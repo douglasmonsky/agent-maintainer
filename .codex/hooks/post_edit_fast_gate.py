@@ -8,7 +8,7 @@ agent so the next step is repair instead of continued drift.
 from __future__ import annotations
 
 import json
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -54,11 +54,12 @@ def main() -> int:
             f"Expected verifier at {verifier}. Restore scripts/verify_quiet.py before continuing.",
         )
 
-    result = subprocess.run(
+    result = subprocess.run(  # nosec B603
         [verifier_python(repo_root), str(verifier), "--profile", "fast", "--base-ref", "HEAD"],
         cwd=repo_root,
         text=True,
         capture_output=True,
+        check=False,
     )
 
     if result.returncode == 0:

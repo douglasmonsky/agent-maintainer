@@ -15,21 +15,25 @@ Profiles:
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from guardrail_config import GuardrailConfig, any_path_exists, existing_paths, format_paths, load_config
+from guardrail_config import (
+    GuardrailConfig,
+    any_path_exists,
+    existing_paths,
+    format_paths,
+    load_config,
+)
+from guardrail_reporting import print_failures, print_success, summarize_check
 
 LOG_DIR = Path(".verify-logs")
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
-
-Profile = str
 
 COMMON_PROFILES = frozenset({"precommit", "full", "ci"})
 ALL_PROFILES = frozenset({"fast", "precommit", "full", "ci"})
@@ -41,7 +45,7 @@ CI_ONLY = frozenset({"ci"})
 class Check:
     name: str
     command: list[str]
-    profiles: frozenset[Profile]
+    profiles: frozenset[str]
     required_paths: tuple[str, ...] = ()
     required_executable: str | None = None
     optional_skip_reason: str | None = None
@@ -123,35 +127,38 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> GuardrailConfig:
     updates: dict[str, object] = {}
-    source_roots = parse_csv_like(args.source_root)
-    test_roots = parse_csv_like(args.test_root)
-    coverage_source = parse_csv_like(args.coverage_source)
-    package_paths = parse_csv_like(args.package_path)
-    file_length_paths = parse_csv_like(args.file_length_path)
-    vulture_paths = parse_csv_like(args.vulture_path)
 
-    if source_roots is not None:
-        updates["source_roots"] = source_roots
-    if test_roots is not None:
-        updates["test_roots"] = test_roots
-    if coverage_source is not None:
-        updates["coverage_source"] = coverage_source
-    if package_paths is not None:
-        updates["package_paths"] = package_paths
-    if file_length_paths is not None:
-        updates["file_length_paths"] = file_length_paths
-    if vulture_paths is not None:
-        updates["vulture_paths"] = vulture_paths
-    if args.coverage_fail_under is not None:
-        updates["coverage_fail_under"] = args.coverage_fail_under
-    if args.diff_cover_fail_under is not None:
-        updates["diff_cover_fail_under"] = args.diff_cover_fail_under
-    if args.require_tests is not None:
-        updates["require_tests"] = args.require_tests
-    if args.enable_pip_audit is not None:
-        updates["enable_pip_audit"] = args.enable_pip_audit
+    tuple_overrides = {
+        "source_roots": parse_csv_like(args.source_root),
+        "test_roots": parse_csv_like(args.test_root),
+        "coverage_source": parse_csv_like(args.coverage_source),
+        "package_paths": parse_csv_like(args.package_path),
+        "file_length_paths": parse_csv_like(args.file_length_path),
+        "vulture_paths": parse_csv_like(args.vulture_path),
+    }
+    scalar_overrides = {
+        "coverage_fail_under": args.coverage_fail_under,
+        "diff_cover_fail_under": args.diff_cover_fail_under,
+        "require_tests": args.require_tests,
+        "enable_pip_audit": args.enable_pip_audit,
+    }
+
+    updates.update({field: value for field, value in tuple_overrides.items() if value is not None})
+    updates.update({field: value for field, value in scalar_overrides.items() if value is not None})
 
     return replace(config, **updates)
+
+
+def tool_search_path() -> str:
+    executable_dir = str(Path(sys.executable).parent)
+    existing_path = os.environ.get("PATH", "")
+    return executable_dir + os.pathsep + existing_path if existing_path else executable_dir
+
+
+def command_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env["PATH"] = tool_search_path()
+    return env
 
 
 def existing_or_configured(paths: tuple[str, ...]) -> list[str]:
@@ -193,7 +200,9 @@ def pip_audit_check(config: GuardrailConfig) -> Check:
 def make_checks(config: GuardrailConfig, base_ref: str, compare_branch: str) -> list[Check]:
     package_paths = tuple(existing_or_configured(config.package_paths))
     file_length_paths = tuple(existing_or_configured(config.file_length_paths))
-    vulture_paths = tuple(path for path in config.vulture_paths if Path(path).exists()) or package_paths
+    vulture_paths = (
+        tuple(path for path in config.vulture_paths if Path(path).exists()) or package_paths
+    )
 
     change_budget_command = [sys.executable, "scripts/check_change_budget.py", base_ref]
     for root in config.source_roots:
@@ -255,63 +264,117 @@ def make_checks(config: GuardrailConfig, base_ref: str, compare_branch: str) -> 
             ALL_PROFILES,
             required_paths=("scripts/check_suppression_budget.py", ".git"),
         ),
-        Check("ruff-format", ["ruff", "format", "--check", "."], COMMON_PROFILES, required_executable="ruff"),
-        Check("ruff", ["ruff", "check", "--output-format=concise", "."], ALL_PROFILES, required_executable="ruff"),
-        Check("pyright", ["pyright", "--outputjson"], COMMON_PROFILES, required_executable="pyright"),
+        Check(
+            "ruff-format",
+            ["ruff", "format", "--check", "."],
+            COMMON_PROFILES,
+            required_executable="ruff",
+        ),
+        Check(
+            "ruff",
+            ["ruff", "check", "--output-format=concise", "."],
+            ALL_PROFILES,
+            required_executable="ruff",
+        ),
+        Check(
+            "pyright", ["pyright", "--outputjson"], COMMON_PROFILES, required_executable="pyright"
+        ),
         pytest_coverage_check,
-        Check("radon-cc-report", ["radon", "cc", *package_paths, "-a", "-s"], FULL_AND_CI, required_executable="radon"),
-        Check("radon-mi-report", ["radon", "mi", *package_paths, "-s"], FULL_AND_CI, required_executable="radon"),
+        Check(
+            "radon-cc-report",
+            ["radon", "cc", *package_paths, "-a", "-s"],
+            FULL_AND_CI,
+            required_executable="radon",
+        ),
+        Check(
+            "radon-mi-report",
+            ["radon", "mi", *package_paths, "-s"],
+            FULL_AND_CI,
+            required_executable="radon",
+        ),
         Check(
             "xenon-complexity-gate",
-            ["xenon", "--max-absolute", "B", "--max-modules", "A", "--max-average", "A", *package_paths],
+            [
+                "xenon",
+                "--max-absolute",
+                "B",
+                "--max-modules",
+                "A",
+                "--max-average",
+                "A",
+                *package_paths,
+            ],
             COMMON_PROFILES,
             required_executable="xenon",
         ),
-        Check("pylint", ["pylint", *package_paths, "--score=n"], FULL_AND_CI, required_executable="pylint"),
+        Check(
+            "pylint",
+            ["pylint", *package_paths, "--score=n"],
+            FULL_AND_CI,
+            required_executable="pylint",
+        ),
         Check(
             "import-linter",
             ["lint-imports"],
             FULL_AND_CI,
             required_executable="lint-imports",
-            optional_skip_reason=".importlinter is absent; architecture contracts are not configured",
+            optional_skip_reason=(
+                ".importlinter is absent; architecture contracts are not configured"
+            ),
         ),
         Check("deptry", ["deptry", "."], FULL_AND_CI, required_executable="deptry"),
         Check("vulture", ["vulture", *vulture_paths], FULL_AND_CI, required_executable="vulture"),
-        Check("bandit", ["bandit", "-q", "-r", *package_paths], FULL_AND_CI, required_executable="bandit"),
+        Check(
+            "bandit",
+            ["bandit", "-q", "-r", *package_paths],
+            FULL_AND_CI,
+            required_executable="bandit",
+        ),
         pip_audit_check(config),
         diff_cover_check,
     ]
 
 
-def layout_failures(config: GuardrailConfig, profile: Profile) -> list[str]:
-    failures: list[str] = []
+def requires_full_layout(profile: str) -> bool:
+    return profile in COMMON_PROFILES
 
-    if profile in COMMON_PROFILES and not any_path_exists(config.source_roots):
-        failures.append(
-            "No configured source root exists. Configured source_roots: "
-            f"{format_paths(config.source_roots)}. Set [tool.ai_guardrails].source_roots, "
-            "GUARDRAILS_SOURCE_ROOTS, or --source-root."
+
+def configured_path_failure(label: str, paths: tuple[str, ...], guidance: str = "") -> str | None:
+    if any_path_exists(paths):
+        return None
+    suffix = f" {guidance}" if guidance else ""
+    return f"No configured {label} exists. Configured {label}: {format_paths(paths)}.{suffix}"
+
+
+def layout_failures(config: GuardrailConfig, profile: str) -> list[str]:
+    if not requires_full_layout(profile):
+        return []
+
+    failures = [
+        configured_path_failure(
+            "source root",
+            config.source_roots,
+            "Set [tool.ai_guardrails].source_roots, GUARDRAILS_SOURCE_ROOTS, or --source-root.",
+        ),
+        configured_path_failure(
+            "package/static-analysis path",
+            config.package_paths,
+        ),
+    ]
+
+    if config.require_tests:
+        failures.extend(
+            [
+                configured_path_failure(
+                    "test root",
+                    config.test_roots,
+                    "Create tests or set require_tests = false intentionally.",
+                ),
+                configured_path_failure("coverage source", config.coverage_source),
+            ]
         )
 
-    if profile in COMMON_PROFILES and config.require_tests and not any_path_exists(config.test_roots):
-        failures.append(
-            "No configured test root exists, and tests are required. Configured test_roots: "
-            f"{format_paths(config.test_roots)}. Create tests or set require_tests = false intentionally."
-        )
-
-    if profile in COMMON_PROFILES and config.require_tests and not any_path_exists(config.coverage_source):
-        failures.append(
-            "No configured coverage source exists. Configured coverage_source: "
-            f"{format_paths(config.coverage_source)}."
-        )
-
-    if profile in COMMON_PROFILES and not any_path_exists(config.package_paths):
-        failures.append(
-            "No configured package/static-analysis path exists. Configured package_paths: "
-            f"{format_paths(config.package_paths)}."
-        )
-
-    return failures
+    return [failure for failure in failures if failure is not None]
 
 
 def missing_requirement(check: Check) -> str | None:
@@ -327,61 +390,12 @@ def missing_requirement(check: Check) -> str | None:
     for required_path in check.required_paths:
         if not Path(required_path).exists():
             return f"required path {required_path!r} is absent"
-    if check.required_executable and shutil.which(check.required_executable) is None:
+    if (
+        check.required_executable
+        and shutil.which(check.required_executable, path=tool_search_path()) is None
+    ):
         return f"command not found: {check.required_executable!r}. Install dev dependencies."
     return None
-
-
-def compact_output(text: str, max_lines: int, max_chars: int) -> str:
-    lines = [line.rstrip() for line in text.splitlines() if line.strip()]
-    if not lines:
-        return "(no output)"
-
-    if len(lines) > max_lines:
-        hidden = len(lines) - max_lines
-        lines = lines[:max_lines] + [f"... {hidden} more lines omitted. See .verify-logs/ for full output."]
-
-    compact = "\n".join(lines)
-    if len(compact) > max_chars:
-        compact = compact[:max_chars].rstrip() + "\n... output truncated. See .verify-logs/ for full output."
-    return compact
-
-
-def summarize_pyright(raw: str) -> str | None:
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        return None
-
-    diagnostics = payload.get("generalDiagnostics", [])
-    if not diagnostics:
-        summary = payload.get("summary", {})
-        return json.dumps(summary, indent=2) if summary else None
-
-    lines: list[str] = []
-    for diagnostic in diagnostics[:50]:
-        file_name = diagnostic.get("file", "<unknown>")
-        range_info = diagnostic.get("range", {}).get("start", {})
-        line = int(range_info.get("line", 0)) + 1
-        character = int(range_info.get("character", 0)) + 1
-        severity = diagnostic.get("severity", "error")
-        message = diagnostic.get("message", "")
-        rule = diagnostic.get("rule")
-        suffix = f" [{rule}]" if rule else ""
-        lines.append(f"{file_name}:{line}:{character}: {severity}: {message}{suffix}")
-
-    omitted = len(diagnostics) - len(lines)
-    if omitted > 0:
-        lines.append(f"... {omitted} more diagnostics omitted. See .verify-logs/pyright.log")
-    return "\n".join(lines)
-
-
-def summarize(check: Check, raw_output: str, max_lines: int, max_chars: int) -> str:
-    if check.name == "pyright":
-        pyright_summary = summarize_pyright(raw_output)
-        if pyright_summary:
-            return compact_output(pyright_summary, max_lines, max_chars)
-    return compact_output(raw_output, max_lines, max_chars)
 
 
 def run_check(check: Check, max_lines: int, max_chars: int) -> CheckResult:
@@ -390,13 +404,26 @@ def run_check(check: Check, max_lines: int, max_chars: int) -> CheckResult:
         LOG_DIR.mkdir(exist_ok=True)
         (LOG_DIR / f"{check.name}.log").write_text(missing + "\n", encoding="utf-8")
         if missing.startswith("optional skip:"):
-            return CheckResult(check.name, passed=True, output=missing.removeprefix("optional skip: "), skipped=True)
+            return CheckResult(
+                check.name,
+                passed=True,
+                output=missing.removeprefix("optional skip: "),
+                skipped=True,
+            )
         return CheckResult(check.name, passed=False, output=missing)
 
     try:
-        result = subprocess.run(check.command, text=True, capture_output=True)
+        result = subprocess.run(  # nosec B603
+            check.command,
+            text=True,
+            capture_output=True,
+            env=command_env(),
+            check=False,
+        )
     except OSError as exc:
-        return CheckResult(check.name, passed=False, output=f"could not run {check.command!r}: {exc}")
+        return CheckResult(
+            check.name, passed=False, output=f"could not run {check.command!r}: {exc}"
+        )
 
     full_output = ""
     if result.stdout:
@@ -412,14 +439,49 @@ def run_check(check: Check, max_lines: int, max_chars: int) -> CheckResult:
     if result.returncode == 0:
         return CheckResult(check.name, passed=True)
 
-    return CheckResult(check.name, passed=False, output=summarize(check, full_output, max_lines, max_chars))
+    return CheckResult(
+        check.name,
+        passed=False,
+        output=summarize_check(check.name, full_output, max_lines, max_chars),
+    )
 
 
 def emit_layout_failure(failures: list[str]) -> CheckResult:
     LOG_DIR.mkdir(exist_ok=True)
-    output = "Guardrail layout/configuration failed:\n\n" + "\n".join(f"  {failure}" for failure in failures)
+    output = "Guardrail layout/configuration failed:\n\n" + "\n".join(
+        f"  {failure}" for failure in failures
+    )
     (LOG_DIR / "guardrail-layout.log").write_text(output + "\n", encoding="utf-8")
     return CheckResult("guardrail-layout", passed=False, output=output)
+
+
+def collect_results(
+    args: argparse.Namespace, config: GuardrailConfig, selected: list[Check]
+) -> list[CheckResult]:
+    layout = layout_failures(config, args.profile)
+    if layout:
+        return [emit_layout_failure(layout)]
+    return [run_check(check, args.max_lines, args.max_chars) for check in selected]
+
+
+def apply_optional_skip_policy(
+    results: list[CheckResult], fail_on_optional_skip: bool
+) -> list[CheckResult]:
+    if not fail_on_optional_skip:
+        return results
+    return [
+        (
+            CheckResult(
+                result.name,
+                passed=False,
+                output=f"optional check skipped: {result.output}",
+                skipped=False,
+            )
+            if result.skipped
+            else result
+        )
+        for result in results
+    ]
 
 
 def main(argv: list[str]) -> int:
@@ -427,45 +489,17 @@ def main(argv: list[str]) -> int:
     config = apply_cli_overrides(load_config(), args)
     checks = make_checks(config, args.base_ref, args.compare_branch)
     selected = [check for check in checks if args.profile in check.profiles]
-
-    results: list[CheckResult] = []
-    layout = layout_failures(config, args.profile)
-    if layout:
-        results.append(emit_layout_failure(layout))
-    else:
-        for check in selected:
-            results.append(run_check(check, args.max_lines, args.max_chars))
-
-    if args.fail_on_optional_skip:
-        results = [
-            CheckResult(result.name, passed=False, output=f"optional check skipped: {result.output}", skipped=False)
-            if result.skipped
-            else result
-            for result in results
-        ]
+    results = collect_results(args, config, selected)
+    results = apply_optional_skip_policy(results, args.fail_on_optional_skip)
 
     failures = [result for result in results if not result.passed]
     skipped = [result for result in results if result.skipped]
 
     if not failures:
-        print("PASS")
-        if skipped:
-            print("SKIPPED optional checks:")
-            for result in skipped:
-                print(f"  {result.name}: {result.output}")
+        print_success(skipped)
         return 0
 
-    print(f"FAIL: {len(failures)} check(s) failed [{args.profile}]\n")
-    for index, result in enumerate(failures, start=1):
-        print(f"{index}. {result.name}")
-        print(result.output or "(no output)")
-        print()
-    if skipped:
-        print("Skipped optional checks:")
-        for result in skipped:
-            print(f"  {result.name}: {result.output}")
-        print()
-    print("Full logs are in .verify-logs/.")
+    print_failures(args.profile, failures, skipped)
     return 1
 
 

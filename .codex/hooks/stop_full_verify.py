@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import json
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -42,15 +42,19 @@ def main() -> int:
         return emit(
             {
                 "decision": "block",
-                "reason": f"Repository guardrail verifier is missing at {verifier}. Restore it before finishing.",
+                "reason": (
+                    f"Repository guardrail verifier is missing at {verifier}. "
+                    "Restore it before finishing."
+                ),
             }
         )
 
-    result = subprocess.run(
+    result = subprocess.run(  # nosec B603
         [verifier_python(repo_root), str(verifier), "--profile", "precommit", "--base-ref", "HEAD"],
         cwd=repo_root,
         text=True,
         capture_output=True,
+        check=False,
     )
 
     if result.returncode == 0:

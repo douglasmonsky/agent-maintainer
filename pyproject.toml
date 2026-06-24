@@ -43,3 +43,12 @@ exclude_lines = [
   "if TYPE_CHECKING:",
   "if __name__ == .__main__.:",
 ]
+
+[tool.deptry]
+known_first_party = ["guardrail_config", "guardrail_reporting"]
+requirements_files = ["requirements.txt"]
+requirements_files_dev = ["config/dev-dependencies.txt"]
+
+[tool.deptry.per_rule_ignores]
+DEP003 = ["tomli"]
+DEP004 = ["tomli"]

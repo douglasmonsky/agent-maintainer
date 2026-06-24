@@ -14,7 +14,7 @@ markers near the top.
 from __future__ import annotations
 
 import argparse
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -51,7 +51,9 @@ GENERATED_MARKERS = (
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("paths", nargs="*", help="Specific files or directories to check.")
-    parser.add_argument("--root", action="append", help="Default scan root. May be repeated or comma-separated.")
+    parser.add_argument(
+        "--root", action="append", help="Default scan root. May be repeated or comma-separated."
+    )
     parser.add_argument("--max-physical", type=int, default=DEFAULT_MAX_PHYSICAL_LINES)
     parser.add_argument("--max-source", type=int, default=DEFAULT_MAX_SOURCE_LINES)
     parser.add_argument(
@@ -82,7 +84,7 @@ def is_generated(path: Path) -> bool:
 
 def git_files(command: list[str]) -> list[Path]:
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603
             command,
             text=True,
             capture_output=True,
@@ -147,14 +149,10 @@ def count_lines(path: Path) -> tuple[int, int]:
     return physical, source
 
 
-def main(argv: list[str]) -> int:
-    args = parse_args(argv)
-    configured_roots = parse_csv_like(args.root)
-    paths = args.paths or configured_roots
-    failures: list[str] = []
-
+def eligible_python_paths(paths: list[Path], include_generated: bool) -> list[Path]:
+    eligible: list[Path] = []
     seen: set[Path] = set()
-    for path in expand_paths(paths, args.changed_only):
+    for path in paths:
         path = path.resolve() if path.is_absolute() else path
         if path in seen:
             continue
@@ -162,21 +160,42 @@ def main(argv: list[str]) -> int:
 
         if not path.exists() or path.suffix != ".py" or is_excluded(path):
             continue
-        if not args.include_generated and is_generated(path):
+        if not include_generated and is_generated(path):
             continue
 
+        eligible.append(path)
+    return eligible
+
+
+def length_failures(paths: list[Path], max_physical: int, max_source: int) -> list[str]:
+    failures: list[str] = []
+    for path in paths:
         physical, source = count_lines(path)
-        if physical > args.max_physical or source > args.max_source:
+        if physical > max_physical or source > max_source:
             failures.append(
                 f"{path}: {physical} physical lines, {source} source lines "
-                f"(limits: {args.max_physical} physical, {args.max_source} source)"
+                f"(limits: {max_physical} physical, {max_source} source)"
             )
+    return failures
+
+
+def print_failures(failures: list[str]) -> None:
+    print("File length check failed:\n")
+    for failure in failures:
+        print(f"  {failure}")
+    print("\nSplit oversized files by responsibility instead of suppressing this check.")
+
+
+def main(argv: list[str]) -> int:
+    args = parse_args(argv)
+    configured_roots = parse_csv_like(args.root)
+    paths = args.paths or configured_roots
+    expanded = expand_paths(paths, args.changed_only)
+    eligible = eligible_python_paths(expanded, args.include_generated)
+    failures = length_failures(eligible, args.max_physical, args.max_source)
 
     if failures:
-        print("File length check failed:\n")
-        for failure in failures:
-            print(f"  {failure}")
-        print("\nSplit oversized files by responsibility instead of suppressing this check.")
+        print_failures(failures)
         return 1
 
     return 0

@@ -10,7 +10,8 @@ variables, or CLI flags.
 from __future__ import annotations
 
 import argparse
-import subprocess
+import shutil
+import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass, replace
 
@@ -20,6 +21,7 @@ DEFAULT_WARN_CHANGED_LINES = 300
 DEFAULT_BLOCK_CHANGED_LINES = 800
 DEFAULT_WARN_PY_FILES = 8
 DEFAULT_BLOCK_PY_FILES = 20
+NUMSTAT_FIELD_COUNT = 3
 
 EXCLUDED_SUFFIXES = (
     ".lock",
@@ -71,8 +73,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default="HEAD",
         help="Git ref to compare against. Use origin/main in CI.",
     )
-    parser.add_argument("--source-root", action="append", help="Source root. May be repeated or comma-separated.")
-    parser.add_argument("--test-root", action="append", help="Test root. May be repeated or comma-separated.")
+    parser.add_argument(
+        "--source-root", action="append", help="Source root. May be repeated or comma-separated."
+    )
+    parser.add_argument(
+        "--test-root", action="append", help="Test root. May be repeated or comma-separated."
+    )
     parser.add_argument("--warn-lines", type=int, default=DEFAULT_WARN_CHANGED_LINES)
     parser.add_argument("--block-lines", type=int, default=DEFAULT_BLOCK_CHANGED_LINES)
     parser.add_argument("--warn-files", type=int, default=DEFAULT_WARN_PY_FILES)
@@ -110,9 +116,10 @@ def is_python_test(path: str, test_roots: tuple[str, ...]) -> bool:
 
 
 def run_git_numstat(base_ref: str) -> list[FileChange]:
+    git = shutil.which("git") or "git"
     try:
-        result = subprocess.run(
-            ["git", "diff", "--numstat", base_ref, "--"],
+        result = subprocess.run(  # nosec B603
+            [git, "diff", "--numstat", base_ref, "--"],
             text=True,
             capture_output=True,
             check=True,
@@ -124,7 +131,7 @@ def run_git_numstat(base_ref: str) -> list[FileChange]:
     changes: list[FileChange] = []
     for line in result.stdout.splitlines():
         parts = line.split("\t")
-        if len(parts) != 3:
+        if len(parts) != NUMSTAT_FIELD_COUNT:
             continue
         added_raw, deleted_raw, path = parts
         if added_raw == "-" or deleted_raw == "-" or should_exclude(path):
@@ -133,24 +140,29 @@ def run_git_numstat(base_ref: str) -> list[FileChange]:
     return changes
 
 
-def main(argv: list[str]) -> int:
-    args = parse_args(argv)
-    config = apply_cli_overrides(load_config(), args)
+def changed_python_files(
+    changes: list[FileChange], config: GuardrailConfig
+) -> tuple[list[FileChange], list[FileChange]]:
+    py_source_changes = [
+        change for change in changes if is_python_source(change.path, config.source_roots)
+    ]
+    py_test_changes = [
+        change for change in changes if is_python_test(change.path, config.test_roots)
+    ]
+    return py_source_changes, py_test_changes
 
-    try:
-        changes = run_git_numstat(args.base_ref)
-    except RuntimeError as exc:
-        print(str(exc))
-        return 1
 
-    py_source_changes = [change for change in changes if is_python_source(change.path, config.source_roots)]
-    py_test_changes = [change for change in changes if is_python_test(change.path, config.test_roots)]
+def budget_messages(
+    args: argparse.Namespace,
+    config: GuardrailConfig,
+    py_source_changes: list[FileChange],
+    py_test_changes: list[FileChange],
+) -> tuple[list[str], list[str]]:
+    warnings: list[str] = []
+    failures: list[str] = []
 
     total_py_source_lines = sum(change.changed for change in py_source_changes)
     total_py_source_files = len(py_source_changes)
-
-    warnings: list[str] = []
-    failures: list[str] = []
 
     if total_py_source_lines > args.block_lines:
         failures.append(
@@ -177,21 +189,45 @@ def main(argv: list[str]) -> int:
     if py_source_changes and not py_test_changes and config.require_tests:
         warnings.append("Python source changed, but no configured Python test files changed.")
 
+    return failures, warnings
+
+
+def print_failure_report(failures: list[str], warnings: list[str]) -> None:
+    print("Change budget failed:\n")
+    for failure in failures:
+        print(f"  BLOCK: {failure}")
+    if warnings:
+        print("\nWarnings:")
+        for warning in warnings:
+            print(f"  WARN: {warning}")
+    print("\nSplit the work into smaller commits/tasks or document why this is mechanical.")
+
+
+def print_warning_report(warnings: list[str]) -> None:
+    print("Change budget warnings:\n")
+    for warning in warnings:
+        print(f"  WARN: {warning}")
+
+
+def main(argv: list[str]) -> int:
+    args = parse_args(argv)
+    config = apply_cli_overrides(load_config(), args)
+
+    try:
+        changes = run_git_numstat(args.base_ref)
+    except RuntimeError as exc:
+        print(str(exc))
+        return 1
+
+    py_source_changes, py_test_changes = changed_python_files(changes, config)
+    failures, warnings = budget_messages(args, config, py_source_changes, py_test_changes)
+
     if failures:
-        print("Change budget failed:\n")
-        for failure in failures:
-            print(f"  BLOCK: {failure}")
-        if warnings:
-            print("\nWarnings:")
-            for warning in warnings:
-                print(f"  WARN: {warning}")
-        print("\nSplit the work into smaller commits/tasks or document why this is mechanical.")
+        print_failure_report(failures, warnings)
         return 1
 
     if warnings:
-        print("Change budget warnings:\n")
-        for warning in warnings:
-            print(f"  WARN: {warning}")
+        print_warning_report(warnings)
         if args.warnings_as_errors:
             return 1
 
