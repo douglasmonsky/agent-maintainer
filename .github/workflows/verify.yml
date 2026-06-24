@@ -1,0 +1,61 @@
+name: verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install guardrail dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r config/dev-dependencies.txt
+
+      - name: Install project when package metadata exists
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import sys
+          import tomllib
+
+          has_metadata = Path("setup.py").exists() or Path("setup.cfg").exists()
+          if Path("pyproject.toml").exists():
+              with Path("pyproject.toml").open("rb") as handle:
+                  data = tomllib.load(handle)
+              has_metadata = has_metadata or "project" in data or "build-system" in data
+
+          if has_metadata:
+              subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "."])
+          else:
+              print("No installable package metadata found; skipping editable install.")
+          PY
+
+      - name: Verify quietly
+        run: |
+          BASE_REF="origin/${GITHUB_BASE_REF:-main}"
+          python scripts/verify_quiet.py --profile ci --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
+
+      - name: Upload full verification logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-logs
+          path: |
+            .verify-logs/
+            coverage.xml
+          if-no-files-found: ignore

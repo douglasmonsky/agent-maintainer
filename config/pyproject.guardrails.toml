@@ -1,0 +1,61 @@
+# Merge these sections into your existing pyproject.toml.
+# Adjust [tool.ai_guardrails] paths if your repository does not use src/ and tests/.
+
+[tool.ai_guardrails]
+source_roots = ["src"]
+test_roots = ["tests"]
+package_paths = ["src"]
+coverage_source = ["src"]
+file_length_paths = ["src", "tests", "scripts", ".codex/hooks"]
+vulture_paths = ["src", "tests", "scripts"]
+require_tests = true
+coverage_fail_under = 80
+diff_cover_fail_under = 90
+
+# Disabled by default because pip-audit may query external vulnerability data
+# and can audit unrelated active-environment packages if no input file is used.
+enable_pip_audit = false
+# Example when enabled:
+# pip_audit_args = ["-r", "requirements.txt"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "F",    # pyflakes
+  "I",    # import sorting
+  "B",    # bugbear-style correctness checks
+  "UP",   # pyupgrade
+  "SIM",  # simplification checks
+  "C90",  # McCabe complexity
+  "PLR",  # Pylint refactor rules exposed by Ruff
+  "RUF",  # Ruff-specific rules
+]
+ignore = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.pytest.ini_options]
+# The verifier passes configured test roots directly. Uncomment if you also want
+# plain `pytest` to use a fixed default.
+# testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+# The verifier passes configured coverage sources through pytest-cov `--cov`.
+# Uncomment and adjust only if you also run coverage without the verifier.
+# source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+]

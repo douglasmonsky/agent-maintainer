@@ -1,0 +1,33 @@
+# Copy to .importlinter and replace your_package with your actual package name.
+# This template is intentionally conservative: the domain layer is protected,
+# and the application layer cannot reach into infrastructure.
+
+[importlinter]
+root_package = your_package
+
+[importlinter:contract:domain_is_independent]
+name = Domain layer is independent
+type = forbidden
+source_modules =
+    your_package.domain
+forbidden_modules =
+    your_package.cli
+    your_package.application
+    your_package.infrastructure
+
+[importlinter:contract:application_does_not_import_infrastructure]
+name = Application does not import infrastructure
+type = forbidden
+source_modules =
+    your_package.application
+forbidden_modules =
+    your_package.infrastructure
+    your_package.cli
+
+[importlinter:contract:basic_layers]
+name = Basic inward-facing layers
+type = layers
+layers =
+    your_package.cli
+    your_package.application
+    your_package.domain

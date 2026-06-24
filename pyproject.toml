@@ -1,0 +1,45 @@
+[tool.ai_guardrails]
+source_roots = ["scripts", ".codex/hooks"]
+test_roots = []
+package_paths = ["scripts", ".codex/hooks"]
+coverage_source = ["scripts", ".codex/hooks"]
+file_length_paths = ["scripts", ".codex/hooks"]
+vulture_paths = ["scripts", ".codex/hooks"]
+require_tests = false
+coverage_fail_under = 80
+diff_cover_fail_under = 90
+enable_pip_audit = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "I",
+  "B",
+  "UP",
+  "SIM",
+  "C90",
+  "PLR",
+  "RUF",
+]
+ignore = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+]

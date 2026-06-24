@@ -1,0 +1,17 @@
+ruff
+pyright
+pytest
+pytest-cov
+coverage
+diff-cover
+hypothesis
+import-linter
+radon
+xenon
+pylint
+deptry
+vulture
+bandit
+pip-audit
+pre-commit
+tomli; python_version < "3.11"

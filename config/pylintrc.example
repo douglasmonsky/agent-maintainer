@@ -1,0 +1,20 @@
+[MASTER]
+ignore=.venv,build,dist
+
+[FORMAT]
+max-line-length=100
+max-module-lines=600
+
+[DESIGN]
+max-args=6
+max-branches=12
+max-locals=15
+max-returns=6
+max-statements=50
+
+[MESSAGES CONTROL]
+# Keep this narrow. Prefer fixing issues to disabling them.
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring

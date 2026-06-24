@@ -1,0 +1,18 @@
+{
+  "include": ["."],
+  "exclude": [
+    ".git",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "node_modules",
+    ".tox",
+    ".ruff_cache",
+    ".mypy_cache",
+    ".pytest_cache"
+  ],
+  "typeCheckingMode": "standard",
+  "pythonVersion": "3.12",
+  "reportMissingTypeStubs": false
+}
