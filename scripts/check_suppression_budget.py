@@ -14,6 +14,8 @@ import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass
 
+from guardrail_config import load_config
+
 SUPPRESSION_PATTERNS = (
     "# noqa",
     "# type: ignore",
@@ -38,7 +40,7 @@ class Suppression:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("base_ref", nargs="?", default="HEAD")
-    parser.add_argument("--max-new-suppressions", type=int, default=3)
+    parser.add_argument("--max-new-suppressions", type=int)
     return parser.parse_args(argv)
 
 
@@ -112,6 +114,7 @@ def print_failures(failures: list[str]) -> None:
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
+    config = load_config()
 
     try:
         added = added_python_lines(args.base_ref)
@@ -119,7 +122,8 @@ def main(argv: list[str]) -> int:
         print(str(exc))
         return 1
 
-    failures = suppression_failures(added, args.max_new_suppressions)
+    max_new_suppressions = args.max_new_suppressions or config.suppression_max_new
+    failures = suppression_failures(added, max_new_suppressions)
 
     if failures:
         print_failures(failures)

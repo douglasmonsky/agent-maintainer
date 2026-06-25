@@ -20,9 +20,6 @@ from pathlib import Path
 
 from guardrail_config import load_config
 
-DEFAULT_MAX_PHYSICAL_LINES = 600
-DEFAULT_MAX_SOURCE_LINES = 450
-
 EXCLUDED_DIRS = {
     ".git",
     ".hg",
@@ -54,8 +51,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--root", action="append", help="Default scan root. May be repeated or comma-separated."
     )
-    parser.add_argument("--max-physical", type=int, default=DEFAULT_MAX_PHYSICAL_LINES)
-    parser.add_argument("--max-source", type=int, default=DEFAULT_MAX_SOURCE_LINES)
+    parser.add_argument("--max-physical", type=int)
+    parser.add_argument("--max-source", type=int)
     parser.add_argument(
         "--changed-only",
         action="store_true",
@@ -188,11 +185,14 @@ def print_failures(failures: list[str]) -> None:
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
+    config = load_config()
     configured_roots = parse_csv_like(args.root)
     paths = args.paths or configured_roots
+    max_physical = args.max_physical or config.file_length_max_physical
+    max_source = args.max_source or config.file_length_max_source
     expanded = expand_paths(paths, args.changed_only)
     eligible = eligible_python_paths(expanded, args.include_generated)
-    failures = length_failures(eligible, args.max_physical, args.max_source)
+    failures = length_failures(eligible, max_physical, max_source)
 
     if failures:
         print_failures(failures)

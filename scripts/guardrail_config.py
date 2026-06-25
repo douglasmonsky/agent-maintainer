@@ -41,6 +41,18 @@ class GuardrailConfig:
     require_tests: bool = True
     coverage_fail_under: int = 80
     diff_cover_fail_under: int = 90
+    file_length_max_physical: int = 600
+    file_length_max_source: int = 450
+    change_warn_lines: int = 300
+    change_block_lines: int = 800
+    change_warn_files: int = 8
+    change_block_files: int = 20
+    suppression_max_new: int = 3
+    xenon_max_absolute: str = "B"
+    xenon_max_modules: str = "A"
+    xenon_max_average: str = "A"
+    ruff_max_complexity: int = 10
+    pyright_type_checking_mode: str = "standard"
     enable_pip_audit: bool = False
     pip_audit_args: tuple[str, ...] = ()
 
@@ -76,6 +88,12 @@ def _as_int(value: object, field_name: str) -> int:
         raise TypeError(f"{field_name} must be an integer") from exc
 
 
+def _as_str(value: object, field_name: str) -> str:
+    if isinstance(value, str) and value:
+        return value
+    raise TypeError(f"{field_name} must be a non-empty string")
+
+
 def _read_pyproject(path: Path = Path("pyproject.toml")) -> dict[str, Any]:
     if not path.exists():
         return {}
@@ -102,7 +120,24 @@ def _apply_pyproject(config: GuardrailConfig, raw: dict[str, Any]) -> GuardrailC
         "pip_audit_args",
     }
     bool_fields = {"require_tests", "enable_pip_audit"}
-    int_fields = {"coverage_fail_under", "diff_cover_fail_under"}
+    int_fields = {
+        "coverage_fail_under",
+        "diff_cover_fail_under",
+        "file_length_max_physical",
+        "file_length_max_source",
+        "change_warn_lines",
+        "change_block_lines",
+        "change_warn_files",
+        "change_block_files",
+        "suppression_max_new",
+        "ruff_max_complexity",
+    }
+    str_fields = {
+        "xenon_max_absolute",
+        "xenon_max_modules",
+        "xenon_max_average",
+        "pyright_type_checking_mode",
+    }
 
     for field_name in tuple_fields:
         if field_name in raw:
@@ -113,6 +148,9 @@ def _apply_pyproject(config: GuardrailConfig, raw: dict[str, Any]) -> GuardrailC
     for field_name in int_fields:
         if field_name in raw:
             updates[field_name] = _as_int(raw[field_name], field_name)
+    for field_name in str_fields:
+        if field_name in raw:
+            updates[field_name] = _as_str(raw[field_name], field_name)
 
     return replace(config, **updates)
 
@@ -168,6 +206,20 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
     diff_cover_fail_under = _env_int("GUARDRAILS_DIFF_COVER_FAIL_UNDER")
     if diff_cover_fail_under is not None:
         updates["diff_cover_fail_under"] = diff_cover_fail_under
+
+    threshold_envs = {
+        "file_length_max_physical": "GUARDRAILS_FILE_LENGTH_MAX_PHYSICAL",
+        "file_length_max_source": "GUARDRAILS_FILE_LENGTH_MAX_SOURCE",
+        "change_warn_lines": "GUARDRAILS_CHANGE_WARN_LINES",
+        "change_block_lines": "GUARDRAILS_CHANGE_BLOCK_LINES",
+        "change_warn_files": "GUARDRAILS_CHANGE_WARN_FILES",
+        "change_block_files": "GUARDRAILS_CHANGE_BLOCK_FILES",
+        "suppression_max_new": "GUARDRAILS_SUPPRESSION_MAX_NEW",
+    }
+    for field_name, env_name in threshold_envs.items():
+        value = _env_int(env_name)
+        if value is not None:
+            updates[field_name] = value
 
     pip_audit_args = os.getenv("GUARDRAILS_PIP_AUDIT_ARGS")
     if pip_audit_args is not None:

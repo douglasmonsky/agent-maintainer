@@ -17,10 +17,6 @@ from dataclasses import dataclass, replace
 
 from guardrail_config import GuardrailConfig, load_config, path_matches_roots
 
-DEFAULT_WARN_CHANGED_LINES = 300
-DEFAULT_BLOCK_CHANGED_LINES = 800
-DEFAULT_WARN_PY_FILES = 8
-DEFAULT_BLOCK_PY_FILES = 20
 NUMSTAT_FIELD_COUNT = 3
 
 EXCLUDED_SUFFIXES = (
@@ -79,10 +75,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--test-root", action="append", help="Test root. May be repeated or comma-separated."
     )
-    parser.add_argument("--warn-lines", type=int, default=DEFAULT_WARN_CHANGED_LINES)
-    parser.add_argument("--block-lines", type=int, default=DEFAULT_BLOCK_CHANGED_LINES)
-    parser.add_argument("--warn-files", type=int, default=DEFAULT_WARN_PY_FILES)
-    parser.add_argument("--block-files", type=int, default=DEFAULT_BLOCK_PY_FILES)
+    parser.add_argument("--warn-lines", type=int)
+    parser.add_argument("--block-lines", type=int)
+    parser.add_argument("--warn-files", type=int)
+    parser.add_argument("--block-files", type=int)
     parser.add_argument(
         "--warnings-as-errors",
         action="store_true",
@@ -160,36 +156,51 @@ def budget_messages(
 ) -> tuple[list[str], list[str]]:
     warnings: list[str] = []
     failures: list[str] = []
-
-    total_py_source_lines = sum(change.changed for change in py_source_changes)
-    total_py_source_files = len(py_source_changes)
-
-    if total_py_source_lines > args.block_lines:
-        failures.append(
-            f"Python source diff is too large: {total_py_source_lines} changed lines "
-            f"(block limit: {args.block_lines})."
-        )
-    elif total_py_source_lines > args.warn_lines:
-        warnings.append(
-            f"Large Python source diff: {total_py_source_lines} changed lines "
-            f"(warning threshold: {args.warn_lines})."
-        )
-
-    if total_py_source_files > args.block_files:
-        failures.append(
-            f"Too many Python source files touched: {total_py_source_files} "
-            f"(block limit: {args.block_files})."
-        )
-    elif total_py_source_files > args.warn_files:
-        warnings.append(
-            f"Many Python source files touched: {total_py_source_files} "
-            f"(warning threshold: {args.warn_files})."
-        )
+    failures.extend(line_budget_failures(args, config, py_source_changes, warnings))
+    failures.extend(file_budget_failures(args, config, py_source_changes, warnings))
 
     if py_source_changes and not py_test_changes and config.require_tests:
         warnings.append("Python source changed, but no configured Python test files changed.")
 
     return failures, warnings
+
+
+def line_budget_failures(
+    args: argparse.Namespace,
+    config: GuardrailConfig,
+    py_source_changes: list[FileChange],
+    warnings: list[str],
+) -> list[str]:
+    total = sum(change.changed for change in py_source_changes)
+    warn_limit = args.warn_lines or config.change_warn_lines
+    block_limit = args.block_lines or config.change_block_lines
+    if total > block_limit:
+        return [
+            f"Python source diff is too large: {total} changed lines (block limit: {block_limit})."
+        ]
+    if total > warn_limit:
+        warnings.append(
+            f"Large Python source diff: {total} changed lines (warning threshold: {warn_limit})."
+        )
+    return []
+
+
+def file_budget_failures(
+    args: argparse.Namespace,
+    config: GuardrailConfig,
+    py_source_changes: list[FileChange],
+    warnings: list[str],
+) -> list[str]:
+    total = len(py_source_changes)
+    warn_limit = args.warn_files or config.change_warn_files
+    block_limit = args.block_files or config.change_block_files
+    if total > block_limit:
+        return [f"Too many Python source files touched: {total} (block limit: {block_limit})."]
+    if total > warn_limit:
+        warnings.append(
+            f"Many Python source files touched: {total} (warning threshold: {warn_limit})."
+        )
+    return []
 
 
 def print_failure_report(failures: list[str], warnings: list[str]) -> None:

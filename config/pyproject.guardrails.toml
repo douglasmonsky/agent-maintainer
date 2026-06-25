@@ -11,6 +11,18 @@ vulture_paths = ["src", "tests", "scripts"]
 require_tests = true
 coverage_fail_under = 80
 diff_cover_fail_under = 90
+file_length_max_physical = 600
+file_length_max_source = 450
+change_warn_lines = 300
+change_block_lines = 800
+change_warn_files = 8
+change_block_files = 20
+suppression_max_new = 3
+xenon_max_absolute = "B"
+xenon_max_modules = "A"
+xenon_max_average = "A"
+ruff_max_complexity = 10
+pyright_type_checking_mode = "standard"
 
 # Disabled by default because pip-audit may query external vulnerability data
 # and can audit unrelated active-environment packages if no input file is used.
