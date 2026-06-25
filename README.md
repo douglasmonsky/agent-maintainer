@@ -80,6 +80,17 @@ python3 -m scripts.guardrail doctor --strict
 
 Then merge `config/pyproject.guardrails.toml` into your `pyproject.toml`.
 
+Generate agent-facing guidance from the resolved guardrail config:
+
+```bash
+python3 -m scripts.guardrail guidance
+python3 -m scripts.guardrail guidance --check
+```
+
+The generated `AGENTS.guardrails.md` sidecar summarizes the active mode, roots,
+thresholds, enabled gates, and required commands. Keep human-written guidance in
+`AGENTS.md`; regenerate the sidecar after changing `[tool.ai_guardrails]`.
+
 Copy the Pyright and Pylint examples if you want them active:
 
 ```bash
@@ -214,6 +225,13 @@ Setup diagnostics:
 python3 -m scripts.guardrail doctor --strict
 ```
 
+Generate or check agent guidance:
+
+```bash
+python3 -m scripts.guardrail guidance
+python3 -m scripts.guardrail guidance --check
+```
+
 Fast check after edits:
 
 ```bash
@@ -237,6 +255,8 @@ If you use `just`:
 ```bash
 just bootstrap
 just doctor
+just guidance
+just guidance-check
 just verify
 just verify-fast
 just verify-precommit
@@ -250,6 +270,7 @@ just verify-ci
 - `docs/codex-hooks.md`: hook behavior and trust review.
 - `docs/troubleshooting.md`: setup, lock, and verification failures.
 - `docs/tool-map.md`: compact map of the included tools.
+- `docs/ROADMAP.md`: tracked product hardening roadmap.
 
 ## Output philosophy
 
@@ -325,6 +346,10 @@ Start strict for new repositories. For existing repositories, start with `fast` 
 This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
 
 This repository also keeps the normally optional hardening gates active for itself: tests are required, `tach.toml` defines the guardrail-script dependency layers with `root_module = "forbid"`, Interrogate enforces an 80% docstring-coverage ratchet, and `pip-audit` runs against `config/dev-lock.txt`.
+
+`AGENTS.guardrails.md` is generated for this repository and should be refreshed
+with `python3 -m scripts.guardrail guidance` whenever `[tool.ai_guardrails]`
+changes.
 
 Generated files are skipped by the file-length check when they contain common generated-file markers near the top. Lock files and binary assets are excluded from the change-budget check.
 

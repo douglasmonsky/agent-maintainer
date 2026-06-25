@@ -21,6 +21,7 @@ BOOTSTRAP_STATUS = 11
 DOCTOR_STATUS = 14
 INSTALL_STATUS = 12
 VERIFY_STATUS = 13
+GUIDANCE_STATUS = 15
 UNKNOWN_COMMAND_STATUS = 2
 DEPENDENCY_FAILURE_STATUS = 7
 NOQA_SUPPRESSION = "# " + "noqa"
@@ -247,11 +248,13 @@ path = "scripts"
 def test_guardrail_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(guardrail, "bootstrap", lambda: BOOTSTRAP_STATUS)
     monkeypatch.setattr(guardrail, "doctor_main", lambda args: DOCTOR_STATUS)
+    monkeypatch.setattr(guardrail, "guidance_main", lambda args: GUIDANCE_STATUS)
     monkeypatch.setattr(guardrail, "install", lambda: INSTALL_STATUS)
     monkeypatch.setattr(guardrail, "verify_main", lambda args: VERIFY_STATUS)
 
     assert guardrail.main(["bootstrap"]) == BOOTSTRAP_STATUS
     assert guardrail.main(["doctor", "--strict"]) == DOCTOR_STATUS
+    assert guardrail.main(["guidance", "--check"]) == GUIDANCE_STATUS
     assert guardrail.main(["install"]) == INSTALL_STATUS
     assert guardrail.main(["verify", "--profile", "fast"]) == VERIFY_STATUS
     assert guardrail.main(["unknown"]) == UNKNOWN_COMMAND_STATUS

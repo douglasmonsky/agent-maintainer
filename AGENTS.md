@@ -2,6 +2,11 @@
 
 The goal is maintainable code, not just passing code. Treat the guardrails as the source of truth.
 
+Also read `AGENTS.guardrails.md` before changing code. It is generated from
+`[tool.ai_guardrails]` and summarizes the active mode, paths, thresholds, and
+required verification commands. If guardrail configuration changes, regenerate it
+with `python3 -m scripts.guardrail guidance`.
+
 ## Required workflow
 
 Before finishing any code task, run:

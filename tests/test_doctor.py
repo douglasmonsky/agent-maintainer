@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_doctor
+from scripts import guardrail_doctor, guardrail_guidance
 from scripts.guardrail_config import GuardrailConfig
 from scripts.guardrail_models import FULL_PROFILES, Check
 
@@ -38,7 +38,7 @@ def test_status_code_treats_warnings_as_strict_failures() -> None:
 def test_main_emits_json(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(guardrail_doctor, "load_config", GuardrailConfig)
+    monkeypatch.setattr(guardrail_doctor.guardrail_config, "load_config", GuardrailConfig)
     monkeypatch.setattr(
         guardrail_doctor,
         "run_doctor",
@@ -56,7 +56,7 @@ def test_main_emits_json(
 def test_main_emits_text(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(guardrail_doctor, "load_config", GuardrailConfig)
+    monkeypatch.setattr(guardrail_doctor.guardrail_config, "load_config", GuardrailConfig)
     monkeypatch.setattr(
         guardrail_doctor,
         "run_doctor",
@@ -404,3 +404,30 @@ def test_recent_logs_warn_and_pass(tmp_path: Path) -> None:
 
     assert result.status == guardrail_doctor.OK
     assert "ruff.log" in result.message
+
+
+def test_agent_guidance_check_warns_for_missing_custom_sidecar(tmp_path: Path) -> None:
+    result = guardrail_doctor.check_agent_guidance(tmp_path, GuardrailConfig())
+
+    assert result.status == guardrail_doctor.WARNING
+    assert "AGENTS.guardrails.md" in result.message
+
+
+def test_agent_guidance_check_fails_for_stale_fresh_strict_sidecar(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.guardrails.md").write_text("stale\n", encoding="utf-8")
+    config = GuardrailConfig(mode="fresh-strict")
+
+    result = guardrail_doctor.check_agent_guidance(tmp_path, config)
+
+    assert result.status == guardrail_doctor.ERROR
+    assert "stale" in result.message
+
+
+def test_agent_guidance_check_passes_for_current_sidecar(tmp_path: Path) -> None:
+    config = GuardrailConfig(mode="fresh-strict")
+    expected = guardrail_guidance.render_guidance(config)
+    (tmp_path / "AGENTS.guardrails.md").write_text(expected, encoding="utf-8")
+
+    result = guardrail_doctor.check_agent_guidance(tmp_path, config)
+
+    assert result.status == guardrail_doctor.OK

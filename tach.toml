@@ -38,6 +38,7 @@ paths = [
   "scripts.check_suppression_budget",
   "scripts.check_tach_config",
   "scripts.guardrail_doctor",
+  "scripts.guardrail_guidance",
   "scripts.verify_quiet",
 ]
 layer = "orchestration"

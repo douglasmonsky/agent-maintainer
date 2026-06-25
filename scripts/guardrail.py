@@ -7,23 +7,30 @@ from __future__ import annotations
 import shutil
 import subprocess  # nosec B404
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.guardrail_doctor import main as doctor_main
+from scripts.guardrail_guidance import main as guidance_main
 from scripts.verify_quiet import main as verify_main
+
+CommandRunner = Callable[[list[str]], int]
 
 USAGE = """Usage:
   python -m scripts.guardrail bootstrap
   python -m scripts.guardrail doctor [doctor options]
+  python -m scripts.guardrail guidance [guidance options]
   python -m scripts.guardrail install
   python -m scripts.guardrail verify [verify options]
 
 Examples:
   python -m scripts.guardrail bootstrap
   python -m scripts.guardrail doctor --strict
+  python -m scripts.guardrail guidance
+  python -m scripts.guardrail guidance --check
   python -m scripts.guardrail install
   python -m scripts.guardrail verify --profile fast
   python -m scripts.guardrail verify --profile precommit
@@ -46,19 +53,36 @@ def main(argv: list[str]) -> int:
 def route_command(command: str, command_args: list[str]) -> int:
     """Route one guardrail subcommand to its implementation."""
 
-    if command == "bootstrap":
-        status = bootstrap()
-    elif command == "doctor":
-        status = doctor_main(command_args)
-    elif command == "install":
-        status = install()
-    elif command == "verify":
-        status = verify_main(command_args)
-    else:
+    handler = command_handlers().get(command)
+    if handler is None:
         print(f"Unknown guardrail command: {command}", file=sys.stderr)
         print(USAGE.rstrip(), file=sys.stderr)
-        status = 2
-    return status
+        return 2
+    return handler(command_args)
+
+
+def command_handlers() -> dict[str, CommandRunner]:
+    """Return command handlers keyed by top-level subcommand name."""
+
+    return {
+        "bootstrap": bootstrap_command,
+        "doctor": doctor_main,
+        "guidance": guidance_main,
+        "install": install_command,
+        "verify": verify_main,
+    }
+
+
+def bootstrap_command(_command_args: list[str]) -> int:
+    """Adapt bootstrap to the shared command handler signature."""
+
+    return bootstrap()
+
+
+def install_command(_command_args: list[str]) -> int:
+    """Adapt install to the shared command handler signature."""
+
+    return install()
 
 
 def bootstrap() -> int:

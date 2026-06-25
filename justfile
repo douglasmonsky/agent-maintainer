@@ -6,6 +6,12 @@ bootstrap:
 doctor:
     python3 -m scripts.guardrail doctor
 
+guidance:
+    python3 -m scripts.guardrail guidance
+
+guidance-check:
+    python3 -m scripts.guardrail guidance --check
+
 verify:
     python3 -m scripts.guardrail verify --profile full
 

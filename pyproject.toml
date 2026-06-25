@@ -67,6 +67,7 @@ known_first_party = [
   "guardrail_config",
   "guardrail_doctor",
   "guardrail_executor",
+  "guardrail_guidance",
   "guardrail_layout",
   "guardrail_models",
   "guardrail_reporting",

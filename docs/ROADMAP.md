@@ -19,27 +19,27 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 0: Generated Agent Guidance
 
-- [ ] Add a generator that renders agent-facing guidance from
+- [x] Add a generator that renders agent-facing guidance from
   `[tool.ai_guardrails]`.
-- [ ] Include active mode, source roots, test roots, architecture backend,
+- [x] Include active mode, source roots, test roots, architecture backend,
   thresholds, required commands, enabled optional gates, and escape hatches.
-- [ ] Frame generated guidance as positive operating instructions, not just a
+- [x] Frame generated guidance as positive operating instructions, not just a
   list of ways checks can fail.
-- [ ] Keep human-owned `AGENTS.md` content authoritative and avoid overwriting it
+- [x] Keep human-owned `AGENTS.md` content authoritative and avoid overwriting it
   wholesale.
-- [ ] Use a protected generated block or a committed sidecar file such as
+- [x] Use a protected generated block or a committed sidecar file such as
   `AGENTS.guardrails.md`.
-- [ ] If using a sidecar file, add a stable human-owned pointer from `AGENTS.md`
+- [x] If using a sidecar file, add a stable human-owned pointer from `AGENTS.md`
   so agents know to read it.
-- [ ] Make generated output deterministic and free of secrets, machine-local
+- [x] Make generated output deterministic and free of secrets, machine-local
   paths, volatile git state, or timestamps.
-- [ ] Add a `doctor` freshness check so generated guidance cannot silently drift
+- [x] Add a `doctor` freshness check so generated guidance cannot silently drift
   from configuration.
-- [ ] Add tests proving guidance updates when config changes and remains stable
+- [x] Add tests proving guidance updates when config changes and remains stable
   when config does not change.
-- [ ] Use this repository as the first consumer so subsequent roadmap work gets
+- [x] Use this repository as the first consumer so subsequent roadmap work gets
   immediate benefit from the generated guidance.
-- [ ] Consider optional subdirectory `AGENTS.md` generation only after the root
+- [x] Consider optional subdirectory `AGENTS.md` generation only after the root
   guidance flow is proven.
 
 ## Phase 1: Test-Driven Enforcement Fidelity

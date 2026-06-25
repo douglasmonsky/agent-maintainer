@@ -10,14 +10,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from scripts import guardrail_config, guardrail_guidance
 from scripts.guardrail_catalog import make_checks
-from scripts.guardrail_config import (
-    FRESH_STRICT_MODE,
-    TACH_TOOL,
-    GuardrailConfig,
-    format_paths,
-    load_config,
-)
 from scripts.guardrail_layout import layout_failures
 from scripts.guardrail_tach import tach_config_issues
 
@@ -60,7 +54,7 @@ def main(argv: list[str]) -> int:
     """Run setup diagnostics and emit text or JSON output."""
 
     args = parse_args(argv)
-    results = run_doctor(Path.cwd(), load_config())
+    results = run_doctor(Path.cwd(), guardrail_config.load_config())
     if args.json:
         print(json.dumps([item.__dict__ for item in results], indent=2))
     else:
@@ -68,7 +62,7 @@ def main(argv: list[str]) -> int:
     return status_code(results, strict=args.strict)
 
 
-def run_doctor(repo_root: Path, config: GuardrailConfig) -> list[DoctorResult]:
+def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> list[DoctorResult]:
     """Run every setup diagnostic against a repository root."""
 
     return [
@@ -82,6 +76,7 @@ def run_doctor(repo_root: Path, config: GuardrailConfig) -> list[DoctorResult]:
         check_codex_hooks(repo_root),
         check_optional_gates(repo_root, config),
         check_canonical_commands(repo_root),
+        check_agent_guidance(repo_root, config),
         check_git_state(repo_root),
         check_recent_logs(repo_root),
     ]
@@ -125,7 +120,9 @@ def check_virtualenv(repo_root: Path) -> DoctorResult:
     return DoctorResult("virtualenv", WARNING, "No .venv or venv Python found.")
 
 
-def check_required_executables(repo_root: Path, config: GuardrailConfig) -> DoctorResult:
+def check_required_executables(
+    repo_root: Path, config: guardrail_config.GuardrailConfig
+) -> DoctorResult:
     """Check that required executables for configured checks are installed."""
 
     checks = make_checks(config, "HEAD", "origin/main")
@@ -147,25 +144,25 @@ def executable_exists(repo_root: Path, executable: str) -> bool:
     return any(path.exists() for path in local_paths) or shutil.which(executable) is not None
 
 
-def check_layout(config: GuardrailConfig) -> DoctorResult:
+def check_layout(config: guardrail_config.GuardrailConfig) -> DoctorResult:
     """Validate configured source, package, test, and coverage roots."""
 
     failures = layout_failures(config, "full")
     if failures:
         return DoctorResult("configured-roots", ERROR, "; ".join(failures))
-    source_roots = format_paths(config.source_roots)
-    test_roots = format_paths(config.test_roots)
+    source_roots = guardrail_config.format_paths(config.source_roots)
+    test_roots = guardrail_config.format_paths(config.test_roots)
     return DoctorResult("configured-roots", OK, f"sources={source_roots}; tests={test_roots}")
 
 
-def check_tests(repo_root: Path, config: GuardrailConfig) -> DoctorResult:
+def check_tests(repo_root: Path, config: guardrail_config.GuardrailConfig) -> DoctorResult:
     """Report whether tests are required and available."""
 
     if not config.require_tests:
         return DoctorResult("tests", WARNING, "Tests are disabled with require_tests = false.")
     existing = [path for path in config.test_roots if (repo_root / path).exists()]
     if not existing:
-        test_roots = format_paths(config.test_roots)
+        test_roots = guardrail_config.format_paths(config.test_roots)
         return DoctorResult(
             "tests",
             ERROR,
@@ -199,15 +196,18 @@ def check_codex_hooks(repo_root: Path) -> DoctorResult:
     return DoctorResult("codex-hooks", OK, ".codex/config.toml enables hooks.")
 
 
-def check_optional_gates(repo_root: Path, config: GuardrailConfig) -> DoctorResult:
+def check_optional_gates(repo_root: Path, config: guardrail_config.GuardrailConfig) -> DoctorResult:
     """Report whether optional hardening integrations are active."""
 
     missing: list[str] = []
     architecture_name = "Import Linter"
-    if config.architecture_tool == TACH_TOOL:
+    if config.architecture_tool == guardrail_config.TACH_TOOL:
         architecture_name = "Tach"
         missing.extend(
-            tach_config_issues(repo_root, require_strict_root=config.mode == FRESH_STRICT_MODE)
+            tach_config_issues(
+                repo_root,
+                require_strict_root=config.mode == guardrail_config.FRESH_STRICT_MODE,
+            )
         )
     elif not (repo_root / ".importlinter").exists():
         missing.append(".importlinter")
@@ -255,6 +255,16 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
         OK,
         "CI, pre-commit, and Codex hooks use module entrypoint.",
     )
+
+
+def check_agent_guidance(repo_root: Path, config: guardrail_config.GuardrailConfig) -> DoctorResult:
+    """Report whether generated agent guidance matches current config."""
+
+    state = guardrail_guidance.guidance_state(repo_root, config)
+    if state.status == "current":
+        return DoctorResult("agent-guidance", OK, state.message)
+    status = ERROR if config.mode == guardrail_config.FRESH_STRICT_MODE else WARNING
+    return DoctorResult("agent-guidance", status, state.message)
 
 
 def check_git_state(repo_root: Path) -> DoctorResult:
