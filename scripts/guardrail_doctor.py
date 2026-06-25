@@ -9,14 +9,18 @@ import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
-from scripts import guardrail_config, guardrail_doctor_policy, guardrail_guidance
+from scripts import (
+    guardrail_config,
+    guardrail_doctor_logs,
+    guardrail_doctor_policy,
+    guardrail_guidance,
+)
 from scripts.guardrail_catalog import make_checks
 from scripts.guardrail_doctor_models import ERROR, OK, WARNING, DoctorResult
 from scripts.guardrail_layout import layout_failures
 from scripts.guardrail_tach import tach_config_issues
 
 MIN_PYTHON = (3, 11)
-VERIFY_LOG_DIR = ".verify-logs"
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -66,7 +70,7 @@ def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> lis
         check_canonical_commands(repo_root),
         check_agent_guidance(repo_root, config),
         check_git_state(repo_root),
-        check_recent_logs(repo_root),
+        guardrail_doctor_logs.check_recent_logs(repo_root, config),
     ]
 
 
@@ -282,19 +286,6 @@ def check_git_state(repo_root: Path) -> DoctorResult:
     if details:
         return DoctorResult("git-state", WARNING, "; ".join(details))
     return DoctorResult("git-state", OK, branch.removeprefix("## "))
-
-
-def check_recent_logs(repo_root: Path) -> DoctorResult:
-    """Report whether recent verifier logs are available."""
-
-    log_dir = repo_root / VERIFY_LOG_DIR
-    if not log_dir.exists():
-        return DoctorResult("verification-logs", WARNING, f"{VERIFY_LOG_DIR}/ is absent.")
-    logs = sorted(log_dir.glob("*.log"), key=lambda path: path.stat().st_mtime, reverse=True)
-    if not logs:
-        return DoctorResult("verification-logs", WARNING, f"No logs found in {VERIFY_LOG_DIR}/.")
-    latest_log = logs[0].name
-    return DoctorResult("verification-logs", OK, f"Latest log: {latest_log}")
 
 
 def print_text(results: list[DoctorResult]) -> None:
