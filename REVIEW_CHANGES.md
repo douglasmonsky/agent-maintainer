@@ -2,6 +2,16 @@
 
 This revision addresses the main review findings from the first package.
 
+## Current productization pass
+
+The canonical CI and hook command is now `python3 -m scripts.guardrail`.
+
+`python3 -m scripts.guardrail doctor` reports setup health across Python version, required executables, configured roots, tests, hooks, optional gates, canonical command wiring, git state, and recent verification logs. `doctor --strict` exits nonzero on warnings.
+
+`[tool.ai_guardrails].mode` now supports `custom`, `legacy-ratchet`, and `fresh-strict`. This repository uses `fresh-strict`, keeps tests and optional hardening gates active, and audits the pinned `config/dev-lock.txt`.
+
+Bootstrap and CI prefer `config/dev-lock.txt` when present and fall back to `config/dev-dependencies.txt`.
+
 ## Required checks no longer skip silently
 
 `python -m scripts.guardrail verify` now distinguishes required guardrail assets from optional integrations.

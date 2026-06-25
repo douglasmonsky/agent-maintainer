@@ -50,10 +50,13 @@ Shared path configuration is read from `[tool.ai_guardrails]` in `pyproject.toml
 
 ```toml
 [tool.ai_guardrails]
+mode = "custom"
 source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]
 coverage_source = ["src"]
 ```
+
+Mode can be `custom`, `legacy-ratchet`, or `fresh-strict`. Built-in defaults apply first, then mode defaults, then explicit pyproject fields, environment variables, and CLI flags.
 
 Missing required roots fail in `precommit`, `full`, and `ci`; optional integrations are reported as skipped.

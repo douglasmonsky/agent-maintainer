@@ -1,0 +1,53 @@
+# Troubleshooting
+
+Start with:
+
+```bash
+python3 -m scripts.guardrail doctor
+```
+
+Use `--strict` after setup or after pushing when warnings should fail:
+
+```bash
+python3 -m scripts.guardrail doctor --strict
+```
+
+## Common Issues
+
+| Symptom | Fix |
+|---|---|
+| Missing required executables | Run `python3 -m scripts.guardrail bootstrap`. |
+| Missing source, test, package, or coverage roots | Set `[tool.ai_guardrails]` paths in `pyproject.toml`. |
+| Pre-commit hook is not installed | Run `python3 -m scripts.guardrail install`. |
+| `.importlinter` is absent | Add an Import Linter contract or accept the optional skip. |
+| `pip-audit` is disabled | Enable it with a pinned input such as `config/dev-lock.txt`. |
+| `wemake` is disabled | Enable `fresh-strict` or set `enable_wemake = true`. |
+| Branch is ahead or dirty | Commit/push intentionally, or run non-strict doctor while work is in progress. |
+| CI diff-cover cannot compare branches | Use a fetched base ref such as `origin/main`. |
+
+## Dependency Lock
+
+`config/dev-dependencies.txt` is the human-edited dependency input. `config/dev-lock.txt` is generated and preferred by bootstrap and CI when present.
+
+Refresh the lock after changing dependency inputs:
+
+```bash
+python3 -m scripts.guardrail bootstrap
+.venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
+```
+
+Then run:
+
+```bash
+python3 -m scripts.guardrail verify --profile full
+```
+
+## Verification Logs
+
+The quiet verifier writes raw command output to `.verify-logs/`. When the terminal output is abbreviated, inspect the matching log file before changing thresholds or adding suppressions.
+
+Clean generated logs with:
+
+```bash
+just clean-verify-logs
+```

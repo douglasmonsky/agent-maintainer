@@ -132,6 +132,8 @@ enable_wemake = false
 
 Use `mode = "fresh-strict"` for new repositories where strict checks should block from day one. Use `mode = "legacy-ratchet"` for existing repositories where heavy gates should stay opt-in while the repo adopts changed-file and baseline discipline.
 
+See `docs/fresh-strict.md` and `docs/legacy-ratchet.md` for preset details.
+
 Set `require_tests = false` only for repositories where tests are intentionally unavailable. In that mode, pytest coverage and changed-code coverage are reported as explicit optional skips.
 
 For a flat package layout, use something like:
@@ -215,6 +217,14 @@ just verify-precommit
 just verify-ci
 ```
 
+## More docs
+
+- `docs/fresh-strict.md`: new-repo strictness preset.
+- `docs/legacy-ratchet.md`: existing-repo adoption path.
+- `docs/codex-hooks.md`: hook behavior and trust review.
+- `docs/troubleshooting.md`: setup, lock, and verification failures.
+- `docs/tool-map.md`: compact map of the included tools.
+
 ## Output philosophy
 
 The quiet verifier prints only:
@@ -276,39 +286,6 @@ Full raw output is stored in `.verify-logs/` to keep agent context small.
 | Python source diff hard block | 800 lines |
 | Python source files warning | 8 files |
 | Python source files hard block | 20 files |
-
-## pip-audit behavior
-
-`pip-audit` is disabled by default in this kit. When enabled, it can query external vulnerability data and may audit unrelated active-environment packages if you run it without input files. Prefer a pinned input where possible:
-
-```toml
-[tool.ai_guardrails]
-enable_pip_audit = true
-pip_audit_args = ["-r", "requirements.txt"]
-```
-
-Or enable it only in CI with an environment variable:
-
-```bash
-GUARDRAILS_ENABLE_PIP_AUDIT=1 GUARDRAILS_PIP_AUDIT_ARGS="-r requirements.txt" python3 -m scripts.guardrail verify --profile ci
-```
-
-## wemake behavior
-
-`wemake-python-styleguide` is disabled by default because it is intentionally rigid. Enable it for fresh repositories where you want strict style friction from day one:
-
-```toml
-[tool.ai_guardrails]
-enable_wemake = true
-```
-
-Or enable it temporarily:
-
-```bash
-GUARDRAILS_ENABLE_WEMAKE=1 python3 -m scripts.guardrail verify --profile full
-```
-
-When enabled, the verifier runs `flake8 --require-plugins wemake-python-styleguide` over configured `package_paths`. For existing repositories, keep it off until you have a clean baseline or an explicit ratchet plan.
 
 ## Notes
 
