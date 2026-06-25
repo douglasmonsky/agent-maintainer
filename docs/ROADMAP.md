@@ -106,6 +106,8 @@ repo state instead of reconstructing the plan from chat history.
   full-log paths, and the exact rerun command.
 - [x] Keep terminal output compact while making the artifact trail complete.
 - [x] Store structured output where supported, starting with Pyright JSON.
+- [x] Add `.verify-logs/hooks.jsonl` so Codex hook execution has a local audit
+  trail that `doctor` can inspect.
 - [ ] Add Ruff JSON or SARIF output when useful for summaries.
 - [ ] Add pytest JUnit XML output.
 - [ ] Preserve coverage XML and consider coverage JSON.

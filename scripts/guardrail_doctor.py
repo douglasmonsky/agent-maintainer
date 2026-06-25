@@ -11,6 +11,7 @@ from pathlib import Path
 
 from scripts import (
     guardrail_config,
+    guardrail_doctor_hook_audit,
     guardrail_doctor_logs,
     guardrail_doctor_policy,
     guardrail_guidance,
@@ -65,6 +66,7 @@ def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> lis
         guardrail_doctor_policy.check_pyright_config(repo_root, config),
         check_pre_commit(repo_root),
         check_codex_hooks(repo_root),
+        guardrail_doctor_hook_audit.check_hook_audit(repo_root, config),
         guardrail_doctor_policy.check_pip_audit_safety(config),
         check_optional_gates(repo_root, config),
         check_canonical_commands(repo_root),

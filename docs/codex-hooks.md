@@ -39,3 +39,19 @@ python3 -m scripts.guardrail verify --profile precommit
 ```
 
 They prefer `.venv/bin/python` or `venv/bin/python` when present. Run `python3 -m scripts.guardrail doctor` if hooks are configured but not behaving as expected.
+
+## Audit Trail
+
+Successful Codex hook passes are not guaranteed to appear in Codex session JSONL.
+The hook scripts therefore append local audit records to:
+
+```text
+.verify-logs/hooks.jsonl
+```
+
+The audit records include the hook name, verifier profile, command, exit code,
+status, timestamps, and duration. They intentionally do not include hook stdin,
+prompt text, tool payloads, or verifier stdout/stderr.
+
+`python3 -m scripts.guardrail doctor` reports the latest audited hook status when
+repo-local hooks are enabled.
