@@ -2,7 +2,9 @@
 
 ## Everyday gates
 
-`python3 -m scripts.guardrail` is the canonical entrypoint. Use `python3 -m scripts.guardrail bootstrap` for one-command local setup, `python3 -m scripts.guardrail verify --profile precommit` for local completion checks, `python3 -m scripts.guardrail verify --profile full` for deeper review, and `python3 -m scripts.guardrail install` to install local hooks without reinstalling dependencies.
+`python3 -m scripts.guardrail` is the canonical entrypoint. Use `python3 -m scripts.guardrail bootstrap` for one-command local setup, `python3 -m scripts.guardrail doctor` for setup health, `python3 -m scripts.guardrail verify --profile precommit` for local completion checks, `python3 -m scripts.guardrail verify --profile full` for deeper review, and `python3 -m scripts.guardrail install` to install local hooks without reinstalling dependencies.
+
+`doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state.
 
 Ruff handles formatting, import order, linting, and McCabe complexity feedback. It is the fastest feedback loop and should run after most edits.
 

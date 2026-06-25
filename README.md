@@ -61,6 +61,15 @@ This creates `.venv` when needed, installs `config/dev-dependencies.txt`, instal
 
 Python 3.11+ is recommended. Python 3.10 and older require `tomli` in the same environment that runs the verifier. The Codex hooks prefer `.venv/bin/python` or `venv/bin/python` when present, so installing dev dependencies into a project virtualenv is the most reliable local setup.
 
+Check setup health after bootstrap:
+
+```bash
+python3 -m scripts.guardrail doctor
+python3 -m scripts.guardrail doctor --strict
+```
+
+`doctor` reports compact `PASS`, `WARN`, and `FAIL` rows for Python version, required executables, configured roots, test availability, pre-commit installation, Codex hook config, optional gates, canonical command wiring, git state, and recent verification logs. By default only hard failures exit nonzero; `--strict` also exits nonzero on warnings.
+
 Then merge `config/pyproject.guardrails.toml` into your `pyproject.toml`.
 
 Copy the Pyright and Pylint examples if you want them active:
@@ -160,6 +169,12 @@ One-command local bootstrap:
 python3 -m scripts.guardrail bootstrap
 ```
 
+Setup diagnostics:
+
+```bash
+python3 -m scripts.guardrail doctor --strict
+```
+
 Fast check after edits:
 
 ```bash
@@ -182,6 +197,7 @@ If you use `just`:
 
 ```bash
 just bootstrap
+just doctor
 just verify
 just verify-fast
 just verify-precommit

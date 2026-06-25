@@ -21,20 +21,15 @@ from dataclasses import replace
 from pathlib import Path
 
 from scripts.guardrail_catalog import make_checks
-from scripts.guardrail_config import (
-    GuardrailConfig,
-    any_path_exists,
-    format_paths,
-    load_config,
-)
+from scripts.guardrail_config import GuardrailConfig, load_config
 from scripts.guardrail_executor import run_check
-from scripts.guardrail_models import LOCAL_GATE_PROFILES, Check, CheckResult
+from scripts.guardrail_layout import layout_failures
+from scripts.guardrail_models import Check, CheckResult
 from scripts.guardrail_reporting import print_failures, print_success
 
 LOG_DIR = Path(".verify-logs")
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
-VALID_PYRIGHT_MODES = frozenset(("off", "basic", "standard", "strict"))
 
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
@@ -133,51 +128,6 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
     updates.update({field: value for field, value in scalar_overrides.items() if value is not None})
 
     return replace(config, **updates)
-
-
-def requires_full_layout(profile: str) -> bool:
-    return profile in LOCAL_GATE_PROFILES
-
-
-def configured_path_failure(label: str, paths: tuple[str, ...], guidance: str = "") -> str | None:
-    if any_path_exists(paths):
-        return None
-    suffix = f" {guidance}" if guidance else ""
-    return f"No configured {label} exists. Configured {label}: {format_paths(paths)}.{suffix}"
-
-
-def layout_failures(config: GuardrailConfig, profile: str) -> list[str]:
-    if not requires_full_layout(profile):
-        return []
-
-    failures = [
-        configured_path_failure(
-            "source root",
-            config.source_roots,
-            "Set [tool.ai_guardrails].source_roots, GUARDRAILS_SOURCE_ROOTS, or --source-root.",
-        ),
-        configured_path_failure(
-            "package/static-analysis path",
-            config.package_paths,
-        ),
-    ]
-
-    if config.require_tests:
-        failures.extend(
-            [
-                configured_path_failure(
-                    "test root",
-                    config.test_roots,
-                    "Create tests or set require_tests = false intentionally.",
-                ),
-                configured_path_failure("coverage source", config.coverage_source),
-            ]
-        )
-    if config.pyright_type_checking_mode not in VALID_PYRIGHT_MODES:
-        valid_modes = ", ".join(sorted(VALID_PYRIGHT_MODES))
-        failures.append(f"pyright_type_checking_mode must be one of: {valid_modes}")
-
-    return [failure for failure in failures if failure is not None]
 
 
 def emit_layout_failure(failures: list[str]) -> CheckResult:

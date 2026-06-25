@@ -12,15 +12,18 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.guardrail_doctor import main as doctor_main
 from scripts.verify_quiet import main as verify_main
 
 USAGE = """Usage:
   python -m scripts.guardrail bootstrap
+  python -m scripts.guardrail doctor [doctor options]
   python -m scripts.guardrail install
   python -m scripts.guardrail verify [verify options]
 
 Examples:
   python -m scripts.guardrail bootstrap
+  python -m scripts.guardrail doctor --strict
   python -m scripts.guardrail install
   python -m scripts.guardrail verify --profile fast
   python -m scripts.guardrail verify --profile precommit
@@ -31,19 +34,27 @@ Examples:
 def main(argv: list[str]) -> int:
     if not argv or argv[0] in {"-h", "--help"}:
         print(USAGE.rstrip())
-        return 0
+        status = 0
+    else:
+        command, *command_args = argv
+        status = route_command(command, command_args)
+    return status
 
-    command, *command_args = argv
+
+def route_command(command: str, command_args: list[str]) -> int:
     if command == "bootstrap":
-        return bootstrap()
-    if command == "install":
-        return install()
-    if command == "verify":
-        return verify_main(command_args)
-
-    print(f"Unknown guardrail command: {command}", file=sys.stderr)
-    print(USAGE.rstrip(), file=sys.stderr)
-    return 2
+        status = bootstrap()
+    elif command == "doctor":
+        status = doctor_main(command_args)
+    elif command == "install":
+        status = install()
+    elif command == "verify":
+        status = verify_main(command_args)
+    else:
+        print(f"Unknown guardrail command: {command}", file=sys.stderr)
+        print(USAGE.rstrip(), file=sys.stderr)
+        status = 2
+    return status
 
 
 def bootstrap() -> int:

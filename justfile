@@ -3,6 +3,9 @@
 bootstrap:
     python3 -m scripts.guardrail bootstrap
 
+doctor:
+    python3 -m scripts.guardrail doctor
+
 verify:
     python3 -m scripts.guardrail verify --profile full
 
