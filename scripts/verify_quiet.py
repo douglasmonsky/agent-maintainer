@@ -84,9 +84,10 @@ def main(argv: list[str]) -> int:
 
     failures = [result for result in results if not result.passed]
     skipped = [result for result in results if result.skipped]
+    warnings = [result for result in results if result.warning]
 
     if not failures:
-        print_success(skipped)
+        print_success(skipped, warnings)
         return 0
 
     print_failures(args.profile, failures, skipped)

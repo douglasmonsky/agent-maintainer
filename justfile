@@ -31,20 +31,19 @@ verify-flat PACKAGE:
 verify-full-output:
     ruff format --check .
     ruff check .
-    pyright
-    pytest -q --tb=short --disable-warnings --cov=src --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=80 tests
-    radon cc src -a -s
-    radon mi src -s
-    xenon --max-absolute B --max-modules A --max-average A src
-    pylint src --score=n
+    python3 -m scripts.run_pyright
+    pytest -q --tb=short --disable-warnings --cov=scripts --cov=.codex/hooks --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=80 tests
+    radon cc scripts .codex/hooks -a -s
+    radon mi scripts .codex/hooks -s
+    xenon --max-absolute B --max-modules A --max-average A scripts .codex/hooks
+    pylint scripts .codex/hooks --score=n
     python3 -m scripts.check_tach_config --strict-root-module
     tach check --exact
     interrogate --fail-under=80 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic scripts .codex/hooks
     deptry .
-    vulture src tests scripts
-    bandit -q -r src
-    # pip-audit is intentionally not run here by default. Prefer a pinned input:
-    # pip-audit -r requirements.txt
+    vulture scripts .codex/hooks tests
+    bandit -q -r scripts .codex/hooks
+    pip-audit -r config/dev-lock.txt
 
 clean-verify-logs:
     rm -rf .verify-logs coverage.xml .coverage htmlcov

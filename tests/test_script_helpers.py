@@ -173,6 +173,35 @@ def test_change_budget_main_can_fail_warnings_as_errors(
     assert "Change budget warnings" in capsys.readouterr().out
 
 
+def test_change_budget_can_allow_source_changes_without_test_changes() -> None:
+    args = check_change_budget.parse_args(["--allow-source-without-test-change"])
+    config = GuardrailConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
+
+    failures, warnings = check_change_budget.budget_messages(
+        args,
+        config,
+        [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
+        [],
+    )
+
+    assert failures == []
+    assert warnings == []
+
+
+def test_justfile_full_output_recipe_uses_repo_roots() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    justfile = (repo_root / "justfile").read_text(encoding="utf-8")
+    recipe = justfile.split("verify-full-output:", maxsplit=1)[1].split(
+        "clean-verify-logs:",
+        maxsplit=1,
+    )[0]
+
+    assert " --cov=src" not in recipe
+    assert "radon cc src" not in recipe
+    assert "pylint src" not in recipe
+    assert "bandit -q -r src" not in recipe
+
+
 def test_suppression_budget_detects_broad_suppressions() -> None:
     added = [
         ("scripts/tool.py", f"value = call()  {NOQA_SUPPRESSION}"),

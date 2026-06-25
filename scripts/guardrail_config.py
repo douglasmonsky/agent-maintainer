@@ -47,6 +47,7 @@ TUPLE_FIELDS = frozenset(
         "file_length_paths",
         "vulture_paths",
         "pip_audit_args",
+        "source_without_test_change_error_profiles",
     )
 )
 BOOL_FIELDS = frozenset(
@@ -55,6 +56,7 @@ BOOL_FIELDS = frozenset(
         "enable_pip_audit",
         "enable_wemake",
         "enable_interrogate",
+        "allow_source_without_test_change",
     )
 )
 INT_FIELDS = frozenset(
@@ -102,6 +104,8 @@ class GuardrailConfig:
     change_block_lines: int = 800
     change_warn_files: int = 8
     change_block_files: int = 20
+    source_without_test_change_error_profiles: tuple[str, ...] = ()
+    allow_source_without_test_change: bool = False
     suppression_max_new: int = 3
     xenon_max_absolute: str = "B"
     xenon_max_modules: str = "A"
@@ -223,6 +227,7 @@ def apply_mode(config: GuardrailConfig, mode: str) -> GuardrailConfig:
             "change_block_lines": 600,
             "change_warn_files": 6,
             "change_block_files": 12,
+            "source_without_test_change_error_profiles": ("precommit",),
             "suppression_max_new": 1,
             "ruff_max_complexity": 8,
             "enable_wemake": True,
@@ -277,12 +282,16 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
         "coverage_source": "GUARDRAILS_COVERAGE_SOURCE",
         "file_length_paths": "GUARDRAILS_FILE_LENGTH_PATHS",
         "vulture_paths": "GUARDRAILS_VULTURE_PATHS",
+        "source_without_test_change_error_profiles": (
+            "GUARDRAILS_SOURCE_WITHOUT_TEST_CHANGE_ERROR_PROFILES"
+        ),
     }
     bool_envs = {
         "require_tests": "GUARDRAILS_REQUIRE_TESTS",
         "enable_pip_audit": "GUARDRAILS_ENABLE_PIP_AUDIT",
         "enable_wemake": "GUARDRAILS_ENABLE_WEMAKE",
         "enable_interrogate": "GUARDRAILS_ENABLE_INTERROGATE",
+        "allow_source_without_test_change": ("GUARDRAILS_ALLOW_SOURCE_WITHOUT_TEST_CHANGE"),
     }
     coverage_envs = {
         "coverage_fail_under": "GUARDRAILS_COVERAGE_FAIL_UNDER",
