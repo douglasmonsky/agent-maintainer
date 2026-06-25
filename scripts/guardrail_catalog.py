@@ -142,6 +142,20 @@ def pyright_check(config: GuardrailConfig) -> models.Check:
     )
 
 
+def ruff_check(config: GuardrailConfig) -> models.Check:
+    """Build the Ruff check through the JSON-artifact wrapper."""
+
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    return models.Check(
+        "ruff",
+        [sys.executable, "-m", "scripts.run_ruff"],
+        models.ALL_PROFILES,
+        required_paths=("scripts/run_ruff.py",),
+        required_executable="ruff",
+        artifact_paths=(str(artifacts_dir / "ruff.json"),),
+    )
+
+
 def wemake_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> models.Check:
     """Build the wemake strict-style check or its explicit skip."""
 
@@ -279,19 +293,7 @@ def make_checks(
             models.LOCAL_GATE_PROFILES,
             required_executable="ruff",
         ),
-        models.Check(
-            "ruff",
-            [
-                "ruff",
-                "check",
-                "--output-format=concise",
-                "--config",
-                f"lint.mccabe.max-complexity={config.ruff_max_complexity}",
-                ".",
-            ],
-            models.ALL_PROFILES,
-            required_executable="ruff",
-        ),
+        ruff_check(config),
         pyright_check(config),
         pytest_check(config),
         models.Check(

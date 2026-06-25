@@ -86,6 +86,7 @@ known_first_party = [
   "guardrail_tach",
   "hook_audit",
   "run_pyright",
+  "run_ruff",
   "verify_quiet",
 ]
 requirements_files = ["requirements.txt"]

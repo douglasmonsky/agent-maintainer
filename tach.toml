@@ -45,6 +45,7 @@ paths = [
   "scripts.guardrail_doctor",
   "scripts.guardrail_guidance",
   "scripts.run_pyright",
+  "scripts.run_ruff",
   "scripts.verify_quiet",
 ]
 layer = "orchestration"

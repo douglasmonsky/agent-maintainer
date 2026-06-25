@@ -10,7 +10,10 @@
 `[tool.ai_guardrails]`. In this repository's `fresh-strict` mode, `doctor`
 reports stale generated guidance as a failure.
 
-Ruff handles formatting, import order, linting, and McCabe complexity feedback. It is the fastest feedback loop and should run after most edits.
+Ruff handles formatting, import order, linting, and McCabe complexity feedback.
+The verifier preserves Ruff JSON as `.verify-logs/ruff.json` and prints compact
+diagnostics instead of dumping raw JSON into terminal output. It is the fastest
+feedback loop and should run after most edits.
 
 Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.ai_guardrails].pyright_type_checking_mode` affects the actual Pyright invocation. Pyright JSON is also preserved as `.verify-logs/pyright.json` and listed in the verifier manifest.
 
