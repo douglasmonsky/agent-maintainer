@@ -37,6 +37,7 @@ BOOL_FIELDS = frozenset(
         "enable_wemake",
         "enable_interrogate",
         "allow_source_without_test_change",
+        "diagnostic_artifacts_enabled",
     )
 )
 INT_FIELDS = frozenset(
@@ -61,6 +62,7 @@ STR_FIELDS = frozenset(
         "xenon_max_average",
         "pyright_type_checking_mode",
         "file_length_baseline",
+        "diagnostic_artifacts_dir",
     )
 )
 
@@ -100,3 +102,5 @@ class GuardrailConfig:
     architecture_tool: str = IMPORT_LINTER_TOOL
     enable_interrogate: bool = False
     interrogate_fail_under: int = 80
+    diagnostic_artifacts_enabled: bool = True
+    diagnostic_artifacts_dir: str = ".verify-logs"

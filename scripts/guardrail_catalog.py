@@ -54,6 +54,7 @@ def pytest_check(config: GuardrailConfig) -> models.Check:
             pytest_command(config),
             models.LOCAL_GATE_PROFILES,
             required_executable="pytest",
+            artifact_paths=("coverage.xml",),
         )
     return models.Check(
         "pytest-coverage",

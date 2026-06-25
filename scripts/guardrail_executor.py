@@ -6,10 +6,29 @@ import os
 import shutil
 import subprocess  # nosec B404
 import sys
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 from scripts.guardrail_models import Check, CheckResult
 from scripts.guardrail_reporting import summarize_check
+
+OutputLimits = tuple[int, int]
+
+
+@dataclass(frozen=True)
+class CheckRun:
+    """Metadata captured for one check execution."""
+
+    log_path: Path
+    started_at: str
+    ended_at: str
+
+
+def utc_timestamp() -> str:
+    """Return a stable UTC timestamp for verifier metadata."""
+
+    return datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def tool_search_path() -> str:
@@ -81,49 +100,117 @@ def run_command(command: list[str]) -> tuple[int, str]:
 def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> CheckResult:
     """Execute one check, write its raw log, and return a compact result."""
 
+    log_path = log_dir / f"{check.name}.log"
+    started_at = utc_timestamp()
     missing = missing_requirement(check)
     if missing:
-        return missing_requirement_result(check, log_dir, missing)
+        return missing_requirement_result(check, log_path, missing, started_at)
     try:
         returncode, output = run_command(check.command)
     except OSError as exc:
+        ended_at = utc_timestamp()
+        output = f"could not run {check.command!r}: {exc}"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path.write_text(f"{output}\n", encoding="utf-8")
         return CheckResult(
-            check.name, passed=False, output=f"could not run {check.command!r}: {exc}"
+            check.name,
+            passed=False,
+            output=output,
+            command=tuple(check.command),
+            log_path=str(log_path),
+            started_at=started_at,
+            ended_at=ended_at,
         )
-    log_dir.mkdir(exist_ok=True)
-    (log_dir / f"{check.name}.log").write_text(output, encoding="utf-8")
+    ended_at = utc_timestamp()
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path.write_text(output, encoding="utf-8")
+    artifact_paths = existing_artifact_paths(check)
     if returncode == 0:
-        return success_result(check, output, max_lines, max_chars)
+        return success_result(
+            check,
+            output,
+            (max_lines, max_chars),
+            CheckRun(log_path, started_at, ended_at),
+        )
     return CheckResult(
         check.name,
         passed=False,
         output=summarize_check(check.name, output, max_lines, max_chars),
+        command=tuple(check.command),
+        exit_code=returncode,
+        log_path=str(log_path),
+        started_at=started_at,
+        ended_at=ended_at,
+        artifact_paths=artifact_paths,
     )
 
 
-def missing_requirement_result(check: Check, log_dir: Path, missing: str) -> CheckResult:
+def existing_artifact_paths(check: Check) -> tuple[str, ...]:
+    """Return declared artifacts that exist after a check has run."""
+
+    return tuple(path for path in check.artifact_paths if Path(path).exists())
+
+
+def missing_requirement_result(
+    check: Check, log_path: Path, missing: str, started_at: str
+) -> CheckResult:
     """Write a missing-requirement log and return its verifier result."""
 
-    log_dir.mkdir(exist_ok=True)
-    (log_dir / f"{check.name}.log").write_text(f"{missing}\n", encoding="utf-8")
+    ended_at = utc_timestamp()
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path.write_text(f"{missing}\n", encoding="utf-8")
     if missing.startswith("optional skip:"):
         return CheckResult(
             check.name,
             passed=True,
             output=missing.removeprefix("optional skip: "),
             skipped=True,
+            command=tuple(check.command),
+            log_path=str(log_path),
+            started_at=started_at,
+            ended_at=ended_at,
         )
-    return CheckResult(check.name, passed=False, output=missing)
+    return CheckResult(
+        check.name,
+        passed=False,
+        output=missing,
+        command=tuple(check.command),
+        log_path=str(log_path),
+        started_at=started_at,
+        ended_at=ended_at,
+    )
 
 
-def success_result(check: Check, output: str, max_lines: int, max_chars: int) -> CheckResult:
+def success_result(
+    check: Check,
+    output: str,
+    output_limits: OutputLimits,
+    check_run: CheckRun,
+) -> CheckResult:
     """Return a passing result, preserving configured warning output."""
 
+    artifact_paths = existing_artifact_paths(check)
     if check.report_success_output and output.strip():
+        max_lines, max_chars = output_limits
         return CheckResult(
             check.name,
             passed=True,
             output=summarize_check(check.name, output, max_lines, max_chars),
             warning=True,
+            command=tuple(check.command),
+            exit_code=0,
+            log_path=str(check_run.log_path),
+            started_at=check_run.started_at,
+            ended_at=check_run.ended_at,
+            artifact_paths=artifact_paths,
         )
-    return CheckResult(check.name, passed=True)
+    return CheckResult(
+        check.name,
+        passed=True,
+        command=tuple(check.command),
+        exit_code=0,
+        log_path=str(check_run.log_path),
+        started_at=check_run.started_at,
+        ended_at=check_run.ended_at,
+        artifact_paths=artifact_paths,
+    )

@@ -26,6 +26,7 @@ class Check:
     required_executable: str | None = None
     optional_skip_reason: str | None = None
     report_success_output: bool = False
+    artifact_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -37,3 +38,9 @@ class CheckResult:
     output: str = ""
     skipped: bool = False
     warning: bool = False
+    command: tuple[str, ...] = ()
+    exit_code: int | None = None
+    log_path: str = ""
+    started_at: str = ""
+    ended_at: str = ""
+    artifact_paths: tuple[str, ...] = ()

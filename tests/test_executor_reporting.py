@@ -77,7 +77,12 @@ def test_run_check_writes_skip_log(tmp_path: Path, monkeypatch: pytest.MonkeyPat
 
     result = guardrail_executor.run_check(check, tmp_path / "logs", 5, 200)
 
-    assert result == CheckResult("pip-audit", passed=True, output="disabled", skipped=True)
+    assert result.name == "pip-audit"
+    assert result.passed is True
+    assert result.output == "disabled"
+    assert result.skipped is True
+    assert result.command == ("pip-audit",)
+    assert result.log_path == str(tmp_path / "logs" / "pip-audit.log")
     assert (tmp_path / "logs" / "pip-audit.log").read_text(encoding="utf-8")
 
 
@@ -95,8 +100,36 @@ def test_run_check_summarizes_command_failure(
     )
 
     assert result.passed is False
+    assert result.command == ("tool",)
+    assert result.exit_code == 1
+    assert result.log_path == str(tmp_path / "logs" / "tool.log")
     assert "line 0" in result.output
     assert "more lines omitted" in result.output
+
+
+def test_run_check_records_existing_declared_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifact = tmp_path / "coverage.xml"
+
+    def fake_run(command: list[str]) -> tuple[int, str]:
+        assert command == ["pytest"]
+        artifact.write_text("<coverage />\n", encoding="utf-8")
+        return 0, "ok\n"
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(guardrail_executor, "run_command", fake_run)
+
+    result = guardrail_executor.run_check(
+        Check("pytest-coverage", ["pytest"], frozenset(), artifact_paths=("coverage.xml",)),
+        tmp_path / "logs",
+        3,
+        200,
+    )
+
+    assert result.passed is True
+    assert result.exit_code == 0
+    assert result.artifact_paths == ("coverage.xml",)
 
 
 def test_reporting_truncates_lines_and_characters() -> None:

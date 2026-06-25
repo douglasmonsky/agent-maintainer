@@ -22,6 +22,10 @@ enable_wemake = true
 enable_interrogate = true
 interrogate_fail_under = 80
 
+[tool.ai_guardrails.diagnostics]
+enabled = true
+log_dir = ".verify-logs"
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"

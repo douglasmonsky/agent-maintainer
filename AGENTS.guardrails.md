@@ -21,6 +21,7 @@ configuration first, then regenerate it.
 - Coverage source: `scripts`, `.codex/hooks`, `guardrail_lib`
 - Architecture backend: `tach`
 - Tests required: `true`
+- Diagnostic artifacts: `enabled` at `.verify-logs`
 - Source-without-test-change errors in profiles: `precommit`
 - Source-only changes without test-file changes: `blocked`
 

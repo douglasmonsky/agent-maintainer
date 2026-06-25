@@ -30,6 +30,7 @@ BOOL_ENVS = (
     ("enable_wemake", "GUARDRAILS_ENABLE_WEMAKE"),
     ("enable_interrogate", "GUARDRAILS_ENABLE_INTERROGATE"),
     ("allow_source_without_test_change", "GUARDRAILS_ALLOW_SOURCE_WITHOUT_TEST_CHANGE"),
+    ("diagnostic_artifacts_enabled", "GUARDRAILS_DIAGNOSTIC_ARTIFACTS_ENABLED"),
 )
 COVERAGE_ENVS = (
     ("coverage_fail_under", "GUARDRAILS_COVERAGE_FAIL_UNDER"),
@@ -51,6 +52,7 @@ STRING_ENVS = (
     ("xenon_max_absolute", "GUARDRAILS_XENON_MAX_ABSOLUTE"),
     ("xenon_max_modules", "GUARDRAILS_XENON_MAX_MODULES"),
     ("xenon_max_average", "GUARDRAILS_XENON_MAX_AVERAGE"),
+    ("diagnostic_artifacts_dir", "GUARDRAILS_DIAGNOSTIC_ARTIFACTS_DIR"),
 )
 
 
