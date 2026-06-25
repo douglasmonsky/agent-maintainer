@@ -40,23 +40,35 @@ class Suppression:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("base_ref", nargs="?", default="HEAD")
+    parser.add_argument(
+        "--staged",
+        action="store_true",
+        help="Inspect staged changes with git diff --cached.",
+    )
     parser.add_argument("--max-new-suppressions", type=int)
     return parser.parse_args(argv)
 
 
-def added_python_lines(base_ref: str) -> list[tuple[str, str]]:
+def added_python_lines(base_ref: str, *, staged: bool) -> list[tuple[str, str]]:
     git = shutil.which("git") or "git"
+    command = [git, "diff", "--unified=0"]
+    if staged:
+        command.append("--cached")
+    else:
+        command.append(base_ref)
+    command.extend(["--", "*.py"])
     try:
         result = subprocess.run(  # nosec B603
-            [git, "diff", "--unified=0", base_ref, "--", "*.py"],
+            command,
             text=True,
             capture_output=True,
             check=True,
         )
     except subprocess.CalledProcessError as exc:
         stderr = exc.stderr.strip() if exc.stderr else "unknown git diff failure"
+        target = "staged changes" if staged else repr(base_ref)
         raise RuntimeError(
-            f"Could not inspect suppression diff against {base_ref!r}: {stderr}"
+            f"Could not inspect suppression diff against {target}: {stderr}"
         ) from exc
 
     path = "<unknown>"
@@ -117,7 +129,7 @@ def main(argv: list[str]) -> int:
     config = load_config()
 
     try:
-        added = added_python_lines(args.base_ref)
+        added = added_python_lines(args.base_ref, staged=args.staged)
     except RuntimeError as exc:
         print(str(exc))
         return 1

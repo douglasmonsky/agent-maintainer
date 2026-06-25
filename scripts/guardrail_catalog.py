@@ -96,7 +96,9 @@ def vulture_paths(config: GuardrailConfig, package_paths: tuple[str, ...]) -> tu
     return paths or package_paths
 
 
-def make_checks(config: GuardrailConfig, base_ref: str, compare_branch: str) -> list[Check]:
+def make_checks(
+    config: GuardrailConfig, base_ref: str, compare_branch: str, *, staged: bool = False
+) -> list[Check]:
     package_paths = existing_or_configured(config.package_paths)
     file_length_paths = existing_or_configured(config.file_length_paths)
     return [
@@ -108,13 +110,13 @@ def make_checks(config: GuardrailConfig, base_ref: str, compare_branch: str) -> 
         ),
         Check(
             "change-budget",
-            change_budget_command(config, base_ref),
+            change_budget_command(config, base_ref, staged=staged),
             ALL_PROFILES,
             required_paths=("scripts/check_change_budget.py", ".git"),
         ),
         Check(
             "suppression-budget",
-            [sys.executable, "scripts/check_suppression_budget.py", base_ref],
+            suppression_budget_command(base_ref, staged=staged),
             ALL_PROFILES,
             required_paths=("scripts/check_suppression_budget.py", ".git"),
         ),
@@ -202,10 +204,19 @@ def make_checks(config: GuardrailConfig, base_ref: str, compare_branch: str) -> 
     ]
 
 
-def change_budget_command(config: GuardrailConfig, base_ref: str) -> list[str]:
+def change_budget_command(config: GuardrailConfig, base_ref: str, *, staged: bool) -> list[str]:
     command = [sys.executable, "scripts/check_change_budget.py", base_ref]
+    if staged:
+        command.append("--staged")
     for root in config.source_roots:
         command.extend(["--source-root", root])
     for root in config.test_roots:
         command.extend(["--test-root", root])
+    return command
+
+
+def suppression_budget_command(base_ref: str, *, staged: bool) -> list[str]:
+    command = [sys.executable, "scripts/check_suppression_budget.py", base_ref]
+    if staged:
+        command.append("--staged")
     return command

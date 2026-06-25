@@ -57,6 +57,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--compare-branch", default=os.getenv("COMPARE_BRANCH", "origin/main"))
     parser.add_argument("--max-lines", type=int, default=DEFAULT_MAX_LINES_PER_FAILURE)
     parser.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS_PER_FAILURE)
+    parser.add_argument(
+        "--staged",
+        action="store_true",
+        help="Use staged changes for diff-based checks.",
+    )
 
     parser.add_argument(
         "--source-root",
@@ -209,7 +214,7 @@ def apply_optional_skip_policy(
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
     config = apply_cli_overrides(load_config(), args)
-    checks = make_checks(config, args.base_ref, args.compare_branch)
+    checks = make_checks(config, args.base_ref, args.compare_branch, staged=args.staged)
     selected = [check for check in checks if args.profile in check.profiles]
     results = collect_results(args, config, selected)
     results = apply_optional_skip_policy(results, args.fail_on_optional_skip)

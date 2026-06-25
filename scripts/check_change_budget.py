@@ -67,7 +67,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "base_ref",
         nargs="?",
         default="HEAD",
-        help="Git ref to compare against. Use origin/main in CI.",
+        help="Git ref to compare against. Ignored when --staged is set.",
+    )
+    parser.add_argument(
+        "--staged",
+        action="store_true",
+        help="Inspect staged changes with git diff --cached.",
     )
     parser.add_argument(
         "--source-root", action="append", help="Source root. May be repeated or comma-separated."
@@ -111,18 +116,30 @@ def is_python_test(path: str, test_roots: tuple[str, ...]) -> bool:
     return path.endswith(".py") and path_matches_roots(path, test_roots)
 
 
-def run_git_numstat(base_ref: str) -> list[FileChange]:
+def git_numstat_command(base_ref: str, *, staged: bool) -> list[str]:
     git = shutil.which("git") or "git"
+    command = [git, "diff", "--numstat"]
+    command.extend(["--cached"] if staged else [base_ref])
+    command.append("--")
+    return command
+
+
+def diff_target_label(base_ref: str, *, staged: bool) -> str:
+    return "staged changes" if staged else repr(base_ref)
+
+
+def run_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
     try:
         result = subprocess.run(  # nosec B603
-            [git, "diff", "--numstat", base_ref, "--"],
+            git_numstat_command(base_ref, staged=staged),
             text=True,
             capture_output=True,
             check=True,
         )
     except subprocess.CalledProcessError as exc:
         stderr = exc.stderr.strip() if exc.stderr else "unknown git diff failure"
-        raise RuntimeError(f"Could not calculate diff against {base_ref!r}: {stderr}") from exc
+        target = diff_target_label(base_ref, staged=staged)
+        raise RuntimeError(f"Could not calculate diff against {target}: {stderr}") from exc
 
     changes: list[FileChange] = []
     for line in result.stdout.splitlines():
@@ -225,7 +242,7 @@ def main(argv: list[str]) -> int:
     config = apply_cli_overrides(load_config(), args)
 
     try:
-        changes = run_git_numstat(args.base_ref)
+        changes = run_git_numstat(args.base_ref, staged=args.staged)
     except RuntimeError as exc:
         print(str(exc))
         return 1
