@@ -106,10 +106,21 @@ def print_skipped(skipped: list[Any], heading: str) -> None:
         print(f"  {result.name}: {result.output}")
 
 
-def print_success(skipped: list[Any]) -> None:
-    """Print the passing verifier result and any optional skips."""
+def print_warnings(warnings: list[Any], heading: str) -> None:
+    """Print successful checks that still produced actionable warnings."""
+
+    if not warnings:
+        return
+    print(heading)
+    for result in warnings:
+        print(f"  {result.name}: {result.output}")
+
+
+def print_success(skipped: list[Any], warnings: list[Any] | None = None) -> None:
+    """Print the passing verifier result, warnings, and optional skips."""
 
     print("PASS")
+    print_warnings(warnings or [], "WARNINGS:")
     print_skipped(skipped, "SKIPPED optional checks:")
 
 

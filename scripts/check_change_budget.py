@@ -40,6 +40,7 @@ EXCLUDED_NAMES = frozenset(
         "yarn.lock",
     )
 )
+MISSING_TEST_CHANGE_WARNING = "Python source changed, but no configured Python test files changed."
 
 
 @dataclass(frozen=True)
@@ -98,6 +99,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--warnings-as-errors",
         action="store_true",
         help="Exit nonzero for soft-budget warnings. Useful for agent hooks.",
+    )
+    parser.add_argument(
+        "--missing-test-change-as-error",
+        action="store_true",
+        help="Exit nonzero only when source changed without configured test changes.",
+    )
+    parser.add_argument(
+        "--allow-source-without-test-change",
+        action="store_true",
+        help="Do not warn when source changes are covered by existing tests.",
     )
     return parser.parse_args(argv)
 
@@ -204,8 +215,13 @@ def budget_messages(
     failures.extend(line_budget_failures(args, config, py_source_changes, warnings))
     failures.extend(file_budget_failures(args, config, py_source_changes, warnings))
 
-    if py_source_changes and not py_test_changes and config.require_tests:
-        warnings.append("Python source changed, but no configured Python test files changed.")
+    if (
+        py_source_changes
+        and not py_test_changes
+        and config.require_tests
+        and not args.allow_source_without_test_change
+    ):
+        warnings.append(MISSING_TEST_CHANGE_WARNING)
 
     return failures, warnings
 
@@ -294,7 +310,9 @@ def main(argv: list[str]) -> int:
 
     if warnings:
         print_warning_report(warnings)
-        if args.warnings_as_errors:
+        if args.warnings_as_errors or (
+            args.missing_test_change_as_error and MISSING_TEST_CHANGE_WARNING in warnings
+        ):
             return 1
 
     return 0

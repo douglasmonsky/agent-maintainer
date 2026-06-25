@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from scripts import guardrail_models as models
 from scripts.guardrail_config import (
     FRESH_STRICT_MODE,
     IMPORT_LINTER_TOOL,
@@ -12,12 +13,12 @@ from scripts.guardrail_config import (
     GuardrailConfig,
     existing_paths,
 )
-from scripts.guardrail_models import (
-    ALL_PROFILES,
-    CI_ONLY_PROFILES,
-    FULL_PROFILES,
-    LOCAL_GATE_PROFILES,
-    Check,
+
+CHANGE_BUDGET_PROFILES = (
+    models.FAST_PROFILE,
+    models.PRECOMMIT_PROFILE,
+    models.FULL_PROFILE,
+    models.CI_PROFILE,
 )
 
 
@@ -44,29 +45,29 @@ def pytest_command(config: GuardrailConfig) -> list[str]:
     return command
 
 
-def pytest_check(config: GuardrailConfig) -> Check:
+def pytest_check(config: GuardrailConfig) -> models.Check:
     """Build the pytest coverage check or its require-tests skip."""
 
     if config.require_tests:
-        return Check(
+        return models.Check(
             "pytest-coverage",
             pytest_command(config),
-            LOCAL_GATE_PROFILES,
+            models.LOCAL_GATE_PROFILES,
             required_executable="pytest",
         )
-    return Check(
+    return models.Check(
         "pytest-coverage",
         ["pytest"],
-        LOCAL_GATE_PROFILES,
+        models.LOCAL_GATE_PROFILES,
         optional_skip_reason="tests are disabled by require_tests = false",
     )
 
 
-def diff_cover_check(config: GuardrailConfig, compare_branch: str) -> Check:
+def diff_cover_check(config: GuardrailConfig, compare_branch: str) -> models.Check:
     """Build the changed-code coverage check for CI profiles."""
 
     if config.require_tests:
-        return Check(
+        return models.Check(
             "diff-cover",
             [
                 "diff-cover",
@@ -74,53 +75,81 @@ def diff_cover_check(config: GuardrailConfig, compare_branch: str) -> Check:
                 f"--compare-branch={compare_branch}",
                 f"--fail-under={config.diff_cover_fail_under}",
             ],
-            CI_ONLY_PROFILES,
+            models.CI_ONLY_PROFILES,
             required_paths=("coverage.xml", ".git"),
             required_executable="diff-cover",
         )
-    return Check(
+    return models.Check(
         "diff-cover",
         ["diff-cover"],
-        CI_ONLY_PROFILES,
+        models.CI_ONLY_PROFILES,
         optional_skip_reason="changed-code coverage is disabled because require_tests = false",
     )
 
 
-def pip_audit_check(config: GuardrailConfig) -> Check:
+def pip_audit_check(config: GuardrailConfig) -> models.Check:
     """Build the dependency vulnerability check or its explicit skip."""
 
     if not config.enable_pip_audit:
-        return Check(
+        return models.Check(
             "pip-audit",
             ["pip-audit"],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             optional_skip_reason=(
                 "disabled by default; enable with GUARDRAILS_ENABLE_PIP_AUDIT=1 or "
                 "[tool.ai_guardrails].enable_pip_audit = true"
             ),
         )
-    return Check(
+    if not config.pip_audit_args:
+        if config.mode == FRESH_STRICT_MODE:
+            return models.Check(
+                "pip-audit",
+                [sys.executable, "-m", "scripts.check_pip_audit_config"],
+                models.FULL_PROFILES,
+                required_paths=("scripts/check_pip_audit_config.py",),
+            )
+        return models.Check(
+            "pip-audit",
+            ["pip-audit"],
+            models.FULL_PROFILES,
+            optional_skip_reason=(
+                "enabled without pinned input; skipped to avoid auditing the active environment"
+            ),
+        )
+    return models.Check(
         "pip-audit",
         ["pip-audit", *config.pip_audit_args],
-        FULL_PROFILES,
+        models.FULL_PROFILES,
         required_executable="pip-audit",
     )
 
 
-def wemake_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> Check:
+def pyright_check() -> models.Check:
+    """Build the Pyright check through the generated-project wrapper."""
+
+    return models.Check(
+        "pyright",
+        [sys.executable, "-m", "scripts.run_pyright"],
+        models.LOCAL_GATE_PROFILES,
+        required_paths=("scripts/run_pyright.py",),
+        required_executable="pyright",
+    )
+
+
+def wemake_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> models.Check:
     """Build the wemake strict-style check or its explicit skip."""
 
     if not config.enable_wemake:
-        return Check(
+        return models.Check(
             "wemake",
             ["flake8"],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             optional_skip_reason=(
                 "disabled by default; enable with GUARDRAILS_ENABLE_WEMAKE=1 or "
                 "[tool.ai_guardrails].enable_wemake = true"
             ),
         )
-    return Check(
+    return models.Check(
         "wemake",
         [
             "flake8",
@@ -128,25 +157,25 @@ def wemake_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> Che
             "wemake-python-styleguide",
             *package_paths,
         ],
-        FULL_PROFILES,
+        models.FULL_PROFILES,
         required_executable="flake8",
     )
 
 
-def interrogate_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> Check:
+def interrogate_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> models.Check:
     """Build the docstring coverage check or its explicit optional skip."""
 
     if not config.enable_interrogate:
-        return Check(
+        return models.Check(
             "interrogate",
             ["interrogate"],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             optional_skip_reason=(
                 "disabled by default; enable with GUARDRAILS_ENABLE_INTERROGATE=1 or "
                 "[tool.ai_guardrails].enable_interrogate = true"
             ),
         )
-    return Check(
+    return models.Check(
         "interrogate",
         [
             "interrogate",
@@ -158,21 +187,21 @@ def interrogate_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -
             "--ignore-magic",
             *package_paths,
         ],
-        FULL_PROFILES,
+        models.FULL_PROFILES,
         required_executable="interrogate",
     )
 
 
-def architecture_checks(config: GuardrailConfig) -> list[Check]:
+def architecture_checks(config: GuardrailConfig) -> list[models.Check]:
     """Build the selected architecture contract checks."""
 
     if config.architecture_tool == TACH_TOOL:
         return tach_checks(config)
     return [
-        Check(
+        models.Check(
             IMPORT_LINTER_TOOL,
             ["lint-imports"],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_executable="lint-imports",
             optional_skip_reason=(
                 ".importlinter is absent; architecture contracts are not configured"
@@ -181,7 +210,7 @@ def architecture_checks(config: GuardrailConfig) -> list[Check]:
     ]
 
 
-def tach_checks(config: GuardrailConfig) -> list[Check]:
+def tach_checks(config: GuardrailConfig) -> list[models.Check]:
     """Build Tach config and architecture checks for the selected strictness mode."""
 
     strict = config.mode == FRESH_STRICT_MODE
@@ -192,17 +221,17 @@ def tach_checks(config: GuardrailConfig) -> list[Check]:
     if not strict:
         optional_skip_reason = "tach.toml is absent; architecture contracts are not configured"
     return [
-        Check(
+        models.Check(
             "tach-config",
             config_command,
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_paths=("tach.toml",) if strict else (),
             optional_skip_reason=optional_skip_reason,
         ),
-        Check(
+        models.Check(
             "tach",
             ["tach", "check", "--exact"],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_paths=("tach.toml",) if strict else (),
             required_executable="tach",
             optional_skip_reason=optional_skip_reason,
@@ -219,37 +248,32 @@ def vulture_paths(config: GuardrailConfig, package_paths: tuple[str, ...]) -> tu
 
 def make_checks(
     config: GuardrailConfig, base_ref: str, compare_branch: str, *, staged: bool = False
-) -> list[Check]:
+) -> list[models.Check]:
     """Build the complete check catalog for all verifier profiles."""
 
     package_paths = existing_or_configured(config.package_paths)
     file_length_paths = existing_or_configured(config.file_length_paths)
     return [
-        Check(
+        models.Check(
             "file-length",
             [sys.executable, "-m", "scripts.check_file_lengths", *file_length_paths],
-            ALL_PROFILES,
+            models.ALL_PROFILES,
             required_paths=("scripts/check_file_lengths.py",),
         ),
-        Check(
-            "change-budget",
-            change_budget_command(config, base_ref, staged=staged),
-            ALL_PROFILES,
-            required_paths=("scripts/check_change_budget.py", ".git"),
-        ),
-        Check(
+        *change_budget_checks(config, base_ref, staged=staged),
+        models.Check(
             "suppression-budget",
             suppression_budget_command(base_ref, staged=staged),
-            ALL_PROFILES,
+            models.ALL_PROFILES,
             required_paths=("scripts/check_suppression_budget.py", ".git"),
         ),
-        Check(
+        models.Check(
             "ruff-format",
             ["ruff", "format", "--check", "."],
-            LOCAL_GATE_PROFILES,
+            models.LOCAL_GATE_PROFILES,
             required_executable="ruff",
         ),
-        Check(
+        models.Check(
             "ruff",
             [
                 "ruff",
@@ -259,29 +283,24 @@ def make_checks(
                 f"lint.mccabe.max-complexity={config.ruff_max_complexity}",
                 ".",
             ],
-            ALL_PROFILES,
+            models.ALL_PROFILES,
             required_executable="ruff",
         ),
-        Check(
-            "pyright",
-            ["pyright", "--outputjson"],
-            LOCAL_GATE_PROFILES,
-            required_executable="pyright",
-        ),
+        pyright_check(),
         pytest_check(config),
-        Check(
+        models.Check(
             "radon-cc-report",
             ["radon", "cc", *package_paths, "-a", "-s"],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_executable="radon",
         ),
-        Check(
+        models.Check(
             "radon-mi-report",
             ["radon", "mi", *package_paths, "-s"],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_executable="radon",
         ),
-        Check(
+        models.Check(
             "xenon-complexity-gate",
             [
                 "xenon",
@@ -293,32 +312,32 @@ def make_checks(
                 config.xenon_max_average,
                 *package_paths,
             ],
-            LOCAL_GATE_PROFILES,
+            models.LOCAL_GATE_PROFILES,
             required_executable="xenon",
         ),
-        Check(
+        models.Check(
             "pylint",
             ["pylint", *package_paths, "--score=n"],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_executable="pylint",
         ),
         *architecture_checks(config),
-        Check(
+        models.Check(
             "deptry",
             ["deptry", "."],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_executable="deptry",
         ),
-        Check(
+        models.Check(
             "vulture",
             ["vulture", *vulture_paths(config, package_paths)],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_executable="vulture",
         ),
-        Check(
+        models.Check(
             "bandit",
             ["bandit", "-q", "-r", *package_paths],
-            FULL_PROFILES,
+            models.FULL_PROFILES,
             required_executable="bandit",
         ),
         pip_audit_check(config),
@@ -328,12 +347,46 @@ def make_checks(
     ]
 
 
-def change_budget_command(config: GuardrailConfig, base_ref: str, *, staged: bool) -> list[str]:
+def change_budget_checks(
+    config: GuardrailConfig, base_ref: str, *, staged: bool
+) -> list[models.Check]:
+    """Build profile-specific change-budget checks."""
+
+    return [
+        models.Check(
+            "change-budget",
+            change_budget_command(
+                config,
+                base_ref,
+                staged=staged,
+                missing_test_change_as_error=(
+                    profile in config.source_without_test_change_error_profiles
+                ),
+            ),
+            frozenset((profile,)),
+            required_paths=("scripts/check_change_budget.py", ".git"),
+            report_success_output=True,
+        )
+        for profile in CHANGE_BUDGET_PROFILES
+    ]
+
+
+def change_budget_command(
+    config: GuardrailConfig,
+    base_ref: str,
+    *,
+    staged: bool,
+    missing_test_change_as_error: bool = False,
+) -> list[str]:
     """Build the change-budget command with configured source and test roots."""
 
     command = [sys.executable, "-m", "scripts.check_change_budget", base_ref]
     if staged:
         command.append("--staged")
+    if missing_test_change_as_error:
+        command.append("--missing-test-change-as-error")
+    if config.allow_source_without_test_change:
+        command.append("--allow-source-without-test-change")
     for root in config.source_roots:
         command.extend(["--source-root", root])
     for root in config.test_roots:

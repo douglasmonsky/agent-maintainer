@@ -128,12 +128,23 @@ def render_guidance(config: GuardrailConfig) -> str:
         f"- Coverage source: {format_inline_paths(config.coverage_source)}",
         f"- Architecture backend: `{config.architecture_tool}`",
         f"- Tests required: `{tests_required}`",
+        (
+            "- Source-without-test-change errors in profiles: "
+            f"{format_inline_paths(config.source_without_test_change_error_profiles)}"
+        ),
+        (
+            "- Source-only changes without test-file changes: "
+            f"{allowed_word(config.allow_source_without_test_change)}"
+        ),
         "",
-        "## Required Workflow",
+        "## Verification Flow",
         "",
-        "- Before finishing a code task, run",
+        "- Trusted Codex hooks normally run fast checks after edits and the precommit profile",
+        "  before completion.",
+        "- Run the precommit profile manually when hooks are unavailable, after bypassing hooks,",
+        "  or when reproducing a hook failure:",
         "  `python3 -m scripts.guardrail verify --profile precommit`.",
-        "- Before merging a larger change, run",
+        "- Run the full profile before merging larger changes or changing shared guardrail logic:",
         "  `python3 -m scripts.guardrail verify --profile full`.",
         "- After changing `[tool.ai_guardrails]`, run",
         "  `python3 -m scripts.guardrail guidance` and `python3 -m scripts.guardrail doctor`.",
@@ -177,6 +188,10 @@ def render_guidance(config: GuardrailConfig) -> str:
         "- Keep temporary CLI or environment overrides out of committed config "
         "unless they are policy.",
         "- Use `require_tests = false` only for repositories that intentionally have no tests.",
+        (
+            "- Use `allow_source_without_test_change = true` only when existing "
+            "tests already cover the change."
+        ),
         "- If a guardrail is wrong, make the smallest correction to the check, config, or docs.",
     ]
     lines.append("")
@@ -195,6 +210,12 @@ def enabled_word(enabled: bool) -> str:
     """Return a compact enabled/disabled token."""
 
     return "`enabled`" if enabled else "`disabled`"
+
+
+def allowed_word(enabled: bool) -> str:
+    """Return a compact allowed/blocked token."""
+
+    return "`allowed`" if enabled else "`blocked`"
 
 
 def enabled_with_args(enabled: bool, args: tuple[str, ...]) -> str:

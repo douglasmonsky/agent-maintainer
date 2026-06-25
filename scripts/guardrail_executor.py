@@ -83,16 +83,7 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
 
     missing = missing_requirement(check)
     if missing:
-        log_dir.mkdir(exist_ok=True)
-        (log_dir / f"{check.name}.log").write_text(f"{missing}\n", encoding="utf-8")
-        if missing.startswith("optional skip:"):
-            return CheckResult(
-                check.name,
-                passed=True,
-                output=missing.removeprefix("optional skip: "),
-                skipped=True,
-            )
-        return CheckResult(check.name, passed=False, output=missing)
+        return missing_requirement_result(check, log_dir, missing)
     try:
         returncode, output = run_command(check.command)
     except OSError as exc:
@@ -102,9 +93,37 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
     log_dir.mkdir(exist_ok=True)
     (log_dir / f"{check.name}.log").write_text(output, encoding="utf-8")
     if returncode == 0:
-        return CheckResult(check.name, passed=True)
+        return success_result(check, output, max_lines, max_chars)
     return CheckResult(
         check.name,
         passed=False,
         output=summarize_check(check.name, output, max_lines, max_chars),
     )
+
+
+def missing_requirement_result(check: Check, log_dir: Path, missing: str) -> CheckResult:
+    """Write a missing-requirement log and return its verifier result."""
+
+    log_dir.mkdir(exist_ok=True)
+    (log_dir / f"{check.name}.log").write_text(f"{missing}\n", encoding="utf-8")
+    if missing.startswith("optional skip:"):
+        return CheckResult(
+            check.name,
+            passed=True,
+            output=missing.removeprefix("optional skip: "),
+            skipped=True,
+        )
+    return CheckResult(check.name, passed=False, output=missing)
+
+
+def success_result(check: Check, output: str, max_lines: int, max_chars: int) -> CheckResult:
+    """Return a passing result, preserving configured warning output."""
+
+    if check.report_success_output and output.strip():
+        return CheckResult(
+            check.name,
+            passed=True,
+            output=summarize_check(check.name, output, max_lines, max_chars),
+            warning=True,
+        )
+    return CheckResult(check.name, passed=True)

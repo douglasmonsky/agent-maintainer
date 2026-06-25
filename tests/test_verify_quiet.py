@@ -136,6 +136,47 @@ def test_optional_skip_policy_can_fail_skips() -> None:
     ]
 
 
+def test_main_prints_success_with_warning_results(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "scripts").mkdir()
+    monkeypatch.setattr(
+        verify_quiet,
+        "load_config",
+        lambda: replace(
+            GuardrailConfig(),
+            source_roots=("scripts",),
+            package_paths=("scripts",),
+            require_tests=False,
+        ),
+    )
+    monkeypatch.setattr(
+        verify_quiet,
+        "make_checks",
+        lambda config, base_ref, compare_branch, staged=False: [
+            Check("change-budget", ["true"], frozenset(("fast",)))
+        ],
+    )
+    monkeypatch.setattr(
+        verify_quiet,
+        "run_check",
+        lambda check, log_dir, max_lines, max_chars: CheckResult(
+            check.name,
+            passed=True,
+            output="WARN: source changed without tests",
+            warning=True,
+        ),
+    )
+
+    assert verify_quiet.main(["--profile", "fast"]) == 0
+
+    output = capsys.readouterr().out
+    assert "PASS" in output
+    assert "WARNINGS:" in output
+    assert "change-budget: WARN: source changed without tests" in output
+
+
 def test_main_prints_success_for_passing_selected_check(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

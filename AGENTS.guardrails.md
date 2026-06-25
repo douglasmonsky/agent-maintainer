@@ -21,12 +21,17 @@ configuration first, then regenerate it.
 - Coverage source: `scripts`, `.codex/hooks`
 - Architecture backend: `tach`
 - Tests required: `true`
+- Source-without-test-change errors in profiles: `precommit`
+- Source-only changes without test-file changes: `blocked`
 
-## Required Workflow
+## Verification Flow
 
-- Before finishing a code task, run
+- Trusted Codex hooks normally run fast checks after edits and the precommit profile
+  before completion.
+- Run the precommit profile manually when hooks are unavailable, after bypassing hooks,
+  or when reproducing a hook failure:
   `python3 -m scripts.guardrail verify --profile precommit`.
-- Before merging a larger change, run
+- Run the full profile before merging larger changes or changing shared guardrail logic:
   `python3 -m scripts.guardrail verify --profile full`.
 - After changing `[tool.ai_guardrails]`, run
   `python3 -m scripts.guardrail guidance` and `python3 -m scripts.guardrail doctor`.
@@ -55,4 +60,5 @@ configuration first, then regenerate it.
 - Prefer config changes over one-off command drift when repository layout changes.
 - Keep temporary CLI or environment overrides out of committed config unless they are policy.
 - Use `require_tests = false` only for repositories that intentionally have no tests.
+- Use `allow_source_without_test_change = true` only when existing tests already cover the change.
 - If a guardrail is wrong, make the smallest correction to the check, config, or docs.

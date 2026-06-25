@@ -9,7 +9,7 @@ import pytest
 
 from scripts import guardrail_catalog, guardrail_config
 from scripts.guardrail_config import GuardrailConfig
-from scripts.guardrail_models import FULL_PROFILE, PRECOMMIT_PROFILE
+from scripts.guardrail_models import CI_PROFILE, PRECOMMIT_PROFILE
 
 CONFIG_COVERAGE_THRESHOLD = 91
 ENV_COVERAGE_THRESHOLD = 95
@@ -243,4 +243,61 @@ def test_make_checks_includes_expected_profiles(
     assert by_name["change-budget"].command[:3]
     assert "--staged" in by_name["change-budget"].command
     assert PRECOMMIT_PROFILE in by_name["pytest-coverage"].profiles
-    assert FULL_PROFILE in by_name["pip-audit"].profiles
+
+
+def test_pyright_check_uses_generated_project_runner() -> None:
+    checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    pyright = next(check for check in checks if check.name == "pyright")
+
+    assert pyright.command[:3] == [
+        guardrail_catalog.sys.executable,
+        "-m",
+        "scripts.run_pyright",
+    ]
+
+
+def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only() -> None:
+    config = guardrail_config.apply_mode(GuardrailConfig(), "fresh-strict")
+    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
+    precommit = [
+        check
+        for check in checks
+        if check.name == "change-budget" and PRECOMMIT_PROFILE in check.profiles
+    ]
+    ci = [
+        check for check in checks if check.name == "change-budget" and CI_PROFILE in check.profiles
+    ]
+
+    assert len(precommit) == 1
+    assert "--missing-test-change-as-error" in precommit[0].command
+    assert "--missing-test-change-as-error" not in ci[0].command
+
+
+def test_source_without_test_escape_hatch_reaches_change_budget_command() -> None:
+    config = guardrail_config.apply_mode(GuardrailConfig(), "fresh-strict")
+    config = replace(config, allow_source_without_test_change=True)
+    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
+    precommit = next(
+        check
+        for check in checks
+        if check.name == "change-budget" and PRECOMMIT_PROFILE in check.profiles
+    )
+
+    assert "--allow-source-without-test-change" in precommit.command
+
+
+def test_pip_audit_unsafe_config_fails_only_in_fresh_strict() -> None:
+    strict = guardrail_config.apply_mode(GuardrailConfig(), "fresh-strict")
+    strict = replace(strict, enable_pip_audit=True, pip_audit_args=())
+    custom = replace(GuardrailConfig(), enable_pip_audit=True, pip_audit_args=())
+
+    strict_check = guardrail_catalog.pip_audit_check(strict)
+    custom_check = guardrail_catalog.pip_audit_check(custom)
+
+    assert strict_check.command[:3] == [
+        guardrail_catalog.sys.executable,
+        "-m",
+        "scripts.check_pip_audit_config",
+    ]
+    assert custom_check.optional_skip_reason
+    assert "pinned input" in custom_check.optional_skip_reason

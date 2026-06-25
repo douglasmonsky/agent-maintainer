@@ -22,6 +22,9 @@ python3 -m scripts.guardrail doctor --strict
 | Architecture config is absent | Add `tach.toml` or `.importlinter`, or accept the optional skip. |
 | Tach fails in `fresh-strict` | Set `root_module = "forbid"` and define explicit modules. |
 | `pip-audit` is disabled | Enable it with a pinned input such as `config/dev-lock.txt`. |
+| `pip-audit` is enabled without pinned input | Add `pip_audit_args = ["-r", "config/dev-lock.txt"]` or disable pip-audit. |
+| Source changed without test-file changes | Add or update tests, or set `allow_source_without_test_change = true` only when existing tests already cover the change. |
+| Pyright mode differs from root config | Align `pyrightconfig.json` with `[tool.ai_guardrails].pyright_type_checking_mode`; the verifier uses its generated config. |
 | `wemake` is disabled | Enable `fresh-strict` or set `enable_wemake = true`. |
 | `interrogate` is disabled | Enable it after choosing a docstring coverage baseline. |
 | Interrogate fails | Add useful docstrings or lower the ratchet only with an explicit baseline note. |

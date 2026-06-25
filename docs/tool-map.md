@@ -12,7 +12,7 @@ reports stale generated guidance as a failure.
 
 Ruff handles formatting, import order, linting, and McCabe complexity feedback. It is the fastest feedback loop and should run after most edits.
 
-Pyright enforces type discipline. It prevents vague interfaces and catches many integration mistakes before runtime.
+Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.ai_guardrails].pyright_type_checking_mode` affects the actual Pyright invocation.
 
 Pytest and pytest-cov enforce behavior and coverage. The configured coverage gate prevents untested new behavior from quietly entering the repository.
 
@@ -34,7 +34,7 @@ This repository uses Tach for its own guardrail script modules. Its `tach.toml` 
 
 The file-length check stops giant files.
 
-The change-budget check prevents huge or overly diffuse changes from becoming a single opaque commit. It uses configured `source_roots` and `test_roots`, not hard-coded `src/` and `tests/`. In pre-commit, `--staged` limits diff-budget checks to the staged patch.
+The change-budget check prevents huge or overly diffuse changes from becoming a single opaque commit. It uses configured `source_roots` and `test_roots`, not hard-coded `src/` and `tests/`. In pre-commit, `--staged` limits diff-budget checks to the staged patch. Nonfatal warnings are shown in the aggregate verifier output; in `fresh-strict`, source changes without configured test-file changes fail in `precommit` unless explicitly allowed.
 
 The suppression-budget check prevents broad `noqa`, `type: ignore`, `pylint: disable`, and `pragma: no cover` usage from hiding quality failures.
 
@@ -46,7 +46,7 @@ vulture finds likely dead Python code.
 
 Bandit scans Python source for common security issues.
 
-pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`.
+pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`. In `fresh-strict`, enabling pip-audit without pinned args is a failure.
 
 `config/dev-dependencies.txt` is the human-edited dependency input. `config/dev-lock.txt` is the pinned install and audit artifact when present; bootstrap and CI prefer it automatically.
 

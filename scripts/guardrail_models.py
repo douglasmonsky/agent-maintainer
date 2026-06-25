@@ -25,6 +25,7 @@ class Check:
     required_paths: tuple[str, ...] = ()
     required_executable: str | None = None
     optional_skip_reason: str | None = None
+    report_success_output: bool = False
 
 
 @dataclass(frozen=True)
@@ -35,3 +36,4 @@ class CheckResult:
     passed: bool
     output: str = ""
     skipped: bool = False
+    warning: bool = False

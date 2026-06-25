@@ -21,6 +21,10 @@ change_warn_lines = 300
 change_block_lines = 800
 change_warn_files = 8
 change_block_files = 20
+# In fresh-strict this defaults to ["precommit"]. Add "ci" only when you want
+# the source/test-change heuristic to fail CI in addition to diff-cover.
+source_without_test_change_error_profiles = []
+allow_source_without_test_change = false
 suppression_max_new = 3
 xenon_max_absolute = "B"
 xenon_max_modules = "A"
