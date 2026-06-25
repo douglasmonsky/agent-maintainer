@@ -34,6 +34,7 @@ from guardrail_reporting import print_failures, print_success
 LOG_DIR = Path(".verify-logs")
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
+VALID_PYRIGHT_MODES = frozenset({"off", "basic", "standard", "strict"})
 
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
@@ -168,6 +169,10 @@ def layout_failures(config: GuardrailConfig, profile: str) -> list[str]:
                 ),
                 configured_path_failure("coverage source", config.coverage_source),
             ]
+        )
+    if config.pyright_type_checking_mode not in VALID_PYRIGHT_MODES:
+        failures.append(
+            "pyright_type_checking_mode must be one of: " + ", ".join(sorted(VALID_PYRIGHT_MODES))
         )
 
     return [failure for failure in failures if failure is not None]

@@ -128,7 +128,14 @@ def make_checks(
         ),
         Check(
             "ruff",
-            ["ruff", "check", "--output-format=concise", "."],
+            [
+                "ruff",
+                "check",
+                "--output-format=concise",
+                "--config",
+                f"lint.mccabe.max-complexity={config.ruff_max_complexity}",
+                ".",
+            ],
             ALL_PROFILES,
             required_executable="ruff",
         ),
