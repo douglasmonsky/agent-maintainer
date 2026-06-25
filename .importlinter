@@ -10,7 +10,7 @@ containers =
 layers =
     guardrail
     guardrail_doctor | verify_quiet | check_change_budget | check_file_lengths | check_suppression_budget
-    guardrail_catalog | guardrail_executor | guardrail_layout
+    guardrail_args | guardrail_catalog | guardrail_executor | guardrail_layout
     guardrail_config | guardrail_reporting
     guardrail_models
 exhaustive = true

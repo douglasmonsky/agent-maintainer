@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import verify_quiet
+from scripts import guardrail_args, verify_quiet
 from scripts.guardrail_config import GuardrailConfig
 from scripts.guardrail_models import Check, CheckResult
 
@@ -16,17 +16,17 @@ STRICT_COMPLEXITY = 8
 
 
 def test_parse_csv_like_normalizes_repeated_values() -> None:
-    assert verify_quiet.parse_csv_like(["src, tests", "tools/"]) == (
+    assert guardrail_args.parse_csv_like(["src, tests", "tools/"]) == (
         "src",
         "tests",
         "tools",
     )
-    assert verify_quiet.parse_csv_like(None) is None
-    assert verify_quiet.parse_csv_like([" , "]) is None
+    assert guardrail_args.parse_csv_like(None) is None
+    assert guardrail_args.parse_csv_like([" , "]) is None
 
 
 def test_cli_overrides_replace_config_values() -> None:
-    args = verify_quiet.parse_args(
+    args = guardrail_args.parse_args(
         [
             "--source-root",
             "lib",
@@ -38,7 +38,7 @@ def test_cli_overrides_replace_config_values() -> None:
         ]
     )
 
-    config = verify_quiet.apply_cli_overrides(GuardrailConfig(), args)
+    config = guardrail_args.apply_cli_overrides(GuardrailConfig(), args)
 
     assert config.source_roots == ("lib",)
     assert config.test_roots == ("specs",)
@@ -47,7 +47,7 @@ def test_cli_overrides_replace_config_values() -> None:
 
 
 def test_cli_mode_applies_before_other_cli_overrides() -> None:
-    args = verify_quiet.parse_args(
+    args = guardrail_args.parse_args(
         [
             "--mode",
             "fresh-strict",
@@ -57,7 +57,7 @@ def test_cli_mode_applies_before_other_cli_overrides() -> None:
         ]
     )
 
-    config = verify_quiet.apply_cli_overrides(GuardrailConfig(), args)
+    config = guardrail_args.apply_cli_overrides(GuardrailConfig(), args)
 
     assert config.mode == "fresh-strict"
     assert config.ruff_max_complexity == STRICT_COMPLEXITY

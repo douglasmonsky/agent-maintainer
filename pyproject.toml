@@ -58,6 +58,7 @@ testpaths = ["tests"]
 [tool.deptry]
 known_first_party = [
   "scripts",
+  "guardrail_args",
   "guardrail_catalog",
   "guardrail_config",
   "guardrail_doctor",
