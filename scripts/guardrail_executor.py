@@ -13,9 +13,15 @@ from guardrail_reporting import summarize_check
 
 
 def tool_search_path() -> str:
+    local_tool_dirs = [
+        str(Path(relative)) for relative in (".venv/bin", "venv/bin") if Path(relative).is_dir()
+    ]
     executable_dir = str(Path(sys.executable).parent)
     existing_path = os.environ.get("PATH", "")
-    return executable_dir + os.pathsep + existing_path if existing_path else executable_dir
+    search_dirs = [*local_tool_dirs, executable_dir]
+    if existing_path:
+        search_dirs.append(existing_path)
+    return os.pathsep.join(search_dirs)
 
 
 def command_env() -> dict[str, str]:
