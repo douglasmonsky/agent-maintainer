@@ -18,7 +18,7 @@ enable_pip_audit = true
 pip_audit_args = ["-r", "config/dev-lock.txt"]
 enable_wemake = true
 enable_interrogate = true
-interrogate_fail_under = 70
+interrogate_fail_under = 80
 
 [tool.ruff]
 line-length = 100

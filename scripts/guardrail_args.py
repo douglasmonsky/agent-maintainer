@@ -18,6 +18,8 @@ DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
 
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
+    """Normalize repeated comma-separated verifier path options."""
+
     if not values:
         return None
     items: list[str] = []
@@ -28,6 +30,8 @@ def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
+    """Parse quiet verifier command-line options."""
+
     parser = argparse.ArgumentParser(
         description="Run repository quality checks with low-noise output."
     )
@@ -79,6 +83,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def add_path_overrides(parser: argparse.ArgumentParser) -> None:
+    """Register path override flags shared by verifier profiles."""
+
     parser.add_argument(
         "--source-root",
         action="append",
@@ -112,6 +118,8 @@ def add_path_overrides(parser: argparse.ArgumentParser) -> None:
 
 
 def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> GuardrailConfig:
+    """Apply verifier CLI overrides after config and environment loading."""
+
     if args.mode is not None:
         config = apply_mode(config, args.mode)
 

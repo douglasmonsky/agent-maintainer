@@ -9,10 +9,14 @@ PYRIGHT_DIAGNOSTIC_LIMIT = 50
 
 
 def nonblank_lines(text: str) -> list[str]:
+    """Return non-empty output lines without trailing whitespace."""
+
     return [line.rstrip() for line in text.splitlines() if line.strip()]
 
 
 def truncate_lines(lines: list[str], max_lines: int) -> list[str]:
+    """Limit output by line count while pointing readers to raw logs."""
+
     if len(lines) <= max_lines:
         return lines
     hidden = len(lines) - max_lines
@@ -23,6 +27,8 @@ def truncate_lines(lines: list[str], max_lines: int) -> list[str]:
 
 
 def truncate_chars(text: str, max_chars: int) -> str:
+    """Limit output by character count while preserving a log pointer."""
+
     if len(text) <= max_chars:
         return text
     truncated_text = text[:max_chars].rstrip()
@@ -30,6 +36,8 @@ def truncate_chars(text: str, max_chars: int) -> str:
 
 
 def compact_output(text: str, max_lines: int, max_chars: int) -> str:
+    """Return a concise human-readable summary of command output."""
+
     lines = nonblank_lines(text)
     if not lines:
         return "(no output)"
@@ -37,11 +45,15 @@ def compact_output(text: str, max_lines: int, max_chars: int) -> str:
 
 
 def pyright_summary_payload(payload: dict[str, object]) -> str | None:
+    """Return Pyright summary JSON when no diagnostics are present."""
+
     summary = payload.get("summary", {})
     return json.dumps(summary, indent=2) if summary else None
 
 
 def format_diagnostic(diagnostic: dict[str, object]) -> str:
+    """Format one Pyright diagnostic as a compact editor-style line."""
+
     file_name = diagnostic.get("file", "<unknown>")
     range_info = diagnostic.get("range", {})
     start = range_info.get("start", {}) if isinstance(range_info, dict) else {}
@@ -55,6 +67,8 @@ def format_diagnostic(diagnostic: dict[str, object]) -> str:
 
 
 def summarize_pyright(raw: str) -> str | None:
+    """Summarize Pyright JSON output, falling back when parsing fails."""
+
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError:
@@ -73,6 +87,8 @@ def summarize_pyright(raw: str) -> str | None:
 
 
 def summarize_check(check_name: str, raw_output: str, max_lines: int, max_chars: int) -> str:
+    """Summarize a failed check with check-specific formatting when available."""
+
     if check_name == "pyright":
         pyright_summary = summarize_pyright(raw_output)
         if pyright_summary:
@@ -81,6 +97,8 @@ def summarize_check(check_name: str, raw_output: str, max_lines: int, max_chars:
 
 
 def print_skipped(skipped: list[Any], heading: str) -> None:
+    """Print skipped optional checks under a supplied heading."""
+
     if not skipped:
         return
     print(heading)
@@ -89,11 +107,15 @@ def print_skipped(skipped: list[Any], heading: str) -> None:
 
 
 def print_success(skipped: list[Any]) -> None:
+    """Print the passing verifier result and any optional skips."""
+
     print("PASS")
     print_skipped(skipped, "SKIPPED optional checks:")
 
 
 def print_failures(profile: str, failures: list[Any], skipped: list[Any]) -> None:
+    """Print a compact failure report for the selected verifier profile."""
+
     print(f"FAIL: {len(failures)} check(s) failed [{profile}]\n")
     for index, result in enumerate(failures, start=1):
         print(f"{index}. {result.name}")

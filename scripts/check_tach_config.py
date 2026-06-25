@@ -10,6 +10,8 @@ from scripts.guardrail_tach import tach_config_issues
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse Tach config validation options."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--strict-root-module",
@@ -20,6 +22,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Validate tach.toml and print all discovered configuration issues."""
+
     args = parse_args(argv)
     issues = tach_config_issues(Path.cwd(), require_strict_root=args.strict_root_module)
     if not issues:

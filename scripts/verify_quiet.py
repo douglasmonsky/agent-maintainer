@@ -30,6 +30,8 @@ LOG_DIR = Path(".verify-logs")
 
 
 def emit_layout_failure(failures: list[str]) -> CheckResult:
+    """Write and return a synthetic failure for invalid guardrail layout."""
+
     LOG_DIR.mkdir(exist_ok=True)
     failure_lines = "\n".join(f"  {failure}" for failure in failures)
     output = f"Guardrail layout/configuration failed:\n\n{failure_lines}"
@@ -71,6 +73,8 @@ def apply_optional_skip_policy(
 
 
 def main(argv: list[str]) -> int:
+    """Run the selected verifier profile and print compact results."""
+
     args = parse_args(argv)
     config = apply_cli_overrides(load_config(), args)
     checks = make_checks(config, args.base_ref, args.compare_branch, staged=args.staged)

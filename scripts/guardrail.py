@@ -86,6 +86,8 @@ def install() -> int:
 
 
 def ensure_virtualenv(repo_root: Path) -> Path | None:
+    """Return a project virtualenv interpreter, creating .venv when needed."""
+
     virtualenv_python = repo_root / ".venv" / "bin" / "python"
     if virtualenv_python.exists():
         return virtualenv_python
@@ -109,6 +111,8 @@ def ensure_virtualenv(repo_root: Path) -> Path | None:
 
 
 def install_dependencies(repo_root: Path, python_path: Path) -> int:
+    """Install development dependencies from the preferred manifest."""
+
     dependency_file = preferred_dependency_file(repo_root)
     if not dependency_file.exists():
         print(
@@ -129,6 +133,8 @@ def install_dependencies(repo_root: Path, python_path: Path) -> int:
 
 
 def preferred_dependency_file(repo_root: Path) -> Path:
+    """Choose the pinned dev lock when present, otherwise the editable input."""
+
     lock_file = repo_root / "config" / "dev-lock.txt"
     if lock_file.exists():
         return lock_file
@@ -136,6 +142,8 @@ def preferred_dependency_file(repo_root: Path) -> Path:
 
 
 def install_pre_commit(repo_root: Path) -> int:
+    """Install the pre-commit hook when the repository is configured for it."""
+
     config_path = repo_root / ".pre-commit-config.yaml"
     if not config_path.exists():
         print("SKIP pre-commit: .pre-commit-config.yaml is not present.")
@@ -156,6 +164,8 @@ def install_pre_commit(repo_root: Path) -> int:
 
 
 def find_pre_commit(repo_root: Path) -> str | None:
+    """Find pre-commit in a local virtualenv or on PATH."""
+
     for relative in (".venv/bin/pre-commit", "venv/bin/pre-commit"):
         candidate = repo_root / relative
         if candidate.exists():
@@ -164,6 +174,8 @@ def find_pre_commit(repo_root: Path) -> str | None:
 
 
 def report_codex_hooks(repo_root: Path) -> None:
+    """Print whether repo-local Codex hook configuration exists."""
+
     config_path = repo_root / ".codex" / "config.toml"
     if config_path.exists():
         print("Codex hooks are configured in .codex/config.toml.")
