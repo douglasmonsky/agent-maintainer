@@ -10,6 +10,8 @@ The canonical CI and hook command is now `python3 -m scripts.guardrail`.
 
 `[tool.ai_guardrails].mode` now supports `custom`, `legacy-ratchet`, and `fresh-strict`. This repository uses `fresh-strict`, keeps tests and optional hardening gates active, and audits the pinned `config/dev-lock.txt`.
 
+`[tool.ai_guardrails].architecture_tool` now supports `import-linter` and `tach`. Import Linter remains the backward-compatible default. This repository uses Tach with `root_module = "forbid"` and `tach check --exact`.
+
 Bootstrap and CI prefer `config/dev-lock.txt` when present and fall back to `config/dev-dependencies.txt`.
 
 ## Required checks no longer skip silently
@@ -18,7 +20,7 @@ Bootstrap and CI prefer `config/dev-lock.txt` when present and fall back to `con
 
 Required failures include missing helper scripts, missing `.git` for diff-based checks, missing configured source roots in precommit/full/ci, missing configured test roots when tests are required, missing coverage sources, missing package paths, and missing executables for selected required checks.
 
-Optional skips are reported explicitly. Currently this applies to absent `.importlinter`, disabled `pip-audit`, and coverage checks when `require_tests = false`.
+Optional skips are reported explicitly. Currently this applies to absent architecture config, disabled `pip-audit`, and coverage checks when `require_tests = false`.
 
 ## Configurable repository layout
 

@@ -31,7 +31,8 @@ verify-full-output:
     radon mi src -s
     xenon --max-absolute B --max-modules A --max-average A src
     pylint src --score=n
-    lint-imports
+    python3 -m scripts.check_tach_config --strict-root-module
+    tach check --exact
     deptry .
     vulture src tests scripts
     bandit -q -r src

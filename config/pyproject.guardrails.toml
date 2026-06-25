@@ -4,6 +4,8 @@
 [tool.ai_guardrails]
 # Optional: custom (default), legacy-ratchet, or fresh-strict.
 # mode = "custom"
+# Optional: import-linter (default) or tach.
+# architecture_tool = "import-linter"
 source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]

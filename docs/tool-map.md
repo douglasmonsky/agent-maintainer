@@ -20,9 +20,9 @@ Pylint provides a backup for design smells, including module length through `max
 
 wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean baselines. It runs only when `enable_wemake = true` or `GUARDRAILS_ENABLE_WEMAKE=1`, and the verifier requires the actual wemake plugin so plain flake8 cannot masquerade as the strict check.
 
-Import Linter enforces architectural boundaries once `.importlinter` is configured for the repository. The verifier reports it as an optional skip when `.importlinter` is absent rather than silently pretending the architecture gate ran.
+Tach and Import Linter are supported architecture boundary backends. `architecture_tool = "import-linter"` is the backward-compatible default. `architecture_tool = "tach"` runs a Tach config smoke check and then `tach check --exact`.
 
-This repository has `.importlinter` enabled for its own guardrail script modules. The contract keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules.
+This repository uses Tach for its own guardrail script modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules, and uses `root_module = "forbid"` so source files cannot drift outside explicit modules.
 
 ## Diff hygiene gates
 
@@ -51,6 +51,7 @@ Shared path configuration is read from `[tool.ai_guardrails]` in `pyproject.toml
 ```toml
 [tool.ai_guardrails]
 mode = "custom"
+architecture_tool = "import-linter"
 source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]
@@ -59,4 +60,4 @@ coverage_source = ["src"]
 
 Mode can be `custom`, `legacy-ratchet`, or `fresh-strict`. Built-in defaults apply first, then mode defaults, then explicit pyproject fields, environment variables, and CLI flags.
 
-Missing required roots fail in `precommit`, `full`, and `ci`; optional integrations are reported as skipped.
+Missing required roots fail in `precommit`, `full`, and `ci`; optional integrations are reported as skipped. In `fresh-strict` mode with `architecture_tool = "tach"`, `tach.toml` must exist and use `root_module = "forbid"`.

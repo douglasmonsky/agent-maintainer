@@ -1,0 +1,48 @@
+# Copy to tach.toml and replace your_package with your actual package name.
+# This template is intentionally strict for fresh repositories.
+
+source_roots = ["src"]
+root_module = "forbid"
+exact = true
+
+exclude = [
+  ".git/",
+  ".mypy_cache/",
+  ".pytest_cache/",
+  ".ruff_cache/",
+  ".venv/",
+  "build/",
+  "dist/",
+  "htmlcov/",
+  "tests/",
+  "venv/",
+]
+
+layers = [
+  "entrypoint",
+  "application",
+  "domain",
+]
+
+[[modules]]
+path = "your_package.cli"
+layer = "entrypoint"
+depends_on = ["your_package.runner"]
+
+[[modules]]
+path = "your_package.runner"
+layer = "application"
+depends_on = [
+  "your_package.config",
+  "your_package.results",
+]
+
+[[modules]]
+path = "your_package.config"
+layer = "domain"
+depends_on = []
+
+[[modules]]
+path = "your_package.results"
+layer = "domain"
+depends_on = []

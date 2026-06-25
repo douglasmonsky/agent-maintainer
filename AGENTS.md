@@ -59,10 +59,10 @@ Application code may orchestrate domain objects but should not import concrete i
 
 Infrastructure code may depend inward on domain or application interfaces.
 
-If `.importlinter` is configured, respect it. If a change violates the import contract, refactor the boundary instead of adding an ignore.
+This repository uses `tach.toml` for architecture contracts. Keep `root_module = "forbid"` and explicit modules. If a change violates the Tach contract, refactor the boundary instead of adding an ignore.
 
 ## When a hook fails
 
 Fix the root cause. Do not bypass hooks. If the hook is wrong, make the smallest possible correction to the hook or configuration and explain why in the PR notes.
 
-Optional checks must be explicit. A missing `.importlinter` is an optional skip. Missing guardrail scripts, missing configured source roots in precommit/full/ci, missing required tests, or a broken package install are failures.
+Optional checks must be explicit. Missing optional architecture config is a skip only outside configured strict mode. Missing guardrail scripts, missing configured source roots in precommit/full/ci, missing required tests, or a broken package install are failures.

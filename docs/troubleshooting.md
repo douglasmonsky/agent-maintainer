@@ -19,7 +19,8 @@ python3 -m scripts.guardrail doctor --strict
 | Missing required executables | Run `python3 -m scripts.guardrail bootstrap`. |
 | Missing source, test, package, or coverage roots | Set `[tool.ai_guardrails]` paths in `pyproject.toml`. |
 | Pre-commit hook is not installed | Run `python3 -m scripts.guardrail install`. |
-| `.importlinter` is absent | Add an Import Linter contract or accept the optional skip. |
+| Architecture config is absent | Add `tach.toml` or `.importlinter`, or accept the optional skip. |
+| Tach fails in `fresh-strict` | Set `root_module = "forbid"` and define explicit modules. |
 | `pip-audit` is disabled | Enable it with a pinned input such as `config/dev-lock.txt`. |
 | `wemake` is disabled | Enable `fresh-strict` or set `enable_wemake = true`. |
 | Branch is ahead or dirty | Commit/push intentionally, or run non-strict doctor while work is in progress. |

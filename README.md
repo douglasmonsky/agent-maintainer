@@ -17,7 +17,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Complexity | Radon reports + Xenon gate |
 | Module/file length backup | Pylint `max-module-lines` |
 | Fresh-repo strict style | wemake-python-styleguide, when explicitly enabled |
-| Architecture boundaries | Import Linter, when `.importlinter` exists |
+| Architecture boundaries | Tach or Import Linter, when configured |
 | Dependency hygiene | deptry |
 | Dead code | vulture |
 | Security checks | Bandit; pip-audit when explicitly enabled |
@@ -42,7 +42,7 @@ config/
 Install dev dependencies. With `uv`:
 
 ```bash
-uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter radon xenon pylint deptry vulture bandit pip-audit pre-commit wemake-python-styleguide
+uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter tach radon xenon pylint deptry vulture bandit pip-audit pre-commit wemake-python-styleguide
 ```
 
 Or with pip:
@@ -92,7 +92,26 @@ For wemake-python-styleguide, copy and tune the flake8 example before enabling i
 cp config/flake8.wemake.example .flake8
 ```
 
-For architecture contracts, copy and edit the Import Linter template:
+For architecture contracts, use Tach or Import Linter. Tach is the preferred strict
+option for fresh repositories:
+
+```bash
+cp config/tach.example.toml tach.toml
+# Then replace your_package with your actual root package.
+```
+
+Pair it with:
+
+```toml
+[tool.ai_guardrails]
+architecture_tool = "tach"
+```
+
+For fresh-strict Tach, keep `root_module = "forbid"` and run `tach check --exact`.
+The verifier enforces that strict root setting when `mode = "fresh-strict"` and
+`architecture_tool = "tach"`.
+
+Import Linter remains supported and is still the default-compatible option:
 
 ```bash
 cp config/importlinter.example .importlinter
@@ -117,6 +136,8 @@ Preferred configuration lives in `pyproject.toml`:
 [tool.ai_guardrails]
 # Optional: custom (default), legacy-ratchet, or fresh-strict.
 # mode = "custom"
+# Optional: import-linter (default) or tach.
+# architecture_tool = "import-linter"
 source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]
@@ -155,6 +176,7 @@ GUARDRAILS_SOURCE_ROOTS=my_package,tools \
 GUARDRAILS_TEST_ROOTS=tests \
 GUARDRAILS_COVERAGE_SOURCE=my_package \
 GUARDRAILS_PACKAGE_PATHS=my_package \
+GUARDRAILS_ARCHITECTURE_TOOL=tach \
 python3 -m scripts.guardrail verify --profile full
 ```
 
@@ -165,7 +187,8 @@ python3 -m scripts.guardrail verify --profile full \
   --source-root my_package \
   --test-root tests \
   --coverage-source my_package \
-  --package-path my_package
+  --package-path my_package \
+  --architecture-tool tach
 ```
 
 ## Commands
@@ -247,7 +270,7 @@ src/runner.py:724 physical lines, 510 source lines (limits: 600 physical, 450 so
 Full logs are in .verify-logs/.
 ```
 
-Optional integrations are explicit, not silent. For example, if `.importlinter` is absent or `pip-audit` is disabled, a passing full run may include:
+Optional integrations are explicit, not silent. For example, if architecture contracts are absent or `pip-audit` is disabled, a passing full run may include:
 
 ```text
 PASS
@@ -255,6 +278,10 @@ SKIPPED optional checks:
   import-linter: .importlinter is absent; architecture contracts are not configured
   pip-audit: disabled by default; enable with GUARDRAILS_ENABLE_PIP_AUDIT=1 or [tool.ai_guardrails].enable_pip_audit = true
 ```
+
+When `architecture_tool = "tach"` is selected outside `fresh-strict`, absent
+`tach.toml` is reported the same way. In `fresh-strict`, missing or permissive
+Tach config is a failure.
 
 Full raw output is stored in `.verify-logs/` to keep agent context small.
 
@@ -264,7 +291,7 @@ Full raw output is stored in `.verify-logs/` to keep agent context small.
 
 `precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip. The bundled pre-commit hook runs this profile with `--staged`, so diff budgets inspect staged changes only.
 
-`full` is designed for local deep verification. It adds Radon reports, Pylint, Import Linter when configured, deptry, vulture, Bandit, and pip-audit when explicitly enabled.
+`full` is designed for local deep verification. It adds Radon reports, Pylint, Tach or Import Linter when configured, deptry, vulture, Bandit, and pip-audit when explicitly enabled.
 
 `ci` is designed for GitHub Actions. It runs the full profile plus changed-code coverage through diff-cover. When tests are disabled, changed-code coverage is reported as an optional skip.
 
@@ -293,7 +320,7 @@ Start strict for new repositories. For existing repositories, start with `fast` 
 
 This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
 
-This repository also keeps the normally optional hardening gates active for itself: tests are required, `.importlinter` defines the guardrail-script dependency layers, and `pip-audit` runs against `config/dev-lock.txt`.
+This repository also keeps the normally optional hardening gates active for itself: tests are required, `tach.toml` defines the guardrail-script dependency layers with `root_module = "forbid"`, and `pip-audit` runs against `config/dev-lock.txt`.
 
 Generated files are skipped by the file-length check when they contain common generated-file markers near the top. Lock files and binary assets are excluded from the change-budget check.
 

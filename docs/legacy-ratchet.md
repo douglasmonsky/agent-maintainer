@@ -20,7 +20,7 @@ Recommended adoption path:
 3. Run `python3 -m scripts.guardrail verify --profile fast`.
 4. Add tests or set `require_tests = false` only when tests are intentionally absent.
 5. Promote to `precommit`, then `full`, then `ci`.
-6. Enable `.importlinter`, `pip-audit`, and `wemake` only after each has a clean baseline or explicit ratchet plan.
+6. Enable `tach.toml` or `.importlinter`, `pip-audit`, and `wemake` only after each has a clean baseline or explicit ratchet plan.
 
 Useful overrides during adoption:
 
