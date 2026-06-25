@@ -132,6 +132,37 @@ def test_run_check_records_existing_declared_artifacts(
     assert result.artifact_paths == ("coverage.xml",)
 
 
+def test_run_check_creates_log_dir_before_command_runs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    artifact = Path("logs/pytest-junit.xml")
+
+    def fake_run(command: list[str]) -> tuple[int, str]:
+        assert command == ["pytest"]
+        assert artifact.parent.is_dir()
+        artifact.write_text("<testsuite />\n", encoding="utf-8")
+        return 0, "ok\n"
+
+    monkeypatch.setattr(guardrail_executor, "run_command", fake_run)
+
+    result = guardrail_executor.run_check(
+        Check(
+            "pytest-coverage",
+            ["pytest"],
+            frozenset(),
+            artifact_paths=("logs/pytest-junit.xml",),
+        ),
+        Path("logs"),
+        3,
+        200,
+    )
+
+    assert result.passed is True
+    assert result.artifact_paths == ("logs/pytest-junit.xml",)
+
+
 def test_reporting_truncates_lines_and_characters() -> None:
     assert guardrail_reporting.nonblank_lines("a\n\n b ") == ["a", " b"]
     assert guardrail_reporting.truncate_lines(["a", "b", "c"], 2)[-1].startswith("... 1")

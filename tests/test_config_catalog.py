@@ -198,6 +198,27 @@ def test_pytest_and_diff_cover_are_required_when_tests_are_required() -> None:
     assert diff_cover.optional_skip_reason is None
 
 
+def test_pytest_check_declares_structured_test_artifacts() -> None:
+    config = replace(
+        GuardrailConfig(),
+        diagnostic_artifacts_dir=".custom-logs",
+        test_roots=("tests",),
+        coverage_source=("scripts",),
+        require_tests=True,
+    )
+
+    check = guardrail_catalog.pytest_check(config)
+
+    assert "--cov-report=xml" in check.command
+    assert "--cov-report=json:.custom-logs/coverage.json" in check.command
+    assert "--junitxml=.custom-logs/pytest-junit.xml" in check.command
+    assert check.artifact_paths == (
+        "coverage.xml",
+        ".custom-logs/coverage.json",
+        ".custom-logs/pytest-junit.xml",
+    )
+
+
 def test_pytest_and_diff_cover_skip_when_tests_are_disabled() -> None:
     config = replace(GuardrailConfig(), require_tests=False)
 

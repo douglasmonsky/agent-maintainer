@@ -32,12 +32,17 @@ def existing_or_configured(paths: tuple[str, ...]) -> tuple[str, ...]:
 def pytest_command(config: GuardrailConfig) -> list[str]:
     """Build the coverage-enforcing pytest command."""
 
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    coverage_json = artifacts_dir / "coverage.json"
+    junit_xml = artifacts_dir / "pytest-junit.xml"
     command = ["pytest", "-q", "--tb=short", "--disable-warnings", "-p", "no:tach"]
     command.extend(f"--cov={source}" for source in config.coverage_source)
     command.extend(
         [
             "--cov-report=term-missing:skip-covered",
             "--cov-report=xml",
+            f"--cov-report=json:{coverage_json}",
+            f"--junitxml={junit_xml}",
             f"--cov-fail-under={config.coverage_fail_under}",
             *config.test_roots,
         ]
@@ -49,12 +54,17 @@ def pytest_check(config: GuardrailConfig) -> models.Check:
     """Build the pytest coverage check or its require-tests skip."""
 
     if config.require_tests:
+        artifacts_dir = Path(config.diagnostic_artifacts_dir)
         return models.Check(
             "pytest-coverage",
             pytest_command(config),
             models.LOCAL_GATE_PROFILES,
             required_executable="pytest",
-            artifact_paths=("coverage.xml",),
+            artifact_paths=(
+                "coverage.xml",
+                str(artifacts_dir / "coverage.json"),
+                str(artifacts_dir / "pytest-junit.xml"),
+            ),
         )
     return models.Check(
         "pytest-coverage",
