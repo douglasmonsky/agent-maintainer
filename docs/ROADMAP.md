@@ -98,13 +98,13 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 3: Agent Diagnostic Artifacts
 
-- [ ] Add a diagnostics config section for verifier artifacts.
-- [ ] Add `.verify-logs/manifest.json`.
-- [ ] Record command, exit code, status, profile, timestamps, git SHA/state,
+- [x] Add a diagnostics config section for verifier artifacts.
+- [x] Add `.verify-logs/manifest.json`.
+- [x] Record command, exit code, status, profile, timestamps, git SHA/state,
   relevant thresholds, and artifact paths per check.
-- [ ] Add `.verify-logs/LAST_FAILURE.md` with failed checks, concise diagnostics,
+- [x] Add `.verify-logs/LAST_FAILURE.md` with failed checks, concise diagnostics,
   full-log paths, and the exact rerun command.
-- [ ] Keep terminal output compact while making the artifact trail complete.
+- [x] Keep terminal output compact while making the artifact trail complete.
 - [ ] Store structured output where supported, starting with Pyright JSON.
 - [ ] Add Ruff JSON or SARIF output when useful for summaries.
 - [ ] Add pytest JUnit XML output.
@@ -112,9 +112,9 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Add Bandit JSON output.
 - [ ] Prefer structured artifacts over raw text when producing compact failure
   summaries.
-- [ ] Add tests for manifest content, failure-note content, stale artifacts, and
+- [x] Add tests for manifest content, failure-note content, stale artifacts, and
   successful runs.
-- [ ] Teach `doctor` to detect stale logs and stale structured artifacts.
+- [x] Teach `doctor` to detect stale logs and stale structured artifacts.
 - [ ] Keep runtime application logging enforcement advisory and disabled by
   default.
 

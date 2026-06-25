@@ -16,6 +16,11 @@ Pyright enforces type discipline. The verifier runs it through a generated proje
 
 Pytest and pytest-cov enforce behavior and coverage. The configured coverage gate prevents untested new behavior from quietly entering the repository.
 
+Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable run
+metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails. The
+terminal output stays compact; agents should use these artifacts for command,
+exit-code, threshold, log-path, and rerun context.
+
 ## Maintainability gates
 
 Radon reports cyclomatic complexity and maintainability metrics. Xenon converts complexity thresholds into a failing gate.
@@ -64,8 +69,17 @@ source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]
 coverage_source = ["src"]
+
+[tool.ai_guardrails.diagnostics]
+enabled = true
+log_dir = ".verify-logs"
 ```
 
 Mode can be `custom`, `legacy-ratchet`, or `fresh-strict`. Built-in defaults apply first, then mode defaults, then explicit pyproject fields, environment variables, and CLI flags.
 
 Missing required roots fail in `precommit`, `full`, and `ci`; optional integrations are reported as skipped. In `fresh-strict` mode with `architecture_tool = "tach"`, `tach.toml` must exist and use `root_module = "forbid"`.
+
+`doctor` checks that verifier diagnostics are coherent: logs exist, the manifest
+is present and newer than the latest raw log, manifest-referenced logs and
+artifacts still exist, and `LAST_FAILURE.md` matches the pass/fail state of the
+latest manifest.
