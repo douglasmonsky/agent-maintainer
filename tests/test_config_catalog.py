@@ -291,7 +291,8 @@ def test_make_checks_includes_expected_profiles(
 
 
 def test_pyright_check_uses_generated_project_runner() -> None:
-    checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    config = GuardrailConfig(diagnostic_artifacts_dir=".custom-logs")
+    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
     pyright = next(check for check in checks if check.name == "pyright")
 
     assert pyright.command[:3] == [
@@ -299,6 +300,10 @@ def test_pyright_check_uses_generated_project_runner() -> None:
         "-m",
         "scripts.run_pyright",
     ]
+    assert pyright.artifact_paths == (
+        ".custom-logs/pyright.json",
+        ".custom-logs/pyrightconfig.generated.json",
+    )
 
 
 def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only() -> None:

@@ -125,15 +125,20 @@ def pip_audit_check(config: GuardrailConfig) -> models.Check:
     )
 
 
-def pyright_check() -> models.Check:
+def pyright_check(config: GuardrailConfig) -> models.Check:
     """Build the Pyright check through the generated-project wrapper."""
 
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
     return models.Check(
         "pyright",
         [sys.executable, "-m", "scripts.run_pyright"],
         models.LOCAL_GATE_PROFILES,
         required_paths=("scripts/run_pyright.py",),
         required_executable="pyright",
+        artifact_paths=(
+            str(artifacts_dir / "pyright.json"),
+            str(artifacts_dir / "pyrightconfig.generated.json"),
+        ),
     )
 
 
@@ -287,7 +292,7 @@ def make_checks(
             models.ALL_PROFILES,
             required_executable="ruff",
         ),
-        pyright_check(),
+        pyright_check(config),
         pytest_check(config),
         models.Check(
             "radon-cc-report",

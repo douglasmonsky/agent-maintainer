@@ -12,7 +12,7 @@ reports stale generated guidance as a failure.
 
 Ruff handles formatting, import order, linting, and McCabe complexity feedback. It is the fastest feedback loop and should run after most edits.
 
-Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.ai_guardrails].pyright_type_checking_mode` affects the actual Pyright invocation.
+Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.ai_guardrails].pyright_type_checking_mode` affects the actual Pyright invocation. Pyright JSON is also preserved as `.verify-logs/pyright.json` and listed in the verifier manifest.
 
 Pytest and pytest-cov enforce behavior and coverage. The configured coverage gate prevents untested new behavior from quietly entering the repository.
 
