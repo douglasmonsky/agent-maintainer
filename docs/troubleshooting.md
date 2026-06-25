@@ -23,6 +23,8 @@ python3 -m scripts.guardrail doctor --strict
 | Tach fails in `fresh-strict` | Set `root_module = "forbid"` and define explicit modules. |
 | `pip-audit` is disabled | Enable it with a pinned input such as `config/dev-lock.txt`. |
 | `wemake` is disabled | Enable `fresh-strict` or set `enable_wemake = true`. |
+| `interrogate` is disabled | Enable it after choosing a docstring coverage baseline. |
+| Interrogate fails | Add useful docstrings or lower the ratchet only with an explicit baseline note. |
 | Branch is ahead or dirty | Commit/push intentionally, or run non-strict doctor while work is in progress. |
 | CI diff-cover cannot compare branches | Use a fetched base ref such as `origin/main`. |
 

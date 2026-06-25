@@ -38,6 +38,11 @@ enable_pip_audit = false
 # repos or existing repos that have a clean baseline or ratchet plan.
 enable_wemake = false
 
+# Disabled by default for existing repos. fresh-strict enables this; legacy
+# repos should set a baseline and raise it deliberately.
+enable_interrogate = false
+interrogate_fail_under = 80
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"

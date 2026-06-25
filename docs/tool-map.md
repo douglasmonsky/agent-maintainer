@@ -20,6 +20,8 @@ Pylint provides a backup for design smells, including module length through `max
 
 wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean baselines. It runs only when `enable_wemake = true` or `GUARDRAILS_ENABLE_WEMAKE=1`, and the verifier requires the actual wemake plugin so plain flake8 cannot masquerade as the strict check.
 
+Interrogate checks docstring coverage. It runs only when `enable_interrogate = true` or `GUARDRAILS_ENABLE_INTERROGATE=1`; use `interrogate_fail_under` as a ratchet floor rather than forcing a legacy repo to document every helper at once.
+
 Tach and Import Linter are supported architecture boundary backends. `architecture_tool = "import-linter"` is the backward-compatible default. `architecture_tool = "tach"` runs a Tach config smoke check and then `tach check --exact`.
 
 This repository uses Tach for its own guardrail script modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules, and uses `root_module = "forbid"` so source files cannot drift outside explicit modules.
@@ -52,6 +54,8 @@ Shared path configuration is read from `[tool.ai_guardrails]` in `pyproject.toml
 [tool.ai_guardrails]
 mode = "custom"
 architecture_tool = "import-linter"
+enable_interrogate = false
+interrogate_fail_under = 80
 source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]

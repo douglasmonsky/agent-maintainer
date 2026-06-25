@@ -28,10 +28,11 @@ If the repository does not use `src/` and `tests/`, configure `[tool.ai_guardrai
 4. Keep functions small. Split functions above roughly 75 lines unless there is a specific, local reason.
 5. Keep cyclomatic complexity under the configured Xenon/Radon thresholds.
 6. Use explicit return types for public functions.
-7. Prefer typed domain objects over unstructured dictionaries at internal boundaries.
-8. Do not introduce new dependencies unless the standard library or existing dependencies are insufficient.
-9. New behavior requires tests unless the repository explicitly sets `require_tests = false` for a documented reason.
-10. Changed code should be covered by tests; CI enforces changed-code coverage.
+7. Add docstrings to public modules, classes, and functions when they define a durable boundary.
+8. Prefer typed domain objects over unstructured dictionaries at internal boundaries.
+9. Do not introduce new dependencies unless the standard library or existing dependencies are insufficient.
+10. New behavior requires tests unless the repository explicitly sets `require_tests = false` for a documented reason.
+11. Changed code should be covered by tests; CI enforces changed-code coverage.
 
 ## Suppression policy
 
@@ -65,4 +66,4 @@ This repository uses `tach.toml` for architecture contracts. Keep `root_module =
 
 Fix the root cause. Do not bypass hooks. If the hook is wrong, make the smallest possible correction to the hook or configuration and explain why in the PR notes.
 
-Optional checks must be explicit. Missing optional architecture config is a skip only outside configured strict mode. Missing guardrail scripts, missing configured source roots in precommit/full/ci, missing required tests, or a broken package install are failures.
+Optional checks must be explicit. Missing optional architecture config is a skip only outside configured strict mode. This repository also enforces an Interrogate docstring-coverage ratchet. Missing guardrail scripts, missing configured source roots in precommit/full/ci, missing required tests, or a broken package install are failures.

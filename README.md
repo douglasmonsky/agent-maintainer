@@ -14,6 +14,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Type discipline | Pyright |
 | Tests and total coverage | Pytest + pytest-cov |
 | Changed-code coverage in CI | diff-cover |
+| Docstring coverage | Interrogate, when explicitly enabled |
 | Complexity | Radon reports + Xenon gate |
 | Module/file length backup | Pylint `max-module-lines` |
 | Fresh-repo strict style | wemake-python-styleguide, when explicitly enabled |
@@ -42,7 +43,7 @@ config/
 Install dev dependencies. With `uv`:
 
 ```bash
-uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter tach radon xenon pylint deptry vulture bandit pip-audit pre-commit wemake-python-styleguide
+uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit pre-commit wemake-python-styleguide
 ```
 
 Or with pip:
@@ -149,6 +150,8 @@ coverage_fail_under = 80
 diff_cover_fail_under = 90
 enable_pip_audit = false
 enable_wemake = false
+enable_interrogate = false
+interrogate_fail_under = 80
 ```
 
 Use `mode = "fresh-strict"` for new repositories where strict checks should block from day one. Use `mode = "legacy-ratchet"` for existing repositories where heavy gates should stay opt-in while the repo adopts changed-file and baseline discipline.
@@ -277,6 +280,7 @@ PASS
 SKIPPED optional checks:
   import-linter: .importlinter is absent; architecture contracts are not configured
   pip-audit: disabled by default; enable with GUARDRAILS_ENABLE_PIP_AUDIT=1 or [tool.ai_guardrails].enable_pip_audit = true
+  interrogate: disabled by default; enable with GUARDRAILS_ENABLE_INTERROGATE=1 or [tool.ai_guardrails].enable_interrogate = true
 ```
 
 When `architecture_tool = "tach"` is selected outside `fresh-strict`, absent
@@ -291,7 +295,7 @@ Full raw output is stored in `.verify-logs/` to keep agent context small.
 
 `precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip. The bundled pre-commit hook runs this profile with `--staged`, so diff budgets inspect staged changes only.
 
-`full` is designed for local deep verification. It adds Radon reports, Pylint, Tach or Import Linter when configured, deptry, vulture, Bandit, and pip-audit when explicitly enabled.
+`full` is designed for local deep verification. It adds Radon reports, Pylint, Tach or Import Linter when configured, Interrogate when enabled, deptry, vulture, Bandit, and pip-audit when explicitly enabled.
 
 `ci` is designed for GitHub Actions. It runs the full profile plus changed-code coverage through diff-cover. When tests are disabled, changed-code coverage is reported as an optional skip.
 
@@ -320,7 +324,7 @@ Start strict for new repositories. For existing repositories, start with `fast` 
 
 This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
 
-This repository also keeps the normally optional hardening gates active for itself: tests are required, `tach.toml` defines the guardrail-script dependency layers with `root_module = "forbid"`, and `pip-audit` runs against `config/dev-lock.txt`.
+This repository also keeps the normally optional hardening gates active for itself: tests are required, `tach.toml` defines the guardrail-script dependency layers with `root_module = "forbid"`, Interrogate enforces a 30% docstring-coverage ratchet, and `pip-audit` runs against `config/dev-lock.txt`.
 
 Generated files are skipped by the file-length check when they contain common generated-file markers near the top. Lock files and binary assets are excluded from the change-budget check.
 

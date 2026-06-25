@@ -11,7 +11,7 @@ package_paths = ["src"]
 coverage_source = ["src"]
 ```
 
-This mode keeps conservative defaults and leaves the heavy optional gates off unless explicitly configured. In particular, it disables `wemake-python-styleguide` and `pip-audit` at the mode layer. Existing explicit pyproject fields still win.
+This mode keeps conservative defaults and leaves the heavy optional gates off unless explicitly configured. In particular, it disables `wemake-python-styleguide`, Interrogate, and `pip-audit` at the mode layer. Existing explicit pyproject fields still win.
 
 Recommended adoption path:
 
@@ -20,7 +20,7 @@ Recommended adoption path:
 3. Run `python3 -m scripts.guardrail verify --profile fast`.
 4. Add tests or set `require_tests = false` only when tests are intentionally absent.
 5. Promote to `precommit`, then `full`, then `ci`.
-6. Enable `tach.toml` or `.importlinter`, `pip-audit`, and `wemake` only after each has a clean baseline or explicit ratchet plan.
+6. Enable `tach.toml` or `.importlinter`, Interrogate, `pip-audit`, and `wemake` only after each has a clean baseline or explicit ratchet plan.
 
 Useful overrides during adoption:
 
