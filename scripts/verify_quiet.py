@@ -100,6 +100,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--no-require-tests", action="store_false", dest="require_tests")
     parser.add_argument("--enable-pip-audit", action="store_true", default=None)
     parser.add_argument("--disable-pip-audit", action="store_false", dest="enable_pip_audit")
+    parser.add_argument("--enable-wemake", action="store_true", default=None)
+    parser.add_argument("--disable-wemake", action="store_false", dest="enable_wemake")
     parser.add_argument(
         "--fail-on-optional-skip",
         action="store_true",
@@ -124,6 +126,7 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "diff_cover_fail_under": args.diff_cover_fail_under,
         "require_tests": args.require_tests,
         "enable_pip_audit": args.enable_pip_audit,
+        "enable_wemake": args.enable_wemake,
     }
 
     updates.update({field: value for field, value in tuple_overrides.items() if value is not None})
@@ -179,9 +182,8 @@ def layout_failures(config: GuardrailConfig, profile: str) -> list[str]:
 
 def emit_layout_failure(failures: list[str]) -> CheckResult:
     LOG_DIR.mkdir(exist_ok=True)
-    output = "Guardrail layout/configuration failed:\n\n{failures}".format(
-        failures="\n".join(f"  {failure}" for failure in failures)
-    )
+    failure_lines = "\n".join(f"  {failure}" for failure in failures)
+    output = f"Guardrail layout/configuration failed:\n\n{failure_lines}"
     (LOG_DIR / "guardrail-layout.log").write_text(f"{output}\n", encoding="utf-8")
     return CheckResult("guardrail-layout", passed=False, output=output)
 

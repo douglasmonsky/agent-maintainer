@@ -30,6 +30,10 @@ enable_pip_audit = false
 # Example when enabled:
 # pip_audit_args = ["-r", "requirements.txt"]
 
+# Disabled by default because wemake is intentionally strict. Enable for fresh
+# repos or existing repos that have a clean baseline or ratchet plan.
+enable_wemake = false
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"

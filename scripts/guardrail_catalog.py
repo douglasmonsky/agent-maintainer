@@ -91,6 +91,30 @@ def pip_audit_check(config: GuardrailConfig) -> Check:
     )
 
 
+def wemake_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> Check:
+    if not config.enable_wemake:
+        return Check(
+            "wemake",
+            ["flake8"],
+            FULL_PROFILES,
+            optional_skip_reason=(
+                "disabled by default; enable with GUARDRAILS_ENABLE_WEMAKE=1 or "
+                "[tool.ai_guardrails].enable_wemake = true"
+            ),
+        )
+    return Check(
+        "wemake",
+        [
+            "flake8",
+            "--require-plugins",
+            "wemake-python-styleguide",
+            *package_paths,
+        ],
+        FULL_PROFILES,
+        required_executable="flake8",
+    )
+
+
 def vulture_paths(config: GuardrailConfig, package_paths: tuple[str, ...]) -> tuple[str, ...]:
     paths = tuple(path for path in config.vulture_paths if Path(path).exists())
     return paths or package_paths
@@ -207,6 +231,7 @@ def make_checks(
             required_executable="bandit",
         ),
         pip_audit_check(config),
+        wemake_check(config, package_paths),
         diff_cover_check(config, compare_branch),
     ]
 

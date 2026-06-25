@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import shlex
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
@@ -54,6 +55,7 @@ class GuardrailConfig:
     ruff_max_complexity: int = 10
     pyright_type_checking_mode: str = "standard"
     enable_pip_audit: bool = False
+    enable_wemake: bool = False
     pip_audit_args: tuple[str, ...] = ()
 
 
@@ -120,7 +122,7 @@ def _apply_pyproject(config: GuardrailConfig, raw: dict[str, Any]) -> GuardrailC
         "vulture_paths",
         "pip_audit_args",
     }
-    bool_fields = {"require_tests", "enable_pip_audit"}
+    bool_fields = {"require_tests", "enable_pip_audit", "enable_wemake"}
     int_fields = {
         "coverage_fail_under",
         "diff_cover_fail_under",
@@ -181,6 +183,17 @@ def _env_int(name: str) -> int | None:
     return _as_int(value, name)
 
 
+def _merge_env_values(
+    updates: dict[str, object],
+    envs: dict[str, str],
+    parser: Callable[[str], object | None],
+) -> None:
+    for field_name, env_name in envs.items():
+        parsed_value = parser(env_name)
+        if parsed_value is not None:
+            updates[field_name] = parsed_value
+
+
 def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
     updates: dict[str, object] = {}
     tuple_envs = {
@@ -191,26 +204,15 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
         "file_length_paths": "GUARDRAILS_FILE_LENGTH_PATHS",
         "vulture_paths": "GUARDRAILS_VULTURE_PATHS",
     }
-    for field_name, env_name in tuple_envs.items():
-        value = _env_tuple(env_name)
-        if value is not None:
-            updates[field_name] = value
-
-    require_tests = _env_bool("GUARDRAILS_REQUIRE_TESTS")
-    if require_tests is not None:
-        updates["require_tests"] = require_tests
-
-    enable_pip_audit = _env_bool("GUARDRAILS_ENABLE_PIP_AUDIT")
-    if enable_pip_audit is not None:
-        updates["enable_pip_audit"] = enable_pip_audit
-
-    coverage_fail_under = _env_int("GUARDRAILS_COVERAGE_FAIL_UNDER")
-    if coverage_fail_under is not None:
-        updates["coverage_fail_under"] = coverage_fail_under
-
-    diff_cover_fail_under = _env_int("GUARDRAILS_DIFF_COVER_FAIL_UNDER")
-    if diff_cover_fail_under is not None:
-        updates["diff_cover_fail_under"] = diff_cover_fail_under
+    bool_envs = {
+        "require_tests": "GUARDRAILS_REQUIRE_TESTS",
+        "enable_pip_audit": "GUARDRAILS_ENABLE_PIP_AUDIT",
+        "enable_wemake": "GUARDRAILS_ENABLE_WEMAKE",
+    }
+    coverage_envs = {
+        "coverage_fail_under": "GUARDRAILS_COVERAGE_FAIL_UNDER",
+        "diff_cover_fail_under": "GUARDRAILS_DIFF_COVER_FAIL_UNDER",
+    }
 
     threshold_envs = {
         "file_length_max_physical": "GUARDRAILS_FILE_LENGTH_MAX_PHYSICAL",
@@ -221,10 +223,10 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
         "change_block_files": "GUARDRAILS_CHANGE_BLOCK_FILES",
         "suppression_max_new": "GUARDRAILS_SUPPRESSION_MAX_NEW",
     }
-    for field_name, env_name in threshold_envs.items():
-        value = _env_int(env_name)
-        if value is not None:
-            updates[field_name] = value
+    _merge_env_values(updates, tuple_envs, _env_tuple)
+    _merge_env_values(updates, bool_envs, _env_bool)
+    _merge_env_values(updates, coverage_envs, _env_int)
+    _merge_env_values(updates, threshold_envs, _env_int)
 
     pip_audit_args = os.getenv("GUARDRAILS_PIP_AUDIT_ARGS")
     if pip_audit_args is not None:
