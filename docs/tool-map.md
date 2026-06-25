@@ -16,6 +16,8 @@ Radon reports cyclomatic complexity and maintainability metrics. Xenon converts 
 
 Pylint provides a backup for design smells, including module length through `max-module-lines`.
 
+wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean baselines. It runs only when `enable_wemake = true` or `GUARDRAILS_ENABLE_WEMAKE=1`, and the verifier requires the actual wemake plugin so plain flake8 cannot masquerade as the strict check.
+
 Import Linter enforces architectural boundaries once `.importlinter` is configured for the repository. The verifier reports it as an optional skip when `.importlinter` is absent rather than silently pretending the architecture gate ran.
 
 ## Diff hygiene gates

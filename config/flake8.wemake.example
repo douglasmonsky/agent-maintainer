@@ -1,0 +1,27 @@
+[flake8]
+max-line-length = 100
+exclude =
+    .git
+    .mypy_cache
+    .pytest_cache
+    .ruff_cache
+    .tox
+    .venv
+    build
+    dist
+    htmlcov
+    venv
+
+# Keep this list short and intentional. WPS110 is often too subjective for
+# migration work; WPS421 is commonly acceptable for small CLI tools.
+extend-ignore =
+    WPS110
+    WPS421
+
+max-module-members = 20
+max-local-variables = 12
+max-expressions = 25
+max-cognitive-score = 20
+max-jones-score = 20
+max-line-complexity = 20
+max-string-usages = 8

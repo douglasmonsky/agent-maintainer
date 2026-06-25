@@ -16,6 +16,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Changed-code coverage in CI | diff-cover |
 | Complexity | Radon reports + Xenon gate |
 | Module/file length backup | Pylint `max-module-lines` |
+| Fresh-repo strict style | wemake-python-styleguide, when explicitly enabled |
 | Architecture boundaries | Import Linter, when `.importlinter` exists |
 | Dependency hygiene | deptry |
 | Dead code | vulture |
@@ -41,7 +42,7 @@ config/
 Install dev dependencies. With `uv`:
 
 ```bash
-uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter radon xenon pylint deptry vulture bandit pip-audit pre-commit
+uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter radon xenon pylint deptry vulture bandit pip-audit pre-commit wemake-python-styleguide
 ```
 
 Or with pip:
@@ -59,6 +60,12 @@ Copy the Pyright and Pylint examples if you want them active:
 ```bash
 cp config/pyrightconfig.json pyrightconfig.json
 cp config/pylintrc.example .pylintrc
+```
+
+For wemake-python-styleguide, copy and tune the flake8 example before enabling it:
+
+```bash
+cp config/flake8.wemake.example .flake8
 ```
 
 For architecture contracts, copy and edit the Import Linter template:
@@ -94,6 +101,7 @@ require_tests = true
 coverage_fail_under = 80
 diff_cover_fail_under = 90
 enable_pip_audit = false
+enable_wemake = false
 ```
 
 Set `require_tests = false` only for repositories where tests are intentionally unavailable. In that mode, pytest coverage and changed-code coverage are reported as explicit optional skips.
@@ -243,11 +251,28 @@ Or enable it only in CI with an environment variable:
 GUARDRAILS_ENABLE_PIP_AUDIT=1 GUARDRAILS_PIP_AUDIT_ARGS="-r requirements.txt" python3 scripts/guardrail.py verify --profile ci
 ```
 
+## wemake behavior
+
+`wemake-python-styleguide` is disabled by default because it is intentionally rigid. Enable it for fresh repositories where you want strict style friction from day one:
+
+```toml
+[tool.ai_guardrails]
+enable_wemake = true
+```
+
+Or enable it temporarily:
+
+```bash
+GUARDRAILS_ENABLE_WEMAKE=1 python3 scripts/guardrail.py verify --profile full
+```
+
+When enabled, the verifier runs `flake8 --require-plugins wemake-python-styleguide` over configured `package_paths`. For existing repositories, keep it off until you have a clean baseline or an explicit ratchet plan.
+
 ## Notes
 
 Start strict for new repositories. For existing repositories, start with `fast` and `precommit`, then promote the heavier checks after you have a clean baseline.
 
-This repository is configured to use the kit on itself. After changing guardrail code or docs, run `python3 scripts/guardrail.py verify --profile precommit`; for broader changes, run `python3 scripts/guardrail.py verify --profile full`.
+This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 scripts/guardrail.py verify --profile precommit`; for broader changes, run `python3 scripts/guardrail.py verify --profile full`.
 
 Generated files are skipped by the file-length check when they contain common generated-file markers near the top. Lock files and binary assets are excluded from the change-budget check.
 
