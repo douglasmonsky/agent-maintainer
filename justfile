@@ -33,7 +33,7 @@ verify-full-output:
     pylint src --score=n
     python3 -m scripts.check_tach_config --strict-root-module
     tach check --exact
-    interrogate --fail-under=30 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic src
+    interrogate --fail-under=80 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic scripts .codex/hooks
     deptry .
     vulture src tests scripts
     bandit -q -r src
