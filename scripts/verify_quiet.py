@@ -16,10 +16,8 @@ from __future__ import annotations
 
 import argparse
 import os
-import shutil
-import subprocess  # nosec B404
 import sys
-from dataclasses import dataclass, replace
+from dataclasses import replace
 from pathlib import Path
 
 from guardrail_config import (
@@ -29,7 +27,9 @@ from guardrail_config import (
     format_paths,
     load_config,
 )
-from guardrail_reporting import print_failures, print_success, summarize_check
+from guardrail_executor import run_check
+from guardrail_models import Check, CheckResult
+from guardrail_reporting import print_failures, print_success
 
 LOG_DIR = Path(".verify-logs")
 DEFAULT_MAX_LINES_PER_FAILURE = 50
@@ -39,24 +39,6 @@ COMMON_PROFILES = frozenset({"precommit", "full", "ci"})
 ALL_PROFILES = frozenset({"fast", "precommit", "full", "ci"})
 FULL_AND_CI = frozenset({"full", "ci"})
 CI_ONLY = frozenset({"ci"})
-
-
-@dataclass(frozen=True)
-class Check:
-    name: str
-    command: list[str]
-    profiles: frozenset[str]
-    required_paths: tuple[str, ...] = ()
-    required_executable: str | None = None
-    optional_skip_reason: str | None = None
-
-
-@dataclass(frozen=True)
-class CheckResult:
-    name: str
-    passed: bool
-    output: str = ""
-    skipped: bool = False
 
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
@@ -147,18 +129,6 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
     updates.update({field: value for field, value in scalar_overrides.items() if value is not None})
 
     return replace(config, **updates)
-
-
-def tool_search_path() -> str:
-    executable_dir = str(Path(sys.executable).parent)
-    existing_path = os.environ.get("PATH", "")
-    return executable_dir + os.pathsep + existing_path if existing_path else executable_dir
-
-
-def command_env() -> dict[str, str]:
-    env = os.environ.copy()
-    env["PATH"] = tool_search_path()
-    return env
 
 
 def existing_or_configured(paths: tuple[str, ...]) -> list[str]:
@@ -377,75 +347,6 @@ def layout_failures(config: GuardrailConfig, profile: str) -> list[str]:
     return [failure for failure in failures if failure is not None]
 
 
-def missing_requirement(check: Check) -> str | None:
-    if check.optional_skip_reason:
-        if check.name == "import-linter" and not Path(".importlinter").exists():
-            return f"optional skip: {check.optional_skip_reason}"
-        if check.name == "pip-audit":
-            # pip-audit supplies optional_skip_reason only when disabled.
-            return f"optional skip: {check.optional_skip_reason}"
-        if check.name in {"pytest-coverage", "diff-cover"}:
-            return f"optional skip: {check.optional_skip_reason}"
-
-    for required_path in check.required_paths:
-        if not Path(required_path).exists():
-            return f"required path {required_path!r} is absent"
-    if (
-        check.required_executable
-        and shutil.which(check.required_executable, path=tool_search_path()) is None
-    ):
-        return f"command not found: {check.required_executable!r}. Install dev dependencies."
-    return None
-
-
-def run_check(check: Check, max_lines: int, max_chars: int) -> CheckResult:
-    missing = missing_requirement(check)
-    if missing:
-        LOG_DIR.mkdir(exist_ok=True)
-        (LOG_DIR / f"{check.name}.log").write_text(missing + "\n", encoding="utf-8")
-        if missing.startswith("optional skip:"):
-            return CheckResult(
-                check.name,
-                passed=True,
-                output=missing.removeprefix("optional skip: "),
-                skipped=True,
-            )
-        return CheckResult(check.name, passed=False, output=missing)
-
-    try:
-        result = subprocess.run(  # nosec B603
-            check.command,
-            text=True,
-            capture_output=True,
-            env=command_env(),
-            check=False,
-        )
-    except OSError as exc:
-        return CheckResult(
-            check.name, passed=False, output=f"could not run {check.command!r}: {exc}"
-        )
-
-    full_output = ""
-    if result.stdout:
-        full_output += result.stdout
-    if result.stderr:
-        if full_output:
-            full_output += "\n"
-        full_output += result.stderr
-
-    LOG_DIR.mkdir(exist_ok=True)
-    (LOG_DIR / f"{check.name}.log").write_text(full_output, encoding="utf-8")
-
-    if result.returncode == 0:
-        return CheckResult(check.name, passed=True)
-
-    return CheckResult(
-        check.name,
-        passed=False,
-        output=summarize_check(check.name, full_output, max_lines, max_chars),
-    )
-
-
 def emit_layout_failure(failures: list[str]) -> CheckResult:
     LOG_DIR.mkdir(exist_ok=True)
     output = "Guardrail layout/configuration failed:\n\n" + "\n".join(
@@ -461,7 +362,7 @@ def collect_results(
     layout = layout_failures(config, args.profile)
     if layout:
         return [emit_layout_failure(layout)]
-    return [run_check(check, args.max_lines, args.max_chars) for check in selected]
+    return [run_check(check, LOG_DIR, args.max_lines, args.max_chars) for check in selected]
 
 
 def apply_optional_skip_policy(
