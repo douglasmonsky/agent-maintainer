@@ -117,6 +117,10 @@ def add_path_overrides(parser: argparse.ArgumentParser) -> None:
         help="Paths scanned by the file-length check. May be repeated or comma-separated.",
     )
     parser.add_argument(
+        "--file-length-baseline",
+        help="JSON baseline used by the file-length ratchet.",
+    )
+    parser.add_argument(
         "--vulture-path",
         action="append",
         help="Paths scanned by vulture. May be repeated or comma-separated.",
@@ -149,6 +153,7 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "interrogate_fail_under": args.interrogate_fail_under,
         "architecture_tool": args.architecture_tool,
         "allow_source_without_test_change": args.allow_source_without_test_change,
+        "file_length_baseline": args.file_length_baseline,
     }
 
     updates.update({field: value for field, value in tuple_overrides.items() if value is not None})

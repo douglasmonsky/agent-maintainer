@@ -155,6 +155,7 @@ test_roots = ["tests"]
 package_paths = ["src"]
 coverage_source = ["src"]
 file_length_paths = ["src", "tests", "scripts", ".codex/hooks"]
+file_length_baseline = ""
 vulture_paths = ["src", "tests", "scripts"]
 require_tests = true
 coverage_fail_under = 80
@@ -167,7 +168,7 @@ enable_interrogate = false
 interrogate_fail_under = 80
 ```
 
-Use `mode = "fresh-strict"` for new repositories where strict checks should block from day one. Use `mode = "legacy-ratchet"` for existing repositories where heavy gates should stay opt-in while the repo adopts changed-file and baseline discipline.
+Use `mode = "fresh-strict"` for new repositories where strict checks should block from day one. Use `mode = "legacy-ratchet"` for existing repositories where heavy gates should stay opt-in while the repo adopts changed-file and baseline discipline. In `legacy-ratchet`, `file_length_baseline` defaults to `.guardrails/file-length-baseline.json`.
 
 See `docs/fresh-strict.md` and `docs/legacy-ratchet.md` for preset details.
 
@@ -324,7 +325,7 @@ Full raw output is stored in `.verify-logs/` to keep agent context small.
 
 ## Profiles
 
-`fast` is designed for Codex `PostToolUse` after file edits. It runs cheap checks: file length, change budget, suppression budget, and Ruff. It still fails when required guardrail scripts or `.git` are missing, but it does not require configured source/test roots to exist yet.
+`fast` is designed for Codex `PostToolUse` after file edits. It runs cheap checks: file length, change budget, suppression budget, and Ruff. It still fails when required guardrail scripts or `.git` are missing, but it does not require configured source/test roots to exist yet. In `legacy-ratchet`, file-length failures are compared against the configured baseline so existing oversized files pass unless they worsen.
 
 `precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip. The bundled pre-commit hook runs this profile with `--staged`, so diff budgets inspect staged changes only. In `fresh-strict`, source changes without configured test-file changes fail in `precommit` unless `allow_source_without_test_change = true` is set for an already-covered change.
 

@@ -32,7 +32,7 @@ This repository uses Tach for its own guardrail script modules. Its `tach.toml` 
 
 ## Diff hygiene gates
 
-The file-length check stops giant files.
+The file-length check stops giant files. In `legacy-ratchet`, it can use `file_length_baseline` so old oversized files are tolerated only while they stay unchanged or improve; new and worsened oversized files fail.
 
 The change-budget check prevents huge or overly diffuse changes from becoming a single opaque commit. It uses configured `source_roots` and `test_roots`, not hard-coded `src/` and `tests/`. In pre-commit, `--staged` limits diff-budget checks to the staged patch. Nonfatal warnings are shown in the aggregate verifier output; in `fresh-strict`, source changes without configured test-file changes fail in `precommit` unless explicitly allowed.
 

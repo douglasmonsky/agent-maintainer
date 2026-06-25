@@ -14,6 +14,7 @@ markers near the top.
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess  # nosec B404
 import sys
 from pathlib import Path
@@ -66,6 +67,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--include-generated",
         action="store_true",
         help="Do not skip files marked as generated.",
+    )
+    parser.add_argument(
+        "--baseline",
+        help="JSON baseline for legacy-ratchet oversized files.",
+    )
+    parser.add_argument(
+        "--write-baseline",
+        help="Write a JSON baseline of current oversized files and exit.",
     )
     return parser.parse_args(argv)
 
@@ -214,6 +223,90 @@ def length_failures(paths: list[Path], max_physical: int, max_source: int) -> li
     return failures
 
 
+def baseline_key(path: Path) -> str:
+    """Return the stable repository-relative baseline key for a path."""
+
+    try:
+        candidate = path.resolve().relative_to(Path.cwd().resolve())
+    except ValueError:
+        candidate = path
+    return candidate.as_posix()
+
+
+def read_baseline(path: Path) -> dict[str, tuple[int, int]]:
+    """Read a file-length baseline as path keys mapped to physical/source counts."""
+
+    if not path.exists():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    files = payload.get("files", {})
+    if not isinstance(files, dict):
+        raise ValueError("file-length baseline 'files' must be an object")
+    baseline: dict[str, tuple[int, int]] = {}
+    for file_path, raw_counts in files.items():
+        if not isinstance(raw_counts, dict):
+            raise ValueError(f"file-length baseline record for {file_path!r} must be an object")
+        baseline[str(file_path)] = (
+            int(raw_counts.get("physical", 0)),
+            int(raw_counts.get("source", 0)),
+        )
+    return baseline
+
+
+def baseline_records(
+    paths: list[Path], max_physical: int, max_source: int
+) -> dict[str, dict[str, int]]:
+    """Return baseline records for files currently above configured limits."""
+
+    records: dict[str, dict[str, int]] = {}
+    for path in paths:
+        physical, source = count_lines(path)
+        if physical > max_physical or source > max_source:
+            records[baseline_key(path)] = {"physical": physical, "source": source}
+    return dict(sorted(records.items()))
+
+
+def write_baseline(path: Path, paths: list[Path], max_physical: int, max_source: int) -> None:
+    """Write a JSON baseline for currently oversized files."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "version": 1,
+        "limits": {"max_physical": max_physical, "max_source": max_source},
+        "files": baseline_records(paths, max_physical, max_source),
+    }
+    path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
+
+
+def ratchet_length_failures(
+    paths: list[Path],
+    max_physical: int,
+    max_source: int,
+    baseline_path: Path,
+) -> list[str]:
+    """Return only new or worsened file-length failures against a baseline."""
+
+    baseline = read_baseline(baseline_path)
+    failures: list[str] = []
+    for path in paths:
+        physical, source = count_lines(path)
+        if physical <= max_physical and source <= max_source:
+            continue
+        path_key = baseline_key(path)
+        previous = baseline.get(path_key)
+        if previous is None:
+            failures.append(
+                f"{path_key}: new oversized file has {physical} physical lines, "
+                f"{source} source lines (limits: {max_physical} physical, {max_source} source)"
+            )
+        elif physical > previous[0] or source > previous[1]:
+            failures.append(
+                f"{path_key}: worsened legacy file has {physical} physical lines, "
+                f"{source} source lines (baseline: {previous[0]} physical, {previous[1]} source)"
+            )
+    return failures
+
+
 def print_failures(failures: list[str]) -> None:
     """Print file-length failures with a refactoring-oriented hint."""
 
@@ -234,7 +327,14 @@ def main(argv: list[str]) -> int:
     max_source = args.max_source or config.file_length_max_source
     expanded = expand_paths(paths, args.changed_only)
     eligible = eligible_python_paths(expanded, args.include_generated)
-    failures = length_failures(eligible, max_physical, max_source)
+    if args.write_baseline:
+        write_baseline(Path(args.write_baseline), eligible, max_physical, max_source)
+        return 0
+    baseline_path = args.baseline or config.file_length_baseline
+    if baseline_path:
+        failures = ratchet_length_failures(eligible, max_physical, max_source, Path(baseline_path))
+    else:
+        failures = length_failures(eligible, max_physical, max_source)
 
     if failures:
         print_failures(failures)

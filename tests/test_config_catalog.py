@@ -33,6 +33,7 @@ pip_audit_args = ["-r", "requirements.txt"]
 enable_interrogate = true
 interrogate_fail_under = 31
 coverage_fail_under = 91
+file_length_baseline = ".guardrails/baseline.json"
 architecture_tool = "tach"
 """.strip(),
         encoding="utf-8",
@@ -49,6 +50,7 @@ architecture_tool = "tach"
     assert loaded.enable_interrogate is True
     assert loaded.interrogate_fail_under == CONFIG_INTERROGATE_THRESHOLD
     assert loaded.coverage_fail_under == CONFIG_COVERAGE_THRESHOLD
+    assert loaded.file_length_baseline == ".guardrails/baseline.json"
     assert loaded.architecture_tool == "tach"
 
 
@@ -93,6 +95,16 @@ def test_fresh_strict_mode_applies_before_explicit_config() -> None:
     assert loaded.enable_interrogate is True
 
 
+def test_legacy_ratchet_mode_sets_file_length_baseline() -> None:
+    loaded = guardrail_config.apply_mode(GuardrailConfig(), "legacy-ratchet")
+    checks = guardrail_catalog.make_checks(loaded, "HEAD", "origin/main")
+    file_length = next(check for check in checks if check.name == "file-length")
+
+    assert loaded.file_length_baseline == ".guardrails/file-length-baseline.json"
+    assert "--baseline" in file_length.command
+    assert ".guardrails/file-length-baseline.json" in file_length.command
+
+
 def test_environment_mode_applies_before_explicit_environment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -114,6 +126,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GUARDRAILS_ARCHITECTURE_TOOL", "tach")
     monkeypatch.setenv("GUARDRAILS_ENABLE_INTERROGATE", "true")
     monkeypatch.setenv("GUARDRAILS_INTERROGATE_FAIL_UNDER", "33")
+    monkeypatch.setenv("GUARDRAILS_FILE_LENGTH_BASELINE", ".guardrails/env-baseline.json")
 
     loaded = guardrail_config._apply_env(GuardrailConfig())
 
@@ -124,6 +137,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.architecture_tool == "tach"
     assert loaded.enable_interrogate is True
     assert loaded.interrogate_fail_under == ENV_INTERROGATE_THRESHOLD
+    assert loaded.file_length_baseline == ".guardrails/env-baseline.json"
 
 
 def test_path_matching_handles_roots_and_relative_prefixes() -> None:
