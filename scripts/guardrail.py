@@ -11,10 +11,12 @@ from pathlib import Path
 from verify_quiet import main as verify_main
 
 USAGE = """Usage:
+  python scripts/guardrail.py bootstrap
   python scripts/guardrail.py install
   python scripts/guardrail.py verify [verify options]
 
 Examples:
+  python scripts/guardrail.py bootstrap
   python scripts/guardrail.py install
   python scripts/guardrail.py verify --profile fast
   python scripts/guardrail.py verify --profile precommit
@@ -28,6 +30,8 @@ def main(argv: list[str]) -> int:
         return 0
 
     command, *command_args = argv
+    if command == "bootstrap":
+        return bootstrap()
     if command == "install":
         return install()
     if command == "verify":
@@ -38,11 +42,64 @@ def main(argv: list[str]) -> int:
     return 2
 
 
+def bootstrap() -> int:
+    repo_root = Path(__file__).resolve().parents[1]
+    python_path = ensure_virtualenv(repo_root)
+    if python_path is None:
+        return 1
+
+    dependency_status = install_dependencies(repo_root, python_path)
+    if dependency_status != 0:
+        return dependency_status
+
+    return install()
+
+
 def install() -> int:
     repo_root = Path(__file__).resolve().parents[1]
     pre_commit_status = install_pre_commit(repo_root)
     report_codex_hooks(repo_root)
     return pre_commit_status
+
+
+def ensure_virtualenv(repo_root: Path) -> Path | None:
+    virtualenv_python = repo_root / ".venv" / "bin" / "python"
+    if virtualenv_python.exists():
+        return virtualenv_python
+
+    system_python = shutil.which("python3") or shutil.which("python")
+    if system_python is None:
+        print("FAIL bootstrap: python3 command not found.", file=sys.stderr)
+        return None
+
+    print("Creating .venv with the active Python interpreter.", flush=True)
+    result = subprocess.run(  # nosec B603
+        [system_python, "-m", "venv", ".venv"],
+        cwd=repo_root,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+
+    return virtualenv_python
+
+
+def install_dependencies(repo_root: Path, python_path: Path) -> int:
+    dependency_file = repo_root / "config" / "dev-dependencies.txt"
+    if not dependency_file.exists():
+        print("FAIL bootstrap: config/dev-dependencies.txt is not present.", file=sys.stderr)
+        return 1
+
+    dependency_path = dependency_file.relative_to(repo_root)
+    print(f"Installing dev dependencies from {dependency_path}.", flush=True)
+    result = subprocess.run(  # nosec B603
+        [str(python_path), "-m", "pip", "install", "-r", str(dependency_path)],
+        cwd=repo_root,
+        text=True,
+        check=False,
+    )
+    return result.returncode
 
 
 def install_pre_commit(repo_root: Path) -> int:

@@ -2,7 +2,7 @@
 
 ## Everyday gates
 
-`scripts/guardrail.py` is the canonical entrypoint. Use `python3 scripts/guardrail.py verify --profile precommit` for local completion checks, `python3 scripts/guardrail.py verify --profile full` for deeper review, and `python3 scripts/guardrail.py install` to install local hooks.
+`scripts/guardrail.py` is the canonical entrypoint. Use `python3 scripts/guardrail.py bootstrap` for one-command local setup, `python3 scripts/guardrail.py verify --profile precommit` for local completion checks, `python3 scripts/guardrail.py verify --profile full` for deeper review, and `python3 scripts/guardrail.py install` to install local hooks without reinstalling dependencies.
 
 Ruff handles formatting, import order, linting, and McCabe complexity feedback. It is the fastest feedback loop and should run after most edits.
 

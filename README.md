@@ -51,6 +51,14 @@ Or with pip:
 python -m pip install -r config/dev-dependencies.txt
 ```
 
+For the shortest local path with pip, run:
+
+```bash
+python3 scripts/guardrail.py bootstrap
+```
+
+This creates `.venv` when needed, installs `config/dev-dependencies.txt`, installs the pre-commit hook, and reports whether Codex hooks are configured.
+
 Python 3.11+ is recommended. Python 3.10 and older require `tomli` in the same environment that runs the verifier. The Codex hooks prefer `.venv/bin/python` or `venv/bin/python` when present, so installing dev dependencies into a project virtualenv is the most reliable local setup.
 
 Then merge `config/pyproject.guardrails.toml` into your `pyproject.toml`.
@@ -81,7 +89,7 @@ Install local guardrail hooks:
 python3 scripts/guardrail.py install
 ```
 
-This installs the pre-commit hook when `pre-commit` is available and reports whether Codex hooks are configured. If you use Codex, review and trust the repo-local hooks through Codex's hook review flow.
+This keeps dependency installation separate and only installs the pre-commit hook when `pre-commit` is available. If you use Codex, review and trust the repo-local hooks through Codex's hook review flow.
 
 ## Configure paths
 
@@ -146,6 +154,12 @@ Quiet local verification:
 python3 scripts/guardrail.py verify --profile full
 ```
 
+One-command local bootstrap:
+
+```bash
+python3 scripts/guardrail.py bootstrap
+```
+
 Fast check after edits:
 
 ```bash
@@ -167,6 +181,7 @@ python3 scripts/guardrail.py verify --profile ci --base-ref origin/main --compar
 If you use `just`:
 
 ```bash
+just bootstrap
 just verify
 just verify-fast
 just verify-precommit

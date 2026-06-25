@@ -1,5 +1,8 @@
 # Canonical developer commands. All agent instructions should point here.
 
+bootstrap:
+    python3 scripts/guardrail.py bootstrap
+
 verify:
     python3 scripts/guardrail.py verify --profile full
 
