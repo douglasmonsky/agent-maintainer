@@ -2,6 +2,8 @@
 
 ## Everyday gates
 
+`scripts/guardrail.py` is the canonical entrypoint. Use `python3 scripts/guardrail.py verify --profile precommit` for local completion checks, `python3 scripts/guardrail.py verify --profile full` for deeper review, and `python3 scripts/guardrail.py install` to install local hooks.
+
 Ruff handles formatting, import order, linting, and McCabe complexity feedback. It is the fastest feedback loop and should run after most edits.
 
 Pyright enforces type discipline. It prevents vague interfaces and catches many integration mistakes before runtime.
@@ -20,7 +22,7 @@ Import Linter enforces architectural boundaries once `.importlinter` is configur
 
 The file-length check stops giant files.
 
-The change-budget check prevents huge or overly diffuse changes from becoming a single opaque commit. It uses configured `source_roots` and `test_roots`, not hard-coded `src/` and `tests/`.
+The change-budget check prevents huge or overly diffuse changes from becoming a single opaque commit. It uses configured `source_roots` and `test_roots`, not hard-coded `src/` and `tests/`. In pre-commit, `--staged` limits diff-budget checks to the staged patch.
 
 The suppression-budget check prevents broad `noqa`, `type: ignore`, `pylint: disable`, and `pragma: no cover` usage from hiding quality failures.
 

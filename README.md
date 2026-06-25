@@ -9,7 +9,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Oversized Python files | `scripts/check_file_lengths.py` |
 | Huge or diffuse changes | `scripts/check_change_budget.py` |
 | Broad suppressions | `scripts/check_suppression_budget.py` |
-| Required repo layout | `scripts/verify_quiet.py` layout check |
+| Required repo layout | `scripts/guardrail.py verify` layout check |
 | Style and simple defects | Ruff |
 | Type discipline | Pyright |
 | Tests and total coverage | Pytest + pytest-cov |
@@ -68,13 +68,13 @@ cp config/importlinter.example .importlinter
 # Then replace your_package with your actual root package.
 ```
 
-Install pre-commit:
+Install local guardrail hooks:
 
 ```bash
-pre-commit install
+python3 scripts/guardrail.py install
 ```
 
-If you use Codex, review and trust the repo-local hooks through Codex's hook review flow.
+This installs the pre-commit hook when `pre-commit` is available and reports whether Codex hooks are configured. If you use Codex, review and trust the repo-local hooks through Codex's hook review flow.
 
 ## Configure paths
 
@@ -117,13 +117,13 @@ GUARDRAILS_SOURCE_ROOTS=my_package,tools \
 GUARDRAILS_TEST_ROOTS=tests \
 GUARDRAILS_COVERAGE_SOURCE=my_package \
 GUARDRAILS_PACKAGE_PATHS=my_package \
-python scripts/verify_quiet.py --profile full
+python3 scripts/guardrail.py verify --profile full
 ```
 
 CLI overrides are available for one-off runs:
 
 ```bash
-python scripts/verify_quiet.py --profile full \
+python3 scripts/guardrail.py verify --profile full \
   --source-root my_package \
   --test-root tests \
   --coverage-source my_package \
@@ -135,25 +135,25 @@ python scripts/verify_quiet.py --profile full \
 Quiet local verification:
 
 ```bash
-python scripts/verify_quiet.py --profile full
+python3 scripts/guardrail.py verify --profile full
 ```
 
 Fast check after edits:
 
 ```bash
-python scripts/verify_quiet.py --profile fast
+python3 scripts/guardrail.py verify --profile fast
 ```
 
 Commit-level check:
 
 ```bash
-python scripts/verify_quiet.py --profile precommit
+python3 scripts/guardrail.py verify --profile precommit
 ```
 
 CI-level check:
 
 ```bash
-python scripts/verify_quiet.py --profile ci --base-ref origin/main --compare-branch origin/main
+python3 scripts/guardrail.py verify --profile ci --base-ref origin/main --compare-branch origin/main
 ```
 
 If you use `just`:
@@ -202,7 +202,7 @@ Full raw output is stored in `.verify-logs/` to keep agent context small.
 
 `fast` is designed for Codex `PostToolUse` after file edits. It runs cheap checks: file length, change budget, suppression budget, and Ruff. It still fails when required guardrail scripts or `.git` are missing, but it does not require configured source/test roots to exist yet.
 
-`precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip.
+`precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip. The bundled pre-commit hook runs this profile with `--staged`, so diff budgets inspect staged changes only.
 
 `full` is designed for local deep verification. It adds Radon reports, Pylint, Import Linter when configured, deptry, vulture, Bandit, and pip-audit when explicitly enabled.
 
@@ -240,12 +240,14 @@ pip_audit_args = ["-r", "requirements.txt"]
 Or enable it only in CI with an environment variable:
 
 ```bash
-GUARDRAILS_ENABLE_PIP_AUDIT=1 GUARDRAILS_PIP_AUDIT_ARGS="-r requirements.txt" python scripts/verify_quiet.py --profile ci
+GUARDRAILS_ENABLE_PIP_AUDIT=1 GUARDRAILS_PIP_AUDIT_ARGS="-r requirements.txt" python3 scripts/guardrail.py verify --profile ci
 ```
 
 ## Notes
 
 Start strict for new repositories. For existing repositories, start with `fast` and `precommit`, then promote the heavier checks after you have a clean baseline.
+
+This repository is configured to use the kit on itself. After changing guardrail code or docs, run `python3 scripts/guardrail.py verify --profile precommit`; for broader changes, run `python3 scripts/guardrail.py verify --profile full`.
 
 Generated files are skipped by the file-length check when they contain common generated-file markers near the top. Lock files and binary assets are excluded from the change-budget check.
 

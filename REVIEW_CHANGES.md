@@ -4,7 +4,7 @@ This revision addresses the main review findings from the first package.
 
 ## Required checks no longer skip silently
 
-`scripts/verify_quiet.py` now distinguishes required guardrail assets from optional integrations.
+`scripts/guardrail.py verify` now distinguishes required guardrail assets from optional integrations.
 
 Required failures include missing helper scripts, missing `.git` for diff-based checks, missing configured source roots in precommit/full/ci, missing configured test roots when tests are required, missing coverage sources, missing package paths, and missing executables for selected required checks.
 
@@ -35,7 +35,13 @@ The hook scripts now derive:
 repo_root = Path(__file__).resolve().parents[2]
 ```
 
-They run `scripts/verify_quiet.py` with `cwd=repo_root` and an absolute verifier path. When `.venv/bin/python` or `venv/bin/python` exists, hooks use that interpreter for the verifier.
+They run `scripts/guardrail.py verify` with `cwd=repo_root` and an absolute verifier path. When `.venv/bin/python` or `venv/bin/python` exists, hooks use that interpreter for the verifier.
+
+## Bootstrap command and staged pre-commit diffs
+
+`python3 scripts/guardrail.py install` installs the local pre-commit hook and reports Codex hook configuration.
+
+The pre-commit hook calls `python3 scripts/guardrail.py verify --profile precommit --staged`, so the change-budget and suppression-budget checks inspect the staged patch instead of unrelated working-tree edits.
 
 ## CI no longer masks editable-install failures
 

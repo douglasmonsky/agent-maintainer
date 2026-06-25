@@ -1,20 +1,20 @@
 # Canonical developer commands. All agent instructions should point here.
 
 verify:
-    python scripts/guardrail.py verify --profile full
+    python3 scripts/guardrail.py verify --profile full
 
 verify-fast:
-    python scripts/guardrail.py verify --profile fast
+    python3 scripts/guardrail.py verify --profile fast
 
 verify-precommit:
-    python scripts/guardrail.py verify --profile precommit
+    python3 scripts/guardrail.py verify --profile precommit
 
 verify-ci:
-    python scripts/guardrail.py verify --profile ci --base-ref origin/main --compare-branch origin/main
+    python3 scripts/guardrail.py verify --profile ci --base-ref origin/main --compare-branch origin/main
 
 # Example for a flat package layout:
 verify-flat PACKAGE:
-    python scripts/guardrail.py verify --profile full --source-root {{PACKAGE}} --coverage-source {{PACKAGE}} --package-path {{PACKAGE}} --test-root tests
+    python3 scripts/guardrail.py verify --profile full --source-root {{PACKAGE}} --coverage-source {{PACKAGE}} --package-path {{PACKAGE}} --test-root tests
 
 verify-full-output:
     ruff format --check .
