@@ -94,7 +94,8 @@ def _as_str(value: object, field_name: str) -> str:
     raise TypeError(f"{field_name} must be a non-empty string")
 
 
-def _read_pyproject(path: Path = Path("pyproject.toml")) -> dict[str, Any]:
+def _read_pyproject(path: Path | None = None) -> dict[str, Any]:
+    path = path or Path("pyproject.toml")
     if not path.exists():
         return {}
     with path.open("rb") as handle:
@@ -140,17 +141,21 @@ def _apply_pyproject(config: GuardrailConfig, raw: dict[str, Any]) -> GuardrailC
     }
 
     for field_name in tuple_fields:
-        if field_name in raw:
-            updates[field_name] = _as_tuple(raw[field_name], field_name)
+        raw_value = raw.get(field_name)
+        if raw_value is not None:
+            updates[field_name] = _as_tuple(raw_value, field_name)
     for field_name in bool_fields:
-        if field_name in raw:
-            updates[field_name] = _as_bool(raw[field_name], field_name)
+        raw_value = raw.get(field_name)
+        if raw_value is not None:
+            updates[field_name] = _as_bool(raw_value, field_name)
     for field_name in int_fields:
-        if field_name in raw:
-            updates[field_name] = _as_int(raw[field_name], field_name)
+        raw_value = raw.get(field_name)
+        if raw_value is not None:
+            updates[field_name] = _as_int(raw_value, field_name)
     for field_name in str_fields:
-        if field_name in raw:
-            updates[field_name] = _as_str(raw[field_name], field_name)
+        raw_value = raw.get(field_name)
+        if raw_value is not None:
+            updates[field_name] = _as_str(raw_value, field_name)
 
     return replace(config, **updates)
 
@@ -253,6 +258,6 @@ def path_matches_roots(path: str, roots: tuple[str, ...]) -> bool:
         clean_root = root.replace("\\", "/").strip("/")
         if clean_root in {"", "."}:
             return True
-        if normalized == clean_root or normalized.startswith(clean_root + "/"):
+        if normalized == clean_root or normalized.startswith(f"{clean_root}/"):
             return True
     return False

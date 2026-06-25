@@ -108,13 +108,18 @@ def suppression_failures(added: list[tuple[str, str]], max_new_suppressions: int
     suppressions = [(path, line) for path, line in added if contains_suppression(line)]
     issues = [issue for path, line in added for issue in classify(path, line)]
 
-    failures = [f"{issue.path}: {issue.reason}: {issue.line.strip()}" for issue in issues]
+    failures = [format_suppression_failure(issue) for issue in issues]
     if len(suppressions) > max_new_suppressions:
         failures.append(
             f"Too many new suppression comments: {len(suppressions)} "
             f"(limit: {max_new_suppressions})."
         )
     return failures
+
+
+def format_suppression_failure(issue: Suppression) -> str:
+    stripped_line = issue.line.strip()
+    return f"{issue.path}: {issue.reason}: {stripped_line}"
 
 
 def print_failures(failures: list[str]) -> None:
@@ -145,4 +150,4 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    sys.exit(main(sys.argv[1:]))

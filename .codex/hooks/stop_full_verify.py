@@ -70,18 +70,19 @@ def main() -> int:
 
     output = (result.stdout or result.stderr or "Verification failed with no output.").strip()
     if len(output) > MAX_CONTEXT:
-        output = output[:MAX_CONTEXT].rstrip() + "\n... truncated. Full logs are in .verify-logs/."
+        truncated_output = output[:MAX_CONTEXT].rstrip()
+        output = f"{truncated_output}\n... truncated. Full logs are in .verify-logs/."
 
     return emit(
         {
             "decision": "block",
             "reason": (
                 "Final verification failed. Fix the issues below before finishing. "
-                "Do not lower thresholds or add broad suppressions.\n\n" + output
+                f"Do not lower thresholds or add broad suppressions.\n\n{output}"
             ),
         }
     )
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

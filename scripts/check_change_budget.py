@@ -30,14 +30,16 @@ EXCLUDED_SUFFIXES = (
     ".webp",
     ".pdf",
 )
-EXCLUDED_NAMES = {
-    "uv.lock",
-    "poetry.lock",
-    "pdm.lock",
-    "package-lock.json",
-    "pnpm-lock.yaml",
-    "yarn.lock",
-}
+EXCLUDED_NAMES = frozenset(
+    (
+        "uv.lock",
+        "poetry.lock",
+        "pdm.lock",
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+    )
+)
 
 
 @dataclass(frozen=True)
@@ -263,4 +265,4 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    sys.exit(main(sys.argv[1:]))

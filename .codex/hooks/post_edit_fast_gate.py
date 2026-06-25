@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import subprocess  # nosec B404
 import sys
+from contextlib import suppress
 from pathlib import Path
 
 MAX_CONTEXT = 6_000
@@ -40,10 +41,8 @@ def emit_block(reason: str, additional_context: str) -> int:
 
 
 def main() -> int:
-    try:
-        _payload = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        _payload = {}
+    with suppress(json.JSONDecodeError):
+        json.load(sys.stdin)
 
     repo_root = Path(__file__).resolve().parents[2]
     verifier = repo_root / "scripts" / "guardrail.py"
@@ -75,16 +74,17 @@ def main() -> int:
 
     output = (result.stdout or result.stderr or "Verification failed with no output.").strip()
     if len(output) > MAX_CONTEXT:
-        output = output[:MAX_CONTEXT].rstrip() + "\n... truncated. Full logs are in .verify-logs/."
+        truncated_output = output[:MAX_CONTEXT].rstrip()
+        output = f"{truncated_output}\n... truncated. Full logs are in .verify-logs/."
 
     return emit_block(
         "Fast repository guardrails failed after a file edit.",
         (
             "Repair these issues before continuing. Do not suppress the checks unless the "
-            "suppression is narrow and justified.\n\n" + output
+            f"suppression is narrow and justified.\n\n{output}"
         ),
     )
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

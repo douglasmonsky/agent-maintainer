@@ -80,4 +80,4 @@ def report_codex_hooks(repo_root: Path) -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    sys.exit(main(sys.argv[1:]))

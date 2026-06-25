@@ -70,7 +70,7 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
     missing = missing_requirement(check)
     if missing:
         log_dir.mkdir(exist_ok=True)
-        (log_dir / f"{check.name}.log").write_text(missing + "\n", encoding="utf-8")
+        (log_dir / f"{check.name}.log").write_text(f"{missing}\n", encoding="utf-8")
         if missing.startswith("optional skip:"):
             return CheckResult(
                 check.name,

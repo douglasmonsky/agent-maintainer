@@ -20,22 +20,24 @@ from pathlib import Path
 
 from guardrail_config import load_config
 
-EXCLUDED_DIRS = {
-    ".git",
-    ".hg",
-    ".svn",
-    ".venv",
-    "venv",
-    "env",
-    "__pycache__",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".tox",
-    "build",
-    "dist",
-    "node_modules",
-}
+EXCLUDED_DIRS = frozenset(
+    (
+        ".git",
+        ".hg",
+        ".svn",
+        ".venv",
+        "venv",
+        "env",
+        "__pycache__",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".tox",
+        "build",
+        "dist",
+        "node_modules",
+    )
+)
 
 GENERATED_MARKERS = (
     "@generated",
@@ -202,4 +204,4 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    sys.exit(main(sys.argv[1:]))

@@ -34,7 +34,7 @@ from guardrail_reporting import print_failures, print_success
 LOG_DIR = Path(".verify-logs")
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
-VALID_PYRIGHT_MODES = frozenset({"off", "basic", "standard", "strict"})
+VALID_PYRIGHT_MODES = frozenset(("off", "basic", "standard", "strict"))
 
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
@@ -171,19 +171,18 @@ def layout_failures(config: GuardrailConfig, profile: str) -> list[str]:
             ]
         )
     if config.pyright_type_checking_mode not in VALID_PYRIGHT_MODES:
-        failures.append(
-            "pyright_type_checking_mode must be one of: " + ", ".join(sorted(VALID_PYRIGHT_MODES))
-        )
+        valid_modes = ", ".join(sorted(VALID_PYRIGHT_MODES))
+        failures.append(f"pyright_type_checking_mode must be one of: {valid_modes}")
 
     return [failure for failure in failures if failure is not None]
 
 
 def emit_layout_failure(failures: list[str]) -> CheckResult:
     LOG_DIR.mkdir(exist_ok=True)
-    output = "Guardrail layout/configuration failed:\n\n" + "\n".join(
-        f"  {failure}" for failure in failures
+    output = "Guardrail layout/configuration failed:\n\n{failures}".format(
+        failures="\n".join(f"  {failure}" for failure in failures)
     )
-    (LOG_DIR / "guardrail-layout.log").write_text(output + "\n", encoding="utf-8")
+    (LOG_DIR / "guardrail-layout.log").write_text(f"{output}\n", encoding="utf-8")
     return CheckResult("guardrail-layout", passed=False, output=output)
 
 
@@ -236,4 +235,4 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    sys.exit(main(sys.argv[1:]))

@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
 """Compact reporting helpers for guardrail verification."""
 
 from __future__ import annotations
 
 import json
 from typing import Any
+
+PYRIGHT_DIAGNOSTIC_LIMIT = 50
 
 
 def nonblank_lines(text: str) -> list[str]:
@@ -24,7 +25,8 @@ def truncate_lines(lines: list[str], max_lines: int) -> list[str]:
 def truncate_chars(text: str, max_chars: int) -> str:
     if len(text) <= max_chars:
         return text
-    return text[:max_chars].rstrip() + "\n... output truncated. See .verify-logs/ for full output."
+    truncated_text = text[:max_chars].rstrip()
+    return f"{truncated_text}\n... output truncated. See .verify-logs/ for full output."
 
 
 def compact_output(text: str, max_lines: int, max_chars: int) -> str:
@@ -62,7 +64,7 @@ def summarize_pyright(raw: str) -> str | None:
     if not diagnostics:
         return pyright_summary_payload(payload)
 
-    lines = [format_diagnostic(diagnostic) for diagnostic in diagnostics[:50]]
+    lines = [format_diagnostic(diagnostic) for diagnostic in diagnostics[:PYRIGHT_DIAGNOSTIC_LIMIT]]
 
     omitted = len(diagnostics) - len(lines)
     if omitted > 0:
