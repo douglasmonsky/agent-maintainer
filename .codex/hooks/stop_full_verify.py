@@ -36,7 +36,7 @@ def main() -> int:
         return emit({"continue": True})
 
     repo_root = Path(__file__).resolve().parents[2]
-    verifier = repo_root / "scripts" / "verify_quiet.py"
+    verifier = repo_root / "scripts" / "guardrail.py"
 
     if not verifier.exists():
         return emit(
@@ -50,7 +50,15 @@ def main() -> int:
         )
 
     result = subprocess.run(  # nosec B603
-        [verifier_python(repo_root), str(verifier), "--profile", "precommit", "--base-ref", "HEAD"],
+        [
+            verifier_python(repo_root),
+            str(verifier),
+            "verify",
+            "--profile",
+            "precommit",
+            "--base-ref",
+            "HEAD",
+        ],
         cwd=repo_root,
         text=True,
         capture_output=True,

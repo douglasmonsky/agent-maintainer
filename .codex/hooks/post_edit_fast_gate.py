@@ -46,16 +46,24 @@ def main() -> int:
         _payload = {}
 
     repo_root = Path(__file__).resolve().parents[2]
-    verifier = repo_root / "scripts" / "verify_quiet.py"
+    verifier = repo_root / "scripts" / "guardrail.py"
 
     if not verifier.exists():
         return emit_block(
             "Repository guardrail verifier is missing.",
-            f"Expected verifier at {verifier}. Restore scripts/verify_quiet.py before continuing.",
+            f"Expected verifier at {verifier}. Restore scripts/guardrail.py before continuing.",
         )
 
     result = subprocess.run(  # nosec B603
-        [verifier_python(repo_root), str(verifier), "--profile", "fast", "--base-ref", "HEAD"],
+        [
+            verifier_python(repo_root),
+            str(verifier),
+            "verify",
+            "--profile",
+            "fast",
+            "--base-ref",
+            "HEAD",
+        ],
         cwd=repo_root,
         text=True,
         capture_output=True,

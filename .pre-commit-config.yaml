@@ -3,6 +3,6 @@ repos:
     hooks:
       - id: verify-quiet-precommit
         name: quiet repository verification
-        entry: python scripts/verify_quiet.py --profile precommit --base-ref HEAD
+        entry: python scripts/guardrail.py verify --profile precommit --base-ref HEAD --staged
         language: system
         pass_filenames: false
