@@ -12,6 +12,16 @@ configuration first, then regenerate it.
 - Preserve the configured architecture boundaries instead of adding imports around them.
 - Add or update tests for behavior changes unless tests are explicitly disabled.
 
+## File Inspection Safety
+
+- Prefer `rg --files` or `git ls-files` when enumerating files to inspect.
+- Restrict bulk reads to relevant text/source globs instead of every file under a tree.
+- Do not read generated or binary artifacts unless the task explicitly targets them:
+  `__pycache__`, `*.pyc`, `.venv`, `venv`, `.verify-logs`, `.coverage`,
+  `coverage.xml`, `htmlcov`, `build`, and `dist`.
+- When a broad command is unavoidable, exclude generated, binary, cache, and
+  virtualenv paths before printing file contents.
+
 ## Active Configuration
 
 - Mode: `fresh-strict`

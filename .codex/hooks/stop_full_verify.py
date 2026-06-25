@@ -6,9 +6,20 @@ from __future__ import annotations
 import json
 import subprocess  # nosec B404
 import sys
+import time
 from pathlib import Path
 
+from hook_audit import (
+    HookAuditRecord,
+    duration_since,
+    record_hook_result,
+    status_for_exit,
+    utc_timestamp,
+)
+
 MAX_CONTEXT = 8_000
+HOOK_NAME = "Stop"
+PROFILE = "precommit"
 
 
 def verifier_python(repo_root: Path) -> str:
@@ -43,8 +54,24 @@ def main() -> int:
 
     repo_root = Path(__file__).resolve().parents[2]
     verifier = repo_root / "scripts" / "guardrail.py"
+    started_at = utc_timestamp()
+    started = time.monotonic()
 
     if not verifier.exists():
+        record_hook_result(
+            repo_root,
+            HookAuditRecord(
+                hook_name=HOOK_NAME,
+                profile=PROFILE,
+                status="failed",
+                command=(),
+                exit_code=None,
+                started_at=started_at,
+                ended_at=utc_timestamp(),
+                duration_seconds=duration_since(started),
+                reason="missing verifier",
+            ),
+        )
         return emit(
             {
                 "decision": "block",
@@ -55,21 +82,35 @@ def main() -> int:
             }
         )
 
+    command = [
+        verifier_python(repo_root),
+        "-m",
+        "scripts.guardrail",
+        "verify",
+        "--profile",
+        PROFILE,
+        "--base-ref",
+        "HEAD",
+    ]
     result = subprocess.run(  # nosec B603
-        [
-            verifier_python(repo_root),
-            "-m",
-            "scripts.guardrail",
-            "verify",
-            "--profile",
-            "precommit",
-            "--base-ref",
-            "HEAD",
-        ],
+        command,
         cwd=repo_root,
         text=True,
         capture_output=True,
         check=False,
+    )
+    record_hook_result(
+        repo_root,
+        HookAuditRecord(
+            hook_name=HOOK_NAME,
+            profile=PROFILE,
+            status=status_for_exit(result.returncode),
+            command=tuple(command),
+            exit_code=result.returncode,
+            started_at=started_at,
+            ended_at=utc_timestamp(),
+            duration_seconds=duration_since(started),
+        ),
     )
 
     if result.returncode == 0:

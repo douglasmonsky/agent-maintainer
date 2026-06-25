@@ -20,6 +20,8 @@ Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable run
 metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails. The
 terminal output stays compact; agents should use these artifacts for command,
 exit-code, threshold, log-path, and rerun context.
+Codex hooks append local execution evidence to `.verify-logs/hooks.jsonl`, and
+`doctor` reports the latest audited hook status.
 
 ## Maintainability gates
 
@@ -82,4 +84,5 @@ Missing required roots fail in `precommit`, `full`, and `ci`; optional integrati
 `doctor` checks that verifier diagnostics are coherent: logs exist, the manifest
 is present and newer than the latest raw log, manifest-referenced logs and
 artifacts still exist, and `LAST_FAILURE.md` matches the pass/fail state of the
-latest manifest.
+latest manifest. It also checks the Codex hook audit trail when repo-local hooks
+are enabled.
