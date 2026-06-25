@@ -32,17 +32,17 @@ verify-full-output:
     ruff format --check .
     ruff check .
     python3 -m scripts.run_pyright
-    pytest -q --tb=short --disable-warnings --cov=scripts --cov=.codex/hooks --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=80 tests
-    radon cc scripts .codex/hooks -a -s
-    radon mi scripts .codex/hooks -s
-    xenon --max-absolute B --max-modules A --max-average A scripts .codex/hooks
-    pylint scripts .codex/hooks --score=n
+    pytest -q --tb=short --disable-warnings --cov=scripts --cov=.codex/hooks --cov=guardrail_lib --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=80 tests
+    radon cc scripts .codex/hooks guardrail_lib -a -s
+    radon mi scripts .codex/hooks guardrail_lib -s
+    xenon --max-absolute B --max-modules A --max-average A scripts .codex/hooks guardrail_lib
+    pylint scripts .codex/hooks guardrail_lib --score=n
     python3 -m scripts.check_tach_config --strict-root-module
     tach check --exact
-    interrogate --fail-under=80 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic scripts .codex/hooks
+    interrogate --fail-under=80 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic scripts .codex/hooks guardrail_lib
     deptry .
-    vulture scripts .codex/hooks tests
-    bandit -q -r scripts .codex/hooks
+    vulture scripts .codex/hooks guardrail_lib tests
+    bandit -q -r scripts .codex/hooks guardrail_lib
     pip-audit -r config/dev-lock.txt
 
 clean-verify-logs:

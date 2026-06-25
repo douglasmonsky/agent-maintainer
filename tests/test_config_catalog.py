@@ -120,6 +120,12 @@ def test_legacy_ratchet_mode_sets_file_length_baseline() -> None:
     assert ".guardrails/file-length-baseline.json" in file_length.command
 
 
+def test_config_facade_preserves_public_entrypoints() -> None:
+    assert guardrail_config.load_config is guardrail_config_loader.load_config
+    assert guardrail_config.apply_mode is guardrail_config_modes.apply_mode
+    assert guardrail_config.GuardrailConfig is guardrail_config_schema.GuardrailConfig
+
+
 def test_environment_mode_applies_before_explicit_environment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

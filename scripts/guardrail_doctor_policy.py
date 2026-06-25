@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from guardrail_lib.config import schema as guardrail_config_schema
 from scripts import guardrail_config
 from scripts.guardrail_doctor_models import ERROR, OK, WARNING, DoctorResult
 
@@ -48,7 +49,7 @@ def check_pip_audit_safety(config: guardrail_config.GuardrailConfig) -> DoctorRe
     if config.pip_audit_args:
         args = " ".join(config.pip_audit_args)
         return DoctorResult("pip-audit-config", OK, f"pip-audit input: {args}")
-    status = ERROR if config.mode == guardrail_config.FRESH_STRICT_MODE else WARNING
+    status = ERROR if config.mode == guardrail_config_schema.FRESH_STRICT_MODE else WARNING
     return DoctorResult(
         "pip-audit-config",
         status,

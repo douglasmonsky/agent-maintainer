@@ -6,11 +6,11 @@ import argparse
 import os
 from dataclasses import replace
 
-from scripts.guardrail_config import (
+from guardrail_lib.config.modes import apply_mode
+from guardrail_lib.config.schema import (
     VALID_ARCHITECTURE_TOOLS,
     VALID_MODES,
     GuardrailConfig,
-    apply_mode,
 )
 
 DEFAULT_MAX_LINES_PER_FAILURE = 50

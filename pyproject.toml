@@ -1,12 +1,12 @@
 [tool.ai_guardrails]
 mode = "fresh-strict"
 architecture_tool = "tach"
-source_roots = ["scripts", ".codex/hooks"]
+source_roots = ["scripts", ".codex/hooks", "guardrail_lib"]
 test_roots = ["tests"]
-package_paths = ["scripts", ".codex/hooks"]
-coverage_source = ["scripts", ".codex/hooks"]
-file_length_paths = ["scripts", ".codex/hooks", "tests"]
-vulture_paths = ["scripts", ".codex/hooks", "tests"]
+package_paths = ["scripts", ".codex/hooks", "guardrail_lib"]
+coverage_source = ["scripts", ".codex/hooks", "guardrail_lib"]
+file_length_paths = ["scripts", ".codex/hooks", "guardrail_lib", "tests"]
+vulture_paths = ["scripts", ".codex/hooks", "guardrail_lib", "tests"]
 require_tests = true
 coverage_fail_under = 80
 diff_cover_fail_under = 90
@@ -64,6 +64,7 @@ testpaths = ["tests"]
 known_first_party = [
   "check_pip_audit_config",
   "check_tach_config",
+  "guardrail_lib",
   "scripts",
   "guardrail_args",
   "guardrail_catalog",

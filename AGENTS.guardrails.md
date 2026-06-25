@@ -15,10 +15,10 @@ configuration first, then regenerate it.
 ## Active Configuration
 
 - Mode: `fresh-strict`
-- Source roots: `scripts`, `.codex/hooks`
+- Source roots: `scripts`, `.codex/hooks`, `guardrail_lib`
 - Test roots: `tests`
-- Package paths: `scripts`, `.codex/hooks`
-- Coverage source: `scripts`, `.codex/hooks`
+- Package paths: `scripts`, `.codex/hooks`, `guardrail_lib`
+- Coverage source: `scripts`, `.codex/hooks`, `guardrail_lib`
 - Architecture backend: `tach`
 - Tests required: `true`
 - Source-without-test-change errors in profiles: `precommit`
