@@ -12,6 +12,8 @@ MAX_CONTEXT = 8_000
 
 
 def verifier_python(repo_root: Path) -> str:
+    """Prefer the repository virtualenv when running final verification."""
+
     for relative in (".venv/bin/python", "venv/bin/python"):
         candidate = repo_root / relative
         if candidate.exists():
@@ -20,11 +22,15 @@ def verifier_python(repo_root: Path) -> str:
 
 
 def emit(payload: dict[str, object]) -> int:
+    """Emit one Codex Stop-hook response payload."""
+
     print(json.dumps(payload))
     return 0
 
 
 def main() -> int:
+    """Run precommit verification before allowing the agent to finish."""
+
     try:
         payload = json.load(sys.stdin)
     except json.JSONDecodeError:

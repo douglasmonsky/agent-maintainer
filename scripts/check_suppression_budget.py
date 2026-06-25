@@ -40,6 +40,8 @@ class Suppression:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
+    """Parse suppression-budget command-line options."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("base_ref", nargs="?", default="HEAD")
     parser.add_argument(
@@ -52,6 +54,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def added_python_lines(base_ref: str, *, staged: bool) -> list[tuple[str, str]]:
+    """Return added Python lines from staged or ref-based git diff output."""
+
     git = shutil.which("git") or "git"
     command = [git, "diff", "--unified=0"]
     if staged:
@@ -85,6 +89,8 @@ def added_python_lines(base_ref: str, *, staged: bool) -> list[tuple[str, str]]:
 
 
 def classify(path: str, line: str) -> list[Suppression]:
+    """Classify broad suppression patterns in a single added source line."""
+
     lower = line.lower()
     if not any(pattern in lower for pattern in SUPPRESSION_PATTERNS):
         return []
@@ -102,6 +108,8 @@ def classify(path: str, line: str) -> list[Suppression]:
 
 
 def contains_suppression(line: str) -> bool:
+    """Return whether a line contains any tracked suppression marker."""
+
     lower = line.lower()
     return any(pattern in lower for pattern in SUPPRESSION_PATTERNS)
 
@@ -122,11 +130,15 @@ def suppression_failures(added: list[tuple[str, str]], max_new_suppressions: int
 
 
 def format_suppression_failure(issue: Suppression) -> str:
+    """Format one classified suppression issue for terminal output."""
+
     stripped_line = issue.line.strip()
     return f"{issue.path}: {issue.reason}: {stripped_line}"
 
 
 def print_failures(failures: list[str]) -> None:
+    """Print suppression-budget failures with repair guidance."""
+
     print("Suppression budget failed:\n")
     for failure in failures:
         print(f"  {failure}")
@@ -134,6 +146,8 @@ def print_failures(failures: list[str]) -> None:
 
 
 def main(argv: list[str]) -> int:
+    """Run the suppression-budget check and return a process exit code."""
+
     args = parse_args(argv)
     config = load_config()
 

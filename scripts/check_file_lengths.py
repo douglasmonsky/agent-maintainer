@@ -48,6 +48,8 @@ GENERATED_MARKERS = (
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
+    """Parse file-length command-line options."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("paths", nargs="*", help="Specific files or directories to check.")
     parser.add_argument(
@@ -69,10 +71,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def is_excluded(path: Path) -> bool:
+    """Return whether a path lives under an ignored tool/cache directory."""
+
     return any(part in EXCLUDED_DIRS for part in path.parts)
 
 
 def is_generated(path: Path) -> bool:
+    """Return whether a file advertises itself as generated near the top."""
+
     try:
         head = "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[:10])
     except OSError:
@@ -82,6 +88,8 @@ def is_generated(path: Path) -> bool:
 
 
 def git_files(command: list[str]) -> list[Path]:
+    """Return Python paths from a git command, or an empty list on failure."""
+
     try:
         result = subprocess.run(  # nosec B603
             command,
@@ -96,6 +104,8 @@ def git_files(command: list[str]) -> list[Path]:
 
 
 def parse_csv_like(values: list[str] | None) -> list[str]:
+    """Normalize repeated comma-separated path options."""
+
     if not values:
         return []
     items: list[str] = []
@@ -105,6 +115,8 @@ def parse_csv_like(values: list[str] | None) -> list[str]:
 
 
 def expand_paths(paths: list[str], changed_only: bool) -> list[Path]:
+    """Resolve explicit, changed-only, tracked, or configured scan targets."""
+
     if changed_only:
         return changed_python_paths()
 
@@ -119,10 +131,14 @@ def expand_paths(paths: list[str], changed_only: bool) -> list[Path]:
 
 
 def changed_python_paths() -> list[Path]:
+    """Return Python files changed against HEAD."""
+
     return git_files(["git", "diff", "--name-only", "HEAD", "--", "*.py"])
 
 
 def expand_explicit_paths(paths: list[str]) -> list[Path]:
+    """Expand explicit file and directory arguments into Python files."""
+
     expanded: list[Path] = []
     for raw in paths:
         path = Path(raw)
@@ -134,6 +150,8 @@ def expand_explicit_paths(paths: list[str]) -> list[Path]:
 
 
 def configured_file_length_paths() -> list[Path]:
+    """Expand configured fallback roots into Python files."""
+
     expanded: list[Path] = []
     for root_raw in load_config().file_length_paths:
         root = Path(root_raw)
@@ -163,6 +181,8 @@ def count_lines(path: Path) -> tuple[int, int]:
 
 
 def eligible_python_paths(paths: list[Path], include_generated: bool) -> list[Path]:
+    """Deduplicate paths and filter to checkable Python files."""
+
     eligible: list[Path] = []
     seen: set[Path] = set()
     for path in paths:
@@ -195,6 +215,8 @@ def length_failures(paths: list[Path], max_physical: int, max_source: int) -> li
 
 
 def print_failures(failures: list[str]) -> None:
+    """Print file-length failures with a refactoring-oriented hint."""
+
     print("File length check failed:\n")
     for failure in failures:
         print(f"  {failure}")
@@ -202,6 +224,8 @@ def print_failures(failures: list[str]) -> None:
 
 
 def main(argv: list[str]) -> int:
+    """Run the file-length check and return a process exit code."""
+
     args = parse_args(argv)
     config = load_config()
     configured_roots = parse_csv_like(args.root)

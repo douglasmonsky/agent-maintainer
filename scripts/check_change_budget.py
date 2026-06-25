@@ -52,10 +52,14 @@ class FileChange:
 
     @property
     def changed(self) -> int:
+        """Total changed lines counted by git numstat."""
+
         return self.added + self.deleted
 
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
+    """Normalize repeated comma-separated CLI path options."""
+
     if not values:
         return None
     items: list[str] = []
@@ -66,6 +70,8 @@ def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
+    """Parse diff-budget command-line options."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "base_ref",
@@ -97,6 +103,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> GuardrailConfig:
+    """Apply root overrides without changing unrelated guardrail settings."""
+
     updates: dict[str, object] = {}
     source_roots = parse_csv_like(args.source_root)
     test_roots = parse_csv_like(args.test_root)
@@ -108,19 +116,27 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
 
 
 def should_exclude(path: str) -> bool:
+    """Return whether a changed file is generated, locked, or binary-like."""
+
     name = path.rsplit("/", maxsplit=1)[-1]
     return name in EXCLUDED_NAMES or path.endswith(EXCLUDED_SUFFIXES)
 
 
 def is_python_source(path: str, source_roots: tuple[str, ...]) -> bool:
+    """Return whether a path is Python code inside configured source roots."""
+
     return path.endswith(".py") and path_matches_roots(path, source_roots)
 
 
 def is_python_test(path: str, test_roots: tuple[str, ...]) -> bool:
+    """Return whether a path is Python code inside configured test roots."""
+
     return path.endswith(".py") and path_matches_roots(path, test_roots)
 
 
 def git_numstat_command(base_ref: str, *, staged: bool) -> list[str]:
+    """Build the git numstat command for staged or ref-based comparison."""
+
     git = shutil.which("git") or "git"
     command = [git, "diff", "--numstat"]
     command.extend(["--cached"] if staged else [base_ref])
@@ -129,10 +145,14 @@ def git_numstat_command(base_ref: str, *, staged: bool) -> list[str]:
 
 
 def diff_target_label(base_ref: str, *, staged: bool) -> str:
+    """Return a readable label for the diff target in error messages."""
+
     return "staged changes" if staged else repr(base_ref)
 
 
 def run_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
+    """Read git numstat output and return countable source changes."""
+
     try:
         result = subprocess.run(  # nosec B603
             git_numstat_command(base_ref, staged=staged),
@@ -160,6 +180,8 @@ def run_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
 def changed_python_files(
     changes: list[FileChange], config: GuardrailConfig
 ) -> tuple[list[FileChange], list[FileChange]]:
+    """Split changes into configured Python source and test buckets."""
+
     py_source_changes = [
         change for change in changes if is_python_source(change.path, config.source_roots)
     ]
@@ -194,6 +216,8 @@ def line_budget_failures(
     py_source_changes: list[FileChange],
     warnings: list[str],
 ) -> list[str]:
+    """Return a blocking failure when changed source lines exceed the hard limit."""
+
     total = sum(change.changed for change in py_source_changes)
     warn_limit = args.warn_lines or config.change_warn_lines
     block_limit = args.block_lines or config.change_block_lines
@@ -214,6 +238,8 @@ def file_budget_failures(
     py_source_changes: list[FileChange],
     warnings: list[str],
 ) -> list[str]:
+    """Return a blocking failure when changed source file count exceeds the hard limit."""
+
     total = len(py_source_changes)
     warn_limit = args.warn_files or config.change_warn_files
     block_limit = args.block_files or config.change_block_files
@@ -227,6 +253,8 @@ def file_budget_failures(
 
 
 def print_failure_report(failures: list[str], warnings: list[str]) -> None:
+    """Print block-level diff-budget findings and related warnings."""
+
     print("Change budget failed:\n")
     for failure in failures:
         print(f"  BLOCK: {failure}")
@@ -238,12 +266,16 @@ def print_failure_report(failures: list[str], warnings: list[str]) -> None:
 
 
 def print_warning_report(warnings: list[str]) -> None:
+    """Print non-blocking diff-budget warnings."""
+
     print("Change budget warnings:\n")
     for warning in warnings:
         print(f"  WARN: {warning}")
 
 
 def main(argv: list[str]) -> int:
+    """Run the change-budget check and return a process exit code."""
+
     args = parse_args(argv)
     config = apply_cli_overrides(load_config(), args)
 

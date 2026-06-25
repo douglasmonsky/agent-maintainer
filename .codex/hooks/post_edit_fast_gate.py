@@ -17,6 +17,8 @@ MAX_CONTEXT = 6_000
 
 
 def verifier_python(repo_root: Path) -> str:
+    """Prefer the repository virtualenv when running the verifier."""
+
     for relative in (".venv/bin/python", "venv/bin/python"):
         candidate = repo_root / relative
         if candidate.exists():
@@ -25,6 +27,8 @@ def verifier_python(repo_root: Path) -> str:
 
 
 def emit_block(reason: str, additional_context: str) -> int:
+    """Emit a Codex PostToolUse block decision with concise repair context."""
+
     print(
         json.dumps(
             {
@@ -41,6 +45,8 @@ def emit_block(reason: str, additional_context: str) -> int:
 
 
 def main() -> int:
+    """Run fast guardrails after edits and block only when repair is needed."""
+
     with suppress(json.JSONDecodeError):
         json.load(sys.stdin)
 
