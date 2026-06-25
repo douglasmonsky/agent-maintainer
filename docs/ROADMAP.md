@@ -17,6 +17,20 @@ repo state instead of reconstructing the plan from chat history.
   hooks are already part of the guardrail surface.
 - [x] Docker is intentionally not part of this repository's own workflow.
 
+## Standing Implementation Rules
+
+- [ ] When adding a relevant guardrail capability, enable it for this repository
+  in the same pass so the kit remains its own first consumer.
+- [ ] Leave a new capability disabled for this repository only when it is
+  objectively not applicable, too slow for normal profiles, requires
+  unavailable external binaries, requires credentials or external services, or
+  has privacy/network implications that have not been explicitly accepted.
+- [ ] If a capability is intentionally not enabled here, document the reason in
+  the roadmap, tool map, or relevant feature docs.
+- [ ] Prefer advisory/warn-only rollout for subjective design smells, then
+  graduate to blocking only when the signal is precise enough for
+  `fresh-strict`.
+
 ## Phase 0: Generated Agent Guidance
 
 - [x] Add a generator that renders agent-facing guidance from
