@@ -1,11 +1,11 @@
 [tool.ai_guardrails]
 source_roots = ["scripts", ".codex/hooks"]
-test_roots = []
+test_roots = ["tests"]
 package_paths = ["scripts", ".codex/hooks"]
 coverage_source = ["scripts", ".codex/hooks"]
-file_length_paths = ["scripts", ".codex/hooks"]
-vulture_paths = ["scripts", ".codex/hooks"]
-require_tests = false
+file_length_paths = ["scripts", ".codex/hooks", "tests"]
+vulture_paths = ["scripts", ".codex/hooks", "tests"]
+require_tests = true
 coverage_fail_under = 80
 diff_cover_fail_under = 90
 file_length_max_physical = 600
@@ -20,7 +20,8 @@ xenon_max_modules = "A"
 xenon_max_average = "A"
 ruff_max_complexity = 10
 pyright_type_checking_mode = "standard"
-enable_pip_audit = false
+enable_pip_audit = true
+pip_audit_args = ["-r", "config/dev-dependencies.txt"]
 enable_wemake = true
 
 [tool.ruff]
@@ -57,8 +58,13 @@ exclude_lines = [
   "if __name__ == .__main__.:",
 ]
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
 [tool.deptry]
 known_first_party = [
+  "scripts",
   "guardrail_catalog",
   "guardrail_config",
   "guardrail_executor",

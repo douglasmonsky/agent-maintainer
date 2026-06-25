@@ -5,8 +5,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from guardrail_config import GuardrailConfig, existing_paths
-from guardrail_models import (
+from scripts.guardrail_config import GuardrailConfig, existing_paths
+from scripts.guardrail_models import (
     ALL_PROFILES,
     CI_ONLY_PROFILES,
     FULL_PROFILES,
@@ -128,7 +128,7 @@ def make_checks(
     return [
         Check(
             "file-length",
-            [sys.executable, "scripts/check_file_lengths.py", *file_length_paths],
+            [sys.executable, "-m", "scripts.check_file_lengths", *file_length_paths],
             ALL_PROFILES,
             required_paths=("scripts/check_file_lengths.py",),
         ),
@@ -237,7 +237,7 @@ def make_checks(
 
 
 def change_budget_command(config: GuardrailConfig, base_ref: str, *, staged: bool) -> list[str]:
-    command = [sys.executable, "scripts/check_change_budget.py", base_ref]
+    command = [sys.executable, "-m", "scripts.check_change_budget", base_ref]
     if staged:
         command.append("--staged")
     for root in config.source_roots:
@@ -248,7 +248,7 @@ def change_budget_command(config: GuardrailConfig, base_ref: str, *, staged: boo
 
 
 def suppression_budget_command(base_ref: str, *, staged: bool) -> list[str]:
-    command = [sys.executable, "scripts/check_suppression_budget.py", base_ref]
+    command = [sys.executable, "-m", "scripts.check_suppression_budget", base_ref]
     if staged:
         command.append("--staged")
     return command

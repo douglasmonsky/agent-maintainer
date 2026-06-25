@@ -7,13 +7,13 @@ The goal is maintainable code, not just passing code. Treat the guardrails as th
 Before finishing any code task, run:
 
 ```bash
-python3 scripts/guardrail.py verify --profile precommit
+python3 -m scripts.guardrail verify --profile precommit
 ```
 
 Before opening or merging a larger change, run:
 
 ```bash
-python3 scripts/guardrail.py verify --profile full
+python3 -m scripts.guardrail verify --profile full
 ```
 
 Do not claim completion while these checks fail. Do not lower thresholds, delete checks, or add broad suppressions to make the pipeline pass.

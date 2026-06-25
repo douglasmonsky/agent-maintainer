@@ -8,8 +8,8 @@ import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
-from guardrail_models import Check, CheckResult
-from guardrail_reporting import summarize_check
+from scripts.guardrail_models import Check, CheckResult
+from scripts.guardrail_reporting import summarize_check
 
 
 def tool_search_path() -> str:

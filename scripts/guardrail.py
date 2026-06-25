@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Canonical command-line entrypoint for repository guardrails."""
+# pylint: disable=wrong-import-position
 
 from __future__ import annotations
 
@@ -8,19 +9,22 @@ import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
-from verify_quiet import main as verify_main
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.verify_quiet import main as verify_main
 
 USAGE = """Usage:
-  python scripts/guardrail.py bootstrap
-  python scripts/guardrail.py install
-  python scripts/guardrail.py verify [verify options]
+  python -m scripts.guardrail bootstrap
+  python -m scripts.guardrail install
+  python -m scripts.guardrail verify [verify options]
 
 Examples:
-  python scripts/guardrail.py bootstrap
-  python scripts/guardrail.py install
-  python scripts/guardrail.py verify --profile fast
-  python scripts/guardrail.py verify --profile precommit
-  python scripts/guardrail.py verify --profile full
+  python -m scripts.guardrail bootstrap
+  python -m scripts.guardrail install
+  python -m scripts.guardrail verify --profile fast
+  python -m scripts.guardrail verify --profile precommit
+  python -m scripts.guardrail verify --profile full
 """
 
 

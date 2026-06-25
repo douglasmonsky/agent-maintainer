@@ -15,7 +15,7 @@ import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass, replace
 
-from guardrail_config import GuardrailConfig, load_config, path_matches_roots
+from scripts.guardrail_config import GuardrailConfig, load_config, path_matches_roots
 
 NUMSTAT_FIELD_COUNT = 3
 

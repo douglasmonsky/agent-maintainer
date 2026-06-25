@@ -9,7 +9,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Oversized Python files | `scripts/check_file_lengths.py` |
 | Huge or diffuse changes | `scripts/check_change_budget.py` |
 | Broad suppressions | `scripts/check_suppression_budget.py` |
-| Required repo layout | `scripts/guardrail.py verify` layout check |
+| Required repo layout | `python -m scripts.guardrail verify` layout check |
 | Style and simple defects | Ruff |
 | Type discipline | Pyright |
 | Tests and total coverage | Pytest + pytest-cov |
@@ -54,7 +54,7 @@ python -m pip install -r config/dev-dependencies.txt
 For the shortest local path with pip, run:
 
 ```bash
-python3 scripts/guardrail.py bootstrap
+python3 -m scripts.guardrail bootstrap
 ```
 
 This creates `.venv` when needed, installs `config/dev-dependencies.txt`, installs the pre-commit hook, and reports whether Codex hooks are configured.
@@ -86,7 +86,7 @@ cp config/importlinter.example .importlinter
 Install local guardrail hooks:
 
 ```bash
-python3 scripts/guardrail.py install
+python3 -m scripts.guardrail install
 ```
 
 This keeps dependency installation separate and only installs the pre-commit hook when `pre-commit` is available. If you use Codex, review and trust the repo-local hooks through Codex's hook review flow.
@@ -133,13 +133,13 @@ GUARDRAILS_SOURCE_ROOTS=my_package,tools \
 GUARDRAILS_TEST_ROOTS=tests \
 GUARDRAILS_COVERAGE_SOURCE=my_package \
 GUARDRAILS_PACKAGE_PATHS=my_package \
-python3 scripts/guardrail.py verify --profile full
+python3 -m scripts.guardrail verify --profile full
 ```
 
 CLI overrides are available for one-off runs:
 
 ```bash
-python3 scripts/guardrail.py verify --profile full \
+python3 -m scripts.guardrail verify --profile full \
   --source-root my_package \
   --test-root tests \
   --coverage-source my_package \
@@ -151,31 +151,31 @@ python3 scripts/guardrail.py verify --profile full \
 Quiet local verification:
 
 ```bash
-python3 scripts/guardrail.py verify --profile full
+python3 -m scripts.guardrail verify --profile full
 ```
 
 One-command local bootstrap:
 
 ```bash
-python3 scripts/guardrail.py bootstrap
+python3 -m scripts.guardrail bootstrap
 ```
 
 Fast check after edits:
 
 ```bash
-python3 scripts/guardrail.py verify --profile fast
+python3 -m scripts.guardrail verify --profile fast
 ```
 
 Commit-level check:
 
 ```bash
-python3 scripts/guardrail.py verify --profile precommit
+python3 -m scripts.guardrail verify --profile precommit
 ```
 
 CI-level check:
 
 ```bash
-python3 scripts/guardrail.py verify --profile ci --base-ref origin/main --compare-branch origin/main
+python3 -m scripts.guardrail verify --profile ci --base-ref origin/main --compare-branch origin/main
 ```
 
 If you use `just`:
@@ -263,7 +263,7 @@ pip_audit_args = ["-r", "requirements.txt"]
 Or enable it only in CI with an environment variable:
 
 ```bash
-GUARDRAILS_ENABLE_PIP_AUDIT=1 GUARDRAILS_PIP_AUDIT_ARGS="-r requirements.txt" python3 scripts/guardrail.py verify --profile ci
+GUARDRAILS_ENABLE_PIP_AUDIT=1 GUARDRAILS_PIP_AUDIT_ARGS="-r requirements.txt" python3 -m scripts.guardrail verify --profile ci
 ```
 
 ## wemake behavior
@@ -278,7 +278,7 @@ enable_wemake = true
 Or enable it temporarily:
 
 ```bash
-GUARDRAILS_ENABLE_WEMAKE=1 python3 scripts/guardrail.py verify --profile full
+GUARDRAILS_ENABLE_WEMAKE=1 python3 -m scripts.guardrail verify --profile full
 ```
 
 When enabled, the verifier runs `flake8 --require-plugins wemake-python-styleguide` over configured `package_paths`. For existing repositories, keep it off until you have a clean baseline or an explicit ratchet plan.
@@ -287,7 +287,9 @@ When enabled, the verifier runs `flake8 --require-plugins wemake-python-stylegui
 
 Start strict for new repositories. For existing repositories, start with `fast` and `precommit`, then promote the heavier checks after you have a clean baseline.
 
-This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 scripts/guardrail.py verify --profile precommit`; for broader changes, run `python3 scripts/guardrail.py verify --profile full`.
+This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
+
+This repository also keeps the normally optional hardening gates active for itself: tests are required, `.importlinter` defines the guardrail-script dependency layers, and `pip-audit` runs against `config/dev-dependencies.txt`.
 
 Generated files are skipped by the file-length check when they contain common generated-file markers near the top. Lock files and binary assets are excluded from the change-budget check.
 

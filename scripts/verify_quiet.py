@@ -20,16 +20,16 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
-from guardrail_catalog import make_checks
-from guardrail_config import (
+from scripts.guardrail_catalog import make_checks
+from scripts.guardrail_config import (
     GuardrailConfig,
     any_path_exists,
     format_paths,
     load_config,
 )
-from guardrail_executor import run_check
-from guardrail_models import LOCAL_GATE_PROFILES, Check, CheckResult
-from guardrail_reporting import print_failures, print_success
+from scripts.guardrail_executor import run_check
+from scripts.guardrail_models import LOCAL_GATE_PROFILES, Check, CheckResult
+from scripts.guardrail_reporting import print_failures, print_success
 
 LOG_DIR = Path(".verify-logs")
 DEFAULT_MAX_LINES_PER_FAILURE = 50

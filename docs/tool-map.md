@@ -2,7 +2,7 @@
 
 ## Everyday gates
 
-`scripts/guardrail.py` is the canonical entrypoint. Use `python3 scripts/guardrail.py bootstrap` for one-command local setup, `python3 scripts/guardrail.py verify --profile precommit` for local completion checks, `python3 scripts/guardrail.py verify --profile full` for deeper review, and `python3 scripts/guardrail.py install` to install local hooks without reinstalling dependencies.
+`python3 -m scripts.guardrail` is the canonical entrypoint. Use `python3 -m scripts.guardrail bootstrap` for one-command local setup, `python3 -m scripts.guardrail verify --profile precommit` for local completion checks, `python3 -m scripts.guardrail verify --profile full` for deeper review, and `python3 -m scripts.guardrail install` to install local hooks without reinstalling dependencies.
 
 Ruff handles formatting, import order, linting, and McCabe complexity feedback. It is the fastest feedback loop and should run after most edits.
 
@@ -19,6 +19,8 @@ Pylint provides a backup for design smells, including module length through `max
 wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean baselines. It runs only when `enable_wemake = true` or `GUARDRAILS_ENABLE_WEMAKE=1`, and the verifier requires the actual wemake plugin so plain flake8 cannot masquerade as the strict check.
 
 Import Linter enforces architectural boundaries once `.importlinter` is configured for the repository. The verifier reports it as an optional skip when `.importlinter` is absent rather than silently pretending the architecture gate ran.
+
+This repository has `.importlinter` enabled for its own guardrail script modules. The contract keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules.
 
 ## Diff hygiene gates
 

@@ -52,7 +52,8 @@ def main() -> int:
     result = subprocess.run(  # nosec B603
         [
             verifier_python(repo_root),
-            str(verifier),
+            "-m",
+            "scripts.guardrail",
             "verify",
             "--profile",
             "precommit",
