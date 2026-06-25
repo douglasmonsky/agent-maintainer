@@ -20,25 +20,20 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
+from guardrail_catalog import make_checks
 from guardrail_config import (
     GuardrailConfig,
     any_path_exists,
-    existing_paths,
     format_paths,
     load_config,
 )
 from guardrail_executor import run_check
-from guardrail_models import Check, CheckResult
+from guardrail_models import LOCAL_GATE_PROFILES, Check, CheckResult
 from guardrail_reporting import print_failures, print_success
 
 LOG_DIR = Path(".verify-logs")
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
-
-COMMON_PROFILES = frozenset({"precommit", "full", "ci"})
-ALL_PROFILES = frozenset({"fast", "precommit", "full", "ci"})
-FULL_AND_CI = frozenset({"full", "ci"})
-CI_ONLY = frozenset({"ci"})
 
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
@@ -131,182 +126,8 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
     return replace(config, **updates)
 
 
-def existing_or_configured(paths: tuple[str, ...]) -> list[str]:
-    existing = existing_paths(paths)
-    return existing if existing else list(paths)
-
-
-def pytest_command(config: GuardrailConfig) -> list[str]:
-    command = ["pytest", "-q", "--tb=short", "--disable-warnings"]
-    for source in config.coverage_source:
-        command.append(f"--cov={source}")
-    command.extend(
-        [
-            "--cov-report=term-missing:skip-covered",
-            "--cov-report=xml",
-            f"--cov-fail-under={config.coverage_fail_under}",
-        ]
-    )
-    command.extend(config.test_roots)
-    return command
-
-
-def pip_audit_check(config: GuardrailConfig) -> Check:
-    if not config.enable_pip_audit:
-        return Check(
-            "pip-audit",
-            ["pip-audit"],
-            FULL_AND_CI,
-            optional_skip_reason=(
-                "disabled by default; enable with GUARDRAILS_ENABLE_PIP_AUDIT=1 or "
-                "[tool.ai_guardrails].enable_pip_audit = true"
-            ),
-        )
-
-    command = ["pip-audit", *config.pip_audit_args]
-    return Check("pip-audit", command, FULL_AND_CI, required_executable="pip-audit")
-
-
-def make_checks(config: GuardrailConfig, base_ref: str, compare_branch: str) -> list[Check]:
-    package_paths = tuple(existing_or_configured(config.package_paths))
-    file_length_paths = tuple(existing_or_configured(config.file_length_paths))
-    vulture_paths = (
-        tuple(path for path in config.vulture_paths if Path(path).exists()) or package_paths
-    )
-
-    change_budget_command = [sys.executable, "scripts/check_change_budget.py", base_ref]
-    for root in config.source_roots:
-        change_budget_command.extend(["--source-root", root])
-    for root in config.test_roots:
-        change_budget_command.extend(["--test-root", root])
-
-    file_length_command = [sys.executable, "scripts/check_file_lengths.py", *file_length_paths]
-
-    if config.require_tests:
-        pytest_coverage_check = Check(
-            "pytest-coverage",
-            pytest_command(config),
-            COMMON_PROFILES,
-            required_executable="pytest",
-        )
-        diff_cover_check = Check(
-            "diff-cover",
-            [
-                "diff-cover",
-                "coverage.xml",
-                f"--compare-branch={compare_branch}",
-                f"--fail-under={config.diff_cover_fail_under}",
-            ],
-            CI_ONLY,
-            required_paths=("coverage.xml", ".git"),
-            required_executable="diff-cover",
-        )
-    else:
-        pytest_coverage_check = Check(
-            "pytest-coverage",
-            ["pytest"],
-            COMMON_PROFILES,
-            optional_skip_reason="tests are disabled by require_tests = false",
-        )
-        diff_cover_check = Check(
-            "diff-cover",
-            ["diff-cover"],
-            CI_ONLY,
-            optional_skip_reason="changed-code coverage is disabled because require_tests = false",
-        )
-
-    return [
-        Check(
-            "file-length",
-            file_length_command,
-            ALL_PROFILES,
-            required_paths=("scripts/check_file_lengths.py",),
-        ),
-        Check(
-            "change-budget",
-            change_budget_command,
-            ALL_PROFILES,
-            required_paths=("scripts/check_change_budget.py", ".git"),
-        ),
-        Check(
-            "suppression-budget",
-            [sys.executable, "scripts/check_suppression_budget.py", base_ref],
-            ALL_PROFILES,
-            required_paths=("scripts/check_suppression_budget.py", ".git"),
-        ),
-        Check(
-            "ruff-format",
-            ["ruff", "format", "--check", "."],
-            COMMON_PROFILES,
-            required_executable="ruff",
-        ),
-        Check(
-            "ruff",
-            ["ruff", "check", "--output-format=concise", "."],
-            ALL_PROFILES,
-            required_executable="ruff",
-        ),
-        Check(
-            "pyright", ["pyright", "--outputjson"], COMMON_PROFILES, required_executable="pyright"
-        ),
-        pytest_coverage_check,
-        Check(
-            "radon-cc-report",
-            ["radon", "cc", *package_paths, "-a", "-s"],
-            FULL_AND_CI,
-            required_executable="radon",
-        ),
-        Check(
-            "radon-mi-report",
-            ["radon", "mi", *package_paths, "-s"],
-            FULL_AND_CI,
-            required_executable="radon",
-        ),
-        Check(
-            "xenon-complexity-gate",
-            [
-                "xenon",
-                "--max-absolute",
-                config.xenon_max_absolute,
-                "--max-modules",
-                config.xenon_max_modules,
-                "--max-average",
-                config.xenon_max_average,
-                *package_paths,
-            ],
-            COMMON_PROFILES,
-            required_executable="xenon",
-        ),
-        Check(
-            "pylint",
-            ["pylint", *package_paths, "--score=n"],
-            FULL_AND_CI,
-            required_executable="pylint",
-        ),
-        Check(
-            "import-linter",
-            ["lint-imports"],
-            FULL_AND_CI,
-            required_executable="lint-imports",
-            optional_skip_reason=(
-                ".importlinter is absent; architecture contracts are not configured"
-            ),
-        ),
-        Check("deptry", ["deptry", "."], FULL_AND_CI, required_executable="deptry"),
-        Check("vulture", ["vulture", *vulture_paths], FULL_AND_CI, required_executable="vulture"),
-        Check(
-            "bandit",
-            ["bandit", "-q", "-r", *package_paths],
-            FULL_AND_CI,
-            required_executable="bandit",
-        ),
-        pip_audit_check(config),
-        diff_cover_check,
-    ]
-
-
 def requires_full_layout(profile: str) -> bool:
-    return profile in COMMON_PROFILES
+    return profile in LOCAL_GATE_PROFILES
 
 
 def configured_path_failure(label: str, paths: tuple[str, ...], guidance: str = "") -> str | None:
