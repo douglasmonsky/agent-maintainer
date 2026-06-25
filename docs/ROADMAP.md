@@ -168,6 +168,16 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Add config such as `[tool.ai_guardrails.structure] folder_file_warn`,
   `folder_file_block`, and `ignore_folder_file_count_paths`, or an equivalent
   shape that fits the final config model.
+- [ ] Add configurable regex hint patterns for naming clusters, separate from
+  the warn/block thresholds.
+- [ ] Ship conservative built-in regex hints for common hierarchy smells:
+  repeated prefixes like `^guardrail_`, `^check_`, and domain prefixes such as
+  `^user_` or `^course_`; repeated role suffixes like `_model$`, `_service$`,
+  `_repository$`, `_client$`, `_adapter$`, `_parser$`, `_loader$`, `_schema$`,
+  `_executor$`, and `_reporting$`; and layer words such as `cli`, `args`,
+  `config`, `models`, `checks`, `doctor`, `executor`, and `reporting`.
+- [ ] Use regex matches to enrich advisory messages with concrete clusters and
+  likely split candidates, not as standalone failure conditions.
 - [ ] Detect prefix clusters that suggest fake flat hierarchy, such as many
   `guardrail_*` or `check_*` modules in one folder.
 - [ ] Detect layer mixing signals, such as CLI entrypoints, config parsing,
@@ -180,7 +190,8 @@ repo state instead of reconstructing the plan from chat history.
   proactively notice refactor pressure.
 - [ ] Teach `doctor` to report active structure thresholds and ignored paths.
 - [ ] Add tests for normal folders, warning folders, fresh-strict block folders,
-  ignored folders, prefix clusters, and explicit registry exemptions.
+  ignored folders, regex hint clusters, prefix clusters, and explicit registry
+  exemptions.
 - [ ] Document when to split into subpackages and use this repository's
   `guardrail_lib/config` extraction as the motivating example.
 
