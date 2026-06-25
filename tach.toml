@@ -28,6 +28,10 @@ path = "scripts"
 layer = "shared"
 
 [[modules]]
+path = "guardrail_lib"
+layer = "shared"
+
+[[modules]]
 path = "scripts.guardrail"
 layer = "entrypoint"
 
@@ -60,6 +64,9 @@ paths = [
   "scripts.guardrail_config",
   "scripts.guardrail_reporting",
   "scripts.guardrail_tach",
+  "guardrail_lib.config.coercion",
+  "guardrail_lib.config.loader",
+  "guardrail_lib.config.modes",
 ]
 layer = "shared"
 
@@ -67,5 +74,6 @@ layer = "shared"
 paths = [
   "scripts.guardrail_doctor_models",
   "scripts.guardrail_models",
+  "guardrail_lib.config.schema",
 ]
 layer = "models"

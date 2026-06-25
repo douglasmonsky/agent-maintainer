@@ -5,8 +5,9 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
+from guardrail_lib.config.modes import apply_mode
+from guardrail_lib.config.schema import GuardrailConfig
 from scripts import guardrail_guidance
-from scripts.guardrail_config import GuardrailConfig, apply_mode
 
 
 def strict_config() -> GuardrailConfig:

@@ -5,14 +5,14 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from scripts import guardrail_models as models
-from scripts.guardrail_config import (
+from guardrail_lib.config.schema import (
     FRESH_STRICT_MODE,
     IMPORT_LINTER_TOOL,
     TACH_TOOL,
     GuardrailConfig,
-    existing_paths,
 )
+from scripts import guardrail_models as models
+from scripts.guardrail_config import existing_paths
 
 CHANGE_BUDGET_PROFILES = (
     models.FAST_PROFILE,
