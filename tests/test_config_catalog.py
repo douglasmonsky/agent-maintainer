@@ -50,6 +50,10 @@ interrogate_fail_under = 31
 coverage_fail_under = 91
 file_length_baseline = ".guardrails/baseline.json"
 architecture_tool = "tach"
+
+[tool.ai_guardrails.diagnostics]
+enabled = false
+log_dir = ".custom-verify-logs"
 """.strip(),
         encoding="utf-8",
     )
@@ -67,6 +71,8 @@ architecture_tool = "tach"
     assert loaded.coverage_fail_under == CONFIG_COVERAGE_THRESHOLD
     assert loaded.file_length_baseline == ".guardrails/baseline.json"
     assert loaded.architecture_tool == "tach"
+    assert loaded.diagnostic_artifacts_enabled is False
+    assert loaded.diagnostic_artifacts_dir == ".custom-verify-logs"
 
 
 def test_invalid_config_values_raise_clear_type_errors() -> None:
@@ -148,6 +154,8 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GUARDRAILS_ENABLE_INTERROGATE", "true")
     monkeypatch.setenv("GUARDRAILS_INTERROGATE_FAIL_UNDER", "33")
     monkeypatch.setenv("GUARDRAILS_FILE_LENGTH_BASELINE", ".guardrails/env-baseline.json")
+    monkeypatch.setenv("GUARDRAILS_DIAGNOSTIC_ARTIFACTS_ENABLED", "false")
+    monkeypatch.setenv("GUARDRAILS_DIAGNOSTIC_ARTIFACTS_DIR", ".env-verify-logs")
 
     loaded = guardrail_config_loader.apply_env(GuardrailConfig())
 
@@ -159,6 +167,8 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.enable_interrogate is True
     assert loaded.interrogate_fail_under == ENV_INTERROGATE_THRESHOLD
     assert loaded.file_length_baseline == ".guardrails/env-baseline.json"
+    assert loaded.diagnostic_artifacts_enabled is False
+    assert loaded.diagnostic_artifacts_dir == ".env-verify-logs"
 
 
 def test_path_matching_handles_roots_and_relative_prefixes() -> None:

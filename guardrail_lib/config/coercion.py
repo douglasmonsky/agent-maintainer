@@ -62,6 +62,25 @@ def as_choice(value: object, field_name: str, choices: frozenset[str]) -> str:
     raise TypeError(f"{field_name} must be one of: {valid_values}")
 
 
+DIAGNOSTIC_FIELD_PARSERS = (
+    ("enabled", "diagnostic_artifacts_enabled", as_bool),
+    ("log_dir", "diagnostic_artifacts_dir", as_str),
+)
+
+
+def coerce_diagnostics(raw_value: object) -> dict[str, object]:
+    """Coerce the nested diagnostics config table."""
+
+    if not isinstance(raw_value, dict):
+        raise TypeError("diagnostics must be a table")
+    updates: dict[str, object] = {}
+    for raw_name, field_name, parser in DIAGNOSTIC_FIELD_PARSERS:
+        value = raw_value.get(raw_name)
+        if value is not None:
+            updates[field_name] = parser(value, f"diagnostics.{raw_name}")
+    return updates
+
+
 def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
     """Coerce raw pyproject config values into dataclass update values."""
 
@@ -82,4 +101,7 @@ def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
         updates["architecture_tool"] = as_choice(
             architecture_tool, "architecture_tool", schema.VALID_ARCHITECTURE_TOOLS
         )
+    diagnostics = raw.get("diagnostics")
+    if diagnostics is not None:
+        updates.update(coerce_diagnostics(diagnostics))
     return updates

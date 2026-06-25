@@ -67,6 +67,7 @@ paths = [
   "guardrail_lib.config.coercion",
   "guardrail_lib.config.loader",
   "guardrail_lib.config.modes",
+  "guardrail_lib.verify.artifacts",
 ]
 layer = "shared"
 

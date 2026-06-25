@@ -129,6 +129,11 @@ def render_guidance(config: GuardrailConfig) -> str:
         f"- Architecture backend: `{config.architecture_tool}`",
         f"- Tests required: `{tests_required}`",
         (
+            "- Diagnostic artifacts: "
+            f"{enabled_word(config.diagnostic_artifacts_enabled)} at "
+            f"`{config.diagnostic_artifacts_dir}`"
+        ),
+        (
             "- Source-without-test-change errors in profiles: "
             f"{format_inline_paths(config.source_without_test_change_error_profiles)}"
         ),

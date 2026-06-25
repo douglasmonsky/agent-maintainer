@@ -33,6 +33,7 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Source roots: `scripts`, `.codex/hooks`" in text
     assert "Test roots: `tests`" in text
     assert "Architecture backend: `tach`" in text
+    assert "Diagnostic artifacts: `enabled` at `.verify-logs`" in text
     assert "Pyright mode: `standard`" in text
     assert "File length baseline: `disabled`" in text
     assert "Source-without-test-change errors in profiles: `precommit`" in text
