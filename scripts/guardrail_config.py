@@ -80,6 +80,7 @@ STR_FIELDS = frozenset(
         "xenon_max_modules",
         "xenon_max_average",
         "pyright_type_checking_mode",
+        "file_length_baseline",
     )
 )
 
@@ -100,6 +101,7 @@ class GuardrailConfig:
     diff_cover_fail_under: int = 90
     file_length_max_physical: int = 600
     file_length_max_source: int = 450
+    file_length_baseline: str = ""
     change_warn_lines: int = 300
     change_block_lines: int = 800
     change_warn_files: int = 8
@@ -214,6 +216,7 @@ def apply_mode(config: GuardrailConfig, mode: str) -> GuardrailConfig:
     updates: dict[str, object] = {}
     if mode == LEGACY_RATCHET_MODE:
         updates = {
+            "file_length_baseline": ".guardrails/file-length-baseline.json",
             "enable_pip_audit": False,
             "enable_wemake": False,
             "enable_interrogate": False,
@@ -297,6 +300,13 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
         "coverage_fail_under": "GUARDRAILS_COVERAGE_FAIL_UNDER",
         "diff_cover_fail_under": "GUARDRAILS_DIFF_COVER_FAIL_UNDER",
     }
+    str_envs = {
+        "file_length_baseline": "GUARDRAILS_FILE_LENGTH_BASELINE",
+        "pyright_type_checking_mode": "GUARDRAILS_PYRIGHT_TYPE_CHECKING_MODE",
+        "xenon_max_absolute": "GUARDRAILS_XENON_MAX_ABSOLUTE",
+        "xenon_max_modules": "GUARDRAILS_XENON_MAX_MODULES",
+        "xenon_max_average": "GUARDRAILS_XENON_MAX_AVERAGE",
+    }
 
     threshold_envs = {
         "file_length_max_physical": "GUARDRAILS_FILE_LENGTH_MAX_PHYSICAL",
@@ -312,6 +322,13 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
     _merge_env_values(updates, bool_envs, _env_bool)
     _merge_env_values(updates, coverage_envs, _env_int)
     _merge_env_values(updates, threshold_envs, _env_int)
+    _merge_env_values(
+        updates,
+        str_envs,
+        lambda env_name: (
+            _as_str(os.environ[env_name], env_name) if env_name in os.environ else None
+        ),
+    )
 
     pip_audit_args = os.getenv("GUARDRAILS_PIP_AUDIT_ARGS")
     if pip_audit_args is not None:

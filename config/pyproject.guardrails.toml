@@ -17,6 +17,8 @@ coverage_fail_under = 80
 diff_cover_fail_under = 90
 file_length_max_physical = 600
 file_length_max_source = 450
+# legacy-ratchet defaults this to ".guardrails/file-length-baseline.json".
+file_length_baseline = ""
 change_warn_lines = 300
 change_block_lines = 800
 change_warn_files = 8

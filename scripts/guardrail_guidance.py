@@ -158,6 +158,7 @@ def render_guidance(config: GuardrailConfig) -> str:
             f"`{config.file_length_max_physical}` physical lines, "
             f"`{config.file_length_max_source}` source lines"
         ),
+        f"- File length baseline: {disabled_or_path(config.file_length_baseline)}",
         (
             "- Change budget warnings: "
             f"`{config.change_warn_lines}` lines or `{config.change_warn_files}` files"
@@ -210,6 +211,12 @@ def enabled_word(enabled: bool) -> str:
     """Return a compact enabled/disabled token."""
 
     return "`enabled`" if enabled else "`disabled`"
+
+
+def disabled_or_path(value: str) -> str:
+    """Return a compact disabled token or inline path."""
+
+    return f"`{value}`" if value else "`disabled`"
 
 
 def allowed_word(enabled: bool) -> str:

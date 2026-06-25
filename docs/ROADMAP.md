@@ -72,13 +72,14 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 2: Make Legacy-Ratchet Real
 
-- [ ] Add file-length baselining for `legacy-ratchet`.
-- [ ] Make legacy file-length checks fail only for new or worsened violations.
-- [ ] Document the baseline file format and refresh workflow.
-- [ ] Add tests for clean legacy baselines, worsened legacy violations, and new
+- [x] Add file-length baselining for `legacy-ratchet`.
+- [x] Make legacy file-length checks fail only for new or worsened violations.
+- [x] Document the baseline file format and refresh workflow.
+- [x] Add tests for clean legacy baselines, worsened legacy violations, and new
   oversized files.
-- [ ] Consider complexity baselining after file-length baselining is stable.
-- [ ] Update `docs/legacy-ratchet.md` to distinguish fresh blocking from legacy
+- [x] Consider complexity baselining after file-length baselining is stable;
+  defer it until file-length ratcheting has real adoption feedback.
+- [x] Update `docs/legacy-ratchet.md` to distinguish fresh blocking from legacy
   ratcheting.
 
 ## Phase 3: Agent Diagnostic Artifacts

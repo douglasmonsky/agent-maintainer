@@ -256,7 +256,7 @@ def make_checks(
     return [
         models.Check(
             "file-length",
-            [sys.executable, "-m", "scripts.check_file_lengths", *file_length_paths],
+            file_length_command(config, file_length_paths),
             models.ALL_PROFILES,
             required_paths=("scripts/check_file_lengths.py",),
         ),
@@ -369,6 +369,15 @@ def change_budget_checks(
         )
         for profile in CHANGE_BUDGET_PROFILES
     ]
+
+
+def file_length_command(config: GuardrailConfig, file_length_paths: tuple[str, ...]) -> list[str]:
+    """Build the file-length command with optional legacy-ratchet baseline."""
+
+    command = [sys.executable, "-m", "scripts.check_file_lengths", *file_length_paths]
+    if config.file_length_baseline:
+        command.extend(["--baseline", config.file_length_baseline])
+    return command
 
 
 def change_budget_command(

@@ -18,6 +18,7 @@ python3 -m scripts.guardrail doctor --strict
 |---|---|
 | Missing required executables | Run `python3 -m scripts.guardrail bootstrap`. |
 | Missing source, test, package, or coverage roots | Set `[tool.ai_guardrails]` paths in `pyproject.toml`. |
+| Legacy file-length ratchet fails | Split the new or worsened oversized file, or refresh `file_length_baseline` only after reviewing the diff. |
 | Pre-commit hook is not installed | Run `python3 -m scripts.guardrail install`. |
 | Architecture config is absent | Add `tach.toml` or `.importlinter`, or accept the optional skip. |
 | Tach fails in `fresh-strict` | Set `root_module = "forbid"` and define explicit modules. |

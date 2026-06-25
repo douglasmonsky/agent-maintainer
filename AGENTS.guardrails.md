@@ -41,6 +41,7 @@ configuration first, then regenerate it.
 - Total coverage floor: `80%`
 - Changed-code coverage floor: `90%`
 - File length limits: `500` physical lines, `375` source lines
+- File length baseline: `disabled`
 - Change budget warnings: `200` lines or `6` files
 - Change budget blocks: `600` lines or `12` files
 - New suppression budget: `1`
