@@ -328,14 +328,20 @@ def load_config() -> GuardrailConfig:
 
 
 def existing_paths(paths: tuple[str, ...]) -> list[str]:
+    """Return configured paths that exist in the current working tree."""
+
     return [path for path in paths if Path(path).exists()]
 
 
 def any_path_exists(paths: tuple[str, ...]) -> bool:
+    """Return whether at least one configured path exists."""
+
     return any(Path(path).exists() for path in paths)
 
 
 def format_paths(paths: tuple[str, ...]) -> str:
+    """Format configured paths for compact diagnostics."""
+
     return ", ".join(paths) if paths else "<none>"
 
 

@@ -13,6 +13,8 @@ from scripts.guardrail_reporting import summarize_check
 
 
 def tool_search_path() -> str:
+    """Build PATH with local virtualenv tools ahead of ambient executables."""
+
     local_tool_dirs = [
         str(Path(relative)) for relative in (".venv/bin", "venv/bin") if Path(relative).is_dir()
     ]
@@ -25,12 +27,16 @@ def tool_search_path() -> str:
 
 
 def command_env() -> dict[str, str]:
+    """Return the subprocess environment used for guardrail commands."""
+
     env = os.environ.copy()
     env["PATH"] = tool_search_path()
     return env
 
 
 def optional_skip(check: Check) -> str | None:
+    """Return an optional-skip message when a configured integration is inactive."""
+
     if not check.optional_skip_reason:
         return None
     if check.name == "import-linter" and not Path(".importlinter").exists():
@@ -60,6 +66,8 @@ def missing_requirement(check: Check) -> str | None:
 
 
 def run_command(command: list[str]) -> tuple[int, str]:
+    """Run a command and combine stdout and stderr for log storage."""
+
     result = subprocess.run(  # nosec B603
         command,
         text=True,

@@ -9,10 +9,14 @@ VALID_PYRIGHT_MODES = frozenset(("off", "basic", "standard", "strict"))
 
 
 def requires_full_layout(profile: str) -> bool:
+    """Return whether a verifier profile requires configured roots to exist."""
+
     return profile in LOCAL_GATE_PROFILES
 
 
 def configured_path_failure(label: str, paths: tuple[str, ...], guidance: str = "") -> str | None:
+    """Return a layout failure when none of the configured paths exists."""
+
     if any_path_exists(paths):
         return None
     suffix = f" {guidance}" if guidance else ""
@@ -20,6 +24,8 @@ def configured_path_failure(label: str, paths: tuple[str, ...], guidance: str = 
 
 
 def layout_failures(config: GuardrailConfig, profile: str) -> list[str]:
+    """Return all layout/configuration failures for a verifier profile."""
+
     if not requires_full_layout(profile):
         return []
 
@@ -45,6 +51,8 @@ def layout_failures(config: GuardrailConfig, profile: str) -> list[str]:
 
 
 def test_layout_failures(config: GuardrailConfig) -> list[str | None]:
+    """Return required test and coverage-root failures."""
+
     return [
         configured_path_failure(
             "test root",

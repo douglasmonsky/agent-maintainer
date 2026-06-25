@@ -40,6 +40,8 @@ class DoctorResult:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
+    """Parse doctor command-line options."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--strict",
@@ -55,6 +57,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def main(argv: list[str]) -> int:
+    """Run setup diagnostics and emit text or JSON output."""
+
     args = parse_args(argv)
     results = run_doctor(Path.cwd(), load_config())
     if args.json:
@@ -84,6 +88,8 @@ def run_doctor(repo_root: Path, config: GuardrailConfig) -> list[DoctorResult]:
 
 
 def check_python_version() -> DoctorResult:
+    """Check that the active Python runtime satisfies the verifier minimum."""
+
     version = sys.version_info
     detected = f"{version.major}.{version.minor}.{version.micro}"
     if (version.major, version.minor) < MIN_PYTHON:
@@ -97,6 +103,8 @@ def check_python_version() -> DoctorResult:
 
 
 def check_repo_root(repo_root: Path) -> DoctorResult:
+    """Check for files that identify a usable guardrail repository root."""
+
     missing = [path for path in (".git", "scripts/guardrail.py") if not (repo_root / path).exists()]
     if missing:
         missing_paths = ", ".join(missing)
@@ -109,6 +117,8 @@ def check_repo_root(repo_root: Path) -> DoctorResult:
 
 
 def check_virtualenv(repo_root: Path) -> DoctorResult:
+    """Report whether a local virtualenv is available for tool execution."""
+
     for relative in (".venv/bin/python", "venv/bin/python"):
         if (repo_root / relative).exists():
             return DoctorResult("virtualenv", OK, relative)
@@ -116,6 +126,8 @@ def check_virtualenv(repo_root: Path) -> DoctorResult:
 
 
 def check_required_executables(repo_root: Path, config: GuardrailConfig) -> DoctorResult:
+    """Check that required executables for configured checks are installed."""
+
     checks = make_checks(config, "HEAD", "origin/main")
     required = sorted({check.required_executable for check in checks if check.required_executable})
     missing = [name for name in required if not executable_exists(repo_root, name)]
@@ -126,6 +138,8 @@ def check_required_executables(repo_root: Path, config: GuardrailConfig) -> Doct
 
 
 def executable_exists(repo_root: Path, executable: str) -> bool:
+    """Return whether an executable exists locally or on PATH."""
+
     local_paths = (
         repo_root / ".venv" / "bin" / executable,
         repo_root / "venv" / "bin" / executable,
@@ -134,6 +148,8 @@ def executable_exists(repo_root: Path, executable: str) -> bool:
 
 
 def check_layout(config: GuardrailConfig) -> DoctorResult:
+    """Validate configured source, package, test, and coverage roots."""
+
     failures = layout_failures(config, "full")
     if failures:
         return DoctorResult("configured-roots", ERROR, "; ".join(failures))
@@ -143,6 +159,8 @@ def check_layout(config: GuardrailConfig) -> DoctorResult:
 
 
 def check_tests(repo_root: Path, config: GuardrailConfig) -> DoctorResult:
+    """Report whether tests are required and available."""
+
     if not config.require_tests:
         return DoctorResult("tests", WARNING, "Tests are disabled with require_tests = false.")
     existing = [path for path in config.test_roots if (repo_root / path).exists()]
@@ -158,6 +176,8 @@ def check_tests(repo_root: Path, config: GuardrailConfig) -> DoctorResult:
 
 
 def check_pre_commit(repo_root: Path) -> DoctorResult:
+    """Report whether the pre-commit config and hook are installed."""
+
     config_path = repo_root / ".pre-commit-config.yaml"
     hook_path = repo_root / ".git" / "hooks" / "pre-commit"
     if not config_path.exists():
@@ -168,6 +188,8 @@ def check_pre_commit(repo_root: Path) -> DoctorResult:
 
 
 def check_codex_hooks(repo_root: Path) -> DoctorResult:
+    """Report whether repo-local Codex hooks are configured."""
+
     config_path = repo_root / ".codex" / "config.toml"
     if not config_path.exists():
         return DoctorResult("codex-hooks", WARNING, ".codex/config.toml is absent.")
@@ -205,6 +227,8 @@ def check_optional_gates(repo_root: Path, config: GuardrailConfig) -> DoctorResu
 
 
 def check_canonical_commands(repo_root: Path) -> DoctorResult:
+    """Check that CI, pre-commit, and hooks use the module entrypoint."""
+
     expectations = {
         ".github/workflows/verify.yml": "python3 -m scripts.guardrail verify",
         ".pre-commit-config.yaml": "python3 -m scripts.guardrail verify --profile precommit",
@@ -234,6 +258,8 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
 
 
 def check_git_state(repo_root: Path) -> DoctorResult:
+    """Summarize dirty, ahead, or behind Git state."""
+
     git_path = shutil.which("git")
     if git_path is None:
         return DoctorResult("git-state", WARNING, "git executable was not found.")
@@ -261,6 +287,8 @@ def check_git_state(repo_root: Path) -> DoctorResult:
 
 
 def check_recent_logs(repo_root: Path) -> DoctorResult:
+    """Report whether recent verifier logs are available."""
+
     log_dir = repo_root / VERIFY_LOG_DIR
     if not log_dir.exists():
         return DoctorResult("verification-logs", WARNING, f"{VERIFY_LOG_DIR}/ is absent.")
@@ -272,11 +300,15 @@ def check_recent_logs(repo_root: Path) -> DoctorResult:
 
 
 def print_text(results: list[DoctorResult]) -> None:
+    """Print doctor results as compact PASS/WARN/FAIL rows."""
+
     for item in results:
         print(f"{item.status} {item.name}: {item.message}")
 
 
 def status_code(results: list[DoctorResult], *, strict: bool) -> int:
+    """Return the doctor process status for default or strict mode."""
+
     if any(item.status == ERROR for item in results):
         return 1
     if strict and any(item.status == WARNING for item in results):

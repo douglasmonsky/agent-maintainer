@@ -22,6 +22,8 @@ from scripts.guardrail_models import (
 
 
 def existing_or_configured(paths: tuple[str, ...]) -> tuple[str, ...]:
+    """Prefer existing paths while preserving configured values for diagnostics."""
+
     existing = tuple(existing_paths(paths))
     return existing if existing else paths
 
@@ -43,6 +45,8 @@ def pytest_command(config: GuardrailConfig) -> list[str]:
 
 
 def pytest_check(config: GuardrailConfig) -> Check:
+    """Build the pytest coverage check or its require-tests skip."""
+
     if config.require_tests:
         return Check(
             "pytest-coverage",
@@ -59,6 +63,8 @@ def pytest_check(config: GuardrailConfig) -> Check:
 
 
 def diff_cover_check(config: GuardrailConfig, compare_branch: str) -> Check:
+    """Build the changed-code coverage check for CI profiles."""
+
     if config.require_tests:
         return Check(
             "diff-cover",
@@ -81,6 +87,8 @@ def diff_cover_check(config: GuardrailConfig, compare_branch: str) -> Check:
 
 
 def pip_audit_check(config: GuardrailConfig) -> Check:
+    """Build the dependency vulnerability check or its explicit skip."""
+
     if not config.enable_pip_audit:
         return Check(
             "pip-audit",
@@ -100,6 +108,8 @@ def pip_audit_check(config: GuardrailConfig) -> Check:
 
 
 def wemake_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> Check:
+    """Build the wemake strict-style check or its explicit skip."""
+
     if not config.enable_wemake:
         return Check(
             "wemake",
@@ -172,6 +182,8 @@ def architecture_checks(config: GuardrailConfig) -> list[Check]:
 
 
 def tach_checks(config: GuardrailConfig) -> list[Check]:
+    """Build Tach config and architecture checks for the selected strictness mode."""
+
     strict = config.mode == FRESH_STRICT_MODE
     config_command = [sys.executable, "-m", "scripts.check_tach_config"]
     if strict:
@@ -199,6 +211,8 @@ def tach_checks(config: GuardrailConfig) -> list[Check]:
 
 
 def vulture_paths(config: GuardrailConfig, package_paths: tuple[str, ...]) -> tuple[str, ...]:
+    """Return existing vulture scan paths, falling back to package paths."""
+
     paths = tuple(path for path in config.vulture_paths if Path(path).exists())
     return paths or package_paths
 
@@ -315,6 +329,8 @@ def make_checks(
 
 
 def change_budget_command(config: GuardrailConfig, base_ref: str, *, staged: bool) -> list[str]:
+    """Build the change-budget command with configured source and test roots."""
+
     command = [sys.executable, "-m", "scripts.check_change_budget", base_ref]
     if staged:
         command.append("--staged")
@@ -326,6 +342,8 @@ def change_budget_command(config: GuardrailConfig, base_ref: str, *, staged: boo
 
 
 def suppression_budget_command(base_ref: str, *, staged: bool) -> list[str]:
+    """Build the suppression-budget command for staged or ref-based diffs."""
+
     command = [sys.executable, "-m", "scripts.check_suppression_budget", base_ref]
     if staged:
         command.append("--staged")
