@@ -2,6 +2,8 @@
 # Adjust [tool.ai_guardrails] paths if your repository does not use src/ and tests/.
 
 [tool.ai_guardrails]
+# Optional: custom (default), legacy-ratchet, or fresh-strict.
+# mode = "custom"
 source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]

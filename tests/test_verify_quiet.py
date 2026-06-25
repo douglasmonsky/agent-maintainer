@@ -12,6 +12,7 @@ from scripts.guardrail_config import GuardrailConfig
 from scripts.guardrail_models import Check, CheckResult
 
 CLI_COVERAGE_THRESHOLD = 92
+STRICT_COMPLEXITY = 8
 
 
 def test_parse_csv_like_normalizes_repeated_values() -> None:
@@ -43,6 +44,25 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.test_roots == ("specs",)
     assert config.coverage_fail_under == CLI_COVERAGE_THRESHOLD
     assert config.enable_pip_audit is True
+
+
+def test_cli_mode_applies_before_other_cli_overrides() -> None:
+    args = verify_quiet.parse_args(
+        [
+            "--mode",
+            "fresh-strict",
+            "--disable-wemake",
+            "--coverage-fail-under",
+            "92",
+        ]
+    )
+
+    config = verify_quiet.apply_cli_overrides(GuardrailConfig(), args)
+
+    assert config.mode == "fresh-strict"
+    assert config.ruff_max_complexity == STRICT_COMPLEXITY
+    assert config.enable_wemake is False
+    assert config.coverage_fail_under == CLI_COVERAGE_THRESHOLD
 
 
 def test_layout_failures_require_tests_when_enabled(

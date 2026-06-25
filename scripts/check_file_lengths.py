@@ -106,22 +106,34 @@ def parse_csv_like(values: list[str] | None) -> list[str]:
 
 def expand_paths(paths: list[str], changed_only: bool) -> list[Path]:
     if changed_only:
-        return git_files(["git", "diff", "--name-only", "HEAD", "--", "*.py"])
+        return changed_python_paths()
 
     if paths:
-        expanded: list[Path] = []
-        for raw in paths:
-            path = Path(raw)
-            if path.is_dir():
-                expanded.extend(path.rglob("*.py"))
-            elif path.suffix == ".py":
-                expanded.append(path)
-        return expanded
+        return expand_explicit_paths(paths)
 
     tracked = git_files(["git", "ls-files", "*.py"])
     if tracked:
         return tracked
 
+    return configured_file_length_paths()
+
+
+def changed_python_paths() -> list[Path]:
+    return git_files(["git", "diff", "--name-only", "HEAD", "--", "*.py"])
+
+
+def expand_explicit_paths(paths: list[str]) -> list[Path]:
+    expanded: list[Path] = []
+    for raw in paths:
+        path = Path(raw)
+        if path.is_dir():
+            expanded.extend(path.rglob("*.py"))
+        elif path.suffix == ".py":
+            expanded.append(path)
+    return expanded
+
+
+def configured_file_length_paths() -> list[Path]:
     expanded: list[Path] = []
     for root_raw in load_config().file_length_paths:
         root = Path(root_raw)

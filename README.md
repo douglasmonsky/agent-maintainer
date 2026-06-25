@@ -108,6 +108,8 @@ Preferred configuration lives in `pyproject.toml`:
 
 ```toml
 [tool.ai_guardrails]
+# Optional: custom (default), legacy-ratchet, or fresh-strict.
+# mode = "custom"
 source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]
@@ -120,6 +122,8 @@ diff_cover_fail_under = 90
 enable_pip_audit = false
 enable_wemake = false
 ```
+
+Use `mode = "fresh-strict"` for new repositories where strict checks should block from day one. Use `mode = "legacy-ratchet"` for existing repositories where heavy gates should stay opt-in while the repo adopts changed-file and baseline discipline.
 
 Set `require_tests = false` only for repositories where tests are intentionally unavailable. In that mode, pytest coverage and changed-code coverage are reported as explicit optional skips.
 

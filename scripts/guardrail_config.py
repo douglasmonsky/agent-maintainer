@@ -3,9 +3,10 @@
 
 Configuration precedence, lowest to highest:
 1. Built-in defaults.
-2. [tool.ai_guardrails] in pyproject.toml.
-3. GUARDRAILS_* environment variables.
-4. Script-specific CLI overrides.
+2. [tool.ai_guardrails].mode preset defaults.
+3. Explicit [tool.ai_guardrails] fields in pyproject.toml.
+4. GUARDRAILS_* environment variables.
+5. Script-specific CLI overrides.
 """
 
 from __future__ import annotations
@@ -29,10 +30,50 @@ DEFAULT_PACKAGE_PATHS = ("src",)
 DEFAULT_COVERAGE_SOURCE = ("src",)
 DEFAULT_FILE_LENGTH_PATHS = ("src", "tests", "scripts", ".codex/hooks")
 DEFAULT_VULTURE_PATHS = ("src", "tests", "scripts")
+CUSTOM_MODE = "custom"
+LEGACY_RATCHET_MODE = "legacy-ratchet"
+FRESH_STRICT_MODE = "fresh-strict"
+VALID_MODES = frozenset((CUSTOM_MODE, LEGACY_RATCHET_MODE, FRESH_STRICT_MODE))
+
+TUPLE_FIELDS = frozenset(
+    (
+        "source_roots",
+        "test_roots",
+        "package_paths",
+        "coverage_source",
+        "file_length_paths",
+        "vulture_paths",
+        "pip_audit_args",
+    )
+)
+BOOL_FIELDS = frozenset(("require_tests", "enable_pip_audit", "enable_wemake"))
+INT_FIELDS = frozenset(
+    (
+        "coverage_fail_under",
+        "diff_cover_fail_under",
+        "file_length_max_physical",
+        "file_length_max_source",
+        "change_warn_lines",
+        "change_block_lines",
+        "change_warn_files",
+        "change_block_files",
+        "suppression_max_new",
+        "ruff_max_complexity",
+    )
+)
+STR_FIELDS = frozenset(
+    (
+        "xenon_max_absolute",
+        "xenon_max_modules",
+        "xenon_max_average",
+        "pyright_type_checking_mode",
+    )
+)
 
 
 @dataclass(frozen=True)
 class GuardrailConfig:
+    mode: str = CUSTOM_MODE
     source_roots: tuple[str, ...] = DEFAULT_SOURCE_ROOTS
     test_roots: tuple[str, ...] = DEFAULT_TEST_ROOTS
     package_paths: tuple[str, ...] = DEFAULT_PACKAGE_PATHS
@@ -96,6 +137,14 @@ def _as_str(value: object, field_name: str) -> str:
     raise TypeError(f"{field_name} must be a non-empty string")
 
 
+def _as_mode(value: object, field_name: str) -> str:
+    mode = _as_str(value, field_name)
+    if mode in VALID_MODES:
+        return mode
+    valid_modes = ", ".join(sorted(VALID_MODES))
+    raise TypeError(f"{field_name} must be one of: {valid_modes}")
+
+
 def _read_pyproject(path: Path | None = None) -> dict[str, Any]:
     path = path or Path("pyproject.toml")
     if not path.exists():
@@ -112,54 +161,49 @@ def _read_pyproject(path: Path | None = None) -> dict[str, Any]:
 
 
 def _apply_pyproject(config: GuardrailConfig, raw: dict[str, Any]) -> GuardrailConfig:
+    mode_value = raw.get("mode")
+    if mode_value is not None:
+        config = apply_mode(config, _as_mode(mode_value, "mode"))
+    return replace(config, **_coerce_updates(raw))
+
+
+def _coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
     updates: dict[str, object] = {}
-    tuple_fields = {
-        "source_roots",
-        "test_roots",
-        "package_paths",
-        "coverage_source",
-        "file_length_paths",
-        "vulture_paths",
-        "pip_audit_args",
-    }
-    bool_fields = {"require_tests", "enable_pip_audit", "enable_wemake"}
-    int_fields = {
-        "coverage_fail_under",
-        "diff_cover_fail_under",
-        "file_length_max_physical",
-        "file_length_max_source",
-        "change_warn_lines",
-        "change_block_lines",
-        "change_warn_files",
-        "change_block_files",
-        "suppression_max_new",
-        "ruff_max_complexity",
-    }
-    str_fields = {
-        "xenon_max_absolute",
-        "xenon_max_modules",
-        "xenon_max_average",
-        "pyright_type_checking_mode",
-    }
+    field_parsers = (
+        (TUPLE_FIELDS, _as_tuple),
+        (BOOL_FIELDS, _as_bool),
+        (INT_FIELDS, _as_int),
+        (STR_FIELDS, _as_str),
+    )
+    for fields, parser in field_parsers:
+        for field_name in fields:
+            raw_value = raw.get(field_name)
+            if raw_value is not None:
+                updates[field_name] = parser(raw_value, field_name)
+    return updates
 
-    for field_name in tuple_fields:
-        raw_value = raw.get(field_name)
-        if raw_value is not None:
-            updates[field_name] = _as_tuple(raw_value, field_name)
-    for field_name in bool_fields:
-        raw_value = raw.get(field_name)
-        if raw_value is not None:
-            updates[field_name] = _as_bool(raw_value, field_name)
-    for field_name in int_fields:
-        raw_value = raw.get(field_name)
-        if raw_value is not None:
-            updates[field_name] = _as_int(raw_value, field_name)
-    for field_name in str_fields:
-        raw_value = raw.get(field_name)
-        if raw_value is not None:
-            updates[field_name] = _as_str(raw_value, field_name)
 
-    return replace(config, **updates)
+def apply_mode(config: GuardrailConfig, mode: str) -> GuardrailConfig:
+    updates: dict[str, object] = {}
+    if mode == LEGACY_RATCHET_MODE:
+        updates = {
+            "enable_pip_audit": False,
+            "enable_wemake": False,
+        }
+    elif mode == FRESH_STRICT_MODE:
+        updates = {
+            "require_tests": True,
+            "file_length_max_physical": 500,
+            "file_length_max_source": 375,
+            "change_warn_lines": 200,
+            "change_block_lines": 600,
+            "change_warn_files": 6,
+            "change_block_files": 12,
+            "suppression_max_new": 1,
+            "ruff_max_complexity": 8,
+            "enable_wemake": True,
+        }
+    return replace(config, mode=mode, **updates)
 
 
 def _env_tuple(name: str) -> tuple[str, ...] | None:
@@ -195,6 +239,10 @@ def _merge_env_values(
 
 
 def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
+    mode = os.getenv("GUARDRAILS_MODE")
+    if mode is not None:
+        config = apply_mode(config, _as_mode(mode, "GUARDRAILS_MODE"))
+
     updates: dict[str, object] = {}
     tuple_envs = {
         "source_roots": "GUARDRAILS_SOURCE_ROOTS",

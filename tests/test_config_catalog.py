@@ -13,6 +13,9 @@ from scripts.guardrail_models import FULL_PROFILE, PRECOMMIT_PROFILE
 
 CONFIG_COVERAGE_THRESHOLD = 91
 ENV_COVERAGE_THRESHOLD = 95
+STRICT_FILE_LENGTH_MAX_PHYSICAL = 500
+STRICT_COMPLEXITY = 8
+OVERRIDE_COMPLEXITY = 9
 
 
 def test_read_pyproject_loads_ai_guardrail_config(tmp_path: Path) -> None:
@@ -53,6 +56,38 @@ def test_invalid_config_values_raise_clear_type_errors() -> None:
 
     with pytest.raises(TypeError, match="xenon_max_absolute"):
         guardrail_config._as_str("", "xenon_max_absolute")
+
+    with pytest.raises(TypeError, match="mode"):
+        guardrail_config._as_mode("maximum", "mode")
+
+
+def test_fresh_strict_mode_applies_before_explicit_config() -> None:
+    loaded = guardrail_config._apply_pyproject(
+        GuardrailConfig(),
+        {
+            "mode": "fresh-strict",
+            "ruff_max_complexity": 9,
+            "enable_wemake": False,
+        },
+    )
+
+    assert loaded.mode == "fresh-strict"
+    assert loaded.file_length_max_physical == STRICT_FILE_LENGTH_MAX_PHYSICAL
+    assert loaded.ruff_max_complexity == OVERRIDE_COMPLEXITY
+    assert loaded.enable_wemake is False
+
+
+def test_environment_mode_applies_before_explicit_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GUARDRAILS_MODE", "fresh-strict")
+    monkeypatch.setenv("GUARDRAILS_ENABLE_WEMAKE", "false")
+
+    loaded = guardrail_config._apply_env(GuardrailConfig())
+
+    assert loaded.mode == "fresh-strict"
+    assert loaded.ruff_max_complexity == STRICT_COMPLEXITY
+    assert loaded.enable_wemake is False
 
 
 def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:

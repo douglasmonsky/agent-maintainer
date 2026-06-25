@@ -21,7 +21,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from scripts.guardrail_catalog import make_checks
-from scripts.guardrail_config import GuardrailConfig, load_config
+from scripts.guardrail_config import VALID_MODES, GuardrailConfig, apply_mode, load_config
 from scripts.guardrail_executor import run_check
 from scripts.guardrail_layout import layout_failures
 from scripts.guardrail_models import Check, CheckResult
@@ -57,6 +57,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--staged",
         action="store_true",
         help="Use staged changes for diff-based checks.",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=sorted(VALID_MODES),
+        help="Apply a guardrail preset for this run before other CLI overrides.",
     )
 
     parser.add_argument(
@@ -106,6 +111,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> GuardrailConfig:
+    if args.mode is not None:
+        config = apply_mode(config, args.mode)
+
     updates: dict[str, object] = {}
 
     tuple_overrides = {

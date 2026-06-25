@@ -1,4 +1,5 @@
 [tool.ai_guardrails]
+mode = "fresh-strict"
 source_roots = ["scripts", ".codex/hooks"]
 test_roots = ["tests"]
 package_paths = ["scripts", ".codex/hooks"]
@@ -8,17 +9,9 @@ vulture_paths = ["scripts", ".codex/hooks", "tests"]
 require_tests = true
 coverage_fail_under = 80
 diff_cover_fail_under = 90
-file_length_max_physical = 600
-file_length_max_source = 450
-change_warn_lines = 300
-change_block_lines = 800
-change_warn_files = 8
-change_block_files = 20
-suppression_max_new = 3
 xenon_max_absolute = "B"
 xenon_max_modules = "A"
 xenon_max_average = "A"
-ruff_max_complexity = 10
 pyright_type_checking_mode = "standard"
 enable_pip_audit = true
 pip_audit_args = ["-r", "config/dev-dependencies.txt"]
@@ -43,7 +36,7 @@ select = [
 ignore = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 10
+max-complexity = 8
 
 [tool.coverage.run]
 branch = true
