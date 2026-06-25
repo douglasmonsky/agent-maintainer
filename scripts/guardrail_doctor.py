@@ -7,30 +7,16 @@ import json
 import shutil
 import subprocess  # nosec B404
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 
-from scripts import guardrail_config, guardrail_guidance
+from scripts import guardrail_config, guardrail_doctor_policy, guardrail_guidance
 from scripts.guardrail_catalog import make_checks
+from scripts.guardrail_doctor_models import ERROR, OK, WARNING, DoctorResult
 from scripts.guardrail_layout import layout_failures
 from scripts.guardrail_tach import tach_config_issues
 
-Status = str
-
-OK: Status = "PASS"
-WARNING: Status = "WARN"
-ERROR: Status = "FAIL"
 MIN_PYTHON = (3, 11)
 VERIFY_LOG_DIR = ".verify-logs"
-
-
-@dataclass(frozen=True)
-class DoctorResult:
-    """One setup diagnostic row emitted by the doctor command."""
-
-    name: str
-    status: Status
-    message: str
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -72,8 +58,10 @@ def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> lis
         check_required_executables(repo_root, config),
         check_layout(config),
         check_tests(repo_root, config),
+        guardrail_doctor_policy.check_pyright_config(repo_root, config),
         check_pre_commit(repo_root),
         check_codex_hooks(repo_root),
+        guardrail_doctor_policy.check_pip_audit_safety(config),
         check_optional_gates(repo_root, config),
         check_canonical_commands(repo_root),
         check_agent_guidance(repo_root, config),

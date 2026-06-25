@@ -7,9 +7,11 @@ Also read `AGENTS.guardrails.md` before changing code. It is generated from
 required verification commands. If guardrail configuration changes, regenerate it
 with `python3 -m scripts.guardrail guidance`.
 
-## Required workflow
+## Verification workflow
 
-Before finishing any code task, run:
+Trusted Codex hooks normally run fast checks after edits and the precommit
+profile before completion. If those hooks are unavailable, were bypassed, or
+need a failure reproduced manually, run:
 
 ```bash
 python3 -m scripts.guardrail verify --profile precommit
@@ -21,7 +23,8 @@ Before opening or merging a larger change, run:
 python3 -m scripts.guardrail verify --profile full
 ```
 
-Do not claim completion while these checks fail. Do not lower thresholds, delete checks, or add broad suppressions to make the pipeline pass.
+Do not claim completion while required hooks or manual checks fail. Do not lower
+thresholds, delete checks, or add broad suppressions to make the pipeline pass.
 
 If the repository does not use `src/` and `tests/`, configure `[tool.ai_guardrails]` in `pyproject.toml` instead of letting checks drift or fail ambiguously.
 

@@ -159,6 +159,8 @@ vulture_paths = ["src", "tests", "scripts"]
 require_tests = true
 coverage_fail_under = 80
 diff_cover_fail_under = 90
+source_without_test_change_error_profiles = ["precommit"]
+allow_source_without_test_change = false
 enable_pip_audit = false
 enable_wemake = false
 enable_interrogate = false
@@ -294,6 +296,16 @@ src/runner.py:724 physical lines, 510 source lines (limits: 600 physical, 450 so
 Full logs are in .verify-logs/.
 ```
 
+Passing runs can also surface warnings without failing. For example, a large but
+non-blocking staged change may print:
+
+```text
+PASS
+WARNINGS:
+  change-budget: Change budget warnings:
+  WARN: Large Python source diff: 225 changed lines (warning threshold: 200).
+```
+
 Optional integrations are explicit, not silent. For example, if architecture contracts are absent or `pip-audit` is disabled, a passing full run may include:
 
 ```text
@@ -314,11 +326,11 @@ Full raw output is stored in `.verify-logs/` to keep agent context small.
 
 `fast` is designed for Codex `PostToolUse` after file edits. It runs cheap checks: file length, change budget, suppression budget, and Ruff. It still fails when required guardrail scripts or `.git` are missing, but it does not require configured source/test roots to exist yet.
 
-`precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip. The bundled pre-commit hook runs this profile with `--staged`, so diff budgets inspect staged changes only.
+`precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip. The bundled pre-commit hook runs this profile with `--staged`, so diff budgets inspect staged changes only. In `fresh-strict`, source changes without configured test-file changes fail in `precommit` unless `allow_source_without_test_change = true` is set for an already-covered change.
 
 `full` is designed for local deep verification. It adds Radon reports, Pylint, Tach or Import Linter when configured, Interrogate when enabled, deptry, vulture, Bandit, and pip-audit when explicitly enabled.
 
-`ci` is designed for GitHub Actions. It runs the full profile plus changed-code coverage through diff-cover. When tests are disabled, changed-code coverage is reported as an optional skip.
+`ci` is designed for GitHub Actions. It runs the full profile plus changed-code coverage through diff-cover. When tests are disabled, changed-code coverage is reported as an optional skip. The source/test-file-change heuristic remains nonfatal in CI unless `source_without_test_change_error_profiles` explicitly includes `ci`.
 
 ## Suggested thresholds
 

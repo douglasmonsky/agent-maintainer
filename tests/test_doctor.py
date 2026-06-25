@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_doctor, guardrail_guidance
+from scripts import guardrail_doctor, guardrail_doctor_policy, guardrail_guidance
 from scripts.guardrail_config import GuardrailConfig
 from scripts.guardrail_models import FULL_PROFILES, Check
 
@@ -313,6 +313,30 @@ path = "scripts"
 
     assert result.status == guardrail_doctor.OK
     assert "Tach" in result.message
+
+
+def test_pip_audit_safety_warns_or_fails_for_empty_args() -> None:
+    custom = GuardrailConfig(enable_pip_audit=True, pip_audit_args=())
+    strict = GuardrailConfig(mode="fresh-strict", enable_pip_audit=True, pip_audit_args=())
+    safe = GuardrailConfig(enable_pip_audit=True, pip_audit_args=("-r", "requirements.txt"))
+
+    assert guardrail_doctor_policy.check_pip_audit_safety(custom).status == guardrail_doctor.WARNING
+    assert guardrail_doctor_policy.check_pip_audit_safety(strict).status == guardrail_doctor.ERROR
+    assert guardrail_doctor_policy.check_pip_audit_safety(safe).status == guardrail_doctor.OK
+
+
+def test_pyright_config_check_reports_mode_mismatch(tmp_path: Path) -> None:
+    (tmp_path / "pyrightconfig.json").write_text(
+        '{"typeCheckingMode": "basic"}\n',
+        encoding="utf-8",
+    )
+    config = GuardrailConfig(pyright_type_checking_mode="strict")
+
+    result = guardrail_doctor_policy.check_pyright_config(tmp_path, config)
+
+    assert result.status == guardrail_doctor.WARNING
+    assert "basic" in result.message
+    assert "strict" in result.message
 
 
 def test_canonical_commands_fail_on_legacy_workflow_entrypoint(tmp_path: Path) -> None:

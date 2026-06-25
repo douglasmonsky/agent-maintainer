@@ -35,10 +35,12 @@ layer = "entrypoint"
 paths = [
   "scripts.check_change_budget",
   "scripts.check_file_lengths",
+  "scripts.check_pip_audit_config",
   "scripts.check_suppression_budget",
   "scripts.check_tach_config",
   "scripts.guardrail_doctor",
   "scripts.guardrail_guidance",
+  "scripts.run_pyright",
   "scripts.verify_quiet",
 ]
 layer = "orchestration"
@@ -47,6 +49,7 @@ layer = "orchestration"
 paths = [
   "scripts.guardrail_args",
   "scripts.guardrail_catalog",
+  "scripts.guardrail_doctor_policy",
   "scripts.guardrail_executor",
   "scripts.guardrail_layout",
 ]
@@ -61,5 +64,8 @@ paths = [
 layer = "shared"
 
 [[modules]]
-path = "scripts.guardrail_models"
+paths = [
+  "scripts.guardrail_doctor_models",
+  "scripts.guardrail_models",
+]
 layer = "models"

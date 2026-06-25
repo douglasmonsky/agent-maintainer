@@ -10,6 +10,8 @@ vulture_paths = ["scripts", ".codex/hooks", "tests"]
 require_tests = true
 coverage_fail_under = 80
 diff_cover_fail_under = 90
+source_without_test_change_error_profiles = ["precommit"]
+allow_source_without_test_change = false
 xenon_max_absolute = "B"
 xenon_max_modules = "A"
 xenon_max_average = "A"
@@ -60,18 +62,22 @@ testpaths = ["tests"]
 
 [tool.deptry]
 known_first_party = [
+  "check_pip_audit_config",
   "check_tach_config",
   "scripts",
   "guardrail_args",
   "guardrail_catalog",
   "guardrail_config",
   "guardrail_doctor",
+  "guardrail_doctor_models",
+  "guardrail_doctor_policy",
   "guardrail_executor",
   "guardrail_guidance",
   "guardrail_layout",
   "guardrail_models",
   "guardrail_reporting",
   "guardrail_tach",
+  "run_pyright",
   "verify_quiet",
 ]
 requirements_files = ["requirements.txt"]

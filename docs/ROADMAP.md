@@ -44,30 +44,30 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 1: Test-Driven Enforcement Fidelity
 
-- [ ] Add a failing regression test proving aggregate verification does not hide
+- [x] Add a failing regression test proving aggregate verification does not hide
   change-budget warnings behind a plain `PASS`.
-- [ ] Add a failing regression test proving `pyright_type_checking_mode` changes
+- [x] Add a failing regression test proving `pyright_type_checking_mode` changes
   the actual Pyright invocation.
-- [ ] Add a failing regression test proving unsafe `pip-audit` config is
+- [x] Add a failing regression test proving unsafe `pip-audit` config is
   diagnosed.
-- [ ] Add a failing regression test proving `justfile verify-full-output` no
+- [x] Add a failing regression test proving `justfile verify-full-output` no
   longer hard-codes stale `src` assumptions.
-- [ ] Make change-budget warnings visible in all profiles.
-- [ ] Make source-without-test-change warnings fail in Codex/local precommit for
+- [x] Make change-budget warnings visible in all profiles.
+- [x] Make source-without-test-change warnings fail in Codex/local precommit for
   `fresh-strict` unless an explicit escape hatch is set.
-- [ ] Keep CI primarily governed by `diff-cover`; make the source/test-change
+- [x] Keep CI primarily governed by `diff-cover`; make the source/test-change
   heuristic fatal only when explicitly configured for `fresh-strict`.
-- [ ] Add an explicit escape hatch for source-only changes that are already
+- [x] Add an explicit escape hatch for source-only changes that are already
   covered by existing tests.
-- [ ] Generate a temporary Pyright config from `GuardrailConfig` and run Pyright
+- [x] Generate a temporary Pyright config from `GuardrailConfig` and run Pyright
   with `--project`.
-- [ ] Teach `doctor` to compare configured Pyright mode with any active root
+- [x] Teach `doctor` to compare configured Pyright mode with any active root
   Pyright config.
-- [ ] Warn when `enable_pip_audit = true` has empty `pip_audit_args` in
+- [x] Warn when `enable_pip_audit = true` has empty `pip_audit_args` in
   `custom` or `legacy-ratchet`.
-- [ ] Fail when `enable_pip_audit = true` has empty `pip_audit_args` in
+- [x] Fail when `enable_pip_audit = true` has empty `pip_audit_args` in
   `fresh-strict`.
-- [ ] Replace or repair `justfile verify-full-output` so it follows configured
+- [x] Replace or repair `justfile verify-full-output` so it follows configured
   roots instead of `src`.
 
 ## Phase 2: Make Legacy-Ratchet Real
