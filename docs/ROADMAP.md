@@ -156,7 +156,35 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Include relevant remediation hints without making text output noisy.
 - [ ] Keep JSON output stable and covered by tests.
 
-## Phase 8: Add Docs And Config Hygiene
+## Phase 8: Add Structural Cohesion Signals
+
+- [ ] Add a folder-level Python file-count smell check.
+- [ ] Treat folder file count as advisory by default, not proof of bad design.
+- [ ] Default to warning around 20 Python files in one folder.
+- [ ] Block only at a high threshold, around 40 Python files, and only in
+  `fresh-strict`.
+- [ ] Never block tests, migrations, generated folders, virtualenvs, caches, or
+  explicitly configured plugin/command registries.
+- [ ] Add config such as `[tool.ai_guardrails.structure] folder_file_warn`,
+  `folder_file_block`, and `ignore_folder_file_count_paths`, or an equivalent
+  shape that fits the final config model.
+- [ ] Detect prefix clusters that suggest fake flat hierarchy, such as many
+  `guardrail_*` or `check_*` modules in one folder.
+- [ ] Detect layer mixing signals, such as CLI entrypoints, config parsing,
+  execution, reporting, models, and individual checks living in one flat folder.
+- [ ] Consider sibling-import density as a future stronger cohesion signal, but
+  keep the first implementation simple and explainable.
+- [ ] Emit messages that recommend considering a split by responsibility instead
+  of requiring arbitrary subfolders.
+- [ ] Surface structural cohesion signals in generated agent guidance so agents
+  proactively notice refactor pressure.
+- [ ] Teach `doctor` to report active structure thresholds and ignored paths.
+- [ ] Add tests for normal folders, warning folders, fresh-strict block folders,
+  ignored folders, prefix clusters, and explicit registry exemptions.
+- [ ] Document when to split into subpackages and use this repository's
+  `guardrail_lib/config` extraction as the motivating example.
+
+## Phase 9: Add Docs And Config Hygiene
 
 - [ ] Add `markdownlint-cli2` support for Markdown structure.
 - [ ] Enable Markdown linting for this repository once the docs pass cleanly.
@@ -172,7 +200,7 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Update `docs/tool-map.md` as each docs/config hygiene gate becomes
   supported.
 
-## Phase 9: Raise Test Depth Toward 90 Percent
+## Phase 10: Raise Test Depth Toward 90 Percent
 
 - [ ] Raise the coverage target only after meaningful tests exist.
 - [ ] Add branch/error-path tests for `scripts/check_change_budget.py`.
@@ -186,7 +214,7 @@ repo state instead of reconstructing the plan from chat history.
   paths.
 - [ ] Avoid chasing 100 percent coverage unless it reflects real risk reduction.
 
-## Phase 10: Add Slow And Advanced Profiles
+## Phase 11: Add Slow And Advanced Profiles
 
 - [ ] Add a slow/manual profile concept separate from normal `full`.
 - [ ] Add `mutmut` as a slow/manual mutation-testing option.
@@ -210,3 +238,5 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Do not adopt Betterleaks as the first default backend until its install and
   config story is clear for this kit.
 - [ ] Do not raise docstring coverage to 100 percent as a default policy.
+- [ ] Do not force arbitrary subfolders from folder file count alone; use count
+  as a refactor signal, not as a standalone design proof.
