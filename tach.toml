@@ -1,0 +1,64 @@
+source_roots = ["."]
+root_module = "forbid"
+exact = true
+exclude = [
+  ".codex/",
+  ".git/",
+  ".mypy_cache/",
+  ".pytest_cache/",
+  ".ruff_cache/",
+  ".venv/",
+  "build/",
+  "dist/",
+  "htmlcov/",
+  "tests/",
+  "venv/",
+]
+
+layers = [
+  "entrypoint",
+  "orchestration",
+  "runtime",
+  "shared",
+  "models",
+]
+
+[[modules]]
+path = "scripts"
+layer = "shared"
+
+[[modules]]
+path = "scripts.guardrail"
+layer = "entrypoint"
+
+[[modules]]
+paths = [
+  "scripts.check_change_budget",
+  "scripts.check_file_lengths",
+  "scripts.check_suppression_budget",
+  "scripts.check_tach_config",
+  "scripts.guardrail_doctor",
+  "scripts.verify_quiet",
+]
+layer = "orchestration"
+
+[[modules]]
+paths = [
+  "scripts.guardrail_args",
+  "scripts.guardrail_catalog",
+  "scripts.guardrail_executor",
+  "scripts.guardrail_layout",
+]
+layer = "runtime"
+
+[[modules]]
+paths = [
+  "scripts.guardrail_config",
+  "scripts.guardrail_reporting",
+  "scripts.guardrail_tach",
+]
+layer = "shared"
+
+[[modules]]
+path = "scripts.guardrail_models"
+layer = "models"
