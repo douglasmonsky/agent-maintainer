@@ -7,7 +7,22 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_catalog, guardrail_config
+from guardrail_lib.config import (
+    coercion as guardrail_config_coercion,
+)
+from guardrail_lib.config import (
+    loader as guardrail_config_loader,
+)
+from guardrail_lib.config import (
+    modes as guardrail_config_modes,
+)
+from guardrail_lib.config import (
+    schema as guardrail_config_schema,
+)
+from scripts import (
+    guardrail_catalog,
+    guardrail_config,
+)
 from scripts.guardrail_config import GuardrailConfig
 from scripts.guardrail_models import CI_PROFILE, PRECOMMIT_PROFILE
 
@@ -39,8 +54,8 @@ architecture_tool = "tach"
         encoding="utf-8",
     )
 
-    raw = guardrail_config._read_pyproject(pyproject)
-    loaded = guardrail_config._apply_pyproject(GuardrailConfig(), raw)
+    raw = guardrail_config_loader.read_pyproject(pyproject)
+    loaded = guardrail_config_loader.apply_pyproject(GuardrailConfig(), raw)
 
     assert loaded.source_roots == ("lib",)
     assert loaded.test_roots == ("specs",)
@@ -56,30 +71,30 @@ architecture_tool = "tach"
 
 def test_invalid_config_values_raise_clear_type_errors() -> None:
     with pytest.raises(TypeError, match="source_roots"):
-        guardrail_config._as_tuple(12, "source_roots")
+        guardrail_config_coercion.as_tuple(12, "source_roots")
 
     with pytest.raises(TypeError, match="enable_pip_audit"):
-        guardrail_config._as_bool("maybe", "enable_pip_audit")
+        guardrail_config_coercion.as_bool("maybe", "enable_pip_audit")
 
     with pytest.raises(TypeError, match="coverage_fail_under"):
-        guardrail_config._as_int("not-an-int", "coverage_fail_under")
+        guardrail_config_coercion.as_int("not-an-int", "coverage_fail_under")
 
     with pytest.raises(TypeError, match="xenon_max_absolute"):
-        guardrail_config._as_str("", "xenon_max_absolute")
+        guardrail_config_coercion.as_str("", "xenon_max_absolute")
 
     with pytest.raises(TypeError, match="mode"):
-        guardrail_config._as_choice("maximum", "mode", guardrail_config.VALID_MODES)
+        guardrail_config_coercion.as_choice("maximum", "mode", guardrail_config_schema.VALID_MODES)
 
     with pytest.raises(TypeError, match="architecture_tool"):
-        guardrail_config._as_choice(
+        guardrail_config_coercion.as_choice(
             "layers",
             "architecture_tool",
-            guardrail_config.VALID_ARCHITECTURE_TOOLS,
+            guardrail_config_schema.VALID_ARCHITECTURE_TOOLS,
         )
 
 
 def test_fresh_strict_mode_applies_before_explicit_config() -> None:
-    loaded = guardrail_config._apply_pyproject(
+    loaded = guardrail_config_loader.apply_pyproject(
         GuardrailConfig(),
         {
             "mode": "fresh-strict",
@@ -96,7 +111,7 @@ def test_fresh_strict_mode_applies_before_explicit_config() -> None:
 
 
 def test_legacy_ratchet_mode_sets_file_length_baseline() -> None:
-    loaded = guardrail_config.apply_mode(GuardrailConfig(), "legacy-ratchet")
+    loaded = guardrail_config_modes.apply_mode(GuardrailConfig(), "legacy-ratchet")
     checks = guardrail_catalog.make_checks(loaded, "HEAD", "origin/main")
     file_length = next(check for check in checks if check.name == "file-length")
 
@@ -111,7 +126,7 @@ def test_environment_mode_applies_before_explicit_environment(
     monkeypatch.setenv("GUARDRAILS_MODE", "fresh-strict")
     monkeypatch.setenv("GUARDRAILS_ENABLE_WEMAKE", "false")
 
-    loaded = guardrail_config._apply_env(GuardrailConfig())
+    loaded = guardrail_config_loader.apply_env(GuardrailConfig())
 
     assert loaded.mode == "fresh-strict"
     assert loaded.ruff_max_complexity == STRICT_COMPLEXITY
@@ -128,7 +143,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GUARDRAILS_INTERROGATE_FAIL_UNDER", "33")
     monkeypatch.setenv("GUARDRAILS_FILE_LENGTH_BASELINE", ".guardrails/env-baseline.json")
 
-    loaded = guardrail_config._apply_env(GuardrailConfig())
+    loaded = guardrail_config_loader.apply_env(GuardrailConfig())
 
     assert loaded.source_roots == ("pkg", "tools")
     assert loaded.require_tests is False
@@ -271,7 +286,7 @@ def test_pyright_check_uses_generated_project_runner() -> None:
 
 
 def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only() -> None:
-    config = guardrail_config.apply_mode(GuardrailConfig(), "fresh-strict")
+    config = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
     checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
     precommit = [
         check
@@ -288,7 +303,7 @@ def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only(
 
 
 def test_source_without_test_escape_hatch_reaches_change_budget_command() -> None:
-    config = guardrail_config.apply_mode(GuardrailConfig(), "fresh-strict")
+    config = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
     config = replace(config, allow_source_without_test_change=True)
     checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
     precommit = next(
@@ -301,7 +316,7 @@ def test_source_without_test_escape_hatch_reaches_change_budget_command() -> Non
 
 
 def test_pip_audit_unsafe_config_fails_only_in_fresh_strict() -> None:
-    strict = guardrail_config.apply_mode(GuardrailConfig(), "fresh-strict")
+    strict = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
     strict = replace(strict, enable_pip_audit=True, pip_audit_args=())
     custom = replace(GuardrailConfig(), enable_pip_audit=True, pip_audit_args=())
 
