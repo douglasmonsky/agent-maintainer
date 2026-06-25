@@ -48,7 +48,7 @@ uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis impor
 Or with pip:
 
 ```bash
-python -m pip install -r config/dev-dependencies.txt
+python -m pip install -r config/dev-lock.txt
 ```
 
 For the shortest local path with pip, run:
@@ -57,7 +57,14 @@ For the shortest local path with pip, run:
 python3 -m scripts.guardrail bootstrap
 ```
 
-This creates `.venv` when needed, installs `config/dev-dependencies.txt`, installs the pre-commit hook, and reports whether Codex hooks are configured.
+This creates `.venv` when needed, installs `config/dev-lock.txt` when present, falls back to `config/dev-dependencies.txt`, installs the pre-commit hook, and reports whether Codex hooks are configured.
+
+Keep `config/dev-dependencies.txt` as the human-edited dependency input. Refresh the pinned lock after changing it:
+
+```bash
+python3 -m scripts.guardrail bootstrap
+.venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
+```
 
 Python 3.11+ is recommended. Python 3.10 and older require `tomli` in the same environment that runs the verifier. The Codex hooks prefer `.venv/bin/python` or `venv/bin/python` when present, so installing dev dependencies into a project virtualenv is the most reliable local setup.
 
@@ -309,7 +316,7 @@ Start strict for new repositories. For existing repositories, start with `fast` 
 
 This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
 
-This repository also keeps the normally optional hardening gates active for itself: tests are required, `.importlinter` defines the guardrail-script dependency layers, and `pip-audit` runs against `config/dev-dependencies.txt`.
+This repository also keeps the normally optional hardening gates active for itself: tests are required, `.importlinter` defines the guardrail-script dependency layers, and `pip-audit` runs against `config/dev-lock.txt`.
 
 Generated files are skipped by the file-length check when they contain common generated-file markers near the top. Lock files and binary assets are excluded from the change-budget check.
 

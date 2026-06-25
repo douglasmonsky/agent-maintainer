@@ -101,9 +101,12 @@ def ensure_virtualenv(repo_root: Path) -> Path | None:
 
 
 def install_dependencies(repo_root: Path, python_path: Path) -> int:
-    dependency_file = repo_root / "config" / "dev-dependencies.txt"
+    dependency_file = preferred_dependency_file(repo_root)
     if not dependency_file.exists():
-        print("FAIL bootstrap: config/dev-dependencies.txt is not present.", file=sys.stderr)
+        print(
+            "FAIL bootstrap: config/dev-lock.txt or config/dev-dependencies.txt is not present.",
+            file=sys.stderr,
+        )
         return 1
 
     dependency_path = dependency_file.relative_to(repo_root)
@@ -115,6 +118,13 @@ def install_dependencies(repo_root: Path, python_path: Path) -> int:
         check=False,
     )
     return result.returncode
+
+
+def preferred_dependency_file(repo_root: Path) -> Path:
+    lock_file = repo_root / "config" / "dev-lock.txt"
+    if lock_file.exists():
+        return lock_file
+    return repo_root / "config" / "dev-dependencies.txt"
 
 
 def install_pre_commit(repo_root: Path) -> int:

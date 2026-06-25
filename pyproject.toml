@@ -14,7 +14,7 @@ xenon_max_modules = "A"
 xenon_max_average = "A"
 pyright_type_checking_mode = "standard"
 enable_pip_audit = true
-pip_audit_args = ["-r", "config/dev-dependencies.txt"]
+pip_audit_args = ["-r", "config/dev-lock.txt"]
 enable_wemake = true
 
 [tool.ruff]
@@ -69,7 +69,7 @@ known_first_party = [
   "verify_quiet",
 ]
 requirements_files = ["requirements.txt"]
-requirements_files_dev = ["config/dev-dependencies.txt"]
+requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
 
 [tool.deptry.per_rule_ignores]
 DEP003 = ["tomli"]

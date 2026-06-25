@@ -30,7 +30,7 @@ pyright_type_checking_mode = "standard"
 # and can audit unrelated active-environment packages if no input file is used.
 enable_pip_audit = false
 # Example when enabled:
-# pip_audit_args = ["-r", "requirements.txt"]
+# pip_audit_args = ["-r", "config/dev-lock.txt"]
 
 # Disabled by default because wemake is intentionally strict. Enable for fresh
 # repos or existing repos that have a clean baseline or ratchet plan.

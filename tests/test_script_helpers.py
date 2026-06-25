@@ -260,6 +260,11 @@ def test_guardrail_install_helpers(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     assert guardrail.install_dependencies(tmp_path, python_path) == 0
     assert calls[0][-2:] == ["-r", "config/dev-dependencies.txt"]
 
+    (tmp_path / "config" / "dev-lock.txt").write_text("pytest==9.1.1\n", encoding="utf-8")
+    calls.clear()
+    assert guardrail.install_dependencies(tmp_path, python_path) == 0
+    assert calls[0][-2:] == ["-r", "config/dev-lock.txt"]
+
 
 def test_guardrail_bootstrap_and_virtualenv_helpers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -327,7 +332,7 @@ def test_guardrail_dependency_install_requires_manifest(
     python_path = tmp_path / ".venv" / "bin" / "python"
 
     assert guardrail.install_dependencies(tmp_path, python_path) == 1
-    assert "dev-dependencies.txt is not present" in capsys.readouterr().err
+    assert "dev-lock.txt or config/dev-dependencies.txt" in capsys.readouterr().err
 
 
 def test_guardrail_reports_codex_hooks(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
