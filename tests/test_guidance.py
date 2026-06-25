@@ -41,6 +41,8 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "pip-audit: enabled with `-r config/dev-lock.txt`" in text
     assert "python3 -m scripts.guardrail verify --profile precommit" in text
     assert "Prefer small, coherent commits" in text
+    assert "Prefer `rg --files` or `git ls-files`" in text
+    assert "`__pycache__`, `*.pyc`, `.venv`" in text
 
 
 def test_render_guidance_is_deterministic_and_nonvolatile() -> None:
