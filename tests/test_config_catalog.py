@@ -134,6 +134,8 @@ def test_pytest_and_diff_cover_are_required_when_tests_are_required() -> None:
 
     assert pytest_check.name == "pytest-coverage"
     assert pytest_check.required_executable == "pytest"
+    assert "-p" in pytest_check.command
+    assert "no:tach" in pytest_check.command
     assert "--cov=scripts" in pytest_check.command
     assert "tests" in pytest_check.command
     assert diff_cover.required_executable == "diff-cover"

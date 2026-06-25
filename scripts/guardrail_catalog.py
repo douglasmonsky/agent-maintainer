@@ -27,7 +27,7 @@ def existing_or_configured(paths: tuple[str, ...]) -> tuple[str, ...]:
 
 
 def pytest_command(config: GuardrailConfig) -> list[str]:
-    command = ["pytest", "-q", "--tb=short", "--disable-warnings"]
+    command = ["pytest", "-q", "--tb=short", "--disable-warnings", "-p", "no:tach"]
     command.extend(f"--cov={source}" for source in config.coverage_source)
     command.extend(
         [
