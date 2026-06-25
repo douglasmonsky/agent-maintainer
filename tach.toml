@@ -54,6 +54,7 @@ paths = [
   "scripts.guardrail_args",
   "scripts.guardrail_catalog",
   "scripts.guardrail_doctor_policy",
+  "scripts.guardrail_doctor_logs",
   "scripts.guardrail_executor",
   "scripts.guardrail_layout",
 ]

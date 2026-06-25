@@ -414,22 +414,6 @@ def test_git_state_passes_for_clean_branch(tmp_path: Path, monkeypatch: pytest.M
     assert result.message == "main...origin/main"
 
 
-def test_recent_logs_warn_and_pass(tmp_path: Path) -> None:
-    assert guardrail_doctor.check_recent_logs(tmp_path).status == guardrail_doctor.WARNING
-
-    log_dir = tmp_path / ".verify-logs"
-    log_dir.mkdir()
-
-    assert guardrail_doctor.check_recent_logs(tmp_path).status == guardrail_doctor.WARNING
-
-    (log_dir / "ruff.log").write_text("ok\n", encoding="utf-8")
-
-    result = guardrail_doctor.check_recent_logs(tmp_path)
-
-    assert result.status == guardrail_doctor.OK
-    assert "ruff.log" in result.message
-
-
 def test_agent_guidance_check_warns_for_missing_custom_sidecar(tmp_path: Path) -> None:
     result = guardrail_doctor.check_agent_guidance(tmp_path, GuardrailConfig())
 
