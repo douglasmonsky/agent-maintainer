@@ -7,7 +7,7 @@ repo state instead of reconstructing the plan from chat history.
 ## Current Baseline
 
 - [x] Private GitHub repository exists.
-- [x] Main branch is synced with `origin/main`.
+- [x] Private origin and remote CI verification have been proven for this repo.
 - [x] Canonical CLI uses `python3 -m scripts.guardrail`.
 - [x] `fresh-strict` mode is active for this repository.
 - [x] Tach is the active architecture backend for this repository.
@@ -56,7 +56,52 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Update `docs/legacy-ratchet.md` to distinguish fresh blocking from legacy
   ratcheting.
 
-## Phase 2: Add Tool Capability Modeling
+## Phase 2: Agent Diagnostic Artifacts
+
+- [ ] Add a diagnostics config section for verifier artifacts.
+- [ ] Add `.verify-logs/manifest.json`.
+- [ ] Record command, exit code, status, profile, timestamps, git SHA/state,
+  relevant thresholds, and artifact paths per check.
+- [ ] Add `.verify-logs/LAST_FAILURE.md` with failed checks, concise diagnostics,
+  full-log paths, and the exact rerun command.
+- [ ] Keep terminal output compact while making the artifact trail complete.
+- [ ] Store structured output where supported, starting with Pyright JSON.
+- [ ] Add Ruff JSON or SARIF output when useful for summaries.
+- [ ] Add pytest JUnit XML output.
+- [ ] Preserve coverage XML and consider coverage JSON.
+- [ ] Add Bandit JSON output.
+- [ ] Prefer structured artifacts over raw text when producing compact failure
+  summaries.
+- [ ] Add tests for manifest content, failure-note content, stale artifacts, and
+  successful runs.
+- [ ] Teach `doctor` to detect stale logs and stale structured artifacts.
+- [ ] Keep runtime application logging enforcement advisory and disabled by
+  default.
+
+## Phase 3: Generated Agent Guidance
+
+- [ ] Add a generator that renders agent-facing guidance from
+  `[tool.ai_guardrails]`.
+- [ ] Include active mode, source roots, test roots, architecture backend,
+  thresholds, required commands, enabled optional gates, and escape hatches.
+- [ ] Frame generated guidance as positive operating instructions, not just a
+  list of ways checks can fail.
+- [ ] Keep human-owned `AGENTS.md` content authoritative and avoid overwriting it
+  wholesale.
+- [ ] Use a protected generated block or a committed sidecar file such as
+  `AGENTS.guardrails.md`.
+- [ ] If using a sidecar file, add a stable human-owned pointer from `AGENTS.md`
+  so agents know to read it.
+- [ ] Make generated output deterministic and free of secrets, machine-local
+  paths, volatile git state, or timestamps.
+- [ ] Add a `doctor` freshness check so generated guidance cannot silently drift
+  from configuration.
+- [ ] Add tests proving guidance updates when config changes and remains stable
+  when config does not change.
+- [ ] Consider optional subdirectory `AGENTS.md` generation only after the root
+  guidance flow is proven.
+
+## Phase 4: Add Tool Capability Modeling
 
 - [ ] Add a tool capability model with at least `python_package`,
   `external_binary`, `github_action_only`, and `manual_optional`.
@@ -66,7 +111,7 @@ repo state instead of reconstructing the plan from chat history.
   non-pip tools are not conflated.
 - [ ] Add tests for supported, missing, disabled, and not-applicable tool states.
 
-## Phase 3: Harden GitHub Actions
+## Phase 5: Harden GitHub Actions
 
 - [ ] Add explicit workflow permissions, starting with
   `permissions: contents: read`.
@@ -80,7 +125,7 @@ repo state instead of reconstructing the plan from chat history.
   GitHub Actions.
 - [ ] Add tests for workflow-tool applicability and optional-skip behavior.
 
-## Phase 4: Add Backend-Neutral Secret Scanning
+## Phase 6: Add Backend-Neutral Secret Scanning
 
 - [ ] Add a `secret_scanner` config concept.
 - [ ] Treat secret scanning as opt-in or mode/profile-driven, not mandatory in
@@ -96,7 +141,7 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Document why Gitleaks is the first backend but not a permanent architectural
   commitment.
 
-## Phase 5: Improve Doctor Product UX
+## Phase 7: Improve Doctor Product UX
 
 - [ ] Report the active architecture backend.
 - [ ] Report active coverage, diff-cover, Interrogate, complexity, and
@@ -108,7 +153,7 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Include relevant remediation hints without making text output noisy.
 - [ ] Keep JSON output stable and covered by tests.
 
-## Phase 6: Add Docs And Config Hygiene
+## Phase 8: Add Docs And Config Hygiene
 
 - [ ] Add `markdownlint-cli2` support for Markdown structure.
 - [ ] Enable Markdown linting for this repository once the docs pass cleanly.
@@ -124,7 +169,7 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Update `docs/tool-map.md` as each docs/config hygiene gate becomes
   supported.
 
-## Phase 7: Raise Test Depth Toward 90 Percent
+## Phase 9: Raise Test Depth Toward 90 Percent
 
 - [ ] Raise the coverage target only after meaningful tests exist.
 - [ ] Add branch/error-path tests for `scripts/check_change_budget.py`.
@@ -138,7 +183,7 @@ repo state instead of reconstructing the plan from chat history.
   paths.
 - [ ] Avoid chasing 100 percent coverage unless it reflects real risk reduction.
 
-## Phase 8: Add Slow And Advanced Profiles
+## Phase 10: Add Slow And Advanced Profiles
 
 - [ ] Add a slow/manual profile concept separate from normal `full`.
 - [ ] Add `mutmut` as a slow/manual mutation-testing option.
