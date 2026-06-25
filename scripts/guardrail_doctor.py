@@ -7,15 +7,21 @@ import json
 import shutil
 import subprocess  # nosec B404
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
 from scripts.guardrail_catalog import make_checks
-from scripts.guardrail_config import GuardrailConfig, format_paths, load_config
+from scripts.guardrail_config import (
+    FRESH_STRICT_MODE,
+    TACH_TOOL,
+    GuardrailConfig,
+    format_paths,
+    load_config,
+)
 from scripts.guardrail_layout import layout_failures
+from scripts.guardrail_tach import tach_config_issues
 
-Status = Literal["PASS", "WARN", "FAIL"]
+Status = str
 
 OK: Status = "PASS"
 WARNING: Status = "WARN"
@@ -50,7 +56,7 @@ def main(argv: list[str]) -> int:
     args = parse_args(argv)
     results = run_doctor(Path.cwd(), load_config())
     if args.json:
-        print(json.dumps([asdict(item) for item in results], indent=2))
+        print(json.dumps([item.__dict__ for item in results], indent=2))
     else:
         print_text(results)
     return status_code(results, strict=args.strict)
@@ -169,7 +175,13 @@ def check_codex_hooks(repo_root: Path) -> DoctorResult:
 
 def check_optional_gates(repo_root: Path, config: GuardrailConfig) -> DoctorResult:
     missing: list[str] = []
-    if not (repo_root / ".importlinter").exists():
+    architecture_name = "Import Linter"
+    if config.architecture_tool == TACH_TOOL:
+        architecture_name = "Tach"
+        missing.extend(
+            tach_config_issues(repo_root, require_strict_root=config.mode == FRESH_STRICT_MODE)
+        )
+    elif not (repo_root / ".importlinter").exists():
         missing.append(".importlinter")
     if not config.enable_pip_audit:
         missing.append("pip-audit disabled")
@@ -177,7 +189,9 @@ def check_optional_gates(repo_root: Path, config: GuardrailConfig) -> DoctorResu
         missing.append("wemake disabled")
     if missing:
         return DoctorResult("optional-gates", WARNING, "; ".join(missing))
-    return DoctorResult("optional-gates", OK, "Import Linter, pip-audit, and wemake are active.")
+    return DoctorResult(
+        "optional-gates", OK, f"{architecture_name}, pip-audit, and wemake are active."
+    )
 
 
 def check_canonical_commands(repo_root: Path) -> DoctorResult:

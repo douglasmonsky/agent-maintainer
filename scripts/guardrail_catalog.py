@@ -5,7 +5,13 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from scripts.guardrail_config import GuardrailConfig, existing_paths
+from scripts.guardrail_config import (
+    FRESH_STRICT_MODE,
+    IMPORT_LINTER_TOOL,
+    TACH_TOOL,
+    GuardrailConfig,
+    existing_paths,
+)
 from scripts.guardrail_models import (
     ALL_PROFILES,
     CI_ONLY_PROFILES,
@@ -115,6 +121,49 @@ def wemake_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> Che
     )
 
 
+def architecture_checks(config: GuardrailConfig) -> list[Check]:
+    if config.architecture_tool == TACH_TOOL:
+        return tach_checks(config)
+    return [
+        Check(
+            IMPORT_LINTER_TOOL,
+            ["lint-imports"],
+            FULL_PROFILES,
+            required_executable="lint-imports",
+            optional_skip_reason=(
+                ".importlinter is absent; architecture contracts are not configured"
+            ),
+        )
+    ]
+
+
+def tach_checks(config: GuardrailConfig) -> list[Check]:
+    strict = config.mode == FRESH_STRICT_MODE
+    config_command = [sys.executable, "-m", "scripts.check_tach_config"]
+    if strict:
+        config_command.append("--strict-root-module")
+    optional_skip_reason = None
+    if not strict:
+        optional_skip_reason = "tach.toml is absent; architecture contracts are not configured"
+    return [
+        Check(
+            "tach-config",
+            config_command,
+            FULL_PROFILES,
+            required_paths=("tach.toml",) if strict else (),
+            optional_skip_reason=optional_skip_reason,
+        ),
+        Check(
+            "tach",
+            ["tach", "check", "--exact"],
+            FULL_PROFILES,
+            required_paths=("tach.toml",) if strict else (),
+            required_executable="tach",
+            optional_skip_reason=optional_skip_reason,
+        ),
+    ]
+
+
 def vulture_paths(config: GuardrailConfig, package_paths: tuple[str, ...]) -> tuple[str, ...]:
     paths = tuple(path for path in config.vulture_paths if Path(path).exists())
     return paths or package_paths
@@ -203,15 +252,7 @@ def make_checks(
             FULL_PROFILES,
             required_executable="pylint",
         ),
-        Check(
-            "import-linter",
-            ["lint-imports"],
-            FULL_PROFILES,
-            required_executable="lint-imports",
-            optional_skip_reason=(
-                ".importlinter is absent; architecture contracts are not configured"
-            ),
-        ),
+        *architecture_checks(config),
         Check(
             "deptry",
             ["deptry", "."],

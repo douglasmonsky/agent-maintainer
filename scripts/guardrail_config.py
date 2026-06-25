@@ -34,6 +34,9 @@ CUSTOM_MODE = "custom"
 LEGACY_RATCHET_MODE = "legacy-ratchet"
 FRESH_STRICT_MODE = "fresh-strict"
 VALID_MODES = frozenset((CUSTOM_MODE, LEGACY_RATCHET_MODE, FRESH_STRICT_MODE))
+IMPORT_LINTER_TOOL = "import-linter"
+TACH_TOOL = "tach"
+VALID_ARCHITECTURE_TOOLS = frozenset((IMPORT_LINTER_TOOL, TACH_TOOL))
 
 TUPLE_FIELDS = frozenset(
     (
@@ -98,6 +101,7 @@ class GuardrailConfig:
     enable_pip_audit: bool = False
     enable_wemake: bool = False
     pip_audit_args: tuple[str, ...] = ()
+    architecture_tool: str = IMPORT_LINTER_TOOL
 
 
 def _as_tuple(value: object, field_name: str) -> tuple[str, ...]:
@@ -137,12 +141,12 @@ def _as_str(value: object, field_name: str) -> str:
     raise TypeError(f"{field_name} must be a non-empty string")
 
 
-def _as_mode(value: object, field_name: str) -> str:
-    mode = _as_str(value, field_name)
-    if mode in VALID_MODES:
-        return mode
-    valid_modes = ", ".join(sorted(VALID_MODES))
-    raise TypeError(f"{field_name} must be one of: {valid_modes}")
+def _as_choice(value: object, field_name: str, choices: frozenset[str]) -> str:
+    selected = _as_str(value, field_name)
+    if selected in choices:
+        return selected
+    valid_values = ", ".join(sorted(choices))
+    raise TypeError(f"{field_name} must be one of: {valid_values}")
 
 
 def _read_pyproject(path: Path | None = None) -> dict[str, Any]:
@@ -163,7 +167,7 @@ def _read_pyproject(path: Path | None = None) -> dict[str, Any]:
 def _apply_pyproject(config: GuardrailConfig, raw: dict[str, Any]) -> GuardrailConfig:
     mode_value = raw.get("mode")
     if mode_value is not None:
-        config = apply_mode(config, _as_mode(mode_value, "mode"))
+        config = apply_mode(config, _as_choice(mode_value, "mode", VALID_MODES))
     return replace(config, **_coerce_updates(raw))
 
 
@@ -180,6 +184,11 @@ def _coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
             raw_value = raw.get(field_name)
             if raw_value is not None:
                 updates[field_name] = parser(raw_value, field_name)
+    architecture_tool = raw.get("architecture_tool")
+    if architecture_tool is not None:
+        updates["architecture_tool"] = _as_choice(
+            architecture_tool, "architecture_tool", VALID_ARCHITECTURE_TOOLS
+        )
     return updates
 
 
@@ -241,7 +250,7 @@ def _merge_env_values(
 def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
     mode = os.getenv("GUARDRAILS_MODE")
     if mode is not None:
-        config = apply_mode(config, _as_mode(mode, "GUARDRAILS_MODE"))
+        config = apply_mode(config, _as_choice(mode, "GUARDRAILS_MODE", VALID_MODES))
 
     updates: dict[str, object] = {}
     tuple_envs = {
@@ -279,6 +288,13 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
     pip_audit_args = os.getenv("GUARDRAILS_PIP_AUDIT_ARGS")
     if pip_audit_args is not None:
         updates["pip_audit_args"] = tuple(shlex.split(pip_audit_args))
+    architecture_tool = os.getenv("GUARDRAILS_ARCHITECTURE_TOOL")
+    if architecture_tool is not None:
+        updates["architecture_tool"] = _as_choice(
+            architecture_tool,
+            "GUARDRAILS_ARCHITECTURE_TOOL",
+            VALID_ARCHITECTURE_TOOLS,
+        )
 
     return replace(config, **updates)
 

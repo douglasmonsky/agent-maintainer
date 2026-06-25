@@ -1,4 +1,5 @@
 CacheControl==0.14.4
+GitPython==3.1.50
 Jinja2==3.1.6
 MarkupSafe==3.0.3
 PyYAML==6.0.3
@@ -22,6 +23,7 @@ dill==0.4.1
 distlib==0.4.3
 filelock==3.29.4
 flake8==7.3.0
+gitdb==4.0.12
 grimp==3.14
 hypothesis==6.155.7
 identify==2.6.19
@@ -35,6 +37,7 @@ markdown-it-py==4.2.0
 mccabe==0.7.0
 mdurl==0.1.2
 msgpack==1.2.1
+networkx==3.6.1
 nodeenv==1.10.0
 packageurl-python==0.17.6
 packaging==26.2
@@ -44,8 +47,10 @@ pip_audit==2.10.1
 platformdirs==4.10.0
 pluggy==1.6.0
 pre_commit==4.6.0
+prompt_toolkit==3.0.52
 py-serializable==2.1.0
 pycodestyle==2.14.0
+pydot==4.0.1
 pyflakes==3.4.0
 pylint==4.0.6
 pyparsing==3.3.2
@@ -59,8 +64,10 @@ requirements-parser==0.13.1
 rich==15.0.0
 ruff==0.15.19
 six==1.17.0
+smmap==5.0.3
 sortedcontainers==2.4.0
 stevedore==5.8.0
+tach==0.35.0
 tomli==2.4.1
 tomli_w==1.2.0
 tomlkit==0.15.0
@@ -68,5 +75,6 @@ typing_extensions==4.15.0
 urllib3==2.7.0
 virtualenv==21.5.1
 vulture==2.16
+wcwidth==0.8.1
 wemake-python-styleguide==1.6.2
 xenon==0.9.3

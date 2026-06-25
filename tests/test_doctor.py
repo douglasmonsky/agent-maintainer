@@ -246,6 +246,67 @@ def test_optional_gates_pass_when_enabled(tmp_path: Path) -> None:
     assert result.status == guardrail_doctor.OK
 
 
+def test_optional_gates_warn_when_tach_config_is_missing(tmp_path: Path) -> None:
+    config = GuardrailConfig(
+        architecture_tool="tach",
+        enable_pip_audit=True,
+        enable_wemake=True,
+    )
+
+    result = guardrail_doctor.check_optional_gates(tmp_path, config)
+
+    assert result.status == guardrail_doctor.WARNING
+    assert "tach.toml is absent" in result.message
+
+
+def test_optional_gates_warn_when_fresh_strict_tach_is_permissive(tmp_path: Path) -> None:
+    (tmp_path / "tach.toml").write_text(
+        """
+source_roots = ["."]
+root_module = "ignore"
+
+[[modules]]
+path = "scripts"
+""".strip(),
+        encoding="utf-8",
+    )
+    config = GuardrailConfig(
+        mode="fresh-strict",
+        architecture_tool="tach",
+        enable_pip_audit=True,
+        enable_wemake=True,
+    )
+
+    result = guardrail_doctor.check_optional_gates(tmp_path, config)
+
+    assert result.status == guardrail_doctor.WARNING
+    assert 'root_module = "forbid"' in result.message
+
+
+def test_optional_gates_pass_when_tach_is_strict(tmp_path: Path) -> None:
+    (tmp_path / "tach.toml").write_text(
+        """
+source_roots = ["."]
+root_module = "forbid"
+
+[[modules]]
+path = "scripts"
+""".strip(),
+        encoding="utf-8",
+    )
+    config = GuardrailConfig(
+        mode="fresh-strict",
+        architecture_tool="tach",
+        enable_pip_audit=True,
+        enable_wemake=True,
+    )
+
+    result = guardrail_doctor.check_optional_gates(tmp_path, config)
+
+    assert result.status == guardrail_doctor.OK
+    assert "Tach" in result.message
+
+
 def test_canonical_commands_fail_on_legacy_workflow_entrypoint(tmp_path: Path) -> None:
     workflow = tmp_path / ".github" / "workflows" / "verify.yml"
     workflow.parent.mkdir(parents=True)

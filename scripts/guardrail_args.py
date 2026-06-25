@@ -6,7 +6,12 @@ import argparse
 import os
 from dataclasses import replace
 
-from scripts.guardrail_config import VALID_MODES, GuardrailConfig, apply_mode
+from scripts.guardrail_config import (
+    VALID_ARCHITECTURE_TOOLS,
+    VALID_MODES,
+    GuardrailConfig,
+    apply_mode,
+)
 
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
@@ -56,9 +61,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--enable-wemake", action="store_true", default=None)
     parser.add_argument("--disable-wemake", action="store_false", dest="enable_wemake")
     parser.add_argument(
+        "--architecture-tool",
+        choices=sorted(VALID_ARCHITECTURE_TOOLS),
+        help="Architecture contract checker to use for this run.",
+    )
+    parser.add_argument(
         "--fail-on-optional-skip",
         action="store_true",
-        help="Treat skipped optional integrations, such as absent .importlinter, as failures.",
+        help=(
+            "Treat skipped optional integrations, such as absent architecture config, as failures."
+        ),
     )
     return parser.parse_args(argv)
 
@@ -116,6 +128,7 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "require_tests": args.require_tests,
         "enable_pip_audit": args.enable_pip_audit,
         "enable_wemake": args.enable_wemake,
+        "architecture_tool": args.architecture_tool,
     }
 
     updates.update({field: value for field, value in tuple_overrides.items() if value is not None})

@@ -35,6 +35,8 @@ def optional_skip(check: Check) -> str | None:
         return None
     if check.name == "import-linter" and not Path(".importlinter").exists():
         return f"optional skip: {check.optional_skip_reason}"
+    if check.name in {"tach", "tach-config"} and not Path("tach.toml").exists():
+        return f"optional skip: {check.optional_skip_reason}"
     if check.name in {"pip-audit", "pytest-coverage", "diff-cover", "wemake"}:
         return f"optional skip: {check.optional_skip_reason}"
     return None

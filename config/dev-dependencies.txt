@@ -6,6 +6,7 @@ coverage
 diff-cover
 hypothesis
 import-linter
+tach
 radon
 xenon
 pylint

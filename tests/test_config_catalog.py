@@ -29,6 +29,7 @@ require_tests = true
 enable_pip_audit = true
 pip_audit_args = ["-r", "requirements.txt"]
 coverage_fail_under = 91
+architecture_tool = "tach"
 """.strip(),
         encoding="utf-8",
     )
@@ -42,6 +43,7 @@ coverage_fail_under = 91
     assert loaded.enable_pip_audit is True
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.coverage_fail_under == CONFIG_COVERAGE_THRESHOLD
+    assert loaded.architecture_tool == "tach"
 
 
 def test_invalid_config_values_raise_clear_type_errors() -> None:
@@ -58,7 +60,14 @@ def test_invalid_config_values_raise_clear_type_errors() -> None:
         guardrail_config._as_str("", "xenon_max_absolute")
 
     with pytest.raises(TypeError, match="mode"):
-        guardrail_config._as_mode("maximum", "mode")
+        guardrail_config._as_choice("maximum", "mode", guardrail_config.VALID_MODES)
+
+    with pytest.raises(TypeError, match="architecture_tool"):
+        guardrail_config._as_choice(
+            "layers",
+            "architecture_tool",
+            guardrail_config.VALID_ARCHITECTURE_TOOLS,
+        )
 
 
 def test_fresh_strict_mode_applies_before_explicit_config() -> None:
@@ -95,6 +104,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GUARDRAILS_REQUIRE_TESTS", "false")
     monkeypatch.setenv("GUARDRAILS_COVERAGE_FAIL_UNDER", "95")
     monkeypatch.setenv("GUARDRAILS_PIP_AUDIT_ARGS", "-r requirements.txt")
+    monkeypatch.setenv("GUARDRAILS_ARCHITECTURE_TOOL", "tach")
 
     loaded = guardrail_config._apply_env(GuardrailConfig())
 
@@ -102,6 +112,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.require_tests is False
     assert loaded.coverage_fail_under == ENV_COVERAGE_THRESHOLD
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
+    assert loaded.architecture_tool == "tach"
 
 
 def test_path_matching_handles_roots_and_relative_prefixes() -> None:
@@ -160,6 +171,20 @@ def test_pip_audit_and_wemake_commands_follow_config() -> None:
         "wemake-python-styleguide",
         "scripts",
     ]
+
+
+def test_architecture_commands_follow_config() -> None:
+    default_checks = guardrail_catalog.architecture_checks(GuardrailConfig())
+    tach_checks = guardrail_catalog.architecture_checks(
+        replace(GuardrailConfig(), architecture_tool="tach", mode="fresh-strict")
+    )
+    by_name = {check.name: check for check in tach_checks}
+
+    assert default_checks[0].name == "import-linter"
+    assert default_checks[0].command == ["lint-imports"]
+    assert by_name["tach-config"].required_paths == ("tach.toml",)
+    assert by_name["tach"].command == ["tach", "check", "--exact"]
+    assert by_name["tach"].required_paths == ("tach.toml",)
 
 
 def test_make_checks_includes_expected_profiles(
