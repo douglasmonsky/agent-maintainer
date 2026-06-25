@@ -16,6 +16,8 @@ ENV_COVERAGE_THRESHOLD = 95
 STRICT_FILE_LENGTH_MAX_PHYSICAL = 500
 STRICT_COMPLEXITY = 8
 OVERRIDE_COMPLEXITY = 9
+CONFIG_INTERROGATE_THRESHOLD = 31
+ENV_INTERROGATE_THRESHOLD = 33
 
 
 def test_read_pyproject_loads_ai_guardrail_config(tmp_path: Path) -> None:
@@ -28,6 +30,8 @@ test_roots = ["specs"]
 require_tests = true
 enable_pip_audit = true
 pip_audit_args = ["-r", "requirements.txt"]
+enable_interrogate = true
+interrogate_fail_under = 31
 coverage_fail_under = 91
 architecture_tool = "tach"
 """.strip(),
@@ -42,6 +46,8 @@ architecture_tool = "tach"
     assert loaded.require_tests is True
     assert loaded.enable_pip_audit is True
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
+    assert loaded.enable_interrogate is True
+    assert loaded.interrogate_fail_under == CONFIG_INTERROGATE_THRESHOLD
     assert loaded.coverage_fail_under == CONFIG_COVERAGE_THRESHOLD
     assert loaded.architecture_tool == "tach"
 
@@ -84,6 +90,7 @@ def test_fresh_strict_mode_applies_before_explicit_config() -> None:
     assert loaded.file_length_max_physical == STRICT_FILE_LENGTH_MAX_PHYSICAL
     assert loaded.ruff_max_complexity == OVERRIDE_COMPLEXITY
     assert loaded.enable_wemake is False
+    assert loaded.enable_interrogate is True
 
 
 def test_environment_mode_applies_before_explicit_environment(
@@ -105,6 +112,8 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GUARDRAILS_COVERAGE_FAIL_UNDER", "95")
     monkeypatch.setenv("GUARDRAILS_PIP_AUDIT_ARGS", "-r requirements.txt")
     monkeypatch.setenv("GUARDRAILS_ARCHITECTURE_TOOL", "tach")
+    monkeypatch.setenv("GUARDRAILS_ENABLE_INTERROGATE", "true")
+    monkeypatch.setenv("GUARDRAILS_INTERROGATE_FAIL_UNDER", "33")
 
     loaded = guardrail_config._apply_env(GuardrailConfig())
 
@@ -113,6 +122,8 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.coverage_fail_under == ENV_COVERAGE_THRESHOLD
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.architecture_tool == "tach"
+    assert loaded.enable_interrogate is True
+    assert loaded.interrogate_fail_under == ENV_INTERROGATE_THRESHOLD
 
 
 def test_path_matching_handles_roots_and_relative_prefixes() -> None:
@@ -171,6 +182,27 @@ def test_pip_audit_and_wemake_commands_follow_config() -> None:
         "flake8",
         "--require-plugins",
         "wemake-python-styleguide",
+        "scripts",
+    ]
+
+
+def test_interrogate_command_follows_config() -> None:
+    disabled = GuardrailConfig()
+    enabled = replace(
+        GuardrailConfig(),
+        enable_interrogate=True,
+        interrogate_fail_under=30,
+    )
+
+    assert guardrail_catalog.interrogate_check(disabled, ("scripts",)).optional_skip_reason
+    assert guardrail_catalog.interrogate_check(enabled, ("scripts",)).command == [
+        "interrogate",
+        "--fail-under=30",
+        "--ignore-init-method",
+        "--ignore-init-module",
+        "--ignore-private",
+        "--ignore-semiprivate",
+        "--ignore-magic",
         "scripts",
     ]
 

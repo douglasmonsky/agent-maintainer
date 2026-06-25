@@ -32,6 +32,8 @@ VERIFY_LOG_DIR = ".verify-logs"
 
 @dataclass(frozen=True)
 class DoctorResult:
+    """One setup diagnostic row emitted by the doctor command."""
+
     name: str
     status: Status
     message: str
@@ -63,6 +65,8 @@ def main(argv: list[str]) -> int:
 
 
 def run_doctor(repo_root: Path, config: GuardrailConfig) -> list[DoctorResult]:
+    """Run every setup diagnostic against a repository root."""
+
     return [
         check_python_version(),
         check_repo_root(repo_root),
@@ -174,6 +178,8 @@ def check_codex_hooks(repo_root: Path) -> DoctorResult:
 
 
 def check_optional_gates(repo_root: Path, config: GuardrailConfig) -> DoctorResult:
+    """Report whether optional hardening integrations are active."""
+
     missing: list[str] = []
     architecture_name = "Import Linter"
     if config.architecture_tool == TACH_TOOL:
@@ -187,10 +193,14 @@ def check_optional_gates(repo_root: Path, config: GuardrailConfig) -> DoctorResu
         missing.append("pip-audit disabled")
     if not config.enable_wemake:
         missing.append("wemake disabled")
+    if not config.enable_interrogate:
+        missing.append("interrogate disabled")
     if missing:
         return DoctorResult("optional-gates", WARNING, "; ".join(missing))
     return DoctorResult(
-        "optional-gates", OK, f"{architecture_name}, pip-audit, and wemake are active."
+        "optional-gates",
+        OK,
+        f"{architecture_name}, pip-audit, wemake, and interrogate are active.",
     )
 
 

@@ -143,6 +143,8 @@ def configured_file_length_paths() -> list[Path]:
 
 
 def count_lines(path: Path) -> tuple[int, int]:
+    """Return physical and source-line counts for one Python file."""
+
     physical = 0
     source = 0
 
@@ -179,6 +181,8 @@ def eligible_python_paths(paths: list[Path], include_generated: bool) -> list[Pa
 
 
 def length_failures(paths: list[Path], max_physical: int, max_source: int) -> list[str]:
+    """Return file-length failures for eligible Python files."""
+
     failures: list[str] = []
     for path in paths:
         physical, source = count_lines(path)

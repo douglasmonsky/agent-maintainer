@@ -17,6 +17,8 @@ CI_ONLY_PROFILES = frozenset((CI_PROFILE,))
 
 @dataclass(frozen=True)
 class Check:
+    """Executable guardrail check plus the profiles where it should run."""
+
     name: str
     command: list[str]
     profiles: frozenset[str]
@@ -27,6 +29,8 @@ class Check:
 
 @dataclass(frozen=True)
 class CheckResult:
+    """Outcome of one guardrail check after execution or optional skipping."""
+
     name: str
     passed: bool
     output: str = ""

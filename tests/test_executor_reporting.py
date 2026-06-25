@@ -60,6 +60,17 @@ def test_tach_config_skip_reports_configured_reason(
     assert guardrail_executor.missing_requirement(check) == "optional skip: tach.toml is absent"
 
 
+def test_interrogate_skip_reports_configured_reason(tmp_path: Path) -> None:
+    check = Check(
+        "interrogate",
+        ["interrogate"],
+        frozenset(),
+        optional_skip_reason="disabled",
+    )
+
+    assert guardrail_executor.missing_requirement(check) == "optional skip: disabled"
+
+
 def test_run_check_writes_skip_log(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     check = Check("pip-audit", ["pip-audit"], frozenset(), optional_skip_reason="disabled")

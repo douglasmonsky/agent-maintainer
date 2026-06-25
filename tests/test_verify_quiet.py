@@ -12,6 +12,7 @@ from scripts.guardrail_config import GuardrailConfig
 from scripts.guardrail_models import Check, CheckResult
 
 CLI_COVERAGE_THRESHOLD = 92
+CLI_INTERROGATE_THRESHOLD = 30
 STRICT_COMPLEXITY = 8
 
 
@@ -35,6 +36,9 @@ def test_cli_overrides_replace_config_values() -> None:
             "--coverage-fail-under",
             "92",
             "--enable-pip-audit",
+            "--enable-interrogate",
+            "--interrogate-fail-under",
+            "30",
         ]
     )
 
@@ -44,6 +48,8 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.test_roots == ("specs",)
     assert config.coverage_fail_under == CLI_COVERAGE_THRESHOLD
     assert config.enable_pip_audit is True
+    assert config.enable_interrogate is True
+    assert config.interrogate_fail_under == CLI_INTERROGATE_THRESHOLD
 
 
 def test_cli_mode_applies_before_other_cli_overrides() -> None:
@@ -62,6 +68,7 @@ def test_cli_mode_applies_before_other_cli_overrides() -> None:
     assert config.mode == "fresh-strict"
     assert config.ruff_max_complexity == STRICT_COMPLEXITY
     assert config.enable_wemake is False
+    assert config.enable_interrogate is True
     assert config.coverage_fail_under == CLI_COVERAGE_THRESHOLD
 
 

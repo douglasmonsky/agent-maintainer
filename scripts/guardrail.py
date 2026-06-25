@@ -32,6 +32,8 @@ Examples:
 
 
 def main(argv: list[str]) -> int:
+    """Dispatch the top-level guardrail command line."""
+
     if not argv or argv[0] in {"-h", "--help"}:
         print(USAGE.rstrip())
         status = 0
@@ -42,6 +44,8 @@ def main(argv: list[str]) -> int:
 
 
 def route_command(command: str, command_args: list[str]) -> int:
+    """Route one guardrail subcommand to its implementation."""
+
     if command == "bootstrap":
         status = bootstrap()
     elif command == "doctor":
@@ -58,6 +62,8 @@ def route_command(command: str, command_args: list[str]) -> int:
 
 
 def bootstrap() -> int:
+    """Create local tooling, install dependencies, and install hooks."""
+
     repo_root = Path(__file__).resolve().parents[1]
     python_path = ensure_virtualenv(repo_root)
     if python_path is None:
@@ -71,6 +77,8 @@ def bootstrap() -> int:
 
 
 def install() -> int:
+    """Install local hooks without reinstalling dependencies."""
+
     repo_root = Path(__file__).resolve().parents[1]
     pre_commit_status = install_pre_commit(repo_root)
     report_codex_hooks(repo_root)

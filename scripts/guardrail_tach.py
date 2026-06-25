@@ -8,6 +8,8 @@ from typing import Any
 
 
 def tach_config_issues(repo_root: Path, *, require_strict_root: bool) -> list[str]:
+    """Return Tach configuration problems before the Tach CLI runs."""
+
     config_path = repo_root / "tach.toml"
     if not config_path.exists():
         return ["tach.toml is absent"]

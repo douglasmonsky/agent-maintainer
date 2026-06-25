@@ -44,6 +44,8 @@ EXCLUDED_NAMES = frozenset(
 
 @dataclass(frozen=True)
 class FileChange:
+    """Git numstat summary for one changed file."""
+
     path: str
     added: int
     deleted: int
@@ -173,6 +175,8 @@ def budget_messages(
     py_source_changes: list[FileChange],
     py_test_changes: list[FileChange],
 ) -> tuple[list[str], list[str]]:
+    """Return blocking failures and softer warnings for a diff."""
+
     warnings: list[str] = []
     failures: list[str] = []
     failures.extend(line_budget_failures(args, config, py_source_changes, warnings))

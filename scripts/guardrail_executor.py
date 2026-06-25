@@ -37,12 +37,14 @@ def optional_skip(check: Check) -> str | None:
         return f"optional skip: {check.optional_skip_reason}"
     if check.name in {"tach", "tach-config"} and not Path("tach.toml").exists():
         return f"optional skip: {check.optional_skip_reason}"
-    if check.name in {"pip-audit", "pytest-coverage", "diff-cover", "wemake"}:
+    if check.name in {"pip-audit", "pytest-coverage", "diff-cover", "wemake", "interrogate"}:
         return f"optional skip: {check.optional_skip_reason}"
     return None
 
 
 def missing_requirement(check: Check) -> str | None:
+    """Return a user-facing reason a check cannot run, if any."""
+
     optional = optional_skip(check)
     if optional:
         return optional
@@ -69,6 +71,8 @@ def run_command(command: list[str]) -> tuple[int, str]:
 
 
 def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> CheckResult:
+    """Execute one check, write its raw log, and return a compact result."""
+
     missing = missing_requirement(check)
     if missing:
         log_dir.mkdir(exist_ok=True)

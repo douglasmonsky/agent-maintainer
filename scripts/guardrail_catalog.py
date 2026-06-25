@@ -27,6 +27,8 @@ def existing_or_configured(paths: tuple[str, ...]) -> tuple[str, ...]:
 
 
 def pytest_command(config: GuardrailConfig) -> list[str]:
+    """Build the coverage-enforcing pytest command."""
+
     command = ["pytest", "-q", "--tb=short", "--disable-warnings", "-p", "no:tach"]
     command.extend(f"--cov={source}" for source in config.coverage_source)
     command.extend(
@@ -121,7 +123,39 @@ def wemake_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> Che
     )
 
 
+def interrogate_check(config: GuardrailConfig, package_paths: tuple[str, ...]) -> Check:
+    """Build the docstring coverage check or its explicit optional skip."""
+
+    if not config.enable_interrogate:
+        return Check(
+            "interrogate",
+            ["interrogate"],
+            FULL_PROFILES,
+            optional_skip_reason=(
+                "disabled by default; enable with GUARDRAILS_ENABLE_INTERROGATE=1 or "
+                "[tool.ai_guardrails].enable_interrogate = true"
+            ),
+        )
+    return Check(
+        "interrogate",
+        [
+            "interrogate",
+            f"--fail-under={config.interrogate_fail_under}",
+            "--ignore-init-method",
+            "--ignore-init-module",
+            "--ignore-private",
+            "--ignore-semiprivate",
+            "--ignore-magic",
+            *package_paths,
+        ],
+        FULL_PROFILES,
+        required_executable="interrogate",
+    )
+
+
 def architecture_checks(config: GuardrailConfig) -> list[Check]:
+    """Build the selected architecture contract checks."""
+
     if config.architecture_tool == TACH_TOOL:
         return tach_checks(config)
     return [
@@ -172,6 +206,8 @@ def vulture_paths(config: GuardrailConfig, package_paths: tuple[str, ...]) -> tu
 def make_checks(
     config: GuardrailConfig, base_ref: str, compare_branch: str, *, staged: bool = False
 ) -> list[Check]:
+    """Build the complete check catalog for all verifier profiles."""
+
     package_paths = existing_or_configured(config.package_paths)
     file_length_paths = existing_or_configured(config.file_length_paths)
     return [
@@ -273,6 +309,7 @@ def make_checks(
         ),
         pip_audit_check(config),
         wemake_check(config, package_paths),
+        interrogate_check(config, package_paths),
         diff_cover_check(config, compare_branch),
     ]
 

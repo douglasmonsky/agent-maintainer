@@ -235,11 +235,16 @@ def test_optional_gates_warn_for_legacy_defaults(tmp_path: Path) -> None:
     assert result.status == guardrail_doctor.WARNING
     assert ".importlinter" in result.message
     assert "pip-audit disabled" in result.message
+    assert "interrogate disabled" in result.message
 
 
 def test_optional_gates_pass_when_enabled(tmp_path: Path) -> None:
     (tmp_path / ".importlinter").write_text("[importlinter]\n", encoding="utf-8")
-    config = GuardrailConfig(enable_pip_audit=True, enable_wemake=True)
+    config = GuardrailConfig(
+        enable_pip_audit=True,
+        enable_wemake=True,
+        enable_interrogate=True,
+    )
 
     result = guardrail_doctor.check_optional_gates(tmp_path, config)
 
@@ -251,6 +256,7 @@ def test_optional_gates_warn_when_tach_config_is_missing(tmp_path: Path) -> None
         architecture_tool="tach",
         enable_pip_audit=True,
         enable_wemake=True,
+        enable_interrogate=True,
     )
 
     result = guardrail_doctor.check_optional_gates(tmp_path, config)
@@ -275,6 +281,7 @@ path = "scripts"
         architecture_tool="tach",
         enable_pip_audit=True,
         enable_wemake=True,
+        enable_interrogate=True,
     )
 
     result = guardrail_doctor.check_optional_gates(tmp_path, config)
@@ -299,6 +306,7 @@ path = "scripts"
         architecture_tool="tach",
         enable_pip_audit=True,
         enable_wemake=True,
+        enable_interrogate=True,
     )
 
     result = guardrail_doctor.check_optional_gates(tmp_path, config)

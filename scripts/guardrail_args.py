@@ -60,6 +60,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--disable-pip-audit", action="store_false", dest="enable_pip_audit")
     parser.add_argument("--enable-wemake", action="store_true", default=None)
     parser.add_argument("--disable-wemake", action="store_false", dest="enable_wemake")
+    parser.add_argument("--enable-interrogate", action="store_true", default=None)
+    parser.add_argument("--disable-interrogate", action="store_false", dest="enable_interrogate")
+    parser.add_argument("--interrogate-fail-under", type=int)
     parser.add_argument(
         "--architecture-tool",
         choices=sorted(VALID_ARCHITECTURE_TOOLS),
@@ -128,6 +131,8 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "require_tests": args.require_tests,
         "enable_pip_audit": args.enable_pip_audit,
         "enable_wemake": args.enable_wemake,
+        "enable_interrogate": args.enable_interrogate,
+        "interrogate_fail_under": args.interrogate_fail_under,
         "architecture_tool": args.architecture_tool,
     }
 

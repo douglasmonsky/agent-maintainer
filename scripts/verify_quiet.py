@@ -40,6 +40,8 @@ def emit_layout_failure(failures: list[str]) -> CheckResult:
 def collect_results(
     args: argparse.Namespace, config: GuardrailConfig, selected: list[Check]
 ) -> list[CheckResult]:
+    """Run selected checks after validating layout requirements."""
+
     layout = layout_failures(config, args.profile)
     if layout:
         return [emit_layout_failure(layout)]
@@ -49,6 +51,8 @@ def collect_results(
 def apply_optional_skip_policy(
     results: list[CheckResult], fail_on_optional_skip: bool
 ) -> list[CheckResult]:
+    """Convert optional skips into failures when the caller asks for strictness."""
+
     if not fail_on_optional_skip:
         return results
     return [

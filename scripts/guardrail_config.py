@@ -49,7 +49,14 @@ TUPLE_FIELDS = frozenset(
         "pip_audit_args",
     )
 )
-BOOL_FIELDS = frozenset(("require_tests", "enable_pip_audit", "enable_wemake"))
+BOOL_FIELDS = frozenset(
+    (
+        "require_tests",
+        "enable_pip_audit",
+        "enable_wemake",
+        "enable_interrogate",
+    )
+)
 INT_FIELDS = frozenset(
     (
         "coverage_fail_under",
@@ -62,6 +69,7 @@ INT_FIELDS = frozenset(
         "change_block_files",
         "suppression_max_new",
         "ruff_max_complexity",
+        "interrogate_fail_under",
     )
 )
 STR_FIELDS = frozenset(
@@ -76,6 +84,8 @@ STR_FIELDS = frozenset(
 
 @dataclass(frozen=True)
 class GuardrailConfig:
+    """Resolved verifier settings after presets and overrides are applied."""
+
     mode: str = CUSTOM_MODE
     source_roots: tuple[str, ...] = DEFAULT_SOURCE_ROOTS
     test_roots: tuple[str, ...] = DEFAULT_TEST_ROOTS
@@ -102,6 +112,8 @@ class GuardrailConfig:
     enable_wemake: bool = False
     pip_audit_args: tuple[str, ...] = ()
     architecture_tool: str = IMPORT_LINTER_TOOL
+    enable_interrogate: bool = False
+    interrogate_fail_under: int = 80
 
 
 def _as_tuple(value: object, field_name: str) -> tuple[str, ...]:
@@ -193,11 +205,14 @@ def _coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
 
 
 def apply_mode(config: GuardrailConfig, mode: str) -> GuardrailConfig:
+    """Apply built-in preset defaults before explicit overrides."""
+
     updates: dict[str, object] = {}
     if mode == LEGACY_RATCHET_MODE:
         updates = {
             "enable_pip_audit": False,
             "enable_wemake": False,
+            "enable_interrogate": False,
         }
     elif mode == FRESH_STRICT_MODE:
         updates = {
@@ -211,6 +226,8 @@ def apply_mode(config: GuardrailConfig, mode: str) -> GuardrailConfig:
             "suppression_max_new": 1,
             "ruff_max_complexity": 8,
             "enable_wemake": True,
+            "enable_interrogate": True,
+            "interrogate_fail_under": 80,
         }
     return replace(config, mode=mode, **updates)
 
@@ -265,6 +282,7 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
         "require_tests": "GUARDRAILS_REQUIRE_TESTS",
         "enable_pip_audit": "GUARDRAILS_ENABLE_PIP_AUDIT",
         "enable_wemake": "GUARDRAILS_ENABLE_WEMAKE",
+        "enable_interrogate": "GUARDRAILS_ENABLE_INTERROGATE",
     }
     coverage_envs = {
         "coverage_fail_under": "GUARDRAILS_COVERAGE_FAIL_UNDER",
@@ -279,6 +297,7 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
         "change_warn_files": "GUARDRAILS_CHANGE_WARN_FILES",
         "change_block_files": "GUARDRAILS_CHANGE_BLOCK_FILES",
         "suppression_max_new": "GUARDRAILS_SUPPRESSION_MAX_NEW",
+        "interrogate_fail_under": "GUARDRAILS_INTERROGATE_FAIL_UNDER",
     }
     _merge_env_values(updates, tuple_envs, _env_tuple)
     _merge_env_values(updates, bool_envs, _env_bool)
@@ -300,6 +319,8 @@ def _apply_env(config: GuardrailConfig) -> GuardrailConfig:
 
 
 def load_config() -> GuardrailConfig:
+    """Load guardrail configuration from pyproject and environment overrides."""
+
     config = GuardrailConfig()
     config = _apply_pyproject(config, _read_pyproject())
     config = _apply_env(config)
@@ -319,6 +340,8 @@ def format_paths(paths: tuple[str, ...]) -> str:
 
 
 def path_matches_roots(path: str, roots: tuple[str, ...]) -> bool:
+    """Return whether a normalized file path belongs to any configured root."""
+
     normalized = path.replace("\\", "/").lstrip("./")
     for root in roots:
         clean_root = root.replace("\\", "/").strip("/")

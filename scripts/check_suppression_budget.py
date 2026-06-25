@@ -32,6 +32,8 @@ PYRIGHT_FILE_DISABLE_RE = re.compile(r"#\s*pyright:\s*report\w+\s*=\s*(?:false|n
 
 @dataclass(frozen=True)
 class Suppression:
+    """Classified suppression comment added by the current diff."""
+
     path: str
     line: str
     reason: str
@@ -105,6 +107,8 @@ def contains_suppression(line: str) -> bool:
 
 
 def suppression_failures(added: list[tuple[str, str]], max_new_suppressions: int) -> list[str]:
+    """Return failures for broad or excessive suppression comments."""
+
     suppressions = [(path, line) for path, line in added if contains_suppression(line)]
     issues = [issue for path, line in added for issue in classify(path, line)]
 
