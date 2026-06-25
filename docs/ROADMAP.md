@@ -17,7 +17,32 @@ repo state instead of reconstructing the plan from chat history.
   hooks are already part of the guardrail surface.
 - [x] Docker is intentionally not part of this repository's own workflow.
 
-## Phase 0: Test-Driven Enforcement Fidelity
+## Phase 0: Generated Agent Guidance
+
+- [ ] Add a generator that renders agent-facing guidance from
+  `[tool.ai_guardrails]`.
+- [ ] Include active mode, source roots, test roots, architecture backend,
+  thresholds, required commands, enabled optional gates, and escape hatches.
+- [ ] Frame generated guidance as positive operating instructions, not just a
+  list of ways checks can fail.
+- [ ] Keep human-owned `AGENTS.md` content authoritative and avoid overwriting it
+  wholesale.
+- [ ] Use a protected generated block or a committed sidecar file such as
+  `AGENTS.guardrails.md`.
+- [ ] If using a sidecar file, add a stable human-owned pointer from `AGENTS.md`
+  so agents know to read it.
+- [ ] Make generated output deterministic and free of secrets, machine-local
+  paths, volatile git state, or timestamps.
+- [ ] Add a `doctor` freshness check so generated guidance cannot silently drift
+  from configuration.
+- [ ] Add tests proving guidance updates when config changes and remains stable
+  when config does not change.
+- [ ] Use this repository as the first consumer so subsequent roadmap work gets
+  immediate benefit from the generated guidance.
+- [ ] Consider optional subdirectory `AGENTS.md` generation only after the root
+  guidance flow is proven.
+
+## Phase 1: Test-Driven Enforcement Fidelity
 
 - [ ] Add a failing regression test proving aggregate verification does not hide
   change-budget warnings behind a plain `PASS`.
@@ -45,7 +70,7 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Replace or repair `justfile verify-full-output` so it follows configured
   roots instead of `src`.
 
-## Phase 1: Make Legacy-Ratchet Real
+## Phase 2: Make Legacy-Ratchet Real
 
 - [ ] Add file-length baselining for `legacy-ratchet`.
 - [ ] Make legacy file-length checks fail only for new or worsened violations.
@@ -56,7 +81,7 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Update `docs/legacy-ratchet.md` to distinguish fresh blocking from legacy
   ratcheting.
 
-## Phase 2: Agent Diagnostic Artifacts
+## Phase 3: Agent Diagnostic Artifacts
 
 - [ ] Add a diagnostics config section for verifier artifacts.
 - [ ] Add `.verify-logs/manifest.json`.
@@ -77,29 +102,6 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Teach `doctor` to detect stale logs and stale structured artifacts.
 - [ ] Keep runtime application logging enforcement advisory and disabled by
   default.
-
-## Phase 3: Generated Agent Guidance
-
-- [ ] Add a generator that renders agent-facing guidance from
-  `[tool.ai_guardrails]`.
-- [ ] Include active mode, source roots, test roots, architecture backend,
-  thresholds, required commands, enabled optional gates, and escape hatches.
-- [ ] Frame generated guidance as positive operating instructions, not just a
-  list of ways checks can fail.
-- [ ] Keep human-owned `AGENTS.md` content authoritative and avoid overwriting it
-  wholesale.
-- [ ] Use a protected generated block or a committed sidecar file such as
-  `AGENTS.guardrails.md`.
-- [ ] If using a sidecar file, add a stable human-owned pointer from `AGENTS.md`
-  so agents know to read it.
-- [ ] Make generated output deterministic and free of secrets, machine-local
-  paths, volatile git state, or timestamps.
-- [ ] Add a `doctor` freshness check so generated guidance cannot silently drift
-  from configuration.
-- [ ] Add tests proving guidance updates when config changes and remains stable
-  when config does not change.
-- [ ] Consider optional subdirectory `AGENTS.md` generation only after the root
-  guidance flow is proven.
 
 ## Phase 4: Add Tool Capability Modeling
 
