@@ -38,6 +38,10 @@ def as_bool(value: object, field_name: str) -> bool:
 def as_int(value: object, field_name: str) -> int:
     """Coerce an integer config value."""
 
+    if isinstance(value, int):
+        return value
+    if not isinstance(value, str):
+        raise TypeError(f"{field_name} must be an integer")
     try:
         return int(value)
     except (TypeError, ValueError) as exc:

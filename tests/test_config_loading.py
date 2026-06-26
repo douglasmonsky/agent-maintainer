@@ -138,6 +138,8 @@ def test_invalid_config_values_raise_clear_type_errors() -> None:
         guardrail_config_coercion.as_bool("maybe", "enable_pip_audit")
     with pytest.raises(TypeError, match="coverage_fail_under"):
         guardrail_config_coercion.as_int("not-an-int", "coverage_fail_under")
+    with pytest.raises(TypeError, match="coverage_fail_under"):
+        guardrail_config_coercion.as_int(object(), "coverage_fail_under")
     with pytest.raises(TypeError, match="xenon_max_absolute"):
         guardrail_config_coercion.as_str("", "xenon_max_absolute")
     with pytest.raises(TypeError, match="mode"):

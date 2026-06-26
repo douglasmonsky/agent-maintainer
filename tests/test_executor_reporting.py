@@ -273,8 +273,13 @@ def test_structured_payload_summaries_report_omitted_items() -> None:
         ]
     }
 
-    assert "more diagnostics omitted" in guardrail_reporting.summarize_ruff_payload(ruff_payload)
-    assert "more findings omitted" in guardrail_reporting.summarize_bandit_payload(bandit_payload)
+    ruff_summary = guardrail_reporting.summarize_ruff_payload(ruff_payload)
+    bandit_summary = guardrail_reporting.summarize_bandit_payload(bandit_payload)
+
+    assert ruff_summary is not None
+    assert bandit_summary is not None
+    assert "more diagnostics omitted" in ruff_summary
+    assert "more findings omitted" in bandit_summary
 
 
 def test_run_check_records_existing_declared_artifacts(

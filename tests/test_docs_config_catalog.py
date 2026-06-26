@@ -76,12 +76,16 @@ def test_docs_config_hygiene_skips_when_enabled_without_matching_files(
         taplo_paths=("*.toml",),
     )
 
-    assert (
-        "no Markdown files"
-        in guardrail_catalog_docs.markdownlint_check(config).optional_skip_reason
-    )
-    assert "no YAML files" in guardrail_catalog_docs.yamllint_check(config).optional_skip_reason
-    assert "no TOML files" in guardrail_catalog_docs.taplo_check(config).optional_skip_reason
+    markdown_reason = guardrail_catalog_docs.markdownlint_check(config).optional_skip_reason
+    yaml_reason = guardrail_catalog_docs.yamllint_check(config).optional_skip_reason
+    toml_reason = guardrail_catalog_docs.taplo_check(config).optional_skip_reason
+
+    assert markdown_reason is not None
+    assert yaml_reason is not None
+    assert toml_reason is not None
+    assert "no Markdown files" in markdown_reason
+    assert "no YAML files" in yaml_reason
+    assert "no TOML files" in toml_reason
 
 
 def test_matching_paths_ignores_generated_dependency_folders(
