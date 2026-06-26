@@ -134,15 +134,15 @@ repo state instead of reconstructing the plan from chat history.
 
 - [x] Add explicit workflow permissions, starting with
   `permissions: contents: read`.
-- [ ] Add `actionlint` support when `.github/workflows` exists.
-- [ ] Add `zizmor` support when `.github/workflows` exists.
-- [ ] Enable `actionlint` for this repository.
-- [ ] Enable `zizmor` for this repository.
+- [x] Add `actionlint` support when `.github/workflows` exists.
+- [x] Add `zizmor` support when `.github/workflows` exists.
+- [x] Enable `actionlint` for this repository.
+- [x] Enable `zizmor` for this repository.
 - [x] Decide the action pinning policy for this kit.
 - [ ] If using SHA pinning, pin third-party actions to full-length commit SHAs.
 - [x] If using tag pinning, document the tradeoff and add Dependabot coverage for
   GitHub Actions.
-- [ ] Add tests for workflow-tool applicability and optional-skip behavior.
+- [x] Add tests for workflow-tool applicability and optional-skip behavior.
 
 ## Phase 6: Add Backend-Neutral Secret Scanning
 

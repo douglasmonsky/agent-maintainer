@@ -93,6 +93,28 @@ def vulture_paths(config: GuardrailConfig, package_paths: tuple[str, ...]) -> tu
     return paths or package_paths
 
 
+def workflow_checks() -> list[models.Check]:
+    """Build GitHub Actions workflow quality and security checks."""
+
+    skip_reason = ".github/workflows is absent; GitHub Actions checks are not applicable"
+    return [
+        models.Check(
+            "actionlint",
+            ["actionlint", "-no-color", "-oneline"],
+            models.FULL_PROFILES,
+            required_executable="actionlint",
+            optional_skip_reason=skip_reason,
+        ),
+        models.Check(
+            "zizmor",
+            ["zizmor", "--offline", "--no-progress", ".github/workflows", ".github/dependabot.yml"],
+            models.FULL_PROFILES,
+            required_executable="zizmor",
+            optional_skip_reason=skip_reason,
+        ),
+    ]
+
+
 def make_checks(
     config: GuardrailConfig, base_ref: str, compare_branch: str, *, staged: bool = False
 ) -> list[models.Check]:
@@ -171,6 +193,7 @@ def make_checks(
         ),
         bandit_check(config),
         pip_audit_check(config),
+        *workflow_checks(),
         wemake_check(config, package_paths),
         interrogate_check(config, package_paths),
         diff_cover_check(config, compare_branch),

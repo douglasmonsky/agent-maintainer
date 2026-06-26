@@ -80,6 +80,11 @@ Dependabot `github-actions` updates so tag-pinned actions are reviewed
 regularly. Revisit SHA pinning if the kit moves toward stricter supply-chain
 requirements.
 
+`actionlint` checks workflow syntax and common GitHub Actions mistakes when
+`.github/workflows` exists. `zizmor` runs offline against workflows and
+Dependabot config to catch risky CI/CD patterns. This repository enables both
+through the normal full/CI verifier profiles.
+
 ## Configuration model
 
 Shared path configuration is read from `[tool.ai_guardrails]` in `pyproject.toml`, then `GUARDRAILS_*` environment variables, then CLI flags. The important fields are:

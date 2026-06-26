@@ -73,6 +73,24 @@ def test_tach_config_skip_reports_configured_reason(
     assert guardrail_executor.missing_requirement(check) == "optional skip: tach.toml is absent"
 
 
+def test_workflow_check_skip_reports_configured_reason(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    check = Check(
+        "zizmor",
+        ["zizmor"],
+        frozenset(),
+        required_executable="zizmor",
+        optional_skip_reason=".github/workflows is absent",
+    )
+
+    assert guardrail_executor.missing_requirement(check) == (
+        "optional skip: .github/workflows is absent"
+    )
+
+
 def test_interrogate_skip_reports_configured_reason(tmp_path: Path) -> None:
     check = Check(
         "interrogate",

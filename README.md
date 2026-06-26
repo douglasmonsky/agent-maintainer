@@ -22,6 +22,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Dependency hygiene | deptry |
 | Dead code | vulture |
 | Security checks | Bandit; pip-audit when explicitly enabled |
+| GitHub Actions checks | actionlint and zizmor when workflows exist |
 | Local enforcement | pre-commit |
 | Final enforcement | GitHub Actions |
 | AI-loop feedback | Codex `PostToolUse` and `Stop` hooks |
@@ -43,7 +44,7 @@ config/
 Install dev dependencies. With `uv`:
 
 ```bash
-uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit pre-commit wemake-python-styleguide
+uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit actionlint-py zizmor pre-commit wemake-python-styleguide
 ```
 
 Or with pip:

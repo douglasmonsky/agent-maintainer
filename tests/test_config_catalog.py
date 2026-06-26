@@ -353,6 +353,22 @@ def test_bandit_check_uses_json_artifact_runner() -> None:
     assert bandit.artifact_paths == (".custom-logs/bandit.json",)
 
 
+def test_workflow_checks_are_configured_for_github_actions() -> None:
+    checks = guardrail_catalog.workflow_checks()
+    by_name = {check.name: check for check in checks}
+
+    assert by_name["actionlint"].command == ["actionlint", "-no-color", "-oneline"]
+    assert by_name["actionlint"].required_executable == "actionlint"
+    assert by_name["zizmor"].command == [
+        "zizmor",
+        "--offline",
+        "--no-progress",
+        ".github/workflows",
+        ".github/dependabot.yml",
+    ]
+    assert by_name["zizmor"].required_executable == "zizmor"
+
+
 def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only() -> None:
     config = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
     checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")

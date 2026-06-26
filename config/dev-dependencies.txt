@@ -1,3 +1,4 @@
+actionlint-py
 ruff
 pyright
 pytest
@@ -15,6 +16,7 @@ deptry
 vulture
 bandit
 pip-audit
+zizmor
 pre-commit
 wemake-python-styleguide
 tomli; python_version < "3.11"

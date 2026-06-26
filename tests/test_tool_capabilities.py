@@ -95,6 +95,26 @@ def test_check_states_require_active_optional_checks(tmp_path: Path) -> None:
     assert states[0].state == capabilities.SUPPORTED
 
 
+def test_workflow_tool_states_follow_workflow_applicability(tmp_path: Path) -> None:
+    check = Check(
+        "zizmor",
+        ["zizmor"],
+        FULL_PROFILES,
+        required_executable="zizmor",
+        optional_skip_reason=".github/workflows is absent",
+    )
+
+    assert capabilities.states_for_checks(tmp_path, [check])[0].state == capabilities.DISABLED
+
+    workflow_dir = tmp_path / ".github" / "workflows"
+    workflow_dir.mkdir(parents=True)
+    tool_path = tmp_path / ".venv" / "bin" / "zizmor"
+    tool_path.parent.mkdir(parents=True)
+    tool_path.write_text("", encoding="utf-8")
+
+    assert capabilities.states_for_checks(tmp_path, [check])[0].state == capabilities.SUPPORTED
+
+
 def test_summarize_states_fails_on_missing_tools(tmp_path: Path) -> None:
     states = [
         capabilities.evaluate_tool(
