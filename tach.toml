@@ -39,6 +39,7 @@ paths = [
   "scripts.check_tach_config",
   "scripts.guardrail_doctor",
   "scripts.guardrail_guidance",
+  "scripts.run_mutmut",
   "scripts.run_bandit",
   "scripts.run_pyright",
   "scripts.run_ruff",

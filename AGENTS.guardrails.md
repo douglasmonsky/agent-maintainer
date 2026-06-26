@@ -22,6 +22,9 @@ configuration first, then regenerate it.
 - Guardrail and hook subprocesses set `PYTHONDONTWRITEBYTECODE=1` by
   default. Set `AI_GUARDRAILS_WRITE_BYTECODE=true` only when explicitly
   debugging bytecode-cache behavior.
+- Manual Mutmut runs remove `mutants` after success. Set
+  `AI_GUARDRAILS_KEEP_MUTANTS=true` only when explicitly debugging
+  mutation artifacts.
 - When a broad command is unavoidable, exclude generated, binary, cache, and
   virtualenv paths before printing file contents.
 

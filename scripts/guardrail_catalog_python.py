@@ -118,7 +118,7 @@ def pip_audit_check(config: GuardrailConfig) -> models.Check:
 def mutmut_check(config: GuardrailConfig) -> models.Check:
     """Build mutation-testing check reserved for the manual profile."""
 
-    command = ["mutmut", *config.mutmut_args]
+    command = [sys.executable, "-m", "scripts.run_mutmut", *config.mutmut_args]
     if not config.enable_mutmut:
         return models.Check(
             "mutmut",
@@ -133,6 +133,7 @@ def mutmut_check(config: GuardrailConfig) -> models.Check:
         "mutmut",
         command,
         models.MANUAL_PROFILES,
+        required_paths=("scripts/run_mutmut.py",),
         required_executable="mutmut",
     )
 

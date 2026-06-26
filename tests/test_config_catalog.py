@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from dataclasses import replace
 from pathlib import Path
 
@@ -243,8 +244,15 @@ def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
         "origin/main",
     )
     enabled = next(check for check in enabled_checks if check.name == "mutmut")
-    assert enabled.command == ["mutmut", "run", "scripts.guardrail_runtime*"]
+    assert enabled.command == [
+        sys.executable,
+        "-m",
+        "scripts.run_mutmut",
+        "run",
+        "scripts.guardrail_runtime*",
+    ]
     assert enabled.profiles == MANUAL_PROFILES
+    assert enabled.required_paths == ("scripts/run_mutmut.py",)
     assert enabled.required_executable == "mutmut"
 
 
