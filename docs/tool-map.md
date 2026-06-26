@@ -11,6 +11,12 @@ package commands, external binaries, GitHub Actions-only tools, and manual
 optional tools. Bootstrap installs the Python package tools from the dependency
 lock/input; it reports but does not install the other capability classes.
 
+Doctor rows include a stable setup state: `active`, `disabled`,
+`not applicable`, `missing`, or `unsafe config`. JSON output includes `state`
+and `hint` fields so setup tooling can offer remediation without parsing prose.
+Doctor also reports the active architecture backend and active thresholds for
+coverage, diff-cover, Interrogate, complexity, and file length.
+
 `guidance --check` verifies that `AGENTS.guardrails.md` is current with
 `[tool.ai_guardrails]`. In this repository's `fresh-strict` mode, `doctor`
 reports stale generated guidance as a failure.
@@ -124,6 +130,7 @@ Missing required roots fail in `precommit`, `full`, and `ci`; optional integrati
 
 `doctor` checks that verifier diagnostics are coherent: logs exist, the manifest
 is present and newer than the latest raw log, manifest-referenced logs and
-artifacts still exist, and `LAST_FAILURE.md` matches the pass/fail state of the
-latest manifest. It also checks the Codex hook audit trail when repo-local hooks
-are enabled.
+artifacts still exist, `LAST_FAILURE.md` matches the pass/fail state of the
+latest manifest, and the latest manifest does not reference disabled or removed
+checks. It also checks the Codex hook audit trail when repo-local hooks are
+enabled.

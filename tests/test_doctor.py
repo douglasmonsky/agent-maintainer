@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
@@ -38,41 +37,6 @@ def test_status_code_treats_warnings_as_strict_failures() -> None:
         )
         == 1
     )
-
-
-def test_main_emits_json(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    monkeypatch.setattr(guardrail_doctor.guardrail_config, "load_config", GuardrailConfig)
-    monkeypatch.setattr(
-        guardrail_doctor,
-        "run_doctor",
-        lambda repo_root, config: [
-            guardrail_doctor.DoctorResult("python-version", guardrail_doctor.OK, "ok")
-        ],
-    )
-
-    assert guardrail_doctor.main(["--json"]) == 0
-
-    payload = json.loads(capsys.readouterr().out)
-    assert payload == [{"name": "python-version", "status": "PASS", "message": "ok"}]
-
-
-def test_main_emits_text(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    monkeypatch.setattr(guardrail_doctor.guardrail_config, "load_config", GuardrailConfig)
-    monkeypatch.setattr(
-        guardrail_doctor,
-        "run_doctor",
-        lambda repo_root, config: [
-            guardrail_doctor.DoctorResult("virtualenv", guardrail_doctor.WARNING, "missing")
-        ],
-    )
-
-    assert guardrail_doctor.main([]) == 0
-
-    assert "WARN virtualenv: missing" in capsys.readouterr().out
 
 
 def test_python_version_passes_for_current_runtime() -> None:

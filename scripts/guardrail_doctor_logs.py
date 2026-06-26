@@ -7,7 +7,15 @@ from pathlib import Path
 
 from guardrail_lib.verify.artifacts import LAST_FAILURE_NAME, MANIFEST_NAME
 from scripts import guardrail_config
-from scripts.guardrail_doctor_models import OK, WARNING, DoctorResult
+from scripts.guardrail_catalog import make_checks
+from scripts.guardrail_doctor_models import (
+    DISABLED,
+    MISSING,
+    OK,
+    UNSAFE_CONFIG,
+    WARNING,
+    DoctorResult,
+)
 
 VERIFY_LOG_DIR = ".verify-logs"
 
@@ -17,6 +25,13 @@ def check_recent_logs(
 ) -> DoctorResult:
     """Report whether recent verifier logs and artifacts are coherent."""
 
+    if config and not config.diagnostic_artifacts_enabled:
+        return DoctorResult(
+            "verification-logs",
+            OK,
+            "diagnostic artifacts disabled.",
+            state=DISABLED,
+        )
     log_dir_name = config.diagnostic_artifacts_dir if config else VERIFY_LOG_DIR
     log_dir = repo_root / log_dir_name
     logs = recent_logs(log_dir)
@@ -27,10 +42,24 @@ def check_recent_logs(
 
     payload = read_manifest(manifest)
     if payload is None:
-        return DoctorResult("verification-logs", WARNING, f"{MANIFEST_NAME} is invalid JSON.")
+        return DoctorResult(
+            "verification-logs",
+            WARNING,
+            f"{MANIFEST_NAME} is invalid JSON.",
+            state=UNSAFE_CONFIG,
+            hint="Remove stale verification logs or rerun verifier.",
+        )
     issues = manifest_issues(repo_root, log_dir, logs[0], manifest, payload)
+    if config is not None:
+        issues.extend(catalog_drift_issues(config, payload))
     if issues:
-        return DoctorResult("verification-logs", WARNING, "; ".join(issues))
+        return DoctorResult(
+            "verification-logs",
+            WARNING,
+            "; ".join(issues),
+            state=issue_state(issues),
+            hint="Rerun the relevant guardrail verify profile.",
+        )
     return ok_result(logs[0], payload)
 
 
@@ -51,11 +80,26 @@ def preflight_result(
     """Return an early verifier-log diagnostic when required files are absent."""
 
     if not log_dir.exists():
-        return DoctorResult("verification-logs", WARNING, f"{log_dir_name}/ is absent.")
+        return DoctorResult(
+            "verification-logs",
+            WARNING,
+            f"{log_dir_name}/ is absent.",
+            state=MISSING,
+        )
     if not logs:
-        return DoctorResult("verification-logs", WARNING, f"No logs found in {log_dir_name}/.")
+        return DoctorResult(
+            "verification-logs",
+            WARNING,
+            f"No logs found in {log_dir_name}/.",
+            state=MISSING,
+        )
     if not manifest.exists():
-        return DoctorResult("verification-logs", WARNING, f"{MANIFEST_NAME} is absent.")
+        return DoctorResult(
+            "verification-logs",
+            WARNING,
+            f"{MANIFEST_NAME} is absent.",
+            state=MISSING,
+        )
     return None
 
 
@@ -84,6 +128,33 @@ def manifest_issues(
     issues.extend(referenced_path_issues(repo_root, payload))
     issues.extend(failure_note_issues(log_dir, payload))
     return issues
+
+
+def catalog_drift_issues(
+    config: guardrail_config.GuardrailConfig, payload: dict[str, object]
+) -> list[str]:
+    """Return manifest checks absent from current check catalog."""
+
+    current_names = {check.name for check in make_checks(config, "HEAD", "origin/main")}
+    stale_names = sorted(
+        {
+            str(check.get("name", "unknown"))
+            for check in manifest_checks(payload)
+            if str(check.get("name", "unknown")) not in current_names
+        }
+    )
+    if not stale_names:
+        return []
+    stale_list = ", ".join(stale_names)
+    return [f"latest manifest references disabled or removed check(s): {stale_list}"]
+
+
+def issue_state(issues: list[str]) -> str:
+    """Return doctor state for verification-log issues."""
+
+    if any("disabled or removed" in issue or "invalid JSON" in issue for issue in issues):
+        return UNSAFE_CONFIG
+    return MISSING
 
 
 def referenced_path_issues(repo_root: Path, payload: dict[str, object]) -> list[str]:
