@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from guardrail_lib.config import (
+from ai_guardrails.catalogs import catalog as guardrail_catalog
+from ai_guardrails.catalogs import python as guardrail_catalog_python
+from ai_guardrails.config import (
     modes as guardrail_config_modes,
 )
-from scripts.guardrail_catalogs import catalog as guardrail_catalog
-from scripts.guardrail_catalogs import python as guardrail_catalog_python
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.core.config import GuardrailConfig
 
 
 def test_pytest_and_diff_cover_are_required_when_tests_are_required() -> None:
@@ -116,7 +116,7 @@ def test_pyright_check_uses_generated_project_runner() -> None:
     assert pyright.command[:3] == [
         guardrail_catalog.sys.executable,
         "-m",
-        "scripts.run_pyright",
+        "ai_guardrails.runners.pyright",
     ]
     assert pyright.artifact_paths == (
         ".custom-logs/pyright.json",
@@ -132,7 +132,7 @@ def test_ruff_check_uses_json_artifact_runner() -> None:
     assert ruff.command[:3] == [
         guardrail_catalog.sys.executable,
         "-m",
-        "scripts.run_ruff",
+        "ai_guardrails.runners.ruff",
     ]
     assert ruff.artifact_paths == (".custom-logs/ruff.json",)
 
@@ -145,7 +145,7 @@ def test_bandit_check_uses_json_artifact_runner() -> None:
     assert bandit.command[:3] == [
         guardrail_catalog.sys.executable,
         "-m",
-        "scripts.run_bandit",
+        "ai_guardrails.runners.bandit",
     ]
     assert bandit.artifact_paths == (".custom-logs/bandit.json",)
 
@@ -161,7 +161,7 @@ def test_pip_audit_unsafe_config_fails_only_in_fresh_strict() -> None:
     assert strict_check.command[:3] == [
         guardrail_catalog.sys.executable,
         "-m",
-        "scripts.check_pip_audit_config",
+        "ai_guardrails.checks.pip_audit_config",
     ]
     assert custom_check.optional_skip_reason
     assert "pinned input" in custom_check.optional_skip_reason

@@ -5,9 +5,9 @@ from __future__ import annotations
 import sys
 from dataclasses import replace
 
-from scripts.guardrail_catalogs import catalog as guardrail_catalog
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_models import (
+from ai_guardrails.catalogs import catalog as guardrail_catalog
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.models import (
     MANUAL_PROFILES,
     PRECOMMIT_PROFILE,
 )
@@ -23,7 +23,7 @@ def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
         replace(
             GuardrailConfig(),
             enable_mutmut=True,
-            mutmut_args=("run", "scripts.guardrail_core.runtime*"),
+            mutmut_args=("run", "ai_guardrails.core.runtime*"),
         ),
         "HEAD",
         "origin/main",
@@ -32,12 +32,12 @@ def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
     assert enabled.command == [
         sys.executable,
         "-m",
-        "scripts.run_mutmut",
+        "ai_guardrails.runners.mutmut",
         "run",
-        "scripts.guardrail_core.runtime*",
+        "ai_guardrails.core.runtime*",
     ]
     assert enabled.profiles == MANUAL_PROFILES
-    assert enabled.required_paths == ("scripts/run_mutmut.py",)
+    assert enabled.required_paths == ("src/ai_guardrails/runners/mutmut.py",)
     assert enabled.required_executable == "mutmut"
 
 

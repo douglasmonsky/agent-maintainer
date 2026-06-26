@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_doctor
-from scripts.guardrail_core import guidance as guardrail_guidance
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_doctor_support import policy as guardrail_doctor_policy
+from ai_guardrails.core import guidance as guardrail_guidance
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.doctor import cli as guardrail_doctor
+from ai_guardrails.doctor.support import policy as guardrail_doctor_policy
 
 
 def write_repo_root(tmp_path: Path) -> Path:
@@ -55,10 +55,10 @@ def test_canonical_commands_warn_for_missing_files(tmp_path: Path) -> None:
 
 def test_canonical_commands_pass_when_all_files_use_module_entrypoint(tmp_path: Path) -> None:
     files = {
-        ".github/workflows/verify.yml": "python3 -m scripts.guardrail verify\n",
-        ".pre-commit-config.yaml": "python3 -m scripts.guardrail verify --profile precommit\n",
-        ".codex/hooks/post_edit_fast_gate.py": "scripts.guardrail\n",
-        ".codex/hooks/stop_full_verify.py": "scripts.guardrail\n",
+        ".github/workflows/verify.yml": "python3 -m ai_guardrails verify\n",
+        ".pre-commit-config.yaml": "python3 -m ai_guardrails verify --profile precommit\n",
+        ".codex/hooks/post_edit_fast_gate.py": "ai_guardrails\n",
+        ".codex/hooks/stop_full_verify.py": "ai_guardrails\n",
     }
     for relative, text in files.items():
         path = tmp_path / relative
@@ -72,14 +72,12 @@ def test_canonical_commands_pass_when_all_files_use_module_entrypoint(tmp_path: 
 
 def test_canonical_commands_pass_folded_yaml_entry(tmp_path: Path) -> None:
     files = {
-        ".github/workflows/verify.yml": "python3 -m scripts.guardrail verify\n",
+        ".github/workflows/verify.yml": "python3 -m ai_guardrails verify\n",
         ".pre-commit-config.yaml": (
-            "entry: >-\n"
-            "  python3 -m scripts.guardrail verify\n"
-            "  --profile precommit --base-ref HEAD\n"
+            "entry: >-\n  python3 -m ai_guardrails verify\n  --profile precommit --base-ref HEAD\n"
         ),
-        ".codex/hooks/post_edit_fast_gate.py": "scripts.guardrail\n",
-        ".codex/hooks/stop_full_verify.py": "scripts.guardrail\n",
+        ".codex/hooks/post_edit_fast_gate.py": "ai_guardrails\n",
+        ".codex/hooks/stop_full_verify.py": "ai_guardrails\n",
     }
     for relative, text in files.items():
         path = tmp_path / relative

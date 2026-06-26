@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import check_tach_config, guardrail_tach
+from ai_guardrails import tach as guardrail_tach
+from ai_guardrails.checks import tach_config as check_tach_config
 
 
 def test_tach_config_issues_require_modules_and_strict_root(tmp_path: Path) -> None:

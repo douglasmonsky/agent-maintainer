@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from scripts.guardrail_catalogs import catalog as guardrail_catalog
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_models import CI_PROFILE, MANUAL_PROFILES
+from ai_guardrails.catalogs import catalog as guardrail_catalog
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.models import CI_PROFILE, MANUAL_PROFILES
 
 
 def test_osv_scanner_check_is_disabled_by_default_and_manual_when_enabled() -> None:

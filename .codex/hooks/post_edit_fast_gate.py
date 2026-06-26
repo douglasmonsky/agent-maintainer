@@ -1,14 +1,10 @@
-#!/usr/bin/env python3
-"""Codex PostToolUse hook: run fast checks after file edits.
-
-PostToolUse cannot undo an edit; it feeds concise failure context back into the
-agent so the next step is repair instead of continued drift.
-"""
+"""Codex PostToolUse hook: run fast checks after file edits."""
 
 from __future__ import annotations
 
 import importlib
 import json
+import os
 import subprocess  # nosec B404
 import sys
 import time
@@ -31,13 +27,25 @@ PROFILE = "fast"
 
 
 def verifier_python(repo_root: Path) -> str:
-    """Prefer the repository virtualenv when running the verifier."""
+    """Prefer virtualenv running verifier."""
 
     for relative in (".venv/bin/python", "venv/bin/python"):
         candidate = repo_root / relative
         if candidate.exists():
             return str(candidate)
     return sys.executable
+
+
+def verifier_env(repo_root: Path) -> dict[str, str]:
+    """Return hook subprocess environment with local src package importable."""
+
+    env = hardened_subprocess_env()
+    src_path = str(repo_root / "src")
+    existing_pythonpath = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = (
+        f"{src_path}{os.pathsep}{existing_pythonpath}" if existing_pythonpath else src_path
+    )
+    return env
 
 
 def emit_block(reason: str, additional_context: str) -> int:
@@ -59,16 +67,15 @@ def emit_block(reason: str, additional_context: str) -> int:
 
 
 def main() -> int:
-    """Run fast guardrails after edits and block only when repair is needed."""
+    """Run fast guardrails after edits and block only when needed."""
 
     with suppress(json.JSONDecodeError):
         json.load(sys.stdin)
 
     repo_root = Path(__file__).resolve().parents[2]
-    verifier = repo_root / "scripts" / "guardrail.py"
+    verifier = repo_root / "src" / "ai_guardrails" / "__main__.py"
     started_at = utc_timestamp()
     started = time.monotonic()
-
     if not verifier.exists():
         record_hook_result(
             repo_root,
@@ -85,14 +92,17 @@ def main() -> int:
             ),
         )
         return emit_block(
-            "Repository guardrail verifier is missing.",
-            f"Expected verifier at {verifier}. Restore scripts/guardrail.py before continuing.",
+            "Repository guardrail verifier missing.",
+            (
+                f"Expected verifier package at {verifier}. "
+                "Restore src/ai_guardrails before continuing."
+            ),
         )
 
     command = [
         verifier_python(repo_root),
         "-m",
-        "scripts.guardrail",
+        "ai_guardrails",
         "verify",
         "--profile",
         PROFILE,
@@ -102,7 +112,7 @@ def main() -> int:
     result = subprocess.run(  # nosec B603
         command,
         cwd=repo_root,
-        env=hardened_subprocess_env(),
+        env=verifier_env(repo_root),
         text=True,
         capture_output=True,
         check=False,
@@ -120,7 +130,6 @@ def main() -> int:
             duration_seconds=duration_since(started),
         ),
     )
-
     if result.returncode == 0:
         return 0
 
@@ -128,12 +137,11 @@ def main() -> int:
     if len(output) > MAX_CONTEXT:
         truncated_output = output[:MAX_CONTEXT].rstrip()
         output = f"{truncated_output}\n... truncated. Full logs are in .verify-logs/."
-
     return emit_block(
-        "Fast repository guardrails failed after a file edit.",
+        "Fast repository guardrails failed after file edit.",
         (
-            "Repair these issues before continuing. Do not suppress the checks unless the "
-            f"suppression is narrow and justified.\n\n{output}"
+            "Repair issues before continuing. Do not suppress or lower thresholds unless "
+            f"the suppression is narrow and justified.\n\n{output}"
         ),
     )
 

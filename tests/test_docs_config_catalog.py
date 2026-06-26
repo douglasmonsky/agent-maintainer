@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.guardrail_catalogs import docs as guardrail_catalog_docs
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.catalogs import docs as guardrail_catalog_docs
+from ai_guardrails.core.config import GuardrailConfig
 
 
 def test_docs_config_hygiene_commands_follow_config(

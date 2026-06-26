@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from guardrail_lib.config import coercion as guardrail_config_coercion
-from guardrail_lib.config import loader as guardrail_config_loader
-from guardrail_lib.config import modes as guardrail_config_modes
-from guardrail_lib.config import schema as guardrail_config_schema
-from scripts.guardrail_core import config as guardrail_config
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.config import coercion as guardrail_config_coercion
+from ai_guardrails.config import loader as guardrail_config_loader
+from ai_guardrails.config import modes as guardrail_config_modes
+from ai_guardrails.config import schema as guardrail_config_schema
+from ai_guardrails.core import config as guardrail_config
+from ai_guardrails.core.config import GuardrailConfig
 
 CONFIG_COVERAGE_THRESHOLD = 91
 ENV_COVERAGE_THRESHOLD = 95
@@ -40,7 +40,7 @@ require_tests = true
 enable_pip_audit = true
 pip_audit_args = ["-r", "requirements.txt"]
 enable_mutmut = true
-mutmut_args = ["run", "scripts.guardrail_core.runtime*"]
+mutmut_args = ["run", "ai_guardrails.core.runtime*"]
 enable_semgrep = true
 semgrep_args = ["scan", "--config", "semgrep.yml", "--metrics=off", "."]
 semgrep_profiles = ["manual"]
@@ -90,7 +90,7 @@ log_dir = ".custom-verify-logs"
     assert loaded.enable_pip_audit is True
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True
-    assert loaded.mutmut_args == ("run", "scripts.guardrail_core.runtime*")
+    assert loaded.mutmut_args == ("run", "ai_guardrails.core.runtime*")
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml", "--metrics=off", ".")
     assert loaded.semgrep_profiles == ("manual",)
@@ -197,7 +197,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
             "GUARDRAILS_COVERAGE_FAIL_UNDER": "95",
             "GUARDRAILS_PIP_AUDIT_ARGS": "-r requirements.txt",
             "GUARDRAILS_ENABLE_MUTMUT": "true",
-            "GUARDRAILS_MUTMUT_ARGS": "run,scripts.guardrail_core.runtime*",
+            "GUARDRAILS_MUTMUT_ARGS": "run,ai_guardrails.core.runtime*",
             "GUARDRAILS_ENABLE_SEMGREP": "true",
             "GUARDRAILS_SEMGREP_ARGS": "scan,--config,semgrep.yml",
             "GUARDRAILS_SEMGREP_PROFILES": "manual,security",
@@ -242,7 +242,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.coverage_fail_under == ENV_COVERAGE_THRESHOLD
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True
-    assert loaded.mutmut_args == ("run", "scripts.guardrail_core.runtime*")
+    assert loaded.mutmut_args == ("run", "ai_guardrails.core.runtime*")
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml")
     assert loaded.semgrep_profiles == ("manual", "security")

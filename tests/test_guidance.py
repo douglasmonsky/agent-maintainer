@@ -5,9 +5,9 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from guardrail_lib.config.modes import apply_mode
-from guardrail_lib.config.schema import GuardrailConfig
-from scripts.guardrail_core import guidance as guardrail_guidance
+from ai_guardrails.config.modes import apply_mode
+from ai_guardrails.config.schema import GuardrailConfig
+from ai_guardrails.core import guidance as guardrail_guidance
 
 
 def strict_config() -> GuardrailConfig:
@@ -16,10 +16,10 @@ def strict_config() -> GuardrailConfig:
     return replace(
         apply_mode(GuardrailConfig(), "fresh-strict"),
         architecture_tool="tach",
-        source_roots=("scripts", ".codex/hooks"),
+        source_roots=("src/ai_guardrails", ".codex/hooks"),
         test_roots=("tests",),
-        package_paths=("scripts", ".codex/hooks"),
-        coverage_source=("scripts", ".codex/hooks"),
+        package_paths=("src/ai_guardrails", ".codex/hooks"),
+        coverage_source=("src/ai_guardrails", ".codex/hooks"),
         enable_pip_audit=True,
         pip_audit_args=("-r", "config/dev-lock.txt"),
         enable_mutmut=True,
@@ -54,7 +54,7 @@ def test_render_guidance_includes_active_configuration() -> None:
 
     assert "Generated Guardrail Guidance" in text
     assert "Mode: `fresh-strict`" in text
-    assert "Source roots: `scripts`, `.codex/hooks`" in text
+    assert "Source roots: `src/ai_guardrails`, `.codex/hooks`" in text
     assert "Test roots: `tests`" in text
     assert "Architecture backend: `tach`" in text
     assert "Diagnostic artifacts: `enabled` at `.verify-logs`" in text
@@ -74,7 +74,7 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "YAML linting: enabled with `.github/workflows .pre-commit-config.yaml`" in text
     assert "TOML formatting: enabled with `pyproject.toml tach.toml`" in text
     assert "Schema validation: enabled with `--builtin-schema vendor.github-workflows" in text
-    assert "python3 -m scripts.guardrail verify --profile precommit" in text
+    assert "python3 -m ai_guardrails verify --profile precommit" in text
     assert "Prefer small, coherent commits" in text
     assert "Prefer `rg --files` or `git ls-files`" in text
     assert "`__pycache__`, `*.pyc`, `.venv`" in text

@@ -6,16 +6,18 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_doctor, guardrail_doctor_setup
-from scripts.guardrail_core import tool_capabilities as guardrail_tool_capabilities
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_models import FULL_PROFILES, Check
+from ai_guardrails.core import tool_capabilities as guardrail_tool_capabilities
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.doctor import cli as guardrail_doctor
+from ai_guardrails.doctor import setup as guardrail_doctor_setup
+from ai_guardrails.models import FULL_PROFILES, Check
 
 
 def write_repo_root(tmp_path: Path) -> Path:
     (tmp_path / ".git" / "hooks").mkdir(parents=True)
-    (tmp_path / "scripts").mkdir()
-    (tmp_path / "scripts" / "guardrail.py").write_text("", encoding="utf-8")
+    package_path = tmp_path / "src" / "ai_guardrails"
+    package_path.mkdir(parents=True)
+    (package_path / "__main__.py").write_text("", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_text("[tool.ai_guardrails]\n", encoding="utf-8")
     return tmp_path
 

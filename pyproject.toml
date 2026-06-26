@@ -1,12 +1,25 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai_guardrails"
+version = "0.1.0"
+description = "Drop-in maintainability guardrails for AI-assisted Python repositories."
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ai_guardrails]
 mode = "fresh-strict"
 architecture_tool = "tach"
-source_roots = ["scripts", ".codex/hooks", "guardrail_lib"]
+source_roots = ["src/ai_guardrails", ".codex/hooks"]
 test_roots = ["tests"]
-package_paths = ["scripts", ".codex/hooks", "guardrail_lib"]
-coverage_source = ["scripts", ".codex/hooks", "guardrail_lib"]
-file_length_paths = ["scripts", ".codex/hooks", "guardrail_lib", "tests"]
-structure_paths = ["scripts", ".codex/hooks", "guardrail_lib"]
+package_paths = ["src/ai_guardrails", ".codex/hooks"]
+coverage_source = ["src/ai_guardrails", ".codex/hooks"]
+file_length_paths = ["src/ai_guardrails", ".codex/hooks", "tests"]
+structure_paths = ["src/ai_guardrails", ".codex/hooks"]
 structure_ignore_paths = [
   "tests/**",
   "migrations/**",
@@ -18,7 +31,7 @@ structure_ignore_paths = [
 folder_file_warn = 20
 folder_file_block = 40
 structure_cluster_min = 4
-vulture_paths = ["scripts", ".codex/hooks", "guardrail_lib", "tests"]
+vulture_paths = ["src/ai_guardrails", ".codex/hooks", "tests"]
 require_tests = true
 coverage_fail_under = 90
 diff_cover_fail_under = 90
@@ -39,9 +52,8 @@ semgrep_args = [
   "semgrep.yml",
   "--error",
   "--metrics=off",
-  "scripts",
+  "src/ai_guardrails",
   ".codex/hooks",
-  "guardrail_lib",
 ]
 semgrep_profiles = ["manual"]
 enable_sbom = true
@@ -88,8 +100,8 @@ enabled = true
 log_dir = ".verify-logs"
 
 [tool.mutmut]
-source_paths = ["scripts/"]
-only_mutate = ["scripts/guardrail_core/runtime.py"]
+source_paths = ["src/ai_guardrails/"]
+only_mutate = ["src/ai_guardrails/core/runtime.py"]
 pytest_add_cli_args_test_selection = ["tests/test_runtime.py"]
 pytest_add_cli_args = ["-p", "no:tach"]
 mutate_only_covered_lines = true
@@ -120,30 +132,11 @@ exclude_lines = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = [".", "src"]
 testpaths = ["tests"]
 
 [tool.deptry]
-known_first_party = [
-  "check_pip_audit_config",
-  "check_tach_config",
-  "guardrail_lib",
-  "scripts",
-  "guardrail_catalogs",
-  "guardrail_core",
-  "guardrail_doctor",
-  "guardrail_doctor_setup",
-  "guardrail_doctor_support",
-  "guardrail_models",
-  "guardrail_tach",
-  "hook_audit",
-  "run_bandit",
-  "run_mutmut",
-  "run_pyright",
-  "run_ruff",
-  "run_secret_scan",
-  "verify_quiet",
-]
+known_first_party = ["ai_guardrails", "hook_audit"]
 requirements_files = ["requirements.txt"]
 requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
 

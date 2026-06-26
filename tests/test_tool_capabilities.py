@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.guardrail_core import tool_capabilities as capabilities
-from scripts.guardrail_models import FULL_PROFILES, Check
+from ai_guardrails.core import tool_capabilities as capabilities
+from ai_guardrails.models import FULL_PROFILES, Check
 
 
 def test_python_package_tool_state_passes_when_local_executable_exists(tmp_path: Path) -> None:

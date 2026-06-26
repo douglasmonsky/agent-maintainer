@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import run_ruff
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.runners import ruff as run_ruff
 
 INVALID_CONFIG_EXIT_CODE = 2
 

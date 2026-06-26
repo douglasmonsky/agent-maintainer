@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import run_mutmut
+from ai_guardrails.runners import mutmut as run_mutmut
 
 
 def test_main_passes_arguments_to_runner(monkeypatch: pytest.MonkeyPatch) -> None:

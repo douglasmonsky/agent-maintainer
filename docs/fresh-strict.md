@@ -36,7 +36,7 @@ Preset defaults:
 Explicit pyproject fields, environment variables, and CLI flags still override the preset. For example, this keeps the mode but temporarily relaxes complexity for one run:
 
 ```bash
-python3 -m scripts.guardrail verify --profile full --mode fresh-strict
+python3 -m ai_guardrails verify --profile full --mode fresh-strict
 ```
 
 `fresh-strict` does not enable `pip-audit` by itself. Enable it with a pinned input when the repository has a stable dependency lock:
@@ -55,6 +55,6 @@ Markdown, YAML, and TOML files are part of the guardrail surface.
 For this repository, `fresh-strict` is active and the optional hardening gates are also enabled. Use:
 
 ```bash
-python3 -m scripts.guardrail doctor
-python3 -m scripts.guardrail verify --profile full
+python3 -m ai_guardrails doctor
+python3 -m ai_guardrails verify --profile full
 ```

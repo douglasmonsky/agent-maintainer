@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from guardrail_lib.checks import structure as check_structure
+from ai_guardrails.checks import structure as check_structure
 
 
 def write_modules(folder: Path, names: list[str]) -> list[Path]:

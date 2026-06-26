@@ -5,12 +5,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from guardrail_lib.verify.artifacts import MANIFEST_NAME
-from scripts import guardrail_doctor, guardrail_doctor_setup
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_doctor_support import logs as guardrail_doctor_logs
-from scripts.guardrail_doctor_support import models as guardrail_doctor_models
-from scripts.guardrail_doctor_support import policy as guardrail_doctor_policy
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.doctor import cli as guardrail_doctor
+from ai_guardrails.doctor import setup as guardrail_doctor_setup
+from ai_guardrails.doctor.support import logs as guardrail_doctor_logs
+from ai_guardrails.doctor.support import models as guardrail_doctor_models
+from ai_guardrails.doctor.support import policy as guardrail_doctor_policy
+from ai_guardrails.verify.artifacts import MANIFEST_NAME
 
 
 def test_architecture_backend_reports_active_tach(tmp_path: Path) -> None:

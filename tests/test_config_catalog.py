@@ -7,13 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from guardrail_lib.config import (
+from ai_guardrails.catalogs import catalog as guardrail_catalog
+from ai_guardrails.config import (
     modes as guardrail_config_modes,
 )
-from scripts.guardrail_catalogs import catalog as guardrail_catalog
-from scripts.guardrail_core import config as guardrail_config
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_models import (
+from ai_guardrails.core import config as guardrail_config
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.models import (
     CI_PROFILE,
     FULL_PROFILE,
     FULL_PROFILES,

@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import run_pyright
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.runners import pyright as run_pyright
 
 
 def test_write_pyright_config_uses_guardrail_mode_and_roots(
@@ -29,7 +29,7 @@ def test_write_pyright_config_uses_guardrail_mode_and_roots(
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert payload["typeCheckingMode"] == "strict"
     assert payload["include"] == ["../scripts", "../.codex/hooks", "../tests"]
-    assert payload["extraPaths"] == [".."]
+    assert payload["extraPaths"] == ["..", "../src"]
     assert "../.venv" in payload["exclude"]
 
 

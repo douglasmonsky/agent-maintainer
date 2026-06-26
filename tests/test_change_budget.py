@@ -6,8 +6,8 @@ import subprocess
 
 import pytest
 
-from guardrail_lib.checks import change_budget as check_change_budget
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.checks import change_budget as check_change_budget
+from ai_guardrails.core.config import GuardrailConfig
 
 
 def test_change_budget_classifies_python_source_and_tests() -> None:
@@ -75,7 +75,7 @@ def test_run_git_numstat_does_not_double_count_copied_source(
         ["git"],
         0,
         stdout=(
-            "0\t1\tscripts/check_tool.py => guardrail_lib/checks/tool.py\n"
+            "0\t1\tscripts/check_tool.py => src/ai_guardrails/checks/tool.py\n"
             "5\t300\tscripts/check_tool.py\n"
         ),
         stderr="",
@@ -83,7 +83,7 @@ def test_run_git_numstat_does_not_double_count_copied_source(
     name_status = subprocess.CompletedProcess(
         ["git"],
         0,
-        stdout="C099\tscripts/check_tool.py\tguardrail_lib/checks/tool.py\n",
+        stdout="C099\tscripts/check_tool.py\tsrc/ai_guardrails/checks/tool.py\n",
         stderr="",
     )
     calls = [numstat, name_status]
@@ -98,7 +98,7 @@ def test_run_git_numstat_does_not_double_count_copied_source(
 
     assert changes == [
         check_change_budget.FileChange(
-            "scripts/check_tool.py => guardrail_lib/checks/tool.py",
+            "scripts/check_tool.py => src/ai_guardrails/checks/tool.py",
             0,
             1,
         ),

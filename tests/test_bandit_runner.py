@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import run_bandit
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.runners import bandit as run_bandit
 
 INVALID_CONFIG_EXIT_CODE = 2
 
@@ -24,7 +24,7 @@ def test_run_bandit_writes_json_artifact_and_prints_compact_findings(
     def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
         assert "-f" in command
         assert "json" in command
-        assert command[-2:] == ["scripts", "guardrail_lib"]
+        assert command[-2:] == ["scripts", "src/ai_guardrails"]
         return subprocess.CompletedProcess(
             command,
             1,
@@ -48,7 +48,7 @@ def test_run_bandit_writes_json_artifact_and_prints_compact_findings(
     monkeypatch.setattr(run_bandit.shutil, "which", lambda name: "/usr/bin/bandit")
     monkeypatch.setattr(run_bandit.subprocess, "run", fake_run)
 
-    assert run_bandit.run_bandit(json_path, package_paths=("scripts", "guardrail_lib")) == 1
+    assert run_bandit.run_bandit(json_path, package_paths=("scripts", "src/ai_guardrails")) == 1
 
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     assert payload["results"][0]["test_id"] == "B101"
@@ -104,7 +104,7 @@ def test_main_uses_configured_diagnostic_artifact_dir(
     diagnostic_dir = tmp_path / "custom-logs"
     config = GuardrailConfig(
         diagnostic_artifacts_dir=str(diagnostic_dir),
-        package_paths=("scripts", "guardrail_lib"),
+        package_paths=("scripts", "src/ai_guardrails"),
     )
     seen: dict[str, object] = {}
 
@@ -120,5 +120,5 @@ def test_main_uses_configured_diagnostic_artifact_dir(
 
     assert seen == {
         "json_path": diagnostic_dir / "bandit.json",
-        "package_paths": ("scripts", "guardrail_lib"),
+        "package_paths": ("scripts", "src/ai_guardrails"),
     }

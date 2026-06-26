@@ -72,7 +72,7 @@ jobs:
       - name: Verify quietly
         run: |
           BASE_REF="origin/${GITHUB_BASE_REF:-main}"
-          python3 -m scripts.guardrail verify --profile ci --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
+          python3 -m ai_guardrails verify --profile ci --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
 
       - name: Upload full verification logs
         if: always()

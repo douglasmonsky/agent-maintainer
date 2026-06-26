@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.guardrail_catalogs import catalog as guardrail_catalog
-from scripts.guardrail_core import config as guardrail_config
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.catalogs import catalog as guardrail_catalog
+from ai_guardrails.core import config as guardrail_config
+from ai_guardrails.core.config import GuardrailConfig
 
 WARN_THRESHOLD = 12
 BLOCK_THRESHOLD = 34
@@ -65,4 +65,4 @@ def test_structure_check_is_in_catalog_and_blocks_only_fresh_strict() -> None:
     assert "--block-threshold" in custom_check.command
     assert "0" in custom_check.command
     assert str(BLOCK_THRESHOLD) in strict_check.command
-    assert "scripts/check_structure.py" in strict_check.required_paths
+    assert "src/ai_guardrails/checks/structure.py" in strict_check.required_paths
