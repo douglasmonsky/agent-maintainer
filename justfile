@@ -36,7 +36,7 @@ verify-full-output:
     ruff format --check .
     ruff check .
     python3 -m scripts.run_pyright
-    pytest -q --tb=short --disable-warnings --cov=scripts --cov=.codex/hooks --cov=guardrail_lib --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=80 tests
+    pytest -q --tb=short --disable-warnings --cov=scripts --cov=.codex/hooks --cov=guardrail_lib --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=90 tests
     radon cc scripts .codex/hooks guardrail_lib -a -s
     radon mi scripts .codex/hooks guardrail_lib -s
     xenon --max-absolute B --max-modules A --max-average A scripts .codex/hooks guardrail_lib

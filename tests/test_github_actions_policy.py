@@ -33,6 +33,9 @@ def test_verify_workflow_installs_gitleaks_from_release_artifact() -> None:
     workflow = (repo_root() / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
 
     assert "GITLEAKS_VERSION=8.30.1" in workflow
+    assert "GITLEAKS_SHA256=" in workflow
+    assert "sha256sum" in workflow
+    assert 'test "$ACTUAL_SHA256" = "$GITLEAKS_SHA256"' in workflow
     assert "github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}" in workflow
     assert "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" in workflow
     assert "go install github.com/gitleaks/gitleaks" not in workflow
