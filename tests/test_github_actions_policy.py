@@ -38,6 +38,13 @@ def test_verify_workflow_installs_gitleaks_from_release_artifact() -> None:
     assert "go install github.com/gitleaks/gitleaks" not in workflow
 
 
+def test_verify_workflow_installs_node_backed_external_tools() -> None:
+    workflow = (repo_root() / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
+
+    assert "npm ci" in workflow
+    assert "npm install -g" not in workflow
+
+
 def test_dependabot_updates_tag_pinned_github_actions() -> None:
     dependabot = (repo_root() / ".github" / "dependabot.yml").read_text(encoding="utf-8")
 

@@ -46,6 +46,17 @@ def test_cli_overrides_replace_config_values() -> None:
             "--enable-interrogate",
             "--interrogate-fail-under",
             "30",
+            "--enable-markdownlint",
+            "--markdownlint-path",
+            "README.md,docs",
+            "--enable-yamllint",
+            "--yamllint-path",
+            ".github/workflows",
+            "--enable-taplo",
+            "--taplo-path",
+            "pyproject.toml",
+            "--enable-check-jsonschema",
+            "--check-jsonschema-arg=--builtin-schema,vendor.github-workflows,.github/workflows/verify.yml",
         ]
     )
 
@@ -61,6 +72,18 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.secret_scan_history_profiles == ("security",)
     assert config.enable_interrogate is True
     assert config.interrogate_fail_under == CLI_INTERROGATE_THRESHOLD
+    assert config.enable_markdownlint is True
+    assert config.markdownlint_paths == ("README.md", "docs")
+    assert config.enable_yamllint is True
+    assert config.yamllint_paths == (".github/workflows",)
+    assert config.enable_taplo is True
+    assert config.taplo_paths == ("pyproject.toml",)
+    assert config.enable_check_jsonschema is True
+    assert config.check_jsonschema_args == (
+        "--builtin-schema",
+        "vendor.github-workflows",
+        ".github/workflows/verify.yml",
+    )
 
 
 def test_cli_mode_applies_before_other_cli_overrides() -> None:

@@ -23,6 +23,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Dead code | vulture |
 | Security checks | Bandit; pip-audit when explicitly enabled; optional Gitleaks secret scanning |
 | GitHub Actions checks | actionlint and zizmor when workflows exist |
+| Docs/config hygiene | markdownlint-cli2, yamllint, Taplo, optional check-jsonschema |
 | Local enforcement | pre-commit |
 | Final enforcement | GitHub Actions |
 | AI-loop feedback | Codex `PostToolUse` and `Stop` hooks |
@@ -34,6 +35,8 @@ Copy these files into the root of a Python repository:
 ```text
 AGENTS.md
 justfile
+package.json
+package-lock.json
 .pre-commit-config.yaml
 .codex/
 .github/workflows/verify.yml
@@ -44,7 +47,7 @@ config/
 Install dev dependencies. With `uv`:
 
 ```bash
-uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit actionlint-py zizmor pre-commit wemake-python-styleguide
+uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit yamllint check-jsonschema actionlint-py zizmor pre-commit wemake-python-styleguide
 ```
 
 Or with pip:
@@ -67,6 +70,12 @@ optional tools; `doctor` reports those capability states separately. This repo
 enables Gitleaks secret scanning, so install it locally with `brew install
 gitleaks` on macOS when running `full`, `ci`, or `security` profiles. CI
 installs the pinned external binary through Go.
+
+This repo also enables Markdown/TOML hygiene tools through `package-lock.json`:
+
+```bash
+npm ci
+```
 
 Keep `config/dev-dependencies.txt` as the human-edited dependency input. Refresh the pinned lock after changing it:
 
@@ -185,6 +194,14 @@ secret_scan_history_profiles = ["security"]
 enable_wemake = false
 enable_interrogate = false
 interrogate_fail_under = 80
+enable_markdownlint = false
+markdownlint_paths = ["**/*.md"]
+enable_yamllint = false
+yamllint_paths = [".github/workflows", ".github/dependabot.yml", ".pre-commit-config.yaml", "*.yml", "*.yaml"]
+enable_taplo = false
+taplo_paths = ["*.toml", "config/*.toml"]
+enable_check_jsonschema = false
+# Example: check_jsonschema_args = ["--builtin-schema", "vendor.github-workflows", ".github/workflows/verify.yml"]
 ```
 
 Use `mode = "fresh-strict"` for new repositories where strict checks should block from day one. Use `mode = "legacy-ratchet"` for existing repositories where heavy gates should stay opt-in while the repo adopts changed-file and baseline discipline. In `legacy-ratchet`, `file_length_baseline` defaults to `.guardrails/file-length-baseline.json`.

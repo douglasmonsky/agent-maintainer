@@ -48,6 +48,21 @@ enable_wemake = false
 # repos should set a baseline and raise it deliberately.
 enable_interrogate = false
 interrogate_fail_under = 80
+enable_markdownlint = false
+markdownlint_paths = ["**/*.md"]
+enable_yamllint = false
+yamllint_paths = [
+  ".github/workflows",
+  ".github/dependabot.yml",
+  ".pre-commit-config.yaml",
+  "*.yml",
+  "*.yaml",
+]
+enable_taplo = false
+taplo_paths = ["*.toml", "config/*.toml"]
+enable_check_jsonschema = false
+# Example enabled for GitHub Actions workflow schema validation:
+# check_jsonschema_args = ["--builtin-schema", "vendor.github-workflows", ".github/workflows/verify.yml"]
 
 [tool.ruff]
 line-length = 100
@@ -55,15 +70,15 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = [
-  "E",    # pycodestyle errors
-  "F",    # pyflakes
-  "I",    # import sorting
-  "B",    # bugbear-style correctness checks
-  "UP",   # pyupgrade
-  "SIM",  # simplification checks
-  "C90",  # McCabe complexity
-  "PLR",  # Pylint refactor rules exposed by Ruff
-  "RUF",  # Ruff-specific rules
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "I",   # import sorting
+  "B",   # bugbear-style correctness checks
+  "UP",  # pyupgrade
+  "SIM", # simplification checks
+  "C90", # McCabe complexity
+  "PLR", # Pylint refactor rules exposed by Ruff
+  "RUF", # Ruff-specific rules
 ]
 ignore = []
 

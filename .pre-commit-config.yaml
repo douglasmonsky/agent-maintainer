@@ -3,6 +3,8 @@ repos:
     hooks:
       - id: verify-quiet-precommit
         name: quiet repository verification
-        entry: env PYTHONDONTWRITEBYTECODE=1 python3 -m scripts.guardrail verify --profile precommit --base-ref HEAD --staged
+        entry: >-
+          env PYTHONDONTWRITEBYTECODE=1 python3 -m scripts.guardrail verify
+          --profile precommit --base-ref HEAD --staged
         language: system
         pass_filenames: false

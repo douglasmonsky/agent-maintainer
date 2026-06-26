@@ -44,6 +44,10 @@ verify-full-output:
     deptry .
     vulture scripts .codex/hooks guardrail_lib tests
     bandit -q -r scripts .codex/hooks guardrail_lib
+    markdownlint-cli2 "**/*.md"
+    yamllint .github/workflows .pre-commit-config.yaml .markdownlint-cli2.yaml .yamllint zizmor.yml
+    taplo fmt --check pyproject.toml tach.toml config/*.toml
+    check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/verify.yml
     pip-audit -r config/dev-lock.txt
 
 clean-verify-logs:

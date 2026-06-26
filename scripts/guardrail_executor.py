@@ -37,7 +37,9 @@ def tool_search_path() -> str:
     """Build PATH with local virtualenv tools ahead of ambient executables."""
 
     local_tool_dirs = [
-        str(Path(relative)) for relative in (".venv/bin", "venv/bin") if Path(relative).is_dir()
+        str(Path(relative))
+        for relative in (".venv/bin", "venv/bin", "node_modules/.bin")
+        if Path(relative).is_dir()
     ]
     executable_dir = str(Path(sys.executable).parent)
     existing_path = os.environ.get("PATH", "")

@@ -394,6 +394,27 @@ def test_canonical_commands_pass_when_all_files_use_module_entrypoint(tmp_path: 
     assert result.status == guardrail_doctor.OK
 
 
+def test_canonical_commands_pass_folded_yaml_entry(tmp_path: Path) -> None:
+    files = {
+        ".github/workflows/verify.yml": "python3 -m scripts.guardrail verify\n",
+        ".pre-commit-config.yaml": (
+            "entry: >-\n"
+            "  python3 -m scripts.guardrail verify\n"
+            "  --profile precommit --base-ref HEAD\n"
+        ),
+        ".codex/hooks/post_edit_fast_gate.py": "scripts.guardrail\n",
+        ".codex/hooks/stop_full_verify.py": "scripts.guardrail\n",
+    }
+    for relative, text in files.items():
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    result = guardrail_doctor.check_canonical_commands(tmp_path)
+
+    assert result.status == guardrail_doctor.OK
+
+
 def test_git_state_warns_for_dirty_ahead_branch(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

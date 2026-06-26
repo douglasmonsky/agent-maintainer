@@ -16,6 +16,9 @@ from scripts.guardrail_models import VALID_PROFILES
 
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
+ACTION_APPEND = "append"
+ACTION_STORE_FALSE = "store_false"
+ACTION_STORE_TRUE = "store_true"
 
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
@@ -32,7 +35,6 @@ def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse quiet verifier command-line options."""
-
     parser = argparse.ArgumentParser(
         description="Run repository quality checks with low-noise output."
     )
@@ -47,31 +49,23 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS_PER_FAILURE)
     parser.add_argument(
         "--staged",
-        action="store_true",
+        action=ACTION_STORE_TRUE,
         help="Use staged changes for diff-based checks.",
     )
     parser.add_argument(
         "--mode",
         choices=sorted(VALID_MODES),
-        help="Apply a guardrail preset for this run before other CLI overrides.",
+        help="Apply guardrail preset before other CLI overrides.",
     )
-
     add_path_overrides(parser)
     parser.add_argument("--coverage-fail-under", type=int)
     parser.add_argument("--diff-cover-fail-under", type=int)
-    parser.add_argument("--require-tests", action="store_true", default=None)
-    parser.add_argument("--no-require-tests", action="store_false", dest="require_tests")
-    parser.add_argument("--enable-pip-audit", action="store_true", default=None)
-    parser.add_argument("--disable-pip-audit", action="store_false", dest="enable_pip_audit")
+    add_quality_gate_overrides(parser)
     add_secret_scan_overrides(parser)
-    parser.add_argument("--enable-wemake", action="store_true", default=None)
-    parser.add_argument("--disable-wemake", action="store_false", dest="enable_wemake")
-    parser.add_argument("--enable-interrogate", action="store_true", default=None)
-    parser.add_argument("--disable-interrogate", action="store_false", dest="enable_interrogate")
-    parser.add_argument("--interrogate-fail-under", type=int)
+    add_docs_config_overrides(parser)
     parser.add_argument(
         "--allow-source-without-test-change",
-        action="store_true",
+        action=ACTION_STORE_TRUE,
         default=None,
         help="Do not warn when source changes are covered by existing tests.",
     )
@@ -82,7 +76,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--fail-on-optional-skip",
-        action="store_true",
+        action=ACTION_STORE_TRUE,
         help=(
             "Treat skipped optional integrations, such as absent architecture config, as failures."
         ),
@@ -90,23 +84,60 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def add_quality_gate_overrides(parser: argparse.ArgumentParser) -> None:
+    """Add optional quality gate CLI overrides."""
+    parser.add_argument("--require-tests", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument("--no-require-tests", action=ACTION_STORE_FALSE, dest="require_tests")
+    parser.add_argument("--enable-pip-audit", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument("--disable-pip-audit", action=ACTION_STORE_FALSE, dest="enable_pip_audit")
+    parser.add_argument("--enable-wemake", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument("--disable-wemake", action=ACTION_STORE_FALSE, dest="enable_wemake")
+    parser.add_argument("--enable-interrogate", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument(
+        "--disable-interrogate", action=ACTION_STORE_FALSE, dest="enable_interrogate"
+    )
+    parser.add_argument("--interrogate-fail-under", type=int)
+
+
+def add_docs_config_overrides(parser: argparse.ArgumentParser) -> None:
+    """Add docs and config hygiene CLI overrides."""
+    parser.add_argument("--enable-markdownlint", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument(
+        "--disable-markdownlint", action=ACTION_STORE_FALSE, dest="enable_markdownlint"
+    )
+    parser.add_argument("--markdownlint-path", action=ACTION_APPEND)
+    parser.add_argument("--enable-yamllint", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument("--disable-yamllint", action=ACTION_STORE_FALSE, dest="enable_yamllint")
+    parser.add_argument("--yamllint-path", action=ACTION_APPEND)
+    parser.add_argument("--enable-taplo", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument("--disable-taplo", action=ACTION_STORE_FALSE, dest="enable_taplo")
+    parser.add_argument("--taplo-path", action=ACTION_APPEND)
+    parser.add_argument("--enable-check-jsonschema", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument(
+        "--disable-check-jsonschema",
+        action=ACTION_STORE_FALSE,
+        dest="enable_check_jsonschema",
+    )
+    parser.add_argument("--check-jsonschema-arg", action=ACTION_APPEND)
+
+
 def add_secret_scan_overrides(parser: argparse.ArgumentParser) -> None:
     """Add backend-neutral secret scanning CLI overrides."""
-    parser.add_argument("--enable-secret-scanning", action="store_true", default=None)
+    parser.add_argument("--enable-secret-scanning", action=ACTION_STORE_TRUE, default=None)
     parser.add_argument(
         "--disable-secret-scanning",
-        action="store_false",
+        action=ACTION_STORE_FALSE,
         dest="enable_secret_scanning",
     )
     parser.add_argument("--secret-scanner")
     parser.add_argument(
         "--secret-scan-profile",
-        action="append",
+        action=ACTION_APPEND,
         help="Secret scan normal profile. May be repeated or comma-separated.",
     )
     parser.add_argument(
         "--secret-scan-history-profile",
-        action="append",
+        action=ACTION_APPEND,
         help="Secret scan history profile. May be repeated or comma-separated.",
     )
 
@@ -116,27 +147,27 @@ def add_path_overrides(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument(
         "--source-root",
-        action="append",
+        action=ACTION_APPEND,
         help="Configured Python source root. May be repeated or comma-separated.",
     )
     parser.add_argument(
         "--test-root",
-        action="append",
+        action=ACTION_APPEND,
         help="Configured Python test root. May be repeated or comma-separated.",
     )
     parser.add_argument(
         "--coverage-source",
-        action="append",
+        action=ACTION_APPEND,
         help="Coverage source passed to pytest-cov. May be repeated or comma-separated.",
     )
     parser.add_argument(
         "--package-path",
-        action="append",
+        action=ACTION_APPEND,
         help="Package/source paths for static analysis. May be repeated or comma-separated.",
     )
     parser.add_argument(
         "--file-length-path",
-        action="append",
+        action=ACTION_APPEND,
         help="Paths scanned by the file-length check. May be repeated or comma-separated.",
     )
     parser.add_argument(
@@ -145,7 +176,7 @@ def add_path_overrides(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--vulture-path",
-        action="append",
+        action=ACTION_APPEND,
         help="Paths scanned by vulture. May be repeated or comma-separated.",
     )
 
@@ -167,6 +198,10 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "vulture_paths": parse_csv_like(args.vulture_path),
         "secret_scan_profiles": parse_csv_like(args.secret_scan_profile),
         "secret_scan_history_profiles": parse_csv_like(args.secret_scan_history_profile),
+        "markdownlint_paths": parse_csv_like(args.markdownlint_path),
+        "yamllint_paths": parse_csv_like(args.yamllint_path),
+        "taplo_paths": parse_csv_like(args.taplo_path),
+        "check_jsonschema_args": parse_csv_like(args.check_jsonschema_arg),
     }
     scalar_overrides = {
         "coverage_fail_under": args.coverage_fail_under,
@@ -178,6 +213,10 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "enable_wemake": args.enable_wemake,
         "enable_interrogate": args.enable_interrogate,
         "interrogate_fail_under": args.interrogate_fail_under,
+        "enable_markdownlint": args.enable_markdownlint,
+        "enable_yamllint": args.enable_yamllint,
+        "enable_taplo": args.enable_taplo,
+        "enable_check_jsonschema": args.enable_check_jsonschema,
         "architecture_tool": args.architecture_tool,
         "allow_source_without_test_change": args.allow_source_without_test_change,
         "file_length_baseline": args.file_length_baseline,

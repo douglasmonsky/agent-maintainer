@@ -18,11 +18,7 @@ exclude = [
   "venv/",
 ]
 
-layers = [
-  "entrypoint",
-  "application",
-  "domain",
-]
+layers = ["entrypoint", "application", "domain"]
 
 [[modules]]
 path = "your_package.cli"
@@ -32,10 +28,7 @@ depends_on = ["your_package.runner"]
 [[modules]]
 path = "your_package.runner"
 layer = "application"
-depends_on = [
-  "your_package.config",
-  "your_package.results",
-]
+depends_on = ["your_package.config", "your_package.results"]
 
 [[modules]]
 path = "your_package.config"
