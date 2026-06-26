@@ -25,6 +25,10 @@ TUPLE_ENVS = (
     ("mutmut_args", "GUARDRAILS_MUTMUT_ARGS"),
     ("semgrep_args", "GUARDRAILS_SEMGREP_ARGS"),
     ("semgrep_profiles", "GUARDRAILS_SEMGREP_PROFILES"),
+    ("osv_scanner_args", "GUARDRAILS_OSV_SCANNER_ARGS"),
+    ("osv_scanner_profiles", "GUARDRAILS_OSV_SCANNER_PROFILES"),
+    ("trivy_args", "GUARDRAILS_TRIVY_ARGS"),
+    ("trivy_profiles", "GUARDRAILS_TRIVY_PROFILES"),
     ("sbom_args", "GUARDRAILS_SBOM_ARGS"),
     ("sbom_profiles", "GUARDRAILS_SBOM_PROFILES"),
     ("license_check_args", "GUARDRAILS_LICENSE_CHECK_ARGS"),
@@ -45,6 +49,8 @@ BOOL_ENVS = (
     ("enable_pip_audit", "GUARDRAILS_ENABLE_PIP_AUDIT"),
     ("enable_mutmut", "GUARDRAILS_ENABLE_MUTMUT"),
     ("enable_semgrep", "GUARDRAILS_ENABLE_SEMGREP"),
+    ("enable_osv_scanner", "GUARDRAILS_ENABLE_OSV_SCANNER"),
+    ("enable_trivy", "GUARDRAILS_ENABLE_TRIVY"),
     ("enable_sbom", "GUARDRAILS_ENABLE_SBOM"),
     ("enable_license_check", "GUARDRAILS_ENABLE_LICENSE_CHECK"),
     ("enable_secret_scanning", "GUARDRAILS_ENABLE_SECRET_SCANNING"),
@@ -163,6 +169,12 @@ def apply_special_envs(updates: dict[str, object]) -> None:
     pip_audit_args = os.getenv("GUARDRAILS_PIP_AUDIT_ARGS")
     if pip_audit_args is not None:
         updates["pip_audit_args"] = tuple(shlex.split(pip_audit_args))
+    osv_scanner_args = os.getenv("GUARDRAILS_OSV_SCANNER_ARGS")
+    if osv_scanner_args is not None:
+        updates["osv_scanner_args"] = tuple(shlex.split(osv_scanner_args))
+    trivy_args = os.getenv("GUARDRAILS_TRIVY_ARGS")
+    if trivy_args is not None:
+        updates["trivy_args"] = tuple(shlex.split(trivy_args))
     architecture_tool = os.getenv("GUARDRAILS_ARCHITECTURE_TOOL")
     if architecture_tool is not None:
         updates["architecture_tool"] = coercion.as_choice(

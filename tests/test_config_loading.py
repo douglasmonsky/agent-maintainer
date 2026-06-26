@@ -44,6 +44,12 @@ mutmut_args = ["run", "scripts.guardrail_runtime*"]
 enable_semgrep = true
 semgrep_args = ["scan", "--config", "semgrep.yml", "--metrics=off", "."]
 semgrep_profiles = ["manual"]
+enable_osv_scanner = true
+osv_scanner_args = ["scan", "source", "-r", "."]
+osv_scanner_profiles = ["manual"]
+enable_trivy = true
+trivy_args = ["fs", "--scanners", "vuln,misconfig", "."]
+trivy_profiles = ["manual"]
 enable_sbom = true
 sbom_args = ["requirements", "config/dev-lock.txt", "--of", "JSON"]
 sbom_profiles = ["ci"]
@@ -88,6 +94,12 @@ log_dir = ".custom-verify-logs"
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml", "--metrics=off", ".")
     assert loaded.semgrep_profiles == ("manual",)
+    assert loaded.enable_osv_scanner is True
+    assert loaded.osv_scanner_args == ("scan", "source", "-r", ".")
+    assert loaded.osv_scanner_profiles == ("manual",)
+    assert loaded.enable_trivy is True
+    assert loaded.trivy_args == ("fs", "--scanners", "vuln,misconfig", ".")
+    assert loaded.trivy_profiles == ("manual",)
     assert loaded.enable_sbom is True
     assert loaded.sbom_args == ("requirements", "config/dev-lock.txt", "--of", "JSON")
     assert loaded.sbom_profiles == ("ci",)
@@ -187,6 +199,12 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
             "GUARDRAILS_ENABLE_SEMGREP": "true",
             "GUARDRAILS_SEMGREP_ARGS": "scan,--config,semgrep.yml",
             "GUARDRAILS_SEMGREP_PROFILES": "manual,security",
+            "GUARDRAILS_ENABLE_OSV_SCANNER": "true",
+            "GUARDRAILS_OSV_SCANNER_ARGS": "scan source -r .",
+            "GUARDRAILS_OSV_SCANNER_PROFILES": "manual",
+            "GUARDRAILS_ENABLE_TRIVY": "true",
+            "GUARDRAILS_TRIVY_ARGS": "fs --scanners vuln,misconfig .",
+            "GUARDRAILS_TRIVY_PROFILES": "manual",
             "GUARDRAILS_ENABLE_SBOM": "true",
             "GUARDRAILS_SBOM_ARGS": "requirements,config/dev-lock.txt,--of,JSON",
             "GUARDRAILS_SBOM_PROFILES": "ci",
@@ -226,6 +244,12 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml")
     assert loaded.semgrep_profiles == ("manual", "security")
+    assert loaded.enable_osv_scanner is True
+    assert loaded.osv_scanner_args == ("scan", "source", "-r", ".")
+    assert loaded.osv_scanner_profiles == ("manual",)
+    assert loaded.enable_trivy is True
+    assert loaded.trivy_args == ("fs", "--scanners", "vuln,misconfig", ".")
+    assert loaded.trivy_profiles == ("manual",)
     assert loaded.enable_sbom is True
     assert loaded.sbom_args == ("requirements", "config/dev-lock.txt", "--of", "JSON")
     assert loaded.sbom_profiles == ("ci",)

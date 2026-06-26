@@ -96,7 +96,7 @@ CycloneDX Python SBOM generation uses `cyclonedx-py` from `cyclonedx-bom`. It is
 
 License reporting and optional policy enforcement use `pip-licenses`. By default, `license_check_args = ["--from=mixed", "--format=json"]` generates `.verify-logs/licenses.json`. Add `--allow-only=...` or `--fail-on=...` to turn the same check into a blocking license policy once the repository has a real license policy. This repository enables the manual report but does not pretend a legal policy exists.
 
-OSV Scanner is best reserved for repositories that genuinely need multi-ecosystem dependency CVE coverage. Trivy is best reserved for repositories with Dockerfiles, container images, Kubernetes, Terraform, or other IaC assets. Syft/Grype are better fits for broader deployable artifacts or container workflows. This repository intentionally keeps its own workflow Python-native and does not add Docker just to run those scanners.
+OSV Scanner is best reserved for repositories that genuinely need multi-ecosystem dependency CVE coverage. Configure `enable_osv_scanner = true` for those repositories; the default manual check writes `.verify-logs/osv-scanner.json`. Trivy is best reserved for repositories with Dockerfiles, container images, Kubernetes, Terraform, or other IaC assets. Configure `enable_trivy = true` for those repositories; the default manual check writes `.verify-logs/trivy.json`. Syft/Grype are better fits for broader deployable artifacts or container workflows. This repository intentionally keeps its own workflow Python-native and does not add Docker just to run those scanners.
 
 ## Docs Config Hygiene
 

@@ -209,6 +209,8 @@ def render_guidance(config: GuardrailConfig) -> str:
         f"- pip-audit: {enabled_with_args(config.enable_pip_audit, config.pip_audit_args)}",
         f"- Mutmut: {enabled_with_args(config.enable_mutmut, config.mutmut_args)}",
         f"- Semgrep: {enabled_with_args(config.enable_semgrep, config.semgrep_args)}",
+        f"- OSV Scanner: {enabled_with_args(config.enable_osv_scanner, config.osv_scanner_args)}",
+        f"- Trivy: {enabled_with_args(config.enable_trivy, config.trivy_args)}",
         f"- Python SBOM: {enabled_with_args(config.enable_sbom, config.sbom_args)}",
         (
             "- License checking: "

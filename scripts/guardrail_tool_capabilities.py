@@ -67,6 +67,22 @@ KNOWN_CAPABILITIES = (
         ),
     ),
     (
+        "osv-scanner",
+        ToolCapability(
+            "osv-scanner",
+            EXTERNAL_BINARY,
+            hint="Install OSV Scanner with the platform package manager or release binary.",
+        ),
+    ),
+    (
+        "trivy",
+        ToolCapability(
+            "trivy",
+            EXTERNAL_BINARY,
+            hint="Install Trivy with the platform package manager or release binary.",
+        ),
+    ),
+    (
         "markdownlint-cli2",
         ToolCapability(
             "markdownlint-cli2",

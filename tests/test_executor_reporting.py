@@ -109,6 +109,18 @@ def test_interrogate_skip_reports_configured_reason(tmp_path: Path) -> None:
     assert guardrail_executor.missing_requirement(check) == "optional skip: disabled"
 
 
+def test_external_manual_scanner_skip_reports_configured_reason(tmp_path: Path) -> None:
+    for check_name in ("osv-scanner", "trivy"):
+        check = Check(
+            check_name,
+            [check_name],
+            frozenset(),
+            optional_skip_reason="disabled",
+        )
+
+        assert guardrail_executor.missing_requirement(check) == "optional skip: disabled"
+
+
 def test_run_check_writes_skip_log(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     check = Check("pip-audit", ["pip-audit"], frozenset(), optional_skip_reason="disabled")

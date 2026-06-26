@@ -249,13 +249,13 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add `mutmut` as a slow/manual mutation-testing option.
 - [x] Document mutmut's POSIX fork requirement and Windows-through-WSL support.
 - [x] Add optional Semgrep support with local or pinned rules first.
-- [ ] Add OSV Scanner only for mixed-ecosystem repositories.
-- [ ] Add Trivy only for repositories with Docker, container, Kubernetes,
+- [x] Add OSV Scanner only for mixed-ecosystem repositories.
+- [x] Add Trivy only for repositories with Docker, container, Kubernetes,
   Terraform, or other IaC assets.
 - [x] Add license checks as an optional policy gate.
 - [x] Add SBOM generation as a CI artifact, not a blocking default.
 - [x] Prefer `cyclonedx-python` for Python-only SBOMs.
-- [ ] Prefer Syft/Grype for broader deployable or container projects.
+- [x] Prefer Syft/Grype for broader deployable or container projects.
 
 ## Explicit Non-Goals For Now
 

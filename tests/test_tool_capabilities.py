@@ -46,6 +46,16 @@ def test_external_binary_tool_state_reports_missing(
     assert "external binary" in state.message
 
 
+def test_external_scanner_capabilities_are_external_binaries() -> None:
+    osv_scanner = capabilities.capability_for_tool("osv-scanner")
+    trivy = capabilities.capability_for_tool("trivy")
+
+    assert osv_scanner.kind == capabilities.EXTERNAL_BINARY
+    assert "release binary" in osv_scanner.hint
+    assert trivy.kind == capabilities.EXTERNAL_BINARY
+    assert "release binary" in trivy.hint
+
+
 def test_docs_config_external_tools_have_install_hints() -> None:
     markdownlint = capabilities.capability_for_tool("markdownlint-cli2")
     taplo = capabilities.capability_for_tool("taplo")
