@@ -52,7 +52,7 @@ configuration first, then regenerate it.
 
 ## Thresholds To Preserve
 
-- Total coverage floor: `80%`
+- Total coverage floor: `90%`
 - Changed-code coverage floor: `90%`
 - File length limits: `500` physical lines, `375` source lines
 - File length baseline: `disabled`
