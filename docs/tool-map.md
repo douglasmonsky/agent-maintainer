@@ -36,6 +36,11 @@ verifier keeps root `coverage.xml` for diff-cover and writes
 `.verify-logs/coverage.json` plus `.verify-logs/pytest-junit.xml` for structured
 diagnostics and CI artifacts.
 
+Mutmut provides mutation testing in the `manual` profile only. It is disabled by
+default for drop-in use; enable it with `enable_mutmut = true` and configure
+`mutmut_args` plus `[tool.mutmut]` source/test paths for nonstandard layouts.
+Mutmut requires fork support, so native Windows users should run it inside WSL.
+
 Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable run
 metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails. The
 terminal output stays compact; agents should use these artifacts for command,

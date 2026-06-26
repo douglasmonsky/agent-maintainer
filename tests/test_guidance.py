@@ -22,6 +22,8 @@ def strict_config() -> GuardrailConfig:
         coverage_source=("scripts", ".codex/hooks"),
         enable_pip_audit=True,
         pip_audit_args=("-r", "config/dev-lock.txt"),
+        enable_mutmut=True,
+        mutmut_args=("run",),
         enable_secret_scanning=True,
         secret_scanner="gitleaks",
         secret_scan_profiles=("full", "ci"),
@@ -55,6 +57,7 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Source-without-test-change errors in profiles: `precommit`" in text
     assert "Source-only changes without test-file changes: `blocked`" in text
     assert "pip-audit: enabled with `-r config/dev-lock.txt`" in text
+    assert "Mutmut: enabled with `run`" in text
     assert "Secret scanning: enabled with `gitleaks`" in text
     assert "Markdown linting: enabled with `'**/*.md'`" in text
     assert "YAML linting: enabled with `.github/workflows .pre-commit-config.yaml`" in text

@@ -22,6 +22,7 @@ TUPLE_ENVS = (
     ("structure_ignore_paths", "GUARDRAILS_STRUCTURE_IGNORE_PATHS"),
     ("structure_hint_patterns", "GUARDRAILS_STRUCTURE_HINT_PATTERNS"),
     ("vulture_paths", "GUARDRAILS_VULTURE_PATHS"),
+    ("mutmut_args", "GUARDRAILS_MUTMUT_ARGS"),
     ("secret_scan_profiles", "GUARDRAILS_SECRET_SCAN_PROFILES"),
     ("secret_scan_history_profiles", "GUARDRAILS_SECRET_SCAN_HISTORY_PROFILES"),
     ("markdownlint_paths", "GUARDRAILS_MARKDOWNLINT_PATHS"),
@@ -36,6 +37,7 @@ TUPLE_ENVS = (
 BOOL_ENVS = (
     ("require_tests", "GUARDRAILS_REQUIRE_TESTS"),
     ("enable_pip_audit", "GUARDRAILS_ENABLE_PIP_AUDIT"),
+    ("enable_mutmut", "GUARDRAILS_ENABLE_MUTMUT"),
     ("enable_secret_scanning", "GUARDRAILS_ENABLE_SECRET_SCANNING"),
     ("enable_wemake", "GUARDRAILS_ENABLE_WEMAKE"),
     ("enable_interrogate", "GUARDRAILS_ENABLE_INTERROGATE"),

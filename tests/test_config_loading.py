@@ -32,6 +32,8 @@ test_roots = ["specs"]
 require_tests = true
 enable_pip_audit = true
 pip_audit_args = ["-r", "requirements.txt"]
+enable_mutmut = true
+mutmut_args = ["run", "scripts.guardrail_runtime*"]
 enable_interrogate = true
 interrogate_fail_under = 31
 enable_markdownlint = true
@@ -65,6 +67,8 @@ log_dir = ".custom-verify-logs"
     assert loaded.require_tests is True
     assert loaded.enable_pip_audit is True
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
+    assert loaded.enable_mutmut is True
+    assert loaded.mutmut_args == ("run", "scripts.guardrail_runtime*")
     assert loaded.enable_interrogate is True
     assert loaded.interrogate_fail_under == CONFIG_INTERROGATE_THRESHOLD
     assert loaded.enable_markdownlint is True
@@ -146,6 +150,8 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GUARDRAILS_REQUIRE_TESTS", "false")
     monkeypatch.setenv("GUARDRAILS_COVERAGE_FAIL_UNDER", "95")
     monkeypatch.setenv("GUARDRAILS_PIP_AUDIT_ARGS", "-r requirements.txt")
+    monkeypatch.setenv("GUARDRAILS_ENABLE_MUTMUT", "true")
+    monkeypatch.setenv("GUARDRAILS_MUTMUT_ARGS", "run,scripts.guardrail_runtime*")
     monkeypatch.setenv("GUARDRAILS_ENABLE_SECRET_SCANNING", "true")
     monkeypatch.setenv("GUARDRAILS_SECRET_SCANNER", "gitleaks")
     monkeypatch.setenv("GUARDRAILS_SECRET_SCAN_PROFILES", "full,ci")
@@ -173,6 +179,8 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.require_tests is False
     assert loaded.coverage_fail_under == ENV_COVERAGE_THRESHOLD
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
+    assert loaded.enable_mutmut is True
+    assert loaded.mutmut_args == ("run", "scripts.guardrail_runtime*")
     assert loaded.enable_secret_scanning is True
     assert loaded.secret_scanner == "gitleaks"
     assert loaded.secret_scan_profiles == ("full", "ci")

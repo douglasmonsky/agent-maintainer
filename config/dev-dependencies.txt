@@ -16,6 +16,7 @@ deptry
 vulture
 bandit
 pip-audit
+mutmut
 yamllint
 check-jsonschema
 zizmor

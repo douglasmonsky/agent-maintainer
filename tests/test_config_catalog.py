@@ -12,6 +12,7 @@ from guardrail_lib.config import (
 )
 from scripts import (
     guardrail_catalog,
+    guardrail_catalog_python,
     guardrail_config,
 )
 from scripts.guardrail_config import GuardrailConfig
@@ -58,8 +59,8 @@ def test_pytest_and_diff_cover_are_required_when_tests_are_required() -> None:
         require_tests=True,
     )
 
-    pytest_check = guardrail_catalog.pytest_check(config)
-    diff_cover = guardrail_catalog.diff_cover_check(config, "origin/main")
+    pytest_check = guardrail_catalog_python.pytest_check(config)
+    diff_cover = guardrail_catalog_python.diff_cover_check(config, "origin/main")
 
     assert pytest_check.name == "pytest-coverage"
     assert pytest_check.required_executable == "pytest"
@@ -80,7 +81,7 @@ def test_pytest_check_declares_structured_test_artifacts() -> None:
         require_tests=True,
     )
 
-    check = guardrail_catalog.pytest_check(config)
+    check = guardrail_catalog_python.pytest_check(config)
 
     assert "--cov-report=xml" in check.command
     assert "--cov-report=json:.custom-logs/coverage.json" in check.command
@@ -95,8 +96,8 @@ def test_pytest_check_declares_structured_test_artifacts() -> None:
 def test_pytest_and_diff_cover_skip_when_tests_are_disabled() -> None:
     config = replace(GuardrailConfig(), require_tests=False)
 
-    pytest_check = guardrail_catalog.pytest_check(config)
-    diff_cover = guardrail_catalog.diff_cover_check(config, "origin/main")
+    pytest_check = guardrail_catalog_python.pytest_check(config)
+    diff_cover = guardrail_catalog_python.diff_cover_check(config, "origin/main")
 
     assert pytest_check.optional_skip_reason
     assert diff_cover.optional_skip_reason
@@ -111,13 +112,13 @@ def test_pip_audit_and_wemake_commands_follow_config() -> None:
         enable_wemake=True,
     )
 
-    assert guardrail_catalog.pip_audit_check(disabled).optional_skip_reason
-    assert guardrail_catalog.pip_audit_check(enabled).command == [
+    assert guardrail_catalog_python.pip_audit_check(disabled).optional_skip_reason
+    assert guardrail_catalog_python.pip_audit_check(enabled).command == [
         "pip-audit",
         "-r",
         "config/dev-dependencies.txt",
     ]
-    assert guardrail_catalog.wemake_check(enabled, ("scripts",)).command == [
+    assert guardrail_catalog_python.wemake_check(enabled, ("scripts",)).command == [
         "flake8",
         "--require-plugins",
         "wemake-python-styleguide",
@@ -133,8 +134,8 @@ def test_interrogate_command_follows_config() -> None:
         interrogate_fail_under=30,
     )
 
-    assert guardrail_catalog.interrogate_check(disabled, ("scripts",)).optional_skip_reason
-    assert guardrail_catalog.interrogate_check(enabled, ("scripts",)).command == [
+    assert guardrail_catalog_python.interrogate_check(disabled, ("scripts",)).optional_skip_reason
+    assert guardrail_catalog_python.interrogate_check(enabled, ("scripts",)).command == [
         "interrogate",
         "--fail-under=30",
         "--ignore-init-method",
@@ -224,6 +225,27 @@ def test_bandit_check_uses_json_artifact_runner() -> None:
         "scripts.run_bandit",
     ]
     assert bandit.artifact_paths == (".custom-logs/bandit.json",)
+
+
+def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
+    default_checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    disabled = next(check for check in default_checks if check.name == "mutmut")
+    assert disabled.profiles == MANUAL_PROFILES
+    assert disabled.optional_skip_reason is not None
+
+    enabled_checks = guardrail_catalog.make_checks(
+        replace(
+            GuardrailConfig(),
+            enable_mutmut=True,
+            mutmut_args=("run", "scripts.guardrail_runtime*"),
+        ),
+        "HEAD",
+        "origin/main",
+    )
+    enabled = next(check for check in enabled_checks if check.name == "mutmut")
+    assert enabled.command == ["mutmut", "run", "scripts.guardrail_runtime*"]
+    assert enabled.profiles == MANUAL_PROFILES
+    assert enabled.required_executable == "mutmut"
 
 
 def test_workflow_checks_are_configured_for_github_actions() -> None:
@@ -320,8 +342,8 @@ def test_pip_audit_unsafe_config_fails_only_in_fresh_strict() -> None:
     strict = replace(strict, enable_pip_audit=True, pip_audit_args=())
     custom = replace(GuardrailConfig(), enable_pip_audit=True, pip_audit_args=())
 
-    strict_check = guardrail_catalog.pip_audit_check(strict)
-    custom_check = guardrail_catalog.pip_audit_check(custom)
+    strict_check = guardrail_catalog_python.pip_audit_check(strict)
+    custom_check = guardrail_catalog_python.pip_audit_check(custom)
 
     assert strict_check.command[:3] == [
         guardrail_catalog.sys.executable,
