@@ -15,7 +15,15 @@ from scripts import (
     guardrail_config,
 )
 from scripts.guardrail_config import GuardrailConfig
-from scripts.guardrail_models import CI_PROFILE, PRECOMMIT_PROFILE
+from scripts.guardrail_models import (
+    CI_PROFILE,
+    FULL_PROFILE,
+    FULL_PROFILES,
+    MANUAL_PROFILE,
+    MANUAL_PROFILES,
+    PRECOMMIT_PROFILE,
+    VALID_PROFILES,
+)
 
 
 def test_legacy_ratchet_mode_sets_file_length_baseline() -> None:
@@ -26,6 +34,14 @@ def test_legacy_ratchet_mode_sets_file_length_baseline() -> None:
     assert loaded.file_length_baseline == ".guardrails/file-length-baseline.json"
     assert "--baseline" in file_length.command
     assert ".guardrails/file-length-baseline.json" in file_length.command
+
+
+def test_manual_profile_is_valid_but_separate_from_full_profiles() -> None:
+    assert MANUAL_PROFILE in VALID_PROFILES
+    assert MANUAL_PROFILES.issubset(VALID_PROFILES)
+    assert len(MANUAL_PROFILES) == 1
+    assert MANUAL_PROFILE not in FULL_PROFILES
+    assert FULL_PROFILE not in MANUAL_PROFILES
 
 
 def test_path_matching_handles_roots_and_relative_prefixes() -> None:

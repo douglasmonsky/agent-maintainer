@@ -12,6 +12,7 @@ from scripts import (
     check_suppression_budget,
     check_tach_config,
     guardrail,
+    guardrail_args,
     guardrail_tach,
 )
 from scripts.guardrail_config import GuardrailConfig
@@ -246,6 +247,12 @@ def test_guardrail_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> None
     assert guardrail.main(["install"]) == INSTALL_STATUS
     assert guardrail.main(["verify", "--profile", "fast"]) == VERIFY_STATUS
     assert guardrail.main(["unknown"]) == UNKNOWN_COMMAND_STATUS
+
+
+def test_verify_parser_accepts_manual_profile() -> None:
+    args = guardrail_args.parse_args(["--profile", "manual"])
+
+    assert args.profile == "manual"
 
 
 def test_guardrail_file_entrypoint_help_remains_supported() -> None:

@@ -371,6 +371,10 @@ generated cache files entering agent context accidentally.
 
 `ci` is designed for GitHub Actions. It runs the full profile plus changed-code coverage through diff-cover. When tests are disabled, changed-code coverage is reported as an optional skip. The source/test-file-change heuristic remains nonfatal in CI unless `source_without_test_change_error_profiles` explicitly includes `ci`.
 
+`security` is a manual security profile for checks such as full-history secret scans.
+
+`manual` is reserved for slow or expensive opt-in checks such as mutation testing and SBOM generation. It is separate from `full` so normal local deep verification does not become unexpectedly slow.
+
 ## Suggested thresholds
 
 | Metric | Default |

@@ -2,9 +2,11 @@
 
 ## Everyday gates
 
-`python3 -m scripts.guardrail` is the canonical entrypoint. Use `python3 -m scripts.guardrail bootstrap` for one-command local setup, `python3 -m scripts.guardrail doctor` for setup health, `python3 -m scripts.guardrail guidance` for generated agent-facing guidance, `python3 -m scripts.guardrail verify --profile precommit` for local completion checks, `python3 -m scripts.guardrail verify --profile full` for deeper review, and `python3 -m scripts.guardrail install` to install local hooks without reinstalling dependencies.
+`python3 -m scripts.guardrail` is the canonical entrypoint. Use `python3 -m scripts.guardrail bootstrap` for one-command local setup, `python3 -m scripts.guardrail doctor` for setup health, `python3 -m scripts.guardrail guidance` for generated agent-facing guidance, `python3 -m scripts.guardrail verify --profile precommit` for local completion checks, `python3 -m scripts.guardrail verify --profile full` for deeper review, `python3 -m scripts.guardrail verify --profile manual` for slow opt-in checks, and `python3 -m scripts.guardrail install` to install local hooks without reinstalling dependencies.
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state.
+
+The `manual` profile is intentionally separate from `full`. Put slow, expensive, or artifact-producing checks there so normal local deep verification stays predictable.
 
 `doctor` uses a tool capability model so setup failures distinguish Python
 package commands, external binaries, GitHub Actions-only tools, and manual

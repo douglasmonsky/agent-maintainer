@@ -10,6 +10,8 @@ Profiles:
 - precommit: medium checks suitable before local commits
 - full:       local full verification
 - ci:         full verification plus changed-code coverage
+- security:   manual security checks, such as full-history scans
+- manual:     slow or expensive optional checks outside normal full
 """
 
 from __future__ import annotations

@@ -245,7 +245,7 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 11: Add Slow And Advanced Profiles
 
-- [ ] Add a slow/manual profile concept separate from normal `full`.
+- [x] Add a slow/manual profile concept separate from normal `full`.
 - [ ] Add `mutmut` as a slow/manual mutation-testing option.
 - [ ] Document mutmut's POSIX fork requirement and Windows-through-WSL support.
 - [ ] Add optional Semgrep support with local or pinned rules first.
