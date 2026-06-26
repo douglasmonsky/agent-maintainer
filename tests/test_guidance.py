@@ -22,6 +22,10 @@ def strict_config() -> GuardrailConfig:
         coverage_source=("scripts", ".codex/hooks"),
         enable_pip_audit=True,
         pip_audit_args=("-r", "config/dev-lock.txt"),
+        enable_secret_scanning=True,
+        secret_scanner="gitleaks",
+        secret_scan_profiles=("full", "ci"),
+        secret_scan_history_profiles=("security",),
     )
 
 
@@ -39,6 +43,7 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Source-without-test-change errors in profiles: `precommit`" in text
     assert "Source-only changes without test-file changes: `blocked`" in text
     assert "pip-audit: enabled with `-r config/dev-lock.txt`" in text
+    assert "Secret scanning: enabled with `gitleaks`" in text
     assert "python3 -m scripts.guardrail verify --profile precommit" in text
     assert "Prefer small, coherent commits" in text
     assert "Prefer `rg --files` or `git ls-files`" in text

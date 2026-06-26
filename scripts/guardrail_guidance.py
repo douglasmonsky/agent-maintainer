@@ -198,6 +198,7 @@ def render_guidance(config: GuardrailConfig) -> str:
         "## Optional Gates",
         "",
         f"- pip-audit: {enabled_with_args(config.enable_pip_audit, config.pip_audit_args)}",
+        f"- Secret scanning: {secret_scanning_summary(config)}",
         f"- wemake-python-styleguide: {enabled_word(config.enable_wemake)}",
         f"- Interrogate: {enabled_word(config.enable_interrogate)}",
         "",
@@ -251,6 +252,18 @@ def enabled_with_args(enabled: bool, args: tuple[str, ...]) -> str:
     if not args:
         return "`enabled` with no pinned input"
     return f"enabled with `{shlex.join(args)}`"
+
+
+def secret_scanning_summary(config: GuardrailConfig) -> str:
+    """Return enabled secret scanner backend and profile summary."""
+    if not config.enable_secret_scanning:
+        return "`disabled`"
+    profiles = ", ".join(config.secret_scan_profiles) or "none"
+    history_profiles = ", ".join(config.secret_scan_history_profiles) or "none"
+    return (
+        f"enabled with `{config.secret_scanner}` "
+        f"(profiles: {profiles}; history: {history_profiles})"
+    )
 
 
 if __name__ == "__main__":

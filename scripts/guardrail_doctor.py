@@ -69,6 +69,7 @@ def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> lis
         check_codex_hooks(repo_root),
         guardrail_doctor_hook_audit.check_hook_audit(repo_root, config),
         guardrail_doctor_policy.check_pip_audit_safety(config),
+        guardrail_doctor_policy.check_secret_scanning_policy(config),
         check_optional_gates(repo_root, config),
         check_canonical_commands(repo_root),
         check_agent_guidance(repo_root, config),

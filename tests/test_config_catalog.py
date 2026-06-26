@@ -150,6 +150,9 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GUARDRAILS_REQUIRE_TESTS", "false")
     monkeypatch.setenv("GUARDRAILS_COVERAGE_FAIL_UNDER", "95")
     monkeypatch.setenv("GUARDRAILS_PIP_AUDIT_ARGS", "-r requirements.txt")
+    monkeypatch.setenv("GUARDRAILS_ENABLE_SECRET_SCANNING", "true")
+    monkeypatch.setenv("GUARDRAILS_SECRET_SCANNER", "gitleaks")
+    monkeypatch.setenv("GUARDRAILS_SECRET_SCAN_PROFILES", "full,ci")
     monkeypatch.setenv("GUARDRAILS_ARCHITECTURE_TOOL", "tach")
     monkeypatch.setenv("GUARDRAILS_ENABLE_INTERROGATE", "true")
     monkeypatch.setenv("GUARDRAILS_INTERROGATE_FAIL_UNDER", "33")
@@ -163,6 +166,9 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.require_tests is False
     assert loaded.coverage_fail_under == ENV_COVERAGE_THRESHOLD
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
+    assert loaded.enable_secret_scanning is True
+    assert loaded.secret_scanner == "gitleaks"
+    assert loaded.secret_scan_profiles == ("full", "ci")
     assert loaded.architecture_tool == "tach"
     assert loaded.enable_interrogate is True
     assert loaded.interrogate_fail_under == ENV_INTERROGATE_THRESHOLD
@@ -367,6 +373,34 @@ def test_workflow_checks_are_configured_for_github_actions() -> None:
         ".github/dependabot.yml",
     ]
     assert by_name["zizmor"].required_executable == "zizmor"
+
+
+def test_secret_scan_checks_are_disabled_by_default() -> None:
+    checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    secret_scan = next(check for check in checks if check.name == "secret-scan")
+
+    assert secret_scan.optional_skip_reason is not None
+    assert secret_scan.required_executable is None
+
+
+def test_secret_scan_checks_use_gitleaks_backend_when_enabled() -> None:
+    config = GuardrailConfig(
+        enable_secret_scanning=True,
+        secret_scan_profiles=("full", "ci"),
+        secret_scan_history_profiles=("security",),
+    )
+    checks = guardrail_catalog.make_checks(config, "origin/main", "origin/main")
+    by_profile = {
+        next(iter(check.profiles)): check for check in checks if check.name == "secret-scan"
+    }
+    history = next(check for check in checks if check.name == "secret-scan-history")
+
+    assert by_profile["full"].required_executable == "gitleaks"
+    assert "--mode" in by_profile["full"].command
+    assert "current-tree" in by_profile["full"].command
+    assert "range" in by_profile["ci"].command
+    assert history.profiles == frozenset(("security",))
+    assert "history" in history.command
 
 
 def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only() -> None:

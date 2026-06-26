@@ -19,6 +19,8 @@ TUPLE_ENVS = (
     ("coverage_source", "GUARDRAILS_COVERAGE_SOURCE"),
     ("file_length_paths", "GUARDRAILS_FILE_LENGTH_PATHS"),
     ("vulture_paths", "GUARDRAILS_VULTURE_PATHS"),
+    ("secret_scan_profiles", "GUARDRAILS_SECRET_SCAN_PROFILES"),
+    ("secret_scan_history_profiles", "GUARDRAILS_SECRET_SCAN_HISTORY_PROFILES"),
     (
         "source_without_test_change_error_profiles",
         "GUARDRAILS_SOURCE_WITHOUT_TEST_CHANGE_ERROR_PROFILES",
@@ -27,6 +29,7 @@ TUPLE_ENVS = (
 BOOL_ENVS = (
     ("require_tests", "GUARDRAILS_REQUIRE_TESTS"),
     ("enable_pip_audit", "GUARDRAILS_ENABLE_PIP_AUDIT"),
+    ("enable_secret_scanning", "GUARDRAILS_ENABLE_SECRET_SCANNING"),
     ("enable_wemake", "GUARDRAILS_ENABLE_WEMAKE"),
     ("enable_interrogate", "GUARDRAILS_ENABLE_INTERROGATE"),
     ("allow_source_without_test_change", "GUARDRAILS_ALLOW_SOURCE_WITHOUT_TEST_CHANGE"),
@@ -53,6 +56,7 @@ STRING_ENVS = (
     ("xenon_max_modules", "GUARDRAILS_XENON_MAX_MODULES"),
     ("xenon_max_average", "GUARDRAILS_XENON_MAX_AVERAGE"),
     ("diagnostic_artifacts_dir", "GUARDRAILS_DIAGNOSTIC_ARTIFACTS_DIR"),
+    ("secret_scanner", "GUARDRAILS_SECRET_SCANNER"),
 )
 
 

@@ -22,6 +22,7 @@ from scripts.guardrail_catalog_python import (
     ruff_check,
     wemake_check,
 )
+from scripts.guardrail_catalog_security import secret_scan_checks
 from scripts.guardrail_config import existing_paths
 
 CHANGE_BUDGET_PROFILES = (
@@ -193,6 +194,7 @@ def make_checks(
         ),
         bandit_check(config),
         pip_audit_check(config),
+        *secret_scan_checks(config, base_ref, staged=staged),
         *workflow_checks(),
         wemake_check(config, package_paths),
         interrogate_check(config, package_paths),

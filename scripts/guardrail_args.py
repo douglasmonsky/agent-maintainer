@@ -12,6 +12,7 @@ from guardrail_lib.config.schema import (
     VALID_MODES,
     GuardrailConfig,
 )
+from scripts.guardrail_models import VALID_PROFILES
 
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
@@ -37,7 +38,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--profile",
-        choices=("fast", "precommit", "full", "ci"),
+        choices=sorted(VALID_PROFILES),
         default="full",
     )
     parser.add_argument("--base-ref", default=os.getenv("BASE_REF", "HEAD"))
@@ -62,6 +63,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--no-require-tests", action="store_false", dest="require_tests")
     parser.add_argument("--enable-pip-audit", action="store_true", default=None)
     parser.add_argument("--disable-pip-audit", action="store_false", dest="enable_pip_audit")
+    add_secret_scan_overrides(parser)
     parser.add_argument("--enable-wemake", action="store_true", default=None)
     parser.add_argument("--disable-wemake", action="store_false", dest="enable_wemake")
     parser.add_argument("--enable-interrogate", action="store_true", default=None)
@@ -86,6 +88,27 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         ),
     )
     return parser.parse_args(argv)
+
+
+def add_secret_scan_overrides(parser: argparse.ArgumentParser) -> None:
+    """Add backend-neutral secret scanning CLI overrides."""
+    parser.add_argument("--enable-secret-scanning", action="store_true", default=None)
+    parser.add_argument(
+        "--disable-secret-scanning",
+        action="store_false",
+        dest="enable_secret_scanning",
+    )
+    parser.add_argument("--secret-scanner")
+    parser.add_argument(
+        "--secret-scan-profile",
+        action="append",
+        help="Secret scan normal profile. May be repeated or comma-separated.",
+    )
+    parser.add_argument(
+        "--secret-scan-history-profile",
+        action="append",
+        help="Secret scan history profile. May be repeated or comma-separated.",
+    )
 
 
 def add_path_overrides(parser: argparse.ArgumentParser) -> None:
@@ -142,12 +165,16 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "package_paths": parse_csv_like(args.package_path),
         "file_length_paths": parse_csv_like(args.file_length_path),
         "vulture_paths": parse_csv_like(args.vulture_path),
+        "secret_scan_profiles": parse_csv_like(args.secret_scan_profile),
+        "secret_scan_history_profiles": parse_csv_like(args.secret_scan_history_profile),
     }
     scalar_overrides = {
         "coverage_fail_under": args.coverage_fail_under,
         "diff_cover_fail_under": args.diff_cover_fail_under,
         "require_tests": args.require_tests,
         "enable_pip_audit": args.enable_pip_audit,
+        "enable_secret_scanning": args.enable_secret_scanning,
+        "secret_scanner": args.secret_scanner,
         "enable_wemake": args.enable_wemake,
         "enable_interrogate": args.enable_interrogate,
         "interrogate_fail_under": args.interrogate_fail_under,

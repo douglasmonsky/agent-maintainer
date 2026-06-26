@@ -69,6 +69,19 @@ of dumping raw JSON into terminal output.
 
 pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`. In `fresh-strict`, enabling pip-audit without pinned args is a failure.
 
+## Secret Scanning
+
+Secret scanning is configured through `enable_secret_scanning`, `secret_scanner`,
+`secret_scan_profiles`, and `secret_scan_history_profiles`. Gitleaks is the first
+supported backend and is treated as an external binary. The abstraction is
+backend-neutral so a future Betterleaks backend can be added without changing
+the public config shape.
+
+Normal scans run through `scripts.run_secret_scan`: `full` scans the current
+tree, `ci` scans the comparison range, and staged verifier runs scan the staged
+diff through stdin. The manual `security` profile runs a full-history scan.
+Gitleaks reports are written under `.verify-logs/` and run with redaction.
+
 `config/dev-dependencies.txt` is the human-edited dependency input. `config/dev-lock.txt` is the pinned install and audit artifact when present; bootstrap and CI prefer it automatically.
 
 ## GitHub Actions policy
