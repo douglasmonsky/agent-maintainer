@@ -288,7 +288,7 @@ repo state instead of reconstructing the plan from chat history.
   `.codex/hooks`.
 - [x] Add migration smoke tests for `python3 -m ai_guardrails --help`,
   editable install, and import-policy enforcement.
-- [ ] Confirm package-migration PR locally with `precommit`, `full`, `ci`,
+- [x] Confirm package-migration PR locally with `precommit`, `full`, `ci`,
   `security`, and `doctor --strict`, then push, open PR, watch PR CI, merge
   green, and watch post-merge `main` CI.
 
