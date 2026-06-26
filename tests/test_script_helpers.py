@@ -8,12 +8,9 @@ from pathlib import Path
 import pytest
 
 from scripts import (
-    check_change_budget,
-    check_suppression_budget,
     guardrail,
 )
 from scripts.guardrail_core import args as guardrail_args
-from scripts.guardrail_core.config import GuardrailConfig
 
 BOOTSTRAP_STATUS = 11
 DOCTOR_STATUS = 14
@@ -22,123 +19,6 @@ VERIFY_STATUS = 13
 GUIDANCE_STATUS = 15
 UNKNOWN_COMMAND_STATUS = 2
 DEPENDENCY_FAILURE_STATUS = 7
-NOQA_SUPPRESSION = "# " + "noqa"
-TYPE_IGNORE_SUPPRESSION = "# " + "type: ignore[assignment]"
-
-
-def test_change_budget_classifies_python_source_and_tests() -> None:
-    config = GuardrailConfig(source_roots=("scripts",), test_roots=("tests",))
-    changes = [
-        check_change_budget.FileChange("scripts/tool.py", 2, 1),
-        check_change_budget.FileChange("scripts/package/__init__.py", 1, 0),
-        check_change_budget.FileChange("tests/test_tool.py", 1, 0),
-        check_change_budget.FileChange("README.md", 4, 0),
-    ]
-
-    source, tests = check_change_budget.changed_python_files(changes, config)
-
-    assert [change.path for change in source] == ["scripts/tool.py"]
-    assert [change.path for change in tests] == ["tests/test_tool.py"]
-    assert check_change_budget.should_exclude("poetry.lock")
-    assert check_change_budget.is_trivial_package_marker(
-        check_change_budget.FileChange("scripts/package/__init__.py", 1, 0)
-    )
-    assert check_change_budget.diff_target_label("HEAD", staged=True) == "staged changes"
-
-
-def test_change_budget_reports_missing_tests_when_required() -> None:
-    args = check_change_budget.parse_args([])
-    config = GuardrailConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
-
-    failures, warnings = check_change_budget.budget_messages(
-        args,
-        config,
-        [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
-        [],
-    )
-
-    assert failures == []
-    assert warnings == ["Python source changed, but no configured Python test files changed."]
-
-
-def test_run_git_numstat_parses_output(monkeypatch: pytest.MonkeyPatch) -> None:
-    completed = subprocess.CompletedProcess(
-        ["git"],
-        0,
-        stdout="2\t3\tscripts/tool.py\n-\t-\timage.png\n",
-        stderr="",
-    )
-    monkeypatch.setattr(check_change_budget.subprocess, "run", lambda *args, **_kwargs: completed)
-
-    changes = check_change_budget.run_git_numstat("HEAD", staged=False)
-
-    assert changes == [check_change_budget.FileChange("scripts/tool.py", 2, 3)]
-
-
-def test_change_budget_limit_helpers_report_warnings_and_blocks() -> None:
-    args = check_change_budget.parse_args(
-        ["--warn-lines", "1", "--block-lines", "3", "--warn-files", "1", "--block-files", "2"]
-    )
-    config = GuardrailConfig()
-    changes = [
-        check_change_budget.FileChange("scripts/a.py", 2, 0),
-        check_change_budget.FileChange("scripts/b.py", 2, 0),
-        check_change_budget.FileChange("scripts/c.py", 1, 0),
-    ]
-    warnings: list[str] = []
-
-    line_failures = check_change_budget.line_budget_failures(args, config, changes, warnings)
-    file_failures = check_change_budget.file_budget_failures(args, config, changes, warnings)
-
-    assert line_failures == ["Python source diff is too large: 5 changed lines (block limit: 3)."]
-    assert file_failures == ["Too many Python source files touched: 3 (block limit: 2)."]
-
-
-def test_change_budget_main_handles_runtime_error(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    def fail_run(base_ref: str, *, staged: bool) -> list[check_change_budget.FileChange]:
-        raise RuntimeError("git failed")
-
-    monkeypatch.setattr(check_change_budget, "run_git_numstat", fail_run)
-
-    assert check_change_budget.main([]) == 1
-    assert "git failed" in capsys.readouterr().out
-
-
-def test_change_budget_main_can_fail_warnings_as_errors(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    monkeypatch.setattr(
-        check_change_budget,
-        "run_git_numstat",
-        lambda base_ref, staged=False: [
-            check_change_budget.FileChange("src/app.py", 1, 0),
-        ],
-    )
-    monkeypatch.setattr(
-        check_change_budget,
-        "load_config",
-        lambda: GuardrailConfig(source_roots=("src",), test_roots=("tests",), require_tests=True),
-    )
-
-    assert check_change_budget.main(["--warnings-as-errors"]) == 1
-    assert "Change budget warnings" in capsys.readouterr().out
-
-
-def test_change_budget_can_allow_source_changes_without_test_changes() -> None:
-    args = check_change_budget.parse_args(["--allow-source-without-test-change"])
-    config = GuardrailConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
-
-    failures, warnings = check_change_budget.budget_messages(
-        args,
-        config,
-        [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
-        [],
-    )
-
-    assert failures == []
-    assert warnings == []
 
 
 def test_justfile_full_output_recipe_uses_repo_roots() -> None:
@@ -164,44 +44,6 @@ def test_scripted_entrypoints_disable_python_bytecode_writes() -> None:
 
     assert "env PYTHONDONTWRITEBYTECODE=1 python3 -m scripts.guardrail" in pre_commit
     assert 'export PYTHONDONTWRITEBYTECODE := "1"' in justfile
-
-
-def test_suppression_budget_detects_broad_suppressions() -> None:
-    added = [
-        ("scripts/tool.py", f"value = call()  {NOQA_SUPPRESSION}"),
-        ("scripts/tool.py", f"other = call()  {TYPE_IGNORE_SUPPRESSION}"),
-    ]
-
-    failures = check_suppression_budget.suppression_failures(added, max_new_suppressions=1)
-
-    assert any("broad noqa" in failure for failure in failures)
-    assert any("Too many new suppression comments" in failure for failure in failures)
-
-
-def test_suppression_added_python_lines_parses_diff(monkeypatch: pytest.MonkeyPatch) -> None:
-    diff = f"+++ b/scripts/tool.py\n+value = call()  {NOQA_SUPPRESSION}\n context\n"
-    completed = subprocess.CompletedProcess(["git"], 0, stdout=diff, stderr="")
-    monkeypatch.setattr(
-        check_suppression_budget.subprocess,
-        "run",
-        lambda *args, **_kwargs: completed,
-    )
-
-    assert check_suppression_budget.added_python_lines("HEAD", staged=False) == [
-        ("scripts/tool.py", f"value = call()  {NOQA_SUPPRESSION}")
-    ]
-
-
-def test_suppression_main_handles_runtime_error(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    def fail_added(base_ref: str, *, staged: bool) -> list[tuple[str, str]]:
-        raise RuntimeError("diff failed")
-
-    monkeypatch.setattr(check_suppression_budget, "added_python_lines", fail_added)
-
-    assert check_suppression_budget.main([]) == 1
-    assert "diff failed" in capsys.readouterr().out
 
 
 def test_guardrail_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> None:

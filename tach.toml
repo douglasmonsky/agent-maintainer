@@ -65,6 +65,10 @@ paths = [
   "scripts.guardrail_core.runtime",
   "scripts.guardrail_core.tool_capabilities",
   "scripts.run_secret_scan",
+  "guardrail_lib.checks.change_budget",
+  "guardrail_lib.checks.file_lengths",
+  "guardrail_lib.checks.structure",
+  "guardrail_lib.checks.suppression_budget",
 ]
 layer = "runtime"
 

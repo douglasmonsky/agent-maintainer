@@ -265,10 +265,10 @@ repo state instead of reconstructing the plan from chat history.
   extraction, package migration, then docs/config cleanup.
 - [x] Split large test modules by responsibility before they cross file-length
   limits: doctor, config catalog, executor/reporting, and verify quiet tests.
-- [ ] Extract reusable check logic from `scripts/check_file_lengths.py`,
+- [x] Extract reusable check logic from `scripts/check_file_lengths.py`,
   `scripts/check_change_budget.py`, `scripts/check_suppression_budget.py`,
   and `scripts/check_structure.py` into library modules.
-- [ ] Keep `scripts/check_*.py` modules as compatibility CLI adapters.
+- [x] Keep `scripts/check_*.py` modules as compatibility CLI adapters.
 - [ ] Add package metadata with `src` layout and package name `ai_guardrails`.
 - [ ] Move implementation modules under `src/ai_guardrails`, including config,
   checks, verify, core, catalogs, doctor, runners, models, Tach helpers, CLI,
