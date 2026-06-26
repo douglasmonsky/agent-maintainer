@@ -137,7 +137,7 @@ def test_verification_logs_report_invalid_manifest_json(tmp_path: Path) -> None:
 
 
 def test_verification_log_catalog_drift_ignores_current_checks() -> None:
-    payload = {"checks": [{"name": "ruff"}]}
+    payload: dict[str, object] = {"checks": [{"name": "ruff"}]}
 
     assert guardrail_doctor_logs.catalog_drift_issues(GuardrailConfig(), payload) == []
 

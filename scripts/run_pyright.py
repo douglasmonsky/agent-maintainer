@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess  # nosec B404
 import sys
@@ -28,7 +29,7 @@ PYRIGHT_EXCLUDES = (
 
 
 def main() -> int:
-    """Write the generated config, run Pyright, and forward its output."""
+    """Write config, run Pyright, and forward output."""
 
     config = load_config()
     output_dir = Path(config.diagnostic_artifacts_dir)
@@ -41,14 +42,35 @@ def write_pyright_config(directory: Path, config: GuardrailConfig) -> Path:
 
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / PYRIGHT_CONFIG_NAME
+    repo_root = Path.cwd()
     payload = {
-        "include": unique_paths((*config.package_paths, *config.test_roots)),
-        "exclude": list(PYRIGHT_EXCLUDES),
+        "include": relative_config_paths(
+            directory, repo_root, (*config.package_paths, *config.test_roots)
+        ),
+        "exclude": relative_config_paths(directory, repo_root, PYRIGHT_EXCLUDES),
+        "extraPaths": relative_config_paths(directory, repo_root, (".",)),
         "typeCheckingMode": config.pyright_type_checking_mode,
         "reportMissingTypeStubs": False,
     }
-    path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
+    path.write_text(
+        f"{json.dumps(payload, indent=2, sort_keys=True)}\n",
+        encoding="utf-8",
+    )
     return path
+
+
+def relative_config_paths(
+    config_directory: Path, repo_root: Path, paths: tuple[str, ...]
+) -> list[str]:
+    """Return paths relative to the generated Pyright config directory."""
+
+    start = config_directory.resolve()
+    return unique_paths(
+        tuple(
+            os.path.relpath((repo_root / configured_path).resolve(), start=start)
+            for configured_path in paths
+        )
+    )
 
 
 def unique_paths(paths: tuple[str, ...]) -> list[str]:
@@ -64,10 +86,17 @@ def unique_paths(paths: tuple[str, ...]) -> list[str]:
 
 
 def run_pyright(config_path: Path, json_output_path: Path | None = None) -> int:
-    """Run Pyright against a generated project config."""
+    """Run Pyright against a project config."""
 
     pyright = shutil.which("pyright") or "pyright"
-    command = [pyright, "--project", str(config_path), "--outputjson"]
+    command = [
+        pyright,
+        "--project",
+        str(config_path),
+        "--pythonpath",
+        python_interpreter(),
+        "--outputjson",
+    ]
     result = subprocess.run(  # nosec B603
         command,
         text=True,
@@ -80,7 +109,40 @@ def run_pyright(config_path: Path, json_output_path: Path | None = None) -> int:
         print(result.stdout, end="")
     if result.stderr:
         print(result.stderr, end="", file=sys.stderr)
+    if result.returncode == 0 and analyzed_file_count(result.stdout) == 0:
+        print(
+            "Pyright analyzed 0 files; check generated project paths.",
+            file=sys.stderr,
+        )
+        return 1
     return result.returncode
+
+
+def python_interpreter() -> str:
+    """Return the project Python interpreter Pyright should inspect."""
+
+    for candidate in (Path(".venv/bin/python"), Path("venv/bin/python")):
+        if candidate.exists():
+            return str(candidate)
+    return sys.executable
+
+
+def analyzed_file_count(output: str) -> int | None:
+    """Return Pyright analyzed file count when output is JSON."""
+
+    if not output.strip():
+        return None
+    try:
+        payload = json.loads(output)
+    except json.JSONDecodeError:
+        payload = None
+    if isinstance(payload, dict):
+        summary = payload.get("summary")
+        if isinstance(summary, dict):
+            files_analyzed = summary.get("filesAnalyzed")
+            if isinstance(files_analyzed, int):
+                return files_analyzed
+    return None
 
 
 def write_json_output(path: Path | None, output: str) -> None:
