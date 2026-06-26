@@ -10,10 +10,10 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from scripts import guardrail_tool_capabilities
+from scripts.guardrail_core import tool_capabilities as guardrail_tool_capabilities
+from scripts.guardrail_core.reporting import summarize_check, summarize_check_from_artifacts
+from scripts.guardrail_core.runtime import hardened_subprocess_env
 from scripts.guardrail_models import Check, CheckResult
-from scripts.guardrail_reporting import summarize_check, summarize_check_from_artifacts
-from scripts.guardrail_runtime import hardened_subprocess_env
 
 OutputLimits = tuple[int, int]
 

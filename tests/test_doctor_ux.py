@@ -6,14 +6,11 @@ import json
 from pathlib import Path
 
 from guardrail_lib.verify.artifacts import MANIFEST_NAME
-from scripts import (
-    guardrail_doctor,
-    guardrail_doctor_logs,
-    guardrail_doctor_models,
-    guardrail_doctor_policy,
-    guardrail_doctor_setup,
-)
-from scripts.guardrail_config import GuardrailConfig
+from scripts import guardrail_doctor, guardrail_doctor_setup
+from scripts.guardrail_core.config import GuardrailConfig
+from scripts.guardrail_doctor_support import logs as guardrail_doctor_logs
+from scripts.guardrail_doctor_support import models as guardrail_doctor_models
+from scripts.guardrail_doctor_support import policy as guardrail_doctor_policy
 
 
 def test_architecture_backend_reports_active_tach(tmp_path: Path) -> None:

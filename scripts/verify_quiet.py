@@ -21,13 +21,13 @@ from dataclasses import replace
 from pathlib import Path
 
 from guardrail_lib.verify.artifacts import RunContext, write_run_artifacts
-from scripts.guardrail_args import apply_cli_overrides, parse_args
-from scripts.guardrail_catalog import make_checks
-from scripts.guardrail_config import GuardrailConfig, load_config
-from scripts.guardrail_executor import run_check, utc_timestamp
-from scripts.guardrail_layout import layout_failures
+from scripts.guardrail_catalogs.catalog import make_checks
+from scripts.guardrail_core.args import apply_cli_overrides, parse_args
+from scripts.guardrail_core.config import GuardrailConfig, load_config
+from scripts.guardrail_core.executor import run_check, utc_timestamp
+from scripts.guardrail_core.layout import layout_failures
+from scripts.guardrail_core.reporting import print_failures, print_success
 from scripts.guardrail_models import Check, CheckResult
-from scripts.guardrail_reporting import print_failures, print_success
 
 
 def log_dir_for(config: GuardrailConfig) -> Path:

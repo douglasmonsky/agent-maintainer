@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from guardrail_lib.config.schema import GuardrailConfig
-from scripts import guardrail_doctor, guardrail_doctor_policy
+from scripts import guardrail_doctor
+from scripts.guardrail_doctor_support import policy as guardrail_doctor_policy
 
 
 def test_secret_scanning_policy_warns_when_history_scan_skips_security_profile() -> None:

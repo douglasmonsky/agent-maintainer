@@ -13,10 +13,10 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.guardrail_core.guidance import main as guidance_main
+from scripts.guardrail_core.runtime import disable_bytecode_writes, hardened_subprocess_env
+from scripts.guardrail_core.tool_capabilities import bootstrap_scope_note
 from scripts.guardrail_doctor import main as doctor_main
-from scripts.guardrail_guidance import main as guidance_main
-from scripts.guardrail_runtime import disable_bytecode_writes, hardened_subprocess_env
-from scripts.guardrail_tool_capabilities import bootstrap_scope_note
 from scripts.verify_quiet import main as verify_main
 
 disable_bytecode_writes()

@@ -6,28 +6,26 @@ import argparse
 import json
 import shutil
 import subprocess  # nosec B404
-import sys
 from pathlib import Path
 
-from scripts import (
-    guardrail_config,
-    guardrail_doctor_hook_audit,
-    guardrail_doctor_logs,
-    guardrail_doctor_models,
-    guardrail_doctor_policy,
-    guardrail_doctor_setup,
-    guardrail_guidance,
-    guardrail_tool_capabilities,
-)
-from scripts.guardrail_catalog import make_checks
-from scripts.guardrail_layout import layout_failures
-from scripts.guardrail_tach import tach_config_issues
+from scripts import guardrail_doctor_setup
+from scripts.guardrail_core import config as guardrail_config
+from scripts.guardrail_doctor_support import hook_audit as guardrail_doctor_hook_audit
+from scripts.guardrail_doctor_support import logs as guardrail_doctor_logs
+from scripts.guardrail_doctor_support import models as guardrail_doctor_models
+from scripts.guardrail_doctor_support import policy as guardrail_doctor_policy
 
-MIN_PYTHON = (3, 11)
 DoctorResult = guardrail_doctor_models.DoctorResult
 ERROR = guardrail_doctor_models.ERROR
 OK = guardrail_doctor_models.OK
 WARNING = guardrail_doctor_models.WARNING
+
+check_python_version = guardrail_doctor_setup.check_python_version
+check_agent_guidance = guardrail_doctor_setup.check_agent_guidance
+check_layout = guardrail_doctor_setup.check_layout
+check_optional_gates = guardrail_doctor_setup.check_optional_gates
+check_tests = guardrail_doctor_setup.check_tests
+check_tool_capabilities = guardrail_doctor_setup.check_tool_capabilities
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -86,21 +84,6 @@ def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> lis
     ]
 
 
-def check_python_version() -> DoctorResult:
-    """Check that the active Python runtime satisfies the verifier minimum."""
-
-    version = sys.version_info
-    detected = f"{version.major}.{version.minor}.{version.micro}"
-    if (version.major, version.minor) < MIN_PYTHON:
-        required = ".".join(str(part) for part in MIN_PYTHON)
-        return DoctorResult(
-            "python-version",
-            ERROR,
-            f"Python {detected}; Python {required}+ is required.",
-        )
-    return DoctorResult("python-version", OK, f"Python {detected}")
-
-
 def check_repo_root(repo_root: Path) -> DoctorResult:
     """Check for files that identify a usable guardrail repository root."""
 
@@ -136,67 +119,6 @@ def check_virtualenv(repo_root: Path) -> DoctorResult:
         state=guardrail_doctor_models.MISSING,
         hint="Run python3 -m scripts.guardrail bootstrap.",
     )
-
-
-def check_tool_capabilities(
-    repo_root: Path, config: guardrail_config.GuardrailConfig
-) -> DoctorResult:
-    """Check active tool capabilities without conflating disabled integrations."""
-
-    checks = make_checks(config, "HEAD", "origin/main")
-    states = [
-        *guardrail_tool_capabilities.states_for_checks(repo_root, checks),
-        *guardrail_tool_capabilities.local_runtime_states(repo_root),
-    ]
-    state, message = guardrail_tool_capabilities.summarize_states(states)
-    status = ERROR if state == guardrail_tool_capabilities.MISSING else OK
-    result_state = (
-        guardrail_doctor_models.MISSING
-        if state == guardrail_tool_capabilities.MISSING
-        else guardrail_doctor_models.ACTIVE
-    )
-    return DoctorResult("tool-capabilities", status, message, state=result_state)
-
-
-def check_layout(config: guardrail_config.GuardrailConfig) -> DoctorResult:
-    """Validate configured source, package, test, and coverage roots."""
-
-    failures = layout_failures(config, "full")
-    if failures:
-        return DoctorResult(
-            "configured-roots",
-            ERROR,
-            "; ".join(failures),
-            state=guardrail_doctor_models.MISSING,
-            hint="Create missing roots or update [tool.ai_guardrails] paths.",
-        )
-    source_roots = guardrail_config.format_paths(config.source_roots)
-    test_roots = guardrail_config.format_paths(config.test_roots)
-    return DoctorResult("configured-roots", OK, f"sources={source_roots}; tests={test_roots}")
-
-
-def check_tests(repo_root: Path, config: guardrail_config.GuardrailConfig) -> DoctorResult:
-    """Report whether tests are required and available."""
-
-    if not config.require_tests:
-        return DoctorResult(
-            "tests",
-            WARNING,
-            "Tests are disabled with require_tests = false.",
-            state=guardrail_doctor_models.DISABLED,
-        )
-    existing = [path for path in config.test_roots if (repo_root / path).exists()]
-    if not existing:
-        test_roots = guardrail_config.format_paths(config.test_roots)
-        return DoctorResult(
-            "tests",
-            ERROR,
-            f"No configured test roots exist: {test_roots}",
-            state=guardrail_doctor_models.MISSING,
-            hint="Create the configured test root or update test_roots.",
-        )
-    existing_roots = ", ".join(existing)
-    return DoctorResult("tests", OK, f"Configured test roots exist: {existing_roots}")
 
 
 def check_pre_commit(repo_root: Path) -> DoctorResult:
@@ -246,63 +168,6 @@ def check_codex_hooks(repo_root: Path) -> DoctorResult:
     return DoctorResult("codex-hooks", OK, ".codex/config.toml enables hooks.")
 
 
-def check_optional_gates(repo_root: Path, config: guardrail_config.GuardrailConfig) -> DoctorResult:
-    """Report whether optional hardening integrations are active."""
-
-    architecture_name, missing = architecture_gate_status(repo_root, config)
-    if not config.enable_pip_audit:
-        missing.append("pip-audit disabled")
-    if not config.enable_wemake:
-        missing.append("wemake disabled")
-    if not config.enable_interrogate:
-        missing.append("interrogate disabled")
-    if missing:
-        result_state = guardrail_doctor_models.DISABLED
-        if any("disabled" not in item for item in missing):
-            result_state = guardrail_doctor_models.MISSING
-        return DoctorResult(
-            "optional-gates",
-            WARNING,
-            "; ".join(missing),
-            state=result_state,
-            hint="Enable the gate or document why it is intentionally disabled.",
-        )
-    active_gate_summary = ", ".join(active_optional_gate_names(architecture_name, config))
-    return DoctorResult(
-        "optional-gates",
-        OK,
-        f"{active_gate_summary} are active.",
-    )
-
-
-def architecture_gate_status(
-    repo_root: Path, config: guardrail_config.GuardrailConfig
-) -> tuple[str, list[str]]:
-    """Return active architecture backend name and missing gate diagnostics."""
-
-    if config.architecture_tool == guardrail_config.TACH_TOOL:
-        return "Tach", tach_config_issues(
-            repo_root,
-            require_strict_root=config.mode == guardrail_config.FRESH_STRICT_MODE,
-        )
-    if not (repo_root / ".importlinter").exists():
-        return "Import Linter", [".importlinter"]
-    return "Import Linter", []
-
-
-def active_optional_gate_names(
-    architecture_name: str, config: guardrail_config.GuardrailConfig
-) -> list[str]:
-    """Return active optional gate names for doctor summary output."""
-
-    active_gates = [architecture_name, "pip-audit", "wemake", "interrogate"]
-    if config.enable_sbom:
-        active_gates.append("sbom")
-    if config.enable_license_check:
-        active_gates.append("license-check")
-    return active_gates
-
-
 def check_canonical_commands(repo_root: Path) -> DoctorResult:
     """Check that CI, pre-commit, and hooks use the module entrypoint."""
 
@@ -348,27 +213,6 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
 def normalized_text(text: str) -> str:
     """Return text normalized for command substring checks."""
     return " ".join(text.split())
-
-
-def check_agent_guidance(repo_root: Path, config: guardrail_config.GuardrailConfig) -> DoctorResult:
-    """Report whether generated agent guidance matches current config."""
-
-    state = guardrail_guidance.guidance_state(repo_root, config)
-    if state.status == "current":
-        return DoctorResult("agent-guidance", OK, state.message)
-    status = ERROR if config.mode == guardrail_config.FRESH_STRICT_MODE else WARNING
-    result_state = (
-        guardrail_doctor_models.UNSAFE_CONFIG
-        if state.status == "stale"
-        else guardrail_doctor_models.MISSING
-    )
-    return DoctorResult(
-        "agent-guidance",
-        status,
-        state.message,
-        state=result_state,
-        hint="Run python3 -m scripts.guardrail guidance.",
-    )
 
 
 def check_git_state(repo_root: Path) -> DoctorResult:

@@ -8,8 +8,8 @@ import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
-from scripts.guardrail_executor import command_env
-from scripts.guardrail_runtime import TRUE_ENV_VALUES
+from scripts.guardrail_core.executor import command_env
+from scripts.guardrail_core.runtime import TRUE_ENV_VALUES
 
 KEEP_MUTANTS_ENV = "AI_GUARDRAILS_KEEP_MUTANTS"
 MUTANTS_DIR = Path("mutants")

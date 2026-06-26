@@ -12,10 +12,10 @@ from scripts import (
     check_suppression_budget,
     check_tach_config,
     guardrail,
-    guardrail_args,
     guardrail_tach,
 )
-from scripts.guardrail_config import GuardrailConfig
+from scripts.guardrail_core import args as guardrail_args
+from scripts.guardrail_core.config import GuardrailConfig
 
 BOOTSTRAP_STATUS = 11
 DOCTOR_STATUS = 14
@@ -32,6 +32,7 @@ def test_change_budget_classifies_python_source_and_tests() -> None:
     config = GuardrailConfig(source_roots=("scripts",), test_roots=("tests",))
     changes = [
         check_change_budget.FileChange("scripts/tool.py", 2, 1),
+        check_change_budget.FileChange("scripts/package/__init__.py", 1, 0),
         check_change_budget.FileChange("tests/test_tool.py", 1, 0),
         check_change_budget.FileChange("README.md", 4, 0),
     ]
@@ -41,6 +42,9 @@ def test_change_budget_classifies_python_source_and_tests() -> None:
     assert [change.path for change in source] == ["scripts/tool.py"]
     assert [change.path for change in tests] == ["tests/test_tool.py"]
     assert check_change_budget.should_exclude("poetry.lock")
+    assert check_change_budget.is_trivial_package_marker(
+        check_change_budget.FileChange("scripts/package/__init__.py", 1, 0)
+    )
     assert check_change_budget.diff_target_label("HEAD", staged=True) == "staged changes"
 
 

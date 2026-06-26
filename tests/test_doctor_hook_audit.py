@@ -6,8 +6,8 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from scripts import guardrail_doctor_hook_audit
-from scripts.guardrail_config import GuardrailConfig
+from scripts.guardrail_core.config import GuardrailConfig
+from scripts.guardrail_doctor_support import hook_audit as guardrail_doctor_hook_audit
 
 
 def enable_codex_hooks(repo_root: Path) -> None:

@@ -15,7 +15,7 @@ import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass, replace
 
-from scripts.guardrail_config import GuardrailConfig, load_config, path_matches_roots
+from scripts.guardrail_core.config import GuardrailConfig, load_config, path_matches_roots
 
 NUMSTAT_FIELD_COUNT = 3
 
@@ -133,6 +133,12 @@ def should_exclude(path: str) -> bool:
     return name in EXCLUDED_NAMES or path.endswith(EXCLUDED_SUFFIXES)
 
 
+def is_trivial_package_marker(change: FileChange) -> bool:
+    """Return whether a change only adds or removes a package marker."""
+
+    return change.path.endswith("/__init__.py") and change.changed <= 1
+
+
 def is_python_source(path: str, source_roots: tuple[str, ...]) -> bool:
     """Return whether a path is Python code inside configured source roots."""
 
@@ -194,7 +200,10 @@ def changed_python_files(
     """Split changes into configured Python source and test buckets."""
 
     py_source_changes = [
-        change for change in changes if is_python_source(change.path, config.source_roots)
+        change
+        for change in changes
+        if is_python_source(change.path, config.source_roots)
+        and not is_trivial_package_marker(change)
     ]
     py_test_changes = [
         change for change in changes if is_python_test(change.path, config.test_roots)

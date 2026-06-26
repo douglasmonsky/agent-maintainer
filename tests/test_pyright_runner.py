@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from scripts import run_pyright
-from scripts.guardrail_config import GuardrailConfig
+from scripts.guardrail_core.config import GuardrailConfig
 
 
 def test_write_pyright_config_uses_guardrail_mode_and_roots(

@@ -14,7 +14,7 @@ import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass
 
-from scripts.guardrail_config import load_config
+from scripts.guardrail_core.config import load_config
 
 SUPPRESSION_PATTERNS = (
     "# noqa",

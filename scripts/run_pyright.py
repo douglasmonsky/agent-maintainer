@@ -9,8 +9,8 @@ import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
-from scripts.guardrail_config import GuardrailConfig, load_config
-from scripts.guardrail_executor import command_env
+from scripts.guardrail_core.config import GuardrailConfig, load_config
+from scripts.guardrail_core.executor import command_env
 
 PYRIGHT_CONFIG_NAME = "pyrightconfig.generated.json"
 PYRIGHT_JSON_NAME = "pyright.json"

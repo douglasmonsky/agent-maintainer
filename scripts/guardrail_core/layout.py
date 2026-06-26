@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from scripts.guardrail_config import GuardrailConfig, any_path_exists, format_paths
+from scripts.guardrail_core.config import GuardrailConfig, any_path_exists, format_paths
 from scripts.guardrail_models import LOCAL_GATE_PROFILES
 
 VALID_PYRIGHT_MODES = frozenset(("off", "basic", "standard", "strict"))

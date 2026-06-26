@@ -6,7 +6,7 @@ import sys
 
 import pytest
 
-from scripts import guardrail_runtime
+from scripts.guardrail_core import runtime as guardrail_runtime
 
 
 def test_hardened_subprocess_env_disables_bytecode_writes_by_default() -> None:

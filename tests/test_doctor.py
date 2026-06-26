@@ -7,13 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from scripts import (
-    guardrail_doctor,
-    guardrail_doctor_policy,
-    guardrail_guidance,
-    guardrail_tool_capabilities,
-)
-from scripts.guardrail_config import GuardrailConfig
+from scripts import guardrail_doctor, guardrail_doctor_setup
+from scripts.guardrail_core import guidance as guardrail_guidance
+from scripts.guardrail_core import tool_capabilities as guardrail_tool_capabilities
+from scripts.guardrail_core.config import GuardrailConfig
+from scripts.guardrail_doctor_support import policy as guardrail_doctor_policy
 from scripts.guardrail_models import FULL_PROFILES, Check
 
 
@@ -112,7 +110,7 @@ def test_tool_capabilities_fail_when_dependency_is_missing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        guardrail_doctor,
+        guardrail_doctor_setup,
         "make_checks",
         lambda config, base_ref, compare_branch: [
             Check("custom", ["missing-tool"], FULL_PROFILES, required_executable="missing-tool")
@@ -137,7 +135,7 @@ def test_tool_capabilities_pass_when_local_tool_exists(
     tool_path.parent.mkdir(parents=True)
     tool_path.write_text("", encoding="utf-8")
     monkeypatch.setattr(
-        guardrail_doctor,
+        guardrail_doctor_setup,
         "make_checks",
         lambda config, base_ref, compare_branch: [
             Check("custom", ["local-tool"], FULL_PROFILES, required_executable="local-tool")
@@ -155,7 +153,7 @@ def test_tool_capabilities_report_disabled_optional_check(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        guardrail_doctor,
+        guardrail_doctor_setup,
         "make_checks",
         lambda config, base_ref, compare_branch: [
             Check(

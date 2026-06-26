@@ -7,8 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_args, verify_quiet
-from scripts.guardrail_config import GuardrailConfig
+from scripts import verify_quiet
+from scripts.guardrail_core import args as guardrail_args
+from scripts.guardrail_core.config import GuardrailConfig
 from scripts.guardrail_models import Check, CheckResult
 
 CLI_COVERAGE_THRESHOLD = 92
@@ -40,7 +41,7 @@ def test_cli_overrides_replace_config_values() -> None:
             "--mutmut-arg",
             "run",
             "--mutmut-arg",
-            "scripts.guardrail_runtime*",
+            "scripts.guardrail_core.runtime*",
             "--enable-semgrep",
             "--semgrep-arg",
             "scan",
@@ -78,7 +79,7 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.coverage_fail_under == CLI_COVERAGE_THRESHOLD
     assert config.enable_pip_audit is True
     assert config.enable_mutmut is True
-    assert config.mutmut_args == ("run", "scripts.guardrail_runtime*")
+    assert config.mutmut_args == ("run", "scripts.guardrail_core.runtime*")
     assert config.enable_semgrep is True
     assert config.semgrep_args == ("scan", "--config", "semgrep.yml")
     assert config.semgrep_profiles == ("manual", "security")

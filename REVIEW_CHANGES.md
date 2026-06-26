@@ -26,7 +26,7 @@ Optional skips are reported explicitly. Currently this applies to absent archite
 
 ## Configurable repository layout
 
-Shared configuration now lives in `scripts/guardrail_config.py` and is read from `[tool.ai_guardrails]`, environment variables, and CLI overrides.
+Shared configuration now lives in `scripts/guardrail_core/config.py` and is read from `[tool.ai_guardrails]`, environment variables, and CLI overrides.
 
 Supported path settings include:
 

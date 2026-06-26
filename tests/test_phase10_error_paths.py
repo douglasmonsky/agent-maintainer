@@ -12,9 +12,9 @@ from scripts import (
     check_file_lengths,
     check_suppression_budget,
     check_tach_config,
-    guardrail_executor,
 )
-from scripts.guardrail_config import GuardrailConfig
+from scripts.guardrail_core import executor as guardrail_executor
+from scripts.guardrail_core.config import GuardrailConfig
 from scripts.guardrail_models import Check
 
 PYLINT_DISABLE_ALL = "# pylint:" + " disable" + "=all"

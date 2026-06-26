@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_tool_capabilities as capabilities
+from scripts.guardrail_core import tool_capabilities as capabilities
 from scripts.guardrail_models import FULL_PROFILES, Check
 
 
