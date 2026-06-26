@@ -15,7 +15,7 @@ coverage_source = ["src"]
 
 This mode is meant to stop entropy before it becomes architecture. It keeps tests required, enables `wemake-python-styleguide`, enables Interrogate docstring coverage, lowers file and diff budgets, reduces the new-suppression budget, and sets Ruff McCabe complexity to `8`.
 
-When `architecture_tool = "tach"` is used with `fresh-strict`, `tach.toml` must exist, define at least one module, and set `root_module = "forbid"`. The full verifier then runs `tach check --exact` so stale declared dependencies fail too.
+When `architecture_tool = "tach"` is used with `fresh-strict`, `tach.toml` must exist, define at least one module, set `root_module = "forbid"`, explicitly assign each non-init Python source module under Tach's checked source roots, and avoid module entries that no longer resolve to source files. The full verifier then runs `tach check --exact` so stale declared dependencies fail too.
 
 Preset defaults:
 

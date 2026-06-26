@@ -417,7 +417,7 @@ Start strict for new repositories. For existing repositories, start with `fast` 
 
 This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
 
-This repository also keeps normally optional hardening gates active itself: tests required, `tach.toml` defines guardrail-script dependency layers `root_module = "forbid"`, Interrogate enforces 80% docstring-coverage ratchet, `pip-audit` runs against `config/dev-lock.txt`, Mutmut and Semgrep run in manual profile, Gitleaks secret scanning runs in `full`, `ci`, manual `security` profiles.
+This repository also keeps normally optional hardening gates active itself: tests required, `tach.toml` defines guardrail-script dependency layers with `root_module = "forbid"` plus explicit source-module assignment and stale-reference rejection, Interrogate enforces 80% docstring-coverage ratchet, `pip-audit` runs against `config/dev-lock.txt`, Mutmut and Semgrep run in manual profile, Gitleaks secret scanning runs in `full`, `ci`, manual `security` profiles.
 
 `AGENTS.guardrails.md` is generated for this repository and should be refreshed
 with `python3 -m scripts.guardrail guidance` whenever `[tool.ai_guardrails]`

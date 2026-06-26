@@ -290,6 +290,9 @@ path = "scripts"
 
 
 def test_optional_gates_pass_when_tach_is_strict(tmp_path: Path) -> None:
+    scripts_path = tmp_path / "scripts"
+    scripts_path.mkdir()
+    (scripts_path / "__init__.py").write_text("", encoding="utf-8")
     (tmp_path / "tach.toml").write_text(
         """
 source_roots = ["."]

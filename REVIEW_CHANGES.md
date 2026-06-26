@@ -10,7 +10,7 @@ The canonical CI and hook command is now `python3 -m scripts.guardrail`.
 
 `[tool.ai_guardrails].mode` now supports `custom`, `legacy-ratchet`, and `fresh-strict`. This repository uses `fresh-strict`, keeps tests and optional hardening gates active, and audits the pinned `config/dev-lock.txt`.
 
-`[tool.ai_guardrails].architecture_tool` now supports `import-linter` and `tach`. Import Linter remains the backward-compatible default. This repository uses Tach with `root_module = "forbid"` and `tach check --exact`.
+`[tool.ai_guardrails].architecture_tool` now supports `import-linter` and `tach`. Import Linter remains the backward-compatible default. This repository uses Tach with `root_module = "forbid"`, explicit source-module assignment, stale-reference rejection, and `tach check --exact`.
 
 `[tool.ai_guardrails].enable_interrogate` enables Interrogate docstring coverage as a full-profile gate. `fresh-strict` enables it by default; this repository ratchets from its current baseline with `interrogate_fail_under = 80`.
 
