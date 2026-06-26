@@ -16,7 +16,10 @@ python3 -m scripts.guardrail doctor --strict
 
 | Symptom | Fix |
 |---|---|
-| Missing required executables | Run `python3 -m scripts.guardrail bootstrap`. |
+| Missing Python package command | Run `python3 -m scripts.guardrail bootstrap`. |
+| Missing external binary | Install the named binary with the platform package manager, then rerun `doctor`. |
+| GitHub Actions-only tool is not applicable | Add workflows only if that gate is relevant for the repository. |
+| Manual optional tool is disabled | Enable the slow/manual gate only when that workflow is intentionally adopted. |
 | Missing source, test, package, or coverage roots | Set `[tool.ai_guardrails]` paths in `pyproject.toml`. |
 | Legacy file-length ratchet fails | Split the new or worsened oversized file, or refresh `file_length_baseline` only after reviewing the diff. |
 | Pre-commit hook is not installed | Run `python3 -m scripts.guardrail install`. |

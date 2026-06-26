@@ -15,6 +15,7 @@ if __package__ in {None, ""}:
 
 from scripts.guardrail_doctor import main as doctor_main
 from scripts.guardrail_guidance import main as guidance_main
+from scripts.guardrail_tool_capabilities import bootstrap_scope_note
 from scripts.verify_quiet import main as verify_main
 
 CommandRunner = Callable[[list[str]], int]
@@ -146,13 +147,15 @@ def install_dependencies(repo_root: Path, python_path: Path) -> int:
         return 1
 
     dependency_path = dependency_file.relative_to(repo_root)
-    print(f"Installing dev dependencies from {dependency_path}.", flush=True)
+    print(f"Installing Python package guardrail tools from {dependency_path}.", flush=True)
     result = subprocess.run(  # nosec B603
         [str(python_path), "-m", "pip", "install", "-r", str(dependency_path)],
         cwd=repo_root,
         text=True,
         check=False,
     )
+    if result.returncode == 0:
+        print(bootstrap_scope_note(), flush=True)
     return result.returncode
 
 

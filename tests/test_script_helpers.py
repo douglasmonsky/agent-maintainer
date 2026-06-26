@@ -353,6 +353,30 @@ def test_guardrail_dependency_install_requires_manifest(
     assert "dev-lock.txt or config/dev-dependencies.txt" in capsys.readouterr().err
 
 
+def test_guardrail_dependency_install_explains_python_package_scope(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    dependency_file = tmp_path / "config" / "dev-lock.txt"
+    dependency_file.parent.mkdir()
+    dependency_file.write_text("pytest==9.1.1\n", encoding="utf-8")
+    python_path = tmp_path / ".venv" / "bin" / "python"
+    python_path.parent.mkdir(parents=True)
+    python_path.write_text("", encoding="utf-8")
+    monkeypatch.setattr(
+        guardrail.subprocess,
+        "run",
+        lambda command, **_kwargs: subprocess.CompletedProcess(command, 0, "", ""),
+    )
+
+    assert guardrail.install_dependencies(tmp_path, python_path) == 0
+
+    output = capsys.readouterr().out
+    assert "Installing Python package guardrail tools" in output
+    assert "External binaries, GitHub-only tools, and manual optional tools" in output
+
+
 def test_guardrail_reports_codex_hooks(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     config_path = tmp_path / ".codex" / "config.toml"
     config_path.parent.mkdir()

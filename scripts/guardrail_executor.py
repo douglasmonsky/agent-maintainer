@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from scripts import guardrail_tool_capabilities
 from scripts.guardrail_models import Check, CheckResult
 from scripts.guardrail_reporting import summarize_check
 
@@ -80,7 +81,7 @@ def missing_requirement(check: Check) -> str | None:
         check.required_executable
         and shutil.which(check.required_executable, path=tool_search_path()) is None
     ):
-        return f"command not found: {check.required_executable!r}. Install dev dependencies."
+        return guardrail_tool_capabilities.missing_executable_message(check.required_executable)
     return None
 
 

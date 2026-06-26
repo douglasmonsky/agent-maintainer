@@ -15,6 +15,7 @@ from scripts import (
     guardrail_doctor_logs,
     guardrail_doctor_policy,
     guardrail_guidance,
+    guardrail_tool_capabilities,
 )
 from scripts.guardrail_catalog import make_checks
 from scripts.guardrail_doctor_models import ERROR, OK, WARNING, DoctorResult
@@ -60,7 +61,7 @@ def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> lis
         check_python_version(),
         check_repo_root(repo_root),
         check_virtualenv(repo_root),
-        check_required_executables(repo_root, config),
+        check_tool_capabilities(repo_root, config),
         check_layout(config),
         check_tests(repo_root, config),
         guardrail_doctor_policy.check_pyright_config(repo_root, config),
@@ -114,28 +115,19 @@ def check_virtualenv(repo_root: Path) -> DoctorResult:
     return DoctorResult("virtualenv", WARNING, "No .venv or venv Python found.")
 
 
-def check_required_executables(
+def check_tool_capabilities(
     repo_root: Path, config: guardrail_config.GuardrailConfig
 ) -> DoctorResult:
-    """Check that required executables for configured checks are installed."""
+    """Check active tool capabilities without conflating disabled integrations."""
 
     checks = make_checks(config, "HEAD", "origin/main")
-    required = sorted({check.required_executable for check in checks if check.required_executable})
-    missing = [name for name in required if not executable_exists(repo_root, name)]
-    if missing:
-        missing_names = ", ".join(missing)
-        return DoctorResult("required-executables", ERROR, f"Missing: {missing_names}")
-    return DoctorResult("required-executables", OK, f"Found {len(required)} executables.")
-
-
-def executable_exists(repo_root: Path, executable: str) -> bool:
-    """Return whether an executable exists locally or on PATH."""
-
-    local_paths = (
-        repo_root / ".venv" / "bin" / executable,
-        repo_root / "venv" / "bin" / executable,
-    )
-    return any(path.exists() for path in local_paths) or shutil.which(executable) is not None
+    states = [
+        *guardrail_tool_capabilities.states_for_checks(repo_root, checks),
+        *guardrail_tool_capabilities.local_runtime_states(repo_root),
+    ]
+    state, message = guardrail_tool_capabilities.summarize_states(states)
+    status = ERROR if state == guardrail_tool_capabilities.MISSING else OK
+    return DoctorResult("tool-capabilities", status, message)
 
 
 def check_layout(config: guardrail_config.GuardrailConfig) -> DoctorResult:

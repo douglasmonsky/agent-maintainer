@@ -30,6 +30,19 @@ def test_missing_requirement_reports_required_path(tmp_path: Path) -> None:
     assert guardrail_executor.missing_requirement(check) == "required path 'missing.py' is absent"
 
 
+def test_missing_requirement_uses_capability_aware_executable_hint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(guardrail_executor.shutil, "which", lambda *args, **_kwargs: None)
+    check = Check("missing", ["missing-tool"], frozenset(), required_executable="missing-tool")
+
+    message = guardrail_executor.missing_requirement(check)
+
+    assert message is not None
+    assert "Missing Python package command: missing-tool" in message
+    assert "config/dev-lock.txt" in message
+
+
 def test_optional_skip_reports_configured_reason(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

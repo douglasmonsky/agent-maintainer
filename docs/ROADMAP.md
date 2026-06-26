@@ -122,13 +122,13 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 4: Add Tool Capability Modeling
 
-- [ ] Add a tool capability model with at least `python_package`,
+- [x] Add a tool capability model with at least `python_package`,
   `external_binary`, `github_action_only`, and `manual_optional`.
-- [ ] Use the capability model in `doctor` so missing external binaries are
+- [x] Use the capability model in `doctor` so missing external binaries are
   reported accurately.
-- [ ] Use the capability model in bootstrap docs and output so pip-installed and
+- [x] Use the capability model in bootstrap docs and output so pip-installed and
   non-pip tools are not conflated.
-- [ ] Add tests for supported, missing, disabled, and not-applicable tool states.
+- [x] Add tests for supported, missing, disabled, and not-applicable tool states.
 
 ## Phase 5: Harden GitHub Actions
 
