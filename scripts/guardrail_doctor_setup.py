@@ -70,3 +70,27 @@ def check_thresholds(
         message,
         state=guardrail_doctor_models.ACTIVE,
     )
+
+
+def check_structure_thresholds(
+    config: guardrail_config.GuardrailConfig,
+) -> guardrail_doctor_models.DoctorResult:
+    """Report active structure cohesion thresholds and ignored paths."""
+
+    paths = ", ".join(config.structure_paths or config.source_roots)
+    ignored = ", ".join(config.structure_ignore_paths) or "none"
+    block = (
+        str(config.folder_file_block)
+        if config.mode == guardrail_config.FRESH_STRICT_MODE
+        else "disabled outside fresh-strict"
+    )
+    message = (
+        f"paths={paths}; warn={config.folder_file_warn}; block={block}; "
+        f"cluster-min={config.structure_cluster_min}; ignored={ignored}."
+    )
+    return guardrail_doctor_models.DoctorResult(
+        "structure-thresholds",
+        guardrail_doctor_models.OK,
+        message,
+        state=guardrail_doctor_models.ACTIVE,
+    )

@@ -49,6 +49,8 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Prefer `rg --files` or `git ls-files`" in text
     assert "`__pycache__`, `*.pyc`, `.venv`" in text
     assert "PYTHONDONTWRITEBYTECODE=1" in text
+    assert "Folder Python-file warning/block thresholds" in text
+    assert "Structure hint patterns are advisory refactor prompts" in text
 
 
 def test_render_guidance_is_deterministic_and_nonvolatile() -> None:

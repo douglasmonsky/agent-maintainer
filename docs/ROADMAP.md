@@ -176,41 +176,41 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 8: Add Structural Cohesion Signals
 
-- [ ] Add a folder-level Python file-count smell check.
-- [ ] Treat folder file count as advisory by default, not proof of bad design.
-- [ ] Default to warning around 20 Python files in one folder.
-- [ ] Block only at a high threshold, around 40 Python files, and only in
+- [x] Add a folder-level Python file-count smell check.
+- [x] Treat folder file count as advisory by default, not proof of bad design.
+- [x] Default to warning around 20 Python files in one folder.
+- [x] Block only at a high threshold, around 40 Python files, and only in
   `fresh-strict`.
-- [ ] Never block tests, migrations, generated folders, virtualenvs, caches, or
+- [x] Never block tests, migrations, generated folders, virtualenvs, caches, or
   explicitly configured plugin/command registries.
-- [ ] Add config such as `[tool.ai_guardrails.structure] folder_file_warn`,
+- [x] Add config such as `[tool.ai_guardrails.structure] folder_file_warn`,
   `folder_file_block`, and `ignore_folder_file_count_paths`, or an equivalent
   shape that fits the final config model.
-- [ ] Add configurable regex hint patterns for naming clusters, separate from
+- [x] Add configurable regex hint patterns for naming clusters, separate from
   the warn/block thresholds.
-- [ ] Ship conservative built-in regex hints for common hierarchy smells:
+- [x] Ship conservative built-in regex hints for common hierarchy smells:
   repeated prefixes like `^guardrail_`, `^check_`, and domain prefixes such as
   `^user_` or `^course_`; repeated role suffixes like `_model$`, `_service$`,
   `_repository$`, `_client$`, `_adapter$`, `_parser$`, `_loader$`, `_schema$`,
   `_executor$`, and `_reporting$`; and layer words such as `cli`, `args`,
   `config`, `models`, `checks`, `doctor`, `executor`, and `reporting`.
-- [ ] Use regex matches to enrich advisory messages with concrete clusters and
+- [x] Use regex matches to enrich advisory messages with concrete clusters and
   likely split candidates, not as standalone failure conditions.
-- [ ] Detect prefix clusters that suggest fake flat hierarchy, such as many
+- [x] Detect prefix clusters that suggest fake flat hierarchy, such as many
   `guardrail_*` or `check_*` modules in one folder.
-- [ ] Detect layer mixing signals, such as CLI entrypoints, config parsing,
+- [x] Detect layer mixing signals, such as CLI entrypoints, config parsing,
   execution, reporting, models, and individual checks living in one flat folder.
-- [ ] Consider sibling-import density as a future stronger cohesion signal, but
+- [x] Consider sibling-import density as a future stronger cohesion signal, but
   keep the first implementation simple and explainable.
-- [ ] Emit messages that recommend considering a split by responsibility instead
+- [x] Emit messages that recommend considering a split by responsibility instead
   of requiring arbitrary subfolders.
-- [ ] Surface structural cohesion signals in generated agent guidance so agents
+- [x] Surface structural cohesion signals in generated agent guidance so agents
   proactively notice refactor pressure.
-- [ ] Teach `doctor` to report active structure thresholds and ignored paths.
-- [ ] Add tests for normal folders, warning folders, fresh-strict block folders,
+- [x] Teach `doctor` to report active structure thresholds and ignored paths.
+- [x] Add tests for normal folders, warning folders, fresh-strict block folders,
   ignored folders, regex hint clusters, prefix clusters, and explicit registry
   exemptions.
-- [ ] Document when to split into subpackages and use this repository's
+- [x] Document when to split into subpackages and use this repository's
   `guardrail_lib/config` extraction as the motivating example.
 
 ## Phase 9: Add Docs And Config Hygiene

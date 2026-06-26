@@ -71,6 +71,7 @@ def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> lis
         check_layout(config),
         check_tests(repo_root, config),
         guardrail_doctor_setup.check_thresholds(config),
+        guardrail_doctor_setup.check_structure_thresholds(config),
         guardrail_doctor_policy.check_pyright_config(repo_root, config),
         check_pre_commit(repo_root),
         check_codex_hooks(repo_root),
