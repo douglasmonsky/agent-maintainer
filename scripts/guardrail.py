@@ -39,6 +39,7 @@ Examples:
   python -m scripts.guardrail verify --profile fast
   python -m scripts.guardrail verify --profile precommit
   python -m scripts.guardrail verify --profile full
+  python -m scripts.guardrail verify --profile manual
 """
 
 

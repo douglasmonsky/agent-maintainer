@@ -25,6 +25,9 @@ verify-precommit:
 verify-ci:
     python3 -m scripts.guardrail verify --profile ci --base-ref origin/main --compare-branch origin/main
 
+verify-manual:
+    python3 -m scripts.guardrail verify --profile manual
+
 # Example for a flat package layout:
 verify-flat PACKAGE:
     python3 -m scripts.guardrail verify --profile full --source-root {{PACKAGE}} --coverage-source {{PACKAGE}} --package-path {{PACKAGE}} --test-root tests
