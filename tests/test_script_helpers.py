@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
+from guardrail_lib.checks import change_budget as check_change_budget
+from guardrail_lib.checks import suppression_budget as check_suppression_budget
 from scripts import (
-    check_change_budget,
-    check_suppression_budget,
     guardrail,
 )
 from scripts.guardrail_core import args as guardrail_args
@@ -73,6 +73,44 @@ def test_run_git_numstat_parses_output(monkeypatch: pytest.MonkeyPatch) -> None:
     changes = check_change_budget.run_git_numstat("HEAD", staged=False)
 
     assert changes == [check_change_budget.FileChange("scripts/tool.py", 2, 3)]
+
+
+def test_run_git_numstat_does_not_double_count_copied_source(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    numstat = subprocess.CompletedProcess(
+        ["git"],
+        0,
+        stdout=(
+            "0\t1\tscripts/check_tool.py => guardrail_lib/checks/tool.py\n"
+            "5\t300\tscripts/check_tool.py\n"
+        ),
+        stderr="",
+    )
+    name_status = subprocess.CompletedProcess(
+        ["git"],
+        0,
+        stdout="C099\tscripts/check_tool.py\tguardrail_lib/checks/tool.py\n",
+        stderr="",
+    )
+    calls = [numstat, name_status]
+
+    monkeypatch.setattr(
+        check_change_budget.subprocess,
+        "run",
+        lambda *args, **_kwargs: calls.pop(0),
+    )
+
+    changes = check_change_budget.run_git_numstat("HEAD", staged=False)
+
+    assert changes == [
+        check_change_budget.FileChange(
+            "scripts/check_tool.py => guardrail_lib/checks/tool.py",
+            0,
+            1,
+        ),
+        check_change_budget.FileChange("scripts/check_tool.py", 5, 0),
+    ]
 
 
 def test_change_budget_limit_helpers_report_warnings_and_blocks() -> None:
@@ -179,17 +217,41 @@ def test_suppression_budget_detects_broad_suppressions() -> None:
 
 
 def test_suppression_added_python_lines_parses_diff(monkeypatch: pytest.MonkeyPatch) -> None:
-    diff = f"+++ b/scripts/tool.py\n+value = call()  {NOQA_SUPPRESSION}\n context\n"
-    completed = subprocess.CompletedProcess(["git"], 0, stdout=diff, stderr="")
+    diff = f"+++ b/scripts/tool.py\n+value = call() {NOQA_SUPPRESSION}\n context\n"
+    diff_result = subprocess.CompletedProcess(["git"], 0, stdout=diff, stderr="")
+    name_status_result = subprocess.CompletedProcess(["git"], 0, stdout="", stderr="")
+    calls = [diff_result, name_status_result]
     monkeypatch.setattr(
         check_suppression_budget.subprocess,
         "run",
-        lambda *args, **_kwargs: completed,
+        lambda *args, **_kwargs: calls.pop(0),
     )
 
     assert check_suppression_budget.added_python_lines("HEAD", staged=False) == [
-        ("scripts/tool.py", f"value = call()  {NOQA_SUPPRESSION}")
+        ("scripts/tool.py", f"value = call() {NOQA_SUPPRESSION}")
     ]
+
+
+def test_suppression_added_python_lines_ignores_copied_destinations(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    diff = f"+++ b/guardrail_lib/checks/tool.py\n+value = call() {NOQA_SUPPRESSION}\n"
+    name_status = "C099\tscripts/check_tool.py\tguardrail_lib/checks/tool.py\n"
+    diff_result = subprocess.CompletedProcess(["git"], 0, stdout=diff, stderr="")
+    name_status_result = subprocess.CompletedProcess(
+        ["git"],
+        0,
+        stdout=name_status,
+        stderr="",
+    )
+    calls = [diff_result, name_status_result]
+    monkeypatch.setattr(
+        check_suppression_budget.subprocess,
+        "run",
+        lambda *args, **_kwargs: calls.pop(0),
+    )
+
+    assert check_suppression_budget.added_python_lines("HEAD", staged=False) == []
 
 
 def test_suppression_main_handles_runtime_error(

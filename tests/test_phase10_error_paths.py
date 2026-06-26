@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
+from guardrail_lib.checks import change_budget as check_change_budget
+from guardrail_lib.checks import file_lengths as check_file_lengths
+from guardrail_lib.checks import suppression_budget as check_suppression_budget
 from scripts import (
-    check_change_budget,
-    check_file_lengths,
-    check_suppression_budget,
     check_tach_config,
 )
 from scripts.guardrail_core import executor as guardrail_executor
