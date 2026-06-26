@@ -106,6 +106,22 @@ KNOWN_CAPABILITIES = (
             hint="Install Python package guardrail tools from config/dev-lock.txt.",
         ),
     ),
+    (
+        "cyclonedx-py",
+        ToolCapability(
+            "cyclonedx-py",
+            PYTHON_PACKAGE,
+            hint="Install Python package guardrail tools from config/dev-lock.txt.",
+        ),
+    ),
+    (
+        "pip-licenses",
+        ToolCapability(
+            "pip-licenses",
+            PYTHON_PACKAGE,
+            hint="Install Python package guardrail tools from config/dev-lock.txt.",
+        ),
+    ),
 )
 
 

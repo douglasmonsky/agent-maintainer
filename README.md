@@ -23,6 +23,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Dependency hygiene | deptry |
 | Dead code | vulture |
 | Security checks | Bandit; pip-audit explicitly enabled; optional Gitleaks and Semgrep |
+| Supply-chain artifacts | Optional CycloneDX Python SBOM and pip-licenses report/policy |
 | GitHub Actions checks | actionlint and zizmor when workflows exist |
 | Docs/config hygiene | markdownlint-cli2, yamllint, Taplo, optional check-jsonschema |
 | Local enforcement | pre-commit |
@@ -48,7 +49,7 @@ config/
 Install dev dependencies. With `uv`:
 
 ```bash
-uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis mutmut semgrep import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit yamllint check-jsonschema actionlint-py zizmor pre-commit wemake-python-styleguide
+uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis mutmut semgrep cyclonedx-bom pip-licenses import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit yamllint check-jsonschema actionlint-py zizmor pre-commit wemake-python-styleguide
 ```
 
 Or with pip:
@@ -188,6 +189,12 @@ diff_cover_fail_under = 90
 source_without_test_change_error_profiles = ["precommit"]
 allow_source_without_test_change = false
 enable_pip_audit = false
+enable_sbom = false
+sbom_args = ["requirements", "config/dev-lock.txt", "--output-reproducible", "--of", "JSON"]
+sbom_profiles = ["ci"]
+enable_license_check = false
+license_check_args = ["--from=mixed", "--format=json"]
+license_check_profiles = ["manual"]
 enable_secret_scanning = false
 secret_scanner = "gitleaks"
 secret_scan_profiles = ["full", "ci"]

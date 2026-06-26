@@ -71,6 +71,8 @@ configuration first, then regenerate it.
 - pip-audit: enabled with `-r config/dev-lock.txt`
 - Mutmut: enabled with `run`
 - Semgrep: enabled with `scan --config semgrep.yml --error --metrics=off scripts .codex/hooks guardrail_lib`
+- Python SBOM: enabled with `requirements config/dev-lock.txt --output-reproducible --of JSON`
+- License checking: enabled with `--from=mixed --format=json`
 - Secret scanning: enabled with `gitleaks` (profiles: full, ci; history: security)
 - wemake-python-styleguide: `enabled`
 - Interrogate: `enabled`

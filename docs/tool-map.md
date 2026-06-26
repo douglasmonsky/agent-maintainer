@@ -92,6 +92,12 @@ Use local or pinned configs first, for example `semgrep.yml`, and keep
 
 pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`. In `fresh-strict`, enabling pip-audit without pinned args is a failure.
 
+CycloneDX Python SBOM generation uses `cyclonedx-py` from `cyclonedx-bom`. It is disabled by default for drop-in repos, but this repository enables it in the `ci` profile so `.verify-logs/sbom.cdx.json` is uploaded with normal verification logs. For Python-only repositories, prefer this CycloneDX Python path over broader filesystem scanners.
+
+License reporting and optional policy enforcement use `pip-licenses`. By default, `license_check_args = ["--from=mixed", "--format=json"]` generates `.verify-logs/licenses.json`. Add `--allow-only=...` or `--fail-on=...` to turn the same check into a blocking license policy once the repository has a real license policy. This repository enables the manual report but does not pretend a legal policy exists.
+
+OSV Scanner is best reserved for repositories that genuinely need multi-ecosystem dependency CVE coverage. Trivy is best reserved for repositories with Dockerfiles, container images, Kubernetes, Terraform, or other IaC assets. Syft/Grype are better fits for broader deployable artifacts or container workflows. This repository intentionally keeps its own workflow Python-native and does not add Docker just to run those scanners.
+
 ## Docs Config Hygiene
 
 Markdownlint-cli2 checks Markdown structure when `enable_markdownlint = true`.

@@ -38,6 +38,16 @@ DEFAULT_STRUCTURE_HINT_PATTERNS = (
 DEFAULT_SECRET_SCAN_PROFILES = ("full", "ci")
 DEFAULT_SECRET_SCAN_HISTORY_PROFILES = ("security",)
 DEFAULT_SEMGREP_PROFILES = ("manual",)
+DEFAULT_SBOM_ARGS = (
+    "requirements",
+    "config/dev-lock.txt",
+    "--output-reproducible",
+    "--of",
+    "JSON",
+)
+DEFAULT_SBOM_PROFILES = ("ci",)
+DEFAULT_LICENSE_CHECK_ARGS = ("--from=mixed", "--format=json")
+DEFAULT_LICENSE_CHECK_PROFILES = ("manual",)
 DEFAULT_MARKDOWNLINT_PATHS = ("**/*.md",)
 DEFAULT_YAMLLINT_PATHS = (
     ".github/workflows",
@@ -73,6 +83,10 @@ TUPLE_FIELDS = frozenset(
         "mutmut_args",
         "semgrep_args",
         "semgrep_profiles",
+        "sbom_args",
+        "sbom_profiles",
+        "license_check_args",
+        "license_check_profiles",
         "secret_scan_profiles",
         "secret_scan_history_profiles",
         "markdownlint_paths",
@@ -88,6 +102,8 @@ BOOL_FIELDS = frozenset(
         "enable_pip_audit",
         "enable_mutmut",
         "enable_semgrep",
+        "enable_sbom",
+        "enable_license_check",
         "enable_secret_scanning",
         "enable_wemake",
         "enable_interrogate",
@@ -177,6 +193,12 @@ class GuardrailConfig:
         ".",
     )
     semgrep_profiles: tuple[str, ...] = DEFAULT_SEMGREP_PROFILES
+    enable_sbom: bool = False
+    sbom_args: tuple[str, ...] = DEFAULT_SBOM_ARGS
+    sbom_profiles: tuple[str, ...] = DEFAULT_SBOM_PROFILES
+    enable_license_check: bool = False
+    license_check_args: tuple[str, ...] = DEFAULT_LICENSE_CHECK_ARGS
+    license_check_profiles: tuple[str, ...] = DEFAULT_LICENSE_CHECK_PROFILES
     enable_secret_scanning: bool = False
     secret_scanner: str = GITLEAKS_SCANNER
     secret_scan_profiles: tuple[str, ...] = DEFAULT_SECRET_SCAN_PROFILES
