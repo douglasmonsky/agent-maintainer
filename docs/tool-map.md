@@ -71,6 +71,15 @@ pip-audit checks Python packages for known vulnerabilities. It is disabled by de
 
 `config/dev-dependencies.txt` is the human-edited dependency input. `config/dev-lock.txt` is the pinned install and audit artifact when present; bootstrap and CI prefer it automatically.
 
+## GitHub Actions policy
+
+Workflows should declare least-privilege permissions, starting with
+`permissions: contents: read` for verification-only jobs. This kit currently
+uses trusted action version tags rather than full commit SHA pins, paired with
+Dependabot `github-actions` updates so tag-pinned actions are reviewed
+regularly. Revisit SHA pinning if the kit moves toward stricter supply-chain
+requirements.
+
 ## Configuration model
 
 Shared path configuration is read from `[tool.ai_guardrails]` in `pyproject.toml`, then `GUARDRAILS_*` environment variables, then CLI flags. The important fields are:
