@@ -71,7 +71,7 @@ It does not install external binaries, GitHub Actions-only tools, or manual
 optional tools; `doctor` reports those capability states separately. This repo
 enables Gitleaks secret scanning, so install it locally with `brew install
 gitleaks` on macOS when running `full`, `ci`, or `security` profiles. CI
-installs the pinned external binary through Go.
+installs the pinned release tarball and verifies its SHA-256 before extraction.
 
 This repo also enables Markdown/TOML hygiene tools through `package-lock.json`:
 
@@ -86,7 +86,10 @@ python3 -m scripts.guardrail bootstrap
 .venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
 ```
 
-Python 3.11+ is recommended. Python 3.10 and older require `tomli` in the same environment that runs the verifier. The Codex hooks prefer `.venv/bin/python` or `venv/bin/python` when present, so installing dev dependencies into a project virtualenv is the most reliable local setup.
+Python 3.11+ is required because the verifier uses the standard-library
+`tomllib` parser. The Codex hooks prefer `.venv/bin/python` or
+`venv/bin/python` when present, so installing dev dependencies into a project
+virtualenv is the most reliable local setup.
 
 Check setup health after bootstrap:
 
@@ -184,7 +187,7 @@ file_length_paths = ["src", "tests", "scripts", ".codex/hooks"]
 file_length_baseline = ""
 vulture_paths = ["src", "tests", "scripts"]
 require_tests = true
-coverage_fail_under = 80
+coverage_fail_under = 90
 diff_cover_fail_under = 90
 source_without_test_change_error_profiles = ["precommit"]
 allow_source_without_test_change = false

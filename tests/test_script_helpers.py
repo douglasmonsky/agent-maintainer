@@ -152,6 +152,8 @@ def test_justfile_full_output_recipe_uses_repo_roots() -> None:
     )[0]
 
     assert " --cov=src" not in recipe
+    assert "--cov-fail-under=90" in recipe
+    assert "--cov-fail-under=80" not in recipe
     assert "radon cc src" not in recipe
     assert "pylint src" not in recipe
     assert "bandit -q -r src" not in recipe
