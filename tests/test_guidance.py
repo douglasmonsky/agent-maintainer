@@ -65,6 +65,8 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "pip-audit: enabled with `-r config/dev-lock.txt`" in text
     assert "Mutmut: enabled with `run`" in text
     assert "Semgrep: enabled with `scan --config semgrep.yml --metrics=off .`" in text
+    assert "OSV Scanner: `disabled`" in text
+    assert "Trivy: `disabled`" in text
     assert "Python SBOM: enabled with `requirements config/dev-lock.txt --of JSON`" in text
     assert "License checking: enabled with `--from=mixed --format=json`" in text
     assert "Secret scanning: enabled with `gitleaks`" in text

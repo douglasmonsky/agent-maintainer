@@ -38,6 +38,19 @@ DEFAULT_STRUCTURE_HINT_PATTERNS = (
 DEFAULT_SECRET_SCAN_PROFILES = ("full", "ci")
 DEFAULT_SECRET_SCAN_HISTORY_PROFILES = ("security",)
 DEFAULT_SEMGREP_PROFILES = ("manual",)
+DEFAULT_OSV_SCANNER_ARGS = ("scan", "source", "-r", ".")
+DEFAULT_OSV_SCANNER_PROFILES = ("manual",)
+DEFAULT_TRIVY_ARGS = (
+    "fs",
+    "--scanners",
+    "vuln,misconfig",
+    "--format",
+    "json",
+    "--exit-code",
+    "1",
+    ".",
+)
+DEFAULT_TRIVY_PROFILES = ("manual",)
 DEFAULT_SBOM_ARGS = (
     "requirements",
     "config/dev-lock.txt",
@@ -83,6 +96,10 @@ TUPLE_FIELDS = frozenset(
         "mutmut_args",
         "semgrep_args",
         "semgrep_profiles",
+        "osv_scanner_args",
+        "osv_scanner_profiles",
+        "trivy_args",
+        "trivy_profiles",
         "sbom_args",
         "sbom_profiles",
         "license_check_args",
@@ -102,6 +119,8 @@ BOOL_FIELDS = frozenset(
         "enable_pip_audit",
         "enable_mutmut",
         "enable_semgrep",
+        "enable_osv_scanner",
+        "enable_trivy",
         "enable_sbom",
         "enable_license_check",
         "enable_secret_scanning",
@@ -193,6 +212,12 @@ class GuardrailConfig:
         ".",
     )
     semgrep_profiles: tuple[str, ...] = DEFAULT_SEMGREP_PROFILES
+    enable_osv_scanner: bool = False
+    osv_scanner_args: tuple[str, ...] = DEFAULT_OSV_SCANNER_ARGS
+    osv_scanner_profiles: tuple[str, ...] = DEFAULT_OSV_SCANNER_PROFILES
+    enable_trivy: bool = False
+    trivy_args: tuple[str, ...] = DEFAULT_TRIVY_ARGS
+    trivy_profiles: tuple[str, ...] = DEFAULT_TRIVY_PROFILES
     enable_sbom: bool = False
     sbom_args: tuple[str, ...] = DEFAULT_SBOM_ARGS
     sbom_profiles: tuple[str, ...] = DEFAULT_SBOM_PROFILES

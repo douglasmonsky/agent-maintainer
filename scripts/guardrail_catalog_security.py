@@ -24,6 +24,14 @@ SEMGREP_SKIP_REASON = (
     "disabled by default; enable with GUARDRAILS_ENABLE_SEMGREP=1 or "
     "[tool.ai_guardrails].enable_semgrep = true"
 )
+OSV_SCANNER_SKIP_REASON = (
+    "disabled by default; enable with GUARDRAILS_ENABLE_OSV_SCANNER=1 or "
+    "[tool.ai_guardrails].enable_osv_scanner = true"
+)
+TRIVY_SKIP_REASON = (
+    "disabled by default; enable with GUARDRAILS_ENABLE_TRIVY=1 or "
+    "[tool.ai_guardrails].enable_trivy = true"
+)
 SBOM_SKIP_REASON = (
     "disabled by default; enable with GUARDRAILS_ENABLE_SBOM=1 or "
     "[tool.ai_guardrails].enable_sbom = true"
@@ -34,12 +42,81 @@ LICENSE_CHECK_SKIP_REASON = (
 )
 
 
+def osv_scanner_checks(config: GuardrailConfig) -> list[models.Check]:
+    """Build optional OSV Scanner checks for mixed-ecosystem repositories."""
+
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    report_path = artifacts_dir / "osv-scanner.json"
+    report_path_text = str(report_path)
+    artifact_paths = (report_path_text,)
+    command = [
+        "osv-scanner",
+        *config.osv_scanner_args,
+        "--format",
+        "json",
+        "--output-file",
+        report_path_text,
+    ]
+    profiles = frozenset(config.osv_scanner_profiles)
+    if not config.enable_osv_scanner:
+        return [
+            models.Check(
+                "osv-scanner",
+                command,
+                profiles,
+                optional_skip_reason=OSV_SCANNER_SKIP_REASON,
+                artifact_paths=artifact_paths,
+            )
+        ]
+    return [
+        models.Check(
+            "osv-scanner",
+            command,
+            profiles,
+            required_executable="osv-scanner",
+            artifact_paths=artifact_paths,
+        )
+    ]
+
+
+def trivy_checks(config: GuardrailConfig) -> list[models.Check]:
+    """Build optional Trivy filesystem checks for container or IaC repositories."""
+
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    report_path = artifacts_dir / "trivy.json"
+    report_path_text = str(report_path)
+    artifact_paths = (report_path_text,)
+    command = ["trivy", *config.trivy_args, "--output", report_path_text]
+    profiles = frozenset(config.trivy_profiles)
+    if not config.enable_trivy:
+        return [
+            models.Check(
+                "trivy",
+                command,
+                profiles,
+                optional_skip_reason=TRIVY_SKIP_REASON,
+                artifact_paths=artifact_paths,
+            )
+        ]
+    return [
+        models.Check(
+            "trivy",
+            command,
+            profiles,
+            required_executable="trivy",
+            artifact_paths=artifact_paths,
+        )
+    ]
+
+
 def sbom_checks(config: GuardrailConfig) -> list[models.Check]:
     """Build optional Python SBOM generation checks."""
 
     artifacts_dir = Path(config.diagnostic_artifacts_dir)
     report_path = artifacts_dir / "sbom.cdx.json"
-    command = ["cyclonedx-py", *config.sbom_args, "--output-file", str(report_path)]
+    report_path_text = str(report_path)
+    artifact_paths = (report_path_text,)
+    command = ["cyclonedx-py", *config.sbom_args, "--output-file", report_path_text]
     profiles = frozenset(config.sbom_profiles)
     if not config.enable_sbom:
         return [
@@ -48,7 +125,7 @@ def sbom_checks(config: GuardrailConfig) -> list[models.Check]:
                 command,
                 profiles,
                 optional_skip_reason=SBOM_SKIP_REASON,
-                artifact_paths=(str(report_path),),
+                artifact_paths=artifact_paths,
             )
         ]
     return [
@@ -57,7 +134,7 @@ def sbom_checks(config: GuardrailConfig) -> list[models.Check]:
             command,
             profiles,
             required_executable="cyclonedx-py",
-            artifact_paths=(str(report_path),),
+            artifact_paths=artifact_paths,
         )
     ]
 
@@ -67,7 +144,9 @@ def license_check_checks(config: GuardrailConfig) -> list[models.Check]:
 
     artifacts_dir = Path(config.diagnostic_artifacts_dir)
     report_path = artifacts_dir / "licenses.json"
-    command = ["pip-licenses", *config.license_check_args, "--output-file", str(report_path)]
+    report_path_text = str(report_path)
+    artifact_paths = (report_path_text,)
+    command = ["pip-licenses", *config.license_check_args, "--output-file", report_path_text]
     profiles = frozenset(config.license_check_profiles)
     if not config.enable_license_check:
         return [
@@ -76,7 +155,7 @@ def license_check_checks(config: GuardrailConfig) -> list[models.Check]:
                 command,
                 profiles,
                 optional_skip_reason=LICENSE_CHECK_SKIP_REASON,
-                artifact_paths=(str(report_path),),
+                artifact_paths=artifact_paths,
             )
         ]
     return [
@@ -85,7 +164,7 @@ def license_check_checks(config: GuardrailConfig) -> list[models.Check]:
             command,
             profiles,
             required_executable="pip-licenses",
-            artifact_paths=(str(report_path),),
+            artifact_paths=artifact_paths,
         )
     ]
 
