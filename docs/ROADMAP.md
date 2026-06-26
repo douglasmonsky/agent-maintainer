@@ -263,7 +263,7 @@ repo state instead of reconstructing the plan from chat history.
 
 - [ ] Keep this phase in small PRs: roadmap-only, test splits, check
   extraction, package migration, then docs/config cleanup.
-- [ ] Split large test modules by responsibility before they cross file-length
+- [x] Split large test modules by responsibility before they cross file-length
   limits: doctor, config catalog, executor/reporting, and verify quiet tests.
 - [ ] Extract reusable check logic from `scripts/check_file_lengths.py`,
   `scripts/check_change_budget.py`, `scripts/check_suppression_budget.py`,
