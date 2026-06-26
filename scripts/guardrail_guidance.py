@@ -194,6 +194,15 @@ def render_guidance(config: GuardrailConfig) -> str:
         ),
         f"- Pyright mode: `{config.pyright_type_checking_mode}`",
         f"- Interrogate floor: `{config.interrogate_fail_under}%`",
+        (
+            "- Folder Python-file warning/block thresholds: "
+            f"`{config.folder_file_warn}` / `{config.folder_file_block}` "
+            "(block active in fresh-strict)"
+        ),
+        (
+            "- Structure hint patterns are advisory refactor prompts; split by "
+            "responsibility when a folder no longer has one clear boundary."
+        ),
         "",
         "## Optional Gates",
         "",

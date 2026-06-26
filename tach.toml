@@ -40,6 +40,7 @@ paths = [
   "scripts.check_change_budget",
   "scripts.check_file_lengths",
   "scripts.check_pip_audit_config",
+  "scripts.check_structure",
   "scripts.check_suppression_budget",
   "scripts.check_tach_config",
   "scripts.guardrail_doctor",

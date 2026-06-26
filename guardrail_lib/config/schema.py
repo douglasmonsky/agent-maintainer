@@ -10,6 +10,31 @@ DEFAULT_PACKAGE_PATHS = ("src",)
 DEFAULT_COVERAGE_SOURCE = ("src",)
 DEFAULT_FILE_LENGTH_PATHS = ("src", "tests", "scripts", ".codex/hooks")
 DEFAULT_VULTURE_PATHS = ("src", "tests", "scripts")
+DEFAULT_STRUCTURE_IGNORE_PATHS = (
+    "tests/**",
+    "migrations/**",
+    "generated/**",
+    ".venv/**",
+    "venv/**",
+    "**/__pycache__/**",
+)
+DEFAULT_STRUCTURE_HINT_PATTERNS = (
+    r"^guardrail_",
+    r"^check_",
+    r"^user_",
+    r"^course_",
+    r"_model$",
+    r"_service$",
+    r"_repository$",
+    r"_client$",
+    r"_adapter$",
+    r"_parser$",
+    r"_loader$",
+    r"_schema$",
+    r"_executor$",
+    r"_reporting$",
+    r"^(cli|args|config|models|checks|doctor|executor|reporting)$",
+)
 DEFAULT_SECRET_SCAN_PROFILES = ("full", "ci")
 DEFAULT_SECRET_SCAN_HISTORY_PROFILES = ("security",)
 CUSTOM_MODE = "custom"
@@ -29,6 +54,9 @@ TUPLE_FIELDS = frozenset(
         "package_paths",
         "coverage_source",
         "file_length_paths",
+        "structure_paths",
+        "structure_ignore_paths",
+        "structure_hint_patterns",
         "vulture_paths",
         "pip_audit_args",
         "secret_scan_profiles",
@@ -58,6 +86,9 @@ INT_FIELDS = frozenset(
         "change_warn_files",
         "change_block_files",
         "suppression_max_new",
+        "folder_file_warn",
+        "folder_file_block",
+        "structure_cluster_min",
         "ruff_max_complexity",
         "interrogate_fail_under",
     )
@@ -99,6 +130,9 @@ class GuardrailConfig:
     source_without_test_change_error_profiles: tuple[str, ...] = ()
     allow_source_without_test_change: bool = False
     suppression_max_new: int = 3
+    folder_file_warn: int = 20
+    folder_file_block: int = 40
+    structure_cluster_min: int = 4
     xenon_max_absolute: str = "B"
     xenon_max_modules: str = "A"
     xenon_max_average: str = "A"
@@ -116,3 +150,6 @@ class GuardrailConfig:
     interrogate_fail_under: int = 80
     diagnostic_artifacts_enabled: bool = True
     diagnostic_artifacts_dir: str = ".verify-logs"
+    structure_paths: tuple[str, ...] = ()
+    structure_ignore_paths: tuple[str, ...] = DEFAULT_STRUCTURE_IGNORE_PATHS
+    structure_hint_patterns: tuple[str, ...] = DEFAULT_STRUCTURE_HINT_PATTERNS

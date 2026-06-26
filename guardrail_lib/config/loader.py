@@ -18,6 +18,9 @@ TUPLE_ENVS = (
     ("package_paths", "GUARDRAILS_PACKAGE_PATHS"),
     ("coverage_source", "GUARDRAILS_COVERAGE_SOURCE"),
     ("file_length_paths", "GUARDRAILS_FILE_LENGTH_PATHS"),
+    ("structure_paths", "GUARDRAILS_STRUCTURE_PATHS"),
+    ("structure_ignore_paths", "GUARDRAILS_STRUCTURE_IGNORE_PATHS"),
+    ("structure_hint_patterns", "GUARDRAILS_STRUCTURE_HINT_PATTERNS"),
     ("vulture_paths", "GUARDRAILS_VULTURE_PATHS"),
     ("secret_scan_profiles", "GUARDRAILS_SECRET_SCAN_PROFILES"),
     ("secret_scan_history_profiles", "GUARDRAILS_SECRET_SCAN_HISTORY_PROFILES"),
@@ -47,6 +50,9 @@ THRESHOLD_ENVS = (
     ("change_warn_files", "GUARDRAILS_CHANGE_WARN_FILES"),
     ("change_block_files", "GUARDRAILS_CHANGE_BLOCK_FILES"),
     ("suppression_max_new", "GUARDRAILS_SUPPRESSION_MAX_NEW"),
+    ("folder_file_warn", "GUARDRAILS_FOLDER_FILE_WARN"),
+    ("folder_file_block", "GUARDRAILS_FOLDER_FILE_BLOCK"),
+    ("structure_cluster_min", "GUARDRAILS_STRUCTURE_CLUSTER_MIN"),
     ("interrogate_fail_under", "GUARDRAILS_INTERROGATE_FAIL_UNDER"),
 )
 STRING_ENVS = (

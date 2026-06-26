@@ -130,6 +130,13 @@ def make_checks(
             models.ALL_PROFILES,
             required_paths=("scripts/check_file_lengths.py",),
         ),
+        models.Check(
+            "structure-cohesion",
+            structure_command(config),
+            models.ALL_PROFILES,
+            required_paths=("scripts/check_structure.py",),
+            report_success_output=True,
+        ),
         *change_budget_checks(config, base_ref, staged=staged),
         models.Check(
             "suppression-budget",
@@ -233,6 +240,28 @@ def file_length_command(config: GuardrailConfig, file_length_paths: tuple[str, .
     if config.file_length_baseline:
         command.extend(["--baseline", config.file_length_baseline])
     return command
+
+
+def structure_command(config: GuardrailConfig) -> list[str]:
+    """Build structure cohesion command."""
+
+    paths = config.structure_paths or config.source_roots
+    command = [
+        sys.executable,
+        "-m",
+        "scripts.check_structure",
+        "--warn-threshold",
+        str(config.folder_file_warn),
+        "--block-threshold",
+        str(config.folder_file_block if config.mode == FRESH_STRICT_MODE else 0),
+        "--cluster-min",
+        str(config.structure_cluster_min),
+    ]
+    for ignored_path in config.structure_ignore_paths:
+        command.extend(("--ignore", ignored_path))
+    for pattern in config.structure_hint_patterns:
+        command.extend(("--hint-pattern", pattern))
+    return [*command, *paths]
 
 
 def change_budget_command(

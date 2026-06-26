@@ -66,6 +66,27 @@ def test_thresholds_report_active_enforcement_values() -> None:
     assert "file-length=500 physical/375 source" in result.message
 
 
+def test_structure_thresholds_report_paths_and_ignored_globs() -> None:
+    config = GuardrailConfig(
+        mode="fresh-strict",
+        source_roots=("scripts",),
+        folder_file_warn=12,
+        folder_file_block=34,
+        structure_cluster_min=3,
+        structure_ignore_paths=("tests/**", "generated/**"),
+    )
+
+    result = guardrail_doctor_setup.check_structure_thresholds(config)
+
+    assert result.status == guardrail_doctor.OK
+    assert result.state == guardrail_doctor_models.ACTIVE
+    assert "paths=scripts" in result.message
+    assert "warn=12" in result.message
+    assert "block=34" in result.message
+    assert "cluster-min=3" in result.message
+    assert "tests/**" in result.message
+
+
 def test_verification_logs_report_removed_check_drift(tmp_path: Path) -> None:
     log_dir = tmp_path / ".verify-logs"
     log_dir.mkdir()

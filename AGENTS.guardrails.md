@@ -63,6 +63,8 @@ configuration first, then regenerate it.
 - Xenon complexity: absolute `B`, modules `A`, average `A`
 - Pyright mode: `standard`
 - Interrogate floor: `80%`
+- Folder Python-file warning/block thresholds: `20` / `40` (block active in fresh-strict)
+- Structure hint patterns are advisory refactor prompts; split by responsibility when a folder no longer has one clear boundary.
 
 ## Optional Gates
 
