@@ -57,15 +57,27 @@ def command_env() -> dict[str, str]:
 def optional_skip(check: Check) -> str | None:
     """Return an optional-skip message when a configured integration is inactive."""
 
-    if not check.optional_skip_reason:
-        return None
-    if check.name == "import-linter" and not Path(".importlinter").exists():
-        return f"optional skip: {check.optional_skip_reason}"
-    if check.name in {"tach", "tach-config"} and not Path("tach.toml").exists():
-        return f"optional skip: {check.optional_skip_reason}"
-    if check.name in {"pip-audit", "pytest-coverage", "diff-cover", "wemake", "interrogate"}:
+    if check.optional_skip_reason and optional_skip_applies(check):
         return f"optional skip: {check.optional_skip_reason}"
     return None
+
+
+def optional_skip_applies(check: Check) -> bool:
+    """Return whether a check should report its configured optional skip."""
+
+    if check.name == "import-linter":
+        return not Path(".importlinter").exists()
+    if check.name in {"tach", "tach-config"}:
+        return not Path("tach.toml").exists()
+    if check.name in {"actionlint", "zizmor"}:
+        return not Path(".github/workflows").exists()
+    return check.name in {
+        "pip-audit",
+        "pytest-coverage",
+        "diff-cover",
+        "wemake",
+        "interrogate",
+    }
 
 
 def missing_requirement(check: Check) -> str | None:

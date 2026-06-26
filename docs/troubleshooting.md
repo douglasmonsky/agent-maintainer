@@ -34,6 +34,8 @@ python3 -m scripts.guardrail doctor --strict
 | Interrogate fails | Add useful docstrings or lower the ratchet only with an explicit baseline note. |
 | Branch is ahead or dirty | Commit/push intentionally, or run non-strict doctor while work is in progress. |
 | CI diff-cover cannot compare branches | Use a fetched base ref such as `origin/main`. |
+| `zizmor` reports unpinned first-party actions | Either pin actions to commit SHAs or document the tag-pinning policy in `zizmor.yml`. |
+| `zizmor` reports Dependabot cooldown | Add a `cooldown` section to `.github/dependabot.yml`. |
 
 ## Dependency Lock
 

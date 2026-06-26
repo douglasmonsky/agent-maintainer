@@ -47,9 +47,23 @@ class ToolState:
 
 KNOWN_CAPABILITIES = (
     ("git", ToolCapability("git", EXTERNAL_BINARY, hint="Install Git for repository checks.")),
-    ("actionlint", ToolCapability("actionlint", EXTERNAL_BINARY)),
+    (
+        "actionlint",
+        ToolCapability(
+            "actionlint",
+            PYTHON_PACKAGE,
+            hint="Install Python package guardrail tools from config/dev-lock.txt.",
+        ),
+    ),
     ("gitleaks", ToolCapability("gitleaks", EXTERNAL_BINARY)),
-    ("zizmor", ToolCapability("zizmor", GITHUB_ACTION_ONLY)),
+    (
+        "zizmor",
+        ToolCapability(
+            "zizmor",
+            PYTHON_PACKAGE,
+            hint="Install Python package guardrail tools from config/dev-lock.txt.",
+        ),
+    ),
     ("mutmut", ToolCapability("mutmut", MANUAL_OPTIONAL)),
 )
 
@@ -177,6 +191,8 @@ def check_applies(repo_root: Path, check: Check) -> bool:
         return (repo_root / ".importlinter").exists()
     if check.name in {"tach", "tach-config"}:
         return (repo_root / "tach.toml").exists()
+    if check.name in {"actionlint", "zizmor"}:
+        return (repo_root / ".github" / "workflows").exists()
     return False
 
 
