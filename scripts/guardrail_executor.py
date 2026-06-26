@@ -12,7 +12,7 @@ from pathlib import Path
 
 from scripts import guardrail_tool_capabilities
 from scripts.guardrail_models import Check, CheckResult
-from scripts.guardrail_reporting import summarize_check
+from scripts.guardrail_reporting import summarize_check, summarize_check_from_artifacts
 from scripts.guardrail_runtime import hardened_subprocess_env
 
 OutputLimits = tuple[int, int]
@@ -153,7 +153,9 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
     return CheckResult(
         check.name,
         passed=False,
-        output=summarize_check(check.name, output, max_lines, max_chars),
+        output=summarize_check_from_artifacts(
+            check.name, artifact_paths, output, max_lines, max_chars
+        ),
         command=tuple(check.command),
         exit_code=returncode,
         log_path=str(log_path),
