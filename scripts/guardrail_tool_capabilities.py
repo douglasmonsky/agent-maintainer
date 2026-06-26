@@ -67,6 +67,22 @@ KNOWN_CAPABILITIES = (
         ),
     ),
     (
+        "markdownlint-cli2",
+        ToolCapability(
+            "markdownlint-cli2",
+            EXTERNAL_BINARY,
+            hint="Install Markdownlint CLI2 from package-lock.json with npm ci.",
+        ),
+    ),
+    (
+        "taplo",
+        ToolCapability(
+            "taplo",
+            EXTERNAL_BINARY,
+            hint="Install Taplo from package-lock.json with npm ci.",
+        ),
+    ),
+    (
         "zizmor",
         ToolCapability(
             "zizmor",
@@ -167,6 +183,7 @@ def executable_exists(repo_root: Path, executable: str) -> bool:
     local_paths = (
         repo_root / ".venv" / "bin" / executable,
         repo_root / "venv" / "bin" / executable,
+        repo_root / "node_modules" / ".bin" / executable,
     )
     return any(path.exists() for path in local_paths) or shutil.which(executable) is not None
 

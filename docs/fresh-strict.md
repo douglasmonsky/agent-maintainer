@@ -48,6 +48,10 @@ enable_pip_audit = true
 pip_audit_args = ["-r", "config/dev-lock.txt"]
 ```
 
+Docs/config hygiene gates are also explicit opt-ins. This repository enables
+Markdownlint-cli2, yamllint, Taplo, and GitHub Actions schema validation because
+Markdown, YAML, and TOML files are part of the guardrail surface.
+
 For this repository, `fresh-strict` is active and the optional hardening gates are also enabled. Use:
 
 ```bash

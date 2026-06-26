@@ -24,6 +24,10 @@ TUPLE_ENVS = (
     ("vulture_paths", "GUARDRAILS_VULTURE_PATHS"),
     ("secret_scan_profiles", "GUARDRAILS_SECRET_SCAN_PROFILES"),
     ("secret_scan_history_profiles", "GUARDRAILS_SECRET_SCAN_HISTORY_PROFILES"),
+    ("markdownlint_paths", "GUARDRAILS_MARKDOWNLINT_PATHS"),
+    ("yamllint_paths", "GUARDRAILS_YAMLLINT_PATHS"),
+    ("taplo_paths", "GUARDRAILS_TAPLO_PATHS"),
+    ("check_jsonschema_args", "GUARDRAILS_CHECK_JSONSCHEMA_ARGS"),
     (
         "source_without_test_change_error_profiles",
         "GUARDRAILS_SOURCE_WITHOUT_TEST_CHANGE_ERROR_PROFILES",
@@ -35,6 +39,10 @@ BOOL_ENVS = (
     ("enable_secret_scanning", "GUARDRAILS_ENABLE_SECRET_SCANNING"),
     ("enable_wemake", "GUARDRAILS_ENABLE_WEMAKE"),
     ("enable_interrogate", "GUARDRAILS_ENABLE_INTERROGATE"),
+    ("enable_markdownlint", "GUARDRAILS_ENABLE_MARKDOWNLINT"),
+    ("enable_yamllint", "GUARDRAILS_ENABLE_YAMLLINT"),
+    ("enable_taplo", "GUARDRAILS_ENABLE_TAPLO"),
+    ("enable_check_jsonschema", "GUARDRAILS_ENABLE_CHECK_JSONSCHEMA"),
     ("allow_source_without_test_change", "GUARDRAILS_ALLOW_SOURCE_WITHOUT_TEST_CHANGE"),
     ("diagnostic_artifacts_enabled", "GUARDRAILS_DIAGNOSTIC_ARTIFACTS_ENABLED"),
 )

@@ -12,6 +12,7 @@ from guardrail_lib.config.schema import (
     GuardrailConfig,
 )
 from scripts import guardrail_models as models
+from scripts.guardrail_catalog_docs import docs_config_checks
 from scripts.guardrail_catalog_python import (
     bandit_check,
     diff_cover_check,
@@ -205,6 +206,7 @@ def make_checks(
         *workflow_checks(),
         wemake_check(config, package_paths),
         interrogate_check(config, package_paths),
+        *docs_config_checks(config),
         diff_cover_check(config, compare_branch),
     ]
 

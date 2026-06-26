@@ -37,6 +37,16 @@ DEFAULT_STRUCTURE_HINT_PATTERNS = (
 )
 DEFAULT_SECRET_SCAN_PROFILES = ("full", "ci")
 DEFAULT_SECRET_SCAN_HISTORY_PROFILES = ("security",)
+DEFAULT_MARKDOWNLINT_PATHS = ("**/*.md",)
+DEFAULT_YAMLLINT_PATHS = (
+    ".github/workflows",
+    ".github/dependabot.yml",
+    ".pre-commit-config.yaml",
+    "*.yml",
+    "*.yaml",
+)
+DEFAULT_TAPLO_PATHS = ("*.toml", "config/*.toml")
+DEFAULT_CHECK_JSONSCHEMA_ARGS = ()
 CUSTOM_MODE = "custom"
 LEGACY_RATCHET_MODE = "legacy-ratchet"
 FRESH_STRICT_MODE = "fresh-strict"
@@ -61,6 +71,10 @@ TUPLE_FIELDS = frozenset(
         "pip_audit_args",
         "secret_scan_profiles",
         "secret_scan_history_profiles",
+        "markdownlint_paths",
+        "yamllint_paths",
+        "taplo_paths",
+        "check_jsonschema_args",
         "source_without_test_change_error_profiles",
     )
 )
@@ -71,6 +85,10 @@ BOOL_FIELDS = frozenset(
         "enable_secret_scanning",
         "enable_wemake",
         "enable_interrogate",
+        "enable_markdownlint",
+        "enable_yamllint",
+        "enable_taplo",
+        "enable_check_jsonschema",
         "allow_source_without_test_change",
         "diagnostic_artifacts_enabled",
     )
@@ -148,6 +166,14 @@ class GuardrailConfig:
     architecture_tool: str = IMPORT_LINTER_TOOL
     enable_interrogate: bool = False
     interrogate_fail_under: int = 80
+    enable_markdownlint: bool = False
+    markdownlint_paths: tuple[str, ...] = DEFAULT_MARKDOWNLINT_PATHS
+    enable_yamllint: bool = False
+    yamllint_paths: tuple[str, ...] = DEFAULT_YAMLLINT_PATHS
+    enable_taplo: bool = False
+    taplo_paths: tuple[str, ...] = DEFAULT_TAPLO_PATHS
+    enable_check_jsonschema: bool = False
+    check_jsonschema_args: tuple[str, ...] = DEFAULT_CHECK_JSONSCHEMA_ARGS
     diagnostic_artifacts_enabled: bool = True
     diagnostic_artifacts_dir: str = ".verify-logs"
     structure_paths: tuple[str, ...] = ()

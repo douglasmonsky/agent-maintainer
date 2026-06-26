@@ -16,6 +16,8 @@ deptry
 vulture
 bandit
 pip-audit
+yamllint
+check-jsonschema
 zizmor
 pre-commit
 wemake-python-styleguide

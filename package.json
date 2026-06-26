@@ -1,0 +1,8 @@
+{
+  "name": "ai-maintainability-guardrails",
+  "private": true,
+  "devDependencies": {
+    "@taplo/cli": "0.7.0",
+    "markdownlint-cli2": "0.22.1"
+  }
+}

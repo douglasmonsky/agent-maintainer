@@ -15,13 +15,7 @@ exclude = [
   "venv/",
 ]
 
-layers = [
-  "entrypoint",
-  "orchestration",
-  "runtime",
-  "shared",
-  "models",
-]
+layers = ["entrypoint", "orchestration", "runtime", "shared", "models"]
 
 [[modules]]
 path = "scripts"
@@ -56,6 +50,7 @@ layer = "orchestration"
 paths = [
   "scripts.guardrail_args",
   "scripts.guardrail_catalog",
+  "scripts.guardrail_catalog_docs",
   "scripts.guardrail_catalog_python",
   "scripts.guardrail_doctor_hook_audit",
   "scripts.guardrail_doctor_policy",

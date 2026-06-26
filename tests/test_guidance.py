@@ -26,6 +26,18 @@ def strict_config() -> GuardrailConfig:
         secret_scanner="gitleaks",
         secret_scan_profiles=("full", "ci"),
         secret_scan_history_profiles=("security",),
+        enable_markdownlint=True,
+        markdownlint_paths=("**/*.md",),
+        enable_yamllint=True,
+        yamllint_paths=(".github/workflows", ".pre-commit-config.yaml"),
+        enable_taplo=True,
+        taplo_paths=("pyproject.toml", "tach.toml"),
+        enable_check_jsonschema=True,
+        check_jsonschema_args=(
+            "--builtin-schema",
+            "vendor.github-workflows",
+            ".github/workflows/verify.yml",
+        ),
     )
 
 
@@ -44,6 +56,10 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Source-only changes without test-file changes: `blocked`" in text
     assert "pip-audit: enabled with `-r config/dev-lock.txt`" in text
     assert "Secret scanning: enabled with `gitleaks`" in text
+    assert "Markdown linting: enabled with `'**/*.md'`" in text
+    assert "YAML linting: enabled with `.github/workflows .pre-commit-config.yaml`" in text
+    assert "TOML formatting: enabled with `pyproject.toml tach.toml`" in text
+    assert "Schema validation: enabled with `--builtin-schema vendor.github-workflows" in text
     assert "python3 -m scripts.guardrail verify --profile precommit" in text
     assert "Prefer small, coherent commits" in text
     assert "Prefer `rg --files` or `git ls-files`" in text

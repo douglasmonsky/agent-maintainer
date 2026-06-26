@@ -7,7 +7,14 @@ package_paths = ["scripts", ".codex/hooks", "guardrail_lib"]
 coverage_source = ["scripts", ".codex/hooks", "guardrail_lib"]
 file_length_paths = ["scripts", ".codex/hooks", "guardrail_lib", "tests"]
 structure_paths = ["scripts", ".codex/hooks", "guardrail_lib"]
-structure_ignore_paths = ["tests/**", "migrations/**", "generated/**", ".venv/**", "venv/**", "**/__pycache__/**"]
+structure_ignore_paths = [
+  "tests/**",
+  "migrations/**",
+  "generated/**",
+  ".venv/**",
+  "venv/**",
+  "**/__pycache__/**",
+]
 folder_file_warn = 20
 folder_file_block = 40
 structure_cluster_min = 4
@@ -30,6 +37,25 @@ secret_scan_history_profiles = ["security"]
 enable_wemake = true
 enable_interrogate = true
 interrogate_fail_under = 80
+enable_markdownlint = true
+markdownlint_paths = ["**/*.md"]
+enable_yamllint = true
+yamllint_paths = [
+  ".github/workflows",
+  ".github/dependabot.yml",
+  ".pre-commit-config.yaml",
+  ".markdownlint-cli2.yaml",
+  ".yamllint",
+  "zizmor.yml",
+]
+enable_taplo = true
+taplo_paths = ["pyproject.toml", "tach.toml", "config/*.toml"]
+enable_check_jsonschema = true
+check_jsonschema_args = [
+  "--builtin-schema",
+  "vendor.github-workflows",
+  ".github/workflows/verify.yml",
+]
 
 [tool.ai_guardrails.diagnostics]
 enabled = true
@@ -40,17 +66,7 @@ line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-select = [
-  "E",
-  "F",
-  "I",
-  "B",
-  "UP",
-  "SIM",
-  "C90",
-  "PLR",
-  "RUF",
-]
+select = ["E", "F", "I", "B", "UP", "SIM", "C90", "PLR", "RUF"]
 ignore = []
 
 [tool.ruff.lint.mccabe]

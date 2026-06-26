@@ -215,18 +215,18 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 9: Add Docs And Config Hygiene
 
-- [ ] Add `markdownlint-cli2` support for Markdown structure.
-- [ ] Enable Markdown linting for this repository once the docs pass cleanly.
-- [ ] Add `yamllint` support when YAML files exist.
-- [ ] Enable YAML linting for this repository if the workflow and pre-commit
+- [x] Add `markdownlint-cli2` support for Markdown structure.
+- [x] Enable Markdown linting for this repository once the docs pass cleanly.
+- [x] Add `yamllint` support when YAML files exist.
+- [x] Enable YAML linting for this repository if the workflow and pre-commit
   config pass cleanly.
-- [ ] Add `taplo` support when TOML files exist.
-- [ ] Enable TOML linting for this repository after formatting existing TOML.
-- [ ] Add `check-jsonschema` support only where schemas or stable config
+- [x] Add `taplo` support when TOML files exist.
+- [x] Enable TOML linting for this repository after formatting existing TOML.
+- [x] Add `check-jsonschema` support only where schemas or stable config
   contracts exist.
-- [ ] Continue skipping `typos` and `codespell` as low-leverage AI-maintainability
+- [x] Continue skipping `typos` and `codespell` as low-leverage AI-maintainability
   gates.
-- [ ] Update `docs/tool-map.md` as each docs/config hygiene gate becomes
+- [x] Update `docs/tool-map.md` as each docs/config hygiene gate becomes
   supported.
 
 ## Phase 10: Raise Test Depth Toward 90 Percent

@@ -72,6 +72,10 @@ configuration first, then regenerate it.
 - Secret scanning: enabled with `gitleaks` (profiles: full, ci; history: security)
 - wemake-python-styleguide: `enabled`
 - Interrogate: `enabled`
+- Markdown linting: enabled with `'**/*.md'`
+- YAML linting: enabled with `.github/workflows .github/dependabot.yml .pre-commit-config.yaml .markdownlint-cli2.yaml .yamllint zizmor.yml`
+- TOML formatting: enabled with `pyproject.toml tach.toml 'config/*.toml'`
+- Schema validation: enabled with `--builtin-schema vendor.github-workflows .github/workflows/verify.yml`
 
 ## Escape Hatches
 

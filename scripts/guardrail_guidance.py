@@ -210,6 +210,16 @@ def render_guidance(config: GuardrailConfig) -> str:
         f"- Secret scanning: {secret_scanning_summary(config)}",
         f"- wemake-python-styleguide: {enabled_word(config.enable_wemake)}",
         f"- Interrogate: {enabled_word(config.enable_interrogate)}",
+        (
+            "- Markdown linting: "
+            f"{enabled_with_args(config.enable_markdownlint, config.markdownlint_paths)}"
+        ),
+        f"- YAML linting: {enabled_with_args(config.enable_yamllint, config.yamllint_paths)}",
+        f"- TOML formatting: {enabled_with_args(config.enable_taplo, config.taplo_paths)}",
+        (
+            "- Schema validation: "
+            f"{enabled_with_args(config.enable_check_jsonschema, config.check_jsonschema_args)}"
+        ),
         "",
         "## Escape Hatches",
         "",

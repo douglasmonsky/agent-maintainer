@@ -299,7 +299,8 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
         path
         for path, needle in expectations.items()
         if (repo_root / path).exists()
-        and needle not in (repo_root / path).read_text(encoding="utf-8")
+        and normalized_text(needle)
+        not in normalized_text((repo_root / path).read_text(encoding="utf-8"))
     ]
     if stale:
         stale_paths = ", ".join(stale)
@@ -324,6 +325,11 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
         OK,
         "CI, pre-commit, and Codex hooks use module entrypoint.",
     )
+
+
+def normalized_text(text: str) -> str:
+    """Return text normalized for command substring checks."""
+    return " ".join(text.split())
 
 
 def check_agent_guidance(repo_root: Path, config: guardrail_config.GuardrailConfig) -> DoctorResult:

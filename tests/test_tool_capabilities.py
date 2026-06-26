@@ -22,6 +22,17 @@ def test_python_package_tool_state_passes_when_local_executable_exists(tmp_path:
     assert "Python package" in state.message
 
 
+def test_tool_state_passes_when_node_local_executable_exists(tmp_path: Path) -> None:
+    tool_path = tmp_path / "node_modules" / ".bin" / "markdownlint-cli2"
+    tool_path.parent.mkdir(parents=True)
+    tool_path.write_text("", encoding="utf-8")
+
+    capability = capabilities.ToolCapability("markdownlint-cli2", capabilities.EXTERNAL_BINARY)
+    state = capabilities.evaluate_tool(tmp_path, capability)
+
+    assert state.state == capabilities.SUPPORTED
+
+
 def test_external_binary_tool_state_reports_missing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -33,6 +44,16 @@ def test_external_binary_tool_state_reports_missing(
 
     assert state.state == capabilities.MISSING
     assert "external binary" in state.message
+
+
+def test_docs_config_external_tools_have_install_hints() -> None:
+    markdownlint = capabilities.capability_for_tool("markdownlint-cli2")
+    taplo = capabilities.capability_for_tool("taplo")
+
+    assert markdownlint.kind == capabilities.EXTERNAL_BINARY
+    assert "npm ci" in markdownlint.hint
+    assert taplo.kind == capabilities.EXTERNAL_BINARY
+    assert "npm ci" in taplo.hint
 
 
 def test_disabled_tool_state_does_not_require_executable(tmp_path: Path) -> None:
