@@ -18,7 +18,7 @@ configuration first, then regenerate it.
 - Restrict bulk reads to relevant text/source globs instead of every file under a tree.
 - Do not read generated or binary artifacts unless the task explicitly targets them:
   `__pycache__`, `*.pyc`, `.venv`, `venv`, `.verify-logs`, `.coverage`,
-  `coverage.xml`, `htmlcov`, `build`, and `dist`.
+  `coverage.xml`, `htmlcov`, `mutants`, `build`, and `dist`.
 - Guardrail and hook subprocesses set `PYTHONDONTWRITEBYTECODE=1` by
   default. Set `AI_GUARDRAILS_WRITE_BYTECODE=true` only when explicitly
   debugging bytecode-cache behavior.
@@ -69,6 +69,7 @@ configuration first, then regenerate it.
 ## Optional Gates
 
 - pip-audit: enabled with `-r config/dev-lock.txt`
+- Mutmut: enabled with `run`
 - Secret scanning: enabled with `gitleaks` (profiles: full, ci; history: security)
 - wemake-python-styleguide: `enabled`
 - Interrogate: `enabled`

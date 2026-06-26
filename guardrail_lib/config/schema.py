@@ -69,6 +69,7 @@ TUPLE_FIELDS = frozenset(
         "structure_hint_patterns",
         "vulture_paths",
         "pip_audit_args",
+        "mutmut_args",
         "secret_scan_profiles",
         "secret_scan_history_profiles",
         "markdownlint_paths",
@@ -82,6 +83,7 @@ BOOL_FIELDS = frozenset(
     (
         "require_tests",
         "enable_pip_audit",
+        "enable_mutmut",
         "enable_secret_scanning",
         "enable_wemake",
         "enable_interrogate",
@@ -159,6 +161,8 @@ class GuardrailConfig:
     enable_pip_audit: bool = False
     enable_wemake: bool = False
     pip_audit_args: tuple[str, ...] = ()
+    enable_mutmut: bool = False
+    mutmut_args: tuple[str, ...] = ("run",)
     enable_secret_scanning: bool = False
     secret_scanner: str = GITLEAKS_SCANNER
     secret_scan_profiles: tuple[str, ...] = DEFAULT_SECRET_SCAN_PROFILES

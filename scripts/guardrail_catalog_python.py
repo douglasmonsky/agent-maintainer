@@ -115,6 +115,28 @@ def pip_audit_check(config: GuardrailConfig) -> models.Check:
     )
 
 
+def mutmut_check(config: GuardrailConfig) -> models.Check:
+    """Build mutation-testing check reserved for the manual profile."""
+
+    command = ["mutmut", *config.mutmut_args]
+    if not config.enable_mutmut:
+        return models.Check(
+            "mutmut",
+            command,
+            models.MANUAL_PROFILES,
+            optional_skip_reason=(
+                "disabled by default; enable with GUARDRAILS_ENABLE_MUTMUT=1 or "
+                "[tool.ai_guardrails].enable_mutmut = true"
+            ),
+        )
+    return models.Check(
+        "mutmut",
+        command,
+        models.MANUAL_PROFILES,
+        required_executable="mutmut",
+    )
+
+
 def pyright_check(config: GuardrailConfig) -> models.Check:
     """Build the Pyright check through the generated-project wrapper."""
 

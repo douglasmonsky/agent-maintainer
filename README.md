@@ -14,6 +14,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Type discipline | Pyright |
 | Tests and total coverage | Pytest + pytest-cov |
 | Changed-code coverage in CI | diff-cover |
+| Mutation testing | Mutmut, manual profile only |
 | Docstring coverage | Interrogate, when explicitly enabled |
 | Complexity | Radon reports + Xenon gate |
 | Module/file length backup | Pylint `max-module-lines` |
@@ -47,7 +48,7 @@ config/
 Install dev dependencies. With `uv`:
 
 ```bash
-uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit yamllint check-jsonschema actionlint-py zizmor pre-commit wemake-python-styleguide
+uv add --dev ruff pyright pytest pytest-cov coverage diff-cover hypothesis mutmut import-linter interrogate tach radon xenon pylint deptry vulture bandit pip-audit yamllint check-jsonschema actionlint-py zizmor pre-commit wemake-python-styleguide
 ```
 
 Or with pip:
@@ -400,7 +401,7 @@ Start strict for new repositories. For existing repositories, start with `fast` 
 
 This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
 
-This repository also keeps the normally optional hardening gates active for itself: tests are required, `tach.toml` defines the guardrail-script dependency layers with `root_module = "forbid"`, Interrogate enforces an 80% docstring-coverage ratchet, `pip-audit` runs against `config/dev-lock.txt`, and Gitleaks secret scanning runs in `full`, `ci`, and manual `security` profiles.
+This repository also keeps the normally optional hardening gates active for itself: tests are required, `tach.toml` defines the guardrail-script dependency layers with `root_module = "forbid"`, Interrogate enforces an 80% docstring-coverage ratchet, `pip-audit` runs against `config/dev-lock.txt`, Mutmut runs in the manual profile, and Gitleaks secret scanning runs in `full`, `ci`, and manual `security` profiles.
 
 `AGENTS.guardrails.md` is generated for this repository and should be refreshed
 with `python3 -m scripts.guardrail guidance` whenever `[tool.ai_guardrails]`

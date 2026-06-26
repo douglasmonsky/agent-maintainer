@@ -36,6 +36,11 @@ def test_cli_overrides_replace_config_values() -> None:
             "--coverage-fail-under",
             "92",
             "--enable-pip-audit",
+            "--enable-mutmut",
+            "--mutmut-arg",
+            "run",
+            "--mutmut-arg",
+            "scripts.guardrail_runtime*",
             "--enable-secret-scanning",
             "--secret-scanner",
             "gitleaks",
@@ -66,6 +71,8 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.test_roots == ("specs",)
     assert config.coverage_fail_under == CLI_COVERAGE_THRESHOLD
     assert config.enable_pip_audit is True
+    assert config.enable_mutmut is True
+    assert config.mutmut_args == ("run", "scripts.guardrail_runtime*")
     assert config.enable_secret_scanning is True
     assert config.secret_scanner == "gitleaks"
     assert config.secret_scan_profiles == ("full", "ci")

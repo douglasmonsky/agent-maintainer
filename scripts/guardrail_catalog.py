@@ -11,18 +11,9 @@ from guardrail_lib.config.schema import (
     TACH_TOOL,
     GuardrailConfig,
 )
+from scripts import guardrail_catalog_python as python_checks
 from scripts import guardrail_models as models
 from scripts.guardrail_catalog_docs import docs_config_checks
-from scripts.guardrail_catalog_python import (
-    bandit_check,
-    diff_cover_check,
-    interrogate_check,
-    pip_audit_check,
-    pyright_check,
-    pytest_check,
-    ruff_check,
-    wemake_check,
-)
 from scripts.guardrail_catalog_security import secret_scan_checks
 from scripts.guardrail_config import existing_paths
 
@@ -151,9 +142,9 @@ def make_checks(
             models.LOCAL_GATE_PROFILES,
             required_executable="ruff",
         ),
-        ruff_check(config),
-        pyright_check(config),
-        pytest_check(config),
+        python_checks.ruff_check(config),
+        python_checks.pyright_check(config),
+        python_checks.pytest_check(config),
         models.Check(
             "radon-cc-report",
             ["radon", "cc", *package_paths, "-a", "-s"],
@@ -200,14 +191,15 @@ def make_checks(
             models.FULL_PROFILES,
             required_executable="vulture",
         ),
-        bandit_check(config),
-        pip_audit_check(config),
+        python_checks.bandit_check(config),
+        python_checks.pip_audit_check(config),
+        python_checks.mutmut_check(config),
         *secret_scan_checks(config, base_ref, staged=staged),
         *workflow_checks(),
-        wemake_check(config, package_paths),
-        interrogate_check(config, package_paths),
+        python_checks.wemake_check(config, package_paths),
+        python_checks.interrogate_check(config, package_paths),
         *docs_config_checks(config),
-        diff_cover_check(config, compare_branch),
+        python_checks.diff_cover_check(config, compare_branch),
     ]
 
 

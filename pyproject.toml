@@ -30,6 +30,8 @@ xenon_max_average = "A"
 pyright_type_checking_mode = "standard"
 enable_pip_audit = true
 pip_audit_args = ["-r", "config/dev-lock.txt"]
+enable_mutmut = true
+mutmut_args = ["run"]
 enable_secret_scanning = true
 secret_scanner = "gitleaks"
 secret_scan_profiles = ["full", "ci"]
@@ -60,6 +62,14 @@ check_jsonschema_args = [
 [tool.ai_guardrails.diagnostics]
 enabled = true
 log_dir = ".verify-logs"
+
+[tool.mutmut]
+source_paths = ["scripts/"]
+only_mutate = ["scripts/guardrail_runtime.py"]
+pytest_add_cli_args_test_selection = ["tests/test_runtime.py"]
+pytest_add_cli_args = ["-p", "no:tach"]
+mutate_only_covered_lines = true
+use_setproctitle = false
 
 [tool.ruff]
 line-length = 100

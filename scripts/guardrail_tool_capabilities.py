@@ -90,7 +90,14 @@ KNOWN_CAPABILITIES = (
             hint="Install Python package guardrail tools from config/dev-lock.txt.",
         ),
     ),
-    ("mutmut", ToolCapability("mutmut", MANUAL_OPTIONAL)),
+    (
+        "mutmut",
+        ToolCapability(
+            "mutmut",
+            PYTHON_PACKAGE,
+            hint="Install Python package guardrail tools from config/dev-lock.txt.",
+        ),
+    ),
 )
 
 
