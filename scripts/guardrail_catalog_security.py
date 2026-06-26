@@ -24,6 +24,70 @@ SEMGREP_SKIP_REASON = (
     "disabled by default; enable with GUARDRAILS_ENABLE_SEMGREP=1 or "
     "[tool.ai_guardrails].enable_semgrep = true"
 )
+SBOM_SKIP_REASON = (
+    "disabled by default; enable with GUARDRAILS_ENABLE_SBOM=1 or "
+    "[tool.ai_guardrails].enable_sbom = true"
+)
+LICENSE_CHECK_SKIP_REASON = (
+    "disabled by default; enable with GUARDRAILS_ENABLE_LICENSE_CHECK=1 or "
+    "[tool.ai_guardrails].enable_license_check = true"
+)
+
+
+def sbom_checks(config: GuardrailConfig) -> list[models.Check]:
+    """Build optional Python SBOM generation checks."""
+
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    report_path = artifacts_dir / "sbom.cdx.json"
+    command = ["cyclonedx-py", *config.sbom_args, "--output-file", str(report_path)]
+    profiles = frozenset(config.sbom_profiles)
+    if not config.enable_sbom:
+        return [
+            models.Check(
+                "sbom",
+                command,
+                profiles,
+                optional_skip_reason=SBOM_SKIP_REASON,
+                artifact_paths=(str(report_path),),
+            )
+        ]
+    return [
+        models.Check(
+            "sbom",
+            command,
+            profiles,
+            required_executable="cyclonedx-py",
+            artifact_paths=(str(report_path),),
+        )
+    ]
+
+
+def license_check_checks(config: GuardrailConfig) -> list[models.Check]:
+    """Build optional Python license reporting or policy checks."""
+
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    report_path = artifacts_dir / "licenses.json"
+    command = ["pip-licenses", *config.license_check_args, "--output-file", str(report_path)]
+    profiles = frozenset(config.license_check_profiles)
+    if not config.enable_license_check:
+        return [
+            models.Check(
+                "license-check",
+                command,
+                profiles,
+                optional_skip_reason=LICENSE_CHECK_SKIP_REASON,
+                artifact_paths=(str(report_path),),
+            )
+        ]
+    return [
+        models.Check(
+            "license-check",
+            command,
+            profiles,
+            required_executable="pip-licenses",
+            artifact_paths=(str(report_path),),
+        )
+    ]
 
 
 def semgrep_checks(config: GuardrailConfig) -> list[models.Check]:

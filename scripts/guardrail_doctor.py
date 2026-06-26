@@ -249,18 +249,7 @@ def check_codex_hooks(repo_root: Path) -> DoctorResult:
 def check_optional_gates(repo_root: Path, config: guardrail_config.GuardrailConfig) -> DoctorResult:
     """Report whether optional hardening integrations are active."""
 
-    missing: list[str] = []
-    architecture_name = "Import Linter"
-    if config.architecture_tool == guardrail_config.TACH_TOOL:
-        architecture_name = "Tach"
-        missing.extend(
-            tach_config_issues(
-                repo_root,
-                require_strict_root=config.mode == guardrail_config.FRESH_STRICT_MODE,
-            )
-        )
-    elif not (repo_root / ".importlinter").exists():
-        missing.append(".importlinter")
+    architecture_name, missing = architecture_gate_status(repo_root, config)
     if not config.enable_pip_audit:
         missing.append("pip-audit disabled")
     if not config.enable_wemake:
@@ -278,11 +267,40 @@ def check_optional_gates(repo_root: Path, config: guardrail_config.GuardrailConf
             state=result_state,
             hint="Enable the gate or document why it is intentionally disabled.",
         )
+    active_gate_summary = ", ".join(active_optional_gate_names(architecture_name, config))
     return DoctorResult(
         "optional-gates",
         OK,
-        f"{architecture_name}, pip-audit, wemake, and interrogate are active.",
+        f"{active_gate_summary} are active.",
     )
+
+
+def architecture_gate_status(
+    repo_root: Path, config: guardrail_config.GuardrailConfig
+) -> tuple[str, list[str]]:
+    """Return active architecture backend name and missing gate diagnostics."""
+
+    if config.architecture_tool == guardrail_config.TACH_TOOL:
+        return "Tach", tach_config_issues(
+            repo_root,
+            require_strict_root=config.mode == guardrail_config.FRESH_STRICT_MODE,
+        )
+    if not (repo_root / ".importlinter").exists():
+        return "Import Linter", [".importlinter"]
+    return "Import Linter", []
+
+
+def active_optional_gate_names(
+    architecture_name: str, config: guardrail_config.GuardrailConfig
+) -> list[str]:
+    """Return active optional gate names for doctor summary output."""
+
+    active_gates = [architecture_name, "pip-audit", "wemake", "interrogate"]
+    if config.enable_sbom:
+        active_gates.append("sbom")
+    if config.enable_license_check:
+        active_gates.append("license-check")
+    return active_gates
 
 
 def check_canonical_commands(repo_root: Path) -> DoctorResult:

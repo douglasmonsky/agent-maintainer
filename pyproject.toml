@@ -44,6 +44,18 @@ semgrep_args = [
   "guardrail_lib",
 ]
 semgrep_profiles = ["manual"]
+enable_sbom = true
+sbom_args = [
+  "requirements",
+  "config/dev-lock.txt",
+  "--output-reproducible",
+  "--of",
+  "JSON",
+]
+sbom_profiles = ["ci"]
+enable_license_check = true
+license_check_args = ["--from=mixed", "--format=json"]
+license_check_profiles = ["manual"]
 enable_secret_scanning = true
 secret_scanner = "gitleaks"
 secret_scan_profiles = ["full", "ci"]

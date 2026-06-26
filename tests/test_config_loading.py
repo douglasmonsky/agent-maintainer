@@ -44,6 +44,12 @@ mutmut_args = ["run", "scripts.guardrail_runtime*"]
 enable_semgrep = true
 semgrep_args = ["scan", "--config", "semgrep.yml", "--metrics=off", "."]
 semgrep_profiles = ["manual"]
+enable_sbom = true
+sbom_args = ["requirements", "config/dev-lock.txt", "--of", "JSON"]
+sbom_profiles = ["ci"]
+enable_license_check = true
+license_check_args = ["--from=mixed", "--format=json", "--allow-only=MIT"]
+license_check_profiles = ["manual"]
 enable_interrogate = true
 interrogate_fail_under = 31
 enable_markdownlint = true
@@ -82,6 +88,16 @@ log_dir = ".custom-verify-logs"
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml", "--metrics=off", ".")
     assert loaded.semgrep_profiles == ("manual",)
+    assert loaded.enable_sbom is True
+    assert loaded.sbom_args == ("requirements", "config/dev-lock.txt", "--of", "JSON")
+    assert loaded.sbom_profiles == ("ci",)
+    assert loaded.enable_license_check is True
+    assert loaded.license_check_args == (
+        "--from=mixed",
+        "--format=json",
+        "--allow-only=MIT",
+    )
+    assert loaded.license_check_profiles == ("manual",)
     assert loaded.enable_interrogate is True
     assert loaded.interrogate_fail_under == CONFIG_INTERROGATE_THRESHOLD
     assert loaded.enable_markdownlint is True
@@ -171,6 +187,12 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
             "GUARDRAILS_ENABLE_SEMGREP": "true",
             "GUARDRAILS_SEMGREP_ARGS": "scan,--config,semgrep.yml",
             "GUARDRAILS_SEMGREP_PROFILES": "manual,security",
+            "GUARDRAILS_ENABLE_SBOM": "true",
+            "GUARDRAILS_SBOM_ARGS": "requirements,config/dev-lock.txt,--of,JSON",
+            "GUARDRAILS_SBOM_PROFILES": "ci",
+            "GUARDRAILS_ENABLE_LICENSE_CHECK": "true",
+            "GUARDRAILS_LICENSE_CHECK_ARGS": ("--from=mixed,--format=json,--allow-only=MIT"),
+            "GUARDRAILS_LICENSE_CHECK_PROFILES": "manual",
             "GUARDRAILS_ENABLE_SECRET_SCANNING": "true",
             "GUARDRAILS_SECRET_SCANNER": "gitleaks",
             "GUARDRAILS_SECRET_SCAN_PROFILES": "full,ci",
@@ -204,6 +226,16 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml")
     assert loaded.semgrep_profiles == ("manual", "security")
+    assert loaded.enable_sbom is True
+    assert loaded.sbom_args == ("requirements", "config/dev-lock.txt", "--of", "JSON")
+    assert loaded.sbom_profiles == ("ci",)
+    assert loaded.enable_license_check is True
+    assert loaded.license_check_args == (
+        "--from=mixed",
+        "--format=json",
+        "--allow-only=MIT",
+    )
+    assert loaded.license_check_profiles == ("manual",)
     assert loaded.enable_secret_scanning is True
     assert loaded.secret_scanner == "gitleaks"
     assert loaded.secret_scan_profiles == ("full", "ci")

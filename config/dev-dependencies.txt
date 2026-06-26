@@ -18,6 +18,8 @@ bandit
 pip-audit
 mutmut
 semgrep
+cyclonedx-bom
+pip-licenses
 yamllint
 check-jsonschema
 zizmor

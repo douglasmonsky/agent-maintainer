@@ -241,11 +241,15 @@ def test_optional_gates_pass_when_enabled(tmp_path: Path) -> None:
         enable_pip_audit=True,
         enable_wemake=True,
         enable_interrogate=True,
+        enable_sbom=True,
+        enable_license_check=True,
     )
 
     result = guardrail_doctor.check_optional_gates(tmp_path, config)
 
     assert result.status == guardrail_doctor.OK
+    assert "sbom" in result.message
+    assert "license-check" in result.message
 
 
 def test_optional_gates_warn_when_tach_config_is_missing(tmp_path: Path) -> None:

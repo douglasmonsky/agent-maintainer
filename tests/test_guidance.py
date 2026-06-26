@@ -26,6 +26,10 @@ def strict_config() -> GuardrailConfig:
         mutmut_args=("run",),
         enable_semgrep=True,
         semgrep_args=("scan", "--config", "semgrep.yml", "--metrics=off", "."),
+        enable_sbom=True,
+        sbom_args=("requirements", "config/dev-lock.txt", "--of", "JSON"),
+        enable_license_check=True,
+        license_check_args=("--from=mixed", "--format=json"),
         enable_secret_scanning=True,
         secret_scanner="gitleaks",
         secret_scan_profiles=("full", "ci"),
@@ -61,6 +65,8 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "pip-audit: enabled with `-r config/dev-lock.txt`" in text
     assert "Mutmut: enabled with `run`" in text
     assert "Semgrep: enabled with `scan --config semgrep.yml --metrics=off .`" in text
+    assert "Python SBOM: enabled with `requirements config/dev-lock.txt --of JSON`" in text
+    assert "License checking: enabled with `--from=mixed --format=json`" in text
     assert "Secret scanning: enabled with `gitleaks`" in text
     assert "Markdown linting: enabled with `'**/*.md'`" in text
     assert "YAML linting: enabled with `.github/workflows .pre-commit-config.yaml`" in text

@@ -70,6 +70,16 @@ def test_known_semgrep_capability_is_python_package() -> None:
     assert "config/dev-lock.txt" in semgrep.hint
 
 
+def test_known_supply_chain_capabilities_are_python_packages() -> None:
+    cyclonedx = capabilities.capability_for_tool("cyclonedx-py")
+    pip_licenses = capabilities.capability_for_tool("pip-licenses")
+
+    assert cyclonedx.kind == capabilities.PYTHON_PACKAGE
+    assert "config/dev-lock.txt" in cyclonedx.hint
+    assert pip_licenses.kind == capabilities.PYTHON_PACKAGE
+    assert "config/dev-lock.txt" in pip_licenses.hint
+
+
 def test_disabled_tool_state_does_not_require_executable(tmp_path: Path) -> None:
     capability = capabilities.ToolCapability("lint-imports", capabilities.PYTHON_PACKAGE)
 

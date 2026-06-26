@@ -14,7 +14,12 @@ from guardrail_lib.config.schema import (
 from scripts import guardrail_catalog_python as python_checks
 from scripts import guardrail_models as models
 from scripts.guardrail_catalog_docs import docs_config_checks
-from scripts.guardrail_catalog_security import secret_scan_checks, semgrep_checks
+from scripts.guardrail_catalog_security import (
+    license_check_checks,
+    sbom_checks,
+    secret_scan_checks,
+    semgrep_checks,
+)
 from scripts.guardrail_config import existing_paths
 
 CHANGE_BUDGET_PROFILES = (
@@ -195,6 +200,8 @@ def make_checks(
         python_checks.pip_audit_check(config),
         python_checks.mutmut_check(config),
         *semgrep_checks(config),
+        *sbom_checks(config),
+        *license_check_checks(config),
         *secret_scan_checks(config, base_ref, staged=staged),
         *workflow_checks(),
         python_checks.wemake_check(config, package_paths),
