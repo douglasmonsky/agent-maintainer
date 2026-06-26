@@ -44,6 +44,7 @@ paths = [
   "scripts.check_tach_config",
   "scripts.guardrail_doctor",
   "scripts.guardrail_guidance",
+  "scripts.run_bandit",
   "scripts.run_pyright",
   "scripts.run_ruff",
   "scripts.verify_quiet",
@@ -54,6 +55,7 @@ layer = "orchestration"
 paths = [
   "scripts.guardrail_args",
   "scripts.guardrail_catalog",
+  "scripts.guardrail_catalog_python",
   "scripts.guardrail_doctor_hook_audit",
   "scripts.guardrail_doctor_policy",
   "scripts.guardrail_doctor_logs",

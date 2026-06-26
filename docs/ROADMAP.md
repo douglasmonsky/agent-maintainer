@@ -111,7 +111,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add Ruff JSON or SARIF output when useful for summaries.
 - [x] Add pytest JUnit XML output.
 - [x] Preserve coverage XML and consider coverage JSON.
-- [ ] Add Bandit JSON output.
+- [x] Add Bandit JSON output.
 - [ ] Prefer structured artifacts over raw text when producing compact failure
   summaries.
 - [x] Add tests for manifest content, failure-note content, stale artifacts, and

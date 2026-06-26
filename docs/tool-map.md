@@ -58,7 +58,9 @@ deptry catches unused, missing, and transitive dependency problems.
 
 vulture finds likely dead Python code.
 
-Bandit scans Python source for common security issues.
+Bandit scans Python source for common security issues. The verifier preserves
+Bandit JSON as `.verify-logs/bandit.json` and prints compact findings instead
+of dumping raw JSON into terminal output.
 
 pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`. In `fresh-strict`, enabling pip-audit without pinned args is a failure.
 

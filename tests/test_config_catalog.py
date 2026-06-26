@@ -340,6 +340,19 @@ def test_ruff_check_uses_json_artifact_runner() -> None:
     assert ruff.artifact_paths == (".custom-logs/ruff.json",)
 
 
+def test_bandit_check_uses_json_artifact_runner() -> None:
+    config = GuardrailConfig(diagnostic_artifacts_dir=".custom-logs")
+    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
+    bandit = next(check for check in checks if check.name == "bandit")
+
+    assert bandit.command[:3] == [
+        guardrail_catalog.sys.executable,
+        "-m",
+        "scripts.run_bandit",
+    ]
+    assert bandit.artifact_paths == (".custom-logs/bandit.json",)
+
+
 def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only() -> None:
     config = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
     checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
