@@ -132,15 +132,15 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 5: Harden GitHub Actions
 
-- [ ] Add explicit workflow permissions, starting with
+- [x] Add explicit workflow permissions, starting with
   `permissions: contents: read`.
 - [ ] Add `actionlint` support when `.github/workflows` exists.
 - [ ] Add `zizmor` support when `.github/workflows` exists.
 - [ ] Enable `actionlint` for this repository.
 - [ ] Enable `zizmor` for this repository.
-- [ ] Decide the action pinning policy for this kit.
+- [x] Decide the action pinning policy for this kit.
 - [ ] If using SHA pinning, pin third-party actions to full-length commit SHAs.
-- [ ] If using tag pinning, document the tradeoff and add Dependabot coverage for
+- [x] If using tag pinning, document the tradeoff and add Dependabot coverage for
   GitHub Actions.
 - [ ] Add tests for workflow-tool applicability and optional-skip behavior.
 
