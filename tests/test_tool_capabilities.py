@@ -63,6 +63,13 @@ def test_known_mutmut_capability_is_python_package() -> None:
     assert "config/dev-lock.txt" in mutmut.hint
 
 
+def test_known_semgrep_capability_is_python_package() -> None:
+    semgrep = capabilities.capability_for_tool("semgrep")
+
+    assert semgrep.kind == capabilities.PYTHON_PACKAGE
+    assert "config/dev-lock.txt" in semgrep.hint
+
+
 def test_disabled_tool_state_does_not_require_executable(tmp_path: Path) -> None:
     capability = capabilities.ToolCapability("lint-imports", capabilities.PYTHON_PACKAGE)
 

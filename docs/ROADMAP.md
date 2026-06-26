@@ -248,7 +248,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add a slow/manual profile concept separate from normal `full`.
 - [x] Add `mutmut` as a slow/manual mutation-testing option.
 - [x] Document mutmut's POSIX fork requirement and Windows-through-WSL support.
-- [ ] Add optional Semgrep support with local or pinned rules first.
+- [x] Add optional Semgrep support with local or pinned rules first.
 - [ ] Add OSV Scanner only for mixed-ecosystem repositories.
 - [ ] Add Trivy only for repositories with Docker, container, Kubernetes,
   Terraform, or other IaC assets.

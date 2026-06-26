@@ -37,6 +37,7 @@ DEFAULT_STRUCTURE_HINT_PATTERNS = (
 )
 DEFAULT_SECRET_SCAN_PROFILES = ("full", "ci")
 DEFAULT_SECRET_SCAN_HISTORY_PROFILES = ("security",)
+DEFAULT_SEMGREP_PROFILES = ("manual",)
 DEFAULT_MARKDOWNLINT_PATHS = ("**/*.md",)
 DEFAULT_YAMLLINT_PATHS = (
     ".github/workflows",
@@ -70,6 +71,8 @@ TUPLE_FIELDS = frozenset(
         "vulture_paths",
         "pip_audit_args",
         "mutmut_args",
+        "semgrep_args",
+        "semgrep_profiles",
         "secret_scan_profiles",
         "secret_scan_history_profiles",
         "markdownlint_paths",
@@ -84,6 +87,7 @@ BOOL_FIELDS = frozenset(
         "require_tests",
         "enable_pip_audit",
         "enable_mutmut",
+        "enable_semgrep",
         "enable_secret_scanning",
         "enable_wemake",
         "enable_interrogate",
@@ -163,6 +167,16 @@ class GuardrailConfig:
     pip_audit_args: tuple[str, ...] = ()
     enable_mutmut: bool = False
     mutmut_args: tuple[str, ...] = ("run",)
+    enable_semgrep: bool = False
+    semgrep_args: tuple[str, ...] = (
+        "scan",
+        "--config",
+        "semgrep.yml",
+        "--error",
+        "--metrics=off",
+        ".",
+    )
+    semgrep_profiles: tuple[str, ...] = DEFAULT_SEMGREP_PROFILES
     enable_secret_scanning: bool = False
     secret_scanner: str = GITLEAKS_SCANNER
     secret_scan_profiles: tuple[str, ...] = DEFAULT_SECRET_SCAN_PROFILES

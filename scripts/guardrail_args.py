@@ -93,6 +93,10 @@ def add_quality_gate_overrides(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--enable-mutmut", action=ACTION_STORE_TRUE, default=None)
     parser.add_argument("--disable-mutmut", action=ACTION_STORE_FALSE, dest="enable_mutmut")
     parser.add_argument("--mutmut-arg", action=ACTION_APPEND)
+    parser.add_argument("--enable-semgrep", action=ACTION_STORE_TRUE, default=None)
+    parser.add_argument("--disable-semgrep", action=ACTION_STORE_FALSE, dest="enable_semgrep")
+    parser.add_argument("--semgrep-arg", action=ACTION_APPEND)
+    parser.add_argument("--semgrep-profile", action=ACTION_APPEND)
     parser.add_argument("--enable-wemake", action=ACTION_STORE_TRUE, default=None)
     parser.add_argument("--disable-wemake", action=ACTION_STORE_FALSE, dest="enable_wemake")
     parser.add_argument("--enable-interrogate", action=ACTION_STORE_TRUE, default=None)
@@ -200,6 +204,8 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "file_length_paths": parse_csv_like(args.file_length_path),
         "vulture_paths": parse_csv_like(args.vulture_path),
         "mutmut_args": parse_csv_like(args.mutmut_arg),
+        "semgrep_args": parse_csv_like(args.semgrep_arg),
+        "semgrep_profiles": parse_csv_like(args.semgrep_profile),
         "secret_scan_profiles": parse_csv_like(args.secret_scan_profile),
         "secret_scan_history_profiles": parse_csv_like(args.secret_scan_history_profile),
         "markdownlint_paths": parse_csv_like(args.markdownlint_path),
@@ -213,6 +219,7 @@ def apply_cli_overrides(config: GuardrailConfig, args: argparse.Namespace) -> Gu
         "require_tests": args.require_tests,
         "enable_pip_audit": args.enable_pip_audit,
         "enable_mutmut": args.enable_mutmut,
+        "enable_semgrep": args.enable_semgrep,
         "enable_secret_scanning": args.enable_secret_scanning,
         "secret_scanner": args.secret_scanner,
         "enable_wemake": args.enable_wemake,

@@ -248,6 +248,28 @@ def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
     assert enabled.required_executable == "mutmut"
 
 
+def test_semgrep_check_is_disabled_by_default_and_profile_scoped() -> None:
+    default_checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    disabled = next(check for check in default_checks if check.name == "semgrep")
+    assert disabled.profiles == MANUAL_PROFILES
+    assert disabled.optional_skip_reason is not None
+
+    enabled_checks = guardrail_catalog.make_checks(
+        replace(
+            GuardrailConfig(),
+            enable_semgrep=True,
+            semgrep_args=("scan", "--config", "semgrep.yml", "--metrics=off", "."),
+            semgrep_profiles=("manual", "security"),
+        ),
+        "HEAD",
+        "origin/main",
+    )
+    enabled = next(check for check in enabled_checks if check.name == "semgrep")
+    assert enabled.command == ["semgrep", "scan", "--config", "semgrep.yml", "--metrics=off", "."]
+    assert enabled.profiles == frozenset(("manual", "security"))
+    assert enabled.required_executable == "semgrep"
+
+
 def test_workflow_checks_are_configured_for_github_actions() -> None:
     checks = guardrail_catalog.workflow_checks()
     by_name = {check.name: check for check in checks}
