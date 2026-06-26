@@ -36,6 +36,13 @@ def test_cli_overrides_replace_config_values() -> None:
             "--coverage-fail-under",
             "92",
             "--enable-pip-audit",
+            "--enable-secret-scanning",
+            "--secret-scanner",
+            "gitleaks",
+            "--secret-scan-profile",
+            "full,ci",
+            "--secret-scan-history-profile",
+            "security",
             "--enable-interrogate",
             "--interrogate-fail-under",
             "30",
@@ -48,6 +55,10 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.test_roots == ("specs",)
     assert config.coverage_fail_under == CLI_COVERAGE_THRESHOLD
     assert config.enable_pip_audit is True
+    assert config.enable_secret_scanning is True
+    assert config.secret_scanner == "gitleaks"
+    assert config.secret_scan_profiles == ("full", "ci")
+    assert config.secret_scan_history_profiles == ("security",)
     assert config.enable_interrogate is True
     assert config.interrogate_fail_under == CLI_INTERROGATE_THRESHOLD
 

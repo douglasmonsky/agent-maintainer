@@ -10,6 +10,8 @@ DEFAULT_PACKAGE_PATHS = ("src",)
 DEFAULT_COVERAGE_SOURCE = ("src",)
 DEFAULT_FILE_LENGTH_PATHS = ("src", "tests", "scripts", ".codex/hooks")
 DEFAULT_VULTURE_PATHS = ("src", "tests", "scripts")
+DEFAULT_SECRET_SCAN_PROFILES = ("full", "ci")
+DEFAULT_SECRET_SCAN_HISTORY_PROFILES = ("security",)
 CUSTOM_MODE = "custom"
 LEGACY_RATCHET_MODE = "legacy-ratchet"
 FRESH_STRICT_MODE = "fresh-strict"
@@ -17,6 +19,8 @@ VALID_MODES = frozenset((CUSTOM_MODE, LEGACY_RATCHET_MODE, FRESH_STRICT_MODE))
 IMPORT_LINTER_TOOL = "import-linter"
 TACH_TOOL = "tach"
 VALID_ARCHITECTURE_TOOLS = frozenset((IMPORT_LINTER_TOOL, TACH_TOOL))
+GITLEAKS_SCANNER = "gitleaks"
+SUPPORTED_SECRET_SCANNERS = frozenset((GITLEAKS_SCANNER,))
 
 TUPLE_FIELDS = frozenset(
     (
@@ -27,6 +31,8 @@ TUPLE_FIELDS = frozenset(
         "file_length_paths",
         "vulture_paths",
         "pip_audit_args",
+        "secret_scan_profiles",
+        "secret_scan_history_profiles",
         "source_without_test_change_error_profiles",
     )
 )
@@ -34,6 +40,7 @@ BOOL_FIELDS = frozenset(
     (
         "require_tests",
         "enable_pip_audit",
+        "enable_secret_scanning",
         "enable_wemake",
         "enable_interrogate",
         "allow_source_without_test_change",
@@ -63,6 +70,7 @@ STR_FIELDS = frozenset(
         "pyright_type_checking_mode",
         "file_length_baseline",
         "diagnostic_artifacts_dir",
+        "secret_scanner",
     )
 )
 
@@ -99,6 +107,10 @@ class GuardrailConfig:
     enable_pip_audit: bool = False
     enable_wemake: bool = False
     pip_audit_args: tuple[str, ...] = ()
+    enable_secret_scanning: bool = False
+    secret_scanner: str = GITLEAKS_SCANNER
+    secret_scan_profiles: tuple[str, ...] = DEFAULT_SECRET_SCAN_PROFILES
+    secret_scan_history_profiles: tuple[str, ...] = DEFAULT_SECRET_SCAN_HISTORY_PROFILES
     architecture_tool: str = IMPORT_LINTER_TOOL
     enable_interrogate: bool = False
     interrogate_fail_under: int = 80

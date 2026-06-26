@@ -18,6 +18,7 @@ python3 -m scripts.guardrail doctor --strict
 |---|---|
 | Missing Python package command | Run `python3 -m scripts.guardrail bootstrap`. |
 | Missing external binary | Install the named binary with the platform package manager, then rerun `doctor`. |
+| Missing external binary: gitleaks | Install Gitleaks locally, for example `brew install gitleaks` on macOS, or disable secret scanning for repos that do not use it. |
 | GitHub Actions-only tool is not applicable | Add workflows only if that gate is relevant for the repository. |
 | Manual optional tool is disabled | Enable the slow/manual gate only when that workflow is intentionally adopted. |
 | Missing source, test, package, or coverage roots | Set `[tool.ai_guardrails]` paths in `pyproject.toml`. |

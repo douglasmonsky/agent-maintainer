@@ -21,7 +21,7 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 | Architecture boundaries | Tach or Import Linter, when configured |
 | Dependency hygiene | deptry |
 | Dead code | vulture |
-| Security checks | Bandit; pip-audit when explicitly enabled |
+| Security checks | Bandit; pip-audit when explicitly enabled; optional Gitleaks secret scanning |
 | GitHub Actions checks | actionlint and zizmor when workflows exist |
 | Local enforcement | pre-commit |
 | Final enforcement | GitHub Actions |
@@ -63,7 +63,10 @@ This creates `.venv` when needed, installs Python package guardrail tools from
 `config/dev-lock.txt` when present, falls back to `config/dev-dependencies.txt`,
 installs the pre-commit hook, and reports whether Codex hooks are configured.
 It does not install external binaries, GitHub Actions-only tools, or manual
-optional tools; `doctor` reports those capability states separately.
+optional tools; `doctor` reports those capability states separately. This repo
+enables Gitleaks secret scanning, so install it locally with `brew install
+gitleaks` on macOS when running `full`, `ci`, or `security` profiles. CI
+installs the pinned external binary through Go.
 
 Keep `config/dev-dependencies.txt` as the human-edited dependency input. Refresh the pinned lock after changing it:
 
@@ -172,6 +175,10 @@ diff_cover_fail_under = 90
 source_without_test_change_error_profiles = ["precommit"]
 allow_source_without_test_change = false
 enable_pip_audit = false
+enable_secret_scanning = false
+secret_scanner = "gitleaks"
+secret_scan_profiles = ["full", "ci"]
+secret_scan_history_profiles = ["security"]
 enable_wemake = false
 enable_interrogate = false
 interrogate_fail_under = 80
@@ -340,7 +347,7 @@ generated cache files entering agent context accidentally.
 
 `precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip. The bundled pre-commit hook runs this profile with `--staged`, so diff budgets inspect staged changes only. In `fresh-strict`, source changes without configured test-file changes fail in `precommit` unless `allow_source_without_test_change = true` is set for an already-covered change.
 
-`full` is designed for local deep verification. It adds Radon reports, Pylint, Tach or Import Linter when configured, Interrogate when enabled, deptry, vulture, Bandit, and pip-audit when explicitly enabled.
+`full` is designed for local deep verification. It adds Radon reports, Pylint, Tach or Import Linter when configured, Interrogate when enabled, deptry, vulture, Bandit, pip-audit when explicitly enabled, and secret scanning when configured.
 
 `ci` is designed for GitHub Actions. It runs the full profile plus changed-code coverage through diff-cover. When tests are disabled, changed-code coverage is reported as an optional skip. The source/test-file-change heuristic remains nonfatal in CI unless `source_without_test_change_error_profiles` explicitly includes `ci`.
 
@@ -369,7 +376,7 @@ Start strict for new repositories. For existing repositories, start with `fast` 
 
 This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
 
-This repository also keeps the normally optional hardening gates active for itself: tests are required, `tach.toml` defines the guardrail-script dependency layers with `root_module = "forbid"`, Interrogate enforces an 80% docstring-coverage ratchet, and `pip-audit` runs against `config/dev-lock.txt`.
+This repository also keeps the normally optional hardening gates active for itself: tests are required, `tach.toml` defines the guardrail-script dependency layers with `root_module = "forbid"`, Interrogate enforces an 80% docstring-coverage ratchet, `pip-audit` runs against `config/dev-lock.txt`, and Gitleaks secret scanning runs in `full`, `ci`, and manual `security` profiles.
 
 `AGENTS.guardrails.md` is generated for this repository and should be refreshed
 with `python3 -m scripts.guardrail guidance` whenever `[tool.ai_guardrails]`

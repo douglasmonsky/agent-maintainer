@@ -35,6 +35,14 @@ jobs:
             python -m pip install -r config/dev-dependencies.txt
           fi
 
+      - name: Install external guardrail tools
+        run: |
+          GITLEAKS_VERSION=8.30.1
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o "$RUNNER_TEMP/gitleaks.tar.gz"
+          mkdir -p "$RUNNER_TEMP/gitleaks"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP/gitleaks" gitleaks
+          echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
+
       - name: Install project when package metadata exists
         run: |
           python - <<'PY'

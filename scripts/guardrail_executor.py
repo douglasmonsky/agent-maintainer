@@ -76,6 +76,8 @@ def optional_skip_applies(check: Check) -> bool:
         "pip-audit",
         "pytest-coverage",
         "diff-cover",
+        "secret-scan",
+        "secret-scan-history",
         "wemake",
         "interrogate",
     }

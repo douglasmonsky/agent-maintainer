@@ -358,6 +358,29 @@ def test_pip_audit_safety_warns_or_fails_for_empty_args() -> None:
     assert guardrail_doctor_policy.check_pip_audit_safety(safe).status == guardrail_doctor.OK
 
 
+def test_secret_scanning_policy_reports_disabled_active_and_invalid() -> None:
+    disabled = GuardrailConfig(enable_secret_scanning=False)
+    active = GuardrailConfig(enable_secret_scanning=True, secret_scanner="gitleaks")
+    unsupported = GuardrailConfig(enable_secret_scanning=True, secret_scanner="betterleaks")
+    invalid_profile = GuardrailConfig(
+        enable_secret_scanning=True,
+        secret_scan_profiles=("full", "unknown"),
+    )
+
+    assert (
+        guardrail_doctor_policy.check_secret_scanning_policy(disabled).status == guardrail_doctor.OK
+    )
+    assert (
+        guardrail_doctor_policy.check_secret_scanning_policy(active).status == guardrail_doctor.OK
+    )
+    assert guardrail_doctor_policy.check_secret_scanning_policy(unsupported).status == (
+        guardrail_doctor.ERROR
+    )
+    assert guardrail_doctor_policy.check_secret_scanning_policy(invalid_profile).status == (
+        guardrail_doctor.ERROR
+    )
+
+
 def test_pyright_config_check_reports_mode_mismatch(tmp_path: Path) -> None:
     (tmp_path / "pyrightconfig.json").write_text(
         '{"typeCheckingMode": "basic"}\n',

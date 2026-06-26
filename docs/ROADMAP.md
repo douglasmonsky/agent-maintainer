@@ -148,18 +148,18 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 6: Add Backend-Neutral Secret Scanning
 
-- [ ] Add a `secret_scanner` config concept.
-- [ ] Treat secret scanning as opt-in or mode/profile-driven, not mandatory in
+- [x] Add a `secret_scanner` config concept.
+- [x] Treat secret scanning as opt-in or mode/profile-driven, not mandatory in
   every profile.
-- [ ] Use `gitleaks` as the initial default backend when secret scanning is
+- [x] Use `gitleaks` as the initial default backend when secret scanning is
   enabled.
-- [ ] Treat `gitleaks` as an `external_binary`, not a Python dependency.
-- [ ] Keep scanner wiring backend-neutral enough to support `betterleaks`.
-- [ ] Keep normal profiles to current-tree, staged, or comparison-range scans.
-- [ ] Add a manual/security profile for full-history scans.
-- [ ] Teach `doctor` to report disabled, missing-backend, active, unsupported
+- [x] Treat `gitleaks` as an `external_binary`, not a Python dependency.
+- [x] Keep scanner wiring backend-neutral enough to support `betterleaks`.
+- [x] Keep normal profiles to current-tree, staged, or comparison-range scans.
+- [x] Add a manual/security profile for full-history scans.
+- [x] Teach `doctor` to report disabled, missing-backend, active, unsupported
   backend, and invalid-history-scan states.
-- [ ] Document why Gitleaks is the first backend but not a permanent architectural
+- [x] Document why Gitleaks is the first backend but not a permanent architectural
   commitment.
 
 ## Phase 7: Improve Doctor Product UX

@@ -55,7 +55,17 @@ KNOWN_CAPABILITIES = (
             hint="Install Python package guardrail tools from config/dev-lock.txt.",
         ),
     ),
-    ("gitleaks", ToolCapability("gitleaks", EXTERNAL_BINARY)),
+    (
+        "gitleaks",
+        ToolCapability(
+            "gitleaks",
+            EXTERNAL_BINARY,
+            hint=(
+                "Install Gitleaks with the platform package manager, "
+                "for example brew install gitleaks."
+            ),
+        ),
+    ),
     (
         "zizmor",
         ToolCapability(

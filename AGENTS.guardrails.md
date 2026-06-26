@@ -67,6 +67,7 @@ configuration first, then regenerate it.
 ## Optional Gates
 
 - pip-audit: enabled with `-r config/dev-lock.txt`
+- Secret scanning: enabled with `gitleaks` (profiles: full, ci; history: security)
 - wemake-python-styleguide: `enabled`
 - Interrogate: `enabled`
 
