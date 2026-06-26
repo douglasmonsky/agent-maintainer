@@ -19,15 +19,15 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Standing Implementation Rules
 
-- [ ] When adding a relevant guardrail capability, enable it for this repository
+- [x] When adding a relevant guardrail capability, enable it for this repository
   in the same pass so the kit remains its own first consumer.
-- [ ] Leave a new capability disabled for this repository only when it is
+- [x] Leave a new capability disabled for this repository only when it is
   objectively not applicable, too slow for normal profiles, requires
   unavailable external binaries, requires credentials or external services, or
   has privacy/network implications that have not been explicitly accepted.
-- [ ] If a capability is intentionally not enabled here, document the reason in
+- [x] If a capability is intentionally not enabled here, document the reason in
   the roadmap, tool map, or relevant feature docs.
-- [ ] Prefer advisory/warn-only rollout for subjective design smells, then
+- [x] Prefer advisory/warn-only rollout for subjective design smells, then
   graduate to blocking only when the signal is precise enough for
   `fresh-strict`.
 
@@ -119,7 +119,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add tests for manifest content, failure-note content, stale artifacts, and
   successful runs.
 - [x] Teach `doctor` to detect stale logs and stale structured artifacts.
-- [ ] Keep runtime application logging enforcement advisory and disabled by
+- [x] Keep runtime application logging enforcement advisory and disabled by
   default.
 
 ## Phase 4: Add Tool Capability Modeling
@@ -141,7 +141,9 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Enable `actionlint` for this repository.
 - [x] Enable `zizmor` for this repository.
 - [x] Decide the action pinning policy for this kit.
-- [ ] If using SHA pinning, pin third-party actions to full-length commit SHAs.
+- [x] If using SHA pinning, pin third-party actions to full-length commit SHAs.
+  Not applicable while the documented policy remains trusted tag pinning with
+  Dependabot review.
 - [x] If using tag pinning, document the tradeoff and add Dependabot coverage for
   GitHub Actions.
 - [x] Add tests for workflow-tool applicability and optional-skip behavior.
@@ -259,13 +261,13 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Explicit Non-Goals For Now
 
-- [ ] Do not add Docker to this repository's own workflow.
-- [ ] Do not make every supported scanner a default blocking gate.
-- [ ] Do not make source-only changes a blanket CI failure without an escape
+- [x] Do not add Docker to this repository's own workflow.
+- [x] Do not make every supported scanner a default blocking gate.
+- [x] Do not make source-only changes a blanket CI failure without an escape
   hatch.
-- [ ] Do not switch back from Tach to Import Linter for this repository.
-- [ ] Do not adopt Betterleaks as the first default backend until its install and
+- [x] Do not switch back from Tach to Import Linter for this repository.
+- [x] Do not adopt Betterleaks as the first default backend until its install and
   config story is clear for this kit.
-- [ ] Do not raise docstring coverage to 100 percent as a default policy.
-- [ ] Do not force arbitrary subfolders from folder file count alone; use count
+- [x] Do not raise docstring coverage to 100 percent as a default policy.
+- [x] Do not force arbitrary subfolders from folder file count alone; use count
   as a refactor signal, not as a standalone design proof.
