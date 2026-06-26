@@ -56,12 +56,15 @@ paths = [
   "scripts.guardrail_catalogs.catalog",
   "scripts.guardrail_catalogs.docs",
   "scripts.guardrail_catalogs.python",
+  "scripts.guardrail_catalogs.security",
   "scripts.guardrail_doctor_support.hook_audit",
   "scripts.guardrail_doctor_support.policy",
   "scripts.guardrail_doctor_support.logs",
   "scripts.guardrail_core.executor",
   "scripts.guardrail_core.layout",
+  "scripts.guardrail_core.runtime",
   "scripts.guardrail_core.tool_capabilities",
+  "scripts.run_secret_scan",
 ]
 layer = "runtime"
 

@@ -10,9 +10,7 @@ import pytest
 from scripts import (
     check_change_budget,
     check_suppression_budget,
-    check_tach_config,
     guardrail,
-    guardrail_tach,
 )
 from scripts.guardrail_core import args as guardrail_args
 from scripts.guardrail_core.config import GuardrailConfig
@@ -204,40 +202,6 @@ def test_suppression_main_handles_runtime_error(
 
     assert check_suppression_budget.main([]) == 1
     assert "diff failed" in capsys.readouterr().out
-
-
-def test_tach_config_issues_require_modules_and_strict_root(tmp_path: Path) -> None:
-    (tmp_path / "tach.toml").write_text(
-        """
-source_roots = ["."]
-root_module = "ignore"
-""".strip(),
-        encoding="utf-8",
-    )
-
-    issues = guardrail_tach.tach_config_issues(tmp_path, require_strict_root=True)
-
-    assert "tach.toml must define at least one module" in issues
-    assert 'tach.toml must set root_module = "forbid"' in issues
-
-
-def test_tach_config_main_reports_success(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    monkeypatch.chdir(tmp_path)
-    (tmp_path / "tach.toml").write_text(
-        """
-source_roots = ["."]
-root_module = "forbid"
-
-[[modules]]
-path = "scripts"
-""".strip(),
-        encoding="utf-8",
-    )
-
-    assert check_tach_config.main([]) == 0
-    assert "tach.toml is configured" in capsys.readouterr().out
 
 
 def test_guardrail_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> None:

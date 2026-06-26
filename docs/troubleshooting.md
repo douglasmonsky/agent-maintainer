@@ -29,7 +29,7 @@ python3 -m scripts.guardrail doctor --strict
 | Legacy file-length ratchet fails | Split the new or worsened oversized file, or refresh `file_length_baseline` only after reviewing the diff. |
 | Pre-commit hook is not installed | Run `python3 -m scripts.guardrail install`. |
 | Architecture config is absent | Add `tach.toml` or `.importlinter`, or accept the optional skip. |
-| Tach fails in `fresh-strict` | Set `root_module = "forbid"` and define explicit modules. |
+| Tach fails in `fresh-strict` | Set `root_module = "forbid"`, explicitly assign each non-init Python source module under Tach's checked roots, and remove module entries that no longer resolve to source. |
 | `pip-audit` is disabled | Enable it with a pinned input such as `config/dev-lock.txt`. |
 | `pip-audit` is enabled without pinned input | Add `pip_audit_args = ["-r", "config/dev-lock.txt"]` or disable pip-audit. |
 | License check should enforce policy | Add `--allow-only=...` or `--fail-on=...` to `license_check_args`; otherwise it is only a report. |

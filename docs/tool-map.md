@@ -62,9 +62,9 @@ wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean 
 
 Interrogate checks docstring coverage. It runs only when `enable_interrogate = true` or `GUARDRAILS_ENABLE_INTERROGATE=1`; use `interrogate_fail_under` as a ratchet floor rather than forcing a legacy repo to document every helper at once.
 
-Tach and Import Linter are supported architecture boundary backends. `architecture_tool = "import-linter"` is the backward-compatible default. `architecture_tool = "tach"` runs a Tach config smoke check and then `tach check --exact`.
+Tach and Import Linter are supported architecture boundary backends. `architecture_tool = "import-linter"` is the backward-compatible default. `architecture_tool = "tach"` runs a Tach config check and then `tach check --exact`.
 
-This repository uses Tach for its own guardrail script modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules, and uses `root_module = "forbid"` so source files cannot drift outside explicit modules.
+This repository uses Tach for its own guardrail script modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules. In strict mode, the config check also requires each non-init Python source file under Tach's checked roots to appear explicitly in a Tach module entry, and each configured module entry must still resolve to source, so broad parent modules and stale references cannot hide ownership drift.
 
 ## Diff hygiene gates
 
@@ -166,7 +166,7 @@ log_dir = ".verify-logs"
 
 Mode can be `custom`, `legacy-ratchet`, or `fresh-strict`. Built-in defaults apply first, then mode defaults, then explicit pyproject fields, environment variables, and CLI flags.
 
-Missing required roots fail in `precommit`, `full`, and `ci`; optional integrations are reported as skipped. In `fresh-strict` mode with `architecture_tool = "tach"`, `tach.toml` must exist and use `root_module = "forbid"`.
+Missing required roots fail in `precommit`, `full`, and `ci`; optional integrations are reported as skipped. In `fresh-strict` mode with `architecture_tool = "tach"`, `tach.toml` must exist, use `root_module = "forbid"`, explicitly assign each non-init Python source module under Tach's checked roots, and avoid module entries that no longer resolve to source files.
 
 `doctor` checks that verifier diagnostics are coherent: logs exist, the manifest
 is present and newer than the latest raw log, manifest-referenced logs and
