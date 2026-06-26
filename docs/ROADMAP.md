@@ -164,15 +164,15 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 7: Improve Doctor Product UX
 
-- [ ] Report the active architecture backend.
-- [ ] Report active coverage, diff-cover, Interrogate, complexity, and
+- [x] Report the active architecture backend.
+- [x] Report active coverage, diff-cover, Interrogate, complexity, and
   file-length thresholds.
-- [ ] Report unsafe config states separately from missing dependencies.
-- [ ] Detect and report stale verification logs from disabled or removed checks.
-- [ ] Use consistent state vocabulary: `active`, `disabled`, `not applicable`,
+- [x] Report unsafe config states separately from missing dependencies.
+- [x] Detect and report stale verification logs from disabled or removed checks.
+- [x] Use consistent state vocabulary: `active`, `disabled`, `not applicable`,
   `missing`, and `unsafe config`.
-- [ ] Include relevant remediation hints without making text output noisy.
-- [ ] Keep JSON output stable and covered by tests.
+- [x] Include relevant remediation hints without making text output noisy.
+- [x] Keep JSON output stable and covered by tests.
 
 ## Phase 8: Add Structural Cohesion Signals
 

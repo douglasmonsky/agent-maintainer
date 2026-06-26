@@ -84,11 +84,14 @@ python3 -m scripts.guardrail doctor
 python3 -m scripts.guardrail doctor --strict
 ```
 
-`doctor` reports compact `PASS`, `WARN`, and `FAIL` rows for Python version,
-tool capabilities, configured roots, test availability, pre-commit installation,
-Codex hook config, optional gates, canonical command wiring, git state, and
-recent verification logs. By default only hard failures exit nonzero; `--strict`
-also exits nonzero on warnings.
+`doctor` reports compact `PASS`, `WARN`, and `FAIL` rows with a stable state
+label: `active`, `disabled`, `not applicable`, `missing`, or `unsafe config`.
+It covers Python version, tool capabilities, architecture backend, active
+thresholds, configured roots, test availability, pre-commit installation, Codex
+hook config, optional gates, canonical command wiring, git state, and recent
+verification logs. By default only hard failures exit nonzero; `--strict` also
+exits nonzero on warnings. JSON output includes `state` and `hint` fields for
+setup tooling.
 
 Then merge `config/pyproject.guardrails.toml` into your `pyproject.toml`.
 

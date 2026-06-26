@@ -59,6 +59,7 @@ paths = [
   "scripts.guardrail_doctor_hook_audit",
   "scripts.guardrail_doctor_policy",
   "scripts.guardrail_doctor_logs",
+  "scripts.guardrail_doctor_setup",
   "scripts.guardrail_executor",
   "scripts.guardrail_layout",
   "scripts.guardrail_tool_capabilities",

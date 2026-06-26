@@ -13,16 +13,21 @@ from scripts import (
     guardrail_config,
     guardrail_doctor_hook_audit,
     guardrail_doctor_logs,
+    guardrail_doctor_models,
     guardrail_doctor_policy,
+    guardrail_doctor_setup,
     guardrail_guidance,
     guardrail_tool_capabilities,
 )
 from scripts.guardrail_catalog import make_checks
-from scripts.guardrail_doctor_models import ERROR, OK, WARNING, DoctorResult
 from scripts.guardrail_layout import layout_failures
 from scripts.guardrail_tach import tach_config_issues
 
 MIN_PYTHON = (3, 11)
+DoctorResult = guardrail_doctor_models.DoctorResult
+ERROR = guardrail_doctor_models.ERROR
+OK = guardrail_doctor_models.OK
+WARNING = guardrail_doctor_models.WARNING
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -62,8 +67,10 @@ def run_doctor(repo_root: Path, config: guardrail_config.GuardrailConfig) -> lis
         check_repo_root(repo_root),
         check_virtualenv(repo_root),
         check_tool_capabilities(repo_root, config),
+        guardrail_doctor_setup.check_architecture_backend(repo_root, config),
         check_layout(config),
         check_tests(repo_root, config),
+        guardrail_doctor_setup.check_thresholds(config),
         guardrail_doctor_policy.check_pyright_config(repo_root, config),
         check_pre_commit(repo_root),
         check_codex_hooks(repo_root),
@@ -99,10 +106,18 @@ def check_repo_root(repo_root: Path) -> DoctorResult:
     missing = [path for path in (".git", "scripts/guardrail.py") if not (repo_root / path).exists()]
     if missing:
         missing_paths = ", ".join(missing)
-        return DoctorResult("repo-root", ERROR, f"Missing required repo paths: {missing_paths}")
+        return DoctorResult(
+            "repo-root",
+            ERROR,
+            f"Missing required repo paths: {missing_paths}",
+            state=guardrail_doctor_models.MISSING,
+        )
     if not (repo_root / "pyproject.toml").exists():
         return DoctorResult(
-            "repo-root", WARNING, "pyproject.toml is absent; defaults will be used."
+            "repo-root",
+            WARNING,
+            "pyproject.toml is absent; defaults will be used.",
+            state=guardrail_doctor_models.MISSING,
         )
     return DoctorResult("repo-root", OK, str(repo_root))
 
@@ -113,7 +128,13 @@ def check_virtualenv(repo_root: Path) -> DoctorResult:
     for relative in (".venv/bin/python", "venv/bin/python"):
         if (repo_root / relative).exists():
             return DoctorResult("virtualenv", OK, relative)
-    return DoctorResult("virtualenv", WARNING, "No .venv or venv Python found.")
+    return DoctorResult(
+        "virtualenv",
+        WARNING,
+        "No .venv or venv Python found.",
+        state=guardrail_doctor_models.MISSING,
+        hint="Run python3 -m scripts.guardrail bootstrap.",
+    )
 
 
 def check_tool_capabilities(
@@ -128,7 +149,12 @@ def check_tool_capabilities(
     ]
     state, message = guardrail_tool_capabilities.summarize_states(states)
     status = ERROR if state == guardrail_tool_capabilities.MISSING else OK
-    return DoctorResult("tool-capabilities", status, message)
+    result_state = (
+        guardrail_doctor_models.MISSING
+        if state == guardrail_tool_capabilities.MISSING
+        else guardrail_doctor_models.ACTIVE
+    )
+    return DoctorResult("tool-capabilities", status, message, state=result_state)
 
 
 def check_layout(config: guardrail_config.GuardrailConfig) -> DoctorResult:
@@ -136,7 +162,13 @@ def check_layout(config: guardrail_config.GuardrailConfig) -> DoctorResult:
 
     failures = layout_failures(config, "full")
     if failures:
-        return DoctorResult("configured-roots", ERROR, "; ".join(failures))
+        return DoctorResult(
+            "configured-roots",
+            ERROR,
+            "; ".join(failures),
+            state=guardrail_doctor_models.MISSING,
+            hint="Create missing roots or update [tool.ai_guardrails] paths.",
+        )
     source_roots = guardrail_config.format_paths(config.source_roots)
     test_roots = guardrail_config.format_paths(config.test_roots)
     return DoctorResult("configured-roots", OK, f"sources={source_roots}; tests={test_roots}")
@@ -146,7 +178,12 @@ def check_tests(repo_root: Path, config: guardrail_config.GuardrailConfig) -> Do
     """Report whether tests are required and available."""
 
     if not config.require_tests:
-        return DoctorResult("tests", WARNING, "Tests are disabled with require_tests = false.")
+        return DoctorResult(
+            "tests",
+            WARNING,
+            "Tests are disabled with require_tests = false.",
+            state=guardrail_doctor_models.DISABLED,
+        )
     existing = [path for path in config.test_roots if (repo_root / path).exists()]
     if not existing:
         test_roots = guardrail_config.format_paths(config.test_roots)
@@ -154,6 +191,8 @@ def check_tests(repo_root: Path, config: guardrail_config.GuardrailConfig) -> Do
             "tests",
             ERROR,
             f"No configured test roots exist: {test_roots}",
+            state=guardrail_doctor_models.MISSING,
+            hint="Create the configured test root or update test_roots.",
         )
     existing_roots = ", ".join(existing)
     return DoctorResult("tests", OK, f"Configured test roots exist: {existing_roots}")
@@ -165,9 +204,20 @@ def check_pre_commit(repo_root: Path) -> DoctorResult:
     config_path = repo_root / ".pre-commit-config.yaml"
     hook_path = repo_root / ".git" / "hooks" / "pre-commit"
     if not config_path.exists():
-        return DoctorResult("pre-commit-hook", WARNING, ".pre-commit-config.yaml is absent.")
+        return DoctorResult(
+            "pre-commit-hook",
+            WARNING,
+            ".pre-commit-config.yaml is absent.",
+            state=guardrail_doctor_models.NOT_APPLICABLE,
+        )
     if not hook_path.exists():
-        return DoctorResult("pre-commit-hook", WARNING, "pre-commit hook is not installed.")
+        return DoctorResult(
+            "pre-commit-hook",
+            WARNING,
+            "pre-commit hook is not installed.",
+            state=guardrail_doctor_models.MISSING,
+            hint="Run python3 -m scripts.guardrail install.",
+        )
     return DoctorResult("pre-commit-hook", OK, ".git/hooks/pre-commit is installed.")
 
 
@@ -176,10 +226,22 @@ def check_codex_hooks(repo_root: Path) -> DoctorResult:
 
     config_path = repo_root / ".codex" / "config.toml"
     if not config_path.exists():
-        return DoctorResult("codex-hooks", WARNING, ".codex/config.toml is absent.")
+        return DoctorResult(
+            "codex-hooks",
+            WARNING,
+            ".codex/config.toml is absent.",
+            state=guardrail_doctor_models.MISSING,
+            hint="Run python3 -m scripts.guardrail install.",
+        )
     text = config_path.read_text(encoding="utf-8")
     if "hooks = true" not in text:
-        return DoctorResult("codex-hooks", WARNING, ".codex/config.toml does not enable hooks.")
+        return DoctorResult(
+            "codex-hooks",
+            WARNING,
+            ".codex/config.toml does not enable hooks.",
+            state=guardrail_doctor_models.DISABLED,
+            hint="Set hooks = true for this repo if Codex hooks should enforce guardrails.",
+        )
     return DoctorResult("codex-hooks", OK, ".codex/config.toml enables hooks.")
 
 
@@ -205,7 +267,16 @@ def check_optional_gates(repo_root: Path, config: guardrail_config.GuardrailConf
     if not config.enable_interrogate:
         missing.append("interrogate disabled")
     if missing:
-        return DoctorResult("optional-gates", WARNING, "; ".join(missing))
+        result_state = guardrail_doctor_models.DISABLED
+        if any("disabled" not in item for item in missing):
+            result_state = guardrail_doctor_models.MISSING
+        return DoctorResult(
+            "optional-gates",
+            WARNING,
+            "; ".join(missing),
+            state=result_state,
+            hint="Enable the gate or document why it is intentionally disabled.",
+        )
     return DoctorResult(
         "optional-gates",
         OK,
@@ -231,11 +302,21 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
     ]
     if stale:
         stale_paths = ", ".join(stale)
-        return DoctorResult("canonical-commands", ERROR, f"Stale command path in: {stale_paths}")
+        return DoctorResult(
+            "canonical-commands",
+            ERROR,
+            f"Stale command path in: {stale_paths}",
+            state=guardrail_doctor_models.UNSAFE_CONFIG,
+            hint="Use python3 -m scripts.guardrail in CI, pre-commit, and Codex hooks.",
+        )
     if missing:
         missing_paths = ", ".join(missing)
         return DoctorResult(
-            "canonical-commands", WARNING, f"Missing command files: {missing_paths}"
+            "canonical-commands",
+            WARNING,
+            f"Missing command files: {missing_paths}",
+            state=guardrail_doctor_models.MISSING,
+            hint="Run python3 -m scripts.guardrail install or add the missing integration files.",
         )
     return DoctorResult(
         "canonical-commands",
@@ -251,7 +332,18 @@ def check_agent_guidance(repo_root: Path, config: guardrail_config.GuardrailConf
     if state.status == "current":
         return DoctorResult("agent-guidance", OK, state.message)
     status = ERROR if config.mode == guardrail_config.FRESH_STRICT_MODE else WARNING
-    return DoctorResult("agent-guidance", status, state.message)
+    result_state = (
+        guardrail_doctor_models.UNSAFE_CONFIG
+        if state.status == "stale"
+        else guardrail_doctor_models.MISSING
+    )
+    return DoctorResult(
+        "agent-guidance",
+        status,
+        state.message,
+        state=result_state,
+        hint="Run python3 -m scripts.guardrail guidance.",
+    )
 
 
 def check_git_state(repo_root: Path) -> DoctorResult:
@@ -259,7 +351,12 @@ def check_git_state(repo_root: Path) -> DoctorResult:
 
     git_path = shutil.which("git")
     if git_path is None:
-        return DoctorResult("git-state", WARNING, "git executable was not found.")
+        return DoctorResult(
+            "git-state",
+            WARNING,
+            "git executable was not found.",
+            state=guardrail_doctor_models.MISSING,
+        )
 
     completed = subprocess.run(  # nosec B603
         [git_path, "status", "--short", "--branch"],
@@ -287,7 +384,8 @@ def print_text(results: list[DoctorResult]) -> None:
     """Print doctor results as compact PASS/WARN/FAIL rows."""
 
     for item in results:
-        print(f"{item.status} {item.name}: {item.message}")
+        hint = f" Hint: {item.hint}" if item.hint else ""
+        print(f"{item.status} {item.name} [{item.state}]: {item.message}{hint}")
 
 
 def status_code(results: list[DoctorResult], *, strict: bool) -> int:
