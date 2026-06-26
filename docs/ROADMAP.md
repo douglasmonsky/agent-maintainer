@@ -114,7 +114,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add Bandit JSON output.
 - [x] Disable Python bytecode writes by default in guardrail and hook subprocesses
   to reduce generated-cache token leaks.
-- [ ] Prefer structured artifacts over raw text when producing compact failure
+- [x] Prefer structured artifacts over raw text when producing compact failure
   summaries.
 - [x] Add tests for manifest content, failure-note content, stale artifacts, and
   successful runs.

@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 PYRIGHT_DIAGNOSTIC_LIMIT = 50
+STRUCTURED_DIAGNOSTIC_LIMIT = 50
 
 
 def nonblank_lines(text: str) -> list[str]:
@@ -84,6 +87,110 @@ def summarize_pyright(raw: str) -> str | None:
     if omitted > 0:
         lines.append(f"... {omitted} more diagnostics omitted. See .verify-logs/pyright.log")
     return "\n".join(lines)
+
+
+def summarize_check_from_artifacts(
+    check_name: str,
+    artifact_paths: tuple[str, ...],
+    raw_output: str,
+    max_lines: int,
+    max_chars: int,
+) -> str:
+    """Summarize failed check, preferring known structured artifacts."""
+
+    artifact_summary = structured_artifact_summary(check_name, artifact_paths)
+    if artifact_summary:
+        return compact_output(artifact_summary, max_lines, max_chars)
+    return summarize_check(check_name, raw_output, max_lines, max_chars)
+
+
+def structured_artifact_summary(check_name: str, artifact_paths: tuple[str, ...]) -> str | None:
+    """Return compact summary from known structured diagnostic artifacts."""
+
+    if check_name == "pyright":
+        return summarize_json_artifact(artifact_paths, "pyright.json", summarize_pyright_payload)
+    if check_name == "ruff":
+        return summarize_json_artifact(artifact_paths, "ruff.json", summarize_ruff_payload)
+    if check_name == "bandit":
+        return summarize_json_artifact(artifact_paths, "bandit.json", summarize_bandit_payload)
+    return None
+
+
+def summarize_json_artifact(
+    artifact_paths: tuple[str, ...],
+    suffix: str,
+    formatter: Callable[[object], str | None],
+) -> str | None:
+    """Load matching JSON artifact and return formatter output if possible."""
+
+    path = next((Path(item) for item in artifact_paths if item.endswith(suffix)), None)
+    if path is None or not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return formatter(payload)
+
+
+def summarize_pyright_payload(payload: object) -> str | None:
+    """Summarize Pyright JSON artifact payload."""
+
+    if not isinstance(payload, dict):
+        return None
+    return summarize_pyright(json.dumps(payload))
+
+
+def summarize_ruff_payload(payload: object) -> str | None:
+    """Summarize Ruff JSON artifact payload."""
+
+    if not isinstance(payload, list):
+        return None
+    diagnostics = [item for item in payload if isinstance(item, dict)]
+    lines = [format_ruff_diagnostic(item) for item in diagnostics[:STRUCTURED_DIAGNOSTIC_LIMIT]]
+    omitted = len(diagnostics) - len(lines)
+    if omitted > 0:
+        lines.append(f"... {omitted} more diagnostics omitted. See .verify-logs/ruff.json")
+    return "\n".join(lines) if lines else None
+
+
+def format_ruff_diagnostic(diagnostic: dict[str, object]) -> str:
+    """Format one Ruff diagnostic compact editor-style line."""
+
+    location = diagnostic.get("location", {})
+    row = location.get("row", 1) if isinstance(location, dict) else 1
+    column = location.get("column", 1) if isinstance(location, dict) else 1
+    filename = diagnostic.get("filename", "<unknown>")
+    code = diagnostic.get("code", "ruff")
+    message = diagnostic.get("message", "")
+    return f"{filename}:{row}:{column}: {code}: {message}"
+
+
+def summarize_bandit_payload(payload: object) -> str | None:
+    """Summarize Bandit JSON artifact payload."""
+
+    if not isinstance(payload, dict):
+        return None
+    raw_results = payload.get("results", [])
+    if not isinstance(raw_results, list):
+        return None
+    findings = [item for item in raw_results if isinstance(item, dict)]
+    lines = [format_bandit_finding(item) for item in findings[:STRUCTURED_DIAGNOSTIC_LIMIT]]
+    omitted = len(findings) - len(lines)
+    if omitted > 0:
+        lines.append(f"... {omitted} more findings omitted. See .verify-logs/bandit.json")
+    return "\n".join(lines) if lines else None
+
+
+def format_bandit_finding(finding: dict[str, object]) -> str:
+    """Format one Bandit finding compact editor-style line."""
+
+    filename = finding.get("filename", "<unknown>")
+    line_number = finding.get("line_number", 1)
+    test_id = finding.get("test_id", "bandit")
+    severity = finding.get("issue_severity", "UNKNOWN")
+    message = finding.get("issue_text", "")
+    return f"{filename}:{line_number}: {test_id} {severity}: {message}"
 
 
 def summarize_check(check_name: str, raw_output: str, max_lines: int, max_chars: int) -> str:
