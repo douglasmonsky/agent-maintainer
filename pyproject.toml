@@ -85,6 +85,7 @@ known_first_party = [
   "guardrail_models",
   "guardrail_reporting",
   "guardrail_tach",
+  "guardrail_tool_capabilities",
   "hook_audit",
   "run_bandit",
   "run_pyright",

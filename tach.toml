@@ -61,6 +61,7 @@ paths = [
   "scripts.guardrail_doctor_logs",
   "scripts.guardrail_executor",
   "scripts.guardrail_layout",
+  "scripts.guardrail_tool_capabilities",
 ]
 layer = "runtime"
 

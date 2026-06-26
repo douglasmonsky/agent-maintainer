@@ -58,7 +58,11 @@ For the shortest local path with pip, run:
 python3 -m scripts.guardrail bootstrap
 ```
 
-This creates `.venv` when needed, installs `config/dev-lock.txt` when present, falls back to `config/dev-dependencies.txt`, installs the pre-commit hook, and reports whether Codex hooks are configured.
+This creates `.venv` when needed, installs Python package guardrail tools from
+`config/dev-lock.txt` when present, falls back to `config/dev-dependencies.txt`,
+installs the pre-commit hook, and reports whether Codex hooks are configured.
+It does not install external binaries, GitHub Actions-only tools, or manual
+optional tools; `doctor` reports those capability states separately.
 
 Keep `config/dev-dependencies.txt` as the human-edited dependency input. Refresh the pinned lock after changing it:
 
@@ -76,7 +80,11 @@ python3 -m scripts.guardrail doctor
 python3 -m scripts.guardrail doctor --strict
 ```
 
-`doctor` reports compact `PASS`, `WARN`, and `FAIL` rows for Python version, required executables, configured roots, test availability, pre-commit installation, Codex hook config, optional gates, canonical command wiring, git state, and recent verification logs. By default only hard failures exit nonzero; `--strict` also exits nonzero on warnings.
+`doctor` reports compact `PASS`, `WARN`, and `FAIL` rows for Python version,
+tool capabilities, configured roots, test availability, pre-commit installation,
+Codex hook config, optional gates, canonical command wiring, git state, and
+recent verification logs. By default only hard failures exit nonzero; `--strict`
+also exits nonzero on warnings.
 
 Then merge `config/pyproject.guardrails.toml` into your `pyproject.toml`.
 

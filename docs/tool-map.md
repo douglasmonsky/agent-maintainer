@@ -6,6 +6,11 @@
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state.
 
+`doctor` uses a tool capability model so setup failures distinguish Python
+package commands, external binaries, GitHub Actions-only tools, and manual
+optional tools. Bootstrap installs the Python package tools from the dependency
+lock/input; it reports but does not install the other capability classes.
+
 `guidance --check` verifies that `AGENTS.guardrails.md` is current with
 `[tool.ai_guardrails]`. In this repository's `fresh-strict` mode, `doctor`
 reports stale generated guidance as a failure.

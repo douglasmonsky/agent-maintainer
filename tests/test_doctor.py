@@ -8,7 +8,12 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_doctor, guardrail_doctor_policy, guardrail_guidance
+from scripts import (
+    guardrail_doctor,
+    guardrail_doctor_policy,
+    guardrail_guidance,
+    guardrail_tool_capabilities,
+)
 from scripts.guardrail_config import GuardrailConfig
 from scripts.guardrail_models import FULL_PROFILES, Check
 
@@ -139,7 +144,7 @@ def test_layout_check_passes_when_roots_exist(
     assert "sources=scripts" in result.message
 
 
-def test_required_executables_fail_when_dependency_is_missing(
+def test_tool_capabilities_fail_when_dependency_is_missing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
@@ -149,15 +154,19 @@ def test_required_executables_fail_when_dependency_is_missing(
             Check("custom", ["missing-tool"], FULL_PROFILES, required_executable="missing-tool")
         ],
     )
-    monkeypatch.setattr(guardrail_doctor, "executable_exists", lambda repo_root, name: False)
+    monkeypatch.setattr(
+        guardrail_tool_capabilities,
+        "executable_exists",
+        lambda repo_root, name: False,
+    )
 
-    result = guardrail_doctor.check_required_executables(tmp_path, GuardrailConfig())
+    result = guardrail_doctor.check_tool_capabilities(tmp_path, GuardrailConfig())
 
     assert result.status == guardrail_doctor.ERROR
     assert "missing-tool" in result.message
 
 
-def test_required_executables_pass_when_local_tool_exists(
+def test_tool_capabilities_pass_when_local_tool_exists(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     tool_path = tmp_path / ".venv" / "bin" / "local-tool"
@@ -171,10 +180,34 @@ def test_required_executables_pass_when_local_tool_exists(
         ],
     )
 
-    result = guardrail_doctor.check_required_executables(tmp_path, GuardrailConfig())
+    result = guardrail_doctor.check_tool_capabilities(tmp_path, GuardrailConfig())
 
     assert result.status == guardrail_doctor.OK
-    assert guardrail_doctor.executable_exists(tmp_path, "local-tool")
+    assert guardrail_tool_capabilities.executable_exists(tmp_path, "local-tool")
+
+
+def test_tool_capabilities_report_disabled_optional_check(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        guardrail_doctor,
+        "make_checks",
+        lambda config, base_ref, compare_branch: [
+            Check(
+                "import-linter",
+                ["lint-imports"],
+                FULL_PROFILES,
+                required_executable="lint-imports",
+                optional_skip_reason=".importlinter is absent",
+            )
+        ],
+    )
+
+    result = guardrail_doctor.check_tool_capabilities(tmp_path, GuardrailConfig())
+
+    assert result.status == guardrail_doctor.OK
+    assert "disabled" in result.message
 
 
 def test_tests_check_warns_when_tests_are_disabled(tmp_path: Path) -> None:
