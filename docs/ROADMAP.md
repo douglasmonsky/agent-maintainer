@@ -252,9 +252,9 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Add OSV Scanner only for mixed-ecosystem repositories.
 - [ ] Add Trivy only for repositories with Docker, container, Kubernetes,
   Terraform, or other IaC assets.
-- [ ] Add license checks as an optional policy gate.
-- [ ] Add SBOM generation as a CI artifact, not a blocking default.
-- [ ] Prefer `cyclonedx-python` for Python-only SBOMs.
+- [x] Add license checks as an optional policy gate.
+- [x] Add SBOM generation as a CI artifact, not a blocking default.
+- [x] Prefer `cyclonedx-python` for Python-only SBOMs.
 - [ ] Prefer Syft/Grype for broader deployable or container projects.
 
 ## Explicit Non-Goals For Now
