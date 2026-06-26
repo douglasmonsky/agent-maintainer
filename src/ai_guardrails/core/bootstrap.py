@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess  # nosec B404
 import sys
@@ -189,16 +188,22 @@ def site_package_paths(repo_root: Path, python_path: Path) -> tuple[Path, ...]:
 def hidden_file_flag() -> int | None:
     """Return platform hidden-file flag when Python can clear it."""
 
-    if getattr(os, "chflags", None) is None:
+    if chflags_command() is None:
         return None
     return MACOS_HIDDEN_FILE_FLAG
+
+
+def chflags_command() -> str | None:
+    """Return local chflags command when this platform provides it."""
+
+    return shutil.which("chflags")
 
 
 def clear_hidden_file_flag(path: Path, hidden_flag: int) -> None:
     """Clear hidden flag from one file, ignoring unsupported filesystem states."""
 
-    chflags = getattr(os, "chflags", None)
-    if chflags is None:
+    command = chflags_command()
+    if command is None:
         return
     try:
         current_flags = getattr(path.stat(), "st_flags", 0)
@@ -206,10 +211,12 @@ def clear_hidden_file_flag(path: Path, hidden_flag: int) -> None:
         return
     if not current_flags & hidden_flag:
         return
-    try:
-        chflags(path, current_flags & ~hidden_flag)
-    except OSError:
-        return
+    subprocess.run(  # nosec B603
+        [command, "nohidden", str(path)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
 
 
 def preferred_dependency_file(repo_root: Path) -> Path:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -277,9 +278,17 @@ def test_guardrail_site_package_paths_returns_empty_on_failure(
 def test_guardrail_hidden_file_flag_requires_chflags(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(guardrail_bootstrap.os, "chflags", None, raising=False)
+    monkeypatch.setattr(guardrail_bootstrap, "chflags_command", lambda: None)
 
     assert guardrail_bootstrap.hidden_file_flag() is None
+
+
+def test_guardrail_hidden_file_flag_uses_chflags_command(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(guardrail_bootstrap, "chflags_command", lambda: "chflags")
+
+    assert guardrail_bootstrap.hidden_file_flag() == guardrail_bootstrap.MACOS_HIDDEN_FILE_FLAG
 
 
 def test_guardrail_clear_hidden_file_flag_branches(
@@ -288,17 +297,19 @@ def test_guardrail_clear_hidden_file_flag_branches(
 ) -> None:
     pth_file = tmp_path / "tool.pth"
     pth_file.write_text("src\n", encoding="utf-8")
-    calls: list[tuple[Path, int]] = []
+    calls: list[list[str]] = []
 
-    monkeypatch.setattr(guardrail_bootstrap.os, "chflags", None, raising=False)
+    monkeypatch.setattr(guardrail_bootstrap, "chflags_command", lambda: None)
     guardrail_bootstrap.clear_hidden_file_flag(pth_file, 1)
     assert not calls
 
+    monkeypatch.setattr(guardrail_bootstrap, "chflags_command", lambda: "chflags")
     monkeypatch.setattr(
-        guardrail_bootstrap.os,
-        "chflags",
-        lambda path, flags: calls.append((path, flags)),
-        raising=False,
+        guardrail_bootstrap.subprocess,
+        "run",
+        lambda command, **_kwargs: (
+            calls.append(command) or subprocess.CompletedProcess(command, 0, "", "")
+        ),
     )
     guardrail_bootstrap.clear_hidden_file_flag(pth_file, 1)
     assert not calls
@@ -309,8 +320,20 @@ def test_guardrail_clear_hidden_file_flag_branches(
         def stat(self) -> object:
             raise OSError
 
-    guardrail_bootstrap.clear_hidden_file_flag(BrokenPath(), 1)  # type: ignore[arg-type]
+    guardrail_bootstrap.clear_hidden_file_flag(cast("Path", BrokenPath()), 1)
     assert not calls
+
+    class HiddenPath:
+        """Path-like object with hidden file stat flags."""
+
+        def stat(self) -> object:
+            return type("StatResult", (), {"st_flags": 1})()
+
+        def __str__(self) -> str:
+            return "hidden.pth"
+
+    guardrail_bootstrap.clear_hidden_file_flag(cast("Path", HiddenPath()), 1)
+    assert calls == [["chflags", "nohidden", "hidden.pth"]]
 
 
 def test_guardrail_creates_editable_package_link(
