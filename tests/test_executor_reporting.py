@@ -24,6 +24,13 @@ def test_tool_search_path_prefers_local_virtualenv(
     assert "/usr/bin" in search_path
 
 
+def test_command_env_disables_bytecode_writes_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AI_GUARDRAILS_WRITE_BYTECODE", raising=False)
+    monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)
+
+    assert guardrail_executor.command_env()["PYTHONDONTWRITEBYTECODE"] == "1"
+
+
 def test_missing_requirement_reports_required_path(tmp_path: Path) -> None:
     check = Check("missing", ["true"], frozenset(), required_paths=("missing.py",))
 

@@ -152,6 +152,15 @@ def test_justfile_full_output_recipe_uses_repo_roots() -> None:
     assert "bandit -q -r src" not in recipe
 
 
+def test_scripted_entrypoints_disable_python_bytecode_writes() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    pre_commit = (repo_root / ".pre-commit-config.yaml").read_text(encoding="utf-8")
+    justfile = (repo_root / "justfile").read_text(encoding="utf-8")
+
+    assert "env PYTHONDONTWRITEBYTECODE=1 python3 -m scripts.guardrail" in pre_commit
+    assert 'export PYTHONDONTWRITEBYTECODE := "1"' in justfile
+
+
 def test_suppression_budget_detects_broad_suppressions() -> None:
     added = [
         ("scripts/tool.py", f"value = call()  {NOQA_SUPPRESSION}"),

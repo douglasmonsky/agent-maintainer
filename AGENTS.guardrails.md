@@ -19,6 +19,9 @@ configuration first, then regenerate it.
 - Do not read generated or binary artifacts unless the task explicitly targets them:
   `__pycache__`, `*.pyc`, `.venv`, `venv`, `.verify-logs`, `.coverage`,
   `coverage.xml`, `htmlcov`, `build`, and `dist`.
+- Guardrail and hook subprocesses set `PYTHONDONTWRITEBYTECODE=1` by
+  default. Set `AI_GUARDRAILS_WRITE_BYTECODE=true` only when explicitly
+  debugging bytecode-cache behavior.
 - When a broad command is unavoidable, exclude generated, binary, cache, and
   virtualenv paths before printing file contents.
 

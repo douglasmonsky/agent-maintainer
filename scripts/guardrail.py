@@ -15,8 +15,11 @@ if __package__ in {None, ""}:
 
 from scripts.guardrail_doctor import main as doctor_main
 from scripts.guardrail_guidance import main as guidance_main
+from scripts.guardrail_runtime import disable_bytecode_writes, hardened_subprocess_env
 from scripts.guardrail_tool_capabilities import bootstrap_scope_note
 from scripts.verify_quiet import main as verify_main
+
+disable_bytecode_writes()
 
 CommandRunner = Callable[[list[str]], int]
 
@@ -126,6 +129,7 @@ def ensure_virtualenv(repo_root: Path) -> Path | None:
     result = subprocess.run(  # nosec B603
         [system_python, "-m", "venv", ".venv"],
         cwd=repo_root,
+        env=hardened_subprocess_env(),
         text=True,
         check=False,
     )
@@ -151,6 +155,7 @@ def install_dependencies(repo_root: Path, python_path: Path) -> int:
     result = subprocess.run(  # nosec B603
         [str(python_path), "-m", "pip", "install", "-r", str(dependency_path)],
         cwd=repo_root,
+        env=hardened_subprocess_env(),
         text=True,
         check=False,
     )
@@ -184,6 +189,7 @@ def install_pre_commit(repo_root: Path) -> int:
     result = subprocess.run(  # nosec B603
         [pre_commit, "install"],
         cwd=repo_root,
+        env=hardened_subprocess_env(),
         text=True,
         check=False,
     )

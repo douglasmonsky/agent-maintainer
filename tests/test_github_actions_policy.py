@@ -23,6 +23,12 @@ def test_checkout_does_not_persist_credentials() -> None:
     assert "persist-credentials: false" in workflow
 
 
+def test_verify_workflow_disables_python_bytecode_writes() -> None:
+    workflow = (repo_root() / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
+
+    assert 'PYTHONDONTWRITEBYTECODE: "1"' in workflow
+
+
 def test_dependabot_updates_tag_pinned_github_actions() -> None:
     dependabot = (repo_root() / ".github" / "dependabot.yml").read_text(encoding="utf-8")
 

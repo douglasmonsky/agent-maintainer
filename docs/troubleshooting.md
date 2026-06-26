@@ -63,3 +63,8 @@ Clean generated logs with:
 ```bash
 just clean-verify-logs
 ```
+
+Guardrail and hook subprocesses set `PYTHONDONTWRITEBYTECODE=1` by default so
+`__pycache__` and `*.pyc` files are not produced during normal verification.
+Set `AI_GUARDRAILS_WRITE_BYTECODE=true` only when explicitly debugging Python
+bytecode-cache behavior.

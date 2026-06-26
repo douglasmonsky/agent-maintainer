@@ -3,19 +3,22 @@
 
 from __future__ import annotations
 
+import importlib
 import json
 import subprocess  # nosec B404
 import sys
 import time
 from pathlib import Path
 
-from hook_audit import (
-    HookAuditRecord,
-    duration_since,
-    record_hook_result,
-    status_for_exit,
-    utc_timestamp,
-)
+sys.dont_write_bytecode = True
+
+hook_audit = importlib.import_module("hook_audit")
+HookAuditRecord = hook_audit.HookAuditRecord
+duration_since = hook_audit.duration_since
+hardened_subprocess_env = hook_audit.hardened_subprocess_env
+record_hook_result = hook_audit.record_hook_result
+status_for_exit = hook_audit.status_for_exit
+utc_timestamp = hook_audit.utc_timestamp
 
 MAX_CONTEXT = 8_000
 HOOK_NAME = "Stop"
@@ -95,6 +98,7 @@ def main() -> int:
     result = subprocess.run(  # nosec B603
         command,
         cwd=repo_root,
+        env=hardened_subprocess_env(),
         text=True,
         capture_output=True,
         check=False,

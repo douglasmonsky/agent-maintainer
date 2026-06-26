@@ -13,6 +13,7 @@ from pathlib import Path
 from scripts import guardrail_tool_capabilities
 from scripts.guardrail_models import Check, CheckResult
 from scripts.guardrail_reporting import summarize_check
+from scripts.guardrail_runtime import hardened_subprocess_env
 
 OutputLimits = tuple[int, int]
 
@@ -49,7 +50,7 @@ def tool_search_path() -> str:
 def command_env() -> dict[str, str]:
     """Return the subprocess environment used for guardrail commands."""
 
-    env = os.environ.copy()
+    env = hardened_subprocess_env()
     env["PATH"] = tool_search_path()
     return env
 

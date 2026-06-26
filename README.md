@@ -331,6 +331,8 @@ When `architecture_tool = "tach"` is selected outside `fresh-strict`, absent
 Tach config is a failure.
 
 Full raw output is stored in `.verify-logs/` to keep agent context small.
+Guardrail subprocesses disable Python bytecode writes by default to avoid
+generated cache files entering agent context accidentally.
 
 ## Profiles
 

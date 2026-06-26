@@ -72,6 +72,9 @@ def test_post_hook_main_blocks_on_failed_verification(
 
     def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
         assert command[-2:] == ["--base-ref", "HEAD"]
+        env = _kwargs["env"]
+        assert isinstance(env, dict)
+        assert env["PYTHONDONTWRITEBYTECODE"] == "1"
         return subprocess.CompletedProcess(command, 1, "failed", "")
 
     monkeypatch.setattr(post_hook.subprocess, "run", fake_run)
@@ -147,6 +150,9 @@ def test_stop_hook_blocks_on_failed_verification(
 
     def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
         assert command[-2:] == ["--base-ref", "HEAD"]
+        env = _kwargs["env"]
+        assert isinstance(env, dict)
+        assert env["PYTHONDONTWRITEBYTECODE"] == "1"
         return subprocess.CompletedProcess(command, 1, "precommit failed", "")
 
     monkeypatch.setattr(stop_hook.subprocess, "run", fake_run)

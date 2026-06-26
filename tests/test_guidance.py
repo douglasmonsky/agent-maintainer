@@ -43,6 +43,7 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Prefer small, coherent commits" in text
     assert "Prefer `rg --files` or `git ls-files`" in text
     assert "`__pycache__`, `*.pyc`, `.venv`" in text
+    assert "PYTHONDONTWRITEBYTECODE=1" in text
 
 
 def test_render_guidance_is_deterministic_and_nonvolatile() -> None:
