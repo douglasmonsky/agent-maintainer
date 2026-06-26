@@ -54,6 +54,17 @@ class FakeHookPath:
         return [None, None, self._repo_root]
 
 
+def test_post_hook_verifier_python_falls_back_to_current_interpreter(
+    tmp_path: Path,
+) -> None:
+    post_hook = load_hook(
+        "post_edit_fast_gate_python_fallback_test",
+        ".codex/hooks/post_edit_fast_gate.py",
+    )
+
+    assert post_hook.verifier_python(tmp_path) == sys.executable
+
+
 def test_post_hook_emits_block_payload(capsys: pytest.CaptureFixture[str]) -> None:
     post_hook = load_hook("post_edit_fast_gate_test", ".codex/hooks/post_edit_fast_gate.py")
 
@@ -87,6 +98,35 @@ def test_post_hook_main_blocks_on_failed_verification(
     assert "failed" in payload["hookSpecificOutput"]["additionalContext"]
     assert records[0].hook_name == "PostToolUse"
     assert records[0].profile == "fast"
+    assert records[0].status == "failed"
+
+
+def test_post_hook_truncates_long_failure_output(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    post_hook = load_hook(
+        "post_edit_fast_gate_truncation_test",
+        ".codex/hooks/post_edit_fast_gate.py",
+    )
+    records = capture_audit(post_hook, monkeypatch)
+
+    def fake_run(
+        command: list[str],
+        **_kwargs: object,
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 1, "x" * 24, "")
+
+    monkeypatch.setattr(post_hook, "MAX_CONTEXT", 5)
+    monkeypatch.setattr(post_hook.subprocess, "run", fake_run)
+    monkeypatch.setattr(sys, "stdin", io.StringIO("not-json"))
+
+    assert post_hook.main() == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "xxxxx" in context
+    assert "truncated" in context
     assert records[0].status == "failed"
 
 
@@ -130,6 +170,17 @@ def test_post_hook_main_allows_success(
     assert records[0].status == "passed"
 
 
+def test_stop_hook_verifier_python_falls_back_to_current_interpreter(
+    tmp_path: Path,
+) -> None:
+    stop_hook = load_hook(
+        "stop_full_verify_python_fallback_test",
+        ".codex/hooks/stop_full_verify.py",
+    )
+
+    assert stop_hook.verifier_python(tmp_path) == sys.executable
+
+
 def test_stop_hook_allows_recursive_stop_hook(capsys: pytest.CaptureFixture[str]) -> None:
     stop_hook = load_hook("stop_full_verify_recursive_test", ".codex/hooks/stop_full_verify.py")
     original_stdin = sys.stdin
@@ -165,6 +216,58 @@ def test_stop_hook_blocks_on_failed_verification(
     assert "precommit failed" in payload["reason"]
     assert records[0].hook_name == "Stop"
     assert records[0].profile == "precommit"
+    assert records[0].status == "failed"
+
+
+def test_stop_hook_treats_malformed_stdin_as_empty_payload(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    stop_hook = load_hook(
+        "stop_full_verify_bad_stdin_test",
+        ".codex/hooks/stop_full_verify.py",
+    )
+    records = capture_audit(stop_hook, monkeypatch)
+
+    def fake_run(
+        command: list[str],
+        **_kwargs: object,
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(stop_hook.subprocess, "run", fake_run)
+    monkeypatch.setattr(sys, "stdin", io.StringIO("{"))
+
+    assert stop_hook.main() == 0
+    assert json.loads(capsys.readouterr().out) == {"continue": True}
+    assert records[0].status == "passed"
+
+
+def test_stop_hook_truncates_long_failure_output(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    stop_hook = load_hook(
+        "stop_full_verify_truncation_test",
+        ".codex/hooks/stop_full_verify.py",
+    )
+    records = capture_audit(stop_hook, monkeypatch)
+
+    def fake_run(
+        command: list[str],
+        **_kwargs: object,
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 1, "x" * 24, "")
+
+    monkeypatch.setattr(stop_hook, "MAX_CONTEXT", 5)
+    monkeypatch.setattr(stop_hook.subprocess, "run", fake_run)
+    monkeypatch.setattr(sys, "stdin", io.StringIO("{}"))
+
+    assert stop_hook.main() == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert "xxxxx" in payload["reason"]
+    assert "truncated" in payload["reason"]
     assert records[0].status == "failed"
 
 
