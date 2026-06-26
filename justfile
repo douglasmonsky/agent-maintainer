@@ -1,4 +1,5 @@
 # Canonical developer commands. All agent instructions should point here.
+export PYTHONDONTWRITEBYTECODE := "1"
 
 bootstrap:
     python3 -m scripts.guardrail bootstrap

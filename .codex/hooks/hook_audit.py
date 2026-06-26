@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 import tomllib
 from contextlib import suppress
@@ -12,6 +13,9 @@ from pathlib import Path
 
 DEFAULT_LOG_DIR = ".verify-logs"
 HOOK_AUDIT_NAME = "hooks.jsonl"
+ALLOW_BYTECODE_ENV = "AI_GUARDRAILS_WRITE_BYTECODE"
+PYTHON_BYTECODE_ENV = "PYTHONDONTWRITEBYTECODE"
+TRUE_ENV_VALUES = frozenset(("1", "true", "yes", "on"))
 
 
 @dataclass(frozen=True)
@@ -64,6 +68,16 @@ def status_for_exit(exit_code: int | None) -> str:
     """Return the audit status for a verifier exit code."""
 
     return "passed" if exit_code == 0 else "failed"
+
+
+def hardened_subprocess_env() -> dict[str, str]:
+    """Return hook subprocess environment with bytecode writes disabled by default."""
+    environment = os.environ.copy()
+    if environment.get(ALLOW_BYTECODE_ENV, "").casefold() in TRUE_ENV_VALUES:
+        environment.pop(PYTHON_BYTECODE_ENV, None)
+    else:
+        environment[PYTHON_BYTECODE_ENV] = "1"
+    return environment
 
 
 def hook_audit_path(repo_root: Path) -> Path:

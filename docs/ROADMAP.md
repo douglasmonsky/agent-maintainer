@@ -112,6 +112,8 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add pytest JUnit XML output.
 - [x] Preserve coverage XML and consider coverage JSON.
 - [x] Add Bandit JSON output.
+- [x] Disable Python bytecode writes by default in guardrail and hook subprocesses
+  to reduce generated-cache token leaks.
 - [ ] Prefer structured artifacts over raw text when producing compact failure
   summaries.
 - [x] Add tests for manifest content, failure-note content, stale artifacts, and
