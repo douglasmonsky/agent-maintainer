@@ -29,6 +29,15 @@ def test_verify_workflow_disables_python_bytecode_writes() -> None:
     assert 'PYTHONDONTWRITEBYTECODE: "1"' in workflow
 
 
+def test_verify_workflow_installs_gitleaks_from_release_artifact() -> None:
+    workflow = (repo_root() / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
+
+    assert "GITLEAKS_VERSION=8.30.1" in workflow
+    assert "github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}" in workflow
+    assert "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" in workflow
+    assert "go install github.com/gitleaks/gitleaks" not in workflow
+
+
 def test_dependabot_updates_tag_pinned_github_actions() -> None:
     dependabot = (repo_root() / ".github" / "dependabot.yml").read_text(encoding="utf-8")
 

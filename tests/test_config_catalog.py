@@ -403,6 +403,21 @@ def test_secret_scan_checks_use_gitleaks_backend_when_enabled() -> None:
     assert "history" in history.command
 
 
+def test_secret_scan_checks_use_staged_mode_for_staged_precommit() -> None:
+    config = GuardrailConfig(
+        enable_secret_scanning=True,
+        secret_scan_profiles=(PRECOMMIT_PROFILE,),
+    )
+    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main", staged=True)
+    secret_scan = next(
+        check
+        for check in checks
+        if check.name == "secret-scan" and PRECOMMIT_PROFILE in check.profiles
+    )
+
+    assert "staged" in secret_scan.command
+
+
 def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only() -> None:
     config = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
     checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
