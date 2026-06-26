@@ -20,6 +20,35 @@ SECRET_SCAN_SKIP_REASON = (
 )  # nosec B105 - this is a user-facing scanner enablement hint, not a credential.
 
 
+SEMGREP_SKIP_REASON = (
+    "disabled by default; enable with GUARDRAILS_ENABLE_SEMGREP=1 or "
+    "[tool.ai_guardrails].enable_semgrep = true"
+)
+
+
+def semgrep_checks(config: GuardrailConfig) -> list[models.Check]:
+    """Build optional Semgrep checks for configured profiles."""
+
+    profiles = frozenset(config.semgrep_profiles)
+    if not config.enable_semgrep:
+        return [
+            models.Check(
+                "semgrep",
+                ["semgrep", *config.semgrep_args],
+                profiles,
+                optional_skip_reason=SEMGREP_SKIP_REASON,
+            )
+        ]
+    return [
+        models.Check(
+            "semgrep",
+            ["semgrep", *config.semgrep_args],
+            profiles,
+            required_executable="semgrep",
+        )
+    ]
+
+
 def secret_scan_checks(
     config: GuardrailConfig, base_ref: str, *, staged: bool
 ) -> list[models.Check]:

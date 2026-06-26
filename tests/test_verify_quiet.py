@@ -41,6 +41,12 @@ def test_cli_overrides_replace_config_values() -> None:
             "run",
             "--mutmut-arg",
             "scripts.guardrail_runtime*",
+            "--enable-semgrep",
+            "--semgrep-arg",
+            "scan",
+            "--semgrep-arg=--config,semgrep.yml",
+            "--semgrep-profile",
+            "manual,security",
             "--enable-secret-scanning",
             "--secret-scanner",
             "gitleaks",
@@ -73,6 +79,9 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.enable_pip_audit is True
     assert config.enable_mutmut is True
     assert config.mutmut_args == ("run", "scripts.guardrail_runtime*")
+    assert config.enable_semgrep is True
+    assert config.semgrep_args == ("scan", "--config", "semgrep.yml")
+    assert config.semgrep_profiles == ("manual", "security")
     assert config.enable_secret_scanning is True
     assert config.secret_scanner == "gitleaks"
     assert config.secret_scan_profiles == ("full", "ci")

@@ -17,6 +17,7 @@ vulture
 bandit
 pip-audit
 mutmut
+semgrep
 yamllint
 check-jsonschema
 zizmor

@@ -24,6 +24,8 @@ def strict_config() -> GuardrailConfig:
         pip_audit_args=("-r", "config/dev-lock.txt"),
         enable_mutmut=True,
         mutmut_args=("run",),
+        enable_semgrep=True,
+        semgrep_args=("scan", "--config", "semgrep.yml", "--metrics=off", "."),
         enable_secret_scanning=True,
         secret_scanner="gitleaks",
         secret_scan_profiles=("full", "ci"),
@@ -58,6 +60,7 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Source-only changes without test-file changes: `blocked`" in text
     assert "pip-audit: enabled with `-r config/dev-lock.txt`" in text
     assert "Mutmut: enabled with `run`" in text
+    assert "Semgrep: enabled with `scan --config semgrep.yml --metrics=off .`" in text
     assert "Secret scanning: enabled with `gitleaks`" in text
     assert "Markdown linting: enabled with `'**/*.md'`" in text
     assert "YAML linting: enabled with `.github/workflows .pre-commit-config.yaml`" in text

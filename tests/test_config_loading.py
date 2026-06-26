@@ -22,6 +22,13 @@ CONFIG_INTERROGATE_THRESHOLD = 31
 ENV_INTERROGATE_THRESHOLD = 33
 
 
+def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
+    """Set multiple environment variables for config override tests."""
+
+    for name, value in values.items():
+        monkeypatch.setenv(name, value)
+
+
 def test_read_pyproject_loads_ai_guardrail_config(tmp_path: Path) -> None:
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text(
@@ -34,6 +41,9 @@ enable_pip_audit = true
 pip_audit_args = ["-r", "requirements.txt"]
 enable_mutmut = true
 mutmut_args = ["run", "scripts.guardrail_runtime*"]
+enable_semgrep = true
+semgrep_args = ["scan", "--config", "semgrep.yml", "--metrics=off", "."]
+semgrep_profiles = ["manual"]
 enable_interrogate = true
 interrogate_fail_under = 31
 enable_markdownlint = true
@@ -69,6 +79,9 @@ log_dir = ".custom-verify-logs"
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True
     assert loaded.mutmut_args == ("run", "scripts.guardrail_runtime*")
+    assert loaded.enable_semgrep is True
+    assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml", "--metrics=off", ".")
+    assert loaded.semgrep_profiles == ("manual",)
     assert loaded.enable_interrogate is True
     assert loaded.interrogate_fail_under == CONFIG_INTERROGATE_THRESHOLD
     assert loaded.enable_markdownlint is True
@@ -146,28 +159,35 @@ def test_environment_mode_applies_before_explicit_environment(
 
 
 def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("GUARDRAILS_SOURCE_ROOTS", "pkg,tools")
-    monkeypatch.setenv("GUARDRAILS_REQUIRE_TESTS", "false")
-    monkeypatch.setenv("GUARDRAILS_COVERAGE_FAIL_UNDER", "95")
-    monkeypatch.setenv("GUARDRAILS_PIP_AUDIT_ARGS", "-r requirements.txt")
-    monkeypatch.setenv("GUARDRAILS_ENABLE_MUTMUT", "true")
-    monkeypatch.setenv("GUARDRAILS_MUTMUT_ARGS", "run,scripts.guardrail_runtime*")
-    monkeypatch.setenv("GUARDRAILS_ENABLE_SECRET_SCANNING", "true")
-    monkeypatch.setenv("GUARDRAILS_SECRET_SCANNER", "gitleaks")
-    monkeypatch.setenv("GUARDRAILS_SECRET_SCAN_PROFILES", "full,ci")
-    monkeypatch.setenv("GUARDRAILS_ARCHITECTURE_TOOL", "tach")
-    monkeypatch.setenv("GUARDRAILS_ENABLE_INTERROGATE", "true")
-    monkeypatch.setenv("GUARDRAILS_INTERROGATE_FAIL_UNDER", "33")
-    monkeypatch.setenv("GUARDRAILS_ENABLE_MARKDOWNLINT", "true")
-    monkeypatch.setenv("GUARDRAILS_MARKDOWNLINT_PATHS", "README.md,docs")
-    monkeypatch.setenv("GUARDRAILS_ENABLE_YAMLLINT", "true")
-    monkeypatch.setenv("GUARDRAILS_YAMLLINT_PATHS", ".github/workflows")
-    monkeypatch.setenv("GUARDRAILS_ENABLE_TAPLO", "true")
-    monkeypatch.setenv("GUARDRAILS_TAPLO_PATHS", "pyproject.toml,tach.toml")
-    monkeypatch.setenv("GUARDRAILS_ENABLE_CHECK_JSONSCHEMA", "true")
-    monkeypatch.setenv(
-        "GUARDRAILS_CHECK_JSONSCHEMA_ARGS",
-        "--builtin-schema,vendor.github-workflows,.github/workflows/verify.yml",
+    set_envs(
+        monkeypatch,
+        {
+            "GUARDRAILS_SOURCE_ROOTS": "pkg,tools",
+            "GUARDRAILS_REQUIRE_TESTS": "false",
+            "GUARDRAILS_COVERAGE_FAIL_UNDER": "95",
+            "GUARDRAILS_PIP_AUDIT_ARGS": "-r requirements.txt",
+            "GUARDRAILS_ENABLE_MUTMUT": "true",
+            "GUARDRAILS_MUTMUT_ARGS": "run,scripts.guardrail_runtime*",
+            "GUARDRAILS_ENABLE_SEMGREP": "true",
+            "GUARDRAILS_SEMGREP_ARGS": "scan,--config,semgrep.yml",
+            "GUARDRAILS_SEMGREP_PROFILES": "manual,security",
+            "GUARDRAILS_ENABLE_SECRET_SCANNING": "true",
+            "GUARDRAILS_SECRET_SCANNER": "gitleaks",
+            "GUARDRAILS_SECRET_SCAN_PROFILES": "full,ci",
+            "GUARDRAILS_ARCHITECTURE_TOOL": "tach",
+            "GUARDRAILS_ENABLE_INTERROGATE": "true",
+            "GUARDRAILS_INTERROGATE_FAIL_UNDER": "33",
+            "GUARDRAILS_ENABLE_MARKDOWNLINT": "true",
+            "GUARDRAILS_MARKDOWNLINT_PATHS": "README.md,docs",
+            "GUARDRAILS_ENABLE_YAMLLINT": "true",
+            "GUARDRAILS_YAMLLINT_PATHS": ".github/workflows",
+            "GUARDRAILS_ENABLE_TAPLO": "true",
+            "GUARDRAILS_TAPLO_PATHS": "pyproject.toml,tach.toml",
+            "GUARDRAILS_ENABLE_CHECK_JSONSCHEMA": "true",
+            "GUARDRAILS_CHECK_JSONSCHEMA_ARGS": (
+                "--builtin-schema,vendor.github-workflows,.github/workflows/verify.yml"
+            ),
+        },
     )
     monkeypatch.setenv("GUARDRAILS_FILE_LENGTH_BASELINE", ".guardrails/env-baseline.json")
     monkeypatch.setenv("GUARDRAILS_DIAGNOSTIC_ARTIFACTS_ENABLED", "false")
@@ -181,6 +201,9 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True
     assert loaded.mutmut_args == ("run", "scripts.guardrail_runtime*")
+    assert loaded.enable_semgrep is True
+    assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml")
+    assert loaded.semgrep_profiles == ("manual", "security")
     assert loaded.enable_secret_scanning is True
     assert loaded.secret_scanner == "gitleaks"
     assert loaded.secret_scan_profiles == ("full", "ci")

@@ -98,6 +98,14 @@ KNOWN_CAPABILITIES = (
             hint="Install Python package guardrail tools from config/dev-lock.txt.",
         ),
     ),
+    (
+        "semgrep",
+        ToolCapability(
+            "semgrep",
+            PYTHON_PACKAGE,
+            hint="Install Python package guardrail tools from config/dev-lock.txt.",
+        ),
+    ),
 )
 
 

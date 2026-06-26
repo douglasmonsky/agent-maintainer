@@ -32,6 +32,18 @@ enable_pip_audit = true
 pip_audit_args = ["-r", "config/dev-lock.txt"]
 enable_mutmut = true
 mutmut_args = ["run"]
+enable_semgrep = true
+semgrep_args = [
+  "scan",
+  "--config",
+  "semgrep.yml",
+  "--error",
+  "--metrics=off",
+  "scripts",
+  ".codex/hooks",
+  "guardrail_lib",
+]
+semgrep_profiles = ["manual"]
 enable_secret_scanning = true
 secret_scanner = "gitleaks"
 secret_scan_profiles = ["full", "ci"]
