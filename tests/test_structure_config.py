@@ -6,8 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_catalog, guardrail_config
-from scripts.guardrail_config import GuardrailConfig
+from scripts.guardrail_catalogs import catalog as guardrail_catalog
+from scripts.guardrail_core import config as guardrail_config
+from scripts.guardrail_core.config import GuardrailConfig
 
 WARN_THRESHOLD = 12
 BLOCK_THRESHOLD = 34

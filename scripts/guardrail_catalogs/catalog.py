@@ -11,10 +11,10 @@ from guardrail_lib.config.schema import (
     TACH_TOOL,
     GuardrailConfig,
 )
-from scripts import guardrail_catalog_python as python_checks
 from scripts import guardrail_models as models
-from scripts.guardrail_catalog_docs import docs_config_checks
-from scripts.guardrail_catalog_security import (
+from scripts.guardrail_catalogs import python as python_checks
+from scripts.guardrail_catalogs.docs import docs_config_checks
+from scripts.guardrail_catalogs.security import (
     license_check_checks,
     osv_scanner_checks,
     sbom_checks,
@@ -22,7 +22,7 @@ from scripts.guardrail_catalog_security import (
     semgrep_checks,
     trivy_checks,
 )
-from scripts.guardrail_config import existing_paths
+from scripts.guardrail_core.config import existing_paths
 
 CHANGE_BUDGET_PROFILES = (
     models.FAST_PROFILE,

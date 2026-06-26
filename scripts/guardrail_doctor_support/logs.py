@@ -6,9 +6,9 @@ import json
 from pathlib import Path
 
 from guardrail_lib.verify.artifacts import LAST_FAILURE_NAME, MANIFEST_NAME
-from scripts import guardrail_config
-from scripts.guardrail_catalog import make_checks
-from scripts.guardrail_doctor_models import (
+from scripts.guardrail_catalogs.catalog import make_checks
+from scripts.guardrail_core import config as guardrail_config
+from scripts.guardrail_doctor_support.models import (
     DISABLED,
     MISSING,
     OK,

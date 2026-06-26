@@ -6,7 +6,7 @@ import json
 import os
 from pathlib import Path
 
-from scripts import guardrail_doctor_logs
+from scripts.guardrail_doctor_support import logs as guardrail_doctor_logs
 
 
 def write_verification_manifest(

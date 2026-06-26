@@ -11,12 +11,10 @@ import pytest
 from guardrail_lib.config import (
     modes as guardrail_config_modes,
 )
-from scripts import (
-    guardrail_catalog,
-    guardrail_catalog_python,
-    guardrail_config,
-)
-from scripts.guardrail_config import GuardrailConfig
+from scripts.guardrail_catalogs import catalog as guardrail_catalog
+from scripts.guardrail_catalogs import python as guardrail_catalog_python
+from scripts.guardrail_core import config as guardrail_config
+from scripts.guardrail_core.config import GuardrailConfig
 from scripts.guardrail_models import (
     CI_PROFILE,
     FULL_PROFILE,
@@ -238,7 +236,7 @@ def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
         replace(
             GuardrailConfig(),
             enable_mutmut=True,
-            mutmut_args=("run", "scripts.guardrail_runtime*"),
+            mutmut_args=("run", "scripts.guardrail_core.runtime*"),
         ),
         "HEAD",
         "origin/main",
@@ -249,7 +247,7 @@ def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
         "-m",
         "scripts.run_mutmut",
         "run",
-        "scripts.guardrail_runtime*",
+        "scripts.guardrail_core.runtime*",
     ]
     assert enabled.profiles == MANUAL_PROFILES
     assert enabled.required_paths == ("scripts/run_mutmut.py",)

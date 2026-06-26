@@ -7,7 +7,7 @@ from pathlib import Path
 
 from guardrail_lib.config.modes import apply_mode
 from guardrail_lib.config.schema import GuardrailConfig
-from scripts import guardrail_guidance
+from scripts.guardrail_core import guidance as guardrail_guidance
 
 
 def strict_config() -> GuardrailConfig:

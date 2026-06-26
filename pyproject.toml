@@ -89,7 +89,7 @@ log_dir = ".verify-logs"
 
 [tool.mutmut]
 source_paths = ["scripts/"]
-only_mutate = ["scripts/guardrail_runtime.py"]
+only_mutate = ["scripts/guardrail_core/runtime.py"]
 pytest_add_cli_args_test_selection = ["tests/test_runtime.py"]
 pytest_add_cli_args = ["-p", "no:tach"]
 mutate_only_covered_lines = true
@@ -129,26 +129,19 @@ known_first_party = [
   "check_tach_config",
   "guardrail_lib",
   "scripts",
-  "guardrail_args",
-  "guardrail_catalog",
-  "guardrail_catalog_python",
-  "guardrail_config",
+  "guardrail_catalogs",
+  "guardrail_core",
   "guardrail_doctor",
-  "guardrail_doctor_hook_audit",
-  "guardrail_doctor_logs",
-  "guardrail_doctor_models",
-  "guardrail_doctor_policy",
-  "guardrail_executor",
-  "guardrail_guidance",
-  "guardrail_layout",
+  "guardrail_doctor_setup",
+  "guardrail_doctor_support",
   "guardrail_models",
-  "guardrail_reporting",
   "guardrail_tach",
-  "guardrail_tool_capabilities",
   "hook_audit",
   "run_bandit",
+  "run_mutmut",
   "run_pyright",
   "run_ruff",
+  "run_secret_scan",
   "verify_quiet",
 ]
 requirements_files = ["requirements.txt"]

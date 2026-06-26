@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from guardrail_lib.config.schema import FRESH_STRICT_MODE
-from scripts.guardrail_config import GuardrailConfig, load_config
+from scripts.guardrail_core.config import GuardrailConfig, load_config
 
 FAIL = "FAIL"
 WARN = "WARN"

@@ -9,8 +9,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.guardrail_config import load_config
-from scripts.guardrail_executor import command_env
+from scripts.guardrail_core.config import load_config
+from scripts.guardrail_core.executor import command_env
 
 BANDIT_JSON_NAME = "bandit.json"
 BANDIT_FINDING_LIMIT = 50

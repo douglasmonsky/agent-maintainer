@@ -6,8 +6,9 @@ import json
 
 import pytest
 
-from scripts import guardrail_doctor, guardrail_doctor_models
-from scripts.guardrail_config import GuardrailConfig
+from scripts import guardrail_doctor
+from scripts.guardrail_core.config import GuardrailConfig
+from scripts.guardrail_doctor_support import models as guardrail_doctor_models
 
 
 def test_main_emits_json_with_state_and_hint(

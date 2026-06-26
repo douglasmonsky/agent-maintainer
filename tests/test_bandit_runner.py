@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from scripts import run_bandit
-from scripts.guardrail_config import GuardrailConfig
+from scripts.guardrail_core.config import GuardrailConfig
 
 INVALID_CONFIG_EXIT_CODE = 2
 

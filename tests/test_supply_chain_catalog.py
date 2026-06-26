@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from scripts import guardrail_catalog
-from scripts.guardrail_config import GuardrailConfig
+from scripts.guardrail_catalogs import catalog as guardrail_catalog
+from scripts.guardrail_core.config import GuardrailConfig
 from scripts.guardrail_models import CI_PROFILE, MANUAL_PROFILES
 
 

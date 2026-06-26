@@ -38,36 +38,37 @@ paths = [
   "scripts.check_suppression_budget",
   "scripts.check_tach_config",
   "scripts.guardrail_doctor",
-  "scripts.guardrail_guidance",
+  "scripts.guardrail_doctor_setup",
+  "scripts.guardrail_core.guidance",
   "scripts.run_mutmut",
   "scripts.run_bandit",
   "scripts.run_pyright",
   "scripts.run_ruff",
+  "scripts.guardrail_tach",
   "scripts.verify_quiet",
 ]
 layer = "orchestration"
 
 [[modules]]
 paths = [
-  "scripts.guardrail_args",
-  "scripts.guardrail_catalog",
-  "scripts.guardrail_catalog_docs",
-  "scripts.guardrail_catalog_python",
-  "scripts.guardrail_doctor_hook_audit",
-  "scripts.guardrail_doctor_policy",
-  "scripts.guardrail_doctor_logs",
-  "scripts.guardrail_doctor_setup",
-  "scripts.guardrail_executor",
-  "scripts.guardrail_layout",
-  "scripts.guardrail_tool_capabilities",
+  "scripts.guardrail_core.args",
+  "scripts.guardrail_catalogs",
+  "scripts.guardrail_catalogs.catalog",
+  "scripts.guardrail_catalogs.docs",
+  "scripts.guardrail_catalogs.python",
+  "scripts.guardrail_doctor_support.hook_audit",
+  "scripts.guardrail_doctor_support.policy",
+  "scripts.guardrail_doctor_support.logs",
+  "scripts.guardrail_core.executor",
+  "scripts.guardrail_core.layout",
+  "scripts.guardrail_core.tool_capabilities",
 ]
 layer = "runtime"
 
 [[modules]]
 paths = [
-  "scripts.guardrail_config",
-  "scripts.guardrail_reporting",
-  "scripts.guardrail_tach",
+  "scripts.guardrail_core.config",
+  "scripts.guardrail_core.reporting",
   "guardrail_lib.config.coercion",
   "guardrail_lib.config.loader",
   "guardrail_lib.config.modes",
@@ -77,7 +78,7 @@ layer = "shared"
 
 [[modules]]
 paths = [
-  "scripts.guardrail_doctor_models",
+  "scripts.guardrail_doctor_support.models",
   "scripts.guardrail_models",
   "guardrail_lib.config.schema",
 ]

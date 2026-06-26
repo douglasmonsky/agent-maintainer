@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 
 from guardrail_lib.config import schema as guardrail_config_schema
-from scripts import guardrail_config
-from scripts.guardrail_doctor_models import (
+from scripts.guardrail_core import config as guardrail_config
+from scripts.guardrail_doctor_support.models import (
     ACTIVE,
     DISABLED,
     ERROR,

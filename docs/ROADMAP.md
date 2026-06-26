@@ -238,7 +238,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add branch/error-path tests for `scripts/check_suppression_budget.py`.
 - [x] Add branch/error-path tests for `scripts/check_file_lengths.py`.
 - [x] Add branch/error-path tests for `scripts/check_tach_config.py`.
-- [x] Add branch/error-path tests for `scripts/guardrail_executor.py`.
+- [x] Add branch/error-path tests for `scripts/guardrail_core/executor.py`.
 - [x] Add branch/error-path tests for `.codex/hooks/post_edit_fast_gate.py`.
 - [x] Add branch/error-path tests for `.codex/hooks/stop_full_verify.py`.
 - [x] Raise `coverage_fail_under` toward 90 only after the suite proves those

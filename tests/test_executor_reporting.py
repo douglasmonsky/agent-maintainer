@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import guardrail_executor, guardrail_reporting
+from scripts.guardrail_core import executor as guardrail_executor
+from scripts.guardrail_core import reporting as guardrail_reporting
 from scripts.guardrail_models import Check, CheckResult
 
 

@@ -7,8 +7,8 @@ from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from scripts import guardrail_config
-from scripts.guardrail_doctor_models import OK, WARNING, DoctorResult
+from scripts.guardrail_core import config as guardrail_config
+from scripts.guardrail_doctor_support.models import OK, WARNING, DoctorResult
 
 HOOK_AUDIT_NAME = "hooks.jsonl"
 VERIFY_LOG_DIR = ".verify-logs"
