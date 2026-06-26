@@ -17,7 +17,11 @@ feedback loop and should run after most edits.
 
 Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.ai_guardrails].pyright_type_checking_mode` affects the actual Pyright invocation. Pyright JSON is also preserved as `.verify-logs/pyright.json` and listed in the verifier manifest.
 
-Pytest and pytest-cov enforce behavior and coverage. The configured coverage gate prevents untested new behavior from quietly entering the repository.
+Pytest and pytest-cov enforce behavior and coverage. The configured coverage
+gate prevents untested new behavior from quietly entering the repository. The
+verifier keeps root `coverage.xml` for diff-cover and writes
+`.verify-logs/coverage.json` plus `.verify-logs/pytest-junit.xml` for structured
+diagnostics and CI artifacts.
 
 Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable run
 metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails. The

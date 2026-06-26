@@ -102,6 +102,7 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
 
     log_path = log_dir / f"{check.name}.log"
     started_at = utc_timestamp()
+    log_dir.mkdir(parents=True, exist_ok=True)
     missing = missing_requirement(check)
     if missing:
         return missing_requirement_result(check, log_path, missing, started_at)
@@ -110,7 +111,6 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
     except OSError as exc:
         ended_at = utc_timestamp()
         output = f"could not run {check.command!r}: {exc}"
-        log_dir.mkdir(parents=True, exist_ok=True)
         log_path.write_text(f"{output}\n", encoding="utf-8")
         return CheckResult(
             check.name,
