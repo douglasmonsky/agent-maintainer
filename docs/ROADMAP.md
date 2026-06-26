@@ -8,7 +8,7 @@ repo state instead of reconstructing the plan from chat history.
 
 - [x] Private GitHub repository exists.
 - [x] Private origin and remote CI verification have been proven for this repo.
-- [x] Canonical CLI uses `python3 -m scripts.guardrail`.
+- [x] Canonical CLI uses `python3 -m ai_guardrails`.
 - [x] `fresh-strict` mode is active for this repository.
 - [x] Tach is the active architecture backend for this repository.
 - [x] `root_module = "forbid"` is configured in `tach.toml`.
@@ -213,7 +213,7 @@ repo state instead of reconstructing the plan from chat history.
   ignored folders, regex hint clusters, prefix clusters, and explicit registry
   exemptions.
 - [x] Document when to split into subpackages and use this repository's
-  `guardrail_lib/config` extraction as the motivating example.
+  `src/ai_guardrails/config` extraction as the motivating example.
 
 ## Phase 9: Add Docs And Config Hygiene
 
@@ -234,11 +234,11 @@ repo state instead of reconstructing the plan from chat history.
 ## Phase 10: Raise Test Depth Toward 90 Percent
 
 - [x] Raise the coverage target only after meaningful tests exist.
-- [x] Add branch/error-path tests for `scripts/check_change_budget.py`.
-- [x] Add branch/error-path tests for `scripts/check_suppression_budget.py`.
-- [x] Add branch/error-path tests for `scripts/check_file_lengths.py`.
-- [x] Add branch/error-path tests for `scripts/check_tach_config.py`.
-- [x] Add branch/error-path tests for `scripts/guardrail_core/executor.py`.
+- [x] Add branch/error-path tests for `src/ai_guardrails/checks/change_budget.py`.
+- [x] Add branch/error-path tests for `src/ai_guardrails/checks/suppression_budget.py`.
+- [x] Add branch/error-path tests for `src/ai_guardrails/checks/file_lengths.py`.
+- [x] Add branch/error-path tests for `src/ai_guardrails/checks/tach_config.py`.
+- [x] Add branch/error-path tests for `src/ai_guardrails/core/executor.py`.
 - [x] Add branch/error-path tests for `.codex/hooks/post_edit_fast_gate.py`.
 - [x] Add branch/error-path tests for `.codex/hooks/stop_full_verify.py`.
 - [x] Raise `coverage_fail_under` toward 90 only after the suite proves those
@@ -261,35 +261,36 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 12: Test, Check, and Package Refactors
 
-- [ ] Keep this phase in small PRs: roadmap-only, test splits, check
+- [x] Keep this phase in small PRs: roadmap-only, test splits, check
   extraction, package migration, then docs/config cleanup.
 - [x] Split large test modules by responsibility before they cross file-length
   limits: doctor, config catalog, executor/reporting, and verify quiet tests.
-- [x] Extract reusable check logic from `scripts/check_file_lengths.py`,
-  `scripts/check_change_budget.py`, `scripts/check_suppression_budget.py`,
-  and `scripts/check_structure.py` into library modules.
-- [x] Keep `scripts/check_*.py` modules as compatibility CLI adapters.
-- [ ] Add package metadata with `src` layout and package name `ai_guardrails`.
-- [ ] Move implementation modules under `src/ai_guardrails`, including config,
+- [x] Extract reusable check logic from `src/ai_guardrails/checks/file_lengths.py`,
+  `src/ai_guardrails/checks/change_budget.py`, `src/ai_guardrails/checks/suppression_budget.py`,
+  and `src/ai_guardrails/checks/structure.py` into library modules.
+- [x] Drop broad `scripts.*` compatibility shims for the fresh package migration;
+  use `ai_guardrails` as the only supported internal module surface.
+- [x] Add package metadata with `src` layout and package name `ai_guardrails`.
+- [x] Move implementation modules under `src/ai_guardrails`, including config,
   checks, verify, core, catalogs, doctor, runners, models, Tach helpers, CLI,
   and `__main__.py`.
-- [ ] Preserve existing compatibility commands: `python3 -m scripts.guardrail`,
-  `python3 scripts/guardrail.py`, `python3 -m scripts.check_*`, and
-  `python3 -m scripts.run_*`.
-- [ ] Add supported package command `python3 -m ai_guardrails` after editable
+- [x] Preserve the package command `python3 -m ai_guardrails`; do not preserve
+  unused script-module compatibility commands in this fresh repo.
+- [x] Add supported package command `python3 -m ai_guardrails` after editable
   install.
-- [ ] Update bootstrap, CI, pre-commit, Codex hooks, docs, and generated agent
-  guidance to prefer package entrypoints where appropriate while retaining
-  compatibility fallback.
-- [ ] Update `[tool.ai_guardrails]` paths, coverage, vulture, Semgrep, Bandit,
-  file-length, package paths, and `tach.toml` for `src/ai_guardrails`,
-  `scripts`, and `.codex/hooks`.
-- [ ] Add migration smoke tests for `python3 -m ai_guardrails --help`,
-  `python3 -m ai_guardrails verify --profile fast`, legacy script entrypoints,
-  representative check shims, editable install, and import-policy enforcement.
-- [ ] Confirm each PR locally with `precommit`, `full`, `ci`, `security`, and
-  `doctor --strict`, then push, open PR, watch PR CI, merge green, and watch
-  post-merge `main` CI.
+- [x] Update bootstrap to install the project editable after dev dependencies,
+  find the working repository root under `src` layout, and repair hidden macOS
+  `.pth` files when needed.
+- [x] Update CI, pre-commit, Codex hooks, docs, and generated agent guidance to
+  prefer package entrypoints.
+- [x] Update `[tool.ai_guardrails]` paths, coverage, vulture, Semgrep, Bandit,
+  file-length, package paths, and `tach.toml` for `src/ai_guardrails` and
+  `.codex/hooks`.
+- [x] Add migration smoke tests for `python3 -m ai_guardrails --help`,
+  editable install, and import-policy enforcement.
+- [ ] Confirm package-migration PR locally with `precommit`, `full`, `ci`,
+  `security`, and `doctor --strict`, then push, open PR, watch PR CI, merge
+  green, and watch post-merge `main` CI.
 
 ## Explicit Non-Goals For Now
 

@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from guardrail_lib.config.schema import GuardrailConfig
-from guardrail_lib.verify import artifacts
-from scripts.guardrail_models import CheckResult
+from ai_guardrails.config.schema import GuardrailConfig
+from ai_guardrails.models import CheckResult
+from ai_guardrails.verify import artifacts
 
 DEFAULT_COVERAGE_FLOOR = 80
 
@@ -61,7 +61,7 @@ def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -
     failure_note = (log_dir / artifacts.LAST_FAILURE_NAME).read_text(encoding="utf-8")
     assert "### ruff" in failure_note
     assert "lint failed" in failure_note
-    assert "python3 -m scripts.guardrail verify --profile full" in failure_note
+    assert "python3 -m ai_guardrails verify --profile full" in failure_note
 
 
 def test_write_run_artifacts_removes_stale_failure_note_on_success(tmp_path: Path) -> None:

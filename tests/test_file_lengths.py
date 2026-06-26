@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from guardrail_lib.checks import file_lengths as check_file_lengths
+from ai_guardrails.checks import file_lengths as check_file_lengths
 
 
 def test_file_length_helpers_find_eligible_python_files(tmp_path: Path) -> None:

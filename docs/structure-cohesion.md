@@ -19,7 +19,7 @@ and `reporting`.
 
 When this warning fires, split only if the files form multiple concepts. A good
 split gives a clear answer to "what kind of thing belongs here?" This repository
-already uses that shape in `guardrail_lib/config/`: schema, loading, coercion,
+already uses that shape in `src/ai_guardrails/config/`: schema, loading, coercion,
 and mode logic live together under one package instead of remaining as unrelated
 flat modules.
 

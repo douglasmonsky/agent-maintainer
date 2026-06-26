@@ -6,10 +6,10 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 
 | Concern | Enforcement |
 |---|---|
-| Oversized Python files | `scripts/check_file_lengths.py` |
-| Huge or diffuse changes | `scripts/check_change_budget.py` |
-| Broad suppressions | `scripts/check_suppression_budget.py` |
-| Required repo layout | `python -m scripts.guardrail verify` layout check |
+| Oversized Python files | `src/ai_guardrails/checks/file_lengths.py` |
+| Huge or diffuse changes | `src/ai_guardrails/checks/change_budget.py` |
+| Broad suppressions | `src/ai_guardrails/checks/suppression_budget.py` |
+| Required repo layout | `python -m ai_guardrails verify` layout check |
 | Style and simple defects | Ruff |
 | Type discipline | Pyright |
 | Tests and total coverage | Pytest + pytest-cov |
@@ -42,7 +42,7 @@ package-lock.json
 .pre-commit-config.yaml
 .codex/
 .github/workflows/verify.yml
-scripts/
+src/ai_guardrails/
 config/
 ```
 
@@ -61,17 +61,19 @@ python -m pip install -r config/dev-lock.txt
 For the shortest local path with pip, run:
 
 ```bash
-python3 -m scripts.guardrail bootstrap
+PYTHONPATH=src python3 -m ai_guardrails bootstrap
 ```
 
-This creates `.venv` when needed, installs Python package guardrail tools from
-`config/dev-lock.txt` when present, falls back to `config/dev-dependencies.txt`,
-installs the pre-commit hook, and reports whether Codex hooks are configured.
-It does not install external binaries, GitHub Actions-only tools, or manual
-optional tools; `doctor` reports those capability states separately. This repo
-enables Gitleaks secret scanning, so install it locally with `brew install
-gitleaks` on macOS when running `full`, `ci`, or `security` profiles. CI
-installs the pinned release tarball and verifies its SHA-256 before extraction.
+`PYTHONPATH=src` makes the local package importable before editable install.
+Bootstrap creates `.venv` when needed, installs Python package guardrail tools
+from `config/dev-lock.txt` when present, falls back to
+`config/dev-dependencies.txt`, installs this project editable, installs the
+pre-commit hook, and reports whether Codex hooks are configured. It does not
+install external binaries, GitHub Actions-only tools, or manual optional tools;
+`doctor` reports capability states separately. The repo enables Gitleaks secret
+scanning, so install locally with `brew install gitleaks` on macOS before
+running `full`, `ci`, or `security` profiles. CI installs a pinned release
+tarball and verifies its SHA-256 before extraction.
 
 This repo also enables Markdown/TOML hygiene tools through `package-lock.json`:
 
@@ -82,7 +84,7 @@ npm ci
 Keep `config/dev-dependencies.txt` as the human-edited dependency input. Refresh the pinned lock after changing it:
 
 ```bash
-python3 -m scripts.guardrail bootstrap
+PYTHONPATH=src python3 -m ai_guardrails bootstrap
 .venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
 ```
 
@@ -94,8 +96,8 @@ virtualenv is the most reliable local setup.
 Check setup health after bootstrap:
 
 ```bash
-python3 -m scripts.guardrail doctor
-python3 -m scripts.guardrail doctor --strict
+python3 -m ai_guardrails doctor
+python3 -m ai_guardrails doctor --strict
 ```
 
 `doctor` reports compact `PASS`, `WARN`, and `FAIL` rows with a stable state
@@ -112,8 +114,8 @@ Then merge `config/pyproject.guardrails.toml` into your `pyproject.toml`.
 Generate agent-facing guidance from the resolved guardrail config:
 
 ```bash
-python3 -m scripts.guardrail guidance
-python3 -m scripts.guardrail guidance --check
+python3 -m ai_guardrails guidance
+python3 -m ai_guardrails guidance --check
 ```
 
 The generated `AGENTS.guardrails.md` sidecar summarizes the active mode, roots,
@@ -162,7 +164,7 @@ cp config/importlinter.example .importlinter
 Install local guardrail hooks:
 
 ```bash
-python3 -m scripts.guardrail install
+python3 -m ai_guardrails install
 ```
 
 This keeps dependency installation separate and only installs the pre-commit hook when `pre-commit` is available. If you use Codex, review and trust the repo-local hooks through Codex's hook review flow.
@@ -183,9 +185,9 @@ source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]
 coverage_source = ["src"]
-file_length_paths = ["src", "tests", "scripts", ".codex/hooks"]
+file_length_paths = ["src", "tests", ".codex/hooks"]
 file_length_baseline = ""
-vulture_paths = ["src", "tests", "scripts"]
+vulture_paths = ["src", "tests"]
 require_tests = true
 coverage_fail_under = 90
 diff_cover_fail_under = 90
@@ -235,8 +237,8 @@ source_roots = ["my_package"]
 test_roots = ["tests"]
 package_paths = ["my_package"]
 coverage_source = ["my_package"]
-file_length_paths = ["my_package", "tests", "scripts", ".codex/hooks"]
-vulture_paths = ["my_package", "tests", "scripts"]
+file_length_paths = ["my_package", "tests", ".codex/hooks"]
+vulture_paths = ["my_package", "tests"]
 ```
 
 Environment overrides are also supported:
@@ -247,13 +249,13 @@ GUARDRAILS_TEST_ROOTS=tests \
 GUARDRAILS_COVERAGE_SOURCE=my_package \
 GUARDRAILS_PACKAGE_PATHS=my_package \
 GUARDRAILS_ARCHITECTURE_TOOL=tach \
-python3 -m scripts.guardrail verify --profile full
+python3 -m ai_guardrails verify --profile full
 ```
 
 CLI overrides are available for one-off runs:
 
 ```bash
-python3 -m scripts.guardrail verify --profile full \
+python3 -m ai_guardrails verify --profile full \
   --source-root my_package \
   --test-root tests \
   --coverage-source my_package \
@@ -266,44 +268,44 @@ python3 -m scripts.guardrail verify --profile full \
 Quiet local verification:
 
 ```bash
-python3 -m scripts.guardrail verify --profile full
+python3 -m ai_guardrails verify --profile full
 ```
 
 One-command local bootstrap:
 
 ```bash
-python3 -m scripts.guardrail bootstrap
+python3 -m ai_guardrails bootstrap
 ```
 
 Setup diagnostics:
 
 ```bash
-python3 -m scripts.guardrail doctor --strict
+python3 -m ai_guardrails doctor --strict
 ```
 
 Generate or check agent guidance:
 
 ```bash
-python3 -m scripts.guardrail guidance
-python3 -m scripts.guardrail guidance --check
+python3 -m ai_guardrails guidance
+python3 -m ai_guardrails guidance --check
 ```
 
 Fast check after edits:
 
 ```bash
-python3 -m scripts.guardrail verify --profile fast
+python3 -m ai_guardrails verify --profile fast
 ```
 
 Commit-level check:
 
 ```bash
-python3 -m scripts.guardrail verify --profile precommit
+python3 -m ai_guardrails verify --profile precommit
 ```
 
 CI-level check:
 
 ```bash
-python3 -m scripts.guardrail verify --profile ci --base-ref origin/main --compare-branch origin/main
+python3 -m ai_guardrails verify --profile ci --base-ref origin/main --compare-branch origin/main
 ```
 
 If you use `just`:
@@ -380,7 +382,7 @@ generated cache files entering agent context accidentally.
 
 ## Profiles
 
-`fast` is designed for Codex `PostToolUse` after file edits. It runs cheap checks: file length, change budget, suppression budget, and Ruff. It still fails when required guardrail scripts or `.git` are missing, but it does not require configured source/test roots to exist yet. In `legacy-ratchet`, file-length failures are compared against the configured baseline so existing oversized files pass unless they worsen.
+`fast` is designed for Codex `PostToolUse` after file edits. It runs cheap checks: file length, change budget, suppression budget, and Ruff. It still fails when required guardrail package entrypoints or `.git` are missing, but it does not require configured source/test roots to exist yet. In `legacy-ratchet`, file-length failures are compared against the configured baseline so existing oversized files pass unless they worsen.
 
 `precommit` is designed for local commits and Codex final checks. It adds formatting, type checking, tests with coverage, and Xenon complexity gates. It fails if configured source, test, coverage, or package paths are missing, unless tests are explicitly disabled. When tests are disabled, pytest coverage is reported as an optional skip. The bundled pre-commit hook runs this profile with `--staged`, so diff budgets inspect staged changes only. In `fresh-strict`, source changes without configured test-file changes fail in `precommit` unless `allow_source_without_test_change = true` is set for an already-covered change.
 
@@ -415,12 +417,12 @@ generated cache files entering agent context accidentally.
 
 Start strict for new repositories. For existing repositories, start with `fast` and `precommit`, then promote the heavier checks after you have a clean baseline.
 
-This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m scripts.guardrail verify --profile precommit`; for broader changes, run `python3 -m scripts.guardrail verify --profile full`.
+This repository is configured to use the kit on itself, including `enable_wemake = true`. After changing guardrail code or docs, run `python3 -m ai_guardrails verify --profile precommit`; for broader changes, run `python3 -m ai_guardrails verify --profile full`.
 
 This repository also keeps normally optional hardening gates active itself: tests required, `tach.toml` defines guardrail-script dependency layers with `root_module = "forbid"` plus explicit source-module assignment and stale-reference rejection, Interrogate enforces 80% docstring-coverage ratchet, `pip-audit` runs against `config/dev-lock.txt`, Mutmut and Semgrep run in manual profile, Gitleaks secret scanning runs in `full`, `ci`, manual `security` profiles.
 
 `AGENTS.guardrails.md` is generated for this repository and should be refreshed
-with `python3 -m scripts.guardrail guidance` whenever `[tool.ai_guardrails]`
+with `python3 -m ai_guardrails guidance` whenever `[tool.ai_guardrails]`
 changes.
 
 Generated files are skipped by the file-length check when they contain common generated-file markers near the top. Lock files and binary assets are excluded from the change-budget check.

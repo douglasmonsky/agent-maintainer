@@ -5,7 +5,7 @@ The goal is maintainable code, not just passing code. Treat the guardrails as th
 Also read `AGENTS.guardrails.md` before changing code. It is generated from
 `[tool.ai_guardrails]` and summarizes the active mode, paths, thresholds, and
 required verification commands. If guardrail configuration changes, regenerate it
-with `python3 -m scripts.guardrail guidance`.
+with `python3 -m ai_guardrails guidance`.
 
 ## Verification workflow
 
@@ -14,13 +14,13 @@ profile before completion. If those hooks are unavailable, were bypassed, or
 need a failure reproduced manually, run:
 
 ```bash
-python3 -m scripts.guardrail verify --profile precommit
+python3 -m ai_guardrails verify --profile precommit
 ```
 
 Before opening or merging a larger change, run:
 
 ```bash
-python3 -m scripts.guardrail verify --profile full
+python3 -m ai_guardrails verify --profile full
 ```
 
 Do not claim completion while required hooks or manual checks fail. Do not lower
@@ -74,4 +74,4 @@ This repository uses `tach.toml` for architecture contracts. Keep `root_module =
 
 Fix the root cause. Do not bypass hooks. If the hook is wrong, make the smallest possible correction to the hook or configuration and explain why in the PR notes.
 
-Optional checks must be explicit. Missing optional architecture config is a skip only outside configured strict mode. This repository also enforces an Interrogate docstring-coverage ratchet. Missing guardrail scripts, missing configured source roots in precommit/full/ci, missing required tests, or a broken package install are failures.
+Optional checks must be explicit. Missing optional architecture config is a skip only outside configured strict mode. This repository also enforces an Interrogate docstring-coverage ratchet. Missing guardrail package entrypoints, missing configured source roots in precommit/full/ci, missing required tests, or a broken package install are failures.

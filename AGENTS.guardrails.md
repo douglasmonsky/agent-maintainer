@@ -1,7 +1,7 @@
 # Generated Guardrail Guidance
 
 This file is generated from `[tool.ai_guardrails]` by
-`python3 -m scripts.guardrail guidance`. Do not edit it by hand; update
+`python3 -m ai_guardrails guidance`. Do not edit it by hand; update
 configuration first, then regenerate it.
 
 ## Operating Intent
@@ -31,10 +31,10 @@ configuration first, then regenerate it.
 ## Active Configuration
 
 - Mode: `fresh-strict`
-- Source roots: `scripts`, `.codex/hooks`, `guardrail_lib`
+- Source roots: `src/ai_guardrails`, `.codex/hooks`
 - Test roots: `tests`
-- Package paths: `scripts`, `.codex/hooks`, `guardrail_lib`
-- Coverage source: `scripts`, `.codex/hooks`, `guardrail_lib`
+- Package paths: `src/ai_guardrails`, `.codex/hooks`
+- Coverage source: `src/ai_guardrails`, `.codex/hooks`
 - Architecture backend: `tach`
 - Tests required: `true`
 - Diagnostic artifacts: `enabled` at `.verify-logs`
@@ -47,11 +47,11 @@ configuration first, then regenerate it.
   before completion.
 - Run the precommit profile manually when hooks are unavailable, after bypassing hooks,
   or when reproducing a hook failure:
-  `python3 -m scripts.guardrail verify --profile precommit`.
+  `python3 -m ai_guardrails verify --profile precommit`.
 - Run the full profile before merging larger changes or changing shared guardrail logic:
-  `python3 -m scripts.guardrail verify --profile full`.
+  `python3 -m ai_guardrails verify --profile full`.
 - After changing `[tool.ai_guardrails]`, run
-  `python3 -m scripts.guardrail guidance` and `python3 -m scripts.guardrail doctor`.
+  `python3 -m ai_guardrails guidance` and `python3 -m ai_guardrails doctor`.
 
 ## Thresholds To Preserve
 
@@ -73,7 +73,7 @@ configuration first, then regenerate it.
 
 - pip-audit: enabled with `-r config/dev-lock.txt`
 - Mutmut: enabled with `run`
-- Semgrep: enabled with `scan --config semgrep.yml --error --metrics=off scripts .codex/hooks guardrail_lib`
+- Semgrep: enabled with `scan --config semgrep.yml --error --metrics=off src/ai_guardrails .codex/hooks`
 - OSV Scanner: `disabled`
 - Trivy: `disabled`
 - Python SBOM: enabled with `requirements config/dev-lock.txt --output-reproducible --of JSON`

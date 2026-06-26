@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts import verify_quiet
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_models import Check, CheckResult
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.models import Check, CheckResult
+from ai_guardrails.verify import quiet as verify_quiet
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30

@@ -42,7 +42,7 @@ Baseline format:
 Generate or refresh the baseline after choosing the intended limits:
 
 ```bash
-python3 -m scripts.check_file_lengths \
+python3 -m ai_guardrails.checks.file_lengths \
   --write-baseline .guardrails/file-length-baseline.json
 ```
 
@@ -51,8 +51,8 @@ Refresh deliberately. A refresh accepts the current state as the new floor, so r
 Recommended adoption path:
 
 1. Configure correct source, test, package, coverage, file-length, and vulture paths.
-2. Run `python3 -m scripts.guardrail doctor` and fix hard failures first.
-3. Run `python3 -m scripts.guardrail verify --profile fast`.
+2. Run `python3 -m ai_guardrails doctor` and fix hard failures first.
+3. Run `python3 -m ai_guardrails verify --profile fast`.
 4. Add tests or set `require_tests = false` only when tests are intentionally absent.
 5. Generate `.guardrails/file-length-baseline.json` if oversized legacy files exist.
 6. Promote to `precommit`, then `full`, then `ci`.
@@ -61,7 +61,7 @@ Recommended adoption path:
 Useful overrides during adoption:
 
 ```bash
-python3 -m scripts.guardrail verify --profile full \
+python3 -m ai_guardrails verify --profile full \
   --mode legacy-ratchet \
   --source-root my_package \
   --package-path my_package \

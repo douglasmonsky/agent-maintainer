@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
-"""Codex Stop hook: run final verification before the agent finishes."""
+"""Codex Stop hook: run final verification before agent finishes."""
 
 from __future__ import annotations
 
 import importlib
 import json
+import os
 import subprocess  # nosec B404
 import sys
 import time
@@ -26,13 +26,25 @@ PROFILE = "precommit"
 
 
 def verifier_python(repo_root: Path) -> str:
-    """Prefer the repository virtualenv when running final verification."""
+    """Prefer virtualenv verification."""
 
     for relative in (".venv/bin/python", "venv/bin/python"):
         candidate = repo_root / relative
         if candidate.exists():
             return str(candidate)
     return sys.executable
+
+
+def verifier_env(repo_root: Path) -> dict[str, str]:
+    """Return hook subprocess environment with local src package importable."""
+
+    env = hardened_subprocess_env()
+    src_path = str(repo_root / "src")
+    existing_pythonpath = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = (
+        f"{src_path}{os.pathsep}{existing_pythonpath}" if existing_pythonpath else src_path
+    )
+    return env
 
 
 def emit(payload: dict[str, object]) -> int:
@@ -50,16 +62,13 @@ def main() -> int:
     except json.JSONDecodeError:
         payload = {}
 
-    # Avoid infinite continuation loops. Codex sets this when the Stop hook
-    # already continued the turn once.
     if payload.get("stop_hook_active") is True:
         return emit({"continue": True})
 
     repo_root = Path(__file__).resolve().parents[2]
-    verifier = repo_root / "scripts" / "guardrail.py"
+    verifier = repo_root / "src" / "ai_guardrails" / "__main__.py"
     started_at = utc_timestamp()
     started = time.monotonic()
-
     if not verifier.exists():
         record_hook_result(
             repo_root,
@@ -80,7 +89,7 @@ def main() -> int:
                 "decision": "block",
                 "reason": (
                     f"Repository guardrail verifier is missing at {verifier}. "
-                    "Restore it before finishing."
+                    "Restore src/ai_guardrails before finishing."
                 ),
             }
         )
@@ -88,7 +97,7 @@ def main() -> int:
     command = [
         verifier_python(repo_root),
         "-m",
-        "scripts.guardrail",
+        "ai_guardrails",
         "verify",
         "--profile",
         PROFILE,
@@ -98,7 +107,7 @@ def main() -> int:
     result = subprocess.run(  # nosec B603
         command,
         cwd=repo_root,
-        env=hardened_subprocess_env(),
+        env=verifier_env(repo_root),
         text=True,
         capture_output=True,
         check=False,
@@ -116,7 +125,6 @@ def main() -> int:
             duration_seconds=duration_since(started),
         ),
     )
-
     if result.returncode == 0:
         return emit({"continue": True})
 
@@ -124,12 +132,11 @@ def main() -> int:
     if len(output) > MAX_CONTEXT:
         truncated_output = output[:MAX_CONTEXT].rstrip()
         output = f"{truncated_output}\n... truncated. Full logs are in .verify-logs/."
-
     return emit(
         {
             "decision": "block",
             "reason": (
-                "Final verification failed. Fix the issues below before finishing. "
+                "Final verification failed. Fix issues below before finishing. "
                 f"Do not lower thresholds or add broad suppressions.\n\n{output}"
             ),
         }

@@ -2,7 +2,7 @@
 
 ## Everyday gates
 
-`python3 -m scripts.guardrail` is the canonical entrypoint. Use `python3 -m scripts.guardrail bootstrap` for one-command local setup, `python3 -m scripts.guardrail doctor` for setup health, `python3 -m scripts.guardrail guidance` for generated agent-facing guidance, `python3 -m scripts.guardrail verify --profile precommit` for local completion checks, `python3 -m scripts.guardrail verify --profile full` for deeper review, `python3 -m scripts.guardrail verify --profile manual` for slow opt-in checks, and `python3 -m scripts.guardrail install` to install local hooks without reinstalling dependencies.
+`python3 -m ai_guardrails` is the canonical entrypoint. Use `python3 -m ai_guardrails bootstrap` for one-command local setup, `python3 -m ai_guardrails doctor` for setup health, `python3 -m ai_guardrails guidance` for generated agent-facing guidance, `python3 -m ai_guardrails verify --profile precommit` for local completion checks, `python3 -m ai_guardrails verify --profile full` for deeper review, `python3 -m ai_guardrails verify --profile manual` for slow opt-in checks, and `python3 -m ai_guardrails install` to install local hooks without reinstalling dependencies.
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state.
 
@@ -39,7 +39,7 @@ diagnostics and CI artifacts.
 Mutmut provides mutation testing in the `manual` profile only. It is disabled by
 default for drop-in use; enable it with `enable_mutmut = true` and configure
 `mutmut_args` plus `[tool.mutmut]` source/test paths for nonstandard layouts.
-The verifier runs Mutmut through `scripts.run_mutmut`, which removes the
+The verifier runs Mutmut through `ai_guardrails.runners.mutmut`, which removes the
 generated `mutants` directory after successful runs. Set
 `AI_GUARDRAILS_KEEP_MUTANTS=true` only when explicitly debugging mutation
 artifacts. Mutmut requires fork support, so native Windows users should run it
@@ -123,7 +123,7 @@ supported backend and is treated as an external binary. The abstraction is
 backend-neutral so a future Betterleaks backend can be added without changing
 the public config shape.
 
-Normal scans run through `scripts.run_secret_scan`: `full` scans the current
+Normal scans run through `ai_guardrails.runners.secret_scan`: `full` scans the current
 tree, `ci` scans the comparison range, and staged verifier runs scan the staged
 diff through stdin. The manual `security` profile runs a full-history scan.
 Gitleaks reports are written under `.verify-logs/` and run with redaction.

@@ -7,15 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from guardrail_lib.checks import change_budget as check_change_budget
-from guardrail_lib.checks import file_lengths as check_file_lengths
-from guardrail_lib.checks import suppression_budget as check_suppression_budget
-from scripts import (
-    check_tach_config,
-)
-from scripts.guardrail_core import executor as guardrail_executor
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_models import Check
+from ai_guardrails.checks import change_budget as check_change_budget
+from ai_guardrails.checks import file_lengths as check_file_lengths
+from ai_guardrails.checks import suppression_budget as check_suppression_budget
+from ai_guardrails.checks import tach_config as check_tach_config
+from ai_guardrails.core import executor as guardrail_executor
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.models import Check
 
 PYLINT_DISABLE_ALL = "# pylint:" + " disable" + "=all"
 PYRIGHT_REPORT_DISABLE = "# py" + "right: reportGeneralTypeIssues" + "=false"

@@ -6,8 +6,8 @@ import subprocess
 
 import pytest
 
-from guardrail_lib.checks import suppression_budget as check_suppression_budget
-from scripts.guardrail_core.config import GuardrailConfig
+from ai_guardrails.checks import suppression_budget as check_suppression_budget
+from ai_guardrails.core.config import GuardrailConfig
 
 NOQA_SUPPRESSION = "# " + "noqa"
 TYPE_IGNORE_SUPPRESSION = "# " + "type: ignore[assignment]"
@@ -44,8 +44,8 @@ def test_suppression_added_python_lines_parses_diff(monkeypatch: pytest.MonkeyPa
 def test_suppression_added_python_lines_ignores_copied_destinations(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    diff = f"+++ b/guardrail_lib/checks/tool.py\n+value = call() {NOQA_SUPPRESSION}\n"
-    name_status = "C099\tscripts/check_tool.py\tguardrail_lib/checks/tool.py\n"
+    diff = f"+++ b/src/ai_guardrails/checks/tool.py\n+value = call() {NOQA_SUPPRESSION}\n"
+    name_status = "C099\tscripts/check_tool.py\tsrc/ai_guardrails/checks/tool.py\n"
     diff_result = subprocess.CompletedProcess(["git"], 0, stdout=diff, stderr="")
     name_status_result = subprocess.CompletedProcess(
         ["git"],

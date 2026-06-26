@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.guardrail_core import executor as guardrail_executor
-from scripts.guardrail_core import reporting as guardrail_reporting
-from scripts.guardrail_models import Check, CheckResult
+from ai_guardrails.core import executor as guardrail_executor
+from ai_guardrails.core import reporting as guardrail_reporting
+from ai_guardrails.models import Check, CheckResult
 
 
 def test_run_check_prefers_structured_artifact_summary(

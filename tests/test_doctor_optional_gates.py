@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts import guardrail_doctor
-from scripts.guardrail_core.config import GuardrailConfig
-from scripts.guardrail_doctor_support import policy as guardrail_doctor_policy
+from ai_guardrails.core.config import GuardrailConfig
+from ai_guardrails.doctor import cli as guardrail_doctor
+from ai_guardrails.doctor.support import policy as guardrail_doctor_policy
 
 
 def write_repo_root(tmp_path: Path) -> Path:

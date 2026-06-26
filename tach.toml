@@ -1,8 +1,7 @@
-source_roots = ["."]
+source_roots = ["src", ".codex/hooks"]
 root_module = "forbid"
 exact = true
 exclude = [
-  ".codex/",
   ".git/",
   ".mypy_cache/",
   ".pytest_cache/",
@@ -18,75 +17,75 @@ exclude = [
 layers = ["entrypoint", "orchestration", "runtime", "shared", "models"]
 
 [[modules]]
-path = "scripts"
-layer = "shared"
-
-[[modules]]
-path = "guardrail_lib"
-layer = "shared"
-
-[[modules]]
-path = "scripts.guardrail"
+paths = [
+  "ai_guardrails.cli",
+  "ai_guardrails.__main__",
+  "hook_audit",
+  "post_edit_fast_gate",
+  "stop_full_verify",
+]
 layer = "entrypoint"
 
 [[modules]]
 paths = [
-  "scripts.check_change_budget",
-  "scripts.check_file_lengths",
-  "scripts.check_pip_audit_config",
-  "scripts.check_structure",
-  "scripts.check_suppression_budget",
-  "scripts.check_tach_config",
-  "scripts.guardrail_doctor",
-  "scripts.guardrail_doctor_setup",
-  "scripts.guardrail_core.guidance",
-  "scripts.run_mutmut",
-  "scripts.run_bandit",
-  "scripts.run_pyright",
-  "scripts.run_ruff",
-  "scripts.guardrail_tach",
-  "scripts.verify_quiet",
+  "ai_guardrails.catalogs",
+  "ai_guardrails.catalogs.catalog",
+  "ai_guardrails.catalogs.docs",
+  "ai_guardrails.catalogs.python",
+  "ai_guardrails.catalogs.security",
+  "ai_guardrails.checks.pip_audit_config",
+  "ai_guardrails.checks.tach_config",
+  "ai_guardrails.doctor",
+  "ai_guardrails.doctor.cli",
+  "ai_guardrails.doctor.setup",
+  "ai_guardrails.doctor.support.logs",
+  "ai_guardrails.runners",
+  "ai_guardrails.runners.bandit",
+  "ai_guardrails.runners.mutmut",
+  "ai_guardrails.runners.pyright",
+  "ai_guardrails.runners.ruff",
+  "ai_guardrails.runners.secret_scan",
+  "ai_guardrails.verify",
+  "ai_guardrails.verify.quiet",
 ]
 layer = "orchestration"
 
 [[modules]]
 paths = [
-  "scripts.guardrail_core.args",
-  "scripts.guardrail_catalogs",
-  "scripts.guardrail_catalogs.catalog",
-  "scripts.guardrail_catalogs.docs",
-  "scripts.guardrail_catalogs.python",
-  "scripts.guardrail_catalogs.security",
-  "scripts.guardrail_doctor_support.hook_audit",
-  "scripts.guardrail_doctor_support.policy",
-  "scripts.guardrail_doctor_support.logs",
-  "scripts.guardrail_core.executor",
-  "scripts.guardrail_core.layout",
-  "scripts.guardrail_core.runtime",
-  "scripts.guardrail_core.tool_capabilities",
-  "scripts.run_secret_scan",
-  "guardrail_lib.checks.change_budget",
-  "guardrail_lib.checks.file_lengths",
-  "guardrail_lib.checks.structure",
-  "guardrail_lib.checks.suppression_budget",
+  "ai_guardrails.checks",
+  "ai_guardrails.checks.change_budget",
+  "ai_guardrails.checks.file_lengths",
+  "ai_guardrails.checks.structure",
+  "ai_guardrails.checks.suppression_budget",
+  "ai_guardrails.core",
+  "ai_guardrails.core.args",
+  "ai_guardrails.core.bootstrap",
+  "ai_guardrails.core.config",
+  "ai_guardrails.core.executor",
+  "ai_guardrails.core.guidance",
+  "ai_guardrails.core.layout",
+  "ai_guardrails.core.reporting",
+  "ai_guardrails.core.runtime",
+  "ai_guardrails.core.tool_capabilities",
+  "ai_guardrails.doctor.support",
+  "ai_guardrails.doctor.support.hook_audit",
+  "ai_guardrails.doctor.support.policy",
+  "ai_guardrails.tach",
 ]
 layer = "runtime"
 
 [[modules]]
 paths = [
-  "scripts.guardrail_core.config",
-  "scripts.guardrail_core.reporting",
-  "guardrail_lib.config.coercion",
-  "guardrail_lib.config.loader",
-  "guardrail_lib.config.modes",
-  "guardrail_lib.verify.artifacts",
+  "ai_guardrails",
+  "ai_guardrails.config",
+  "ai_guardrails.config.coercion",
+  "ai_guardrails.config.loader",
+  "ai_guardrails.config.modes",
+  "ai_guardrails.config.schema",
+  "ai_guardrails.verify.artifacts",
 ]
 layer = "shared"
 
 [[modules]]
-paths = [
-  "scripts.guardrail_doctor_support.models",
-  "scripts.guardrail_models",
-  "guardrail_lib.config.schema",
-]
+paths = ["ai_guardrails.models", "ai_guardrails.doctor.support.models"]
 layer = "models"

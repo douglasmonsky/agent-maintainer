@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.guardrail_core import executor as guardrail_executor
-from scripts.guardrail_models import Check
+from ai_guardrails.core import executor as guardrail_executor
+from ai_guardrails.models import Check
 
 
 def test_tool_search_path_prefers_local_virtualenv(
@@ -29,6 +29,18 @@ def test_command_env_disables_bytecode_writes_by_default(monkeypatch: pytest.Mon
     monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)
 
     assert guardrail_executor.command_env()["PYTHONDONTWRITEBYTECODE"] == "1"
+
+
+def test_command_env_adds_local_package_pythonpath(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    package_path = tmp_path / "src" / "ai_guardrails"
+    package_path.mkdir(parents=True)
+    monkeypatch.setenv("PYTHONPATH", "existing")
+
+    assert guardrail_executor.command_env()["PYTHONPATH"] == f"src{os.pathsep}existing"
 
 
 def test_missing_requirement_reports_required_path(tmp_path: Path) -> None:
@@ -72,7 +84,7 @@ def test_tach_config_skip_reports_configured_reason(
     monkeypatch.chdir(tmp_path)
     check = Check(
         "tach-config",
-        ["python", "-m", "scripts.check_tach_config"],
+        ["python", "-m", "ai_guardrails.checks.tach_config"],
         frozenset(),
         optional_skip_reason="tach.toml is absent",
     )
