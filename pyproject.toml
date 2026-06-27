@@ -102,7 +102,7 @@ log_dir = ".verify-logs"
 [tool.mutmut]
 source_paths = ["src/ai_guardrails/"]
 only_mutate = ["src/ai_guardrails/core/runtime.py"]
-pytest_add_cli_args_test_selection = ["tests/test_runtime.py"]
+pytest_add_cli_args_test_selection = ["tests/core/test_runtime.py"]
 pytest_add_cli_args = ["-p", "no:tach"]
 mutate_only_covered_lines = true
 use_setproctitle = false

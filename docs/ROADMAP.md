@@ -296,7 +296,7 @@ repo state instead of reconstructing the plan from chat history.
 
 - [x] Reorganize flat `tests/` files into responsibility folders mirroring `src/ai_guardrails`.
 - [x] Add stable test path helpers so moved tests do not depend on fragile `Path(__file__).parents[...]` depths.
-- [ ] Split near-limit bootstrap helper tests by install, path, and environment responsibilities.
+- [x] Split near-limit bootstrap helper tests by install, path, and environment responsibilities.
 - [ ] Keep pytest discovery, coverage, mutmut, and guardrail paths working after test moves.
 - [ ] Review source modules near size or complexity pressure and extract cohesive helpers only where boundaries are already clear.
 - [ ] Confirm Tach remains exact and all runtime modules remain explicitly assigned.
