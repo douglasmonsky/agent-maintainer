@@ -31,7 +31,8 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
         "Repository maintenance checks and diagnostics for AI-assisted Python development."
     )
     assert metadata["project"]["scripts"] == {
-        "agent-maintainer": "agent_maintainer.cli:console_main"
+        "agent-maintainer": "agent_maintainer.cli:console_main",
+        "archguard": "archguard.cli:console_main",
     }
     assert metadata["project"]["license"]
     assert metadata["project"]["authors"] == [{"name": "Doug Monsky"}]
@@ -121,3 +122,21 @@ def test_package_module_entrypoint_help() -> None:
 
     assert result.returncode == 0, result.stderr
     assert "python -m agent_maintainer verify --profile precommit" in result.stdout
+
+
+def test_archguard_module_entrypoint_help() -> None:
+    """The Archguard entrypoint works without relying on console PATH state."""
+
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(REPO_ROOT / "src")
+    result = subprocess.run(  # nosec B603
+        [sys.executable, "-m", "archguard", "--help"],
+        cwd=REPO_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "tach-config" in result.stdout

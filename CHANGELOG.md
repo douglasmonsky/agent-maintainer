@@ -1,10 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Added Since 0.1.0b1
+
+- Archguard CLI: `archguard` and `python -m archguard` for architecture policy
+  governance.
+
+### Beta Notes Since 0.1.0b1
+
+- Known limitation: Semgrep is excluded from `manual` and `all` extras on Python
+  3.13+ while upstream dependency resolution is unstable there.
+
 ## 0.1.0b1 - 2026-06-27
 
 Initial beta release of Agent Maintainer.
 
-### Added
+### Added In 0.1.0b1
 
 - Package-first CLI: `agent-maintainer` and `python -m agent_maintainer`.
 - `init` tracks: `core`, `agent`, and `hardening`.
@@ -17,7 +29,7 @@ Initial beta release of Agent Maintainer.
 - Release-only packaging checks for dependency resolution, wheel/sdist builds,
   artifact metadata, and console-script smoke tests.
 
-### Beta Notes
+### Beta Notes For 0.1.0b1
 
 - Starter files and defaults may change before 1.0.
 - Public config is intended to stabilize through beta feedback.

@@ -42,6 +42,7 @@ Documentation = "https://github.com/douglasmonsky/agent-maintainer#readme"
 
 [project.scripts]
 agent-maintainer = "agent_maintainer.cli:console_main"
+archguard = "archguard.cli:console_main"
 
 [project.optional-dependencies]
 core = [
@@ -143,12 +144,17 @@ where = ["src"]
 [tool.agent_maintainer]
 mode = "fresh-strict"
 architecture_tool = "tach"
-source_roots = ["src/agent_maintainer", ".codex/hooks"]
+source_roots = ["src/agent_maintainer", "src/archguard", ".codex/hooks"]
 test_roots = ["tests"]
-package_paths = ["src/agent_maintainer", ".codex/hooks"]
-coverage_source = ["src/agent_maintainer", ".codex/hooks"]
-file_length_paths = ["src/agent_maintainer", ".codex/hooks", "tests"]
-structure_paths = ["src/agent_maintainer", ".codex/hooks"]
+package_paths = ["src/agent_maintainer", "src/archguard", ".codex/hooks"]
+coverage_source = ["src/agent_maintainer", "src/archguard", ".codex/hooks"]
+file_length_paths = [
+  "src/agent_maintainer",
+  "src/archguard",
+  ".codex/hooks",
+  "tests",
+]
+structure_paths = ["src/agent_maintainer", "src/archguard", ".codex/hooks"]
 structure_ignore_paths = [
   "tests/**",
   "migrations/**",
@@ -160,7 +166,12 @@ structure_ignore_paths = [
 folder_file_warn = 20
 folder_file_block = 40
 structure_cluster_min = 4
-vulture_paths = ["src/agent_maintainer", ".codex/hooks", "tests"]
+vulture_paths = [
+  "src/agent_maintainer",
+  "src/archguard",
+  ".codex/hooks",
+  "tests",
+]
 require_tests = true
 coverage_fail_under = 90
 diff_cover_fail_under = 90
@@ -182,6 +193,7 @@ semgrep_args = [
   "--error",
   "--metrics=off",
   "src/agent_maintainer",
+  "src/archguard",
   ".codex/hooks",
 ]
 semgrep_profiles = ["manual"]
@@ -269,7 +281,7 @@ markers = [
 ]
 
 [tool.deptry]
-known_first_party = ["agent_maintainer", "hook_audit"]
+known_first_party = ["agent_maintainer", "archguard", "hook_audit"]
 requirements_files = ["requirements.txt"]
 requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
 

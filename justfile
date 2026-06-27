@@ -40,17 +40,17 @@ verify-full-output:
     ruff format --check .
     ruff check .
     python3 -m agent_maintainer.runners.pyright
-    pytest -q --tb=short --disable-warnings --cov=.codex/hooks --cov=src/agent_maintainer --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=90 tests
-    radon cc .codex/hooks src/agent_maintainer -a -s
-    radon mi .codex/hooks src/agent_maintainer -s
-    xenon --max-absolute B --max-modules A --max-average A .codex/hooks src/agent_maintainer
-    pylint .codex/hooks src/agent_maintainer --score=n
-    python3 -m agent_maintainer.checks.tach_config --strict-root-module
+    pytest -q --tb=short --disable-warnings --cov=.codex/hooks --cov=src/agent_maintainer --cov=src/archguard --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=90 tests
+    radon cc .codex/hooks src/agent_maintainer src/archguard -a -s
+    radon mi .codex/hooks src/agent_maintainer src/archguard -s
+    xenon --max-absolute B --max-modules A --max-average A .codex/hooks src/agent_maintainer src/archguard
+    pylint .codex/hooks src/agent_maintainer src/archguard --score=n
+    python3 -m archguard tach-config --strict-root-module
     tach check --exact
-    interrogate --fail-under=80 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic .codex/hooks src/agent_maintainer
+    interrogate --fail-under=80 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic .codex/hooks src/agent_maintainer src/archguard
     deptry .
-    vulture .codex/hooks src/agent_maintainer tests
-    bandit -q -r .codex/hooks src/agent_maintainer
+    vulture .codex/hooks src/agent_maintainer src/archguard tests
+    bandit -q -r .codex/hooks src/agent_maintainer src/archguard
     markdownlint-cli2 "**/*.md"
     yamllint .github/workflows .pre-commit-config.yaml .markdownlint-cli2.yaml .yamllint zizmor.yml
     taplo fmt --check pyproject.toml tach.toml config/*.toml

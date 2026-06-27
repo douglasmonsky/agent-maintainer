@@ -52,6 +52,18 @@ layer = "orchestration"
 
 [[modules]]
 paths = [
+  "archguard",
+  "archguard.__main__",
+  "archguard.cli",
+  "archguard.decision_notes",
+  "archguard.git_diff",
+  "archguard.models",
+  "archguard.tach_config",
+]
+layer = "runtime"
+
+[[modules]]
+paths = [
   "agent_maintainer.checks",
   "agent_maintainer.checks.change_budget",
   "agent_maintainer.checks.file_lengths",

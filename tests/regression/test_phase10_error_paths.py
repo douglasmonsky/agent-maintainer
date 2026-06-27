@@ -14,6 +14,7 @@ from agent_maintainer.checks import tach_config as check_tach_config
 from agent_maintainer.core import executor as maintainer_executor
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.models import Check
+from archguard import cli as archguard_cli
 
 PYLINT_DISABLE_ALL = "# pylint:" + " disable" + "=all"
 PYRIGHT_REPORT_DISABLE = "# py" + "right: reportGeneralTypeIssues" + "=false"
@@ -116,7 +117,7 @@ def test_file_length_expand_paths_falls_back_to_configured_roots(
 def test_tach_config_main_reports_issues(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(check_tach_config, "tach_config_issues", lambda *args, **kwargs: ["bad"])
+    monkeypatch.setattr(archguard_cli, "tach_config_issues", lambda *args, **kwargs: ["bad"])
 
     assert check_tach_config.main(["--strict-root-module"]) == 1
     assert "bad" in capsys.readouterr().out

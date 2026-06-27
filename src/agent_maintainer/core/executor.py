@@ -85,7 +85,7 @@ def optional_skip_applies(check: Check) -> bool:
 
     if check.name == "import-linter":
         return not Path(".importlinter").exists()
-    if check.name in {"tach", "tach-config"}:
+    if check.name in {"tach", "tach-config", "architecture-decision"}:
         return not Path("tach.toml").exists()
     if check.name in {"actionlint", "zizmor"}:
         return not Path(".github/workflows").exists()

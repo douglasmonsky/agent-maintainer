@@ -83,7 +83,7 @@ def test_release_extra_dependency_graph_installs(tmp_path: Path, extra: str) -> 
 
     assert result.returncode == 0, result.stdout + result.stderr
 
-    result = run([str(python), "-c", "import agent_maintainer"])
+    result = run([str(python), "-c", "import agent_maintainer; import archguard"])
     assert result.returncode == 0, result.stdout + result.stderr
 
 
@@ -151,3 +151,11 @@ def test_release_builds_artifacts_and_installs_console_script(
         )
         assert result.returncode == 0, result.stdout + result.stderr
         assert "python -m agent_maintainer verify --profile precommit" in result.stdout
+        result = run(
+            [
+                str(python.parent / "archguard"),
+                "--help",
+            ]
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "tach-config" in result.stdout

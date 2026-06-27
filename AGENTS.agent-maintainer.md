@@ -31,15 +31,26 @@ configuration first, then regenerate it.
 ## Active Configuration
 
 - Mode: `fresh-strict`
-- Source roots: `src/agent_maintainer`, `.codex/hooks`
+- Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`
 - Test roots: `tests`
-- Package paths: `src/agent_maintainer`, `.codex/hooks`
-- Coverage source: `src/agent_maintainer`, `.codex/hooks`
+- Package paths: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`
+- Coverage source: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`
 - Architecture backend: `tach`
 - Tests required: `true`
 - Diagnostic artifacts: `enabled` at `.verify-logs`
 - Source-without-test-change errors in profiles: `precommit`
 - Source-only changes without test-file changes: `blocked`
+
+## Architecture Policy Changes
+
+- `tach.toml`, `tach.domain.toml`, and architecture boundary
+ configuration are policy files.
+- If a policy file changes, add or update a decision note under
+ `docs/architecture/decisions/`.
+- The note must explain why the policy change is intentional and why
+ it is not architecture drift.
+- Prefer refactoring code to preserve an existing boundary before
+ changing the boundary.
 
 ## Verification Flow
 
@@ -73,7 +84,7 @@ configuration first, then regenerate it.
 
 - pip-audit: enabled with `-r config/dev-lock.txt`
 - Mutmut: enabled with `run`
-- Semgrep: enabled with `scan --config semgrep.yml --error --metrics=off src/agent_maintainer .codex/hooks`
+- Semgrep: enabled with `scan --config semgrep.yml --error --metrics=off src/agent_maintainer src/archguard .codex/hooks`
 - OSV Scanner: `disabled`
 - Trivy: `disabled`
 - Python SBOM: enabled with `requirements config/dev-lock.txt --output-reproducible --of JSON`

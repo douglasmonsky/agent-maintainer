@@ -109,6 +109,8 @@ python3 -m agent_maintainer verify --profile full
 python3 -m agent_maintainer verify --profile ci
 python3 -m agent_maintainer verify --profile security
 python3 -m agent_maintainer verify --profile manual
+python3 -m archguard tach-config --strict-root-module
+python3 -m archguard decision-check --base-ref HEAD
 ```
 
 Profiles are intentionally stable:
@@ -134,7 +136,7 @@ Profiles are intentionally stable:
 | Type discipline | Pyright |
 | Test coverage | Pytest, pytest-cov, coverage, diff-cover |
 | Complexity | Radon reports and Xenon gate |
-| Architecture boundaries | Tach or Import Linter |
+| Architecture boundaries and policy governance | Tach or Import Linter; Archguard for Tach policy-change decisions |
 | Dependency hygiene | deptry |
 | Dead code | vulture |
 | Security checks | Bandit, pip-audit, Gitleaks, Semgrep when enabled |
