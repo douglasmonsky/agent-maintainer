@@ -6,7 +6,6 @@ pytest
 pytest-cov
 coverage
 diff-cover
-hypothesis
 import-linter
 interrogate
 tach
@@ -26,3 +25,4 @@ check-jsonschema
 zizmor
 pre-commit
 wemake-python-styleguide
+twine

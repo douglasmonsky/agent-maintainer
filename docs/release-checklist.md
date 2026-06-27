@@ -9,13 +9,18 @@ discipline, not a normal local edit loop.
 - [ ] Current branch is `main` and matches `origin/main`.
 - [ ] HEAD SHA is recorded in release notes.
 - [ ] Latest GitHub Actions run on `main` passed.
+- [ ] `LICENSE` exists and matches the intended MIT license.
+- [ ] `pyproject.toml` includes license, authors, classifiers, keywords, and
+  project URLs.
+- [ ] README links to the license and this release checklist.
+- [ ] Repo visibility and GitHub URLs are correct for public release.
 - [ ] PyPI project name availability is rechecked immediately before first
   publish: `https://pypi.org/project/agent-maintainer/`.
-- [ ] External links and docs use `douglasmonsky/agent-maintainer`.
 
 ## Versioning
 
 - [ ] `pyproject.toml` has the intended version.
+- [ ] `CHANGELOG.md` has an entry for the version being published.
 - [ ] `config/dev-dependencies.txt` and `config/dev-lock.txt` are in sync.
 - [ ] No generated metadata such as `dist/`, `build/`, `*.egg-info`, or
   `__pycache__/` is staged.
@@ -46,9 +51,20 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 \
   python3 -m pytest -m release tests/release -q
 ```
 
-These release tests intentionally build wheel and sdist artifacts in a temporary
-directory and install each declared extra in clean virtual environments without
-`--no-deps`.
+The release tests intentionally build wheel and sdist artifacts in a temporary
+directory, run `twine check`, install each declared extra in clean virtual
+environments without `--no-deps`, and smoke the console script from built
+artifacts.
+
+## Publishing
+
+- [ ] Build artifacts from a clean tree.
+- [ ] Publish to TestPyPI first.
+- [ ] Install from TestPyPI in a clean environment.
+- [ ] Run `agent-maintainer --help`.
+- [ ] Run `agent-maintainer init --track core --target <tmp-repo>`.
+- [ ] If TestPyPI smoke passes, publish the same version to PyPI.
+- [ ] Create a GitHub release/tag after package publication succeeds.
 
 ## Release Notes
 

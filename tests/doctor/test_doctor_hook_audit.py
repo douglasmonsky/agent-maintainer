@@ -182,7 +182,10 @@ def test_hook_audit_passes_with_latest_passing_event(tmp_path: Path) -> None:
     enable_codex_hooks(tmp_path)
     write_hook_event(tmp_path / ".verify-logs")
 
-    result = maintainer_doctor_hook_audit.check_hook_audit(tmp_path)
+    result = maintainer_doctor_hook_audit.check_hook_audit(
+        tmp_path,
+        now=datetime(2026, 6, 25, 11, tzinfo=UTC),
+    )
 
     assert result.status == maintainer_doctor_hook_audit.OK
     assert "PostToolUse passed" in result.message

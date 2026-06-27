@@ -1,6 +1,10 @@
 # Agent Maintainer
 
-Maintainability checks and repair-loop diagnostics for AI-assisted Python repositories.
+Maintainability checks and repair-loop diagnostics for AI-assisted Python
+repositories.
+
+> Agent Maintainer is in beta. The core workflow is usable, but starter files
+> and defaults may change as it is tested across more Python repository layouts.
 
 Agent Maintainer helps Python repositories stay maintainable under AI-assisted
 development. It combines low-noise verification, change budgets, suppression
@@ -15,10 +19,10 @@ type-checked, covered, diagnosable, and aligned with repo structure.
 
 ## What This Is Not
 
-Agent Maintainer is not a runtime AI safety guardrail system. It does not
-moderate model outputs, filter prompts, block jailbreaks, or validate chatbot
-responses. It focuses on repository health during AI-assisted software
-development.
+Agent Maintainer is not a runtime AI safety system. It does not moderate model
+outputs, filter prompts, block jailbreaks, or validate chatbot responses. It is
+also not a prompt/output moderation framework. Agent Maintainer focuses on
+repository health during AI-assisted software development.
 
 ## Quick Start
 
@@ -51,8 +55,8 @@ PASS
 ```
 
 `doctor` prints one compact `PASS`, `WARN`, or `FAIL` row per setup check. If
-verification fails, inspect the generated diagnostics before changing
-thresholds or suppressions:
+verification fails, inspect generated diagnostics before changing thresholds or
+suppressions:
 
 ```bash
 cat .verify-logs/LAST_FAILURE.md
@@ -62,7 +66,7 @@ The failure note includes failed checks, relevant artifact paths, and an exact
 rerun command.
 
 The console command is convenient for local use. Committed automation should use
-the module entrypoint because it works reliably in editable and local-source
+the module entrypoint because it works reliably in editable local-source
 contexts:
 
 ```bash
@@ -120,11 +124,10 @@ Profiles are intentionally stable:
 | Oversized Python files | `agent_maintainer.checks.file_lengths` |
 | Huge or diffuse changes | `agent_maintainer.checks.change_budget` |
 | Broad suppressions | `agent_maintainer.checks.suppression_budget` |
-| Required repo layout | verifier layout checks |
+| Required repo layout | Verifier layout checks |
 | Style and simple defects | Ruff |
 | Type discipline | Pyright |
-| Tests and total coverage | Pytest, pytest-cov, coverage |
-| Changed-code coverage | diff-cover |
+| Test coverage | Pytest, pytest-cov, coverage, diff-cover |
 | Complexity | Radon reports and Xenon gate |
 | Architecture boundaries | Tach or Import Linter |
 | Dependency hygiene | deptry |
@@ -157,12 +160,12 @@ log_dir = ".verify-logs"
 ```
 
 `mode = "fresh-strict"` is for new repositories that can block strict checks on
-day one. `mode = "legacy-ratchet"` is for existing repositories where heavy
-gates should remain opt-in while changed-code discipline ramps up. This repo
-self-enforces stricter settings than the starter template, including 90 percent
-total coverage.
+day one. `mode = "legacy-ratchet"` is for existing repositories where heavier
+gates should remain opt-in while changed-code discipline ramps up. This
+repository self-enforces stricter settings than the starter template, including
+90 percent total coverage.
 
-Environment overrides use the `AGENT_MAINTAINER_*` prefix, for example:
+Environment overrides use the `AGENT_MAINTAINER_*` prefix:
 
 ```bash
 AGENT_MAINTAINER_SOURCE_ROOTS=src,tests python3 -m agent_maintainer doctor
@@ -170,15 +173,15 @@ AGENT_MAINTAINER_SOURCE_ROOTS=src,tests python3 -m agent_maintainer doctor
 
 ## Agent Guidance
 
-The generated sidecar gives coding agents the current repo policy without
-copying long instructions into every prompt:
+The generated sidecar gives coding agents current repo policy without copying
+long instructions into every prompt:
 
 ```bash
 python3 -m agent_maintainer guidance
 python3 -m agent_maintainer guidance --check
 ```
 
-It writes `AGENTS.agent-maintainer.md` from `[tool.agent_maintainer]`. Update
+This writes `AGENTS.agent-maintainer.md` from `[tool.agent_maintainer]`. Update
 configuration first, then regenerate the sidecar.
 
 ## Optional Tooling
@@ -199,6 +202,18 @@ Node-backed tools such as `markdownlint-cli2` and Taplo are managed through
 npm ci
 ```
 
+## Install From Source
+
+For local development on Agent Maintainer itself, clone the repository and run:
+
+```bash
+python -m pip install -e ".[core]"
+agent-maintainer --help
+```
+
+Normal downstream repositories should use the package-first init flow rather
+than copying `src/agent_maintainer` into application source trees.
+
 ## Local Development
 
 For this repo:
@@ -217,27 +232,14 @@ PYTHONPATH=src python3 -m agent_maintainer bootstrap
 .venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
 ```
 
-## Legacy Vendored Install
-
-Package-first adoption is preferred. Vendoring the tool source into another
-repository is now an advanced private-fork option for early experimentation.
-If you vendor it, keep the generated config and docs aligned with the installed
-package model and do not copy `src/agent_maintainer` into normal application
-source trees.
-
-## Why Not Call This Guardrails?
-
-In AI tooling, "guardrails" usually means runtime model safety controls. Agent
-Maintainer is different: it focuses on repository maintenance during
-AI-assisted software development. It helps coding agents and humans keep changes
-reviewable, tested, and diagnosable.
-
 ## Further Reading
 
-- `docs/tool-map.md` maps profiles to tools.
-- `docs/fresh-strict.md` explains strict new-repo adoption.
-- `docs/legacy-ratchet.md` explains incremental adoption for existing repos.
-- `docs/codex-hooks.md` documents Codex hook setup and trust behavior.
-- `docs/release-checklist.md` lists beta release packaging checks.
-- `docs/troubleshooting.md` covers common setup failures.
-- `docs/structure-cohesion.md` explains folder-size and cohesion hints.
+- [MIT License](LICENSE)
+- [Changelog](CHANGELOG.md)
+- [Tool map](docs/tool-map.md)
+- [Fresh-strict mode](docs/fresh-strict.md)
+- [Legacy-ratchet mode](docs/legacy-ratchet.md)
+- [Codex hooks](docs/codex-hooks.md)
+- [Release checklist](docs/release-checklist.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Structure cohesion](docs/structure-cohesion.md)
