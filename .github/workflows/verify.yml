@@ -51,7 +51,6 @@ jobs:
             -q
 
   verify:
-    name: full verification
     runs-on: ubuntu-latest
     env:
       PYTHONDONTWRITEBYTECODE: "1"
