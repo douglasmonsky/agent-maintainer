@@ -8,6 +8,11 @@
 
 The `manual` profile is intentionally separate from `full`. Put slow, expensive, or artifact-producing checks there so normal local deep verification stays predictable.
 
+`just release-check` is intentionally release-only. It opts into tests marked
+`release`, builds wheel and sdist artifacts in a temporary directory, and
+installs declared extras in clean virtual environments without `--no-deps`.
+Run it before tagging or publishing, not during the normal precommit loop.
+
 `doctor` uses a tool capability model so setup failures distinguish Python
 package commands, external binaries, GitHub Actions-only tools, and manual
 optional tools. Bootstrap installs the Python package tools from the dependency

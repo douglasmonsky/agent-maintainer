@@ -231,6 +231,9 @@ exclude_lines = [
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]
 testpaths = ["tests"]
+markers = [
+  "release: explicit release-readiness checks that may build artifacts or install dependency graphs",
+]
 
 [tool.deptry]
 known_first_party = ["agent_maintainer", "hook_audit"]
@@ -241,6 +244,7 @@ requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
 DEP002 = [
   "actionlint-py",
   "bandit",
+  "build",
   "check-jsonschema",
   "coverage",
   "cyclonedx-bom",

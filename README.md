@@ -238,5 +238,6 @@ reviewable, tested, and diagnosable.
 - `docs/fresh-strict.md` explains strict new-repo adoption.
 - `docs/legacy-ratchet.md` explains incremental adoption for existing repos.
 - `docs/codex-hooks.md` documents Codex hook setup and trust behavior.
+- `docs/release-checklist.md` lists beta release packaging checks.
 - `docs/troubleshooting.md` covers common setup failures.
 - `docs/structure-cohesion.md` explains folder-size and cohesion hints.
