@@ -8,8 +8,8 @@ DEFAULT_SOURCE_ROOTS = ("src",)
 DEFAULT_TEST_ROOTS = ("tests",)
 DEFAULT_PACKAGE_PATHS = ("src",)
 DEFAULT_COVERAGE_SOURCE = ("src",)
-DEFAULT_FILE_LENGTH_PATHS = ("src", "tests", "scripts", ".codex/hooks")
-DEFAULT_VULTURE_PATHS = ("src", "tests", "scripts")
+DEFAULT_FILE_LENGTH_PATHS = ("src", "tests", ".codex/hooks")
+DEFAULT_VULTURE_PATHS = ("src", "tests", ".codex/hooks")
 DEFAULT_STRUCTURE_IGNORE_PATHS = (
     "tests/**",
     "migrations/**",

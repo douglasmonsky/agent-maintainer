@@ -5,6 +5,9 @@ from __future__ import annotations
 import py_compile
 from pathlib import Path
 
+from yamllint import linter
+from yamllint.config import YamlLintConfig
+
 from agent_maintainer.core import init_template_config, initializer
 from tests.support.paths import REPO_ROOT
 
@@ -25,10 +28,22 @@ def test_core_init_writes_minimum_adoption_files(tmp_path: Path) -> None:
 
     config = (tmp_path / STARTER_CONFIG).read_text(encoding="utf-8")
     dependencies = (tmp_path / "config" / "dev-dependencies.txt").read_text(encoding="utf-8")
+    workflow = (tmp_path / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
     assert "[tool.agent_maintainer]" in config
     assert 'file_length_paths = ["src", "tests", ".codex/hooks"]' in config
     assert "agent-maintainer[core]" in dependencies
+    assert 'python-version: "3.11"' in workflow
+    assert 'BASE_REF="origin/${GITHUB_BASE_REF:-main}"' in workflow
+    assert "verify --profile ci \\" in workflow
+    assert '--base-ref "$BASE_REF"' in workflow
+    assert '--compare-branch "$BASE_REF"' in workflow
+    assert "python -m pip install -e ." in workflow
+    assert "--no-deps" not in workflow
     assert "scripts" not in config
+    yaml_config = YamlLintConfig((REPO_ROOT / ".yamllint").read_text(encoding="utf-8"))
+    workflow_path = tmp_path / ".github" / "workflows" / "verify.yml"
+    problems = list(linter.run(workflow, yaml_config, filepath=str(workflow_path)))
+    assert not problems, "\n".join(str(problem) for problem in problems)
 
 
 def test_starter_config_template_matches_initializer() -> None:

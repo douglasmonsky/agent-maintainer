@@ -42,6 +42,25 @@ agent-maintainer doctor
 agent-maintainer verify --profile precommit
 ```
 
+## First Successful Run
+
+Healthy setup output should be quiet:
+
+```text
+PASS
+```
+
+`doctor` prints one compact `PASS`, `WARN`, or `FAIL` row per setup check. If
+verification fails, inspect the generated diagnostics before changing
+thresholds or suppressions:
+
+```bash
+cat .verify-logs/LAST_FAILURE.md
+```
+
+The failure note includes failed checks, relevant artifact paths, and an exact
+rerun command.
+
 The console command is convenient for local use. Committed automation should use
 the module entrypoint because it works reliably in editable and local-source
 contexts:

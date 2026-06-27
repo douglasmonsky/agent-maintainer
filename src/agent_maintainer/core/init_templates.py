@@ -55,7 +55,7 @@ WORKFLOW = textwrap.dedent(
           - name: Set up Python
             uses: actions/setup-python@v6.2.0
             with:
-              python-version: "3.13"
+              python-version: "3.11"
           - name: Install project and Agent Maintainer tools
             run: |
               python -m pip install --upgrade pip
@@ -64,9 +64,12 @@ WORKFLOW = textwrap.dedent(
               elif [ -f config/dev-dependencies.txt ]; then
                 python -m pip install -r config/dev-dependencies.txt
               fi
-              python -m pip install -e . --no-deps
+              python -m pip install -e .
           - name: Verify
-            run: python3 -m agent_maintainer verify --profile ci
+            run: |
+              BASE_REF="origin/${GITHUB_BASE_REF:-main}"
+              python3 -m agent_maintainer verify --profile ci \\
+                --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
     """
 )
 
