@@ -28,14 +28,14 @@ def load_hook(name: str, relative_path: str) -> ModuleType:
 def test_record_hook_result_uses_configured_diagnostics_dir(tmp_path: Path) -> None:
     hook_audit = load_hook("hook_audit_writer_test", ".codex/hooks/hook_audit.py")
     (tmp_path / "pyproject.toml").write_text(
-        '[tool.ai_guardrails.diagnostics]\nlog_dir = ".custom-logs"\n',
+        '[tool.agent_maintainer.diagnostics]\nlog_dir = ".custom-logs"\n',
         encoding="utf-8",
     )
     record = hook_audit.HookAuditRecord(
         hook_name="PostToolUse",
         profile="fast",
         status="passed",
-        command=("python3", "-m", "ai_guardrails"),
+        command=("python3", "-m", "agent_maintainer"),
         exit_code=0,
         started_at="2026-06-25T10:00:00Z",
         ended_at="2026-06-25T10:00:01Z",
@@ -48,7 +48,7 @@ def test_record_hook_result_uses_configured_diagnostics_dir(tmp_path: Path) -> N
     payload = json.loads(audit_path.read_text(encoding="utf-8"))
     assert payload["hook"] == "PostToolUse"
     assert payload["status"] == "passed"
-    assert payload["command"] == ["python3", "-m", "ai_guardrails"]
+    assert payload["command"] == ["python3", "-m", "agent_maintainer"]
 
 
 def test_status_for_exit_marks_nonzero_and_missing_as_failed() -> None:

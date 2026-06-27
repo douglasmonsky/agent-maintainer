@@ -13,7 +13,7 @@ from pathlib import Path
 
 DEFAULT_LOG_DIR = ".verify-logs"
 HOOK_AUDIT_NAME = "hooks.jsonl"
-ALLOW_BYTECODE_ENV = "AI_GUARDRAILS_WRITE_BYTECODE"
+ALLOW_BYTECODE_ENV = "AGENT_MAINTAINER_WRITE_BYTECODE"
 PYTHON_BYTECODE_ENV = "PYTHONDONTWRITEBYTECODE"
 TRUE_ENV_VALUES = frozenset(("1", "true", "yes", "on"))
 
@@ -96,7 +96,9 @@ def diagnostic_log_dir(repo_root: Path) -> Path:
         payload = tomllib.loads(config_path.read_text(encoding="utf-8"))
     except (OSError, tomllib.TOMLDecodeError):
         return repo_root / DEFAULT_LOG_DIR
-    log_dir = payload.get("tool", {}).get("ai_guardrails", {}).get("diagnostics", {}).get("log_dir")
+    log_dir = (
+        payload.get("tool", {}).get("agent_maintainer", {}).get("diagnostics", {}).get("log_dir")
+    )
     if isinstance(log_dir, str) and log_dir:
         return repo_root / log_dir
     return repo_root / DEFAULT_LOG_DIR

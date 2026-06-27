@@ -1,29 +1,29 @@
-"""Tests for guardrail configuration and check catalog construction."""
+"""Tests for Agent Maintainer configuration and check catalog construction."""
 
 from __future__ import annotations
 
 import sys
 from dataclasses import replace
 
-from ai_guardrails.catalogs import catalog as guardrail_catalog
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.models import (
+from agent_maintainer.catalogs import catalog as maintainer_catalog
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.models import (
     MANUAL_PROFILES,
     PRECOMMIT_PROFILE,
 )
 
 
 def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
-    default_checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    default_checks = maintainer_catalog.make_checks(MaintainerConfig(), "HEAD", "origin/main")
     disabled = next(check for check in default_checks if check.name == "mutmut")
     assert disabled.profiles == MANUAL_PROFILES
     assert disabled.optional_skip_reason is not None
 
-    enabled_checks = guardrail_catalog.make_checks(
+    enabled_checks = maintainer_catalog.make_checks(
         replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             enable_mutmut=True,
-            mutmut_args=("run", "ai_guardrails.core.runtime*"),
+            mutmut_args=("run", "agent_maintainer.core.runtime*"),
         ),
         "HEAD",
         "origin/main",
@@ -32,24 +32,24 @@ def test_mutmut_check_is_disabled_by_default_and_manual_when_enabled() -> None:
     assert enabled.command == [
         sys.executable,
         "-m",
-        "ai_guardrails.runners.mutmut",
+        "agent_maintainer.runners.mutmut",
         "run",
-        "ai_guardrails.core.runtime*",
+        "agent_maintainer.core.runtime*",
     ]
     assert enabled.profiles == MANUAL_PROFILES
-    assert enabled.required_paths == ("src/ai_guardrails/runners/mutmut.py",)
+    assert enabled.required_paths == ()
     assert enabled.required_executable == "mutmut"
 
 
 def test_semgrep_check_is_disabled_by_default_and_profile_scoped() -> None:
-    default_checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    default_checks = maintainer_catalog.make_checks(MaintainerConfig(), "HEAD", "origin/main")
     disabled = next(check for check in default_checks if check.name == "semgrep")
     assert disabled.profiles == MANUAL_PROFILES
     assert disabled.optional_skip_reason is not None
 
-    enabled_checks = guardrail_catalog.make_checks(
+    enabled_checks = maintainer_catalog.make_checks(
         replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             enable_semgrep=True,
             semgrep_args=("scan", "--config", "semgrep.yml", "--metrics=off", "."),
             semgrep_profiles=("manual", "security"),
@@ -64,7 +64,7 @@ def test_semgrep_check_is_disabled_by_default_and_profile_scoped() -> None:
 
 
 def test_secret_scan_checks_are_disabled_by_default() -> None:
-    checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    checks = maintainer_catalog.make_checks(MaintainerConfig(), "HEAD", "origin/main")
     secret_scan = next(check for check in checks if check.name == "secret-scan")
 
     assert secret_scan.optional_skip_reason is not None
@@ -72,12 +72,12 @@ def test_secret_scan_checks_are_disabled_by_default() -> None:
 
 
 def test_secret_scan_checks_use_gitleaks_backend_when_enabled() -> None:
-    config = GuardrailConfig(
+    config = MaintainerConfig(
         enable_secret_scanning=True,
         secret_scan_profiles=("full", "ci"),
         secret_scan_history_profiles=("security",),
     )
-    checks = guardrail_catalog.make_checks(config, "origin/main", "origin/main")
+    checks = maintainer_catalog.make_checks(config, "origin/main", "origin/main")
     by_profile = {
         next(iter(check.profiles)): check for check in checks if check.name == "secret-scan"
     }
@@ -92,11 +92,11 @@ def test_secret_scan_checks_use_gitleaks_backend_when_enabled() -> None:
 
 
 def test_secret_scan_checks_use_staged_mode_for_staged_precommit() -> None:
-    config = GuardrailConfig(
+    config = MaintainerConfig(
         enable_secret_scanning=True,
         secret_scan_profiles=(PRECOMMIT_PROFILE,),
     )
-    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main", staged=True)
+    checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main", staged=True)
     secret_scan = next(
         check
         for check in checks

@@ -2,7 +2,7 @@
 
 ## Everyday gates
 
-`python3 -m ai_guardrails` is the canonical entrypoint. Editable installs also provide `ai-guardrails` for interactive use, but committed hooks and CI should prefer the module command. Use `python3 -m ai_guardrails init --track core` for minimum package-first adoption, `python3 -m ai_guardrails init --track agent` when Codex or other agents actively edit the repo, and `python3 -m ai_guardrails init --track hardening` when optional docs/config hygiene files should also be generated. Use `python3 -m ai_guardrails bootstrap` for one-command local setup, `python3 -m ai_guardrails doctor` for setup health, `python3 -m ai_guardrails guidance` for generated agent-facing guidance, `python3 -m ai_guardrails verify --profile precommit` for local completion checks, `python3 -m ai_guardrails verify --profile full` for deeper review, `python3 -m ai_guardrails verify --profile manual` for slow opt-in checks, and `python3 -m ai_guardrails install` to install local hooks without reinstalling dependencies.
+`python3 -m agent_maintainer` is the canonical entrypoint. Editable installs also provide `agent-maintainer` for interactive use, but committed hooks and CI should prefer the module command. Use `python3 -m agent_maintainer init --track core` for minimum package-first adoption, `python3 -m agent_maintainer init --track agent` when Codex or other agents actively edit the repo, and `python3 -m agent_maintainer init --track hardening` when optional docs/config hygiene files should also be generated. Use `python3 -m agent_maintainer bootstrap` for one-command local setup, `python3 -m agent_maintainer doctor` for setup health, `python3 -m agent_maintainer guidance` for generated agent-facing guidance, `python3 -m agent_maintainer verify --profile precommit` for local completion checks, `python3 -m agent_maintainer verify --profile full` for deeper review, `python3 -m agent_maintainer verify --profile manual` for slow opt-in checks, and `python3 -m agent_maintainer install` to install local hooks without reinstalling dependencies.
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state.
 
@@ -19,8 +19,8 @@ and `hint` fields so setup tooling can offer remediation without parsing prose.
 Doctor also reports the active architecture backend and active thresholds for
 coverage, diff-cover, Interrogate, complexity, and file length.
 
-`guidance --check` verifies that `AGENTS.guardrails.md` is current with
-`[tool.ai_guardrails]`. In this repository's `fresh-strict` mode, `doctor`
+`guidance --check` verifies that `AGENTS.agent-maintainer.md` is current with
+`[tool.agent_maintainer]`. In this repository's `fresh-strict` mode, `doctor`
 reports stale generated guidance as a failure.
 
 Ruff handles formatting, import order, linting, and McCabe complexity feedback.
@@ -28,7 +28,7 @@ The verifier preserves Ruff JSON as `.verify-logs/ruff.json` and prints compact
 diagnostics instead of dumping raw JSON into terminal output. It is the fastest
 feedback loop and should run after most edits.
 
-Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.ai_guardrails].pyright_type_checking_mode` affects the actual Pyright invocation. Pyright JSON is also preserved as `.verify-logs/pyright.json` and listed in the verifier manifest.
+Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.agent_maintainer].pyright_type_checking_mode` affects the actual Pyright invocation. Pyright JSON is also preserved as `.verify-logs/pyright.json` and listed in the verifier manifest.
 
 Pytest and pytest-cov enforce behavior and coverage. The configured coverage
 gate prevents untested new behavior from quietly entering the repository. The
@@ -39,9 +39,9 @@ diagnostics and CI artifacts.
 Mutmut provides mutation testing in the `manual` profile only. It is disabled by
 default for drop-in use; enable it with `enable_mutmut = true` and configure
 `mutmut_args` plus `[tool.mutmut]` source/test paths for nonstandard layouts.
-The verifier runs Mutmut through `ai_guardrails.runners.mutmut`, which removes the
+The verifier runs Mutmut through `agent_maintainer.runners.mutmut`, which removes the
 generated `mutants` directory after successful runs. Set
-`AI_GUARDRAILS_KEEP_MUTANTS=true` only when explicitly debugging mutation
+`AGENT_MAINTAINER_KEEP_MUTANTS=true` only when explicitly debugging mutation
 artifacts. Mutmut requires fork support, so native Windows users should run it
 inside WSL.
 
@@ -58,13 +58,13 @@ Radon reports cyclomatic complexity and maintainability metrics. Xenon converts 
 
 Pylint provides a backup for design smells, including module length through `max-module-lines`.
 
-wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean baselines. It runs only when `enable_wemake = true` or `GUARDRAILS_ENABLE_WEMAKE=1`, and the verifier requires the actual wemake plugin so plain flake8 cannot masquerade as the strict check.
+wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean baselines. It runs only when `enable_wemake = true` or `AGENT_MAINTAINER_ENABLE_WEMAKE=1`, and the verifier requires the actual wemake plugin so plain flake8 cannot masquerade as the strict check.
 
-Interrogate checks docstring coverage. It runs only when `enable_interrogate = true` or `GUARDRAILS_ENABLE_INTERROGATE=1`; use `interrogate_fail_under` as a ratchet floor rather than forcing a legacy repo to document every helper at once.
+Interrogate checks docstring coverage. It runs only when `enable_interrogate = true` or `AGENT_MAINTAINER_ENABLE_INTERROGATE=1`; use `interrogate_fail_under` as a ratchet floor rather than forcing a legacy repo to document every helper at once.
 
 Tach and Import Linter are supported architecture boundary backends. `architecture_tool = "import-linter"` is the backward-compatible default. `architecture_tool = "tach"` runs a Tach config check and then `tach check --exact`.
 
-This repository uses Tach for its own guardrail script modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules. In strict mode, the config check also requires each non-init Python source file under Tach's checked roots to appear explicitly in a Tach module entry, and each configured module entry must still resolve to source, so broad parent modules and stale references cannot hide ownership drift.
+This repository uses Tach for its own Agent Maintainer modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules. In strict mode, the config check also requires each non-init Python source file under Tach's checked roots to appear explicitly in a Tach module entry, and each configured module entry must still resolve to source, so broad parent modules and stale references cannot hide ownership drift.
 
 ## Diff hygiene gates
 
@@ -123,7 +123,7 @@ supported backend and is treated as an external binary. The abstraction is
 backend-neutral so a future Betterleaks backend can be added without changing
 the public config shape.
 
-Normal scans run through `ai_guardrails.runners.secret_scan`: `full` scans the current
+Normal scans run through `agent_maintainer.runners.secret_scan`: `full` scans the current
 tree, `ci` scans the comparison range, and staged verifier runs scan the staged
 diff through stdin. The manual `security` profile runs a full-history scan.
 Gitleaks reports are written under `.verify-logs/` and run with redaction.
@@ -146,10 +146,10 @@ through the normal full/CI verifier profiles.
 
 ## Configuration model
 
-Shared path configuration is read from `[tool.ai_guardrails]` in `pyproject.toml`, then `GUARDRAILS_*` environment variables, then CLI flags. The important fields are:
+Shared path configuration is read from `[tool.agent_maintainer]` in `pyproject.toml`, then `AGENT_MAINTAINER_*` environment variables, then CLI flags. The important fields are:
 
 ```toml
-[tool.ai_guardrails]
+[tool.agent_maintainer]
 mode = "custom"
 architecture_tool = "import-linter"
 enable_interrogate = false
@@ -159,7 +159,7 @@ test_roots = ["tests"]
 package_paths = ["src"]
 coverage_source = ["src"]
 
-[tool.ai_guardrails.diagnostics]
+[tool.agent_maintainer.diagnostics]
 enabled = true
 log_dir = ".verify-logs"
 ```

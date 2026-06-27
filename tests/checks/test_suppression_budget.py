@@ -6,8 +6,8 @@ import subprocess
 
 import pytest
 
-from ai_guardrails.checks import suppression_budget as check_suppression_budget
-from ai_guardrails.core.config import GuardrailConfig
+from agent_maintainer.checks import suppression_budget as check_suppression_budget
+from agent_maintainer.core.config import MaintainerConfig
 
 NOQA_SUPPRESSION = "# " + "noqa"
 TYPE_IGNORE_SUPPRESSION = "# " + "type: ignore[assignment]"
@@ -44,8 +44,8 @@ def test_suppression_added_python_lines_parses_diff(monkeypatch: pytest.MonkeyPa
 def test_suppression_added_python_lines_ignores_copied_destinations(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    diff = f"+++ b/src/ai_guardrails/checks/tool.py\n+value = call() {NOQA_SUPPRESSION}\n"
-    name_status = "C099\tscripts/check_tool.py\tsrc/ai_guardrails/checks/tool.py\n"
+    diff = f"+++ b/src/agent_maintainer/checks/tool.py\n+value = call() {NOQA_SUPPRESSION}\n"
+    name_status = "C099\tscripts/check_tool.py\tsrc/agent_maintainer/checks/tool.py\n"
     diff_result = subprocess.CompletedProcess(["git"], 0, stdout=diff, stderr="")
     name_status_result = subprocess.CompletedProcess(
         ["git"],
@@ -115,7 +115,7 @@ def test_suppression_main_reports_failures(
     monkeypatch.setattr(
         check_suppression_budget,
         "load_config",
-        lambda: GuardrailConfig(suppression_max_new=0),
+        lambda: MaintainerConfig(suppression_max_new=0),
     )
 
     assert check_suppression_budget.main([]) == 1
@@ -128,7 +128,7 @@ def test_suppression_main_passes_without_new_suppressions(
     monkeypatch.setattr(
         check_suppression_budget, "added_python_lines", lambda *_args, **_kwargs: []
     )
-    monkeypatch.setattr(check_suppression_budget, "load_config", GuardrailConfig)
+    monkeypatch.setattr(check_suppression_budget, "load_config", MaintainerConfig)
 
     assert check_suppression_budget.main([]) == 0
 

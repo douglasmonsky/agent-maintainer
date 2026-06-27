@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.core import executor as guardrail_executor
-from ai_guardrails.core import reporting as guardrail_reporting
-from ai_guardrails.models import Check, CheckResult
+from agent_maintainer.core import executor as maintainer_executor
+from agent_maintainer.core import reporting as maintainer_reporting
+from agent_maintainer.models import Check, CheckResult
 
 
 def test_run_check_prefers_structured_artifact_summary(
@@ -31,9 +31,9 @@ def test_run_check_prefers_structured_artifact_summary(
         )
         return 1, "RAW OUTPUT SHOULD NOT BE USED\n"
 
-    monkeypatch.setattr(guardrail_executor, "run_command", fake_run)
+    monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
 
-    result = guardrail_executor.run_check(
+    result = maintainer_executor.run_check(
         Check("ruff", ["ruff"], frozenset(), artifact_paths=(str(artifact),)),
         tmp_path / "logs",
         3,
@@ -62,7 +62,7 @@ def test_structured_artifact_summary_handles_pyright(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    summary = guardrail_reporting.structured_artifact_summary("pyright", (str(artifact),))
+    summary = maintainer_reporting.structured_artifact_summary("pyright", (str(artifact),))
 
     assert summary == "scripts/example.py:2:4: error: Bad type [reportAssignmentType]"
 
@@ -84,7 +84,7 @@ def test_structured_artifact_summary_handles_bandit(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    summary = guardrail_reporting.structured_artifact_summary("bandit", (str(artifact),))
+    summary = maintainer_reporting.structured_artifact_summary("bandit", (str(artifact),))
 
     assert summary == "scripts/example.py:10: B404 LOW: subprocess import"
 
@@ -95,13 +95,13 @@ def test_structured_artifact_summary_falls_back_for_bad_artifacts(
     bad_json = tmp_path / "ruff.json"
     bad_json.write_text("not json", encoding="utf-8")
 
-    assert guardrail_reporting.structured_artifact_summary("unknown", ()) is None
-    assert guardrail_reporting.structured_artifact_summary("ruff", ()) is None
-    assert guardrail_reporting.structured_artifact_summary("ruff", (str(bad_json),)) is None
-    assert guardrail_reporting.summarize_pyright_payload([]) is None
-    assert guardrail_reporting.summarize_ruff_payload({}) is None
-    assert guardrail_reporting.summarize_bandit_payload([]) is None
-    assert guardrail_reporting.summarize_bandit_payload({"results": {}}) is None
+    assert maintainer_reporting.structured_artifact_summary("unknown", ()) is None
+    assert maintainer_reporting.structured_artifact_summary("ruff", ()) is None
+    assert maintainer_reporting.structured_artifact_summary("ruff", (str(bad_json),)) is None
+    assert maintainer_reporting.summarize_pyright_payload([]) is None
+    assert maintainer_reporting.summarize_ruff_payload({}) is None
+    assert maintainer_reporting.summarize_bandit_payload([]) is None
+    assert maintainer_reporting.summarize_bandit_payload({"results": {}}) is None
 
 
 def test_structured_payload_summaries_report_omitted_items() -> None:
@@ -112,7 +112,7 @@ def test_structured_payload_summaries_report_omitted_items() -> None:
             "location": {"row": 2, "column": 4},
             "message": "imported but unused",
         }
-        for index in range(guardrail_reporting.STRUCTURED_DIAGNOSTIC_LIMIT + 1)
+        for index in range(maintainer_reporting.STRUCTURED_DIAGNOSTIC_LIMIT + 1)
     ]
     bandit_payload = {
         "results": [
@@ -123,12 +123,12 @@ def test_structured_payload_summaries_report_omitted_items() -> None:
                 "issue_severity": "LOW",
                 "issue_text": "subprocess import",
             }
-            for index in range(guardrail_reporting.STRUCTURED_DIAGNOSTIC_LIMIT + 1)
+            for index in range(maintainer_reporting.STRUCTURED_DIAGNOSTIC_LIMIT + 1)
         ]
     }
 
-    ruff_summary = guardrail_reporting.summarize_ruff_payload(ruff_payload)
-    bandit_summary = guardrail_reporting.summarize_bandit_payload(bandit_payload)
+    ruff_summary = maintainer_reporting.summarize_ruff_payload(ruff_payload)
+    bandit_summary = maintainer_reporting.summarize_bandit_payload(bandit_payload)
 
     assert ruff_summary is not None
     assert bandit_summary is not None
@@ -137,10 +137,10 @@ def test_structured_payload_summaries_report_omitted_items() -> None:
 
 
 def test_reporting_truncates_lines_and_characters() -> None:
-    assert guardrail_reporting.nonblank_lines("a\n\n b ") == ["a", " b"]
-    assert guardrail_reporting.truncate_lines(["a", "b", "c"], 2)[-1].startswith("... 1")
-    assert guardrail_reporting.truncate_chars("abcdef", 3).startswith("abc")
-    assert guardrail_reporting.compact_output("", 2, 5) == "(no output)"
+    assert maintainer_reporting.nonblank_lines("a\n\n b ") == ["a", " b"]
+    assert maintainer_reporting.truncate_lines(["a", "b", "c"], 2)[-1].startswith("... 1")
+    assert maintainer_reporting.truncate_chars("abcdef", 3).startswith("abc")
+    assert maintainer_reporting.compact_output("", 2, 5) == "(no output)"
 
 
 def test_pyright_summary_formats_diagnostics() -> None:
@@ -158,17 +158,17 @@ def test_pyright_summary_formats_diagnostics() -> None:
 }
 """.strip()
 
-    summary = guardrail_reporting.summarize_pyright(raw)
+    summary = maintainer_reporting.summarize_pyright(raw)
 
     assert summary == ("scripts/example.py:3:5: error: Bad type [reportAssignmentType]")
 
 
 def test_print_success_and_failures(capsys: pytest.CaptureFixture[str]) -> None:
     skipped = [CheckResult("optional", passed=True, output="not configured", skipped=True)]
-    guardrail_reporting.print_success(skipped)
+    maintainer_reporting.print_success(skipped)
     assert "SKIPPED optional checks" in capsys.readouterr().out
 
-    guardrail_reporting.print_failures(
+    maintainer_reporting.print_failures(
         "full",
         [CheckResult("ruff", passed=False, output="lint failed")],
         skipped,

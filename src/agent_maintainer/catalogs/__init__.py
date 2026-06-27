@@ -1,0 +1,1 @@
+"""Maintainer check catalog package."""

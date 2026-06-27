@@ -1,25 +1,25 @@
-"""Tests for supply-chain guardrail catalog checks."""
+"""Tests for supply-chain maintenance catalog checks."""
 
 from __future__ import annotations
 
 from dataclasses import replace
 
-from ai_guardrails.catalogs import catalog as guardrail_catalog
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.models import CI_PROFILE, MANUAL_PROFILES
+from agent_maintainer.catalogs import catalog as maintainer_catalog
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.models import CI_PROFILE, MANUAL_PROFILES
 
 
 def test_osv_scanner_check_is_disabled_by_default_and_manual_when_enabled() -> None:
-    default_checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    default_checks = maintainer_catalog.make_checks(MaintainerConfig(), "HEAD", "origin/main")
     disabled = next(check for check in default_checks if check.name == "osv-scanner")
 
     assert disabled.profiles == MANUAL_PROFILES
     assert disabled.optional_skip_reason is not None
     assert disabled.required_executable is None
 
-    enabled_checks = guardrail_catalog.make_checks(
+    enabled_checks = maintainer_catalog.make_checks(
         replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             enable_osv_scanner=True,
             osv_scanner_args=("scan", "source", "-r", "."),
             diagnostic_artifacts_dir=".custom-logs",
@@ -45,16 +45,16 @@ def test_osv_scanner_check_is_disabled_by_default_and_manual_when_enabled() -> N
 
 
 def test_trivy_check_is_disabled_by_default_and_manual_when_enabled() -> None:
-    default_checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    default_checks = maintainer_catalog.make_checks(MaintainerConfig(), "HEAD", "origin/main")
     disabled = next(check for check in default_checks if check.name == "trivy")
 
     assert disabled.profiles == MANUAL_PROFILES
     assert disabled.optional_skip_reason is not None
     assert disabled.required_executable is None
 
-    enabled_checks = guardrail_catalog.make_checks(
+    enabled_checks = maintainer_catalog.make_checks(
         replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             enable_trivy=True,
             trivy_args=("fs", "--scanners", "vuln,misconfig", "."),
             diagnostic_artifacts_dir=".custom-logs",
@@ -78,16 +78,16 @@ def test_trivy_check_is_disabled_by_default_and_manual_when_enabled() -> None:
 
 
 def test_sbom_check_is_disabled_by_default_and_writes_ci_artifact() -> None:
-    default_checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    default_checks = maintainer_catalog.make_checks(MaintainerConfig(), "HEAD", "origin/main")
     disabled = next(check for check in default_checks if check.name == "sbom")
 
     assert disabled.profiles == frozenset((CI_PROFILE,))
     assert disabled.optional_skip_reason is not None
     assert disabled.required_executable is None
 
-    enabled_checks = guardrail_catalog.make_checks(
+    enabled_checks = maintainer_catalog.make_checks(
         replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             enable_sbom=True,
             sbom_args=("requirements", "config/dev-lock.txt", "--of", "JSON"),
             sbom_profiles=("ci",),
@@ -113,16 +113,16 @@ def test_sbom_check_is_disabled_by_default_and_writes_ci_artifact() -> None:
 
 
 def test_license_check_is_disabled_by_default_and_manual_when_enabled() -> None:
-    default_checks = guardrail_catalog.make_checks(GuardrailConfig(), "HEAD", "origin/main")
+    default_checks = maintainer_catalog.make_checks(MaintainerConfig(), "HEAD", "origin/main")
     disabled = next(check for check in default_checks if check.name == "license-check")
 
     assert disabled.profiles == MANUAL_PROFILES
     assert disabled.optional_skip_reason is not None
     assert disabled.required_executable is None
 
-    enabled_checks = guardrail_catalog.make_checks(
+    enabled_checks = maintainer_catalog.make_checks(
         replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             enable_license_check=True,
             license_check_args=("--from=mixed", "--format=json", "--allow-only=MIT"),
             license_check_profiles=("manual",),

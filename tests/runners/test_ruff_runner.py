@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.runners import ruff as run_ruff
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.runners import ruff as run_ruff
 
 INVALID_CONFIG_EXIT_CODE = 2
 
@@ -96,7 +96,7 @@ def test_main_uses_configured_diagnostic_artifact_dir(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     diagnostic_dir = tmp_path / "custom-logs"
-    config = GuardrailConfig(
+    config = MaintainerConfig(
         diagnostic_artifacts_dir=str(diagnostic_dir),
         ruff_max_complexity=6,
     )

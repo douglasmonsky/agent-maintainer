@@ -9,15 +9,15 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.runners import pyright as run_pyright
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.runners import pyright as run_pyright
 
 
-def test_write_pyright_config_uses_guardrail_mode_and_roots(
+def test_write_pyright_config_uses_maintainer_mode_and_roots(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    config = GuardrailConfig(
+    config = MaintainerConfig(
         package_paths=("scripts", ".codex/hooks"),
         test_roots=("tests",),
         pyright_type_checking_mode="strict",
@@ -114,7 +114,7 @@ def test_main_uses_configured_diagnostic_artifact_dir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     diagnostic_dir = tmp_path / "custom-logs"
-    config = GuardrailConfig(diagnostic_artifacts_dir=str(diagnostic_dir))
+    config = MaintainerConfig(diagnostic_artifacts_dir=str(diagnostic_dir))
     seen_paths: dict[str, Path] = {}
 
     def fake_run_pyright(config_path: Path, json_path: Path | None) -> int:

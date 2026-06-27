@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.models import Check, CheckResult
-from ai_guardrails.verify import quiet as verify_quiet
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.models import Check, CheckResult
+from agent_maintainer.verify import quiet as verify_quiet
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
@@ -26,7 +26,7 @@ def test_main_writes_artifacts_for_selected_profile(
         verify_quiet,
         "load_config",
         lambda: replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             source_roots=("scripts",),
             package_paths=("scripts",),
             require_tests=False,
@@ -74,7 +74,7 @@ def test_main_skips_artifacts_when_diagnostics_are_disabled(
         verify_quiet,
         "load_config",
         lambda: replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             source_roots=("scripts",),
             package_paths=("scripts",),
             require_tests=False,

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.runners import secret_scan as run_secret_scan
+from agent_maintainer.runners import secret_scan as run_secret_scan
 
 CURRENT_TREE_FINDING_STATUS = 3
 GIT_DIFF_FAILURE_STATUS = 2

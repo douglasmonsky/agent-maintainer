@@ -6,12 +6,12 @@ import subprocess
 
 import pytest
 
-from ai_guardrails.checks import change_budget as check_change_budget
-from ai_guardrails.core.config import GuardrailConfig
+from agent_maintainer.checks import change_budget as check_change_budget
+from agent_maintainer.core.config import MaintainerConfig
 
 
 def test_change_budget_classifies_python_source_and_tests() -> None:
-    config = GuardrailConfig(source_roots=("scripts",), test_roots=("tests",))
+    config = MaintainerConfig(source_roots=("scripts",), test_roots=("tests",))
     changes = [
         check_change_budget.FileChange("scripts/tool.py", 2, 1),
         check_change_budget.FileChange("scripts/package/__init__.py", 1, 0),
@@ -41,7 +41,7 @@ def test_change_budget_parse_csv_like_normalizes_values() -> None:
 
 def test_change_budget_reports_missing_tests_when_required() -> None:
     args = check_change_budget.parse_args([])
-    config = GuardrailConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
+    config = MaintainerConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
 
     failures, warnings = check_change_budget.budget_messages(
         args,
@@ -75,7 +75,7 @@ def test_run_git_numstat_does_not_double_count_copied_source(
         ["git"],
         0,
         stdout=(
-            "0\t1\tscripts/check_tool.py => src/ai_guardrails/checks/tool.py\n"
+            "0\t1\tscripts/check_tool.py => src/agent_maintainer/checks/tool.py\n"
             "5\t300\tscripts/check_tool.py\n"
         ),
         stderr="",
@@ -83,7 +83,7 @@ def test_run_git_numstat_does_not_double_count_copied_source(
     name_status = subprocess.CompletedProcess(
         ["git"],
         0,
-        stdout="C099\tscripts/check_tool.py\tsrc/ai_guardrails/checks/tool.py\n",
+        stdout="C099\tscripts/check_tool.py\tsrc/agent_maintainer/checks/tool.py\n",
         stderr="",
     )
     calls = [numstat, name_status]
@@ -98,7 +98,7 @@ def test_run_git_numstat_does_not_double_count_copied_source(
 
     assert changes == [
         check_change_budget.FileChange(
-            "scripts/check_tool.py => src/ai_guardrails/checks/tool.py",
+            "scripts/check_tool.py => src/agent_maintainer/checks/tool.py",
             0,
             1,
         ),
@@ -122,7 +122,7 @@ def test_change_budget_limit_helpers_report_warnings_and_blocks() -> None:
     args = check_change_budget.parse_args(
         ["--warn-lines", "1", "--block-lines", "3", "--warn-files", "1", "--block-files", "2"]
     )
-    config = GuardrailConfig()
+    config = MaintainerConfig()
     changes = [
         check_change_budget.FileChange("scripts/a.py", 2, 0),
         check_change_budget.FileChange("scripts/b.py", 2, 0),
@@ -141,7 +141,7 @@ def test_change_budget_limit_helpers_report_soft_warnings() -> None:
     args = check_change_budget.parse_args(
         ["--warn-lines", "1", "--block-lines", "10", "--warn-files", "1", "--block-files", "10"]
     )
-    config = GuardrailConfig()
+    config = MaintainerConfig()
     changes = [
         check_change_budget.FileChange("scripts/a.py", 1, 1),
         check_change_budget.FileChange("scripts/b.py", 1, 0),
@@ -181,7 +181,7 @@ def test_change_budget_main_can_fail_warnings_as_errors(
     monkeypatch.setattr(
         check_change_budget,
         "load_config",
-        lambda: GuardrailConfig(source_roots=("src",), test_roots=("tests",), require_tests=True),
+        lambda: MaintainerConfig(source_roots=("src",), test_roots=("tests",), require_tests=True),
     )
 
     assert check_change_budget.main(["--warnings-as-errors"]) == 1
@@ -201,7 +201,7 @@ def test_change_budget_main_reports_failures(
     monkeypatch.setattr(
         check_change_budget,
         "load_config",
-        lambda: GuardrailConfig(
+        lambda: MaintainerConfig(
             source_roots=("src",),
             test_roots=("tests",),
             change_warn_lines=1,
@@ -215,7 +215,7 @@ def test_change_budget_main_reports_failures(
 
 def test_change_budget_can_allow_source_changes_without_test_changes() -> None:
     args = check_change_budget.parse_args(["--allow-source-without-test-change"])
-    config = GuardrailConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
+    config = MaintainerConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
 
     failures, warnings = check_change_budget.budget_messages(
         args,
@@ -230,6 +230,6 @@ def test_change_budget_can_allow_source_changes_without_test_changes() -> None:
 
 def test_change_budget_main_passes_clean_diff(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(check_change_budget, "run_git_numstat", lambda base_ref, staged=False: [])
-    monkeypatch.setattr(check_change_budget, "load_config", GuardrailConfig)
+    monkeypatch.setattr(check_change_budget, "load_config", MaintainerConfig)
 
     assert check_change_budget.main([]) == 0

@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.catalogs import catalog as guardrail_catalog
-from ai_guardrails.core import config as guardrail_config
-from ai_guardrails.core.config import GuardrailConfig
+from agent_maintainer.catalogs import catalog as maintainer_catalog
+from agent_maintainer.core import config as maintainer_config
+from agent_maintainer.core.config import MaintainerConfig
 
 WARN_THRESHOLD = 12
 BLOCK_THRESHOLD = 34
@@ -21,7 +21,7 @@ def test_structure_config_loads_thresholds_and_patterns(
     monkeypatch.chdir(tmp_path)
     (tmp_path / "pyproject.toml").write_text(
         """
-[tool.ai_guardrails]
+[tool.agent_maintainer]
 folder_file_warn = 12
 folder_file_block = 34
 structure_cluster_min = 3
@@ -32,7 +32,7 @@ structure_hint_patterns = ["^domain_"]
         encoding="utf-8",
     )
 
-    config = guardrail_config.load_config()
+    config = maintainer_config.load_config()
 
     assert config.folder_file_warn == WARN_THRESHOLD
     assert config.folder_file_block == BLOCK_THRESHOLD
@@ -43,8 +43,8 @@ structure_hint_patterns = ["^domain_"]
 
 
 def test_structure_check_is_in_catalog_and_blocks_only_fresh_strict() -> None:
-    custom = GuardrailConfig(source_roots=("scripts",), folder_file_block=BLOCK_THRESHOLD)
-    strict = GuardrailConfig(
+    custom = MaintainerConfig(source_roots=("scripts",), folder_file_block=BLOCK_THRESHOLD)
+    strict = MaintainerConfig(
         mode="fresh-strict",
         source_roots=("scripts",),
         folder_file_block=BLOCK_THRESHOLD,
@@ -52,12 +52,12 @@ def test_structure_check_is_in_catalog_and_blocks_only_fresh_strict() -> None:
 
     custom_check = next(
         check
-        for check in guardrail_catalog.make_checks(custom, "HEAD", "origin/main")
+        for check in maintainer_catalog.make_checks(custom, "HEAD", "origin/main")
         if check.name == "structure-cohesion"
     )
     strict_check = next(
         check
-        for check in guardrail_catalog.make_checks(strict, "HEAD", "origin/main")
+        for check in maintainer_catalog.make_checks(strict, "HEAD", "origin/main")
         if check.name == "structure-cohesion"
     )
 
@@ -65,4 +65,4 @@ def test_structure_check_is_in_catalog_and_blocks_only_fresh_strict() -> None:
     assert "--block-threshold" in custom_check.command
     assert "0" in custom_check.command
     assert str(BLOCK_THRESHOLD) in strict_check.command
-    assert "src/ai_guardrails/checks/structure.py" in strict_check.required_paths
+    assert strict_check.required_paths == ()

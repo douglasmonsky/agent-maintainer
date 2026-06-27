@@ -1,4 +1,4 @@
-"""Tests for guardrail tool capability modeling."""
+"""Tests for maintainer tool capability modeling."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.core import tool_capabilities as capabilities
-from ai_guardrails.core import tool_capability_types
-from ai_guardrails.models import FULL_PROFILES, Check
+from agent_maintainer.core import tool_capabilities as capabilities
+from agent_maintainer.core import tool_capability_types
+from agent_maintainer.models import FULL_PROFILES, Check
 
 
 def test_tool_capability_module_reexports_public_constants() -> None:

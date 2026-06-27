@@ -67,13 +67,13 @@ def emit_block(reason: str, additional_context: str) -> int:
 
 
 def main() -> int:
-    """Run fast guardrails after edits and block only when needed."""
+    """Run fast Agent Maintainer checks after edits and block only when needed."""
 
     with suppress(json.JSONDecodeError):
         json.load(sys.stdin)
 
     repo_root = Path(__file__).resolve().parents[2]
-    verifier = repo_root / "src" / "ai_guardrails" / "__main__.py"
+    verifier = repo_root / "src" / "agent_maintainer" / "__main__.py"
     started_at = utc_timestamp()
     started = time.monotonic()
     if not verifier.exists():
@@ -92,17 +92,17 @@ def main() -> int:
             ),
         )
         return emit_block(
-            "Repository guardrail verifier missing.",
+            "Agent Maintainer verifier missing.",
             (
                 f"Expected verifier package at {verifier}. "
-                "Restore src/ai_guardrails before continuing."
+                "Restore src/agent_maintainer before continuing."
             ),
         )
 
     command = [
         verifier_python(repo_root),
         "-m",
-        "ai_guardrails",
+        "agent_maintainer",
         "verify",
         "--profile",
         PROFILE,
@@ -138,7 +138,7 @@ def main() -> int:
         truncated_output = output[:MAX_CONTEXT].rstrip()
         output = f"{truncated_output}\n... truncated. Full logs are in .verify-logs/."
     return emit_block(
-        "Fast repository guardrails failed after file edit.",
+        "Fast Agent Maintainer checks failed after file edit.",
         (
             "Repair issues before continuing. Do not suppress or lower thresholds unless "
             f"the suppression is narrow and justified.\n\n{output}"

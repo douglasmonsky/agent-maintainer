@@ -1,27 +1,27 @@
-"""Tests for guardrail configuration and check catalog construction."""
+"""Tests for Agent Maintainer configuration and check catalog construction."""
 
 from __future__ import annotations
 
 from dataclasses import replace
 
-from ai_guardrails.catalogs import catalog as guardrail_catalog
-from ai_guardrails.catalogs import python as guardrail_catalog_python
-from ai_guardrails.config import (
-    modes as guardrail_config_modes,
+from agent_maintainer.catalogs import catalog as maintainer_catalog
+from agent_maintainer.catalogs import python as maintainer_catalog_python
+from agent_maintainer.config import (
+    modes as maintainer_config_modes,
 )
-from ai_guardrails.core.config import GuardrailConfig
+from agent_maintainer.core.config import MaintainerConfig
 
 
 def test_pytest_and_diff_cover_are_required_when_tests_are_required() -> None:
     config = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         test_roots=("tests",),
         coverage_source=("scripts",),
         require_tests=True,
     )
 
-    pytest_check = guardrail_catalog_python.pytest_check(config)
-    diff_cover = guardrail_catalog_python.diff_cover_check(config, "origin/main")
+    pytest_check = maintainer_catalog_python.pytest_check(config)
+    diff_cover = maintainer_catalog_python.diff_cover_check(config, "origin/main")
 
     assert pytest_check.name == "pytest-coverage"
     assert pytest_check.required_executable == "pytest"
@@ -35,14 +35,14 @@ def test_pytest_and_diff_cover_are_required_when_tests_are_required() -> None:
 
 def test_pytest_check_declares_structured_test_artifacts() -> None:
     config = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         diagnostic_artifacts_dir=".custom-logs",
         test_roots=("tests",),
         coverage_source=("scripts",),
         require_tests=True,
     )
 
-    check = guardrail_catalog_python.pytest_check(config)
+    check = maintainer_catalog_python.pytest_check(config)
 
     assert "--cov-report=xml" in check.command
     assert "--cov-report=json:.custom-logs/coverage.json" in check.command
@@ -55,31 +55,31 @@ def test_pytest_check_declares_structured_test_artifacts() -> None:
 
 
 def test_pytest_and_diff_cover_skip_when_tests_are_disabled() -> None:
-    config = replace(GuardrailConfig(), require_tests=False)
+    config = replace(MaintainerConfig(), require_tests=False)
 
-    pytest_check = guardrail_catalog_python.pytest_check(config)
-    diff_cover = guardrail_catalog_python.diff_cover_check(config, "origin/main")
+    pytest_check = maintainer_catalog_python.pytest_check(config)
+    diff_cover = maintainer_catalog_python.diff_cover_check(config, "origin/main")
 
     assert pytest_check.optional_skip_reason
     assert diff_cover.optional_skip_reason
 
 
 def test_pip_audit_and_wemake_commands_follow_config() -> None:
-    disabled = GuardrailConfig()
+    disabled = MaintainerConfig()
     enabled = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         enable_pip_audit=True,
         pip_audit_args=("-r", "config/dev-dependencies.txt"),
         enable_wemake=True,
     )
 
-    assert guardrail_catalog_python.pip_audit_check(disabled).optional_skip_reason
-    assert guardrail_catalog_python.pip_audit_check(enabled).command == [
+    assert maintainer_catalog_python.pip_audit_check(disabled).optional_skip_reason
+    assert maintainer_catalog_python.pip_audit_check(enabled).command == [
         "pip-audit",
         "-r",
         "config/dev-dependencies.txt",
     ]
-    assert guardrail_catalog_python.wemake_check(enabled, ("scripts",)).command == [
+    assert maintainer_catalog_python.wemake_check(enabled, ("scripts",)).command == [
         "flake8",
         "--require-plugins",
         "wemake-python-styleguide",
@@ -88,15 +88,15 @@ def test_pip_audit_and_wemake_commands_follow_config() -> None:
 
 
 def test_interrogate_command_follows_config() -> None:
-    disabled = GuardrailConfig()
+    disabled = MaintainerConfig()
     enabled = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         enable_interrogate=True,
         interrogate_fail_under=30,
     )
 
-    assert guardrail_catalog_python.interrogate_check(disabled, ("scripts",)).optional_skip_reason
-    assert guardrail_catalog_python.interrogate_check(enabled, ("scripts",)).command == [
+    assert maintainer_catalog_python.interrogate_check(disabled, ("scripts",)).optional_skip_reason
+    assert maintainer_catalog_python.interrogate_check(enabled, ("scripts",)).command == [
         "interrogate",
         "--fail-under=30",
         "--ignore-init-method",
@@ -109,14 +109,14 @@ def test_interrogate_command_follows_config() -> None:
 
 
 def test_pyright_check_uses_generated_project_runner() -> None:
-    config = GuardrailConfig(diagnostic_artifacts_dir=".custom-logs")
-    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
+    config = MaintainerConfig(diagnostic_artifacts_dir=".custom-logs")
+    checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
     pyright = next(check for check in checks if check.name == "pyright")
 
     assert pyright.command[:3] == [
-        guardrail_catalog.sys.executable,
+        maintainer_catalog.sys.executable,
         "-m",
-        "ai_guardrails.runners.pyright",
+        "agent_maintainer.runners.pyright",
     ]
     assert pyright.artifact_paths == (
         ".custom-logs/pyright.json",
@@ -125,43 +125,43 @@ def test_pyright_check_uses_generated_project_runner() -> None:
 
 
 def test_ruff_check_uses_json_artifact_runner() -> None:
-    config = GuardrailConfig(diagnostic_artifacts_dir=".custom-logs")
-    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
+    config = MaintainerConfig(diagnostic_artifacts_dir=".custom-logs")
+    checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
     ruff = next(check for check in checks if check.name == "ruff")
 
     assert ruff.command[:3] == [
-        guardrail_catalog.sys.executable,
+        maintainer_catalog.sys.executable,
         "-m",
-        "ai_guardrails.runners.ruff",
+        "agent_maintainer.runners.ruff",
     ]
     assert ruff.artifact_paths == (".custom-logs/ruff.json",)
 
 
 def test_bandit_check_uses_json_artifact_runner() -> None:
-    config = GuardrailConfig(diagnostic_artifacts_dir=".custom-logs")
-    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
+    config = MaintainerConfig(diagnostic_artifacts_dir=".custom-logs")
+    checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
     bandit = next(check for check in checks if check.name == "bandit")
 
     assert bandit.command[:3] == [
-        guardrail_catalog.sys.executable,
+        maintainer_catalog.sys.executable,
         "-m",
-        "ai_guardrails.runners.bandit",
+        "agent_maintainer.runners.bandit",
     ]
     assert bandit.artifact_paths == (".custom-logs/bandit.json",)
 
 
 def test_pip_audit_unsafe_config_fails_only_in_fresh_strict() -> None:
-    strict = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
+    strict = maintainer_config_modes.apply_mode(MaintainerConfig(), "fresh-strict")
     strict = replace(strict, enable_pip_audit=True, pip_audit_args=())
-    custom = replace(GuardrailConfig(), enable_pip_audit=True, pip_audit_args=())
+    custom = replace(MaintainerConfig(), enable_pip_audit=True, pip_audit_args=())
 
-    strict_check = guardrail_catalog_python.pip_audit_check(strict)
-    custom_check = guardrail_catalog_python.pip_audit_check(custom)
+    strict_check = maintainer_catalog_python.pip_audit_check(strict)
+    custom_check = maintainer_catalog_python.pip_audit_check(custom)
 
     assert strict_check.command[:3] == [
-        guardrail_catalog.sys.executable,
+        maintainer_catalog.sys.executable,
         "-m",
-        "ai_guardrails.checks.pip_audit_config",
+        "agent_maintainer.checks.pip_audit_config",
     ]
     assert custom_check.optional_skip_reason
     assert "pinned input" in custom_check.optional_skip_reason
