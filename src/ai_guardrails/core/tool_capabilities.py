@@ -5,23 +5,21 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+from ai_guardrails.core import tool_capability_types
 from ai_guardrails.core.tool_capability_registry import KNOWN_CAPABILITIES
-from ai_guardrails.core.tool_capability_types import (
-    CAPABILITY_LABELS,
-    DISABLED,
-    GITHUB_ACTION_ONLY,
-    MANUAL_OPTIONAL,
-    MISSING,
-    NOT_APPLICABLE,
-    PYTHON_PACKAGE,
-    SUPPORTED,
-    ToolCapability,
-    ToolState,
-)
-from ai_guardrails.core.tool_capability_types import (
-    EXTERNAL_BINARY as EXTERNAL_BINARY,
-)
 from ai_guardrails.models import Check
+
+PYTHON_PACKAGE = tool_capability_types.PYTHON_PACKAGE
+EXTERNAL_BINARY = tool_capability_types.EXTERNAL_BINARY
+GITHUB_ACTION_ONLY = tool_capability_types.GITHUB_ACTION_ONLY
+MANUAL_OPTIONAL = tool_capability_types.MANUAL_OPTIONAL
+SUPPORTED = tool_capability_types.SUPPORTED
+MISSING = tool_capability_types.MISSING
+DISABLED = tool_capability_types.DISABLED
+NOT_APPLICABLE = tool_capability_types.NOT_APPLICABLE
+CAPABILITY_LABELS = tool_capability_types.CAPABILITY_LABELS
+ToolCapability = tool_capability_types.ToolCapability
+ToolState = tool_capability_types.ToolState
 
 
 def capability_for_tool(tool: str) -> ToolCapability:

@@ -7,12 +7,15 @@ from pathlib import Path
 import pytest
 
 from ai_guardrails.core import tool_capabilities as capabilities
+from ai_guardrails.core import tool_capability_types
 from ai_guardrails.models import FULL_PROFILES, Check
 
 
 def test_tool_capability_module_reexports_public_constants() -> None:
     assert capabilities.EXTERNAL_BINARY == "external_binary"
     assert capabilities.PYTHON_PACKAGE == "python_package"
+    assert capabilities.ToolCapability is tool_capability_types.ToolCapability
+    assert capabilities.ToolState is tool_capability_types.ToolState
 
 
 def test_python_package_tool_state_passes_when_local_executable_exists(tmp_path: Path) -> None:
