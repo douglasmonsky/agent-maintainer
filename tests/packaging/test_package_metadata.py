@@ -35,12 +35,14 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
         "agent-maintainer": "agent_maintainer.cli:console_main",
         "archguard": "archguard.cli:console_main",
     }
-    assert metadata["project"]["license"]
+    assert metadata["build-system"]["requires"] == ["setuptools>=77", "wheel"]
+    assert metadata["project"]["license"] == "MIT"
+    assert metadata["project"]["license-files"] == ["LICENSE"]
     assert metadata["project"]["authors"] == [{"name": "Doug Monsky"}]
     assert metadata["project"]["urls"]["Repository"] == (
         "https://github.com/douglasmonsky/agent-maintainer"
     )
-    assert "License :: OSI Approved :: MIT License" in metadata["project"]["classifiers"]
+    assert "License :: OSI Approved :: MIT License" not in metadata["project"]["classifiers"]
     assert "Programming Language :: Python :: 3.14" in metadata["project"]["classifiers"]
     assert {"core", "agent", "hardening", "manual", "all"} <= set(
         metadata["project"]["optional-dependencies"]
