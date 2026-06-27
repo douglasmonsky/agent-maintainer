@@ -16,6 +16,12 @@ discipline, not a normal local edit loop.
 - [ ] Repo visibility and GitHub URLs are correct for public release.
 - [ ] PyPI project name availability is rechecked immediately before first
   publish: `https://pypi.org/project/agent-maintainer/`.
+- [ ] PyPI Trusted Publisher is configured with project name `agent-maintainer`,
+  owner `douglasmonsky`, repository `agent-maintainer`, workflow `publish.yml`,
+  and environment `pypi`.
+- [ ] TestPyPI Trusted Publisher is configured with project name
+  `agent-maintainer`, owner `douglasmonsky`, repository `agent-maintainer`,
+  workflow `publish.yml`, and environment `testpypi`.
 
 ## Versioning
 
@@ -59,12 +65,13 @@ artifacts.
 ## Publishing
 
 - [ ] Build artifacts from a clean tree.
-- [ ] Publish to TestPyPI first.
+- [ ] Run the `publish` workflow manually with target `testpypi`.
 - [ ] Install from TestPyPI in a clean environment.
 - [ ] Run `agent-maintainer --help`.
 - [ ] Run `agent-maintainer init --track core --target <tmp-repo>`.
-- [ ] If TestPyPI smoke passes, publish the same version to PyPI.
-- [ ] Create a GitHub release/tag after package publication succeeds.
+- [ ] If TestPyPI smoke passes, create the GitHub release to publish the same
+  version to PyPI.
+- [ ] Confirm the `publish` workflow completed the `pypi` environment job.
 
 ## Release Notes
 
