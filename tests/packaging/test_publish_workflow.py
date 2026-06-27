@@ -31,12 +31,12 @@ def test_publish_workflow_uses_trusted_publishing() -> None:
 
 def test_release_checklist_documents_trusted_publisher_values() -> None:
     """The release checklist tells maintainers which PyPI values to enter."""
-
     text = RELEASE_CHECKLIST.read_text(encoding="utf-8")
+    normalized_text = " ".join(text.split())
 
-    assert "project name `agent-maintainer`" in text
-    assert "owner `douglasmonsky`" in text
-    assert "repository `agent-maintainer`" in text
-    assert "workflow `publish.yml`" in text
-    assert "environment `pypi`" in text
-    assert "environment `testpypi`" in text
+    assert "project name `agent-maintainer`" in normalized_text
+    assert "owner `douglasmonsky`" in normalized_text
+    assert "repository `agent-maintainer`" in normalized_text
+    assert "workflow `publish.yml`" in normalized_text
+    assert "environment `pypi`" in normalized_text
+    assert "environment `testpypi`" in normalized_text

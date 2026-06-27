@@ -9,6 +9,47 @@ permissions:
   contents: read
 
 jobs:
+  python-compatibility:
+    name: python ${{ matrix.python-version }} compatibility
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPATH: src
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+
+      - name: Install compatibility dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[core]"
+
+      - name: Smoke supported entrypoints
+        run: |
+          python -m agent_maintainer --help
+          python -m archguard --help
+
+      - name: Run compatibility tests
+        run: |
+          python -m pytest \
+            tests/archguard \
+            tests/packaging/test_package_metadata.py \
+            tests/packaging/test_onboarding_smoke.py \
+            -q
+
   verify:
     runs-on: ubuntu-latest
     env:
@@ -49,7 +90,7 @@ jobs:
           tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP/gitleaks" gitleaks
           echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
 
-      - name: Install project when package metadata exists
+      - name: Install project package if metadata exists
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -72,14 +113,13 @@ jobs:
       - name: Verify quietly
         run: |
           BASE_REF="origin/${GITHUB_BASE_REF:-main}"
-          python3 -m agent_maintainer verify --profile ci --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
+          python3 -m agent_maintainer verify --profile ci \
+            --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
 
       - name: Upload full verification logs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: verify-logs
-          path: |
-            .verify-logs/
-            coverage.xml
+          path: .verify-logs/
           if-no-files-found: ignore

@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-maintainer-legacy-ratchet-example"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.agent_maintainer]
+mode = "legacy-ratchet"
+architecture_tool = "import-linter"
+source_roots = ["src"]
+test_roots = ["tests"]
+package_paths = ["src"]
+coverage_source = ["src"]
+file_length_paths = ["src", "tests"]
+structure_paths = ["src"]
+vulture_paths = ["src", "tests"]
+require_tests = true
+coverage_fail_under = 80
+diff_cover_fail_under = 90
+enable_interrogate = false
+enable_wemake = false
+enable_pip_audit = false
+enable_markdownlint = false
+enable_yamllint = false
+enable_taplo = false
+
+[tool.agent_maintainer.diagnostics]
+enabled = true
+log_dir = ".verify-logs"
