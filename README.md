@@ -244,9 +244,15 @@ PYTHONPATH=src python3 -m agent_maintainer bootstrap
 - [MIT License](LICENSE)
 - [Changelog](CHANGELOG.md)
 - [Tool map](docs/tool-map.md)
+- [First run walkthrough](docs/onboarding-first-run.md)
 - [Fresh-strict mode](docs/fresh-strict.md)
 - [Legacy-ratchet mode](docs/legacy-ratchet.md)
 - [Codex hooks](docs/codex-hooks.md)
 - [Release checklist](docs/release-checklist.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Structure cohesion](docs/structure-cohesion.md)
+
+Example starter projects:
+
+- [Fresh-strict example](examples/fresh-strict)
+- [Legacy-ratchet example](examples/legacy-ratchet)

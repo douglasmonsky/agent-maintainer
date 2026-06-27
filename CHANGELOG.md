@@ -2,12 +2,26 @@
 
 ## Unreleased
 
-### Added Since 0.1.0b1
+## 0.1.0b2 - 2026-06-27
+
+Second beta release of Agent Maintainer.
+
+### Added In 0.1.0b2
 
 - Archguard CLI: `archguard` and `python -m archguard` for architecture policy
   governance.
+- Architecture decision-note enforcement when Tach policy files change.
+- Python compatibility CI matrix for Python 3.11, 3.12, 3.13, and 3.14.
+- GitHub release artifact attachment for built wheel and sdist distributions.
+- Fresh-strict and legacy-ratchet example projects.
+- First-run onboarding walkthrough focused on diagnostics and repair loops.
 
-### Beta Notes Since 0.1.0b1
+### Changed In 0.1.0b2
+
+- Agent Maintainer now consumes Archguard for Tach configuration validation.
+- The real PyPI publishing environment requires manual reviewer approval.
+
+### Beta Notes For 0.1.0b2
 
 - Known limitation: Semgrep is excluded from `manual` and `all` extras on Python
   3.13+ while upstream dependency resolution is unstable there.

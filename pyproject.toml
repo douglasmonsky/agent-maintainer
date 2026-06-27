@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-maintainer"
-version = "0.1.0b1"
+version = "0.1.0b2"
 description = "Repository maintenance checks and diagnostics for AI-assisted Python development."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -281,7 +281,13 @@ markers = [
 ]
 
 [tool.deptry]
-known_first_party = ["agent_maintainer", "archguard", "hook_audit"]
+known_first_party = [
+  "agent_maintainer",
+  "archguard",
+  "fresh_strict_example",
+  "hook_audit",
+  "legacy_ratchet_example",
+]
 requirements_files = ["requirements.txt"]
 requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
 
