@@ -303,7 +303,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Review package-first documentation and metadata after migration cleanup.
 - [x] Keep OSV and Trivy disabled here unless mixed-ecosystem, container, Kubernetes, Terraform, or other IaC assets become part of this repository.
 - [x] Confirm locally with focused tests, `precommit`, `full`, `ci`, `security`, and `doctor --strict`.
-- [ ] Push cleanup PR, watch PR CI, merge green, then watch post-merge `main` CI.
+- [x] Push cleanup PR, watch PR CI, merge green, then watch post-merge `main` CI.
 
 ## Explicit Non-Goals For Now
 
