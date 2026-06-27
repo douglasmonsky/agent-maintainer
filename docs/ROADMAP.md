@@ -292,6 +292,19 @@ repo state instead of reconstructing the plan from chat history.
   `security`, and `doctor --strict`, then push, open PR, watch PR CI, merge
   green, and watch post-merge `main` CI.
 
+## Phase 13: Test Organization and Post-Migration Cleanup
+
+- [ ] Reorganize flat `tests/` files into responsibility folders mirroring `src/ai_guardrails`.
+- [ ] Add stable test path helpers so moved tests do not depend on fragile `Path(__file__).parents[...]` depths.
+- [ ] Split near-limit bootstrap helper tests by install, path, and environment responsibilities.
+- [ ] Keep pytest discovery, coverage, mutmut, and guardrail paths working after test moves.
+- [ ] Review source modules near size or complexity pressure and extract cohesive helpers only where boundaries are already clear.
+- [ ] Confirm Tach remains exact and all runtime modules remain explicitly assigned.
+- [ ] Review package-first documentation and metadata after migration cleanup.
+- [ ] Keep OSV and Trivy disabled here unless mixed-ecosystem, container, Kubernetes, Terraform, or other IaC assets become part of this repository.
+- [ ] Confirm locally with focused tests, `precommit`, `full`, `ci`, `security`, and `doctor --strict`.
+- [ ] Push cleanup PR, watch PR CI, merge green, then watch post-merge `main` CI.
+
 ## Explicit Non-Goals For Now
 
 - [x] Do not add Docker to this repository's own workflow.
