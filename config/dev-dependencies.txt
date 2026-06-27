@@ -26,3 +26,4 @@ zizmor
 pre-commit
 wemake-python-styleguide
 twine
+rust-just

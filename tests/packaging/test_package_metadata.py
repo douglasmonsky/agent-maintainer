@@ -61,6 +61,7 @@ def test_optional_dependency_extras_are_flattened() -> None:
     assert set(extras["manual"]) <= set(extras["all"])
     assert set(extras["hardening"]) <= set(extras["all"])
     assert all("hypothesis" not in dependencies for dependencies in extras.values())
+    assert all("rust-just" not in dependencies for dependencies in extras.values())
 
 
 def test_package_extras_install_in_clean_virtualenv(tmp_path: Path) -> None:
