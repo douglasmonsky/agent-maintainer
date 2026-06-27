@@ -10,6 +10,11 @@ from ai_guardrails.core import tool_capabilities as capabilities
 from ai_guardrails.models import FULL_PROFILES, Check
 
 
+def test_tool_capability_module_reexports_public_constants() -> None:
+    assert capabilities.EXTERNAL_BINARY == "external_binary"
+    assert capabilities.PYTHON_PACKAGE == "python_package"
+
+
 def test_python_package_tool_state_passes_when_local_executable_exists(tmp_path: Path) -> None:
     tool_path = tmp_path / ".venv" / "bin" / "ruff"
     tool_path.parent.mkdir(parents=True)

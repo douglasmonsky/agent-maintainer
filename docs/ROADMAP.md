@@ -298,8 +298,8 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add stable test path helpers so moved tests do not depend on fragile `Path(__file__).parents[...]` depths.
 - [x] Split near-limit bootstrap helper tests by install, path, and environment responsibilities.
 - [ ] Keep pytest discovery, coverage, mutmut, and guardrail paths working after test moves.
-- [ ] Review source modules near size or complexity pressure and extract cohesive helpers only where boundaries are already clear.
-- [ ] Confirm Tach remains exact and all runtime modules remain explicitly assigned.
+- [x] Review source modules near size or complexity pressure and extract cohesive helpers only where boundaries are already clear.
+- [x] Confirm Tach remains exact and all runtime modules remain explicitly assigned.
 - [ ] Review package-first documentation and metadata after migration cleanup.
 - [ ] Keep OSV and Trivy disabled here unless mixed-ecosystem, container, Kubernetes, Terraform, or other IaC assets become part of this repository.
 - [ ] Confirm locally with focused tests, `precommit`, `full`, `ci`, `security`, and `doctor --strict`.
