@@ -67,9 +67,11 @@ wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean 
 
 Interrogate checks docstring coverage. It runs only when `enable_interrogate = true` or `AGENT_MAINTAINER_ENABLE_INTERROGATE=1`; use `interrogate_fail_under` as a ratchet floor rather than forcing a legacy repo to document every helper at once.
 
-Tach and Import Linter are supported architecture boundary backends. `architecture_tool = "import-linter"` is the backward-compatible default. `architecture_tool = "tach"` runs a Tach config check and then `tach check --exact`.
+Tach and Import Linter are supported architecture boundary backends. `architecture_tool = "import-linter"` is the backward-compatible default. `architecture_tool = "tach"` runs an Archguard Tach config check and then `tach check --exact`.
 
 This repository uses Tach for its own Agent Maintainer modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules. In strict mode, the config check also requires each non-init Python source file under Tach's checked roots to appear explicitly in a Tach module entry, and each configured module entry must still resolve to source, so broad parent modules and stale references cannot hide ownership drift.
+
+Archguard runs alongside Tach when `architecture_tool = "tach"`. Tach enforces the current architecture contract. Archguard governs changes to that contract. If `tach.toml` or `tach.domain.toml` changes, Archguard requires an architecture decision note in `docs/architecture/decisions/`.
 
 ## Diff hygiene gates
 

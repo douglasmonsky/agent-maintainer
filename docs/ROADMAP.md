@@ -12,6 +12,9 @@ stability.
 - Keep public configuration stable where possible and document breaking changes
   before 1.0.
 - Clarify which checks belong in normal profiles versus release-only checks.
+- Ensure the GitHub `pypi` environment requires manual approval before real PyPI
+  publication.
+- Add a CI matrix for advertised Python versions 3.11, 3.12, 3.13, and 3.14.
 
 ## Later
 

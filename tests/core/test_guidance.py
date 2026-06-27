@@ -16,10 +16,10 @@ def strict_config() -> MaintainerConfig:
     return replace(
         apply_mode(MaintainerConfig(), "fresh-strict"),
         architecture_tool="tach",
-        source_roots=("src/agent_maintainer", ".codex/hooks"),
+        source_roots=("src/agent_maintainer", "src/archguard", ".codex/hooks"),
         test_roots=("tests",),
-        package_paths=("src/agent_maintainer", ".codex/hooks"),
-        coverage_source=("src/agent_maintainer", ".codex/hooks"),
+        package_paths=("src/agent_maintainer", "src/archguard", ".codex/hooks"),
+        coverage_source=("src/agent_maintainer", "src/archguard", ".codex/hooks"),
         enable_pip_audit=True,
         pip_audit_args=("-r", "config/dev-lock.txt"),
         enable_mutmut=True,
@@ -54,9 +54,11 @@ def test_render_guidance_includes_active_configuration() -> None:
 
     assert "Generated Agent Maintainer Guidance" in text
     assert "Mode: `fresh-strict`" in text
-    assert "Source roots: `src/agent_maintainer`, `.codex/hooks`" in text
+    assert "Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`" in text
     assert "Test roots: `tests`" in text
     assert "Architecture backend: `tach`" in text
+    assert "## Architecture Policy Changes" in text
+    assert "`docs/architecture/decisions/`" in text
     assert "Diagnostic artifacts: `enabled` at `.verify-logs`" in text
     assert "Pyright mode: `standard`" in text
     assert "File length baseline: `disabled`" in text

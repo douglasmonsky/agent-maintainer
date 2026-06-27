@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from dataclasses import replace
 from pathlib import Path
 
@@ -49,17 +50,44 @@ def test_path_matching_handles_roots_and_relative_prefixes() -> None:
 
 
 def test_architecture_commands_follow_config() -> None:
-    default_checks = maintainer_catalog.architecture_checks(MaintainerConfig())
+    default_checks = maintainer_catalog.architecture_checks(
+        MaintainerConfig(),
+        "HEAD",
+        staged=False,
+    )
     tach_checks = maintainer_catalog.architecture_checks(
-        replace(MaintainerConfig(), architecture_tool="tach", mode="fresh-strict")
+        replace(MaintainerConfig(), architecture_tool="tach", mode="fresh-strict"),
+        "origin/main",
+        staged=False,
     )
     by_name = {check.name: check for check in tach_checks}
 
     assert default_checks[0].name == "import-linter"
     assert default_checks[0].command == ["lint-imports"]
+    assert by_name["tach-config"].command[:3] == [sys.executable, "-m", "archguard"]
+    assert by_name["tach-config"].command[3] == "tach-config"
     assert by_name["tach-config"].required_paths == ("tach.toml",)
+    assert by_name["architecture-decision"].command[:3] == [
+        sys.executable,
+        "-m",
+        "archguard",
+    ]
+    assert "decision-check" in by_name["architecture-decision"].command
+    assert "--base-ref" in by_name["architecture-decision"].command
+    assert "origin/main" in by_name["architecture-decision"].command
+    assert PRECOMMIT_PROFILE in by_name["architecture-decision"].profiles
+    assert FULL_PROFILE in by_name["architecture-decision"].profiles
+    assert CI_PROFILE in by_name["architecture-decision"].profiles
     assert by_name["tach"].command == ["tach", "check", "--exact"]
     assert by_name["tach"].required_paths == ("tach.toml",)
+
+
+def test_architecture_decision_check_receives_staged_flag() -> None:
+    config = replace(MaintainerConfig(), architecture_tool="tach", mode="fresh-strict")
+    checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main", staged=True)
+    decision = next(check for check in checks if check.name == "architecture-decision")
+
+    assert "--staged" in decision.command
 
 
 def test_make_checks_includes_expected_profiles(

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer import tach as maintainer_tach
-from agent_maintainer.checks import tach_config as check_tach_config
+from archguard import tach_config
+from archguard.cli import tach_config_main
 
 
 def test_tach_config_issues_require_modules_and_strict_root(tmp_path: Path) -> None:
@@ -20,10 +20,37 @@ root_module = "ignore"
         encoding="utf-8",
     )
 
-    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert "tach.toml must define at least one module" in issues
     assert 'tach.toml must set root_module = "forbid"' in issues
+
+
+def test_tach_config_issues_reports_invalid_toml(tmp_path: Path) -> None:
+    """Report invalid Tach TOML before deeper validation."""
+    (tmp_path / "tach.toml").write_text("source_roots = [", encoding="utf-8")
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert issues[0].startswith("tach.toml is invalid:")
+
+
+def test_tach_config_issues_requires_source_roots(tmp_path: Path) -> None:
+    """Require Tach source roots to make ownership checks meaningful."""
+    (tmp_path / "tach.toml").write_text(
+        """
+root_module = "forbid"
+
+[[modules]]
+
+path = "package"
+""".strip(),
+        encoding="utf-8",
+    )
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert "tach.toml must define source_roots" in issues
 
 
 def test_tach_config_issues_require_explicit_source_modules(tmp_path: Path) -> None:
@@ -50,7 +77,7 @@ path = "package.known"
         encoding="utf-8",
     )
 
-    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == ["tach.toml must explicitly assign source modules: package.stale"]
 
@@ -74,7 +101,7 @@ paths = ["package.known"]
         encoding="utf-8",
     )
 
-    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == [
         "tach.toml must explicitly assign source modules: "
@@ -100,7 +127,7 @@ paths = ["package.known", "package.missing"]
         encoding="utf-8",
     )
 
-    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == ["tach.toml references modules without source files: package.missing"]
 
@@ -116,15 +143,15 @@ modules = ["not-a-module-table"]
         encoding="utf-8",
     )
 
-    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == ["each tach module must define path or paths"]
 
 
 def test_tach_config_defensive_helpers_handle_invalid_inputs(tmp_path: Path) -> None:
     """Keep defensive helper branches stable for malformed TOML values."""
-    assert maintainer_tach._source_module_names(tmp_path, "scripts", None) == ()
-    assert not maintainer_tach._matches_exclude("package/file.py", ("package",), " ")
+    assert tach_config._source_module_names(tmp_path, "scripts", None) == ()
+    assert not tach_config._matches_exclude("package/file.py", ("package",), " ")
 
 
 def test_tach_config_main_reports_success(
@@ -148,7 +175,7 @@ path = "scripts"
         encoding="utf-8",
     )
 
-    assert check_tach_config.main([]) == 0
+    assert tach_config_main([]) == 0
     output = capsys.readouterr().out
     assert "tach.toml" in output
     assert "configured" in output

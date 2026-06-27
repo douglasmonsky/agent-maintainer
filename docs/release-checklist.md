@@ -19,6 +19,8 @@ discipline, not a normal local edit loop.
 - [ ] PyPI Trusted Publisher is configured with project name `agent-maintainer`,
   owner `douglasmonsky`, repository `agent-maintainer`, workflow `publish.yml`,
   and environment `pypi`.
+- [ ] GitHub `pypi` environment requires manual reviewer approval before
+  publishing to the real PyPI project.
 - [ ] TestPyPI Trusted Publisher is configured with project name
   `agent-maintainer`, owner `douglasmonsky`, repository `agent-maintainer`,
   workflow `publish.yml`, and environment `testpypi`.
@@ -82,6 +84,8 @@ artifacts.
 - [ ] Include verification evidence, including the release-only packaging
   command.
 - [ ] List known risks and current beta limitations.
+- [ ] Mention Semgrep is excluded from `manual` and `all` extras on Python
+  3.13+ while resolver compatibility is unstable there, if still true.
 
 ## Smoke Test
 

@@ -17,6 +17,8 @@ This mode is meant to stop entropy before it becomes architecture. It keeps test
 
 When `architecture_tool = "tach"` is used with `fresh-strict`, `tach.toml` must exist, define at least one module, set `root_module = "forbid"`, explicitly assign each non-init Python source module under Tach's checked source roots, and avoid module entries that no longer resolve to source files. The full verifier then runs `tach check --exact` so stale declared dependencies fail too.
 
+Fresh-strict Tach mode also runs the Archguard architecture-decision gate in `precommit`, `full`, and `ci` profiles. Any change to Tach architecture policy files must include an architecture decision note.
+
 Preset defaults:
 
 | Setting | Value |

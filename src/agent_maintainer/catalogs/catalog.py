@@ -39,11 +39,16 @@ def existing_or_configured(paths: tuple[str, ...]) -> tuple[str, ...]:
     return existing if existing else paths
 
 
-def architecture_checks(config: MaintainerConfig) -> list[models.Check]:
+def architecture_checks(
+    config: MaintainerConfig,
+    base_ref: str,
+    *,
+    staged: bool,
+) -> list[models.Check]:
     """Build the selected architecture contract checks."""
 
     if config.architecture_tool == TACH_TOOL:
-        return tach_checks(config)
+        return tach_checks(config, base_ref, staged=staged)
     return [
         models.Check(
             IMPORT_LINTER_TOOL,
@@ -57,13 +62,28 @@ def architecture_checks(config: MaintainerConfig) -> list[models.Check]:
     ]
 
 
-def tach_checks(config: MaintainerConfig) -> list[models.Check]:
+def tach_checks(
+    config: MaintainerConfig,
+    base_ref: str,
+    *,
+    staged: bool,
+) -> list[models.Check]:
     """Build Tach config and architecture checks for the selected strictness mode."""
 
     strict = config.mode == FRESH_STRICT_MODE
-    config_command = [sys.executable, "-m", "agent_maintainer.checks.tach_config"]
+    config_command = [sys.executable, "-m", "archguard", "tach-config"]
     if strict:
         config_command.append("--strict-root-module")
+    decision_command = [
+        sys.executable,
+        "-m",
+        "archguard",
+        "decision-check",
+        "--base-ref",
+        base_ref,
+    ]
+    if staged:
+        decision_command.append("--staged")
     optional_skip_reason = None
     if not strict:
         optional_skip_reason = "tach.toml is absent; architecture contracts are not configured"
@@ -73,6 +93,13 @@ def tach_checks(config: MaintainerConfig) -> list[models.Check]:
             config_command,
             models.FULL_PROFILES,
             required_paths=("tach.toml",) if strict else (),
+            optional_skip_reason=optional_skip_reason,
+        ),
+        models.Check(
+            "architecture-decision",
+            decision_command,
+            models.LOCAL_GATE_PROFILES,
+            required_paths=(".git",),
             optional_skip_reason=optional_skip_reason,
         ),
         models.Check(
@@ -183,7 +210,7 @@ def make_checks(
             models.FULL_PROFILES,
             required_executable="pylint",
         ),
-        *architecture_checks(config),
+        *architecture_checks(config, base_ref, staged=staged),
         models.Check(
             "deptry",
             ["deptry", "."],
