@@ -6,6 +6,8 @@ import os
 import subprocess  # nosec B404
 import sys
 import tomllib
+import venv
+from pathlib import Path
 
 from tests.support.paths import REPO_ROOT
 
@@ -26,6 +28,59 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     assert {"core", "agent", "hardening", "manual", "all"} <= set(
         metadata["project"]["optional-dependencies"]
     )
+
+
+def test_optional_dependency_extras_are_flattened() -> None:
+    """Extras avoid recursive self-references so installers stay predictable."""
+
+    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
+        metadata = tomllib.load(handle)
+
+    extras = metadata["project"]["optional-dependencies"]
+    for dependencies in extras.values():
+        assert len(dependencies) == len(set(dependencies))
+        assert all(not dependency.startswith("agent-maintainer[") for dependency in dependencies)
+
+    assert set(extras["core"]) <= set(extras["agent"])
+    assert set(extras["core"]) <= set(extras["hardening"])
+    assert set(extras["core"]) <= set(extras["all"])
+    assert set(extras["manual"]) <= set(extras["all"])
+    assert set(extras["hardening"]) <= set(extras["all"])
+
+
+def test_package_extras_install_in_clean_virtualenv(tmp_path: Path) -> None:
+    """Each declared extra is accepted by pip in a clean virtualenv."""
+
+    venv_dir = tmp_path / "venv"
+    venv.EnvBuilder(with_pip=True).create(venv_dir)
+    python = venv_dir / "bin" / "python"
+
+    for extra in ("core", "agent", "hardening", "manual", "all"):
+        result = subprocess.run(  # nosec B603
+            [
+                str(python),
+                "-m",
+                "pip",
+                "install",
+                "--disable-pip-version-check",
+                "--no-deps",
+                "-e",
+                f"{REPO_ROOT}[{extra}]",
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+
+    result = subprocess.run(  # nosec B603
+        [str(python), "-c", "import agent_maintainer; print(agent_maintainer.__name__)"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "agent_maintainer"
 
 
 def test_package_module_entrypoint_help() -> None:
