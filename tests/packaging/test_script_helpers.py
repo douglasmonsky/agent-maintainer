@@ -5,6 +5,7 @@ from __future__ import annotations
 import runpy
 import subprocess
 import sys
+import tomllib
 
 import pytest
 
@@ -77,6 +78,24 @@ def test_guardrail_package_entrypoint_help() -> None:
 
     assert result.returncode == 0
     assert "python -m ai_guardrails doctor" in result.stdout
+
+
+def test_project_exposes_console_script_entrypoint() -> None:
+    pyproject = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+    assert pyproject["project"]["scripts"]["ai-guardrails"] == "ai_guardrails.cli:console_main"
+
+
+def test_guardrail_console_script_dispatches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[list[str]] = []
+
+    monkeypatch.setattr(guardrail_cli, "main", lambda argv: calls.append(argv) or 0)
+    monkeypatch.setattr(sys, "argv", ["ai-guardrails", "doctor"])
+
+    assert guardrail_cli.console_main() == 0
+    assert calls == [["doctor"]]
 
 
 def test_guardrail_package_main_module_dispatches(

@@ -100,6 +100,10 @@ python3 -m ai_guardrails doctor
 python3 -m ai_guardrails doctor --strict
 ```
 
+After editable install, `ai-guardrails` is also available as a console script.
+Use `python3 -m ai_guardrails` for committed automation so hooks and CI do not
+depend on shell `PATH` state.
+
 `doctor` reports compact `PASS`, `WARN`, and `FAIL` rows with a stable state
 label: `active`, `disabled`, `not applicable`, `missing`, or `unsafe config`.
 It covers Python version, tool capabilities, architecture backend, active

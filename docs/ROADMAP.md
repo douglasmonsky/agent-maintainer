@@ -300,8 +300,8 @@ repo state instead of reconstructing the plan from chat history.
 - [ ] Keep pytest discovery, coverage, mutmut, and guardrail paths working after test moves.
 - [x] Review source modules near size or complexity pressure and extract cohesive helpers only where boundaries are already clear.
 - [x] Confirm Tach remains exact and all runtime modules remain explicitly assigned.
-- [ ] Review package-first documentation and metadata after migration cleanup.
-- [ ] Keep OSV and Trivy disabled here unless mixed-ecosystem, container, Kubernetes, Terraform, or other IaC assets become part of this repository.
+- [x] Review package-first documentation and metadata after migration cleanup.
+- [x] Keep OSV and Trivy disabled here unless mixed-ecosystem, container, Kubernetes, Terraform, or other IaC assets become part of this repository.
 - [ ] Confirm locally with focused tests, `precommit`, `full`, `ci`, `security`, and `doctor --strict`.
 - [ ] Push cleanup PR, watch PR CI, merge green, then watch post-merge `main` CI.
 
