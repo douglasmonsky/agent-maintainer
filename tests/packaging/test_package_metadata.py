@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess  # nosec B404
 import sys
 import tomllib
@@ -10,6 +11,13 @@ import venv
 from pathlib import Path
 
 from tests.support.paths import REPO_ROOT
+
+SOURCE_METADATA = REPO_ROOT / "src" / "agent_maintainer.egg-info"
+
+
+def cleanup_source_metadata() -> None:
+    """Remove editable-install metadata generated during packaging tests."""
+    shutil.rmtree(SOURCE_METADATA, ignore_errors=True)
 
 
 def test_project_metadata_uses_agent_maintainer_identity() -> None:
@@ -55,23 +63,26 @@ def test_package_extras_install_in_clean_virtualenv(tmp_path: Path) -> None:
     venv.EnvBuilder(with_pip=True).create(venv_dir)
     python = venv_dir / "bin" / "python"
 
-    for extra in ("core", "agent", "hardening", "manual", "all"):
-        result = subprocess.run(  # nosec B603
-            [
-                str(python),
-                "-m",
-                "pip",
-                "install",
-                "--disable-pip-version-check",
-                "--no-deps",
-                "-e",
-                f"{REPO_ROOT}[{extra}]",
-            ],
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        assert result.returncode == 0, result.stdout + result.stderr
+    try:
+        for extra in ("core", "agent", "hardening", "manual", "all"):
+            result = subprocess.run(  # nosec B603
+                [
+                    str(python),
+                    "-m",
+                    "pip",
+                    "install",
+                    "--disable-pip-version-check",
+                    "--no-deps",
+                    "-e",
+                    f"{REPO_ROOT}[{extra}]",
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            assert result.returncode == 0, result.stdout + result.stderr
+    finally:
+        cleanup_source_metadata()
 
     result = subprocess.run(  # nosec B603
         [str(python), "-c", "import agent_maintainer; print(agent_maintainer.__name__)"],

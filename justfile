@@ -27,7 +27,10 @@ verify-ci:
     python3 -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
 
 verify-manual:
-    python3 -m agent_maintainer verify --profile manual
+   python3 -m agent_maintainer verify --profile manual
+
+release-check:
+   AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 pytest -m release tests/release -q
 
 # Example for a flat package layout:
 verify-flat PACKAGE:

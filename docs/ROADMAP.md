@@ -1,5 +1,14 @@
 # Product Roadmap
 
+## Phase 18: Beta Release Packaging Discipline
+
+- [x] Add a repository-specific release checklist for beta tagging and publish prep.
+- [x] Add release-only pytest marker for checks that may build artifacts or resolve dependency graphs.
+- [x] Add clean virtualenv dependency-resolution checks for all declared package extras.
+- [x] Add wheel and sdist build/install smoke coverage for the console script.
+- [x] Add `just release-check` as the explicit opt-in command.
+- [x] Keep release packaging checks out of normal precommit/full loops.
+
 ## Phase 17: Agent Maintainer Rename And Release Readiness
 
 - [x] Rename display identity to Agent Maintainer.
