@@ -1,30 +1,40 @@
-# Merge these sections into your existing pyproject.toml.
-# Adjust [tool.ai_guardrails] paths if your repository does not use src/ and tests/.
+# Starter guardrail config for package-first adoption.
+# Merge this into your repository's pyproject.toml, then tune paths.
 
 [tool.ai_guardrails]
-# Optional: custom (default), legacy-ratchet, or fresh-strict.
-# mode = "custom"
-# Optional: import-linter (default) or tach.
-# architecture_tool = "import-linter"
+# Kit default for existing repositories. Use "fresh-strict" only after the
+# repository is clean enough for strict checks to block immediately.
+mode = "custom"
+architecture_tool = "import-linter"
+
+# Core paths. Package users should not vendor src/ai_guardrails into their app.
 source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]
 coverage_source = ["src"]
-file_length_paths = ["src", "tests", "scripts", ".codex/hooks"]
-vulture_paths = ["src", "tests", "scripts"]
+file_length_paths = ["src", "tests", ".codex/hooks"]
+structure_paths = ["src", ".codex/hooks"]
+structure_ignore_paths = [
+  "tests/**",
+  "migrations/**",
+  "generated/**",
+  ".venv/**",
+  "venv/**",
+  "**/__pycache__/**",
+]
+vulture_paths = ["src", "tests", ".codex/hooks"]
+
+# Core policy. This kit default is intentionally lower than this repo's
+# self-enforced 90 percent total coverage setting.
 require_tests = true
 coverage_fail_under = 80
 diff_cover_fail_under = 90
 file_length_max_physical = 600
 file_length_max_source = 450
-# legacy-ratchet defaults this to ".guardrails/file-length-baseline.json".
-file_length_baseline = ""
 change_warn_lines = 300
 change_block_lines = 800
 change_warn_files = 8
 change_block_files = 20
-# In fresh-strict this defaults to ["precommit"]. Add "ci" only when you want
-# the source/test-change heuristic to fail CI in addition to diff-cover.
 source_without_test_change_error_profiles = []
 allow_source_without_test_change = false
 suppression_max_new = 3
@@ -34,18 +44,10 @@ xenon_max_average = "A"
 ruff_max_complexity = 10
 pyright_type_checking_mode = "standard"
 
-# Disabled by default because pip-audit may query external vulnerability data
-# and can audit unrelated active-environment packages if no input file is used.
+# Optional hardening gates stay off until explicitly adopted.
 enable_pip_audit = false
-# Example when enabled:
-# pip_audit_args = ["-r", "config/dev-lock.txt"]
-
-# Disabled by default because wemake is intentionally strict. Enable for fresh
-# repos or existing repos that have a clean baseline or ratchet plan.
+pip_audit_args = ["-r", "config/dev-lock.txt"]
 enable_wemake = false
-
-# Disabled by default for existing repos. fresh-strict enables this; legacy
-# repos should set a baseline and raise it deliberately.
 enable_interrogate = false
 interrogate_fail_under = 80
 enable_markdownlint = false
@@ -59,49 +61,51 @@ yamllint_paths = [
   "*.yaml",
 ]
 enable_taplo = false
-taplo_paths = ["*.toml", "config/*.toml"]
+taplo_paths = ["pyproject.toml", "tach.toml", "config/*.toml"]
 enable_check_jsonschema = false
-# Example enabled for GitHub Actions workflow schema validation:
-# check_jsonschema_args = ["--builtin-schema", "vendor.github-workflows", ".github/workflows/verify.yml"]
-
-[tool.ruff]
-line-length = 100
-target-version = "py312"
-
-[tool.ruff.lint]
-select = [
-  "E",   # pycodestyle errors
-  "F",   # pyflakes
-  "I",   # import sorting
-  "B",   # bugbear-style correctness checks
-  "UP",  # pyupgrade
-  "SIM", # simplification checks
-  "C90", # McCabe complexity
-  "PLR", # Pylint refactor rules exposed by Ruff
-  "RUF", # Ruff-specific rules
+check_jsonschema_args = []
+enable_secret_scanning = false
+secret_scanner = "gitleaks"
+secret_scan_profiles = ["full", "ci"]
+secret_scan_history_profiles = ["security"]
+enable_semgrep = false
+semgrep_args = [
+  "scan",
+  "--config",
+  "semgrep.yml",
+  "--error",
+  "--metrics=off",
+  "src",
 ]
-ignore = []
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
-
-[tool.pytest.ini_options]
-# The verifier passes configured test roots directly. Uncomment if you also want
-# plain `pytest` to use a fixed default.
-# testpaths = ["tests"]
-
-[tool.coverage.run]
-branch = true
-# The verifier passes configured coverage sources through pytest-cov `--cov`.
-# Uncomment and adjust only if you also run coverage without the verifier.
-# source = ["src"]
-
-[tool.coverage.report]
-show_missing = true
-skip_covered = true
-fail_under = 80
-exclude_lines = [
-  "pragma: no cover",
-  "if TYPE_CHECKING:",
-  "if __name__ == .__main__.:",
+semgrep_profiles = ["manual"]
+enable_osv_scanner = false
+osv_scanner_args = ["scan", "source", "-r", "."]
+osv_scanner_profiles = ["manual"]
+enable_trivy = false
+trivy_args = [
+  "fs",
+  "--scanners",
+  "vuln,misconfig",
+  "--format",
+  "json",
+  "--exit-code",
+  "1",
+  ".",
 ]
+trivy_profiles = ["manual"]
+enable_sbom = false
+sbom_args = [
+  "requirements",
+  "config/dev-lock.txt",
+  "--output-reproducible",
+  "--of",
+  "JSON",
+]
+sbom_profiles = ["ci"]
+enable_license_check = false
+license_check_args = ["--from=mixed", "--format=json"]
+license_check_profiles = ["manual"]
+
+[tool.ai_guardrails.diagnostics]
+enabled = true
+log_dir = ".verify-logs"

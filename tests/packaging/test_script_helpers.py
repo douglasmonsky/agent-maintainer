@@ -18,6 +18,7 @@ DOCTOR_STATUS = 14
 INSTALL_STATUS = 12
 VERIFY_STATUS = 13
 GUIDANCE_STATUS = 15
+INIT_STATUS = 16
 UNKNOWN_COMMAND_STATUS = 2
 
 
@@ -49,12 +50,14 @@ def test_guardrail_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.setattr(guardrail_cli, "bootstrap", lambda: BOOTSTRAP_STATUS)
     monkeypatch.setattr(guardrail_cli, "doctor_main", lambda args: DOCTOR_STATUS)
     monkeypatch.setattr(guardrail_cli, "guidance_main", lambda args: GUIDANCE_STATUS)
+    monkeypatch.setattr(guardrail_cli, "init_main", lambda args: INIT_STATUS)
     monkeypatch.setattr(guardrail_cli, "install", lambda: INSTALL_STATUS)
     monkeypatch.setattr(guardrail_cli, "verify_main", lambda args: VERIFY_STATUS)
 
     assert guardrail_cli.main(["bootstrap"]) == BOOTSTRAP_STATUS
     assert guardrail_cli.main(["doctor", "--strict"]) == DOCTOR_STATUS
     assert guardrail_cli.main(["guidance", "--check"]) == GUIDANCE_STATUS
+    assert guardrail_cli.main(["init", "--track", "core"]) == INIT_STATUS
     assert guardrail_cli.main(["install"]) == INSTALL_STATUS
     assert guardrail_cli.main(["verify", "--profile", "fast"]) == VERIFY_STATUS
     assert guardrail_cli.main(["unknown"]) == UNKNOWN_COMMAND_STATUS

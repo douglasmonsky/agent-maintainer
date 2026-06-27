@@ -32,7 +32,37 @@ This is a drop-in kit for steering AI-assisted Python changes toward maintainabl
 
 ## Install
 
-Copy these files into the root of a Python repository:
+Recommended adoption is package-first: install `ai_guardrails`, then initialize
+the small repo-local files that make sense for your maturity level.
+
+```bash
+python -m pip install ai_guardrails  # or install from the Git URL/source checkout
+python3 -m ai_guardrails init --track core
+```
+
+`init` supports three tracks:
+
+| Track | Use when | Writes |
+|---|---|---|
+| `core` | You want the minimum useful guardrail loop. | Starter config, pre-commit hook config, CI workflow. |
+| `agent` | AI agents actively edit the repo. | Core files plus `AGENTS.md` and Codex hook files. |
+| `hardening` | You are ready for docs/config hygiene and optional security surfaces. | Agent files plus Node-backed tooling metadata. |
+
+Run `python3 -m ai_guardrails init --dry-run` to preview writes. Existing files
+are not overwritten unless `--force` is passed.
+
+After initialization, merge `config/pyproject.guardrails.toml` into your
+`pyproject.toml`, tune paths, then run:
+
+```bash
+python3 -m ai_guardrails doctor
+python3 -m ai_guardrails verify --profile precommit
+```
+
+### Legacy Vendored Install
+
+For early dogfooding or private forks, you can still copy the kit into the root
+of a Python repository:
 
 ```text
 AGENTS.md
@@ -177,7 +207,9 @@ This keeps dependency installation separate and only installs the pre-commit hoo
 
 The verifier no longer assumes that every project uses `src/` and `tests/` silently. Defaults are still `src` and `tests`, but missing configured roots are reported as guardrail configuration failures in `precommit`, `full`, and `ci` profiles.
 
-Preferred configuration lives in `pyproject.toml`:
+Preferred configuration lives in `pyproject.toml`. The example below shows the
+starter kit default; this repository self-enforces a stricter 90% total coverage
+floor in its own `pyproject.toml`.
 
 ```toml
 [tool.ai_guardrails]
@@ -191,9 +223,9 @@ package_paths = ["src"]
 coverage_source = ["src"]
 file_length_paths = ["src", "tests", ".codex/hooks"]
 file_length_baseline = ""
-vulture_paths = ["src", "tests"]
+vulture_paths = ["src", "tests", ".codex/hooks"]
 require_tests = true
-coverage_fail_under = 90
+coverage_fail_under = 80
 diff_cover_fail_under = 90
 source_without_test_change_error_profiles = ["precommit"]
 allow_source_without_test_change = false
@@ -279,6 +311,14 @@ One-command local bootstrap:
 
 ```bash
 python3 -m ai_guardrails bootstrap
+```
+
+Initialize guardrail files in another repository:
+
+```bash
+python3 -m ai_guardrails init --track core
+python3 -m ai_guardrails init --track agent
+python3 -m ai_guardrails init --track hardening
 ```
 
 Setup diagnostics:
