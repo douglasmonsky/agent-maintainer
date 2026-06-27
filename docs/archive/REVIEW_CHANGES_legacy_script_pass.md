@@ -5,7 +5,7 @@ This file is archived historical context. It describes an earlier
 automation uses `python3 -m ai_guardrails`, with `ai-guardrails` available after
 editable install for interactive use.
 
-# Review-driven changes in this revision
+## Review-driven changes in this revision
 
 This revision addresses the main review findings from the first package.
 

@@ -36,6 +36,12 @@ def test_agent_init_includes_codex_hooks_and_agent_guidance(tmp_path: Path) -> N
     assert (tmp_path / ".codex" / "hooks" / "post_edit_fast_gate.py").exists()
     assert (tmp_path / ".codex" / "hooks" / "stop_full_verify.py").exists()
     assert "python3 -m ai_guardrails" in (tmp_path / "AGENTS.md").read_text(encoding="utf-8")
+    stop_hook = (tmp_path / ".codex" / "hooks" / "stop_full_verify.py").read_text(
+        encoding="utf-8",
+    )
+    assert "Final verification failed. Fix issues before finishing." in stop_hook
+    assert "separator = chr(10) * 2" in stop_hook
+    assert "{separator}{output[:8000]}" in stop_hook
 
 
 def test_hardening_init_adds_node_backed_tooling_files(tmp_path: Path) -> None:

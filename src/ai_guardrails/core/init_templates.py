@@ -252,16 +252,17 @@ STOP_HOOK = textwrap.dedent(
             print(json.dumps({"continue": True}))
             return 0
         output = (result.stdout or result.stderr or "Verification failed.").strip()
-        print(
-            json.dumps(
-                {
-                    "decision": "block",
-                    "reason": (
-                        "Final verification failed. Fix issues before finishing."
-                        f"\\n\\n{output[:8000]}"
-                    ),
-                }
-            )
+    separator = chr(10) * 2
+    print(
+        json.dumps(
+            {
+                "decision": "block",
+                "reason": (
+                    "Final verification failed. Fix issues before finishing."
+                    f"{separator}{output[:8000]}"
+                ),
+            }
+        )
         )
         return 0
 
