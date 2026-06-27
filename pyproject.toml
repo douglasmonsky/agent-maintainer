@@ -4,10 +4,40 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-maintainer"
-version = "0.1.0"
+version = "0.1.0b1"
 description = "Repository maintenance checks and diagnostics for AI-assisted Python development."
 readme = "README.md"
 requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Doug Monsky" }]
+keywords = [
+  "ai",
+  "coding-agents",
+  "maintainability",
+  "ci",
+  "python",
+  "code-quality",
+  "developer-tools",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Software Development :: Version Control :: Git",
+]
+
+[project.urls]
+Homepage = "https://github.com/douglasmonsky/agent-maintainer"
+Repository = "https://github.com/douglasmonsky/agent-maintainer"
+Issues = "https://github.com/douglasmonsky/agent-maintainer/issues"
+Documentation = "https://github.com/douglasmonsky/agent-maintainer#readme"
 
 [project.scripts]
 agent-maintainer = "agent_maintainer.cli:console_main"
@@ -18,7 +48,6 @@ core = [
   "coverage",
   "deptry",
   "diff-cover",
-  "hypothesis",
   "import-linter",
   "pre-commit",
   "pylint",
@@ -36,7 +65,6 @@ agent = [
   "coverage",
   "deptry",
   "diff-cover",
-  "hypothesis",
   "import-linter",
   "pre-commit",
   "pylint",
@@ -54,7 +82,6 @@ hardening = [
   "coverage",
   "deptry",
   "diff-cover",
-  "hypothesis",
   "import-linter",
   "pre-commit",
   "pylint",
@@ -83,7 +110,6 @@ all = [
   "cyclonedx-bom",
   "deptry",
   "diff-cover",
-  "hypothesis",
   "import-linter",
   "interrogate",
   "mutmut",
@@ -232,7 +258,7 @@ exclude_lines = [
 pythonpath = [".", "src"]
 testpaths = ["tests"]
 markers = [
-  "release: explicit release-readiness checks that may build artifacts or install dependency graphs",
+  "release: release-only packaging checks that build artifacts and install extras",
 ]
 
 [tool.deptry]
@@ -250,7 +276,6 @@ DEP002 = [
   "cyclonedx-bom",
   "deptry",
   "diff-cover",
-  "hypothesis",
   "import-linter",
   "interrogate",
   "mutmut",
@@ -265,6 +290,7 @@ DEP002 = [
   "ruff",
   "semgrep",
   "tach",
+  "twine",
   "vulture",
   "wemake-python-styleguide",
   "xenon",

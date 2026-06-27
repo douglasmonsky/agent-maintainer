@@ -33,6 +33,12 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     assert metadata["project"]["scripts"] == {
         "agent-maintainer": "agent_maintainer.cli:console_main"
     }
+    assert metadata["project"]["license"]
+    assert metadata["project"]["authors"] == [{"name": "Doug Monsky"}]
+    assert metadata["project"]["urls"]["Repository"] == (
+        "https://github.com/douglasmonsky/agent-maintainer"
+    )
+    assert "License :: OSI Approved :: MIT License" in metadata["project"]["classifiers"]
     assert {"core", "agent", "hardening", "manual", "all"} <= set(
         metadata["project"]["optional-dependencies"]
     )
@@ -54,6 +60,7 @@ def test_optional_dependency_extras_are_flattened() -> None:
     assert set(extras["core"]) <= set(extras["all"])
     assert set(extras["manual"]) <= set(extras["all"])
     assert set(extras["hardening"]) <= set(extras["all"])
+    assert all("hypothesis" not in dependencies for dependencies in extras.values())
 
 
 def test_package_extras_install_in_clean_virtualenv(tmp_path: Path) -> None:
