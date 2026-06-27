@@ -47,6 +47,11 @@ def main(argv: list[str]) -> int:
     return status
 
 
+def console_main() -> int:
+    """Dispatch the installed console script."""
+    return main(sys.argv[1:])
+
+
 def route_command(command: str, command_args: list[str]) -> int:
     """Route one guardrail subcommand implementation."""
 

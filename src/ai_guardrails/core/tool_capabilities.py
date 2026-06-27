@@ -3,142 +3,23 @@
 from __future__ import annotations
 
 import shutil
-from dataclasses import dataclass
 from pathlib import Path
 
+from ai_guardrails.core import tool_capability_types
+from ai_guardrails.core.tool_capability_registry import KNOWN_CAPABILITIES
 from ai_guardrails.models import Check
 
-PYTHON_PACKAGE = "python_package"
-EXTERNAL_BINARY = "external_binary"
-GITHUB_ACTION_ONLY = "github_action_only"
-MANUAL_OPTIONAL = "manual_optional"
-
-SUPPORTED = "supported"
-MISSING = "missing"
-DISABLED = "disabled"
-NOT_APPLICABLE = "not_applicable"
-
-CAPABILITY_LABELS = (
-    (PYTHON_PACKAGE, "Python package command"),
-    (EXTERNAL_BINARY, "external binary"),
-    (GITHUB_ACTION_ONLY, "GitHub Actions-only tool"),
-    (MANUAL_OPTIONAL, "manual optional tool"),
-)
-
-
-@dataclass(frozen=True)
-class ToolCapability:
-    """How a guardrail tool is installed and evaluated."""
-
-    tool: str
-    kind: str
-    hint: str = ""
-
-
-@dataclass(frozen=True)
-class ToolState:
-    """Resolved availability state for one guardrail tool."""
-
-    tool: str
-    kind: str
-    state: str
-    message: str
-
-
-KNOWN_CAPABILITIES = (
-    ("git", ToolCapability("git", EXTERNAL_BINARY, hint="Install Git for repository checks.")),
-    (
-        "actionlint",
-        ToolCapability(
-            "actionlint",
-            PYTHON_PACKAGE,
-            hint="Install Python package guardrail tools from config/dev-lock.txt.",
-        ),
-    ),
-    (
-        "gitleaks",
-        ToolCapability(
-            "gitleaks",
-            EXTERNAL_BINARY,
-            hint=(
-                "Install Gitleaks with the platform package manager, "
-                "for example brew install gitleaks."
-            ),
-        ),
-    ),
-    (
-        "osv-scanner",
-        ToolCapability(
-            "osv-scanner",
-            EXTERNAL_BINARY,
-            hint="Install OSV Scanner with the platform package manager or release binary.",
-        ),
-    ),
-    (
-        "trivy",
-        ToolCapability(
-            "trivy",
-            EXTERNAL_BINARY,
-            hint="Install Trivy with the platform package manager or release binary.",
-        ),
-    ),
-    (
-        "markdownlint-cli2",
-        ToolCapability(
-            "markdownlint-cli2",
-            EXTERNAL_BINARY,
-            hint="Install Markdownlint CLI2 from package-lock.json with npm ci.",
-        ),
-    ),
-    (
-        "taplo",
-        ToolCapability(
-            "taplo",
-            EXTERNAL_BINARY,
-            hint="Install Taplo from package-lock.json with npm ci.",
-        ),
-    ),
-    (
-        "zizmor",
-        ToolCapability(
-            "zizmor",
-            PYTHON_PACKAGE,
-            hint="Install Python package guardrail tools from config/dev-lock.txt.",
-        ),
-    ),
-    (
-        "mutmut",
-        ToolCapability(
-            "mutmut",
-            PYTHON_PACKAGE,
-            hint="Install Python package guardrail tools from config/dev-lock.txt.",
-        ),
-    ),
-    (
-        "semgrep",
-        ToolCapability(
-            "semgrep",
-            PYTHON_PACKAGE,
-            hint="Install Python package guardrail tools from config/dev-lock.txt.",
-        ),
-    ),
-    (
-        "cyclonedx-py",
-        ToolCapability(
-            "cyclonedx-py",
-            PYTHON_PACKAGE,
-            hint="Install Python package guardrail tools from config/dev-lock.txt.",
-        ),
-    ),
-    (
-        "pip-licenses",
-        ToolCapability(
-            "pip-licenses",
-            PYTHON_PACKAGE,
-            hint="Install Python package guardrail tools from config/dev-lock.txt.",
-        ),
-    ),
-)
+PYTHON_PACKAGE = tool_capability_types.PYTHON_PACKAGE
+EXTERNAL_BINARY = tool_capability_types.EXTERNAL_BINARY
+GITHUB_ACTION_ONLY = tool_capability_types.GITHUB_ACTION_ONLY
+MANUAL_OPTIONAL = tool_capability_types.MANUAL_OPTIONAL
+SUPPORTED = tool_capability_types.SUPPORTED
+MISSING = tool_capability_types.MISSING
+DISABLED = tool_capability_types.DISABLED
+NOT_APPLICABLE = tool_capability_types.NOT_APPLICABLE
+CAPABILITY_LABELS = tool_capability_types.CAPABILITY_LABELS
+ToolCapability = tool_capability_types.ToolCapability
+ToolState = tool_capability_types.ToolState
 
 
 def capability_for_tool(tool: str) -> ToolCapability:

@@ -2,7 +2,7 @@
 
 ## Everyday gates
 
-`python3 -m ai_guardrails` is the canonical entrypoint. Use `python3 -m ai_guardrails bootstrap` for one-command local setup, `python3 -m ai_guardrails doctor` for setup health, `python3 -m ai_guardrails guidance` for generated agent-facing guidance, `python3 -m ai_guardrails verify --profile precommit` for local completion checks, `python3 -m ai_guardrails verify --profile full` for deeper review, `python3 -m ai_guardrails verify --profile manual` for slow opt-in checks, and `python3 -m ai_guardrails install` to install local hooks without reinstalling dependencies.
+`python3 -m ai_guardrails` is the canonical entrypoint. Editable installs also provide `ai-guardrails` for interactive use, but committed hooks and CI should prefer the module command. Use `python3 -m ai_guardrails bootstrap` for one-command local setup, `python3 -m ai_guardrails doctor` for setup health, `python3 -m ai_guardrails guidance` for generated agent-facing guidance, `python3 -m ai_guardrails verify --profile precommit` for local completion checks, `python3 -m ai_guardrails verify --profile full` for deeper review, `python3 -m ai_guardrails verify --profile manual` for slow opt-in checks, and `python3 -m ai_guardrails install` to install local hooks without reinstalling dependencies.
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state.
 

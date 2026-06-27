@@ -66,6 +66,8 @@ paths = [
   "ai_guardrails.core.layout",
   "ai_guardrails.core.reporting",
   "ai_guardrails.core.runtime",
+  "ai_guardrails.core.tool_capability_registry",
+  "ai_guardrails.core.tool_capability_types",
   "ai_guardrails.core.tool_capabilities",
   "ai_guardrails.doctor.support",
   "ai_guardrails.doctor.support.hook_audit",

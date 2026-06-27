@@ -13,7 +13,7 @@ from typing import Any
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+from tests.support.paths import REPO_ROOT
 
 
 def load_hook(name: str, relative_path: str) -> ModuleType:

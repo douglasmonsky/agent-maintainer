@@ -6,7 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "ai_guardrails"
 version = "0.1.0"
 description = "Drop-in maintainability guardrails for AI-assisted Python repositories."
+readme = "README.md"
 requires-python = ">=3.11"
+
+[project.scripts]
+ai-guardrails = "ai_guardrails.cli:console_main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -102,7 +106,7 @@ log_dir = ".verify-logs"
 [tool.mutmut]
 source_paths = ["src/ai_guardrails/"]
 only_mutate = ["src/ai_guardrails/core/runtime.py"]
-pytest_add_cli_args_test_selection = ["tests/test_runtime.py"]
+pytest_add_cli_args_test_selection = ["tests/core/test_runtime.py"]
 pytest_add_cli_args = ["-p", "no:tach"]
 mutate_only_covered_lines = true
 use_setproctitle = false
