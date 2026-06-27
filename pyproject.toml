@@ -28,6 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Software Development :: Quality Assurance",
   "Topic :: Software Development :: Testing",
   "Topic :: Software Development :: Version Control :: Git",
@@ -101,7 +102,12 @@ hardening = [
   "yamllint",
   "zizmor",
 ]
-manual = ["cyclonedx-bom", "mutmut", "pip-licenses", "semgrep"]
+manual = [
+  "cyclonedx-bom",
+  "mutmut",
+  "pip-licenses",
+  "semgrep; python_version < '3.13'",
+]
 all = [
   "actionlint-py",
   "bandit",
@@ -122,7 +128,7 @@ all = [
   "pytest-cov",
   "radon",
   "ruff",
-  "semgrep",
+  "semgrep; python_version < '3.13'",
   "tach",
   "vulture",
   "wemake-python-styleguide",
