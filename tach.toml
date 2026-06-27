@@ -39,6 +39,7 @@ paths = [
   "agent_maintainer.doctor.cli",
   "agent_maintainer.doctor.setup",
   "agent_maintainer.doctor.support.logs",
+  "agent_maintainer.hooks.templates",
   "agent_maintainer.runners",
   "agent_maintainer.runners.bandit",
   "agent_maintainer.runners.mutmut",
