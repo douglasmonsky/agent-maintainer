@@ -59,6 +59,9 @@ paths = [
   "archguard.git_diff",
   "archguard.models",
   "archguard.tach_config",
+  "agent_maintainer.hooks",
+  "agent_maintainer.hooks.audit",
+  "agent_maintainer.hooks.runtime",
 ]
 layer = "runtime"
 
