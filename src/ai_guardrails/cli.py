@@ -7,6 +7,7 @@ from collections.abc import Callable
 
 from ai_guardrails.core.bootstrap import bootstrap, install
 from ai_guardrails.core.guidance import main as guidance_main
+from ai_guardrails.core.initializer import main as init_main
 from ai_guardrails.core.runtime import disable_bytecode_writes
 from ai_guardrails.doctor.cli import main as doctor_main
 from ai_guardrails.verify.quiet import main as verify_main
@@ -16,18 +17,20 @@ disable_bytecode_writes()
 CommandRunner = Callable[[list[str]], int]
 
 USAGE = """Usage:
-  python -m ai_guardrails bootstrap
-  python -m ai_guardrails doctor [doctor options]
-  python -m ai_guardrails guidance [guidance options]
-  python -m ai_guardrails install
-  python -m ai_guardrails verify [verify options]
+python -m ai_guardrails bootstrap
+python -m ai_guardrails doctor [doctor options]
+python -m ai_guardrails guidance [guidance options]
+python -m ai_guardrails init [init options]
+python -m ai_guardrails install
+python -m ai_guardrails verify [verify options]
 
 Examples:
-  python -m ai_guardrails bootstrap
-  python -m ai_guardrails doctor --strict
-  python -m ai_guardrails guidance
-  python -m ai_guardrails guidance --check
-  python -m ai_guardrails install
+python -m ai_guardrails bootstrap
+python -m ai_guardrails doctor --strict
+python -m ai_guardrails guidance
+python -m ai_guardrails guidance --check
+python -m ai_guardrails init --track core
+python -m ai_guardrails install
   python -m ai_guardrails verify --profile fast
   python -m ai_guardrails verify --profile precommit
   python -m ai_guardrails verify --profile full
@@ -70,6 +73,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "bootstrap": bootstrap_command,
         "doctor": doctor_main,
         "guidance": guidance_main,
+        "init": init_main,
         "install": install_command,
         "verify": verify_main,
     }

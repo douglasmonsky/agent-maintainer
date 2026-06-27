@@ -1,3 +1,10 @@
+# Historical Review Notes: Legacy Script Pass
+
+This file is archived historical context. It describes an earlier
+`python3 -m scripts.guardrail` pass and is not current setup guidance. Current
+automation uses `python3 -m ai_guardrails`, with `ai-guardrails` available after
+editable install for interactive use.
+
 # Review-driven changes in this revision
 
 This revision addresses the main review findings from the first package.

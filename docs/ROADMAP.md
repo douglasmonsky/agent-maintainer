@@ -305,6 +305,16 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Confirm locally with focused tests, `precommit`, `full`, `ci`, `security`, and `doctor --strict`.
 - [x] Push cleanup PR, watch PR CI, merge green, then watch post-merge `main` CI.
 
+## Phase 14: Package-First Onboarding
+
+- [x] Add `python3 -m ai_guardrails init` package-first initializer.
+- [x] Support `core`, `agent`, and `hardening` adoption tracks.
+- [x] Keep `python3 -m ai_guardrails` canonical and `ai-guardrails` as installed convenience.
+- [x] Align `config/pyproject.guardrails.toml` with initializer starter config.
+- [x] Split onboarding docs into minimum core, agent, and hardening paths.
+- [x] Label starter coverage defaults separately from this repo's stricter self-policy.
+- [x] Archive stale legacy-script review notes so they cannot be mistaken for current guidance.
+
 ## Explicit Non-Goals For Now
 
 - [x] Do not add Docker to this repository's own workflow.
