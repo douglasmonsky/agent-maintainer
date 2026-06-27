@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.models import Check, CheckResult
-from ai_guardrails.verify import quiet as verify_quiet
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.models import Check, CheckResult
+from agent_maintainer.verify import quiet as verify_quiet
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
@@ -21,11 +21,11 @@ def test_collect_results_stops_on_layout_failure(
 ) -> None:
     monkeypatch.chdir(tmp_path)
     args = verify_quiet.parse_args(["--profile", "precommit"])
-    config = replace(GuardrailConfig(), source_roots=("missing",), package_paths=("missing",))
+    config = replace(MaintainerConfig(), source_roots=("missing",), package_paths=("missing",))
 
     results = verify_quiet.collect_results(args, config, [])
 
-    assert results[0].name == "guardrail-layout"
+    assert results[0].name == "maintainer-layout"
     assert results[0].passed is False
 
 
@@ -59,7 +59,7 @@ def test_main_prints_success_with_warning_results(
         verify_quiet,
         "load_config",
         lambda: replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             source_roots=("scripts",),
             package_paths=("scripts",),
             require_tests=False,
@@ -101,7 +101,7 @@ def test_main_prints_success_for_passing_selected_check(
         verify_quiet,
         "load_config",
         lambda: replace(
-            GuardrailConfig(),
+            MaintainerConfig(),
             source_roots=("scripts",),
             package_paths=("scripts",),
             require_tests=False,

@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.core import args as guardrail_args
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.verify import quiet as verify_quiet
+from agent_maintainer.core import args as maintainer_args
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.verify import quiet as verify_quiet
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
@@ -17,17 +17,17 @@ STRICT_COMPLEXITY = 8
 
 
 def test_parse_csv_like_normalizes_repeated_values() -> None:
-    assert guardrail_args.parse_csv_like(["src, tests", "tools/"]) == (
+    assert maintainer_args.parse_csv_like(["src, tests", "tools/"]) == (
         "src",
         "tests",
         "tools",
     )
-    assert guardrail_args.parse_csv_like(None) is None
-    assert guardrail_args.parse_csv_like([" , "]) is None
+    assert maintainer_args.parse_csv_like(None) is None
+    assert maintainer_args.parse_csv_like([" , "]) is None
 
 
 def test_cli_overrides_replace_config_values() -> None:
-    args = guardrail_args.parse_args(
+    args = maintainer_args.parse_args(
         [
             "--source-root",
             "lib",
@@ -40,7 +40,7 @@ def test_cli_overrides_replace_config_values() -> None:
             "--mutmut-arg",
             "run",
             "--mutmut-arg",
-            "ai_guardrails.core.runtime*",
+            "agent_maintainer.core.runtime*",
             "--enable-semgrep",
             "--semgrep-arg",
             "scan",
@@ -71,14 +71,14 @@ def test_cli_overrides_replace_config_values() -> None:
         ]
     )
 
-    config = guardrail_args.apply_cli_overrides(GuardrailConfig(), args)
+    config = maintainer_args.apply_cli_overrides(MaintainerConfig(), args)
 
     assert config.source_roots == ("lib",)
     assert config.test_roots == ("specs",)
     assert config.coverage_fail_under == CLI_COVERAGE_THRESHOLD
     assert config.enable_pip_audit is True
     assert config.enable_mutmut is True
-    assert config.mutmut_args == ("run", "ai_guardrails.core.runtime*")
+    assert config.mutmut_args == ("run", "agent_maintainer.core.runtime*")
     assert config.enable_semgrep is True
     assert config.semgrep_args == ("scan", "--config", "semgrep.yml")
     assert config.semgrep_profiles == ("manual", "security")
@@ -103,7 +103,7 @@ def test_cli_overrides_replace_config_values() -> None:
 
 
 def test_cli_mode_applies_before_other_cli_overrides() -> None:
-    args = guardrail_args.parse_args(
+    args = maintainer_args.parse_args(
         [
             "--mode",
             "fresh-strict",
@@ -113,7 +113,7 @@ def test_cli_mode_applies_before_other_cli_overrides() -> None:
         ]
     )
 
-    config = guardrail_args.apply_cli_overrides(GuardrailConfig(), args)
+    config = maintainer_args.apply_cli_overrides(MaintainerConfig(), args)
 
     assert config.mode == "fresh-strict"
     assert config.ruff_max_complexity == STRICT_COMPLEXITY
@@ -128,7 +128,7 @@ def test_layout_failures_require_tests_when_enabled(
     monkeypatch.chdir(tmp_path)
     (tmp_path / "scripts").mkdir()
     config = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         source_roots=("scripts",),
         package_paths=("scripts",),
         test_roots=("tests",),
@@ -146,7 +146,7 @@ def test_layout_failures_validate_pyright_mode(
     monkeypatch.chdir(tmp_path)
     (tmp_path / "scripts").mkdir()
     config = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         source_roots=("scripts",),
         package_paths=("scripts",),
         require_tests=False,

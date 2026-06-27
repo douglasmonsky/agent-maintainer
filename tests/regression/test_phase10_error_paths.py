@@ -7,13 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.checks import change_budget as check_change_budget
-from ai_guardrails.checks import file_lengths as check_file_lengths
-from ai_guardrails.checks import suppression_budget as check_suppression_budget
-from ai_guardrails.checks import tach_config as check_tach_config
-from ai_guardrails.core import executor as guardrail_executor
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.models import Check
+from agent_maintainer.checks import change_budget as check_change_budget
+from agent_maintainer.checks import file_lengths as check_file_lengths
+from agent_maintainer.checks import suppression_budget as check_suppression_budget
+from agent_maintainer.checks import tach_config as check_tach_config
+from agent_maintainer.core import executor as maintainer_executor
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.models import Check
 
 PYLINT_DISABLE_ALL = "# pylint:" + " disable" + "=all"
 PYRIGHT_REPORT_DISABLE = "# py" + "right: reportGeneralTypeIssues" + "=false"
@@ -107,7 +107,7 @@ def test_file_length_expand_paths_falls_back_to_configured_roots(
     monkeypatch.setattr(
         check_file_lengths,
         "load_config",
-        lambda: GuardrailConfig(file_length_paths=("pkg",)),
+        lambda: MaintainerConfig(file_length_paths=("pkg",)),
     )
 
     assert check_file_lengths.expand_paths([], changed_only=False) == [Path("pkg/app.py")]
@@ -128,9 +128,9 @@ def test_executor_run_check_reports_oserror(
     def fail_run(command: list[str]) -> tuple[int, str]:
         raise OSError("missing executable")
 
-    monkeypatch.setattr(guardrail_executor, "run_command", fail_run)
+    monkeypatch.setattr(maintainer_executor, "run_command", fail_run)
 
-    result = guardrail_executor.run_check(
+    result = maintainer_executor.run_check(
         Check("tool", ["missing"], frozenset()),
         tmp_path / "logs",
         max_lines=5,

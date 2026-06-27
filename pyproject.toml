@@ -3,27 +3,60 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ai_guardrails"
+name = "agent-maintainer"
 version = "0.1.0"
-description = "Drop-in maintainability guardrails for AI-assisted Python repositories."
+description = "Repository maintenance checks and diagnostics for AI-assisted Python development."
 readme = "README.md"
 requires-python = ">=3.11"
 
 [project.scripts]
-ai-guardrails = "ai_guardrails.cli:console_main"
+agent-maintainer = "agent_maintainer.cli:console_main"
+
+[project.optional-dependencies]
+core = [
+  "bandit",
+  "coverage",
+  "deptry",
+  "diff-cover",
+  "hypothesis",
+  "import-linter",
+  "pre-commit",
+  "pylint",
+  "pyright",
+  "pytest",
+  "pytest-cov",
+  "radon",
+  "ruff",
+  "tach",
+  "vulture",
+  "xenon",
+]
+agent = ["agent-maintainer[core]"]
+hardening = [
+  "actionlint-py",
+  "agent-maintainer[core]",
+  "check-jsonschema",
+  "interrogate",
+  "pip-audit",
+  "wemake-python-styleguide",
+  "yamllint",
+  "zizmor",
+]
+manual = ["cyclonedx-bom", "mutmut", "pip-licenses", "semgrep"]
+all = ["agent-maintainer[core,agent,hardening,manual]"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.ai_guardrails]
+[tool.agent_maintainer]
 mode = "fresh-strict"
 architecture_tool = "tach"
-source_roots = ["src/ai_guardrails", ".codex/hooks"]
+source_roots = ["src/agent_maintainer", ".codex/hooks"]
 test_roots = ["tests"]
-package_paths = ["src/ai_guardrails", ".codex/hooks"]
-coverage_source = ["src/ai_guardrails", ".codex/hooks"]
-file_length_paths = ["src/ai_guardrails", ".codex/hooks", "tests"]
-structure_paths = ["src/ai_guardrails", ".codex/hooks"]
+package_paths = ["src/agent_maintainer", ".codex/hooks"]
+coverage_source = ["src/agent_maintainer", ".codex/hooks"]
+file_length_paths = ["src/agent_maintainer", ".codex/hooks", "tests"]
+structure_paths = ["src/agent_maintainer", ".codex/hooks"]
 structure_ignore_paths = [
   "tests/**",
   "migrations/**",
@@ -35,7 +68,7 @@ structure_ignore_paths = [
 folder_file_warn = 20
 folder_file_block = 40
 structure_cluster_min = 4
-vulture_paths = ["src/ai_guardrails", ".codex/hooks", "tests"]
+vulture_paths = ["src/agent_maintainer", ".codex/hooks", "tests"]
 require_tests = true
 coverage_fail_under = 90
 diff_cover_fail_under = 90
@@ -56,7 +89,7 @@ semgrep_args = [
   "semgrep.yml",
   "--error",
   "--metrics=off",
-  "src/ai_guardrails",
+  "src/agent_maintainer",
   ".codex/hooks",
 ]
 semgrep_profiles = ["manual"]
@@ -99,13 +132,13 @@ check_jsonschema_args = [
   ".github/workflows/verify.yml",
 ]
 
-[tool.ai_guardrails.diagnostics]
+[tool.agent_maintainer.diagnostics]
 enabled = true
 log_dir = ".verify-logs"
 
 [tool.mutmut]
-source_paths = ["src/ai_guardrails/"]
-only_mutate = ["src/ai_guardrails/core/runtime.py"]
+source_paths = ["src/agent_maintainer/"]
+only_mutate = ["src/agent_maintainer/core/runtime.py"]
 pytest_add_cli_args_test_selection = ["tests/core/test_runtime.py"]
 pytest_add_cli_args = ["-p", "no:tach"]
 mutate_only_covered_lines = true
@@ -140,10 +173,39 @@ pythonpath = [".", "src"]
 testpaths = ["tests"]
 
 [tool.deptry]
-known_first_party = ["ai_guardrails", "hook_audit"]
+known_first_party = ["agent_maintainer", "hook_audit"]
 requirements_files = ["requirements.txt"]
 requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
 
 [tool.deptry.per_rule_ignores]
+DEP002 = [
+  "actionlint-py",
+  "bandit",
+  "check-jsonschema",
+  "coverage",
+  "cyclonedx-bom",
+  "deptry",
+  "diff-cover",
+  "hypothesis",
+  "import-linter",
+  "interrogate",
+  "mutmut",
+  "pip-audit",
+  "pip-licenses",
+  "pre-commit",
+  "pylint",
+  "pyright",
+  "pytest",
+  "pytest-cov",
+  "radon",
+  "ruff",
+  "semgrep",
+  "tach",
+  "vulture",
+  "wemake-python-styleguide",
+  "xenon",
+  "yamllint",
+  "zizmor",
+]
 DEP003 = ["tomli"]
 DEP004 = ["tomli"]

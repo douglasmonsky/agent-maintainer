@@ -3,7 +3,7 @@
 Use `fresh-strict` when a repository is new or already clean enough that strict checks can block immediately.
 
 ```toml
-[tool.ai_guardrails]
+[tool.agent_maintainer]
 mode = "fresh-strict"
 source_roots = ["src"]
 test_roots = ["tests"]
@@ -36,13 +36,13 @@ Preset defaults:
 Explicit pyproject fields, environment variables, and CLI flags still override the preset. For example, this keeps the mode but temporarily relaxes complexity for one run:
 
 ```bash
-python3 -m ai_guardrails verify --profile full --mode fresh-strict
+python3 -m agent_maintainer verify --profile full --mode fresh-strict
 ```
 
 `fresh-strict` does not enable `pip-audit` by itself. Enable it with a pinned input when the repository has a stable dependency lock:
 
 ```toml
-[tool.ai_guardrails]
+[tool.agent_maintainer]
 mode = "fresh-strict"
 enable_pip_audit = true
 pip_audit_args = ["-r", "config/dev-lock.txt"]
@@ -50,11 +50,11 @@ pip_audit_args = ["-r", "config/dev-lock.txt"]
 
 Docs/config hygiene gates are also explicit opt-ins. This repository enables
 Markdownlint-cli2, yamllint, Taplo, and GitHub Actions schema validation because
-Markdown, YAML, and TOML files are part of the guardrail surface.
+Markdown, YAML, and TOML files are part of the Agent Maintainer verification surface.
 
 For this repository, `fresh-strict` is active and the optional hardening gates are also enabled. Use:
 
 ```bash
-python3 -m ai_guardrails doctor
-python3 -m ai_guardrails verify --profile full
+python3 -m agent_maintainer doctor
+python3 -m agent_maintainer verify --profile full
 ```

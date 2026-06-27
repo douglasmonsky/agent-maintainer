@@ -10,7 +10,7 @@ The kit includes repo-local Codex hooks under `.codex/`:
 Install local hooks with:
 
 ```bash
-python3 -m ai_guardrails install
+python3 -m agent_maintainer install
 ```
 
 This installs the pre-commit hook when available and reports whether `.codex/config.toml` exists. It does not approve Codex hooks for you.
@@ -34,11 +34,11 @@ The hook commands should remain repo-local and should not transmit private, stud
 The hook scripts invoke the canonical module entrypoint:
 
 ```bash
-python3 -m ai_guardrails verify --profile fast
-python3 -m ai_guardrails verify --profile precommit
+python3 -m agent_maintainer verify --profile fast
+python3 -m agent_maintainer verify --profile precommit
 ```
 
-They prefer `.venv/bin/python` or `venv/bin/python` when present. Run `python3 -m ai_guardrails doctor` if hooks are configured but not behaving as expected.
+They prefer `.venv/bin/python` or `venv/bin/python` when present. Run `python3 -m agent_maintainer doctor` if hooks are configured but not behaving as expected.
 
 ## Audit Trail
 
@@ -53,5 +53,5 @@ The audit records include the hook name, verifier profile, command, exit code,
 status, timestamps, and duration. They intentionally do not include hook stdin,
 prompt text, tool payloads, or verifier stdout/stderr.
 
-`python3 -m ai_guardrails doctor` reports the latest audited hook status when
+`python3 -m agent_maintainer doctor` reports the latest audited hook status when
 repo-local hooks are enabled.

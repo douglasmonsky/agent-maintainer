@@ -1,4 +1,4 @@
-"""Tests guardrail configuration loading and coercion."""
+"""Tests Agent Maintainer configuration loading and coercion."""
 
 from __future__ import annotations
 
@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.config import coercion as guardrail_config_coercion
-from ai_guardrails.config import loader as guardrail_config_loader
-from ai_guardrails.config import modes as guardrail_config_modes
-from ai_guardrails.config import schema as guardrail_config_schema
-from ai_guardrails.core import config as guardrail_config
-from ai_guardrails.core.config import GuardrailConfig
+from agent_maintainer.config import coercion as maintainer_config_coercion
+from agent_maintainer.config import loader as maintainer_config_loader
+from agent_maintainer.config import modes as maintainer_config_modes
+from agent_maintainer.config import schema as maintainer_config_schema
+from agent_maintainer.core import config as maintainer_config
+from agent_maintainer.core.config import MaintainerConfig
 
 CONFIG_COVERAGE_THRESHOLD = 91
 ENV_COVERAGE_THRESHOLD = 95
@@ -29,18 +29,18 @@ def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
         monkeypatch.setenv(name, value)
 
 
-def test_read_pyproject_loads_ai_guardrail_config(tmp_path: Path) -> None:
+def test_read_pyproject_loads_ai_maintainer_config(tmp_path: Path) -> None:
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text(
         """
-[tool.ai_guardrails]
+[tool.agent_maintainer]
 source_roots = ["lib"]
 test_roots = ["specs"]
 require_tests = true
 enable_pip_audit = true
 pip_audit_args = ["-r", "requirements.txt"]
 enable_mutmut = true
-mutmut_args = ["run", "ai_guardrails.core.runtime*"]
+mutmut_args = ["run", "agent_maintainer.core.runtime*"]
 enable_semgrep = true
 semgrep_args = ["scan", "--config", "semgrep.yml", "--metrics=off", "."]
 semgrep_profiles = ["manual"]
@@ -71,18 +71,18 @@ check_jsonschema_args = [
     ".github/workflows/verify.yml",
 ]
 coverage_fail_under = 91
-file_length_baseline = ".guardrails/baseline.json"
+file_length_baseline = ".agent-maintainer/baseline.json"
 architecture_tool = "tach"
 
-[tool.ai_guardrails.diagnostics]
+[tool.agent_maintainer.diagnostics]
 enabled = false
 log_dir = ".custom-verify-logs"
 """.strip(),
         encoding="utf-8",
     )
 
-    raw = guardrail_config_loader.read_pyproject(pyproject)
-    loaded = guardrail_config_loader.apply_pyproject(GuardrailConfig(), raw)
+    raw = maintainer_config_loader.read_pyproject(pyproject)
+    loaded = maintainer_config_loader.apply_pyproject(MaintainerConfig(), raw)
 
     assert loaded.source_roots == ("lib",)
     assert loaded.test_roots == ("specs",)
@@ -90,7 +90,7 @@ log_dir = ".custom-verify-logs"
     assert loaded.enable_pip_audit is True
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True
-    assert loaded.mutmut_args == ("run", "ai_guardrails.core.runtime*")
+    assert loaded.mutmut_args == ("run", "agent_maintainer.core.runtime*")
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml", "--metrics=off", ".")
     assert loaded.semgrep_profiles == ("manual",)
@@ -125,7 +125,7 @@ log_dir = ".custom-verify-logs"
         ".github/workflows/verify.yml",
     )
     assert loaded.coverage_fail_under == CONFIG_COVERAGE_THRESHOLD
-    assert loaded.file_length_baseline == ".guardrails/baseline.json"
+    assert loaded.file_length_baseline == ".agent-maintainer/baseline.json"
     assert loaded.architecture_tool == "tach"
     assert loaded.diagnostic_artifacts_enabled is False
     assert loaded.diagnostic_artifacts_dir == ".custom-verify-logs"
@@ -133,28 +133,30 @@ log_dir = ".custom-verify-logs"
 
 def test_invalid_config_values_raise_clear_type_errors() -> None:
     with pytest.raises(TypeError, match="source_roots"):
-        guardrail_config_coercion.as_tuple(12, "source_roots")
+        maintainer_config_coercion.as_tuple(12, "source_roots")
     with pytest.raises(TypeError, match="enable_pip_audit"):
-        guardrail_config_coercion.as_bool("maybe", "enable_pip_audit")
+        maintainer_config_coercion.as_bool("maybe", "enable_pip_audit")
     with pytest.raises(TypeError, match="coverage_fail_under"):
-        guardrail_config_coercion.as_int("not-an-int", "coverage_fail_under")
+        maintainer_config_coercion.as_int("not-an-int", "coverage_fail_under")
     with pytest.raises(TypeError, match="coverage_fail_under"):
-        guardrail_config_coercion.as_int(object(), "coverage_fail_under")
+        maintainer_config_coercion.as_int(object(), "coverage_fail_under")
     with pytest.raises(TypeError, match="xenon_max_absolute"):
-        guardrail_config_coercion.as_str("", "xenon_max_absolute")
+        maintainer_config_coercion.as_str("", "xenon_max_absolute")
     with pytest.raises(TypeError, match="mode"):
-        guardrail_config_coercion.as_choice("maximum", "mode", guardrail_config_schema.VALID_MODES)
+        maintainer_config_coercion.as_choice(
+            "maximum", "mode", maintainer_config_schema.VALID_MODES
+        )
     with pytest.raises(TypeError, match="architecture_tool"):
-        guardrail_config_coercion.as_choice(
+        maintainer_config_coercion.as_choice(
             "layers",
             "architecture_tool",
-            guardrail_config_schema.VALID_ARCHITECTURE_TOOLS,
+            maintainer_config_schema.VALID_ARCHITECTURE_TOOLS,
         )
 
 
 def test_fresh_strict_mode_applies_before_explicit_config() -> None:
-    loaded = guardrail_config_loader.apply_pyproject(
-        GuardrailConfig(),
+    loaded = maintainer_config_loader.apply_pyproject(
+        MaintainerConfig(),
         {
             "mode": "fresh-strict",
             "ruff_max_complexity": 9,
@@ -170,18 +172,18 @@ def test_fresh_strict_mode_applies_before_explicit_config() -> None:
 
 
 def test_config_facade_preserves_public_entrypoints() -> None:
-    assert guardrail_config.load_config is guardrail_config_loader.load_config
-    assert guardrail_config.apply_mode is guardrail_config_modes.apply_mode
-    assert guardrail_config.GuardrailConfig is guardrail_config_schema.GuardrailConfig
+    assert maintainer_config.load_config is maintainer_config_loader.load_config
+    assert maintainer_config.apply_mode is maintainer_config_modes.apply_mode
+    assert maintainer_config.MaintainerConfig is maintainer_config_schema.MaintainerConfig
 
 
 def test_environment_mode_applies_before_explicit_environment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("GUARDRAILS_MODE", "fresh-strict")
-    monkeypatch.setenv("GUARDRAILS_ENABLE_WEMAKE", "false")
+    monkeypatch.setenv("AGENT_MAINTAINER_MODE", "fresh-strict")
+    monkeypatch.setenv("AGENT_MAINTAINER_ENABLE_WEMAKE", "false")
 
-    loaded = guardrail_config_loader.apply_env(GuardrailConfig())
+    loaded = maintainer_config_loader.apply_env(MaintainerConfig())
 
     assert loaded.mode == "fresh-strict"
     assert loaded.ruff_max_complexity == STRICT_COMPLEXITY
@@ -192,57 +194,60 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     set_envs(
         monkeypatch,
         {
-            "GUARDRAILS_SOURCE_ROOTS": "pkg,tools",
-            "GUARDRAILS_REQUIRE_TESTS": "false",
-            "GUARDRAILS_COVERAGE_FAIL_UNDER": "95",
-            "GUARDRAILS_PIP_AUDIT_ARGS": "-r requirements.txt",
-            "GUARDRAILS_ENABLE_MUTMUT": "true",
-            "GUARDRAILS_MUTMUT_ARGS": "run,ai_guardrails.core.runtime*",
-            "GUARDRAILS_ENABLE_SEMGREP": "true",
-            "GUARDRAILS_SEMGREP_ARGS": "scan,--config,semgrep.yml",
-            "GUARDRAILS_SEMGREP_PROFILES": "manual,security",
-            "GUARDRAILS_ENABLE_OSV_SCANNER": "true",
-            "GUARDRAILS_OSV_SCANNER_ARGS": "scan source -r .",
-            "GUARDRAILS_OSV_SCANNER_PROFILES": "manual",
-            "GUARDRAILS_ENABLE_TRIVY": "true",
-            "GUARDRAILS_TRIVY_ARGS": "fs --scanners vuln,misconfig .",
-            "GUARDRAILS_TRIVY_PROFILES": "manual",
-            "GUARDRAILS_ENABLE_SBOM": "true",
-            "GUARDRAILS_SBOM_ARGS": "requirements,config/dev-lock.txt,--of,JSON",
-            "GUARDRAILS_SBOM_PROFILES": "ci",
-            "GUARDRAILS_ENABLE_LICENSE_CHECK": "true",
-            "GUARDRAILS_LICENSE_CHECK_ARGS": ("--from=mixed,--format=json,--allow-only=MIT"),
-            "GUARDRAILS_LICENSE_CHECK_PROFILES": "manual",
-            "GUARDRAILS_ENABLE_SECRET_SCANNING": "true",
-            "GUARDRAILS_SECRET_SCANNER": "gitleaks",
-            "GUARDRAILS_SECRET_SCAN_PROFILES": "full,ci",
-            "GUARDRAILS_ARCHITECTURE_TOOL": "tach",
-            "GUARDRAILS_ENABLE_INTERROGATE": "true",
-            "GUARDRAILS_INTERROGATE_FAIL_UNDER": "33",
-            "GUARDRAILS_ENABLE_MARKDOWNLINT": "true",
-            "GUARDRAILS_MARKDOWNLINT_PATHS": "README.md,docs",
-            "GUARDRAILS_ENABLE_YAMLLINT": "true",
-            "GUARDRAILS_YAMLLINT_PATHS": ".github/workflows",
-            "GUARDRAILS_ENABLE_TAPLO": "true",
-            "GUARDRAILS_TAPLO_PATHS": "pyproject.toml,tach.toml",
-            "GUARDRAILS_ENABLE_CHECK_JSONSCHEMA": "true",
-            "GUARDRAILS_CHECK_JSONSCHEMA_ARGS": (
+            "AGENT_MAINTAINER_SOURCE_ROOTS": "pkg,tools",
+            "AGENT_MAINTAINER_REQUIRE_TESTS": "false",
+            "AGENT_MAINTAINER_COVERAGE_FAIL_UNDER": "95",
+            "AGENT_MAINTAINER_PIP_AUDIT_ARGS": "-r requirements.txt",
+            "AGENT_MAINTAINER_ENABLE_MUTMUT": "true",
+            "AGENT_MAINTAINER_MUTMUT_ARGS": "run,agent_maintainer.core.runtime*",
+            "AGENT_MAINTAINER_ENABLE_SEMGREP": "true",
+            "AGENT_MAINTAINER_SEMGREP_ARGS": "scan,--config,semgrep.yml",
+            "AGENT_MAINTAINER_SEMGREP_PROFILES": "manual,security",
+            "AGENT_MAINTAINER_ENABLE_OSV_SCANNER": "true",
+            "AGENT_MAINTAINER_OSV_SCANNER_ARGS": "scan source -r .",
+            "AGENT_MAINTAINER_OSV_SCANNER_PROFILES": "manual",
+            "AGENT_MAINTAINER_ENABLE_TRIVY": "true",
+            "AGENT_MAINTAINER_TRIVY_ARGS": "fs --scanners vuln,misconfig .",
+            "AGENT_MAINTAINER_TRIVY_PROFILES": "manual",
+            "AGENT_MAINTAINER_ENABLE_SBOM": "true",
+            "AGENT_MAINTAINER_SBOM_ARGS": "requirements,config/dev-lock.txt,--of,JSON",
+            "AGENT_MAINTAINER_SBOM_PROFILES": "ci",
+            "AGENT_MAINTAINER_ENABLE_LICENSE_CHECK": "true",
+            "AGENT_MAINTAINER_LICENSE_CHECK_ARGS": ("--from=mixed,--format=json,--allow-only=MIT"),
+            "AGENT_MAINTAINER_LICENSE_CHECK_PROFILES": "manual",
+            "AGENT_MAINTAINER_ENABLE_SECRET_SCANNING": "true",
+            "AGENT_MAINTAINER_SECRET_SCANNER": "gitleaks",
+            "AGENT_MAINTAINER_SECRET_SCAN_PROFILES": "full,ci",
+            "AGENT_MAINTAINER_ARCHITECTURE_TOOL": "tach",
+            "AGENT_MAINTAINER_ENABLE_INTERROGATE": "true",
+            "AGENT_MAINTAINER_INTERROGATE_FAIL_UNDER": "33",
+            "AGENT_MAINTAINER_ENABLE_MARKDOWNLINT": "true",
+            "AGENT_MAINTAINER_MARKDOWNLINT_PATHS": "README.md,docs",
+            "AGENT_MAINTAINER_ENABLE_YAMLLINT": "true",
+            "AGENT_MAINTAINER_YAMLLINT_PATHS": ".github/workflows",
+            "AGENT_MAINTAINER_ENABLE_TAPLO": "true",
+            "AGENT_MAINTAINER_TAPLO_PATHS": "pyproject.toml,tach.toml",
+            "AGENT_MAINTAINER_ENABLE_CHECK_JSONSCHEMA": "true",
+            "AGENT_MAINTAINER_CHECK_JSONSCHEMA_ARGS": (
                 "--builtin-schema,vendor.github-workflows,.github/workflows/verify.yml"
             ),
         },
     )
-    monkeypatch.setenv("GUARDRAILS_FILE_LENGTH_BASELINE", ".guardrails/env-baseline.json")
-    monkeypatch.setenv("GUARDRAILS_DIAGNOSTIC_ARTIFACTS_ENABLED", "false")
-    monkeypatch.setenv("GUARDRAILS_DIAGNOSTIC_ARTIFACTS_DIR", ".env-verify-logs")
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_FILE_LENGTH_BASELINE",
+        ".agent-maintainer/env-baseline.json",
+    )
+    monkeypatch.setenv("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED", "false")
+    monkeypatch.setenv("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR", ".env-verify-logs")
 
-    loaded = guardrail_config_loader.apply_env(GuardrailConfig())
+    loaded = maintainer_config_loader.apply_env(MaintainerConfig())
 
     assert loaded.source_roots == ("pkg", "tools")
     assert loaded.require_tests is False
     assert loaded.coverage_fail_under == ENV_COVERAGE_THRESHOLD
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True
-    assert loaded.mutmut_args == ("run", "ai_guardrails.core.runtime*")
+    assert loaded.mutmut_args == ("run", "agent_maintainer.core.runtime*")
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml")
     assert loaded.semgrep_profiles == ("manual", "security")
@@ -280,6 +285,6 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
         "vendor.github-workflows",
         ".github/workflows/verify.yml",
     )
-    assert loaded.file_length_baseline == ".guardrails/env-baseline.json"
+    assert loaded.file_length_baseline == ".agent-maintainer/env-baseline.json"
     assert loaded.diagnostic_artifacts_enabled is False
     assert loaded.diagnostic_artifacts_dir == ".env-verify-logs"

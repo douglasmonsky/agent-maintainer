@@ -1,4 +1,4 @@
-"""Tests Mutmut guardrail runner cleanup behavior."""
+"""Tests Mutmut maintainer runner cleanup behavior."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.runners import mutmut as run_mutmut
+from agent_maintainer.runners import mutmut as run_mutmut
 
 
 def test_main_passes_arguments_to_runner(monkeypatch: pytest.MonkeyPatch) -> None:

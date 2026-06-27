@@ -1,4 +1,4 @@
-"""Tests for guardrail configuration and check catalog construction."""
+"""Tests for Agent Maintainer configuration and check catalog construction."""
 
 from __future__ import annotations
 
@@ -7,13 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.catalogs import catalog as guardrail_catalog
-from ai_guardrails.config import (
-    modes as guardrail_config_modes,
+from agent_maintainer.catalogs import catalog as maintainer_catalog
+from agent_maintainer.config import (
+    modes as maintainer_config_modes,
 )
-from ai_guardrails.core import config as guardrail_config
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.models import (
+from agent_maintainer.core import config as maintainer_config
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.models import (
     CI_PROFILE,
     FULL_PROFILE,
     FULL_PROFILES,
@@ -25,13 +25,13 @@ from ai_guardrails.models import (
 
 
 def test_legacy_ratchet_mode_sets_file_length_baseline() -> None:
-    loaded = guardrail_config_modes.apply_mode(GuardrailConfig(), "legacy-ratchet")
-    checks = guardrail_catalog.make_checks(loaded, "HEAD", "origin/main")
+    loaded = maintainer_config_modes.apply_mode(MaintainerConfig(), "legacy-ratchet")
+    checks = maintainer_catalog.make_checks(loaded, "HEAD", "origin/main")
     file_length = next(check for check in checks if check.name == "file-length")
 
-    assert loaded.file_length_baseline == ".guardrails/file-length-baseline.json"
+    assert loaded.file_length_baseline == ".agent-maintainer/file-length-baseline.json"
     assert "--baseline" in file_length.command
-    assert ".guardrails/file-length-baseline.json" in file_length.command
+    assert ".agent-maintainer/file-length-baseline.json" in file_length.command
 
 
 def test_manual_profile_is_valid_but_separate_from_full_profiles() -> None:
@@ -43,15 +43,15 @@ def test_manual_profile_is_valid_but_separate_from_full_profiles() -> None:
 
 
 def test_path_matching_handles_roots_and_relative_prefixes() -> None:
-    assert guardrail_config.path_matches_roots("./src/app.py", ("src",))
-    assert guardrail_config.path_matches_roots("tests/unit/test_app.py", ("tests",))
-    assert not guardrail_config.path_matches_roots("docs/app.py", ("src",))
+    assert maintainer_config.path_matches_roots("./src/app.py", ("src",))
+    assert maintainer_config.path_matches_roots("tests/unit/test_app.py", ("tests",))
+    assert not maintainer_config.path_matches_roots("docs/app.py", ("src",))
 
 
 def test_architecture_commands_follow_config() -> None:
-    default_checks = guardrail_catalog.architecture_checks(GuardrailConfig())
-    tach_checks = guardrail_catalog.architecture_checks(
-        replace(GuardrailConfig(), architecture_tool="tach", mode="fresh-strict")
+    default_checks = maintainer_catalog.architecture_checks(MaintainerConfig())
+    tach_checks = maintainer_catalog.architecture_checks(
+        replace(MaintainerConfig(), architecture_tool="tach", mode="fresh-strict")
     )
     by_name = {check.name: check for check in tach_checks}
 
@@ -69,7 +69,7 @@ def test_make_checks_includes_expected_profiles(
     (tmp_path / "scripts").mkdir()
     (tmp_path / "tests").mkdir()
     config = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         source_roots=("scripts",),
         test_roots=("tests",),
         package_paths=("scripts",),
@@ -78,7 +78,7 @@ def test_make_checks_includes_expected_profiles(
         enable_pip_audit=True,
     )
 
-    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main", staged=True)
+    checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main", staged=True)
     by_name = {check.name: check for check in checks}
 
     assert by_name["change-budget"].command[:3]
@@ -87,7 +87,7 @@ def test_make_checks_includes_expected_profiles(
 
 
 def test_workflow_checks_are_configured_for_github_actions() -> None:
-    checks = guardrail_catalog.workflow_checks()
+    checks = maintainer_catalog.workflow_checks()
     by_name = {check.name: check for check in checks}
 
     assert by_name["actionlint"].command == ["actionlint", "-no-color", "-oneline"]
@@ -103,8 +103,8 @@ def test_workflow_checks_are_configured_for_github_actions() -> None:
 
 
 def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only() -> None:
-    config = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
-    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
+    config = maintainer_config_modes.apply_mode(MaintainerConfig(), "fresh-strict")
+    checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
     precommit = [
         check
         for check in checks
@@ -120,9 +120,9 @@ def test_fresh_strict_change_budget_fails_missing_test_change_in_precommit_only(
 
 
 def test_source_without_test_escape_hatch_reaches_change_budget_command() -> None:
-    config = guardrail_config_modes.apply_mode(GuardrailConfig(), "fresh-strict")
+    config = maintainer_config_modes.apply_mode(MaintainerConfig(), "fresh-strict")
     config = replace(config, allow_source_without_test_change=True)
-    checks = guardrail_catalog.make_checks(config, "HEAD", "origin/main")
+    checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
     precommit = next(
         check
         for check in checks

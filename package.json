@@ -1,5 +1,5 @@
 {
-  "name": "ai-maintainability-guardrails",
+  "name": "agent-maintainer",
   "private": true,
   "devDependencies": {
     "@taplo/cli": "0.7.0",

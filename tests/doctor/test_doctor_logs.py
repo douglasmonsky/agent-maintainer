@@ -6,7 +6,7 @@ import json
 import os
 from pathlib import Path
 
-from ai_guardrails.doctor.support import logs as guardrail_doctor_logs
+from agent_maintainer.doctor.support import logs as maintainer_doctor_logs
 
 
 def write_verification_manifest(
@@ -17,7 +17,7 @@ def write_verification_manifest(
 ) -> Path:
     """Write a minimal verifier manifest for doctor tests."""
 
-    manifest = log_dir / guardrail_doctor_logs.MANIFEST_NAME
+    manifest = log_dir / maintainer_doctor_logs.MANIFEST_NAME
     manifest.write_text(
         json.dumps(
             {
@@ -39,22 +39,28 @@ def write_verification_manifest(
 
 
 def test_recent_logs_warn_and_pass(tmp_path: Path) -> None:
-    assert guardrail_doctor_logs.check_recent_logs(tmp_path).status == guardrail_doctor_logs.WARNING
+    assert (
+        maintainer_doctor_logs.check_recent_logs(tmp_path).status == maintainer_doctor_logs.WARNING
+    )
 
     log_dir = tmp_path / ".verify-logs"
     log_dir.mkdir()
 
-    assert guardrail_doctor_logs.check_recent_logs(tmp_path).status == guardrail_doctor_logs.WARNING
+    assert (
+        maintainer_doctor_logs.check_recent_logs(tmp_path).status == maintainer_doctor_logs.WARNING
+    )
 
     (log_dir / "ruff.log").write_text("ok\n", encoding="utf-8")
 
-    assert guardrail_doctor_logs.check_recent_logs(tmp_path).status == guardrail_doctor_logs.WARNING
+    assert (
+        maintainer_doctor_logs.check_recent_logs(tmp_path).status == maintainer_doctor_logs.WARNING
+    )
 
     write_verification_manifest(log_dir)
 
-    result = guardrail_doctor_logs.check_recent_logs(tmp_path)
+    result = maintainer_doctor_logs.check_recent_logs(tmp_path)
 
-    assert result.status == guardrail_doctor_logs.OK
+    assert result.status == maintainer_doctor_logs.OK
     assert "ruff.log" in result.message
 
 
@@ -67,9 +73,9 @@ def test_recent_logs_warn_when_manifest_is_stale(tmp_path: Path) -> None:
     os.utime(manifest, (10, 10))
     os.utime(log_path, (20, 20))
 
-    result = guardrail_doctor_logs.check_recent_logs(tmp_path)
+    result = maintainer_doctor_logs.check_recent_logs(tmp_path)
 
-    assert result.status == guardrail_doctor_logs.WARNING
+    assert result.status == maintainer_doctor_logs.WARNING
     assert "older" in result.message
 
 
@@ -79,9 +85,9 @@ def test_recent_logs_warn_when_manifest_references_missing_artifact(tmp_path: Pa
     (log_dir / "ruff.log").write_text("ok\n", encoding="utf-8")
     write_verification_manifest(log_dir, artifacts=("missing.json",))
 
-    result = guardrail_doctor_logs.check_recent_logs(tmp_path)
+    result = maintainer_doctor_logs.check_recent_logs(tmp_path)
 
-    assert result.status == guardrail_doctor_logs.WARNING
+    assert result.status == maintainer_doctor_logs.WARNING
     assert "artifact is missing" in result.message
 
 
@@ -91,18 +97,18 @@ def test_recent_logs_warn_when_failure_note_is_missing_or_stale(tmp_path: Path) 
     (log_dir / "ruff.log").write_text("failed\n", encoding="utf-8")
     write_verification_manifest(log_dir, status="failed")
 
-    missing_note = guardrail_doctor_logs.check_recent_logs(tmp_path)
+    missing_note = maintainer_doctor_logs.check_recent_logs(tmp_path)
 
-    assert missing_note.status == guardrail_doctor_logs.WARNING
+    assert missing_note.status == maintainer_doctor_logs.WARNING
     assert "LAST_FAILURE.md is absent" in missing_note.message
 
-    (log_dir / guardrail_doctor_logs.LAST_FAILURE_NAME).write_text(
+    (log_dir / maintainer_doctor_logs.LAST_FAILURE_NAME).write_text(
         "failure\n",
         encoding="utf-8",
     )
     write_verification_manifest(log_dir, status="passed")
 
-    stale_note = guardrail_doctor_logs.check_recent_logs(tmp_path)
+    stale_note = maintainer_doctor_logs.check_recent_logs(tmp_path)
 
-    assert stale_note.status == guardrail_doctor_logs.WARNING
+    assert stale_note.status == maintainer_doctor_logs.WARNING
     assert "LAST_FAILURE.md is stale" in stale_note.message

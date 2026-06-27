@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.catalogs import docs as guardrail_catalog_docs
-from ai_guardrails.core.config import GuardrailConfig
+from agent_maintainer.catalogs import docs as maintainer_catalog_docs
+from agent_maintainer.core.config import MaintainerConfig
 
 
 def test_docs_config_hygiene_commands_follow_config(
@@ -22,9 +22,9 @@ def test_docs_config_hygiene_commands_follow_config(
         "name: verify\n", encoding="utf-8"
     )
     (tmp_path / "pyproject.toml").write_text("[tool.example]\n", encoding="utf-8")
-    disabled = GuardrailConfig()
+    disabled = MaintainerConfig()
     enabled = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         enable_markdownlint=True,
         markdownlint_paths=("docs/**/*.md",),
         enable_yamllint=True,
@@ -39,22 +39,22 @@ def test_docs_config_hygiene_commands_follow_config(
         ),
     )
 
-    assert guardrail_catalog_docs.markdownlint_check(disabled).optional_skip_reason
-    assert guardrail_catalog_docs.markdownlint_check(enabled).command == [
+    assert maintainer_catalog_docs.markdownlint_check(disabled).optional_skip_reason
+    assert maintainer_catalog_docs.markdownlint_check(enabled).command == [
         "markdownlint-cli2",
         "docs/guide.md",
     ]
-    assert guardrail_catalog_docs.yamllint_check(enabled).command == [
+    assert maintainer_catalog_docs.yamllint_check(enabled).command == [
         "yamllint",
         ".github/workflows",
     ]
-    assert guardrail_catalog_docs.taplo_check(enabled).command == [
+    assert maintainer_catalog_docs.taplo_check(enabled).command == [
         "taplo",
         "fmt",
         "--check",
         "pyproject.toml",
     ]
-    assert guardrail_catalog_docs.check_jsonschema_check(enabled).command == [
+    assert maintainer_catalog_docs.check_jsonschema_check(enabled).command == [
         "check-jsonschema",
         "--builtin-schema",
         "vendor.github-workflows",
@@ -67,7 +67,7 @@ def test_docs_config_hygiene_skips_when_enabled_without_matching_files(
 ) -> None:
     monkeypatch.chdir(tmp_path)
     config = replace(
-        GuardrailConfig(),
+        MaintainerConfig(),
         enable_markdownlint=True,
         markdownlint_paths=("docs/**/*.md",),
         enable_yamllint=True,
@@ -76,9 +76,9 @@ def test_docs_config_hygiene_skips_when_enabled_without_matching_files(
         taplo_paths=("*.toml",),
     )
 
-    markdown_reason = guardrail_catalog_docs.markdownlint_check(config).optional_skip_reason
-    yaml_reason = guardrail_catalog_docs.yamllint_check(config).optional_skip_reason
-    toml_reason = guardrail_catalog_docs.taplo_check(config).optional_skip_reason
+    markdown_reason = maintainer_catalog_docs.markdownlint_check(config).optional_skip_reason
+    yaml_reason = maintainer_catalog_docs.yamllint_check(config).optional_skip_reason
+    toml_reason = maintainer_catalog_docs.taplo_check(config).optional_skip_reason
 
     assert markdown_reason is not None
     assert yaml_reason is not None
@@ -97,4 +97,4 @@ def test_matching_paths_ignores_generated_dependency_folders(
     dependency_docs.mkdir(parents=True)
     (dependency_docs / "README.md").write_text("# Dependency\n", encoding="utf-8")
 
-    assert guardrail_catalog_docs.matching_paths(("**/*.md",)) == ("README.md",)
+    assert maintainer_catalog_docs.matching_paths(("**/*.md",)) == ("README.md",)

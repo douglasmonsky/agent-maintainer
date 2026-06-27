@@ -2,7 +2,7 @@
 
 This file is archived historical context. It describes an earlier
 `python3 -m scripts.guardrail` pass and is not current setup guidance. Current
-automation uses `python3 -m ai_guardrails`, with `ai-guardrails` available after
+automation uses `python3 -m agent_maintainer`, with `agent-maintainer` available after
 editable install for interactive use.
 
 ## Review-driven changes in this revision
@@ -15,11 +15,11 @@ The canonical CI and hook command is now `python3 -m scripts.guardrail`.
 
 `python3 -m scripts.guardrail doctor` reports setup health across Python version, required executables, configured roots, tests, hooks, optional gates, canonical command wiring, git state, and recent verification logs. `doctor --strict` exits nonzero on warnings.
 
-`[tool.ai_guardrails].mode` now supports `custom`, `legacy-ratchet`, and `fresh-strict`. This repository uses `fresh-strict`, keeps tests and optional hardening gates active, and audits the pinned `config/dev-lock.txt`.
+`[tool.agent_maintainer].mode` now supports `custom`, `legacy-ratchet`, and `fresh-strict`. This repository uses `fresh-strict`, keeps tests and optional hardening gates active, and audits the pinned `config/dev-lock.txt`.
 
-`[tool.ai_guardrails].architecture_tool` now supports `import-linter` and `tach`. Import Linter remains the backward-compatible default. This repository uses Tach with `root_module = "forbid"`, explicit source-module assignment, stale-reference rejection, and `tach check --exact`.
+`[tool.agent_maintainer].architecture_tool` now supports `import-linter` and `tach`. Import Linter remains the backward-compatible default. This repository uses Tach with `root_module = "forbid"`, explicit source-module assignment, stale-reference rejection, and `tach check --exact`.
 
-`[tool.ai_guardrails].enable_interrogate` enables Interrogate docstring coverage as a full-profile gate. `fresh-strict` enables it by default; this repository ratchets from its current baseline with `interrogate_fail_under = 80`.
+`[tool.agent_maintainer].enable_interrogate` enables Interrogate docstring coverage as a full-profile gate. `fresh-strict` enables it by default; this repository ratchets from its current baseline with `interrogate_fail_under = 80`.
 
 Bootstrap and CI prefer `config/dev-lock.txt` when present and fall back to `config/dev-dependencies.txt`.
 
@@ -33,7 +33,7 @@ Optional skips are reported explicitly. Currently this applies to absent archite
 
 ## Configurable repository layout
 
-Shared configuration now lives in `scripts/guardrail_core/config.py` and is read from `[tool.ai_guardrails]`, environment variables, and CLI overrides.
+Shared configuration now lives in `scripts/guardrail_core/config.py` and is read from `[tool.agent_maintainer]`, environment variables, and CLI overrides.
 
 Supported path settings include:
 
@@ -80,7 +80,7 @@ pip_audit_args = ["-r", "requirements.txt"]
 or:
 
 ```bash
-GUARDRAILS_ENABLE_PIP_AUDIT=1 GUARDRAILS_PIP_AUDIT_ARGS="-r requirements.txt"
+AGENT_MAINTAINER_ENABLE_PIP_AUDIT=1 AGENT_MAINTAINER_PIP_AUDIT_ARGS="-r requirements.txt"
 ```
 
 The README now documents the network/flakiness/privacy implications.

@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails.core import executor as guardrail_executor
-from ai_guardrails.models import Check
+from agent_maintainer.core import executor as maintainer_executor
+from agent_maintainer.models import Check
 
 
 def test_tool_search_path_prefers_local_virtualenv(
@@ -18,17 +18,17 @@ def test_tool_search_path_prefers_local_virtualenv(
     (tmp_path / ".venv" / "bin").mkdir(parents=True)
     monkeypatch.setenv("PATH", "/usr/bin")
 
-    search_path = guardrail_executor.tool_search_path().split(os.pathsep)
+    search_path = maintainer_executor.tool_search_path().split(os.pathsep)
 
     assert search_path[0] == ".venv/bin"
     assert "/usr/bin" in search_path
 
 
 def test_command_env_disables_bytecode_writes_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("AI_GUARDRAILS_WRITE_BYTECODE", raising=False)
+    monkeypatch.delenv("AGENT_MAINTAINER_WRITE_BYTECODE", raising=False)
     monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)
 
-    assert guardrail_executor.command_env()["PYTHONDONTWRITEBYTECODE"] == "1"
+    assert maintainer_executor.command_env()["PYTHONDONTWRITEBYTECODE"] == "1"
 
 
 def test_command_env_adds_local_package_pythonpath(
@@ -36,26 +36,26 @@ def test_command_env_adds_local_package_pythonpath(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    package_path = tmp_path / "src" / "ai_guardrails"
+    package_path = tmp_path / "src" / "agent_maintainer"
     package_path.mkdir(parents=True)
     monkeypatch.setenv("PYTHONPATH", "existing")
 
-    assert guardrail_executor.command_env()["PYTHONPATH"] == f"src{os.pathsep}existing"
+    assert maintainer_executor.command_env()["PYTHONPATH"] == f"src{os.pathsep}existing"
 
 
 def test_missing_requirement_reports_required_path(tmp_path: Path) -> None:
     check = Check("missing", ["true"], frozenset(), required_paths=("missing.py",))
 
-    assert guardrail_executor.missing_requirement(check) == "required path 'missing.py' is absent"
+    assert maintainer_executor.missing_requirement(check) == "required path 'missing.py' is absent"
 
 
 def test_missing_requirement_uses_capability_aware_executable_hint(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(guardrail_executor.shutil, "which", lambda *args, **_kwargs: None)
+    monkeypatch.setattr(maintainer_executor.shutil, "which", lambda *args, **_kwargs: None)
     check = Check("missing", ["missing-tool"], frozenset(), required_executable="missing-tool")
 
-    message = guardrail_executor.missing_requirement(check)
+    message = maintainer_executor.missing_requirement(check)
 
     assert message is not None
     assert "Missing Python package command: missing-tool" in message
@@ -73,7 +73,7 @@ def test_optional_skip_reports_configured_reason(
         optional_skip_reason=".importlinter is absent",
     )
 
-    assert guardrail_executor.missing_requirement(check) == (
+    assert maintainer_executor.missing_requirement(check) == (
         "optional skip: .importlinter is absent"
     )
 
@@ -84,12 +84,12 @@ def test_tach_config_skip_reports_configured_reason(
     monkeypatch.chdir(tmp_path)
     check = Check(
         "tach-config",
-        ["python", "-m", "ai_guardrails.checks.tach_config"],
+        ["python", "-m", "agent_maintainer.checks.tach_config"],
         frozenset(),
         optional_skip_reason="tach.toml is absent",
     )
 
-    assert guardrail_executor.missing_requirement(check) == "optional skip: tach.toml is absent"
+    assert maintainer_executor.missing_requirement(check) == "optional skip: tach.toml is absent"
 
 
 def test_workflow_check_skip_reports_configured_reason(
@@ -105,7 +105,7 @@ def test_workflow_check_skip_reports_configured_reason(
         optional_skip_reason=".github/workflows is absent",
     )
 
-    assert guardrail_executor.missing_requirement(check) == (
+    assert maintainer_executor.missing_requirement(check) == (
         "optional skip: .github/workflows is absent"
     )
 
@@ -118,7 +118,7 @@ def test_interrogate_skip_reports_configured_reason(tmp_path: Path) -> None:
         optional_skip_reason="disabled",
     )
 
-    assert guardrail_executor.missing_requirement(check) == "optional skip: disabled"
+    assert maintainer_executor.missing_requirement(check) == "optional skip: disabled"
 
 
 def test_external_manual_scanner_skip_reports_configured_reason(tmp_path: Path) -> None:
@@ -130,14 +130,14 @@ def test_external_manual_scanner_skip_reports_configured_reason(tmp_path: Path) 
             optional_skip_reason="disabled",
         )
 
-        assert guardrail_executor.missing_requirement(check) == "optional skip: disabled"
+        assert maintainer_executor.missing_requirement(check) == "optional skip: disabled"
 
 
 def test_run_check_writes_skip_log(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     check = Check("pip-audit", ["pip-audit"], frozenset(), optional_skip_reason="disabled")
 
-    result = guardrail_executor.run_check(check, tmp_path / "logs", 5, 200)
+    result = maintainer_executor.run_check(check, tmp_path / "logs", 5, 200)
 
     assert result.name == "pip-audit"
     assert result.passed is True
@@ -155,9 +155,9 @@ def test_run_check_summarizes_command_failure(
         assert command == ["tool"]
         return 1, "\n".join(f"line {index}" for index in range(10))
 
-    monkeypatch.setattr(guardrail_executor, "run_command", fake_run)
+    monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
 
-    result = guardrail_executor.run_check(
+    result = maintainer_executor.run_check(
         Check("tool", ["tool"], frozenset()), tmp_path / "logs", 3, 200
     )
 
@@ -180,9 +180,9 @@ def test_run_check_records_existing_declared_artifacts(
         return 0, "ok\n"
 
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(guardrail_executor, "run_command", fake_run)
+    monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
 
-    result = guardrail_executor.run_check(
+    result = maintainer_executor.run_check(
         Check("pytest-coverage", ["pytest"], frozenset(), artifact_paths=("coverage.xml",)),
         tmp_path / "logs",
         3,
@@ -207,9 +207,9 @@ def test_run_check_creates_log_dir_before_command_runs(
         artifact.write_text("<testsuite />\n", encoding="utf-8")
         return 0, "ok\n"
 
-    monkeypatch.setattr(guardrail_executor, "run_command", fake_run)
+    monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
 
-    result = guardrail_executor.run_check(
+    result = maintainer_executor.run_check(
         Check(
             "pytest-coverage",
             ["pytest"],

@@ -1,6 +1,26 @@
 # Product Roadmap
 
-This roadmap tracks the next hardening and productization pass for the guardrail
+## Phase 17: Agent Maintainer Rename And Release Readiness
+
+- [x] Rename display identity to Agent Maintainer.
+- [x] Rename distribution package to `agent-maintainer`.
+- [x] Rename Python import package to `agent_maintainer`.
+- [x] Rename console command to `agent-maintainer`.
+- [x] Rename config namespace to `[tool.agent_maintainer]`.
+- [x] Rename generated sidecar to `AGENTS.agent-maintainer.md`.
+- [x] Update CI, pre-commit, Codex hooks, `justfile`, Tach, Semgrep, and docs to
+  use `python3 -m agent_maintainer`.
+- [x] Keep `.verify-logs/` and profile names unchanged.
+- [x] Make initializer package-first and self-contained through generated
+  `config/dev-dependencies.txt`.
+- [x] Add optional dependency extras for core, agent, hardening, manual, and all
+  adoption tracks.
+- [x] Add generated hook syntax coverage.
+- [x] Add package metadata and downstream onboarding smoke coverage.
+- [x] Add README positioning explaining why this is not runtime AI safety
+  guardrails.
+
+This roadmap tracks the next hardening and productization pass for Agent Maintainer
 kit. Keep the checkboxes current as work lands so future agents can resume from
 repo state instead of reconstructing the plan from chat history.
 
@@ -8,18 +28,18 @@ repo state instead of reconstructing the plan from chat history.
 
 - [x] Private GitHub repository exists.
 - [x] Private origin and remote CI verification have been proven for this repo.
-- [x] Canonical CLI uses `python3 -m ai_guardrails`.
+- [x] Canonical CLI uses `python3 -m agent_maintainer`.
 - [x] `fresh-strict` mode is active for this repository.
 - [x] Tach is the active architecture backend for this repository.
 - [x] `root_module = "forbid"` is configured in `tach.toml`.
 - [x] Tests, coverage, diff-cover, Ruff, Pyright, Radon, Xenon, Pylint, deptry,
   vulture, Bandit, pip-audit, wemake, Interrogate, pre-commit, CI, and Codex
-  hooks are already part of the guardrail surface.
+  hooks are already part of the Agent Maintainer verification surface.
 - [x] Docker is intentionally not part of this repository's own workflow.
 
 ## Standing Implementation Rules
 
-- [x] When adding a relevant guardrail capability, enable it for this repository
+- [x] When adding a relevant maintenance capability, enable it for this repository
   in the same pass so the kit remains its own first consumer.
 - [x] Leave a new capability disabled for this repository only when it is
   objectively not applicable, too slow for normal profiles, requires
@@ -34,7 +54,7 @@ repo state instead of reconstructing the plan from chat history.
 ## Phase 0: Generated Agent Guidance
 
 - [x] Add a generator that renders agent-facing guidance from
-  `[tool.ai_guardrails]`.
+  `[tool.agent_maintainer]`.
 - [x] Include active mode, source roots, test roots, architecture backend,
   thresholds, required commands, enabled optional gates, and escape hatches.
 - [x] Frame generated guidance as positive operating instructions, not just a
@@ -42,7 +62,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Keep human-owned `AGENTS.md` content authoritative and avoid overwriting it
   wholesale.
 - [x] Use a protected generated block or a committed sidecar file such as
-  `AGENTS.guardrails.md`.
+  `AGENTS.agent-maintainer.md`.
 - [x] If using a sidecar file, add a stable human-owned pointer from `AGENTS.md`
   so agents know to read it.
 - [x] Make generated output deterministic and free of secrets, machine-local
@@ -73,7 +93,7 @@ repo state instead of reconstructing the plan from chat history.
   heuristic fatal only when explicitly configured for `fresh-strict`.
 - [x] Add an explicit escape hatch for source-only changes that are already
   covered by existing tests.
-- [x] Generate a temporary Pyright config from `GuardrailConfig` and run Pyright
+- [x] Generate a temporary Pyright config from `MaintainerConfig` and run Pyright
   with `--project`.
 - [x] Teach `doctor` to compare configured Pyright mode with any active root
   Pyright config.
@@ -112,7 +132,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Add pytest JUnit XML output.
 - [x] Preserve coverage XML and consider coverage JSON.
 - [x] Add Bandit JSON output.
-- [x] Disable Python bytecode writes by default in guardrail and hook subprocesses
+- [x] Disable Python bytecode writes by default in Agent Maintainer and hook subprocesses
   to reduce generated-cache token leaks.
 - [x] Prefer structured artifacts over raw text when producing compact failure
   summaries.
@@ -185,13 +205,13 @@ repo state instead of reconstructing the plan from chat history.
   `fresh-strict`.
 - [x] Never block tests, migrations, generated folders, virtualenvs, caches, or
   explicitly configured plugin/command registries.
-- [x] Add config such as `[tool.ai_guardrails.structure] folder_file_warn`,
+- [x] Add config such as `[tool.agent_maintainer.structure] folder_file_warn`,
   `folder_file_block`, and `ignore_folder_file_count_paths`, or an equivalent
   shape that fits the final config model.
 - [x] Add configurable regex hint patterns for naming clusters, separate from
   the warn/block thresholds.
 - [x] Ship conservative built-in regex hints for common hierarchy smells:
-  repeated prefixes like `^guardrail_`, `^check_`, and domain prefixes such as
+  repeated prefixes like `^maintainer_`, `^check_`, and domain prefixes such as
   `^user_` or `^course_`; repeated role suffixes like `_model$`, `_service$`,
   `_repository$`, `_client$`, `_adapter$`, `_parser$`, `_loader$`, `_schema$`,
   `_executor$`, and `_reporting$`; and layer words such as `cli`, `args`,
@@ -199,7 +219,7 @@ repo state instead of reconstructing the plan from chat history.
 - [x] Use regex matches to enrich advisory messages with concrete clusters and
   likely split candidates, not as standalone failure conditions.
 - [x] Detect prefix clusters that suggest fake flat hierarchy, such as many
-  `guardrail_*` or `check_*` modules in one folder.
+  `maintainer_*` or `check_*` modules in one folder.
 - [x] Detect layer mixing signals, such as CLI entrypoints, config parsing,
   execution, reporting, models, and individual checks living in one flat folder.
 - [x] Consider sibling-import density as a future stronger cohesion signal, but
@@ -213,7 +233,7 @@ repo state instead of reconstructing the plan from chat history.
   ignored folders, regex hint clusters, prefix clusters, and explicit registry
   exemptions.
 - [x] Document when to split into subpackages and use this repository's
-  `src/ai_guardrails/config` extraction as the motivating example.
+  `src/agent_maintainer/config` extraction as the motivating example.
 
 ## Phase 9: Add Docs And Config Hygiene
 
@@ -234,11 +254,11 @@ repo state instead of reconstructing the plan from chat history.
 ## Phase 10: Raise Test Depth Toward 90 Percent
 
 - [x] Raise the coverage target only after meaningful tests exist.
-- [x] Add branch/error-path tests for `src/ai_guardrails/checks/change_budget.py`.
-- [x] Add branch/error-path tests for `src/ai_guardrails/checks/suppression_budget.py`.
-- [x] Add branch/error-path tests for `src/ai_guardrails/checks/file_lengths.py`.
-- [x] Add branch/error-path tests for `src/ai_guardrails/checks/tach_config.py`.
-- [x] Add branch/error-path tests for `src/ai_guardrails/core/executor.py`.
+- [x] Add branch/error-path tests for `src/agent_maintainer/checks/change_budget.py`.
+- [x] Add branch/error-path tests for `src/agent_maintainer/checks/suppression_budget.py`.
+- [x] Add branch/error-path tests for `src/agent_maintainer/checks/file_lengths.py`.
+- [x] Add branch/error-path tests for `src/agent_maintainer/checks/tach_config.py`.
+- [x] Add branch/error-path tests for `src/agent_maintainer/core/executor.py`.
 - [x] Add branch/error-path tests for `.codex/hooks/post_edit_fast_gate.py`.
 - [x] Add branch/error-path tests for `.codex/hooks/stop_full_verify.py`.
 - [x] Raise `coverage_fail_under` toward 90 only after the suite proves those
@@ -265,28 +285,28 @@ repo state instead of reconstructing the plan from chat history.
   extraction, package migration, then docs/config cleanup.
 - [x] Split large test modules by responsibility before they cross file-length
   limits: doctor, config catalog, executor/reporting, and verify quiet tests.
-- [x] Extract reusable check logic from `src/ai_guardrails/checks/file_lengths.py`,
-  `src/ai_guardrails/checks/change_budget.py`, `src/ai_guardrails/checks/suppression_budget.py`,
-  and `src/ai_guardrails/checks/structure.py` into library modules.
+- [x] Extract reusable check logic from `src/agent_maintainer/checks/file_lengths.py`,
+  `src/agent_maintainer/checks/change_budget.py`, `src/agent_maintainer/checks/suppression_budget.py`,
+  and `src/agent_maintainer/checks/structure.py` into library modules.
 - [x] Drop broad `scripts.*` compatibility shims for the fresh package migration;
-  use `ai_guardrails` as the only supported internal module surface.
-- [x] Add package metadata with `src` layout and package name `ai_guardrails`.
-- [x] Move implementation modules under `src/ai_guardrails`, including config,
+  use `agent_maintainer` as the only supported internal module surface.
+- [x] Add package metadata with `src` layout and package name `agent_maintainer`.
+- [x] Move implementation modules under `src/agent_maintainer`, including config,
   checks, verify, core, catalogs, doctor, runners, models, Tach helpers, CLI,
   and `__main__.py`.
-- [x] Preserve the package command `python3 -m ai_guardrails`; do not preserve
+- [x] Preserve the package command `python3 -m agent_maintainer`; do not preserve
   unused script-module compatibility commands in this fresh repo.
-- [x] Add supported package command `python3 -m ai_guardrails` after editable
+- [x] Add supported package command `python3 -m agent_maintainer` after editable
   install.
 - [x] Update bootstrap to install the project editable after dev dependencies,
   find the working repository root under `src` layout, and repair hidden macOS
   `.pth` files when needed.
 - [x] Update CI, pre-commit, Codex hooks, docs, and generated agent guidance to
   prefer package entrypoints.
-- [x] Update `[tool.ai_guardrails]` paths, coverage, vulture, Semgrep, Bandit,
-  file-length, package paths, and `tach.toml` for `src/ai_guardrails` and
+- [x] Update `[tool.agent_maintainer]` paths, coverage, vulture, Semgrep, Bandit,
+  file-length, package paths, and `tach.toml` for `src/agent_maintainer` and
   `.codex/hooks`.
-- [x] Add migration smoke tests for `python3 -m ai_guardrails --help`,
+- [x] Add migration smoke tests for `python3 -m agent_maintainer --help`,
   editable install, and import-policy enforcement.
 - [x] Confirm package-migration PR locally with `precommit`, `full`, `ci`,
   `security`, and `doctor --strict`, then push, open PR, watch PR CI, merge
@@ -294,10 +314,10 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 13: Test Organization and Post-Migration Cleanup
 
-- [x] Reorganize flat `tests/` files into responsibility folders mirroring `src/ai_guardrails`.
+- [x] Reorganize flat `tests/` files into responsibility folders mirroring `src/agent_maintainer`.
 - [x] Add stable test path helpers so moved tests do not depend on fragile `Path(__file__).parents[...]` depths.
 - [x] Split near-limit bootstrap helper tests by install, path, and environment responsibilities.
-- [x] Keep pytest discovery, coverage, mutmut, and guardrail paths working after test moves.
+- [x] Keep pytest discovery, coverage, mutmut, and Agent Maintainer paths working after test moves.
 - [x] Review source modules near size or complexity pressure and extract cohesive helpers only where boundaries are already clear.
 - [x] Confirm Tach remains exact and all runtime modules remain explicitly assigned.
 - [x] Review package-first documentation and metadata after migration cleanup.
@@ -307,10 +327,10 @@ repo state instead of reconstructing the plan from chat history.
 
 ## Phase 14: Package-First Onboarding
 
-- [x] Add `python3 -m ai_guardrails init` package-first initializer.
+- [x] Add `python3 -m agent_maintainer init` package-first initializer.
 - [x] Support `core`, `agent`, and `hardening` adoption tracks.
-- [x] Keep `python3 -m ai_guardrails` canonical and `ai-guardrails` as installed convenience.
-- [x] Align `config/pyproject.guardrails.toml` with initializer starter config.
+- [x] Keep `python3 -m agent_maintainer` canonical and `agent-maintainer` as installed convenience.
+- [x] Align `config/pyproject.agent-maintainer.toml` with initializer starter config.
 - [x] Split onboarding docs into minimum core, agent, and hardening paths.
 - [x] Label starter coverage defaults separately from this repo's stricter self-policy.
 - [x] Archive stale legacy-script review notes so they cannot be mistaken for current guidance.

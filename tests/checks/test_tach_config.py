@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from ai_guardrails import tach as guardrail_tach
-from ai_guardrails.checks import tach_config as check_tach_config
+from agent_maintainer import tach as maintainer_tach
+from agent_maintainer.checks import tach_config as check_tach_config
 
 
 def test_tach_config_issues_require_modules_and_strict_root(tmp_path: Path) -> None:
@@ -20,7 +20,7 @@ root_module = "ignore"
         encoding="utf-8",
     )
 
-    issues = guardrail_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert "tach.toml must define at least one module" in issues
     assert 'tach.toml must set root_module = "forbid"' in issues
@@ -50,7 +50,7 @@ path = "package.known"
         encoding="utf-8",
     )
 
-    issues = guardrail_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == ["tach.toml must explicitly assign source modules: package.stale"]
 
@@ -74,7 +74,7 @@ paths = ["package.known"]
         encoding="utf-8",
     )
 
-    issues = guardrail_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == [
         "tach.toml must explicitly assign source modules: "
@@ -100,7 +100,7 @@ paths = ["package.known", "package.missing"]
         encoding="utf-8",
     )
 
-    issues = guardrail_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == ["tach.toml references modules without source files: package.missing"]
 
@@ -116,15 +116,15 @@ modules = ["not-a-module-table"]
         encoding="utf-8",
     )
 
-    issues = guardrail_tach.tach_config_issues(tmp_path, require_strict_root=True)
+    issues = maintainer_tach.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == ["each tach module must define path or paths"]
 
 
 def test_tach_config_defensive_helpers_handle_invalid_inputs(tmp_path: Path) -> None:
     """Keep defensive helper branches stable for malformed TOML values."""
-    assert guardrail_tach._source_module_names(tmp_path, "scripts", None) == ()
-    assert not guardrail_tach._matches_exclude("package/file.py", ("package",), " ")
+    assert maintainer_tach._source_module_names(tmp_path, "scripts", None) == ()
+    assert not maintainer_tach._matches_exclude("package/file.py", ("package",), " ")
 
 
 def test_tach_config_main_reports_success(

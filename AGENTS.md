@@ -1,11 +1,11 @@
-# Repository guardrails for AI-assisted Python changes
+# Repository maintenance for AI-assisted Python changes
 
-The goal is maintainable code, not just passing code. Treat the guardrails as the source of truth.
+The goal is maintainable code, not just passing code. Treat Agent Maintainer checks as the source of truth.
 
-Also read `AGENTS.guardrails.md` before changing code. It is generated from
-`[tool.ai_guardrails]` and summarizes the active mode, paths, thresholds, and
-required verification commands. If guardrail configuration changes, regenerate it
-with `python3 -m ai_guardrails guidance`.
+Also read `AGENTS.agent-maintainer.md` before changing code. It is generated from
+`[tool.agent_maintainer]` and summarizes the active mode, paths, thresholds, and
+required verification commands. If Agent Maintainer configuration changes, regenerate it
+with `python3 -m agent_maintainer guidance`.
 
 ## Verification workflow
 
@@ -14,19 +14,19 @@ profile before completion. If those hooks are unavailable, were bypassed, or
 need a failure reproduced manually, run:
 
 ```bash
-python3 -m ai_guardrails verify --profile precommit
+python3 -m agent_maintainer verify --profile precommit
 ```
 
 Before opening or merging a larger change, run:
 
 ```bash
-python3 -m ai_guardrails verify --profile full
+python3 -m agent_maintainer verify --profile full
 ```
 
 Do not claim completion while required hooks or manual checks fail. Do not lower
 thresholds, delete checks, or add broad suppressions to make the pipeline pass.
 
-If the repository does not use `src/` and `tests/`, configure `[tool.ai_guardrails]` in `pyproject.toml` instead of letting checks drift or fail ambiguously.
+If the repository does not use `src/` and `tests/`, configure `[tool.agent_maintainer]` in `pyproject.toml` instead of letting checks drift or fail ambiguously.
 
 ## Design rules
 
@@ -74,4 +74,4 @@ This repository uses `tach.toml` for architecture contracts. Keep `root_module =
 
 Fix the root cause. Do not bypass hooks. If the hook is wrong, make the smallest possible correction to the hook or configuration and explain why in the PR notes.
 
-Optional checks must be explicit. Missing optional architecture config is a skip only outside configured strict mode. This repository also enforces an Interrogate docstring-coverage ratchet. Missing guardrail package entrypoints, missing configured source roots in precommit/full/ci, missing required tests, or a broken package install are failures.
+Optional checks must be explicit. Missing optional architecture config is a skip only outside configured strict mode. This repository also enforces an Interrogate docstring-coverage ratchet. Missing Agent Maintainer package entrypoints, missing configured source roots in precommit/full/ci, missing required tests, or a broken package install are failures.

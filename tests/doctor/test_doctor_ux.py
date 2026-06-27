@@ -5,13 +5,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ai_guardrails.core.config import GuardrailConfig
-from ai_guardrails.doctor import cli as guardrail_doctor
-from ai_guardrails.doctor import setup as guardrail_doctor_setup
-from ai_guardrails.doctor.support import logs as guardrail_doctor_logs
-from ai_guardrails.doctor.support import models as guardrail_doctor_models
-from ai_guardrails.doctor.support import policy as guardrail_doctor_policy
-from ai_guardrails.verify.artifacts import MANIFEST_NAME
+from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.doctor import cli as maintainer_doctor
+from agent_maintainer.doctor import setup as maintainer_doctor_setup
+from agent_maintainer.doctor.support import logs as maintainer_doctor_logs
+from agent_maintainer.doctor.support import models as maintainer_doctor_models
+from agent_maintainer.doctor.support import policy as maintainer_doctor_policy
+from agent_maintainer.verify.artifacts import MANIFEST_NAME
 
 
 def test_architecture_backend_reports_active_tach(tmp_path: Path) -> None:
@@ -19,28 +19,28 @@ def test_architecture_backend_reports_active_tach(tmp_path: Path) -> None:
         'source_roots = ["scripts"]\nroot_module = "forbid"\n',
         encoding="utf-8",
     )
-    config = GuardrailConfig(architecture_tool="tach")
+    config = MaintainerConfig(architecture_tool="tach")
 
-    result = guardrail_doctor_setup.check_architecture_backend(tmp_path, config)
+    result = maintainer_doctor_setup.check_architecture_backend(tmp_path, config)
 
-    assert result.status == guardrail_doctor.OK
-    assert result.state == guardrail_doctor_models.ACTIVE
+    assert result.status == maintainer_doctor.OK
+    assert result.state == maintainer_doctor_models.ACTIVE
     assert "tach active" in result.message
 
 
 def test_architecture_backend_reports_missing_config(tmp_path: Path) -> None:
-    config = GuardrailConfig(architecture_tool="tach")
+    config = MaintainerConfig(architecture_tool="tach")
 
-    result = guardrail_doctor_setup.check_architecture_backend(tmp_path, config)
+    result = maintainer_doctor_setup.check_architecture_backend(tmp_path, config)
 
-    assert result.status == guardrail_doctor.WARNING
-    assert result.state == guardrail_doctor_models.MISSING
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.MISSING
     assert "tach.toml" in result.message
     assert result.hint
 
 
 def test_thresholds_report_active_enforcement_values() -> None:
-    config = GuardrailConfig(
+    config = MaintainerConfig(
         coverage_fail_under=87,
         diff_cover_fail_under=93,
         interrogate_fail_under=81,
@@ -52,10 +52,10 @@ def test_thresholds_report_active_enforcement_values() -> None:
         xenon_max_average="A",
     )
 
-    result = guardrail_doctor_setup.check_thresholds(config)
+    result = maintainer_doctor_setup.check_thresholds(config)
 
-    assert result.status == guardrail_doctor.OK
-    assert result.state == guardrail_doctor_models.ACTIVE
+    assert result.status == maintainer_doctor.OK
+    assert result.state == maintainer_doctor_models.ACTIVE
     assert "coverage=87%" in result.message
     assert "diff-cover=93%" in result.message
     assert "interrogate=81%" in result.message
@@ -65,7 +65,7 @@ def test_thresholds_report_active_enforcement_values() -> None:
 
 
 def test_structure_thresholds_report_paths_and_ignored_globs() -> None:
-    config = GuardrailConfig(
+    config = MaintainerConfig(
         mode="fresh-strict",
         source_roots=("scripts",),
         folder_file_warn=12,
@@ -74,10 +74,10 @@ def test_structure_thresholds_report_paths_and_ignored_globs() -> None:
         structure_ignore_paths=("tests/**", "generated/**"),
     )
 
-    result = guardrail_doctor_setup.check_structure_thresholds(config)
+    result = maintainer_doctor_setup.check_structure_thresholds(config)
 
-    assert result.status == guardrail_doctor.OK
-    assert result.state == guardrail_doctor_models.ACTIVE
+    assert result.status == maintainer_doctor.OK
+    assert result.state == maintainer_doctor_models.ACTIVE
     assert "paths=scripts" in result.message
     assert "warn=12" in result.message
     assert "block=34" in result.message
@@ -97,28 +97,28 @@ def test_verification_logs_report_removed_check_drift(tmp_path: Path) -> None:
     }
     (log_dir / MANIFEST_NAME).write_text(json.dumps(manifest), encoding="utf-8")
 
-    result = guardrail_doctor_logs.check_recent_logs(tmp_path, GuardrailConfig())
+    result = maintainer_doctor_logs.check_recent_logs(tmp_path, MaintainerConfig())
 
-    assert result.status == guardrail_doctor.WARNING
-    assert result.state == guardrail_doctor_models.UNSAFE_CONFIG
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
     assert "disabled or removed" in result.message
     assert result.hint
 
 
 def test_pre_commit_absent_config_is_not_applicable(tmp_path: Path) -> None:
-    result = guardrail_doctor.check_pre_commit(tmp_path)
+    result = maintainer_doctor.check_pre_commit(tmp_path)
 
-    assert result.status == guardrail_doctor.WARNING
-    assert result.state == guardrail_doctor_models.NOT_APPLICABLE
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.NOT_APPLICABLE
 
 
 def test_verification_logs_report_disabled_artifacts(tmp_path: Path) -> None:
-    config = GuardrailConfig(diagnostic_artifacts_enabled=False)
+    config = MaintainerConfig(diagnostic_artifacts_enabled=False)
 
-    result = guardrail_doctor_logs.check_recent_logs(tmp_path, config)
+    result = maintainer_doctor_logs.check_recent_logs(tmp_path, config)
 
-    assert result.status == guardrail_doctor.OK
-    assert result.state == guardrail_doctor_models.DISABLED
+    assert result.status == maintainer_doctor.OK
+    assert result.state == maintainer_doctor_models.DISABLED
 
 
 def test_verification_logs_report_invalid_manifest_json(tmp_path: Path) -> None:
@@ -127,31 +127,33 @@ def test_verification_logs_report_invalid_manifest_json(tmp_path: Path) -> None:
     (log_dir / "ruff.log").write_text("ok\n", encoding="utf-8")
     (log_dir / MANIFEST_NAME).write_text("{not-json", encoding="utf-8")
 
-    result = guardrail_doctor_logs.check_recent_logs(tmp_path, GuardrailConfig())
+    result = maintainer_doctor_logs.check_recent_logs(tmp_path, MaintainerConfig())
 
-    assert result.status == guardrail_doctor.WARNING
-    assert result.state == guardrail_doctor_models.UNSAFE_CONFIG
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
     assert result.hint
 
 
 def test_verification_log_catalog_drift_ignores_current_checks() -> None:
     payload: dict[str, object] = {"checks": [{"name": "ruff"}]}
 
-    assert guardrail_doctor_logs.catalog_drift_issues(GuardrailConfig(), payload) == []
+    assert maintainer_doctor_logs.catalog_drift_issues(MaintainerConfig(), payload) == []
 
 
 def test_pyright_invalid_json_is_unsafe_config(tmp_path: Path) -> None:
     (tmp_path / "pyrightconfig.json").write_text("{not-json", encoding="utf-8")
 
-    result = guardrail_doctor_policy.check_pyright_config(tmp_path, GuardrailConfig())
+    result = maintainer_doctor_policy.check_pyright_config(tmp_path, MaintainerConfig())
 
-    assert result.status == guardrail_doctor.WARNING
-    assert result.state == guardrail_doctor_models.UNSAFE_CONFIG
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
     assert result.hint
 
 
 def test_pip_audit_disabled_state_is_explicit() -> None:
-    result = guardrail_doctor_policy.check_pip_audit_safety(GuardrailConfig(enable_pip_audit=False))
+    result = maintainer_doctor_policy.check_pip_audit_safety(
+        MaintainerConfig(enable_pip_audit=False)
+    )
 
-    assert result.status == guardrail_doctor.OK
-    assert result.state == guardrail_doctor_models.DISABLED
+    assert result.status == maintainer_doctor.OK
+    assert result.state == maintainer_doctor_models.DISABLED

@@ -7,18 +7,22 @@ from pathlib import Path
 FORBIDDEN_IMPORT_FRAGMENTS = (
     "from scripts",
     "import scripts",
-    "scripts.guardrail_core",
-    "scripts.guardrail_catalogs",
-    "scripts.guardrail_doctor",
+    "scripts." + "guard" + "rail_core",
+    "scripts." + "guard" + "rail_catalogs",
+    "scripts." + "guard" + "rail_doctor",
     "scripts.verify_quiet",
-    "guardrail_lib",
+    "guard" + "rail_" + "lib",
+    "ai_" + "guard" + "rails",
+    "ai-" + "guard" + "rails",
+    "[tool." + "ai_" + "guard" + "rails]",
+    "AGENTS." + "guard" + "rails.md",
 )
 
 
 def test_package_code_does_not_import_legacy_script_modules() -> None:
     """Keep implementation imports package-first after the src migration."""
 
-    roots = (Path("src/ai_guardrails"), Path(".codex/hooks"))
+    roots = (Path("src/agent_maintainer"), Path(".codex/hooks"))
     offenders: list[str] = []
     for root in roots:
         for path in root.rglob("*.py"):

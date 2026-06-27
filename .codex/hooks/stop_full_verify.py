@@ -66,7 +66,7 @@ def main() -> int:
         return emit({"continue": True})
 
     repo_root = Path(__file__).resolve().parents[2]
-    verifier = repo_root / "src" / "ai_guardrails" / "__main__.py"
+    verifier = repo_root / "src" / "agent_maintainer" / "__main__.py"
     started_at = utc_timestamp()
     started = time.monotonic()
     if not verifier.exists():
@@ -88,8 +88,8 @@ def main() -> int:
             {
                 "decision": "block",
                 "reason": (
-                    f"Repository guardrail verifier is missing at {verifier}. "
-                    "Restore src/ai_guardrails before finishing."
+                    f"Agent Maintainer verifier is missing at {verifier}. "
+                    "Restore src/agent_maintainer before finishing."
                 ),
             }
         )
@@ -97,7 +97,7 @@ def main() -> int:
     command = [
         verifier_python(repo_root),
         "-m",
-        "ai_guardrails",
+        "agent_maintainer",
         "verify",
         "--profile",
         PROFILE,
