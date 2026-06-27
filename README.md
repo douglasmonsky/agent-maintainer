@@ -1,5 +1,10 @@
 # Agent Maintainer
 
+[![CI](https://github.com/douglasmonsky/agent-maintainer/actions/workflows/verify.yml/badge.svg)](https://github.com/douglasmonsky/agent-maintainer/actions/workflows/verify.yml)
+[![PyPI](https://img.shields.io/pypi/v/agent-maintainer.svg)](https://pypi.org/project/agent-maintainer/)
+[![Python](https://img.shields.io/pypi/pyversions/agent-maintainer.svg)](https://pypi.org/project/agent-maintainer/)
+[![License: MIT](https://img.shields.io/pypi/l/agent-maintainer.svg)](LICENSE)
+
 Maintainability checks and repair-loop diagnostics for AI-assisted Python
 repositories.
 
