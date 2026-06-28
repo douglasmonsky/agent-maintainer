@@ -170,6 +170,8 @@ def test_change_budget_main_accepts_eligible_local_override(
 ) -> None:
     """Change-budget command downgrades eligible override failures to warnings."""
 
+    monkeypatch.delenv("GITHUB_EVENT_NAME", raising=False)
+    monkeypatch.delenv("GITHUB_EVENT_PATH", raising=False)
     monkeypatch.setattr(
         change_budget,
         "run_git_numstat",
@@ -188,3 +190,124 @@ def test_change_budget_main_accepts_eligible_local_override(
 
     assert result == 0
     assert "Cohesive-change override requested locally" in capsys.readouterr().out
+
+
+def test_github_pr_body_ignores_missing_event_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """GitHub PR parsing is opt-in to a real event payload path."""
+
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.delenv("GITHUB_EVENT_PATH", raising=False)
+
+    assert cohesive_override.github_pr_body() is None
+
+
+def test_github_pr_body_ignores_missing_event_file(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Missing GitHub event files behave like no PR metadata."""
+
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(tmp_path / "missing-event.json"))
+
+    assert cohesive_override.github_pr_body() is None
+
+
+def test_github_pr_body_ignores_malformed_pull_request(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Malformed GitHub events are ignored instead of guessed."""
+
+    event_path = tmp_path / "event.json"
+    event_path.write_text(json.dumps({"pull_request": []}), encoding="utf-8")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event_path))
+
+    assert cohesive_override.github_pr_body() is None
+
+
+def test_github_pr_body_normalizes_non_string_body(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Non-string PR bodies become empty strings for parser safety."""
+
+    event_path = tmp_path / "event.json"
+    event_path.write_text(json.dumps({"pull_request": {"body": None}}), encoding="utf-8")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event_path))
+
+    assert cohesive_override.github_pr_body() == ""
+
+
+def test_parse_pr_body_without_override_section_is_not_requested() -> None:
+    """Normal PR bodies do not request override handling."""
+
+    request = cohesive_override.parse_pr_body("## Summary\n\nRegular change.")
+
+    assert not request.requested
+
+
+def test_behavior_change_field_must_state_unchanged() -> None:
+    """Override metadata must say behavior remains unchanged."""
+
+    body = valid_body().replace(
+        "- Behavior change: none, behavior is unchanged.",
+        "- Behavior change: adds new runtime behavior.",
+    )
+
+    request = cohesive_override.parse_pr_body(body)
+
+    assert request.requested
+    assert request.failures == ("Cohesive-change override must state behavior is unchanged.",)
+
+
+def test_too_many_files_blocks_override(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Configured max file count remains hard limit."""
+
+    set_github_pr_body(monkeypatch, tmp_path, valid_body())
+
+    decision = cohesive_override.evaluate_override(
+        enabled_config(),
+        [
+            change_budget.FileChange("src/agent_maintainer/a.py", 1, 0),
+            change_budget.FileChange("src/agent_maintainer/b.py", 1, 0),
+            change_budget.FileChange("src/agent_maintainer/c.py", 1, 0),
+            change_budget.FileChange("src/agent_maintainer/d.py", 1, 0),
+        ],
+    )
+
+    assert decision.requested
+    assert not decision.allowed
+    assert decision.failures == (
+        "Cohesive-change override touches too many files: 4 files (limit: 3).",
+    )
+
+
+def test_disabled_or_unscoped_config_blocks_override(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Overrides require explicit repository enablement and path scope."""
+
+    set_github_pr_body(monkeypatch, tmp_path, valid_body())
+
+    decision = cohesive_override.evaluate_override(
+        MaintainerConfig(cohesive_change_override_enabled=False),
+        [change_budget.FileChange("src/agent_maintainer/core/config.py", 1, 0)],
+    )
+
+    assert decision.requested
+    assert not decision.allowed
+    assert decision.failures == (
+        "Cohesive-change overrides are disabled for this repository.",
+        "Cohesive-change override has no configured path allowlist.",
+        "Cohesive-change override includes paths outside the allowlist: "
+        "src/agent_maintainer/core/config.py.",
+    )
