@@ -48,6 +48,30 @@ def as_int(value: object, field_name: str) -> int:
         raise TypeError(f"{field_name} must be an integer") from exc
 
 
+def as_non_negative_int(value: object, field_name: str) -> int:
+    """Coerce an integer config value that cannot be negative."""
+
+    parsed = as_int(value, field_name)
+    if parsed < 0:
+        raise TypeError(f"{field_name} must be a non-negative integer")
+    return parsed
+
+
+def as_float(value: object, field_name: str) -> float:
+    """Coerce a float config value."""
+
+    if isinstance(value, bool):
+        raise TypeError(f"{field_name} must be a number")
+    if isinstance(value, (float, int)):
+        return float(value)
+    if not isinstance(value, str):
+        raise TypeError(f"{field_name} must be a number")
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise TypeError(f"{field_name} must be a number") from exc
+
+
 def as_str(value: object, field_name: str) -> str:
     """Coerce a non-empty string config value."""
 
@@ -92,7 +116,9 @@ def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
     field_parsers = (
         (schema.TUPLE_FIELDS, as_tuple),
         (schema.BOOL_FIELDS, as_bool),
+        (schema.NON_NEGATIVE_INT_FIELDS, as_non_negative_int),
         (schema.INT_FIELDS, as_int),
+        (schema.FLOAT_FIELDS, as_float),
         (schema.STR_FIELDS, as_str),
     )
     for fields, parser in field_parsers:
@@ -104,6 +130,13 @@ def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
     if architecture_tool is not None:
         updates["architecture_tool"] = as_choice(
             architecture_tool, "architecture_tool", schema.VALID_ARCHITECTURE_TOOLS
+        )
+    compression_backend = raw.get("context_compression_backend")
+    if compression_backend is not None:
+        updates["context_compression_backend"] = as_choice(
+            compression_backend,
+            "context_compression_backend",
+            schema.VALID_CONTEXT_COMPRESSION_BACKENDS,
         )
     diagnostics = raw.get("diagnostics")
     if diagnostics is not None:

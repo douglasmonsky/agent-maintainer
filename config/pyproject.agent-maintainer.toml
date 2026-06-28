@@ -48,6 +48,34 @@ xenon_max_average = "A"
 ruff_max_complexity = 10
 pyright_type_checking_mode = "standard"
 
+# Planned context-safe legacy repair layers. These fields are inert until the
+# matching features are adopted.
+context_default_budget_chars = 12000
+context_hook_budget_chars = 8000
+context_last_failure_budget_chars = 16000
+context_pack_budget_chars = 24000
+context_large_file_threshold_lines = 800
+context_large_file_threshold_bytes = 250000
+context_max_direct_file_read_lines = 250
+context_max_direct_log_read_lines = 200
+context_max_failure_items = 10
+context_max_paths_default = 50
+context_require_outline_for_large_files = true
+context_compression_enabled = false
+context_compression_backend = "extractive"
+context_compression_target_ratio = 0.5
+context_compression_require_backend = false
+ratchet_enabled = false
+ratchet_baseline_path = ".agent-maintainer/ratchet-baseline.json"
+ratchet_guidance_path = "AGENTS.ratchet.md"
+ratchet_target_limit = 5
+large_changes_enabled = false
+large_change_plan_dirs = [".agent-maintainer/change-plans"]
+large_change_max_active_plans = 1
+large_change_allow_expired_plans = false
+large_change_require_required_sections = true
+large_change_fail_out_of_plan_paths = true
+
 # Optional hardening gates stay off until explicitly adopted.
 enable_pip_audit = false
 pip_audit_args = ["-r", "config/dev-lock.txt"]

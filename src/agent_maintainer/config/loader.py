@@ -47,6 +47,7 @@ TUPLE_ENVS = (
         "source_without_test_change_error_profiles",
         "AGENT_MAINTAINER_SOURCE_WITHOUT_TEST_CHANGE_ERROR_PROFILES",
     ),
+    ("large_change_plan_dirs", "AGENT_MAINTAINER_LARGE_CHANGE_PLAN_DIRS"),
 )
 BOOL_ENVS = (
     ("require_tests", "AGENT_MAINTAINER_REQUIRE_TESTS"),
@@ -70,7 +71,39 @@ BOOL_ENVS = (
         "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_ENABLED",
     ),
     ("diagnostic_artifacts_enabled", "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED"),
+    (
+        "context_require_outline_for_large_files",
+        "AGENT_MAINTAINER_CONTEXT_REQUIRE_OUTLINE_FOR_LARGE_FILES",
+    ),
+    ("context_compression_enabled", "AGENT_MAINTAINER_CONTEXT_COMPRESSION_ENABLED"),
+    (
+        "context_compression_require_backend",
+        "AGENT_MAINTAINER_CONTEXT_COMPRESSION_REQUIRE_BACKEND",
+    ),
+    ("ratchet_enabled", "AGENT_MAINTAINER_RATCHET_ENABLED"),
+    ("large_changes_enabled", "AGENT_MAINTAINER_LARGE_CHANGES_ENABLED"),
+    (
+        "large_change_allow_expired_plans",
+        "AGENT_MAINTAINER_LARGE_CHANGE_ALLOW_EXPIRED_PLANS",
+    ),
+    (
+        "large_change_require_required_sections",
+        "AGENT_MAINTAINER_LARGE_CHANGE_REQUIRE_REQUIRED_SECTIONS",
+    ),
+    (
+        "large_change_fail_out_of_plan_paths",
+        "AGENT_MAINTAINER_LARGE_CHANGE_FAIL_OUT_OF_PLAN_PATHS",
+    ),
 )
+NON_NEGATIVE_INT_ENVS = tuple(
+    (field_name, f"AGENT_MAINTAINER_{field_name.upper()}")
+    for field_name in sorted(schema.NON_NEGATIVE_INT_FIELDS)
+)
+FLOAT_ENVS = tuple(
+    (field_name, f"AGENT_MAINTAINER_{field_name.upper()}")
+    for field_name in sorted(schema.FLOAT_FIELDS)
+)
+
 COVERAGE_ENVS = (
     ("coverage_fail_under", "AGENT_MAINTAINER_COVERAGE_FAIL_UNDER"),
     ("diff_cover_fail_under", "AGENT_MAINTAINER_DIFF_COVER_FAIL_UNDER"),
@@ -104,6 +137,8 @@ STRING_ENVS = (
     ("xenon_max_average", "AGENT_MAINTAINER_XENON_MAX_AVERAGE"),
     ("diagnostic_artifacts_dir", "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"),
     ("secret_scanner", "AGENT_MAINTAINER_SECRET_SCANNER"),
+    ("ratchet_baseline_path", "AGENT_MAINTAINER_RATCHET_BASELINE_PATH"),
+    ("ratchet_guidance_path", "AGENT_MAINTAINER_RATCHET_GUIDANCE_PATH"),
 )
 
 
@@ -172,8 +207,10 @@ def apply_env(config: schema.MaintainerConfig) -> schema.MaintainerConfig:
     updates: dict[str, object] = {}
     merge_env_values(updates, TUPLE_ENVS, coercion.as_tuple)
     merge_env_values(updates, BOOL_ENVS, coercion.as_bool)
+    merge_env_values(updates, NON_NEGATIVE_INT_ENVS, coercion.as_non_negative_int)
     merge_env_values(updates, COVERAGE_ENVS, coercion.as_int)
     merge_env_values(updates, THRESHOLD_ENVS, coercion.as_int)
+    merge_env_values(updates, FLOAT_ENVS, coercion.as_float)
     merge_env_values(updates, STRING_ENVS, coercion.as_str)
     apply_special_envs(updates)
     return replace(config, **updates)
@@ -197,6 +234,13 @@ def apply_special_envs(updates: dict[str, object]) -> None:
             architecture_tool,
             "AGENT_MAINTAINER_ARCHITECTURE_TOOL",
             schema.VALID_ARCHITECTURE_TOOLS,
+        )
+    compression_backend = os.getenv("AGENT_MAINTAINER_CONTEXT_COMPRESSION_BACKEND")
+    if compression_backend is not None:
+        updates["context_compression_backend"] = coercion.as_choice(
+            compression_backend,
+            "AGENT_MAINTAINER_CONTEXT_COMPRESSION_BACKEND",
+            schema.VALID_CONTEXT_COMPRESSION_BACKENDS,
         )
 
 
