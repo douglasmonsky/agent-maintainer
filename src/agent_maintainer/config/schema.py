@@ -80,6 +80,8 @@ TACH_TOOL = "tach"
 VALID_ARCHITECTURE_TOOLS = frozenset((IMPORT_LINTER_TOOL, TACH_TOOL))
 GITLEAKS_SCANNER = "gitleaks"
 SUPPORTED_SECRET_SCANNERS = frozenset((GITLEAKS_SCANNER,))
+EXTRACTIVE_COMPRESSION_BACKEND = "extractive"
+VALID_CONTEXT_COMPRESSION_BACKENDS = frozenset((EXTRACTIVE_COMPRESSION_BACKEND,))
 
 TUPLE_FIELDS = frozenset(
     (
@@ -112,6 +114,7 @@ TUPLE_FIELDS = frozenset(
         "check_jsonschema_args",
         "source_without_test_change_error_profiles",
         "cohesive_change_override_paths",
+        "large_change_plan_dirs",
     )
 )
 BOOL_FIELDS = frozenset(
@@ -134,8 +137,33 @@ BOOL_FIELDS = frozenset(
         "allow_source_without_test_change",
         "cohesive_change_override_enabled",
         "diagnostic_artifacts_enabled",
+        "context_require_outline_for_large_files",
+        "context_compression_enabled",
+        "context_compression_require_backend",
+        "ratchet_enabled",
+        "large_changes_enabled",
+        "large_change_allow_expired_plans",
+        "large_change_require_required_sections",
+        "large_change_fail_out_of_plan_paths",
     )
 )
+NON_NEGATIVE_INT_FIELDS = frozenset(
+    (
+        "context_default_budget_chars",
+        "context_hook_budget_chars",
+        "context_last_failure_budget_chars",
+        "context_pack_budget_chars",
+        "context_large_file_threshold_lines",
+        "context_large_file_threshold_bytes",
+        "context_max_direct_file_read_lines",
+        "context_max_direct_log_read_lines",
+        "context_max_failure_items",
+        "context_max_paths_default",
+        "ratchet_target_limit",
+        "large_change_max_active_plans",
+    )
+)
+
 INT_FIELDS = frozenset(
     (
         "coverage_fail_under",
@@ -156,6 +184,8 @@ INT_FIELDS = frozenset(
         "interrogate_fail_under",
     )
 )
+FLOAT_FIELDS = frozenset(("context_compression_target_ratio",))
+
 STR_FIELDS = frozenset(
     (
         "xenon_max_absolute",
@@ -165,6 +195,8 @@ STR_FIELDS = frozenset(
         "file_length_baseline",
         "diagnostic_artifacts_dir",
         "secret_scanner",
+        "ratchet_baseline_path",
+        "ratchet_guidance_path",
     )
 )
 
@@ -205,6 +237,31 @@ class MaintainerConfig:
     xenon_max_average: str = "A"
     ruff_max_complexity: int = 10
     pyright_type_checking_mode: str = "standard"
+    context_default_budget_chars: int = 12_000
+    context_hook_budget_chars: int = 8_000
+    context_last_failure_budget_chars: int = 16_000
+    context_pack_budget_chars: int = 24_000
+    context_large_file_threshold_lines: int = 800
+    context_large_file_threshold_bytes: int = 250_000
+    context_max_direct_file_read_lines: int = 250
+    context_max_direct_log_read_lines: int = 200
+    context_max_failure_items: int = 10
+    context_max_paths_default: int = 50
+    context_require_outline_for_large_files: bool = True
+    context_compression_enabled: bool = False
+    context_compression_backend: str = EXTRACTIVE_COMPRESSION_BACKEND
+    context_compression_target_ratio: float = 0.5
+    context_compression_require_backend: bool = False
+    ratchet_enabled: bool = False
+    ratchet_baseline_path: str = ".agent-maintainer/ratchet-baseline.json"
+    ratchet_guidance_path: str = "AGENTS.ratchet.md"
+    ratchet_target_limit: int = 5
+    large_changes_enabled: bool = False
+    large_change_plan_dirs: tuple[str, ...] = (".agent-maintainer/change-plans",)
+    large_change_max_active_plans: int = 1
+    large_change_allow_expired_plans: bool = False
+    large_change_require_required_sections: bool = True
+    large_change_fail_out_of_plan_paths: bool = True
     enable_pip_audit: bool = False
     enable_wemake: bool = False
     pip_audit_args: tuple[str, ...] = ()

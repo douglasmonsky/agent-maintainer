@@ -45,7 +45,7 @@ Planned work:
 - [x] Phase 1: ADR for Context-Safe Legacy Ratchets
 - [x] Phase 2: ADR for Test Intelligence Ladder
 - [x] Phase 3: Public Roadmap Docs Stubs
-- [ ] Phase 4: Config Scaffolding
+- [x] Phase 4: Config Scaffolding
 - [ ] Phase 5: Context Contract Implementation
 - [ ] Phase 6: Bounded Verifier, Hook, LAST_FAILURE Output
 - [ ] Phase 7: Test Intelligence MVP
