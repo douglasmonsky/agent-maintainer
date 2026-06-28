@@ -1,4 +1,4 @@
-"""Agent Maintainer codex PostToolUse hook wrapper."""
+"""Agent Maintainer claude-code PostToolUse hook wrapper."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def main() -> int:
     """Run shared Agent Maintainer hook runtime."""
 
     return run_hook(
-        platform="codex",
+        platform="claude-code",
         event="PostToolUse",
         profile="fast",
         repo_root=REPO_ROOT,

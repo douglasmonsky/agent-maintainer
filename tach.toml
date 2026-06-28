@@ -1,4 +1,4 @@
-source_roots = ["src", ".codex/hooks"]
+source_roots = ["src", ".codex/hooks", ".claude/hooks"]
 root_module = "forbid"
 exact = true
 exclude = [
@@ -23,7 +23,10 @@ paths = [
   "agent_maintainer.hooks.cli",
   "hook_audit",
   "post_edit_fast_gate",
+  "post_tool_use",
+  "stop",
   "stop_full_verify",
+  "subagent_stop",
 ]
 layer = "entrypoint"
 

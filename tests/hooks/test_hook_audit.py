@@ -1,4 +1,4 @@
-"""Tests for Codex hook audit JSONL helpers."""
+"""Tests for agent hook audit JSONL helpers."""
 
 from __future__ import annotations
 
