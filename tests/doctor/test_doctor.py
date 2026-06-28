@@ -238,7 +238,7 @@ def test_claude_code_hooks_warn_and_pass(tmp_path: Path) -> None:
     assert maintainer_doctor.check_claude_code_hooks(tmp_path).status == maintainer_doctor.WARNING
 
     settings_path.write_text(
-        '{"hooks": {"Stop": [{"command": "agent_maintainer"}]}}\n',
+        '{"hooks": {"Stop": [{"command": ".claude/hooks/stop.py"}]}}\n',
         encoding="utf-8",
     )
     assert maintainer_doctor.check_claude_code_hooks(tmp_path).status == maintainer_doctor.OK
