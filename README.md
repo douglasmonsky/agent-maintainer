@@ -255,6 +255,7 @@ PYTHONPATH=src python3 -m agent_maintainer bootstrap
 - [Fresh-strict mode](docs/fresh-strict.md)
 - [Legacy-ratchet mode](docs/legacy-ratchet.md)
 - [Agent client hooks](docs/agent-client-hooks.md)
+- [Cohesive-change overrides](docs/cohesive-change-overrides.md)
 - [Release checklist](docs/release-checklist.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Structure cohesion](docs/structure-cohesion.md)

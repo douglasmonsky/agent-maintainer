@@ -72,6 +72,7 @@ configuration first, then regenerate it.
 - File length baseline: `disabled`
 - Change budget warnings: `200` lines or `6` files
 - Change budget blocks: `600` lines or `12` files
+- Cohesive-change override: `enabled`; allowlist `src/agent_maintainer/**`, `src/archguard/**`, `.codex/hooks/**`, `.claude/hooks/**`; max `2500` lines / `40` files
 - New suppression budget: `1`
 - Ruff McCabe complexity: `8`
 - Xenon complexity: absolute `B`, modules `A`, average `A`

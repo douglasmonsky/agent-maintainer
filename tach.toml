@@ -79,6 +79,7 @@ layer = "runtime"
 paths = [
   "agent_maintainer.checks",
   "agent_maintainer.checks.change_budget",
+  "agent_maintainer.checks.cohesive_override",
   "agent_maintainer.checks.file_lengths",
   "agent_maintainer.checks.structure",
   "agent_maintainer.checks.suppression_budget",

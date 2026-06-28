@@ -199,6 +199,15 @@ coverage_fail_under = 90
 diff_cover_fail_under = 90
 source_without_test_change_error_profiles = ["precommit"]
 allow_source_without_test_change = false
+cohesive_change_override_enabled = true
+cohesive_change_override_paths = [
+  "src/agent_maintainer/**",
+  "src/archguard/**",
+  ".codex/hooks/**",
+  ".claude/hooks/**",
+]
+cohesive_change_override_max_lines = 2500
+cohesive_change_override_max_files = 40
 xenon_max_absolute = "B"
 xenon_max_modules = "A"
 xenon_max_average = "A"
