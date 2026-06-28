@@ -204,7 +204,8 @@ def check_claude_code_hooks(repo_root: Path) -> DoctorResult:
             hint="Run python3 -m agent_maintainer hooks install claude-code.",
         )
     text = settings_path.read_text(encoding="utf-8")
-    if "agent_maintainer" not in text and "agent-maintainer hooks run" not in text:
+    settings_markers = ("agent_maintainer", "agent-maintainer hooks run", ".claude/hooks")
+    if not any(marker in text for marker in settings_markers):
         return DoctorResult(
             "claude-code-hooks",
             WARNING,
@@ -227,7 +228,7 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
         ".pre-commit-config.yaml": "python3 -m agent_maintainer verify --profile precommit",
         ".codex/hooks/post_edit_fast_gate.py": "agent_maintainer",
         ".codex/hooks/stop_full_verify.py": "agent_maintainer",
-        ".claude/settings.json": "agent_maintainer",
+        ".claude/settings.json": ".claude/hooks",
         ".claude/hooks/post_tool_use.py": "agent_maintainer",
         ".claude/hooks/stop.py": "agent_maintainer",
         ".claude/hooks/subagent_stop.py": "agent_maintainer",
