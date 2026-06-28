@@ -54,7 +54,7 @@ configuration first, then regenerate it.
 
 ## Verification Flow
 
-- Trusted Codex hooks normally run fast checks after edits and the precommit profile
+- Trusted agent hooks normally run fast checks after edits and the precommit profile
   before completion.
 - Run the precommit profile manually when hooks are unavailable, after bypassing hooks,
   or when reproducing a hook failure:

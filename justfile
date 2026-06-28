@@ -40,17 +40,17 @@ verify-full-output:
     ruff format --check .
     ruff check .
     python3 -m agent_maintainer.runners.pyright
-    pytest -q --tb=short --disable-warnings --cov=.codex/hooks --cov=src/agent_maintainer --cov=src/archguard --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=90 tests
-    radon cc .codex/hooks src/agent_maintainer src/archguard -a -s
-    radon mi .codex/hooks src/agent_maintainer src/archguard -s
-    xenon --max-absolute B --max-modules A --max-average A .codex/hooks src/agent_maintainer src/archguard
-    pylint .codex/hooks src/agent_maintainer src/archguard --score=n
+    pytest -q --tb=short --disable-warnings --cov=.codex/hooks --cov=.claude/hooks --cov=src/agent_maintainer --cov=src/archguard --cov-report=term-missing:skip-covered --cov-report=xml --cov-fail-under=90 tests
+    radon cc .codex/hooks .claude/hooks src/agent_maintainer src/archguard -a -s
+    radon mi .codex/hooks .claude/hooks src/agent_maintainer src/archguard -s
+    xenon --max-absolute B --max-modules A --max-average A .codex/hooks .claude/hooks src/agent_maintainer src/archguard
+    pylint .codex/hooks .claude/hooks src/agent_maintainer src/archguard --score=n
     python3 -m archguard tach-config --strict-root-module
     tach check --exact
-    interrogate --fail-under=80 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic .codex/hooks src/agent_maintainer src/archguard
+    interrogate --fail-under=80 --ignore-init-method --ignore-init-module --ignore-private --ignore-semiprivate --ignore-magic .codex/hooks .claude/hooks src/agent_maintainer src/archguard
     deptry .
-    vulture .codex/hooks src/agent_maintainer src/archguard tests
-    bandit -q -r .codex/hooks src/agent_maintainer src/archguard
+    vulture .codex/hooks .claude/hooks src/agent_maintainer src/archguard tests
+    bandit -q -r .codex/hooks .claude/hooks src/agent_maintainer src/archguard
     markdownlint-cli2 "**/*.md"
     yamllint .github/workflows .pre-commit-config.yaml .markdownlint-cli2.yaml .yamllint zizmor.yml
     taplo fmt --check pyproject.toml tach.toml config/*.toml

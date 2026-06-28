@@ -1,4 +1,4 @@
-"""Doctor checks for Codex hook audit records."""
+"""Doctor checks for agent hook audit records."""
 
 from __future__ import annotations
 
@@ -26,8 +26,8 @@ def check_hook_audit(
 ) -> DoctorResult:
     """Report Codex hook executions from the local audit trail."""
 
-    if not codex_hooks_enabled(repo_root):
-        return DoctorResult("hook-audit", OK, "Codex hooks not enabled; audit not required.")
+    if not agent_hooks_enabled(repo_root):
+        return DoctorResult("hook-audit", OK, "Agent hooks not enabled; audit not required.")
     log_dir_name = config.diagnostic_artifacts_dir if config else VERIFY_LOG_DIR
     audit_path = repo_root / log_dir_name / HOOK_AUDIT_NAME
     if not audit_path.exists():
@@ -45,6 +45,22 @@ def codex_hooks_enabled(repo_root: Path) -> bool:
 
     config_path = repo_root / ".codex" / "config.toml"
     return config_path.exists() and "hooks = true" in config_path.read_text(encoding="utf-8")
+
+
+def claude_code_hooks_enabled(repo_root: Path) -> bool:
+    """Return whether repo-local Claude Code hooks are enabled."""
+
+    settings_path = repo_root / ".claude" / "settings.json"
+    if not settings_path.exists():
+        return False
+    text = settings_path.read_text(encoding="utf-8")
+    return "agent_maintainer" in text or "agent-maintainer hooks run" in text
+
+
+def agent_hooks_enabled(repo_root: Path) -> bool:
+    """Return whether any supported repo-local agent hooks are enabled."""
+
+    return codex_hooks_enabled(repo_root) or claude_code_hooks_enabled(repo_root)
 
 
 def valid_hook_events(audit_path: Path) -> tuple[list[HookEvent], int]:
