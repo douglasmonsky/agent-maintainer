@@ -1,50 +1,68 @@
 # Roadmap
 
-Agent Maintainer is in beta. The current priority is validating package-first
-onboarding across real Python repositories before promising long-term 1.0
-stability.
+This file is the implementation tracker for the full Agent Maintainer roadmap.
+The detailed source-of-truth blueprint is
+[`docs/roadmap/full-roadmap-blueprint.md`](roadmap/full-roadmap-blueprint.md).
 
-## Beta Priorities
+Agent Maintainer is in beta. The current major roadmap is context-safe legacy
+ratchets, test intelligence, planned large-change support, and optional
+compression. Do not collapse this into one large PR. The blueprint requires one
+phase per PR unless the user explicitly changes that rule.
 
-- Validate `init --track core` across common Python package layouts.
-- Improve starter templates based on external repository feedback.
-- Validate `fresh-strict` and `legacy-ratchet` example projects with real
-  repository feedback.
-- Keep public configuration stable where possible, and document breaking
-  changes before 1.0.
-- Clarify which checks belong in normal profiles versus release-only checks.
-- Use the next beta release to prove Python-version CI matrix, annotated tag
-  workflow, PyPI environment approval, and GitHub release asset attachment.
+## Current Baseline
 
-## Completed: Cohesive-Change Override
+The public beta baseline already includes package-first onboarding, verification
+profiles, diagnostics, release checks, public packaging metadata, TestPyPI/PyPI
+Trusted Publishing workflow, Codex and Claude Code hooks, generated guidance,
+example repos, and the first cohesive-change budget exception.
 
-The change-budget system keeps small PRs as the default. It now has a strict
-exception path for rare cohesive migrations where splitting further would create
-temporary dead code, fake boundaries, or incoherent intermediate states.
+Current external release gate:
 
-- [x] Add explicit config for cohesive-change override eligibility, a narrow
-  allowlist of affected paths, and maximum override size.
-- [x] Require an override explanation field in the pull request body before CI
-  accepts a budget override.
-- [x] Require the explanation to identify why the change is one cohesive unit,
-  why smaller splits would make the repository less coherent, which tests cover
-  the migration, and that behavior remains unchanged.
-- [x] Add verifier support that detects the PR explanation field through GitHub
-  context in CI and refuses casual empty override text.
-- [x] Emit a clear local warning when an override is requested but cannot be
-  fully verified outside GitHub CI.
-- [x] Add tests for valid override metadata, missing explanation, over-broad path
-  scope, excessive line count, and normal change-budget behavior without an
-  override.
-- [x] Add a PR template section for the override explanation so reviewers see
-  justification without hunting through logs.
-- [x] Document that overrides are for cohesive infrastructure migrations only,
-  not mixed feature/refactor/docs/dependency bundles.
+- [ ] Approve the waiting protected `pypi` environment job for
+  `agent-maintainer==0.1.0b3`, then smoke-test the real PyPI install.
 
-## Later
+## Implementation Phases
 
-- Consider additional secret scanner backends.
-- Consider richer monorepo support once package-first single-repo adoption is
-  proven.
-- Consider optional publish automation once the manual beta release process is
-  reliable.
+- [ ] Phase 1: ADR for Context-Safe Legacy Ratchets
+- [ ] Phase 2: ADR for Test Intelligence Ladder
+- [ ] Phase 3: Public Roadmap Docs Stubs
+- [ ] Phase 4: Config Scaffolding
+- [ ] Phase 5: Context Contract Implementation
+- [ ] Phase 6: Bounded Verifier, Hook, LAST_FAILURE Output
+- [ ] Phase 7: Test Intelligence MVP
+- [ ] Phase 8: Smarter Source-Without-Test Guidance
+- [ ] Phase 9: `context failures` and `context log`
+- [ ] Phase 10: Context Budget Estimation
+- [ ] Phase 11: Safe Large-File Reading
+- [ ] Phase 12: Diff Context Safety
+- [ ] Phase 13: Ratchet Baseline Status
+- [ ] Phase 14: Ratchet Target Ranking
+- [ ] Phase 15: Generate `AGENTS.ratchet.md`
+- [ ] Phase 16: Context Packs
+- [ ] Phase 17: Hook Output Uses Context Packs
+- [ ] Phase 18: Context Artifact Retention Upload Policy
+- [ ] Phase 19: Hypothesis Candidate Guidance
+- [ ] Phase 20: Mutmut Target Suggestions
+- [ ] Phase 21: CrossHair Candidate Guidance
+- [ ] Phase 22: Cohesive Change Plans
+- [ ] Phase 23: Change-Budget Integration Change Plans
+- [ ] Phase 24: Integration Branch Series
+- [ ] Phase 25: Compression Backend Interface
+- [ ] Phase 26: Optional Headroom Backend
+- [ ] Phase 27: Doctor Integration
+- [ ] Phase 28: Examples Proof Repos
+- [ ] Phase 29: PR / GitHub Actions Summary Report
+- [ ] Phase 30: Policy Packs Onboarding Presets
+- [ ] Phase 31: Archguard Impact Analysis
+- [ ] Phase 32: Repair Plan Command
+- [ ] Phase 33: Agent Adapter API
+- [ ] Phase 34: Static HTML Report
+- [ ] Phase 35: External Case Studies Measured Proof Harness
+- [ ] Phase 36: Monorepo / Multi-Package Support
+- [ ] Phase 37: Team Policy Templates
+
+## Final Definition Of Done
+
+The roadmap is complete only when every phase above is implemented, tested,
+documented, merged through CI, and verified against the final definition of done
+in the full blueprint.
