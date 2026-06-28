@@ -110,10 +110,18 @@ paths = [
   "agent_maintainer.config.loader",
   "agent_maintainer.config.modes",
   "agent_maintainer.config.schema",
+  "agent_maintainer.context",
+  "agent_maintainer.context.budget",
+  "agent_maintainer.context.formatting",
+  "agent_maintainer.context.sanitize",
   "agent_maintainer.verify.artifacts",
 ]
 layer = "shared"
 
 [[modules]]
-paths = ["agent_maintainer.models", "agent_maintainer.doctor.support.models"]
+paths = [
+  "agent_maintainer.models",
+  "agent_maintainer.context.models",
+  "agent_maintainer.doctor.support.models",
+]
 layer = "models"
