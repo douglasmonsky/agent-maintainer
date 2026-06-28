@@ -319,6 +319,8 @@ requirements_files_dev = [
 ]
 
 [tool.deptry.per_rule_ignores]
+DEP001 = ["playwright"]
+
 DEP002 = [
   "actionlint-py",
   "bandit",
