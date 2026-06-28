@@ -40,6 +40,10 @@ TUPLE_ENVS = (
     ("taplo_paths", "AGENT_MAINTAINER_TAPLO_PATHS"),
     ("check_jsonschema_args", "AGENT_MAINTAINER_CHECK_JSONSCHEMA_ARGS"),
     (
+        "cohesive_change_override_paths",
+        "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_PATHS",
+    ),
+    (
         "source_without_test_change_error_profiles",
         "AGENT_MAINTAINER_SOURCE_WITHOUT_TEST_CHANGE_ERROR_PROFILES",
     ),
@@ -61,6 +65,10 @@ BOOL_ENVS = (
     ("enable_taplo", "AGENT_MAINTAINER_ENABLE_TAPLO"),
     ("enable_check_jsonschema", "AGENT_MAINTAINER_ENABLE_CHECK_JSONSCHEMA"),
     ("allow_source_without_test_change", "AGENT_MAINTAINER_ALLOW_SOURCE_WITHOUT_TEST_CHANGE"),
+    (
+        "cohesive_change_override_enabled",
+        "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_ENABLED",
+    ),
     ("diagnostic_artifacts_enabled", "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED"),
 )
 COVERAGE_ENVS = (
@@ -78,6 +86,14 @@ THRESHOLD_ENVS = (
     ("folder_file_warn", "AGENT_MAINTAINER_FOLDER_FILE_WARN"),
     ("folder_file_block", "AGENT_MAINTAINER_FOLDER_FILE_BLOCK"),
     ("structure_cluster_min", "AGENT_MAINTAINER_STRUCTURE_CLUSTER_MIN"),
+    (
+        "cohesive_change_override_max_lines",
+        "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_LINES",
+    ),
+    (
+        "cohesive_change_override_max_files",
+        "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_FILES",
+    ),
     ("interrogate_fail_under", "AGENT_MAINTAINER_INTERROGATE_FAIL_UNDER"),
 )
 STRING_ENVS = (

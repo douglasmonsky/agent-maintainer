@@ -111,6 +111,7 @@ TUPLE_FIELDS = frozenset(
         "taplo_paths",
         "check_jsonschema_args",
         "source_without_test_change_error_profiles",
+        "cohesive_change_override_paths",
     )
 )
 BOOL_FIELDS = frozenset(
@@ -131,6 +132,7 @@ BOOL_FIELDS = frozenset(
         "enable_taplo",
         "enable_check_jsonschema",
         "allow_source_without_test_change",
+        "cohesive_change_override_enabled",
         "diagnostic_artifacts_enabled",
     )
 )
@@ -148,6 +150,8 @@ INT_FIELDS = frozenset(
         "folder_file_warn",
         "folder_file_block",
         "structure_cluster_min",
+        "cohesive_change_override_max_lines",
+        "cohesive_change_override_max_files",
         "ruff_max_complexity",
         "interrogate_fail_under",
     )
@@ -188,6 +192,10 @@ class MaintainerConfig:
     change_block_files: int = 20
     source_without_test_change_error_profiles: tuple[str, ...] = ()
     allow_source_without_test_change: bool = False
+    cohesive_change_override_enabled: bool = False
+    cohesive_change_override_paths: tuple[str, ...] = ()
+    cohesive_change_override_max_lines: int = 2_000
+    cohesive_change_override_max_files: int = 40
     suppression_max_new: int = 3
     folder_file_warn: int = 20
     folder_file_block: int = 40

@@ -199,6 +199,13 @@ def render_guidance(config: MaintainerConfig) -> str:
             "- Change budget blocks: "
             f"`{config.change_block_lines}` lines or `{config.change_block_files}` files"
         ),
+        (
+            "- Cohesive-change override: "
+            f"{enabled_word(config.cohesive_change_override_enabled)}; "
+            f"allowlist {format_inline_paths(config.cohesive_change_override_paths)}; "
+            f"max `{config.cohesive_change_override_max_lines}` lines / "
+            f"`{config.cohesive_change_override_max_files}` files"
+        ),
         f"- New suppression budget: `{config.suppression_max_new}`",
         f"- Ruff McCabe complexity: `{config.ruff_max_complexity}`",
         (

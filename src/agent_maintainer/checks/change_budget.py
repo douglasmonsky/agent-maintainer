@@ -14,6 +14,7 @@ import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass, replace
 
+from agent_maintainer.checks import cohesive_override
 from agent_maintainer.core.config import MaintainerConfig, load_config, path_matches_roots
 
 NUMSTAT_FIELD_COUNT = 3
@@ -347,6 +348,13 @@ def main(argv: list[str]) -> int:
 
     py_source_changes, py_test_changes = changed_python_files(changes, config)
     failures, warnings = budget_messages(args, config, py_source_changes, py_test_changes)
+    if failures:
+        override_decision = cohesive_override.evaluate_override(config, py_source_changes)
+        if override_decision.allowed:
+            failures = []
+            warnings.extend(override_decision.warnings)
+        elif override_decision.requested:
+            failures.extend(override_decision.failures)
 
     if failures:
         print_failure_report(failures, warnings)

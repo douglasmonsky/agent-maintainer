@@ -213,6 +213,39 @@ def test_change_budget_main_reports_failures(
     assert "Change budget failed" in capsys.readouterr().out
 
 
+def test_change_budget_main_reports_requested_override_failures(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Requested override failures are reported with hard budget failures."""
+
+    monkeypatch.delenv("GITHUB_EVENT_NAME", raising=False)
+    monkeypatch.delenv("GITHUB_EVENT_PATH", raising=False)
+    monkeypatch.setenv("AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_REQUESTED", "true")
+    monkeypatch.setattr(
+        check_change_budget,
+        "run_git_numstat",
+        lambda base_ref, staged=False: [
+            check_change_budget.FileChange("src/a.py", 4, 0),
+        ],
+    )
+    monkeypatch.setattr(
+        check_change_budget,
+        "load_config",
+        lambda: MaintainerConfig(
+            source_roots=("src",),
+            test_roots=("tests",),
+            change_warn_lines=1,
+            change_block_lines=2,
+        ),
+    )
+
+    assert check_change_budget.main([]) == 1
+    output = capsys.readouterr().out
+    assert "Change budget failed" in output
+    assert "Cohesive-change overrides are disabled" in output
+
+
 def test_change_budget_can_allow_source_changes_without_test_changes() -> None:
     args = check_change_budget.parse_args(["--allow-source-without-test-change"])
     config = MaintainerConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)

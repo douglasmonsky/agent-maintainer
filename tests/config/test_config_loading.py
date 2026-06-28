@@ -20,6 +20,10 @@ STRICT_COMPLEXITY = 8
 OVERRIDE_COMPLEXITY = 9
 CONFIG_INTERROGATE_THRESHOLD = 31
 ENV_INTERROGATE_THRESHOLD = 33
+CONFIG_OVERRIDE_MAX_LINES = 1_234
+CONFIG_OVERRIDE_MAX_FILES = 23
+ENV_OVERRIDE_MAX_LINES = 2_345
+ENV_OVERRIDE_MAX_FILES = 24
 
 
 def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
@@ -66,10 +70,14 @@ enable_taplo = true
 taplo_paths = ["pyproject.toml"]
 enable_check_jsonschema = true
 check_jsonschema_args = [
-    "--builtin-schema",
-    "vendor.github-workflows",
-    ".github/workflows/verify.yml",
+  "--builtin-schema",
+  "vendor.github-workflows",
+  ".github/workflows/verify.yml",
 ]
+cohesive_change_override_enabled = true
+cohesive_change_override_paths = ["src/**", ".codex/hooks/**"]
+cohesive_change_override_max_lines = 1234
+cohesive_change_override_max_files = 23
 coverage_fail_under = 91
 file_length_baseline = ".agent-maintainer/baseline.json"
 architecture_tool = "tach"
@@ -124,6 +132,10 @@ log_dir = ".custom-verify-logs"
         "vendor.github-workflows",
         ".github/workflows/verify.yml",
     )
+    assert loaded.cohesive_change_override_enabled is True
+    assert loaded.cohesive_change_override_paths == ("src/**", ".codex/hooks/**")
+    assert loaded.cohesive_change_override_max_lines == CONFIG_OVERRIDE_MAX_LINES
+    assert loaded.cohesive_change_override_max_files == CONFIG_OVERRIDE_MAX_FILES
     assert loaded.coverage_fail_under == CONFIG_COVERAGE_THRESHOLD
     assert loaded.file_length_baseline == ".agent-maintainer/baseline.json"
     assert loaded.architecture_tool == "tach"
@@ -231,6 +243,14 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
             "AGENT_MAINTAINER_CHECK_JSONSCHEMA_ARGS": (
                 "--builtin-schema,vendor.github-workflows,.github/workflows/verify.yml"
             ),
+            "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_ENABLED": "true",
+            "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_PATHS": "src/**,.codex/hooks/**",
+            "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_LINES": str(
+                ENV_OVERRIDE_MAX_LINES,
+            ),
+            "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_FILES": str(
+                ENV_OVERRIDE_MAX_FILES,
+            ),
         },
     )
     monkeypatch.setenv(
@@ -285,6 +305,10 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
         "vendor.github-workflows",
         ".github/workflows/verify.yml",
     )
+    assert loaded.cohesive_change_override_enabled is True
+    assert loaded.cohesive_change_override_paths == ("src/**", ".codex/hooks/**")
+    assert loaded.cohesive_change_override_max_lines == ENV_OVERRIDE_MAX_LINES
+    assert loaded.cohesive_change_override_max_files == ENV_OVERRIDE_MAX_FILES
     assert loaded.file_length_baseline == ".agent-maintainer/env-baseline.json"
     assert loaded.diagnostic_artifacts_enabled is False
     assert loaded.diagnostic_artifacts_dir == ".env-verify-logs"
