@@ -250,6 +250,7 @@ PYTHONPATH=src python3 -m agent_maintainer bootstrap
 
 - [MIT License](LICENSE)
 - [Changelog](CHANGELOG.md)
+- [Roadmap](docs/ROADMAP.md)
 - [Tool map](docs/tool-map.md)
 - [First run walkthrough](docs/onboarding-first-run.md)
 - [Fresh-strict mode](docs/fresh-strict.md)
