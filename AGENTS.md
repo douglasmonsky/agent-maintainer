@@ -9,7 +9,7 @@ with `python3 -m agent_maintainer guidance`.
 
 ## Verification workflow
 
-Trusted Codex hooks normally run fast checks after edits and the precommit
+Trusted agent hooks normally run fast checks after edits and the precommit
 profile before completion. If those hooks are unavailable, were bypassed, or
 need a failure reproduced manually, run:
 

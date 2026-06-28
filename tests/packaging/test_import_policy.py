@@ -22,7 +22,7 @@ FORBIDDEN_IMPORT_FRAGMENTS = (
 def test_package_code_does_not_import_legacy_script_modules() -> None:
     """Keep implementation imports package-first after the src migration."""
 
-    roots = (Path("src/agent_maintainer"), Path(".codex/hooks"))
+    roots = (Path("src/agent_maintainer"), Path(".codex/hooks"), Path(".claude/hooks"))
     offenders: list[str] = []
     for root in roots:
         for path in root.rglob("*.py"):

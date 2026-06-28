@@ -16,6 +16,14 @@ def enable_codex_hooks(repo_root: Path) -> None:
     config_path.write_text("[features]\nhooks = true\n", encoding="utf-8")
 
 
+def enable_claude_code_hooks(repo_root: Path) -> None:
+    settings_path = repo_root / ".claude" / "settings.json"
+    settings_path.parent.mkdir(parents=True)
+    settings_path.write_text(
+        '{"hooks": {"Stop": "agent-maintainer hooks run"}}\n', encoding="utf-8"
+    )
+
+
 def write_hook_event(
     log_dir: Path, *, status: str = "passed", timestamp: str = "2026-06-25T10:00:00Z"
 ) -> None:
@@ -51,6 +59,15 @@ def test_hook_audit_warns_when_enabled_without_records(tmp_path: Path) -> None:
 
     assert result.status == maintainer_doctor_hook_audit.WARNING
     assert ".custom-logs/hooks.jsonl" in result.message
+
+
+def test_hook_audit_warns_when_claude_hooks_enabled_without_records(tmp_path: Path) -> None:
+    enable_claude_code_hooks(tmp_path)
+
+    result = maintainer_doctor_hook_audit.check_hook_audit(tmp_path)
+
+    assert result.status == maintainer_doctor_hook_audit.WARNING
+    assert ".verify-logs/hooks.jsonl" in result.message
 
 
 def test_hook_audit_warns_when_latest_event_is_invalid(tmp_path: Path) -> None:

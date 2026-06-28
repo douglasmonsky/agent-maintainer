@@ -73,6 +73,7 @@ def run_doctor(repo_root: Path, config: maintainer_config.MaintainerConfig) -> l
         maintainer_doctor_policy.check_pyright_config(repo_root, config),
         check_pre_commit(repo_root),
         check_codex_hooks(repo_root),
+        check_claude_code_hooks(repo_root),
         maintainer_doctor_hook_audit.check_hook_audit(repo_root, config),
         maintainer_doctor_policy.check_pip_audit_safety(config),
         maintainer_doctor_policy.check_secret_scanning_policy(config),
@@ -175,6 +176,49 @@ def check_codex_hooks(repo_root: Path) -> DoctorResult:
     return DoctorResult("codex-hooks", OK, ".codex/config.toml enables hooks.")
 
 
+def check_claude_code_hooks(repo_root: Path) -> DoctorResult:
+    """Report repo-local Claude Code hooks configured."""
+
+    settings_path = repo_root / ".claude" / "settings.json"
+    hook_paths = (
+        repo_root / ".claude" / "hooks" / "post_tool_use.py",
+        repo_root / ".claude" / "hooks" / "stop.py",
+        repo_root / ".claude" / "hooks" / "subagent_stop.py",
+    )
+    if not settings_path.exists():
+        return DoctorResult(
+            "claude-code-hooks",
+            WARNING,
+            ".claude/settings.json absent.",
+            state=maintainer_doctor_models.MISSING,
+            hint="Run python3 -m agent_maintainer hooks install claude-code.",
+        )
+    missing = [path.relative_to(repo_root).as_posix() for path in hook_paths if not path.exists()]
+    if missing:
+        missing_files = ", ".join(missing)
+        return DoctorResult(
+            "claude-code-hooks",
+            WARNING,
+            f"Claude Code hook scripts missing: {missing_files}.",
+            state=maintainer_doctor_models.MISSING,
+            hint="Run python3 -m agent_maintainer hooks install claude-code.",
+        )
+    text = settings_path.read_text(encoding="utf-8")
+    if "agent_maintainer" not in text and "agent-maintainer hooks run" not in text:
+        return DoctorResult(
+            "claude-code-hooks",
+            WARNING,
+            ".claude/settings.json does not reference Agent Maintainer hooks.",
+            state=maintainer_doctor_models.DISABLED,
+            hint="Run python3 -m agent_maintainer hooks install claude-code.",
+        )
+    return DoctorResult(
+        "claude-code-hooks",
+        OK,
+        ".claude/settings.json enables Agent Maintainer hooks.",
+    )
+
+
 def check_canonical_commands(repo_root: Path) -> DoctorResult:
     """Check that CI, pre-commit, and hooks use the module entrypoint."""
 
@@ -183,6 +227,10 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
         ".pre-commit-config.yaml": "python3 -m agent_maintainer verify --profile precommit",
         ".codex/hooks/post_edit_fast_gate.py": "agent_maintainer",
         ".codex/hooks/stop_full_verify.py": "agent_maintainer",
+        ".claude/settings.json": "agent_maintainer",
+        ".claude/hooks/post_tool_use.py": "agent_maintainer",
+        ".claude/hooks/stop.py": "agent_maintainer",
+        ".claude/hooks/subagent_stop.py": "agent_maintainer",
     }
     missing = [path for path in expectations if not (repo_root / path).exists()]
     stale = [
@@ -213,7 +261,7 @@ def check_canonical_commands(repo_root: Path) -> DoctorResult:
     return DoctorResult(
         "canonical-commands",
         OK,
-        "CI, pre-commit, and Codex hooks use module entrypoint.",
+        "CI, pre-commit, and agent hooks use module entrypoint.",
     )
 
 

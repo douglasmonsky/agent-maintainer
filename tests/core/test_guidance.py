@@ -16,10 +16,10 @@ def strict_config() -> MaintainerConfig:
     return replace(
         apply_mode(MaintainerConfig(), "fresh-strict"),
         architecture_tool="tach",
-        source_roots=("src/agent_maintainer", "src/archguard", ".codex/hooks"),
+        source_roots=("src/agent_maintainer", "src/archguard", ".codex/hooks", ".claude/hooks"),
         test_roots=("tests",),
-        package_paths=("src/agent_maintainer", "src/archguard", ".codex/hooks"),
-        coverage_source=("src/agent_maintainer", "src/archguard", ".codex/hooks"),
+        package_paths=("src/agent_maintainer", "src/archguard", ".codex/hooks", ".claude/hooks"),
+        coverage_source=("src/agent_maintainer", "src/archguard", ".codex/hooks", ".claude/hooks"),
         enable_pip_audit=True,
         pip_audit_args=("-r", "config/dev-lock.txt"),
         enable_mutmut=True,
@@ -54,7 +54,9 @@ def test_render_guidance_includes_active_configuration() -> None:
 
     assert "Generated Agent Maintainer Guidance" in text
     assert "Mode: `fresh-strict`" in text
-    assert "Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`" in text
+    assert (
+        "Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`"
+    ) in text
     assert "Test roots: `tests`" in text
     assert "Architecture backend: `tach`" in text
     assert "## Architecture Policy Changes" in text

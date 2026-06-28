@@ -221,3 +221,24 @@ def test_codex_hooks_warn_and_pass(tmp_path: Path) -> None:
     config_path.write_text("[features]\nhooks = true\n", encoding="utf-8")
 
     assert maintainer_doctor.check_codex_hooks(tmp_path).status == maintainer_doctor.OK
+
+
+def test_claude_code_hooks_warn_and_pass(tmp_path: Path) -> None:
+    assert maintainer_doctor.check_claude_code_hooks(tmp_path).status == maintainer_doctor.WARNING
+
+    settings_path = tmp_path / ".claude" / "settings.json"
+    settings_path.parent.mkdir()
+    settings_path.write_text('{"hooks": {}}\n', encoding="utf-8")
+    assert maintainer_doctor.check_claude_code_hooks(tmp_path).status == maintainer_doctor.WARNING
+
+    hook_dir = tmp_path / ".claude" / "hooks"
+    hook_dir.mkdir()
+    for name in ("post_tool_use.py", "stop.py", "subagent_stop.py"):
+        (hook_dir / name).write_text("agent_maintainer\n", encoding="utf-8")
+    assert maintainer_doctor.check_claude_code_hooks(tmp_path).status == maintainer_doctor.WARNING
+
+    settings_path.write_text(
+        '{"hooks": {"Stop": [{"command": "agent_maintainer"}]}}\n',
+        encoding="utf-8",
+    )
+    assert maintainer_doctor.check_claude_code_hooks(tmp_path).status == maintainer_doctor.OK
