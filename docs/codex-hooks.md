@@ -1,5 +1,8 @@
 # Codex Hooks
 
+For the full managed hook installer covering Codex and Claude Code, see
+[Agent client hooks](agent-client-hooks.md).
+
 The kit includes repo-local Codex hooks under `.codex/`:
 
 | Hook | Purpose |
@@ -7,13 +10,14 @@ The kit includes repo-local Codex hooks under `.codex/`:
 | `PostToolUse` | Runs the fast profile after file edits and feeds failures back into the turn. |
 | `Stop` | Runs the precommit profile before the agent finishes. |
 
-Install local hooks with:
+Install Codex hooks with:
 
 ```bash
-python3 -m agent_maintainer install
+python3 -m agent_maintainer hooks install codex
 ```
 
-This installs the pre-commit hook when available and reports whether `.codex/config.toml` exists. It does not approve Codex hooks for you.
+`python3 -m agent_maintainer install` also installs managed agent-client hooks
+after local pre-commit setup. It does not approve Codex hooks for you.
 
 ## Trust Review
 

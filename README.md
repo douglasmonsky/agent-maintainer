@@ -85,7 +85,7 @@ python3 -m agent_maintainer verify --profile precommit
 | Track | Use When | Writes |
 |---|---|---|
 | `core` | You want the minimum useful maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |
-| `agent` | Coding agents actively edit the repo. | Core files plus `AGENTS.md` and Codex hook files. |
+| `agent` | Coding agents actively edit the repo. | Core files plus `AGENTS.md`, Codex hooks, and Claude Code hooks. |
 | `hardening` | You want docs/config hygiene and security-adjacent surfaces. | Agent files plus Node-backed tooling metadata. |
 
 Preview writes before changing a repo:
@@ -109,6 +109,9 @@ python3 -m agent_maintainer verify --profile full
 python3 -m agent_maintainer verify --profile ci
 python3 -m agent_maintainer verify --profile security
 python3 -m agent_maintainer verify --profile manual
+python3 -m agent_maintainer hooks status all
+python3 -m agent_maintainer hooks install all --dry-run
+python3 -m agent_maintainer hooks install claude-code --scope user
 python3 -m archguard tach-config --strict-root-module
 python3 -m archguard decision-check --base-ref HEAD
 ```
@@ -247,7 +250,7 @@ PYTHONPATH=src python3 -m agent_maintainer bootstrap
 - [First run walkthrough](docs/onboarding-first-run.md)
 - [Fresh-strict mode](docs/fresh-strict.md)
 - [Legacy-ratchet mode](docs/legacy-ratchet.md)
-- [Codex hooks](docs/codex-hooks.md)
+- [Agent client hooks](docs/agent-client-hooks.md)
 - [Release checklist](docs/release-checklist.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Structure cohesion](docs/structure-cohesion.md)
