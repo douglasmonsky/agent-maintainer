@@ -1,23 +1,24 @@
 [features]
-hooks = true
 
 # Fast feedback immediately after Codex writes files. This is intentionally cheap:
 # file length, change budget, suppression budget, and Ruff.
+hooks = true
+
+# >>> agent-maintainer:codex-hooks >>>
 [[hooks.PostToolUse]]
-matcher = "apply_patch|Edit|Write"
+matcher = "apply_patch|Edit|Write|MultiEdit"
 
 [[hooks.PostToolUse.hooks]]
 type = "command"
-command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/post_edit_fast_gate.py"'
+command = "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/post_edit_fast_gate.py\""
 timeout = 60
 statusMessage = "Running fast Agent Maintainer checks"
 
-# Final gate. If verification fails, Codex is continued with the failure report
-# instead of finishing with broken work.
 [[hooks.Stop]]
 
 [[hooks.Stop.hooks]]
 type = "command"
-command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/stop_full_verify.py"'
+command = "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/stop_full_verify.py\""
 timeout = 600
-statusMessage = "Running final verification"
+statusMessage = "Running final Agent Maintainer verification"
+# <<< agent-maintainer:codex-hooks <<<

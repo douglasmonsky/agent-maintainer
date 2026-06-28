@@ -31,10 +31,10 @@ configuration first, then regenerate it.
 ## Active Configuration
 
 - Mode: `fresh-strict`
-- Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`
+- Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`
 - Test roots: `tests`
-- Package paths: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`
-- Coverage source: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`
+- Package paths: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`
+- Coverage source: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`
 - Architecture backend: `tach`
 - Tests required: `true`
 - Diagnostic artifacts: `enabled` at `.verify-logs`
@@ -84,7 +84,7 @@ configuration first, then regenerate it.
 
 - pip-audit: enabled with `-r config/dev-lock.txt`
 - Mutmut: enabled with `run`
-- Semgrep: enabled with `scan --config semgrep.yml --error --metrics=off src/agent_maintainer src/archguard .codex/hooks`
+- Semgrep: enabled with `scan --config semgrep.yml --error --metrics=off src/agent_maintainer src/archguard .codex/hooks .claude/hooks`
 - OSV Scanner: `disabled`
 - Trivy: `disabled`
 - Python SBOM: enabled with `requirements config/dev-lock.txt --output-reproducible --of JSON`

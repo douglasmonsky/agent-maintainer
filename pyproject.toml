@@ -144,17 +144,38 @@ where = ["src"]
 [tool.agent_maintainer]
 mode = "fresh-strict"
 architecture_tool = "tach"
-source_roots = ["src/agent_maintainer", "src/archguard", ".codex/hooks"]
+source_roots = [
+  "src/agent_maintainer",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
 test_roots = ["tests"]
-package_paths = ["src/agent_maintainer", "src/archguard", ".codex/hooks"]
-coverage_source = ["src/agent_maintainer", "src/archguard", ".codex/hooks"]
+package_paths = [
+  "src/agent_maintainer",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
+coverage_source = [
+  "src/agent_maintainer",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
 file_length_paths = [
   "src/agent_maintainer",
   "src/archguard",
   ".codex/hooks",
+  ".claude/hooks",
   "tests",
 ]
-structure_paths = ["src/agent_maintainer", "src/archguard", ".codex/hooks"]
+structure_paths = [
+  "src/agent_maintainer",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
 structure_ignore_paths = [
   "tests/**",
   "migrations/**",
@@ -170,6 +191,7 @@ vulture_paths = [
   "src/agent_maintainer",
   "src/archguard",
   ".codex/hooks",
+  ".claude/hooks",
   "tests",
 ]
 require_tests = true
@@ -195,6 +217,7 @@ semgrep_args = [
   "src/agent_maintainer",
   "src/archguard",
   ".codex/hooks",
+  ".claude/hooks",
 ]
 semgrep_profiles = ["manual"]
 enable_sbom = true
