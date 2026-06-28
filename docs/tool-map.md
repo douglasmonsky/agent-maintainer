@@ -2,7 +2,7 @@
 
 ## Everyday gates
 
-`python3 -m agent_maintainer` is the canonical entrypoint. Editable installs also provide `agent-maintainer` for interactive use, but committed hooks and CI should prefer the module command. Use `python3 -m agent_maintainer init --track core` for minimum package-first adoption, `python3 -m agent_maintainer init --track agent` when Codex or other agents actively edit the repo, and `python3 -m agent_maintainer init --track hardening` when optional docs/config hygiene files should also be generated. Use `python3 -m agent_maintainer bootstrap` for one-command local setup, `python3 -m agent_maintainer doctor` for setup health, `python3 -m agent_maintainer guidance` for generated agent-facing guidance, `python3 -m agent_maintainer verify --profile precommit` for local completion checks, `python3 -m agent_maintainer verify --profile full` for deeper review, `python3 -m agent_maintainer verify --profile manual` for slow opt-in checks, and `python3 -m agent_maintainer install` to install local hooks without reinstalling dependencies.
+`python3 -m agent_maintainer` is the canonical entrypoint. Editable installs also provide `agent-maintainer` for interactive use, but committed hooks and CI should prefer the module command. Use `python3 -m agent_maintainer init --track core` for minimum package-first adoption, `python3 -m agent_maintainer init --track agent` when Codex, Claude Code, or other agents actively edit the repo, and `python3 -m agent_maintainer init --track hardening` when optional docs/config hygiene files should also be generated. Use `python3 -m agent_maintainer bootstrap` for one-command local setup, `python3 -m agent_maintainer doctor` for setup health, `python3 -m agent_maintainer guidance` for generated agent-facing guidance, `python3 -m agent_maintainer verify --profile precommit` for local completion checks, `python3 -m agent_maintainer verify --profile full` for deeper review, `python3 -m agent_maintainer verify --profile manual` for slow opt-in checks, and `python3 -m agent_maintainer install` to install local hooks without reinstalling dependencies. Use `python3 -m agent_maintainer hooks install all` to install managed agent-client hooks directly.
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state.
 
@@ -54,8 +54,8 @@ Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable run
 metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails. The
 terminal output stays compact; agents should use these artifacts for command,
 exit-code, threshold, log-path, and rerun context.
-Codex hooks append local execution evidence to `.verify-logs/hooks.jsonl`, and
-`doctor` reports the latest audited hook status.
+Managed agent-client hooks append local execution evidence to
+`.verify-logs/hooks.jsonl`, and `doctor` reports latest audited hook status.
 
 ## Maintainability gates
 
@@ -182,5 +182,5 @@ Missing required roots fail in `precommit`, `full`, and `ci`; optional integrati
 is present and newer than the latest raw log, manifest-referenced logs and
 artifacts still exist, `LAST_FAILURE.md` matches the pass/fail state of the
 latest manifest, and the latest manifest does not reference disabled or removed
-checks. It also checks the Codex hook audit trail when repo-local hooks are
+checks. It also checks the agent hook audit trail when repo-local hooks are
 enabled.
