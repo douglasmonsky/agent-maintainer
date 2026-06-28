@@ -30,7 +30,7 @@ def test_core_init_writes_minimum_adoption_files(tmp_path: Path) -> None:
     dependencies = (tmp_path / "config" / "dev-dependencies.txt").read_text(encoding="utf-8")
     workflow = (tmp_path / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
     assert "[tool.agent_maintainer]" in config
-    assert 'file_length_paths = ["src", "tests", ".codex/hooks"]' in config
+    assert 'file_length_paths = ["src", "tests", ".codex/hooks", ".claude/hooks"]' in config
     assert "agent-maintainer[core]" in dependencies
     assert 'python-version: "3.11"' in workflow
     assert 'BASE_REF="origin/${GITHUB_BASE_REF:-main}"' in workflow
@@ -55,20 +55,30 @@ def test_starter_config_template_matches_initializer() -> None:
 
 
 def test_agent_init_includes_codex_hooks_and_agent_guidance(tmp_path: Path) -> None:
-    """Agent track writes AGENTS guidance and syntactically valid Codex hooks."""
+    """Agent track writes AGENTS guidance and syntactically valid agent hooks."""
 
     status = initializer.main(["--target", str(tmp_path), "--track", "agent"])
 
     assert status == 0
     assert (tmp_path / "AGENTS.md").exists()
     assert (tmp_path / ".codex" / "config.toml").exists()
+    assert (tmp_path / ".claude" / "settings.json").exists()
 
     post_hook = tmp_path / ".codex" / "hooks" / "post_edit_fast_gate.py"
     stop_hook = tmp_path / ".codex" / "hooks" / "stop_full_verify.py"
+    claude_post_hook = tmp_path / ".claude" / "hooks" / "post_tool_use.py"
+    claude_stop_hook = tmp_path / ".claude" / "hooks" / "stop.py"
+    claude_subagent_hook = tmp_path / ".claude" / "hooks" / "subagent_stop.py"
     assert post_hook.exists()
     assert stop_hook.exists()
+    assert claude_post_hook.exists()
+    assert claude_stop_hook.exists()
+    assert claude_subagent_hook.exists()
     py_compile.compile(str(post_hook), doraise=True)
     py_compile.compile(str(stop_hook), doraise=True)
+    py_compile.compile(str(claude_post_hook), doraise=True)
+    py_compile.compile(str(claude_stop_hook), doraise=True)
+    py_compile.compile(str(claude_subagent_hook), doraise=True)
 
     agents = (tmp_path / "AGENTS.md").read_text(encoding="utf-8")
     assert "AGENTS.agent-maintainer.md" in agents
@@ -85,6 +95,7 @@ def test_hardening_init_includes_package_metadata(tmp_path: Path) -> None:
     assert (tmp_path / STARTER_CONFIG).exists()
     assert (tmp_path / "package.json").exists()
     assert (tmp_path / ".codex" / "hooks" / "stop_full_verify.py").exists()
+    assert (tmp_path / ".claude" / "hooks" / "stop.py").exists()
 
 
 def test_initializer_refuses_overwrite_without_force(tmp_path: Path) -> None:

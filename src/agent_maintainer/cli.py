@@ -10,6 +10,7 @@ from agent_maintainer.core.guidance import main as guidance_main
 from agent_maintainer.core.initializer import main as init_main
 from agent_maintainer.core.runtime import disable_bytecode_writes
 from agent_maintainer.doctor.cli import main as doctor_main
+from agent_maintainer.hooks.cli import main as hooks_main
 from agent_maintainer.verify.quiet import main as verify_main
 
 disable_bytecode_writes()
@@ -20,6 +21,7 @@ USAGE = """Usage:
 python -m agent_maintainer bootstrap
 python -m agent_maintainer doctor [doctor options]
 python -m agent_maintainer guidance [guidance options]
+python -m agent_maintainer hooks [hooks options]
 python -m agent_maintainer init [init options]
 python -m agent_maintainer install
 python -m agent_maintainer verify [verify options]
@@ -29,6 +31,8 @@ python -m agent_maintainer bootstrap
 python -m agent_maintainer doctor --strict
 python -m agent_maintainer guidance
 python -m agent_maintainer guidance --check
+python -m agent_maintainer hooks install all
+python -m agent_maintainer hooks status
 python -m agent_maintainer init --track core
 python -m agent_maintainer install
   python -m agent_maintainer verify --profile fast
@@ -73,6 +77,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "bootstrap": bootstrap_command,
         "doctor": doctor_main,
         "guidance": guidance_main,
+        "hooks": hooks_main,
         "init": init_main,
         "install": install_command,
         "verify": verify_main,

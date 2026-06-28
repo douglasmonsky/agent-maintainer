@@ -9,6 +9,13 @@ from pathlib import Path
 
 from agent_maintainer.core.runtime import hardened_subprocess_env
 from agent_maintainer.core.tool_capabilities import bootstrap_scope_note
+from agent_maintainer.hooks.manager import (
+    ALL_CLIENTS,
+    REPO_SCOPE,
+    InstallOptions,
+    install_hooks,
+    status_hooks,
+)
 
 MACOS_HIDDEN_FILE_FLAG = 0x8000
 
@@ -33,8 +40,17 @@ def install() -> int:
 
     repo_root = project_root()
     pre_commit_status = install_pre_commit(repo_root)
-    report_codex_hooks(repo_root)
-    return pre_commit_status
+    hooks_status = install_hooks(
+        InstallOptions(
+            target=repo_root,
+            client=ALL_CLIENTS,
+            scope=REPO_SCOPE,
+        )
+    )
+    report_agent_hooks(repo_root)
+    if pre_commit_status != 0:
+        return pre_commit_status
+    return hooks_status
 
 
 def project_root() -> Path:
@@ -261,9 +277,13 @@ def find_pre_commit(repo_root: Path) -> str | None:
     return shutil.which("pre-commit")
 
 
+def report_agent_hooks(repo_root: Path) -> None:
+    """Print whether repo-local agent hook configuration exists."""
+
+    status_hooks(repo_root, ALL_CLIENTS, REPO_SCOPE)
+
+
 def report_codex_hooks(repo_root: Path) -> None:
     """Print whether repo-local Codex hook configuration exists."""
 
-    config_path = repo_root / ".codex" / "config.toml"
-    if config_path.exists():
-        print("Codex hooks configured in .codex/config.toml.")
+    report_agent_hooks(repo_root)
