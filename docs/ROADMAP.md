@@ -23,7 +23,7 @@ Current external release gate:
 
 ## Implementation Phases
 
-- [ ] Phase 1: ADR for Context-Safe Legacy Ratchets
+- [x] Phase 1: ADR for Context-Safe Legacy Ratchets
 - [ ] Phase 2: ADR for Test Intelligence Ladder
 - [ ] Phase 3: Public Roadmap Docs Stubs
 - [ ] Phase 4: Config Scaffolding
