@@ -8,6 +8,7 @@
 .tox/
 .venv/
 .verify-logs/
+.claude/settings.local.json
 __pycache__/
 *.pyc
 node_modules/

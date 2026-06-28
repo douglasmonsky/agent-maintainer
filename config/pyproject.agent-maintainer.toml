@@ -12,8 +12,8 @@ source_roots = ["src"]
 test_roots = ["tests"]
 package_paths = ["src"]
 coverage_source = ["src"]
-file_length_paths = ["src", "tests", ".codex/hooks"]
-structure_paths = ["src", ".codex/hooks"]
+file_length_paths = ["src", "tests", ".codex/hooks", ".claude/hooks"]
+structure_paths = ["src", ".codex/hooks", ".claude/hooks"]
 structure_ignore_paths = [
   "tests/**",
   "migrations/**",
@@ -22,7 +22,7 @@ structure_ignore_paths = [
   "venv/**",
   "**/__pycache__/**",
 ]
-vulture_paths = ["src", "tests", ".codex/hooks"]
+vulture_paths = ["src", "tests", ".codex/hooks", ".claude/hooks"]
 
 # Core policy. This kit default is intentionally lower than this repo's
 # self-enforced 90 percent total coverage setting.
