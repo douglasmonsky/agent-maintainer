@@ -30,6 +30,8 @@ discipline, not the normal local edit loop.
 - [ ] `pyproject.toml` has the intended version.
 - [ ] `CHANGELOG.md` has an entry for the version being published.
 - [ ] `config/dev-dependencies.txt` and `config/dev-lock.txt` are in sync.
+- [ ] If files under `docs/assets/graphics/` changed, run `just render-graphics`
+  and `just check-graphics`.
 - [ ] Release tag is annotated:
   `git tag -a vX.Y.Z -m "Agent Maintainer X.Y.Z"`.
 - [ ] No generated metadata such as `dist/`, `build/`, `*.egg-info`, or

@@ -1,5 +1,9 @@
 # Tool map
 
+<p align="center">
+  <img src="assets/graphics/standard-runs-at-a-glance.png" alt="Agent Maintainer standard runs comparison showing typical fast full verification checks plus optional hardening profiles." width="900">
+</p>
+
 ## Everyday gates
 
 `python3 -m agent_maintainer` is the canonical entrypoint. Editable installs also provide `agent-maintainer` for interactive use, but committed hooks and CI should prefer the module command. Use `python3 -m agent_maintainer init --track core` for minimum package-first adoption, `python3 -m agent_maintainer init --track agent` when Codex, Claude Code, or other agents actively edit the repo, and `python3 -m agent_maintainer init --track hardening` when optional docs/config hygiene files should also be generated. Use `python3 -m agent_maintainer bootstrap` for one-command local setup, `python3 -m agent_maintainer doctor` for setup health, `python3 -m agent_maintainer guidance` for generated agent-facing guidance, `python3 -m agent_maintainer verify --profile precommit` for local completion checks, `python3 -m agent_maintainer verify --profile full` for deeper review, `python3 -m agent_maintainer verify --profile manual` for slow opt-in checks, and `python3 -m agent_maintainer install` to install local hooks without reinstalling dependencies. Use `python3 -m agent_maintainer hooks install all` to install managed agent-client hooks directly.
