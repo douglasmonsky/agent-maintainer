@@ -2,6 +2,42 @@
 
 ## Unreleased
 
+## 0.1.0b3 - 2026-06-28
+
+Third beta release of Agent Maintainer.
+
+### Added In 0.1.0b3
+
+- Managed agent-client hook installer, status checks, and runtime support for
+  Codex and Claude Code.
+- Repo-local Claude Code hook templates and generated hook syntax coverage.
+- Agent hook diagnostics in `doctor` and generated agent guidance.
+- Agent-client hook documentation covering repo-local and user-level installs.
+- Editable README graphics sources, rendered PNGs, and graphics freshness
+  checks.
+- Roadmap item for systematic cohesive-change override support with required
+  PR explanation and verifier checks.
+
+### Changed In 0.1.0b3
+
+- `install`, `bootstrap`, and `init --track agent` now wire managed agent hooks
+  through the shared hook installer.
+- Starter config and self-dogfooding paths include `.claude/hooks`.
+- GitHub artifact upload/download actions moved to the Node 24 action majors.
+
+### Fixed In 0.1.0b3
+
+- Doctor now recognizes generated Claude Code settings that reference
+  `.claude/hooks` wrapper files.
+
+### Beta Notes For 0.1.0b3
+
+- Known limitation: Semgrep is excluded from `manual` and `all` extras on
+  Python 3.13+ while upstream dependency resolution remains unstable there.
+- Managed user-level hooks are repo opt-in; outside repositories with
+  `[tool.agent_maintainer]`, they exit successfully without running
+  verification.
+
 ## 0.1.0b2 - 2026-06-27
 
 Second beta release of Agent Maintainer.

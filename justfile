@@ -42,7 +42,7 @@ render-runs-graphic:
 	.venv/bin/python docs/assets/graphics/render_graphics.py --target standard-runs
 
 release-check:
-	AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 python3 -m pytest -m release tests/release -q
+    PYTHON="$([ -x .venv/bin/python ] && printf '%s' .venv/bin/python || printf '%s' python3)"; AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 "$PYTHON" -m pytest -m release tests/release -q
 
 # Example for a flat package layout:
 verify-flat PACKAGE:
