@@ -19,6 +19,12 @@ assigned to the existing entrypoint, orchestration, and runtime layers.
 Template rendering belongs in orchestration because it composes client-specific
 config files from shared runtime constants without executing verification.
 
+The hook manager belongs in orchestration for the same reason: it plans,
+merges, and writes managed hook files while delegating hook execution to the
+shared runtime.
+Merge helpers belong beside the manager so config-format parsing stays out of
+the hook runtime and wrapper entrypoints.
+
 ## Rationale
 
 This keeps client-specific setup in adapters and keeps maintenance behavior in
