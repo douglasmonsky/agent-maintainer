@@ -312,7 +312,11 @@ known_first_party = [
   "legacy_ratchet_example",
 ]
 requirements_files = ["requirements.txt"]
-requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
+requirements_files_dev = [
+  "config/dev-dependencies.txt",
+  "config/dev-lock.txt",
+  "docs/assets/graphics/requirements.txt",
+]
 
 [tool.deptry.per_rule_ignores]
 DEP002 = [
@@ -346,5 +350,7 @@ DEP002 = [
   "yamllint",
   "zizmor",
 ]
-DEP003 = ["tomli"]
+# Playwright is declared in docs/assets/graphics/requirements.txt and is
+# intentionally scoped to optional documentation rendering.
+DEP003 = ["playwright", "tomli"]
 DEP004 = ["tomli"]

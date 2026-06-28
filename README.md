@@ -11,6 +11,10 @@ repositories.
 > Agent Maintainer is in beta. The core workflow is usable, but starter files
 > and defaults may change as it is tested across more Python repository layouts.
 
+<p align="center">
+  <img src="docs/assets/graphics/agent-maintainer-overview.png" alt="Agent Maintainer workflow: an agent edits code, hooks run checks, rules and budgets are enforced, diagnostics guide repair, and CI verifies final state." width="900">
+</p>
+
 Agent Maintainer helps Python repositories stay maintainable under AI-assisted
 development. It combines low-noise verification, change budgets, suppression
 controls, coverage gates, type checks, architecture checks, security checks, and

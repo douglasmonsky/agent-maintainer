@@ -27,10 +27,22 @@ verify-ci:
     python3 -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
 
 verify-manual:
-   python3 -m agent_maintainer verify --profile manual
+	python3 -m agent_maintainer verify --profile manual
+
+render-graphics:
+	.venv/bin/python docs/assets/graphics/render_graphics.py
+
+check-graphics:
+	.venv/bin/python docs/assets/graphics/render_graphics.py --check
+
+render-overview-graphic:
+	.venv/bin/python docs/assets/graphics/render_graphics.py --target overview
+
+render-runs-graphic:
+	.venv/bin/python docs/assets/graphics/render_graphics.py --target standard-runs
 
 release-check:
-    AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 python3 -m pytest -m release tests/release -q
+	AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 python3 -m pytest -m release tests/release -q
 
 # Example for a flat package layout:
 verify-flat PACKAGE:

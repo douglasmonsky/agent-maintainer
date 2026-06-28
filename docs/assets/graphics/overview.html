@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Agent Maintainer Overview</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main
+      class="artboard"
+      role="img"
+      aria-label="Agent Maintainer workflow: coding agents edit code, hooks run checks, diagnostics guide repair, and CI verifies the final state."
+    >
+      <header class="header">
+        <div class="mark" aria-hidden="true"><svg><use href="symbols.svg#shield-code"></use></svg></div>
+        <div class="title">
+          <h1>AGENT MAINTAINER</h1>
+          <p>Maintainability checks and repair-loop diagnostics for AI-assisted Python repositories.</p>
+        </div>
+        <div class="beta">BETA</div>
+      </header>
+
+      <section class="workflow card" aria-label="Agent Maintainer workflow">
+        <div class="step">
+          <div class="num">1</div>
+          <div class="ico"><svg><use href="symbols.svg#robot"></use></svg></div>
+          <strong>Agent edits<br>code</strong>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div class="ico"><svg><use href="symbols.svg#hook"></use></svg></div>
+          <strong>Hooks run<br>checks</strong>
+          <div class="support-line tiny"><span>Supports:</span><strong>Codex</strong><span class="dot">·</span><strong>Claude Code</strong></div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div class="ico"><svg><use href="symbols.svg#checklist"></use></svg></div>
+          <strong>Rules and budgets<br>are enforced</strong>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <div class="ico"><svg><use href="symbols.svg#doc-search"></use></svg></div>
+          <strong>Diagnostics guide<br>repair</strong>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <div class="ico green"><svg><use href="symbols.svg#ci-check"></use></svg></div>
+          <strong>CI verifies<br>final state</strong>
+        </div>
+      </section>
+
+      <section class="overview-grid">
+        <article class="card overview-card blue">
+          <div class="section-title">
+            <div class="badge"><svg><use href="symbols.svg#diff-lines"></use></svg></div>
+            <h2>Small diffs</h2>
+          </div>
+          <div class="bullets">
+            <div class="bullet">
+              <div class="mini-icon"><svg><use href="symbols.svg#gauge"></use></svg></div>
+              <div>
+                <h3>Change budgets</h3>
+                <p>Warn or block giant, hard-to-review diffs.</p>
+              </div>
+            </div>
+            <div class="bullet">
+              <div class="mini-icon"><svg><use href="symbols.svg#file-ruler"></use></svg></div>
+              <div>
+                <h3>File and folder limits</h3>
+                <p>Catch oversized files and structure pressure early.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card overview-card green">
+          <div class="section-title">
+            <div class="badge"><svg><use href="symbols.svg#gate"></use></svg></div>
+            <h2>Quality gates</h2>
+          </div>
+          <div class="bullets">
+            <div class="bullet">
+              <div class="mini-icon"><svg><use href="symbols.svg#ruff"></use></svg></div>
+              <div>
+                <h3>Code health</h3>
+                <p>Ruff, Pyright, tests, coverage, and linting.</p>
+              </div>
+            </div>
+            <div class="bullet">
+              <div class="mini-icon"><svg><use href="symbols.svg#layers"></use></svg></div>
+              <div>
+                <h3>Architecture boundaries</h3>
+                <p>Tach or Import Linter keeps dependencies intentional.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card overview-card purple">
+          <div class="section-title">
+            <div class="badge"><svg><use href="symbols.svg#repair"></use></svg></div>
+            <h2>Repair loops</h2>
+          </div>
+          <div class="bullets compact">
+            <div class="bullet">
+              <div class="mini-icon"><svg><use href="symbols.svg#robot"></use></svg></div>
+              <div>
+                <h3>Agent support</h3>
+                <p>Works with coding agents while they edit.</p>
+                <div class="support-line"><span>Supports:</span><strong>Codex</strong><span class="dot">·</span><strong>Claude Code</strong></div>
+              </div>
+            </div>
+            <div class="bullet">
+              <div class="mini-icon"><svg><use href="symbols.svg#hook"></use></svg></div>
+              <div>
+                <h3>Hook triggers</h3>
+                <p>Post-edit and stop hooks run checks at the right time.</p>
+              </div>
+            </div>
+            <div class="bullet">
+              <div class="mini-icon"><svg><use href="symbols.svg#docs"></use></svg></div>
+              <div>
+                <h3>Agent guidance</h3>
+                <p>AGENTS.agent-maintainer.md summarizes active policy.</p>
+              </div>
+            </div>
+            <div class="bullet">
+              <div class="mini-icon"><svg><use href="symbols.svg#doc-search"></use></svg></div>
+              <div>
+                <h3>Readable diagnostics</h3>
+                <p>.verify-logs/manifest.json and LAST_FAILURE.md explain what to fix.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="chip-row">
+        <strong>Verification profiles:</strong>
+        <span class="chip">fast</span>
+        <span class="chip">precommit</span>
+        <span class="chip green">full</span>
+        <span class="chip green">ci</span>
+        <span class="chip orange">security</span>
+        <span class="chip purple">manual</span>
+      </section>
+
+      <section class="chip-row">
+        <strong>Adoption modes:</strong>
+        <span class="chip gray">custom</span>
+        <span class="chip orange">legacy-ratchet</span>
+        <span class="chip red">fresh-strict</span>
+      </section>
+    </main>
+  </body>
+</html>
