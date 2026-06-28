@@ -1,0 +1,321 @@
+"""Tests for shared agent hook runtime."""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from io import StringIO
+from pathlib import Path
+
+import pytest
+
+from agent_maintainer.hooks import audit, runtime
+
+HOOK_STATUS = 23
+
+
+def configured_repo(tmp_path: Path) -> Path:
+    """Create a minimal maintainer-configured repository."""
+
+    (tmp_path / "pyproject.toml").write_text("[tool.agent_maintainer]\n", encoding="utf-8")
+    return tmp_path
+
+
+def installed_repo(tmp_path: Path) -> Path:
+    """Create a minimal configured repository with local package entrypoint."""
+
+    configured_repo(tmp_path)
+    package_root = tmp_path / "src" / "agent_maintainer"
+    package_root.mkdir(parents=True)
+    (package_root / "__main__.py").write_text("", encoding="utf-8")
+    return tmp_path
+
+
+def test_runtime_noops_without_repo_opt_in(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Global/user hooks skip repositories without maintainer config."""
+
+    def fail_run(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        pytest.fail("unconfigured repository should not run verification")
+
+    monkeypatch.setattr(runtime.subprocess, "run", fail_run)
+
+    status = runtime.run_hook(
+        platform=runtime.CLAUDE_CODE_PLATFORM,
+        event=runtime.STOP_EVENT,
+        profile="precommit",
+        repo_root=tmp_path,
+    )
+
+    assert status == 0
+    assert not (tmp_path / ".verify-logs").exists()
+
+
+def test_discover_repo_root_falls_back_without_git(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Repo discovery falls back when git executable is unavailable."""
+
+    monkeypatch.setattr(runtime.shutil, "which", lambda _name: None)
+
+    assert runtime.discover_repo_root(tmp_path) == tmp_path
+
+
+def test_discover_repo_root_uses_git_output(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Repo discovery uses absolute git executable output when available."""
+
+    expected = tmp_path / "repo"
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        assert command == ["/usr/bin/git", "rev-parse", "--show-toplevel"]
+        assert kwargs["cwd"] == tmp_path
+        return subprocess.CompletedProcess(command, 0, f"{expected}\n", "")
+
+    monkeypatch.setattr(runtime.shutil, "which", lambda _name: "/usr/bin/git")
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+
+    assert runtime.discover_repo_root(tmp_path) == expected
+
+
+def test_main_dispatches_to_run_hook(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Runtime CLI parses arguments and delegates to run_hook."""
+
+    calls: list[dict[str, object]] = []
+
+    def fake_run_hook(**kwargs: object) -> int:
+        calls.append(kwargs)
+        return HOOK_STATUS
+
+    monkeypatch.setattr(runtime, "run_hook", fake_run_hook)
+
+    status = runtime.main(
+        [
+            "--platform",
+            runtime.CODEX_PLATFORM,
+            "--event",
+            runtime.POST_TOOL_USE_EVENT,
+            "--profile",
+            "fast",
+            "--repo-root",
+            str(tmp_path),
+        ]
+    )
+
+    assert status == HOOK_STATUS
+    assert calls == [
+        {
+            "platform": runtime.CODEX_PLATFORM,
+            "event": runtime.POST_TOOL_USE_EVENT,
+            "profile": "fast",
+            "repo_root": tmp_path,
+        }
+    ]
+
+
+def test_recursive_stop_payload_continues(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Recursive stop events continue without running verification."""
+
+    monkeypatch.setattr(sys, "stdin", StringIO('{"stop_hook_active": true}'))
+
+    assert (
+        runtime.run_hook(
+            platform=runtime.CODEX_PLATFORM,
+            event=runtime.STOP_EVENT,
+            profile="precommit",
+            repo_root=tmp_path,
+        )
+        == 0
+    )
+
+    assert json.loads(capsys.readouterr().out) == {"continue": True}
+
+
+def test_malformed_payload_does_not_block_unconfigured_repo(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Malformed hook JSON is treated as an empty payload."""
+
+    monkeypatch.setattr(sys, "stdin", StringIO("{"))
+
+    assert (
+        runtime.run_hook(
+            platform=runtime.CODEX_PLATFORM,
+            event=runtime.STOP_EVENT,
+            profile="precommit",
+            repo_root=tmp_path,
+        )
+        == 0
+    )
+
+
+def test_missing_verifier_blocks_and_records_reason(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Configured repos block when neither local package nor console command exists."""
+
+    configured_repo(tmp_path)
+    monkeypatch.setattr(runtime, "package_command_available", lambda: False)
+
+    assert (
+        runtime.run_hook(
+            platform=runtime.CLAUDE_CODE_PLATFORM,
+            event=runtime.STOP_EVENT,
+            profile="precommit",
+            repo_root=tmp_path,
+        )
+        == 0
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["decision"] == "block"
+    assert "verifier missing" in payload["reason"]
+    audit_payload = json.loads((tmp_path / ".verify-logs" / "hooks.jsonl").read_text())
+    assert audit_payload["reason"] == "missing verifier"
+    assert audit_payload["platform"] == runtime.CLAUDE_CODE_PLATFORM
+
+
+def test_failed_post_tool_use_blocks_with_context(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """PostToolUse failures emit hook-specific blocking context."""
+
+    installed_repo(tmp_path)
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 1, "post failed", "")
+
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+
+    assert (
+        runtime.run_hook(
+            platform=runtime.CODEX_PLATFORM,
+            event=runtime.POST_TOOL_USE_EVENT,
+            profile="fast",
+            repo_root=tmp_path,
+        )
+        == 0
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["decision"] == "block"
+    assert payload["hookSpecificOutput"]["hookEventName"] == runtime.POST_TOOL_USE_EVENT
+    assert payload["hookSpecificOutput"]["additionalContext"] == "post failed"
+
+
+def test_failed_stop_blocks_with_reason(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Stop failures put verifier output in the block reason."""
+
+    installed_repo(tmp_path)
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 1, "", "stop failed")
+
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+
+    assert (
+        runtime.run_hook(
+            platform=runtime.CODEX_PLATFORM,
+            event=runtime.STOP_EVENT,
+            profile="precommit",
+            repo_root=tmp_path,
+        )
+        == 0
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["decision"] == "block"
+    assert "Final verification failed" in payload["reason"]
+    assert "stop failed" in payload["reason"]
+
+
+def test_verifier_helpers_cover_virtualenv_and_global_command(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verifier helper branches find virtualenv and fallback package command."""
+
+    python_path = tmp_path / ".venv" / "bin" / "python"
+    python_path.parent.mkdir(parents=True)
+    python_path.write_text("", encoding="utf-8")
+    monkeypatch.setattr(runtime.shutil, "which", lambda name: f"/bin/{name}")
+
+    assert runtime.verifier_python(tmp_path) == str(python_path)
+    assert runtime.package_command_available()
+    assert runtime.verifier_available(tmp_path)
+
+
+def test_audit_helpers_include_reason_and_custom_log_dir(tmp_path: Path) -> None:
+    """Audit payloads include reasons and respect configured diagnostic dir."""
+
+    record = audit.HookAuditRecord(
+        hook_name="Stop",
+        profile="precommit",
+        status="failed",
+        command=("agent-maintainer", "verify"),
+        exit_code=1,
+        started_at="2026-01-01T00:00:00Z",
+        ended_at="2026-01-01T00:00:01Z",
+        duration_seconds=1.0,
+        reason="failed",
+    )
+    (tmp_path / "pyproject.toml").write_text(
+        "[tool.agent_maintainer.diagnostics]\nlog_dir = '.logs'\n",
+        encoding="utf-8",
+    )
+
+    assert record.to_payload()["reason"] == "failed"
+    assert audit.configured_log_dir(tmp_path) == ".logs"
+
+
+def test_runtime_records_platform_in_hook_audit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Shared hook runtime records client platform."""
+
+    (tmp_path / "src" / "agent_maintainer").mkdir(parents=True)
+    (tmp_path / "src" / "agent_maintainer" / "__main__.py").write_text(
+        "",
+        encoding="utf-8",
+    )
+    (tmp_path / "pyproject.toml").write_text("[tool.agent_maintainer]\n", encoding="utf-8")
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+
+    status = runtime.run_hook(
+        platform=runtime.CLAUDE_CODE_PLATFORM,
+        event=runtime.POST_TOOL_USE_EVENT,
+        profile="fast",
+        repo_root=tmp_path,
+    )
+
+    assert status == 0
+    payload = json.loads((tmp_path / ".verify-logs" / "hooks.jsonl").read_text())
+    assert payload["platform"] == "claude-code"
+    assert payload["hook"] == "PostToolUse"
