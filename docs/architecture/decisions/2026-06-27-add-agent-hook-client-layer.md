@@ -16,6 +16,8 @@ Claude Code hook files thin wrappers around that shared runtime.
 Each generated wrapper is explicitly assigned to the entrypoint layer. The
 package-owned hook CLI, manager, templates, audit writer, and runtime are
 assigned to the existing entrypoint, orchestration, and runtime layers.
+Template rendering belongs in orchestration because it composes client-specific
+config files from shared runtime constants without executing verification.
 
 ## Rationale
 
