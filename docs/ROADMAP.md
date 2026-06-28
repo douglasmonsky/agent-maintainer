@@ -21,11 +21,30 @@ Current external release gate:
 - [ ] Approve the waiting protected `pypi` environment job for
   `agent-maintainer==0.1.0b3`, then smoke-test the real PyPI install.
 
+## Next: Context-Safe Legacy Ratchets
+
+Agent Maintainer's next focus is helping agents improve existing repositories
+without drowning in failures, giant files, huge diffs.
+
+Planned work:
+
+- Bounded failure summaries with explicit expansion commands.
+- Test intelligence for changed source and relevant tests.
+- Safe context commands for logs, failures, files, and diffs.
+- Python file outlines for large legacy files.
+- Context packs for agent repair loops.
+- Ratchet baselines with ranked repair targets.
+- Generated `AGENTS.ratchet.md` guidance.
+- Cohesive change plans for intentional large migrations.
+- Integration branch series support for large rewrites.
+- Optional compression backends for sanitized supporting context.
+- PR summaries with measured proof examples.
+
 ## Implementation Phases
 
 - [x] Phase 1: ADR for Context-Safe Legacy Ratchets
 - [x] Phase 2: ADR for Test Intelligence Ladder
-- [ ] Phase 3: Public Roadmap Docs Stubs
+- [x] Phase 3: Public Roadmap Docs Stubs
 - [ ] Phase 4: Config Scaffolding
 - [ ] Phase 5: Context Contract Implementation
 - [ ] Phase 6: Bounded Verifier, Hook, LAST_FAILURE Output
