@@ -15,6 +15,7 @@ ALL_CLIENTS = "all"
 CLIENTS = (CODEX_CLIENT, CLAUDE_CODE_CLIENT)
 REPO_SCOPE = "repo"
 USER_SCOPE = "user"
+SCOPES = (REPO_SCOPE, USER_SCOPE)
 
 
 @dataclass(frozen=True)
@@ -216,6 +217,47 @@ def confirm_user_scope() -> bool:
 
     answer = input("This will modify files under your home directory. Continue? [y/N] ")
     return answer.strip().casefold() in {"y", "yes"}
+
+
+def status_hooks(target: Path, client: str, scope: str = REPO_SCOPE) -> int:
+    """Print compact install status for selected clients."""
+
+    root = target.resolve()
+    for selected in selected_clients(client):
+        config_path = config_file(selected, root, scope)
+        scripts = hook_script_paths(selected, root, scope)
+        config_status = "present" if config_path.exists() else "missing"
+        scripts_status = "present" if all(path.exists() for path in scripts) else "missing"
+        print(f"{selected}: config={config_status} scripts={scripts_status}")
+    return 0
+
+
+def config_file(client: str, root: Path, scope: str) -> Path:
+    """Return config file path for one client."""
+
+    if client == CODEX_CLIENT:
+        return root / ".codex/config.toml" if scope == REPO_SCOPE else home() / ".codex/config.toml"
+    if client == CLAUDE_CODE_CLIENT:
+        return (
+            root / ".claude/settings.json"
+            if scope == REPO_SCOPE
+            else home() / ".claude/settings.json"
+        )
+    msg = f"Unsupported hook client: {client}"
+    raise ValueError(msg)
+
+
+def hook_script_paths(client: str, root: Path, scope: str) -> tuple[Path, ...]:
+    """Return expected hook script paths for one client."""
+
+    if client == CODEX_CLIENT:
+        base = root / ".codex/hooks" if scope == REPO_SCOPE else home() / ".codex/hooks"
+        return (base / "post_edit_fast_gate.py", base / "stop_full_verify.py")
+    if client == CLAUDE_CODE_CLIENT:
+        base = root / ".claude/hooks" if scope == REPO_SCOPE else home() / ".claude/hooks"
+        return (base / "post_tool_use.py", base / "stop.py", base / "subagent_stop.py")
+    msg = f"Unsupported hook client: {client}"
+    raise ValueError(msg)
 
 
 def home() -> Path:

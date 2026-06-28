@@ -24,6 +24,8 @@ merges, and writes managed hook files while delegating hook execution to the
 shared runtime.
 Merge helpers belong beside the manager so config-format parsing stays out of
 the hook runtime and wrapper entrypoints.
+The hook CLI is assigned to the entrypoint layer because it only parses
+management commands and dispatches to manager or runtime functions.
 
 ## Rationale
 

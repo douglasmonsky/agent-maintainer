@@ -114,6 +114,29 @@ def test_user_scope_uses_installed_command_without_repo_wrappers(
     assert not (tmp_path / ".claude" / "hooks").exists()
 
 
+def test_status_hooks_reports_config_and_script_presence(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Status reports config and script presence for selected clients."""
+
+    manager.install_hooks(
+        manager.InstallOptions(
+            target=tmp_path,
+            client=manager.CODEX_CLIENT,
+            force=True,
+        ),
+    )
+    capsys.readouterr()
+
+    status = manager.status_hooks(tmp_path, manager.ALL_CLIENTS)
+
+    output = capsys.readouterr().out
+    assert status == 0
+    assert "codex: config=present scripts=present" in output
+    assert "claude-code: config=missing scripts=missing" in output
+
+
 def test_install_noops_when_no_plans(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

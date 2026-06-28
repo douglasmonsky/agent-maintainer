@@ -20,6 +20,7 @@ layers = ["entrypoint", "orchestration", "runtime", "shared", "models"]
 paths = [
   "agent_maintainer.cli",
   "agent_maintainer.__main__",
+  "agent_maintainer.hooks.cli",
   "hook_audit",
   "post_edit_fast_gate",
   "stop_full_verify",
