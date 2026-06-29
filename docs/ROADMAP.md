@@ -67,7 +67,7 @@ Planned work:
 - [x] Phase 8: Smarter Source-Without-Test Guidance
 - [x] Phase 9: `context failures` and `context log`
 - [x] Phase 10: Context Budget Estimation
-- [ ] Phase 11: Safe Large-File Reading
+- [x] Phase 11: Safe Large-File Reading
 - [ ] Phase 12: Diff Context Safety
 - [ ] Phase 13: Ratchet Baseline Status
 - [ ] Phase 14: Ratchet Target Ranking

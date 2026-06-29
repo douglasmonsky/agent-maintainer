@@ -19,6 +19,13 @@ from agent_maintainer.context.failures import (
     render_failures_json,
     render_failures_text,
 )
+from agent_maintainer.context.files import (
+    DEFAULT_FILE_CONTEXT_LINES,
+    FileRequest,
+    render_file_json,
+    render_file_text,
+    select_file_context,
+)
 from agent_maintainer.context.logs import LogRequest, render_log_json, render_log_text, select_log
 
 FORMAT_JSON = "json"
@@ -32,6 +39,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     subparsers = parser.add_subparsers(dest="command", required=True)
     add_estimate_parser(subparsers)
+    add_file_parser(subparsers)
     add_failures_parser(subparsers)
     add_log_parser(subparsers)
     return parser.parse_args(argv)
@@ -48,6 +56,21 @@ def add_estimate_parser(subparsers: argparse._SubParsersAction[argparse.Argument
     parser.add_argument("--head", type=int)
     parser.add_argument("--tail", type=int)
     parser.add_argument("--lines")
+    parser.add_argument("--budget", type=int, default=DEFAULT_CONTEXT_BUDGET)
+    parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
+
+
+def add_file_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register file subcommand."""
+
+    parser = subparsers.add_parser("file", help="Show safe bounded file context.")
+    parser.add_argument("path", type=Path)
+    parser.add_argument("--outline", action="store_true")
+    parser.add_argument("--symbols", action="store_true")
+    parser.add_argument("--symbol")
+    parser.add_argument("--lines")
+    parser.add_argument("--around", type=int)
+    parser.add_argument("--context", type=int, default=DEFAULT_FILE_CONTEXT_LINES)
     parser.add_argument("--budget", type=int, default=DEFAULT_CONTEXT_BUDGET)
     parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
 
@@ -91,6 +114,8 @@ def run_context_command(args: argparse.Namespace) -> int:
 
     if args.command == "estimate":
         return run_estimate(args)
+    if args.command == "file":
+        return run_file(args)
     if args.command == "failures":
         return run_failures(args)
     if args.command == "log":
@@ -119,6 +144,26 @@ def run_estimate(args: argparse.Namespace) -> int:
     )
     print(output)
     return 0
+
+
+def run_file(args: argparse.Namespace) -> int:
+    """Run file subcommand."""
+
+    context = select_file_context(
+        FileRequest(
+            path=args.path,
+            outline=args.outline,
+            symbols=args.symbols,
+            symbol=args.symbol,
+            line_range=args.lines,
+            around=args.around,
+            context_lines=args.context,
+            budget=args.budget,
+        ),
+    )
+    output = render_file_json(context) if args.format == FORMAT_JSON else render_file_text(context)
+    print(output)
+    return 1 if context.refused else 0
 
 
 def run_failures(args: argparse.Namespace) -> int:
