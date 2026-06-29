@@ -98,7 +98,7 @@ Planned work:
 - [x] Phase 29: PR / GitHub Actions Summary Report
 - [x] Phase 30: Policy Packs Onboarding Presets
 - [x] Phase 31: Archguard Impact Analysis
-- [ ] Phase 32: Repair Plan Command
+- [x] Phase 32: Repair Plan Command
 - [ ] Phase 33: Agent Adapter API
 - [ ] Phase 34: Static HTML Report
 - [ ] Phase 35: External Case Studies Measured Proof Harness

@@ -57,6 +57,7 @@ paths = [
   "agent_maintainer.hooks.runtime",
   "agent_maintainer.hooks.templates",
   "agent_maintainer.ratchet.cli",
+  "agent_maintainer.repair_plan.cli",
   "agent_maintainer.runners",
   "agent_maintainer.runners.bandit",
   "agent_maintainer.runners.mutmut",
@@ -136,6 +137,9 @@ paths = [
   "agent_maintainer.ratchet.ranking",
   "agent_maintainer.ratchet.reporting",
   "agent_maintainer.ratchet.status",
+  "agent_maintainer.repair_plan",
+  "agent_maintainer.repair_plan.planning",
+  "agent_maintainer.repair_plan.rendering",
   "agent_maintainer.test_intel",
   "agent_maintainer.test_intel.changed",
   "agent_maintainer.test_intel.crosshair_candidates",
@@ -177,6 +181,7 @@ paths = [
   "agent_maintainer.context.models",
   "agent_maintainer.doctor.support.models",
   "agent_maintainer.ratchet.models",
+  "agent_maintainer.repair_plan.models",
   "agent_maintainer.test_intel.models",
 ]
 layer = "models"

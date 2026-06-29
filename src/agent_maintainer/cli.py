@@ -28,6 +28,7 @@ python -m agent_maintainer guidance [guidance options]
   python -m agent_maintainer init [init options]
   python -m agent_maintainer install
   python -m agent_maintainer ratchet [ratchet options]
+  python -m agent_maintainer repair-plan [repair-plan options]
   python -m agent_maintainer test-intel [test-intel options]
   python -m agent_maintainer verify [verify options]
 
@@ -43,6 +44,7 @@ python -m agent_maintainer hooks status
   python -m agent_maintainer init --track core --preset existing-app
   python -m agent_maintainer install
   python -m agent_maintainer ratchet status
+  python -m agent_maintainer repair-plan --ratchet
   python -m agent_maintainer test-intel changed
   python -m agent_maintainer test-intel hypothesis-candidates --changed
   python -m agent_maintainer test-intel mutation-targets --changed
@@ -95,6 +97,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "init": init_main,
         "install": install_command,
         "ratchet": ratchet_command,
+        "repair-plan": repair_plan_command,
         "test-intel": test_intel_main,
         "verify": verify_main,
     }
@@ -123,6 +126,13 @@ def ratchet_command(command_args: list[str]) -> int:
     """Run ratchet command with lazy import to keep entrypoint light."""
 
     module = __import__("agent_maintainer.ratchet.cli", fromlist=("main",))
+    return module.main(command_args)
+
+
+def repair_plan_command(command_args: list[str]) -> int:
+    """Run repair-plan command lazily to keep entrypoint light."""
+
+    module = __import__("agent_maintainer.repair_plan.cli", fromlist=("main",))
     return module.main(command_args)
 
 
