@@ -21,6 +21,14 @@ depends_on = [
 ]
 
 [[modules]]
+path = "artifact_environment"
+depends_on = []
+
+[[modules]]
+path = "check_run"
+depends_on = []
+
+[[modules]]
 path = "config"
 depends_on = [
   "//agent_maintainer.config.loader",
@@ -31,6 +39,8 @@ depends_on = [
 [[modules]]
 path = "executor"
 depends_on = [
+  "artifact_environment",
+  "check_run",
   "reporting",
   "runtime",
   "tool_capabilities",
@@ -79,7 +89,12 @@ path = "reporting"
 depends_on = [
   "//agent_maintainer.context.budget",
   "//agent_maintainer.context.models",
+  "reporting_context",
 ]
+
+[[modules]]
+path = "reporting_context"
+depends_on = []
 
 [[modules]]
 path = "runtime"

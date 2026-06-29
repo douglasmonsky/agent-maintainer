@@ -9,6 +9,7 @@ from typing import Any
 
 from agent_maintainer.context.budget import bound_text
 from agent_maintainer.context.models import ContextBudget
+from agent_maintainer.core.reporting_context import context_commands
 
 PYRIGHT_DIAGNOSTIC_LIMIT = 50
 STRUCTURED_DIAGNOSTIC_LIMIT = 50
@@ -249,13 +250,22 @@ def print_success(skipped: list[Any], warnings: list[Any] | None = None) -> None
     print_skipped(skipped, "SKIPPED optional checks:")
 
 
-def print_failures(profile: str, failures: list[Any], skipped: list[Any]) -> None:
+def print_failures(
+    profile: str,
+    failures: list[Any],
+    skipped: list[Any],
+    *,
+    context_log_dir: str | None = None,
+) -> None:
     """Print a compact failure report for the selected verifier profile."""
 
     print(f"FAIL: {len(failures)} check(s) failed [{profile}]\n")
     for index, result in enumerate(failures, start=1):
         print(f"{index}. {result.name}")
         print(result.output or "(no output)")
+        print("Next context:")
+        for command in context_commands(result.name, log_dir=context_log_dir):
+            print(f"  {command}")
         print()
     if skipped:
         print_skipped(skipped, "Skipped optional checks:")

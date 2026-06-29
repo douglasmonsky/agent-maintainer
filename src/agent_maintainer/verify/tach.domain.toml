@@ -11,7 +11,19 @@ depends_on = [
   "//agent_maintainer.context.budget",
   "//agent_maintainer.context.models",
   "//agent_maintainer.models",
+  "git_state",
+  "history",
   "pr_summary",
+]
+
+[[modules]]
+path = "git_state"
+depends_on = []
+
+[[modules]]
+path = "history"
+depends_on = [
+  "//agent_maintainer.models",
 ]
 
 [[modules]]
@@ -22,10 +34,22 @@ depends_on = [
 ]
 
 [[modules]]
+path = "locking"
+depends_on = []
+
+[[modules]]
 path = "pr_summary_support"
 depends_on = [
   "//agent_maintainer.context.budget",
   "//agent_maintainer.context.models",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "result_summary"
+depends_on = [
+  "//agent_maintainer.core.config",
+  "//agent_maintainer.core.reporting",
   "//agent_maintainer.models",
 ]
 
@@ -35,9 +59,19 @@ depends_on = [
   "//agent_maintainer.catalogs.catalog",
   "//agent_maintainer.core.args",
   "//agent_maintainer.core.config",
+  "history",
+  "locking",
+  "result_summary",
+  "run_steps",
+]
+
+[[modules]]
+path = "run_steps"
+depends_on = [
+  "//agent_maintainer.core.check_run",
+  "//agent_maintainer.core.config",
   "//agent_maintainer.core.executor",
   "//agent_maintainer.core.layout",
-  "//agent_maintainer.core.reporting",
   "//agent_maintainer.models",
   "artifacts",
 ]

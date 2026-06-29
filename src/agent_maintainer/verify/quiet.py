@@ -16,131 +16,69 @@ Profiles:
 
 from __future__ import annotations
 
-import sys
-from dataclasses import replace
 from pathlib import Path
 
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core.args import apply_cli_overrides, parse_args
-from agent_maintainer.core.config import MaintainerConfig, load_config
-from agent_maintainer.core.executor import run_check, utc_timestamp
-from agent_maintainer.core.layout import layout_failures
-from agent_maintainer.core.reporting import print_failures, print_success
-from agent_maintainer.models import Check, CheckResult
-from agent_maintainer.verify.artifacts import RunContext, write_run_artifacts
-
-
-def log_dir_for(config: MaintainerConfig) -> Path:
-    """Return the configured verifier log and artifact directory."""
-
-    return Path(config.diagnostic_artifacts_dir)
-
-
-def emit_layout_failure(failures: list[str], log_dir: Path) -> CheckResult:
-    """Write and return a synthetic failure for invalid maintainer layout."""
-
-    timestamp = utc_timestamp()
-    log_dir.mkdir(parents=True, exist_ok=True)
-    failure_lines = "\n".join(f"  {failure}" for failure in failures)
-    output = f"Maintainer layout/configuration failed:\n\n{failure_lines}"
-    log_path = log_dir / "maintainer-layout.log"
-    log_path.write_text(f"{output}\n", encoding="utf-8")
-    return CheckResult(
-        "maintainer-layout",
-        passed=False,
-        output=output,
-        log_path=str(log_path),
-        started_at=timestamp,
-        ended_at=timestamp,
-    )
-
-
-def collect_results(
-    args,
-    config: MaintainerConfig,
-    selected: list[Check],
-    log_dir: Path | None = None,
-) -> list[CheckResult]:
-    """Run selected checks after validating layout requirements."""
-
-    selected_log_dir = log_dir or log_dir_for(config)
-    layout = layout_failures(config, args.profile)
-    if layout:
-        return [emit_layout_failure(layout, selected_log_dir)]
-    return [
-        run_check(check, selected_log_dir, args.max_lines, args.max_chars) for check in selected
-    ]
-
-
-def apply_optional_skip_policy(
-    results: list[CheckResult], fail_on_optional_skip: bool
-) -> list[CheckResult]:
-    """Convert optional skips into failures when the caller asks for strictness."""
-
-    if not fail_on_optional_skip:
-        return results
-    return [
-        (
-            replace(
-                result,
-                passed=False,
-                output=f"optional check skipped: {result.output}",
-                skipped=False,
-            )
-            if result.skipped
-            else result
-        )
-        for result in results
-    ]
-
-
-def write_artifacts_if_enabled(
-    args,
-    config: MaintainerConfig,
-    log_dir: Path,
-    results: list[CheckResult],
-) -> None:
-    """Write verifier artifacts when diagnostics are enabled."""
-
-    if not config.diagnostic_artifacts_enabled:
-        return
-    write_run_artifacts(
-        log_dir,
-        RunContext(
-            repo_root=Path.cwd(),
-            profile=args.profile,
-            base_ref=args.base_ref,
-            compare_branch=args.compare_branch,
-            staged=args.staged,
-            config=config,
-        ),
-        results,
-    )
+from agent_maintainer.core.config import load_config
+from agent_maintainer.verify.history import build_run_id
+from agent_maintainer.verify.locking import VerificationLock, build_fingerprint
+from agent_maintainer.verify.result_summary import (
+    apply_optional_skip_policy,
+    context_log_dir,
+    print_result_summary,
+)
+from agent_maintainer.verify.run_steps import (
+    collect_results,
+    log_dir_for,
+    write_artifacts_if_enabled,
+)
 
 
 def main(argv: list[str]) -> int:
-    """Run the selected verifier profile and print compact results."""
+    """Run selected verifier profile and print compact results."""
 
     args = parse_args(argv)
     config = apply_cli_overrides(load_config(), args)
     log_dir = log_dir_for(config)
-    checks = make_checks(config, args.base_ref, args.compare_branch, staged=args.staged)
-    selected = [check for check in checks if args.profile in check.profiles]
-    results = collect_results(args, config, selected, log_dir)
-    results = apply_optional_skip_policy(results, args.fail_on_optional_skip)
-    write_artifacts_if_enabled(args, config, log_dir, results)
+    fingerprint = build_fingerprint(
+        repo_root=Path.cwd(),
+        profile=args.profile,
+        base_ref=args.base_ref,
+        compare_branch=args.compare_branch,
+        staged=args.staged,
+    )
+    run_id = build_run_id(args.profile, fingerprint.to_dict())
+    with VerificationLock(log_dir=log_dir, fingerprint=fingerprint) as verifier_lock:
+        if verifier_lock.reused is not None:
+            return print_reused_result(log_dir, verifier_lock.reused.exit_code)
 
-    failures = [result for result in results if not result.passed]
-    skipped = [result for result in results if result.skipped]
-    warnings = [result for result in results if result.warning]
+        checks = make_checks(config, args.base_ref, args.compare_branch, staged=args.staged)
+        selected = [check for check in checks if args.profile in check.profiles]
+        results = collect_results(args, config, selected, log_dir)
+        results = apply_optional_skip_policy(results, args.fail_on_optional_skip)
+        write_artifacts_if_enabled(args, config, log_dir, results, run_id)
+        exit_code = print_result_summary(
+            args.profile,
+            results,
+            context_log_dir_value=context_log_dir(config, log_dir, run_id),
+        )
+        verifier_lock.write_result(exit_code)
+        return exit_code
 
-    if not failures:
-        print_success(skipped, warnings)
+
+def print_reused_result(log_dir: Path, exit_code: int) -> int:
+    """Print compact output for a same-state reused verifier result."""
+
+    if exit_code == 0:
+        print("PASS")
         return 0
-
-    print_failures(args.profile, failures, skipped)
-    return 1
+    last_failure = log_dir / "LAST_FAILURE.md"
+    print(f"FAIL: reused verifier result for same repository state. See {last_failure}.")
+    return exit_code
 
 
 if __name__ == "__main__":
+    import sys
+
     sys.exit(main(sys.argv[1:]))

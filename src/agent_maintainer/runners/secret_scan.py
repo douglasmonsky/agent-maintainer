@@ -43,7 +43,7 @@ def main(argv: list[str]) -> int:
 def run_gitleaks(args: argparse.Namespace) -> int:
     """Run Gitleaks using the configured scan mode."""
     report_path = Path(args.report_path)
-    report_path.parent.mkdir(parents=True, exist_ok=True)
+    prepare_report_path(report_path)
     command = gitleaks_command(args.mode, args.base_ref, report_path)
     if args.mode == STAGED_MODE:
         return run_gitleaks_staged(command)
@@ -70,6 +70,14 @@ def gitleaks_command(mode: str, base_ref: str, report_path: Path) -> list[str]:
     if mode == HISTORY_MODE:
         return ["gitleaks", "git", *common, "--log-opts=--all", "."]
     return ["gitleaks", "stdin", *common]
+
+
+def prepare_report_path(report_path: Path) -> None:
+    """Prepare canonical scanner report path before tool execution."""
+
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    if report_path.exists() and report_path.is_file():
+        report_path.unlink()
 
 
 def run_gitleaks_staged(command: list[str]) -> int:

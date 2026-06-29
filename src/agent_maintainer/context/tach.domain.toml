@@ -13,17 +13,13 @@ depends_on = [
 [[modules]]
 path = "cli"
 depends_on = [
-  "compression_backends",
-  "diff",
-  "diff_git",
   "estimate",
   "failures",
-  "files",
-  "headroom_backend",
-  "logs",
-  "pack_rendering",
-  "packs",
-  "//agent_maintainer.core.config",
+  "pack.cli",
+  "reading.diff",
+  "reading.diff_git",
+  "reading.files",
+  "reading.logs",
 ]
 
 [[modules]]
@@ -31,40 +27,27 @@ path = "compression"
 depends_on = []
 
 [[modules]]
-path = "compression_backends"
+path = "compression.backends"
 depends_on = [
-  "compression",
-  "headroom_backend",
+  "compression.headroom",
+  "compression.models",
 ]
 
 [[modules]]
-path = "diff"
+path = "compression.headroom"
 depends_on = [
-  "budget",
-  "diff_classify",
-  "diff_git",
-  "models",
+  "compression.models",
 ]
 
 [[modules]]
-path = "diff_classify"
-depends_on = []
-
-[[modules]]
-path = "diff_git"
+path = "compression.models"
 depends_on = []
 
 [[modules]]
 path = "estimate"
 depends_on = [
   "failures",
-  "logs",
-]
-
-[[modules]]
-path = "exact_facts"
-depends_on = [
-  "failures",
+  "reading.logs",
 ]
 
 [[modules]]
@@ -76,35 +59,9 @@ depends_on = [
 ]
 
 [[modules]]
-path = "file_safety"
-depends_on = []
-
-[[modules]]
-path = "files"
-depends_on = [
-  "budget",
-  "failures",
-  "file_safety",
-  "models",
-  "python_outline",
-]
-
-[[modules]]
 path = "formatting"
 depends_on = [
   "models",
-]
-
-[[modules]]
-path = "headroom_backend"
-depends_on = [
-  "compression",
-]
-
-[[modules]]
-path = "logs"
-depends_on = [
-  "failures",
 ]
 
 [[modules]]
@@ -112,15 +69,56 @@ path = "models"
 depends_on = []
 
 [[modules]]
-path = "pack_compression"
+path = "pack"
+depends_on = []
+
+[[modules]]
+path = "pack.builder"
 depends_on = [
-  "compression",
-  "compression_backends",
-  "headroom_backend",
+  "failures",
+  "pack.compression",
+  "pack.exact_facts",
+  "pack.ratchet",
+  "pack.rendering",
+  "pack.sanitize",
+  "reading.files",
+  "reading.logs",
 ]
 
 [[modules]]
-path = "pack_rendering"
+path = "pack.cli"
+depends_on = [
+  "compression.backends",
+  "compression.headroom",
+  "pack.builder",
+  "pack.rendering",
+  "//agent_maintainer.core.config",
+]
+
+[[modules]]
+path = "pack.compression"
+depends_on = [
+  "compression.backends",
+  "compression.headroom",
+  "compression.models",
+]
+
+[[modules]]
+path = "pack.exact_facts"
+depends_on = [
+  "failures",
+]
+
+[[modules]]
+path = "pack.ratchet"
+depends_on = [
+  "//agent_maintainer.ratchet.baseline",
+  "//agent_maintainer.ratchet.ranking",
+  "//agent_maintainer.ratchet.status",
+]
+
+[[modules]]
+path = "pack.rendering"
 depends_on = [
   "budget",
   "formatting",
@@ -128,24 +126,50 @@ depends_on = [
 ]
 
 [[modules]]
-path = "packs"
-depends_on = [
-  "exact_facts",
-  "failures",
-  "files",
-  "logs",
-  "pack_compression",
-  "pack_rendering",
-  "sanitize",
-  "//agent_maintainer.ratchet.baseline",
-  "//agent_maintainer.ratchet.ranking",
-  "//agent_maintainer.ratchet.status",
-]
-
-[[modules]]
-path = "python_outline"
+path = "pack.sanitize"
 depends_on = []
 
 [[modules]]
-path = "sanitize"
+path = "reading"
+depends_on = []
+
+[[modules]]
+path = "reading.diff"
+depends_on = [
+  "budget",
+  "models",
+  "reading.diff_classify",
+  "reading.diff_git",
+]
+
+[[modules]]
+path = "reading.diff_classify"
+depends_on = []
+
+[[modules]]
+path = "reading.diff_git"
+depends_on = []
+
+[[modules]]
+path = "reading.file_safety"
+depends_on = []
+
+[[modules]]
+path = "reading.files"
+depends_on = [
+  "budget",
+  "failures",
+  "models",
+  "reading.file_safety",
+  "reading.python_outline",
+]
+
+[[modules]]
+path = "reading.logs"
+depends_on = [
+  "failures",
+]
+
+[[modules]]
+path = "reading.python_outline"
 depends_on = []

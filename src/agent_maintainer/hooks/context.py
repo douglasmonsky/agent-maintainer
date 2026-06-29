@@ -7,9 +7,9 @@ from contextlib import suppress
 from pathlib import Path
 
 from agent_maintainer.config import loader
-from agent_maintainer.context import pack_rendering
-from agent_maintainer.context import packs as context_packs
 from agent_maintainer.context.budget import bound_single_item_text
+from agent_maintainer.context.pack import builder as context_packs
+from agent_maintainer.context.pack import rendering as pack_rendering
 
 
 def hook_config(repo_root: Path) -> loader.schema.MaintainerConfig:

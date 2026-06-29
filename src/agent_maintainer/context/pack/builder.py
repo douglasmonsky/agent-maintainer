@@ -6,19 +6,13 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-from agent_maintainer.context import exact_facts, pack_compression, pack_rendering
-from agent_maintainer.context.failures import (
-    DEFAULT_CONTEXT_BUDGET,
-    DEFAULT_FAILURE_LIMIT,
-    FailureRecord,
-    failure_records,
-)
-from agent_maintainer.context.files import FileRequest, select_file_context
-from agent_maintainer.context.logs import LogRequest, select_log
-from agent_maintainer.context.sanitize import sanitize_text
-from agent_maintainer.ratchet.baseline import read_baseline
-from agent_maintainer.ratchet.ranking import changed_paths, ranked_targets
-from agent_maintainer.ratchet.status import status_report
+from agent_maintainer.context import failures as context_failures
+from agent_maintainer.context.pack import compression as pack_compression
+from agent_maintainer.context.pack import exact_facts, sanitize
+from agent_maintainer.context.pack import ratchet as pack_ratchet
+from agent_maintainer.context.pack import rendering as pack_rendering
+from agent_maintainer.context.reading import files as file_reader
+from agent_maintainer.context.reading import logs as log_reader
 
 PACK_CONTEXT_DIR = "context"
 PACK_MARKDOWN_NAME = "PACK.md"
@@ -34,12 +28,12 @@ class ContextPackRequest:
     """Requested context pack inputs."""
 
     log_dir: Path = Path(".verify-logs")
-    budget: int = DEFAULT_CONTEXT_BUDGET
+    budget: int = context_failures.DEFAULT_CONTEXT_BUDGET
     check: str | None = None
     files: tuple[Path, ...] = ()
     base_ref: str = "HEAD"
     baseline_path: Path | None = None
-    failure_limit: int = DEFAULT_FAILURE_LIMIT
+    failure_limit: int = context_failures.DEFAULT_FAILURE_LIMIT
     target_limit: int = 5
     compression_backend: str = ""
     compression_target_chars: int = 0
@@ -73,7 +67,7 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
 
     markdown_path = request.log_dir / PACK_CONTEXT_DIR / PACK_MARKDOWN_NAME
     json_path = request.log_dir / PACK_CONTEXT_DIR / PACK_JSON_NAME
-    records = failure_records(
+    records = context_failures.failure_records(
         request.log_dir,
         check_name=request.check,
         limit=request.failure_limit,
@@ -89,7 +83,11 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
             required=request.compression_required,
         ),
     )
-    ratchet_state = ratchet_payload(request)
+    ratchet_state = pack_ratchet.ratchet_payload(
+        baseline_path=request.baseline_path,
+        base_ref=request.base_ref,
+        target_limit=request.target_limit,
+    )
     expansion_commands = expansion_command_list(request, records, ratchet_state)
     omitted_counts = omitted_count_payload(compression.logs, compression.files)
     payload = {
@@ -143,7 +141,7 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
 
 def log_payloads(
     request: ContextPackRequest,
-    records: tuple[FailureRecord, ...],
+    records: tuple[context_failures.FailureRecord, ...],
 ) -> list[dict[str, object]]:
     """Return bounded selected verifier log payloads."""
 
@@ -154,7 +152,7 @@ def log_payloads(
 
 def selected_log_names(
     request: ContextPackRequest,
-    records: tuple[FailureRecord, ...],
+    records: tuple[context_failures.FailureRecord, ...],
 ) -> tuple[str, ...]:
     """Return check names whose logs should be included."""
 
@@ -168,15 +166,15 @@ def selected_log_names(
 def log_payload(log_dir: Path, check_name: str, budget: int) -> dict[str, object]:
     """Return bounded log payload for one check."""
 
-    selection = select_log(
+    selection = log_reader.select_log(
         log_dir,
         check_name,
-        LogRequest(tail=DEFAULT_PACK_LOG_TAIL, budget=budget, confirm_large=True),
+        log_reader.LogRequest(tail=DEFAULT_PACK_LOG_TAIL, budget=budget, confirm_large=True),
     )
     return {
         "check": selection.check_name,
         "source": str(selection.log_path),
-        "text": sanitize_text(selection.text),
+        "text": sanitize.sanitize_text(selection.text),
         "untrusted": True,
         "original_chars": selection.original_chars,
         "selected_chars": selection.selected_chars,
@@ -195,46 +193,19 @@ def file_payloads(request: ContextPackRequest) -> list[dict[str, object]]:
 def file_payload(path: Path, budget: int) -> dict[str, object]:
     """Return safe outline payload for one selected file."""
 
-    context = select_file_context(FileRequest(path=path, outline=True, budget=budget))
+    context = file_reader.select_file_context(
+        file_reader.FileRequest(path=path, outline=True, budget=budget)
+    )
     return {
         "path": str(context.path),
         "mode": context.mode,
-        "text": sanitize_text(context.text),
+        "text": sanitize.sanitize_text(context.text),
         "untrusted": True,
         "refused": context.refused,
         "reason": context.reason,
         "original_chars": context.original_chars,
         "selected_chars": context.selected_chars,
         "omitted_chars": context.omitted_chars,
-    }
-
-
-def ratchet_payload(request: ContextPackRequest) -> dict[str, object]:
-    """Return ratchet state and targets when a baseline exists."""
-
-    baseline_path = request.baseline_path
-    if baseline_path is None or not baseline_path.exists():
-        return {
-            "baseline_path": None if baseline_path is None else str(baseline_path),
-            "available": False,
-            "reason": "ratchet baseline not found",
-            "counts": {},
-            "stale_reasons": [],
-            "top_targets": [],
-        }
-    baseline = read_baseline(baseline_path)
-    report = status_report(baseline, base_ref=request.base_ref)
-    targets = ranked_targets(
-        report,
-        changed_path_set=changed_paths(request.base_ref),
-        limit=request.target_limit,
-    )
-    return {
-        "baseline_path": str(baseline_path),
-        "available": True,
-        "counts": report.counts(),
-        "stale_reasons": list(report.stale_reasons),
-        "top_targets": [target.to_dict() for target in targets],
     }
 
 
@@ -254,7 +225,7 @@ def omitted_count_payload(
 
 def expansion_command_list(
     request: ContextPackRequest,
-    records: tuple[FailureRecord, ...],
+    records: tuple[context_failures.FailureRecord, ...],
     ratchet_state: dict[str, object],
 ) -> list[str]:
     """Return deterministic commands to expand context safely."""
@@ -271,21 +242,8 @@ def expansion_command_list(
     for path in request.files:
         commands.append(f"python -m agent_maintainer context file {path} --outline")
     commands.append(f"python -m agent_maintainer ratchet next --limit {request.target_limit}")
-    commands.extend(target_commands(ratchet_state))
+    commands.extend(pack_ratchet.target_commands(ratchet_state))
     return list(unique_names(commands))
-
-
-def target_commands(ratchet_state: dict[str, object]) -> tuple[str, ...]:
-    """Return first expansion commands from ratchet target payload."""
-
-    targets = ratchet_state.get("top_targets", [])
-    if not isinstance(targets, list):
-        return ()
-    return tuple(
-        str(target["first_command"])
-        for target in targets
-        if isinstance(target, dict) and target.get("first_command")
-    )
 
 
 def item_budget(total_budget: int, item_count: int) -> int:

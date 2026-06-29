@@ -8,9 +8,13 @@ from pathlib import Path
 
 from agent_maintainer.context.budget import bound_text
 from agent_maintainer.context.failures import DEFAULT_CONTEXT_BUDGET
-from agent_maintainer.context.file_safety import FileSafety, inspect_file
 from agent_maintainer.context.models import ContextBudget
-from agent_maintainer.context.python_outline import PythonOutline, SymbolOutline, build_outline
+from agent_maintainer.context.reading.file_safety import FileSafety, inspect_file
+from agent_maintainer.context.reading.python_outline import (
+    PythonOutline,
+    SymbolOutline,
+    build_outline,
+)
 
 DEFAULT_FILE_CONTEXT_LINES = 40
 

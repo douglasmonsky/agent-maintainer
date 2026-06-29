@@ -149,4 +149,5 @@ license_check_profiles = ["manual"]
 [tool.agent_maintainer.diagnostics]
 enabled = true
 log_dir = ".verify-logs"
+run_history_limit = 10
 """

@@ -43,6 +43,50 @@ def test_command_env_adds_local_package_pythonpath(
     assert maintainer_executor.command_env()["PYTHONPATH"] == f"src{os.pathsep}existing"
 
 
+def test_run_check_scopes_coverage_file_to_log_dir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Generated coverage data defaults to verifier logs instead of repo root."""
+
+    monkeypatch.delenv("COVERAGE_FILE", raising=False)
+    seen: list[str | None] = []
+
+    def fake_run(command: list[str]) -> tuple[int, str]:
+        assert command == ["tool"]
+        seen.append(os.environ.get("COVERAGE_FILE"))
+        return 0, ""
+
+    monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
+
+    result = maintainer_executor.run_check(
+        Check("tool", ["tool"], frozenset()), tmp_path / "logs", 5, 200
+    )
+
+    assert result.passed is True
+    assert seen == [str(tmp_path / "logs" / ".coverage")]
+    assert "COVERAGE_FILE" not in os.environ
+
+
+def test_run_check_preserves_explicit_coverage_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """User-provided coverage destination is not overwritten."""
+
+    monkeypatch.setenv("COVERAGE_FILE", "custom.coverage")
+    seen: list[str | None] = []
+
+    def fake_run(_command: list[str]) -> tuple[int, str]:
+        seen.append(os.environ.get("COVERAGE_FILE"))
+        return 0, ""
+
+    monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
+
+    maintainer_executor.run_check(Check("tool", ["tool"], frozenset()), tmp_path / "logs", 5, 200)
+
+    assert seen == ["custom.coverage"]
+    assert os.environ["COVERAGE_FILE"] == "custom.coverage"
+
+
 def test_missing_requirement_reports_required_path(tmp_path: Path) -> None:
     check = Check("missing", ["true"], frozenset(), required_paths=("missing.py",))
 

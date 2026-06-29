@@ -145,6 +145,30 @@ def test_gitleaks_staged_scan_reports_git_diff_failure(
     assert "diff stderr" in output
 
 
+def test_gitleaks_run_removes_existing_report_before_scan(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Existing report path is replaced instead of preserved as numbered copy."""
+
+    report_path = tmp_path / "secret-scan.json"
+    report_path.write_text("old report", encoding="utf-8")
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        assert not report_path.exists()
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(run_secret_scan.subprocess, "run", fake_run)
+    status = run_secret_scan.run_gitleaks(
+        argparse.Namespace(
+            mode=run_secret_scan.CURRENT_TREE_MODE,
+            base_ref="HEAD",
+            report_path=str(report_path),
+        )
+    )
+
+    assert status == 0
+
+
 def test_gitleaks_staged_scan_passes_diff_to_stdin(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],

@@ -23,6 +23,7 @@ def run_context(repo_root: Path) -> artifacts.RunContext:
         compare_branch="origin/main",
         staged=False,
         config=MaintainerConfig(context_last_failure_budget_chars=LAST_FAILURE_LIMIT),
+        run_id="20260625T100000Z-full-test",
     )
 
 
@@ -53,8 +54,10 @@ def test_last_failure_is_bounded_and_manifest_has_context_metadata(
     check_payload = manifest["checks"][0]
 
     assert len(failure_note) <= LAST_FAILURE_LIMIT + artifacts.TRUNCATION_NOTE_ALLOWANCE
-    assert "python -m agent_maintainer context failures --check ruff --limit 20" in failure_note
-    assert "python -m agent_maintainer context log ruff --tail 120" in failure_note
+    assert "Run ID: `20260625T100000Z-full-test`" in failure_note
+    assert (
+        "Stable snapshot: `.verify-logs/runs/20260625T100000Z-full-test/LAST_FAILURE.md`"
+    ) in failure_note
     assert "omitted" in failure_note
     assert check_payload["log_bytes"] == len(LARGE_OUTPUT.encode("utf-8"))
     assert check_payload["summary_chars"] == len(LARGE_OUTPUT)

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context.logs import LogRequest, render_log_text, select_log
+from agent_maintainer.context.reading.logs import LogRequest, render_log_text, select_log
 
 TWO_LINES = 2
 THREE_LINES = 3

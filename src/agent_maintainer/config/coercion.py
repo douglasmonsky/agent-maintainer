@@ -93,6 +93,7 @@ def as_choice(value: object, field_name: str, choices: frozenset[str]) -> str:
 DIAGNOSTIC_FIELD_PARSERS = (
     ("enabled", "diagnostic_artifacts_enabled", as_bool),
     ("log_dir", "diagnostic_artifacts_dir", as_str),
+    ("run_history_limit", "diagnostic_run_history_limit", as_non_negative_int),
 )
 
 

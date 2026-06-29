@@ -24,6 +24,8 @@ CONFIG_OVERRIDE_MAX_LINES = 1_234
 CONFIG_OVERRIDE_MAX_FILES = 23
 ENV_OVERRIDE_MAX_LINES = 2_345
 ENV_OVERRIDE_MAX_FILES = 24
+CONFIG_RUN_HISTORY_LIMIT = 7
+ENV_RUN_HISTORY_LIMIT = 3
 
 
 def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
@@ -85,6 +87,7 @@ architecture_tool = "tach"
 [tool.agent_maintainer.diagnostics]
 enabled = false
 log_dir = ".custom-verify-logs"
+run_history_limit = 7
 """.strip(),
         encoding="utf-8",
     )
@@ -141,6 +144,7 @@ log_dir = ".custom-verify-logs"
     assert loaded.architecture_tool == "tach"
     assert loaded.diagnostic_artifacts_enabled is False
     assert loaded.diagnostic_artifacts_dir == ".custom-verify-logs"
+    assert loaded.diagnostic_run_history_limit == CONFIG_RUN_HISTORY_LIMIT
 
 
 def test_invalid_config_values_raise_clear_type_errors() -> None:
@@ -259,6 +263,10 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     monkeypatch.setenv("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED", "false")
     monkeypatch.setenv("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR", ".env-verify-logs")
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_DIAGNOSTIC_RUN_HISTORY_LIMIT",
+        str(ENV_RUN_HISTORY_LIMIT),
+    )
 
     loaded = maintainer_config_loader.apply_env(MaintainerConfig())
 
@@ -312,3 +320,4 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.file_length_baseline == ".agent-maintainer/env-baseline.json"
     assert loaded.diagnostic_artifacts_enabled is False
     assert loaded.diagnostic_artifacts_dir == ".env-verify-logs"
+    assert loaded.diagnostic_run_history_limit == ENV_RUN_HISTORY_LIMIT

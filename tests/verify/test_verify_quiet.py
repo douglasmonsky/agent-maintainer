@@ -10,6 +10,8 @@ import pytest
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.models import Check, CheckResult
 from agent_maintainer.verify import quiet as verify_quiet
+from agent_maintainer.verify import run_steps as verify_run_steps
+from agent_maintainer.verify.result_summary import apply_optional_skip_policy
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
@@ -41,7 +43,7 @@ def test_optional_skip_policy_can_fail_skips() -> None:
         )
     ]
 
-    converted = verify_quiet.apply_optional_skip_policy(results, fail_on_optional_skip=True)
+    converted = apply_optional_skip_policy(results, fail_on_optional_skip=True)
 
     assert converted[0].passed is False
     assert converted[0].output == "optional check skipped: disabled"
@@ -73,7 +75,7 @@ def test_main_prints_success_with_warning_results(
         ],
     )
     monkeypatch.setattr(
-        verify_quiet,
+        verify_run_steps,
         "run_check",
         lambda check, log_dir, max_lines, max_chars: CheckResult(
             check.name,
@@ -115,7 +117,7 @@ def test_main_prints_success_for_passing_selected_check(
         ],
     )
     monkeypatch.setattr(
-        verify_quiet,
+        verify_run_steps,
         "run_check",
         lambda check, log_dir, max_lines, max_chars: CheckResult(check.name, passed=True),
     )

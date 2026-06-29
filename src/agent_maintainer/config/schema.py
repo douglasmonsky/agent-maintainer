@@ -172,6 +172,7 @@ NON_NEGATIVE_INT_FIELDS = frozenset(
         "context_max_direct_log_read_lines",
         "context_max_failure_items",
         "context_max_paths_default",
+        "diagnostic_run_history_limit",
         "ratchet_target_limit",
         "large_change_max_active_plans",
     )
@@ -322,6 +323,7 @@ class MaintainerConfig:
     check_jsonschema_args: tuple[str, ...] = DEFAULT_CHECK_JSONSCHEMA_ARGS
     diagnostic_artifacts_enabled: bool = True
     diagnostic_artifacts_dir: str = ".verify-logs"
+    diagnostic_run_history_limit: int = 10
     structure_paths: tuple[str, ...] = ()
     structure_ignore_paths: tuple[str, ...] = DEFAULT_STRUCTURE_IGNORE_PATHS
     structure_hint_patterns: tuple[str, ...] = DEFAULT_STRUCTURE_HINT_PATTERNS

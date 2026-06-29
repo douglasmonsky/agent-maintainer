@@ -10,7 +10,15 @@ from typing import cast
 import pytest
 
 from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context.pack_rendering import (
+from agent_maintainer.context.pack import cli as pack_cli
+from agent_maintainer.context.pack.builder import (
+    ContextPackRequest,
+    build_context_pack,
+    selected_log_names,
+    write_context_pack,
+)
+from agent_maintainer.context.pack.ratchet import target_commands
+from agent_maintainer.context.pack.rendering import (
     command_pointer_lines,
     exact_fact_lines,
     fact_location,
@@ -21,13 +29,6 @@ from agent_maintainer.context.pack_rendering import (
     supporting_context_lines,
     supporting_item_lines,
     top_target_lines,
-)
-from agent_maintainer.context.packs import (
-    ContextPackRequest,
-    build_context_pack,
-    selected_log_names,
-    target_commands,
-    write_context_pack,
 )
 
 PACK_BUDGET = 2_200
@@ -107,7 +108,7 @@ def test_context_pack_cli_outputs_json_and_writes_artifacts(
     log_dir = tmp_path / ".verify-logs"
     write_log(log_dir, "ruff", "ruff failed\n")
     monkeypatch.setattr(
-        context_cli,
+        pack_cli,
         "load_config",
         lambda: SimpleNamespace(
             context_pack_budget_chars=5_000,

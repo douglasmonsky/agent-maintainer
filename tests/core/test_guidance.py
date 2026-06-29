@@ -53,38 +53,36 @@ def test_render_guidance_includes_active_configuration() -> None:
     text = maintainer_guidance.render_guidance(strict_config())
 
     assert "Generated Agent Maintainer Guidance" in text
+    assert "## Working Rules" in text
+    assert "## Safe Context" in text
+    assert "## Repo Boundaries" in text
+    assert "## Coding Limits" in text
+    assert "## Active Gates" in text
+    assert "## Required Commands" in text
+    assert "## Optional Gates" not in text
     assert "Mode: `fresh-strict`" in text
     assert (
         "Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`"
     ) in text
-    assert "Test roots: `tests`" in text
-    assert "Architecture backend: `tach`" in text
-    assert "## Architecture Policy Changes" in text
-    assert "`docs/architecture/decisions/`" in text
-    assert "Diagnostic artifacts: `enabled` at `.verify-logs`" in text
-    assert "Pyright mode: `standard`" in text
-    assert "File length baseline: `disabled`" in text
-    assert "Source-without-test-change errors in profiles: `precommit`" in text
+    assert "Tests: `tests`" in text
+    assert "Architecture: `tach` with Tach domain contracts" in text
+    assert "Coverage floors: total `80%`, changed `90%`" in text
+    assert "Change budget blocks: `600` lines or `12` files" in text
     assert "Source-only changes without test-file changes: `blocked`" in text
-    assert "pip-audit: enabled with `-r config/dev-lock.txt`" in text
-    assert "Mutmut: enabled with `run`" in text
-    assert "Semgrep: enabled with `scan --config semgrep.yml --metrics=off .`" in text
-    assert "OSV Scanner: `disabled`" in text
-    assert "Trivy: `disabled`" in text
-    assert "Python SBOM: enabled with `requirements config/dev-lock.txt --of JSON`" in text
-    assert "License checking: enabled with `--from=mixed --format=json`" in text
-    assert "Secret scanning: enabled with `gitleaks`" in text
-    assert "Markdown linting: enabled with `'**/*.md'`" in text
-    assert "YAML linting: enabled with `.github/workflows .pre-commit-config.yaml`" in text
-    assert "TOML formatting: enabled with `pyproject.toml tach.toml`" in text
-    assert "Schema validation: enabled with `--builtin-schema vendor.github-workflows" in text
+    assert "pip-audit: `-r config/dev-lock.txt`" in text
+    assert "Mutmut: `run`" in text
+    assert "Semgrep: `scan --config semgrep.yml --metrics=off .`" in text
+    assert "OSV Scanner" not in text
+    assert "Trivy" not in text
+    assert "Python SBOM: `requirements config/dev-lock.txt --of JSON`" in text
+    assert "License checking: `--from=mixed --format=json`" in text
+    assert "Secret scanning: `gitleaks`" in text
+    assert "Markdown linting: `'**/*.md'`" in text
+    assert "YAML linting: `.github/workflows .pre-commit-config.yaml`" in text
+    assert "TOML formatting: `pyproject.toml tach.toml`" in text
+    assert "Schema validation: `--builtin-schema vendor.github-workflows" in text
     assert "python3 -m agent_maintainer verify --profile precommit" in text
-    assert "Prefer small, coherent commits" in text
-    assert "Prefer `rg --files` or `git ls-files`" in text
-    assert "`__pycache__`, `*.pyc`, `.venv`" in text
-    assert "PYTHONDONTWRITEBYTECODE=1" in text
-    assert "Folder Python-file warning/block thresholds" in text
-    assert "Structure hint patterns are advisory refactor prompts" in text
+    assert "Structure hint patterns advisory" not in text
 
 
 def test_render_guidance_is_deterministic_and_nonvolatile() -> None:
@@ -105,7 +103,9 @@ def test_render_guidance_changes_when_config_changes() -> None:
     assert maintainer_guidance.render_guidance(base) != maintainer_guidance.render_guidance(
         stricter
     )
-    assert "Total coverage floor: `90%`" in maintainer_guidance.render_guidance(stricter)
+    assert "Coverage floors: total `90%`, changed `90%`" in maintainer_guidance.render_guidance(
+        stricter
+    )
 
 
 def test_write_guidance_creates_sidecar(tmp_path: Path) -> None:

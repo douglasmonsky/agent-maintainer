@@ -6,7 +6,7 @@ import importlib
 from collections.abc import Callable
 from typing import Any
 
-from agent_maintainer.context.compression import CompressionRequest
+from agent_maintainer.context.compression.models import CompressionRequest
 
 BACKEND_HEADROOM = "headroom"
 HEADROOM_INSTALL_MESSAGE = (
