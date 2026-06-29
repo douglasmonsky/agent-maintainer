@@ -56,6 +56,26 @@ Emit machine-readable status:
 python3 -m agent_maintainer ratchet status --format json
 ```
 
+## Target Ranking
+
+Use `ratchet next` to turn baseline status into a bounded repair queue:
+
+```bash
+python3 -m agent_maintainer ratchet next
+python3 -m agent_maintainer ratchet next --limit 5
+python3 -m agent_maintainer ratchet next --format json
+```
+
+Each target includes:
+
+- why it was selected
+- current metric summary
+- first safe context command
+
+The first ranking policy prioritizes new and worsened findings, boosts findings
+whose path is already in the current diff, skips resolved findings, and keeps
+tie-breaking deterministic.
+
 ## Stale Baselines
 
 `ratchet status` reports stale-baseline signals so agents and reviewers can tell
@@ -70,7 +90,7 @@ Current stale signals:
 
 ## Planned Follow-Up
 
-Planned capabilities include ranked repair targets, changed-code discipline,
-generated agent guidance in `AGENTS.ratchet.md`, context packs, and repair plans.
-The intended outcome is stricter maintenance over time without turning every old
-violation into immediate noise for the current change.
+Planned capabilities include changed-code discipline, generated agent guidance in
+`AGENTS.ratchet.md`, context packs, and repair plans. The intended outcome is
+stricter maintenance over time without turning every old violation into
+immediate noise for the current change.

@@ -70,7 +70,7 @@ Planned work:
 - [x] Phase 11: Safe Large-File Reading
 - [x] Phase 12: Diff Context Safety
 - [x] Phase 13: Ratchet Baseline Status
-- [ ] Phase 14: Ratchet Target Ranking
+- [x] Phase 14: Ratchet Target Ranking
 - [ ] Phase 15: Generate `AGENTS.ratchet.md`
 - [ ] Phase 16: Context Packs
 - [ ] Phase 17: Hook Output Uses Context Packs
