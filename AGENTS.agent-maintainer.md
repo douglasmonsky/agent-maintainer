@@ -4,6 +4,10 @@ This file is generated from `[tool.agent_maintainer]` by
 `python3 -m agent_maintainer guidance`. Do not edit it by hand; update
 configuration first, then regenerate it.
 
+## Ratchet Guidance
+
+- Read `AGENTS.ratchet.md` for legacy ratchet repair guidance.
+
 ## Operating Intent
 
 - Prefer small, coherent commits that keep maintenance feedback easy to review.
