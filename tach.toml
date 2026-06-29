@@ -129,6 +129,8 @@ paths = [
   "agent_maintainer.test_intel.hypothesis_reporting",
   "agent_maintainer.test_intel.hypothesis_scaffolds",
   "agent_maintainer.test_intel.mapping",
+  "agent_maintainer.test_intel.mutation_reporting",
+  "agent_maintainer.test_intel.mutation_targets",
   "agent_maintainer.test_intel.reporting",
   "agent_maintainer.tach",
 ]

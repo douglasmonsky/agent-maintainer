@@ -7,7 +7,12 @@ import sys
 from pathlib import Path
 
 from agent_maintainer.config import loader
-from agent_maintainer.test_intel import hypothesis_candidates, hypothesis_reporting
+from agent_maintainer.test_intel import (
+    hypothesis_candidates,
+    hypothesis_reporting,
+    mutation_reporting,
+    mutation_targets,
+)
 from agent_maintainer.test_intel.changed import changed_source_paths
 from agent_maintainer.test_intel.coverage import coverage_for_changed_sources
 from agent_maintainer.test_intel.mapping import likely_tests_for_changes
@@ -55,6 +60,24 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         choices=(FORMAT_TEXT, FORMAT_JSON),
         default=FORMAT_TEXT,
     )
+    mutation_parser = subparsers.add_parser(
+        "mutation-targets",
+        help="Suggest advisory mutation testing targets.",
+    )
+    mutation_parser.add_argument("--changed", action="store_true")
+    mutation_parser.add_argument("--ratchet", action="store_true")
+    mutation_parser.add_argument("--base-ref", default="HEAD")
+    mutation_parser.add_argument("--staged", action="store_true")
+    mutation_parser.add_argument(
+        "--limit",
+        type=int,
+        default=mutation_targets.DEFAULT_LIMIT,
+    )
+    mutation_parser.add_argument(
+        "--format",
+        choices=(FORMAT_TEXT, FORMAT_JSON),
+        default=FORMAT_TEXT,
+    )
     return parser.parse_args(argv)
 
 
@@ -66,6 +89,8 @@ def main(argv: list[str]) -> int:
         return run_changed(args)
     if args.command == "hypothesis-candidates":
         return run_hypothesis_candidates(args)
+    if args.command == "mutation-targets":
+        return run_mutation_targets(args)
     return 2
 
 
@@ -134,6 +159,46 @@ def render_hypothesis_report(
     if output_format == FORMAT_JSON:
         return hypothesis_reporting.render_json(report)
     return hypothesis_reporting.render_text(report)
+
+
+def run_mutation_targets(args: argparse.Namespace) -> int:
+    """Run advisory mutation target report."""
+
+    repo_root = Path.cwd()
+    config = loader.load_config()
+    try:
+        changed_source = (
+            changed_source_paths(config, base_ref=args.base_ref, staged=args.staged)
+            if args.changed
+            else ()
+        )
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    report = mutation_targets.build_mutation_target_report(
+        mutation_targets.MutationTargetRequest(
+            config=config,
+            repo_root=repo_root,
+            changed_only=args.changed,
+            ratchet_enabled=args.ratchet,
+            base_ref=args.base_ref,
+            changed_source=changed_source,
+            limit=args.limit,
+        )
+    )
+    print(render_mutation_report(report, args.format))
+    return 0
+
+
+def render_mutation_report(
+    report: mutation_targets.MutationTargetReport,
+    output_format: str,
+) -> str:
+    """Render mutation target report in selected format."""
+
+    if output_format == FORMAT_JSON:
+        return mutation_reporting.render_json(report)
+    return mutation_reporting.render_text(report)
 
 
 def render_report(report: TestIntelReport, output_format: str) -> str:

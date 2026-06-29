@@ -52,11 +52,28 @@ Output is advisory only. Suggested scaffolds are starting points, not verified
 contracts, and the command does not import Hypothesis, run tests, or modify
 files.
 
+## Mutation Target Suggestions
+
+Run:
+
+```bash
+python -m agent_maintainer test-intel mutation-targets
+python -m agent_maintainer test-intel mutation-targets --changed
+python -m agent_maintainer test-intel mutation-targets --ratchet
+python -m agent_maintainer test-intel mutation-targets --format json
+```
+
+The command ranks functions that look useful for manual mutation testing:
+changed source, likely focused test coverage, ratchet hotspots, branchy pure-ish
+logic, and parser/validator/decision names.
+
+Output is advisory only. The command does not run Mutmut and does not make
+mutation testing a normal precommit gate.
+
 ## Planned Next Layers
 
 Planned capabilities include smarter source-without-test guidance, branch
-coverage signals, mutation-test target suggestions, and CrossHair candidate
-guidance for pure typed functions.
+coverage signals and CrossHair candidate guidance for pure typed functions.
 
 These signals should guide better tests without encouraging coverage theater or
 turning slow research tools into normal precommit gates.

@@ -81,7 +81,7 @@ Planned work:
 - [x] Phase 17: Hook Output Uses Context Packs
 - [x] Phase 18: Context Artifact Retention Upload Policy
 - [x] Phase 19: Hypothesis Candidate Guidance
-- [ ] Phase 20: Mutmut Target Suggestions
+- [x] Phase 20: Mutmut Target Suggestions
 - [ ] Phase 21: CrossHair Candidate Guidance
 - [ ] Phase 22: Cohesive Change Plans
 - [ ] Phase 23: Change-Budget Integration Change Plans
