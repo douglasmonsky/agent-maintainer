@@ -1,17 +1,45 @@
 # Context Safety
 
-This document tracks planned beta work. implementation will land in small
-phases. Public behavior must remain deterministic and bounded by default.
+Context safety keeps verification feedback useful when a repository has large
+files, long logs, broad diffs, or many existing violations. The goal is to give
+agents enough evidence to repair the next issue without flooding the working
+context.
 
-Context safety is the planned layer that keeps verification feedback useful
-when a repository has large files, long logs, broad diffs, or many existing
-violations. The goal is to give agents enough evidence to repair the next
-issue without flooding their working context.
+Default behavior stays conservative:
 
-Planned capabilities include bounded failure summaries, explicit commands for
-expanding details, safe file and diff readers, and context packs that organize
-repair evidence around the current task.
+- summarize first;
+- keep full generated artifacts on disk;
+- show omitted counts when output is bounded;
+- require explicit commands before printing large supporting context.
 
-The default behavior should stay conservative: summarize first, keep generated
-artifacts on disk, and require an explicit command before printing large
-supporting context.
+## Failure Expansion
+
+Use `context failures` to inspect failed checks from `.verify-logs/manifest.json`
+without dumping raw logs:
+
+```bash
+python -m agent_maintainer context failures
+python -m agent_maintainer context failures --check pyright
+python -m agent_maintainer context failures --limit 20
+python -m agent_maintainer context failures --budget 16000
+python -m agent_maintainer context failures --format json
+```
+
+Failure output is grouped by repair priority, including type errors, test
+failures, coverage failures, architecture failures, structure ratchets,
+suppression issues, security/tooling findings, and style/noise.
+
+## Log Expansion
+
+Use `context log` to inspect only the relevant slice of a verifier log:
+
+```bash
+python -m agent_maintainer context log pyright --tail 120
+python -m agent_maintainer context log pytest-coverage --head 80 --tail 120
+python -m agent_maintainer context log ruff --lines 200:260
+python -m agent_maintainer context log pyright --budget 20000
+python -m agent_maintainer context log pyright --confirm-large
+```
+
+Large log selections are refused by default with safer expansion options. Use
+`--confirm-large` only when the larger output is intentionally needed.
