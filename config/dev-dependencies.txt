@@ -5,6 +5,7 @@ pyright
 pytest
 pytest-cov
 coverage
+defusedxml
 diff-cover
 import-linter
 interrogate

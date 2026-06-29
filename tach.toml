@@ -55,6 +55,7 @@ paths = [
   "agent_maintainer.runners.pyright",
   "agent_maintainer.runners.ruff",
   "agent_maintainer.runners.secret_scan",
+  "agent_maintainer.test_intel.cli",
   "agent_maintainer.verify",
   "agent_maintainer.verify.quiet",
 ]
@@ -98,6 +99,11 @@ paths = [
   "agent_maintainer.doctor.support",
   "agent_maintainer.doctor.support.hook_audit",
   "agent_maintainer.doctor.support.policy",
+  "agent_maintainer.test_intel",
+  "agent_maintainer.test_intel.changed",
+  "agent_maintainer.test_intel.coverage",
+  "agent_maintainer.test_intel.mapping",
+  "agent_maintainer.test_intel.reporting",
   "agent_maintainer.tach",
 ]
 layer = "runtime"
@@ -123,5 +129,6 @@ paths = [
   "agent_maintainer.models",
   "agent_maintainer.context.models",
   "agent_maintainer.doctor.support.models",
+  "agent_maintainer.test_intel.models",
 ]
 layer = "models"

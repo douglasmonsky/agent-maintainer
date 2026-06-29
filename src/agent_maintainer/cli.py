@@ -11,6 +11,7 @@ from agent_maintainer.core.initializer import main as init_main
 from agent_maintainer.core.runtime import disable_bytecode_writes
 from agent_maintainer.doctor.cli import main as doctor_main
 from agent_maintainer.hooks.cli import main as hooks_main
+from agent_maintainer.test_intel.cli import main as test_intel_main
 from agent_maintainer.verify.quiet import main as verify_main
 
 disable_bytecode_writes()
@@ -21,10 +22,11 @@ USAGE = """Usage:
 python -m agent_maintainer bootstrap
 python -m agent_maintainer doctor [doctor options]
 python -m agent_maintainer guidance [guidance options]
-python -m agent_maintainer hooks [hooks options]
-python -m agent_maintainer init [init options]
-python -m agent_maintainer install
-python -m agent_maintainer verify [verify options]
+  python -m agent_maintainer hooks [hooks options]
+  python -m agent_maintainer init [init options]
+  python -m agent_maintainer install
+  python -m agent_maintainer test-intel [test-intel options]
+  python -m agent_maintainer verify [verify options]
 
 Examples:
 python -m agent_maintainer bootstrap
@@ -33,8 +35,9 @@ python -m agent_maintainer guidance
 python -m agent_maintainer guidance --check
 python -m agent_maintainer hooks install all
 python -m agent_maintainer hooks status
-python -m agent_maintainer init --track core
-python -m agent_maintainer install
+  python -m agent_maintainer init --track core
+  python -m agent_maintainer install
+  python -m agent_maintainer test-intel changed
   python -m agent_maintainer verify --profile fast
   python -m agent_maintainer verify --profile precommit
   python -m agent_maintainer verify --profile full
@@ -80,6 +83,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "hooks": hooks_main,
         "init": init_main,
         "install": install_command,
+        "test-intel": test_intel_main,
         "verify": verify_main,
     }
 
