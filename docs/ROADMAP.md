@@ -43,8 +43,9 @@ example repos, and the first cohesive-change budget exception.
 
 Current external release gate:
 
-- [ ] Approve the waiting protected `pypi` environment job for
-  `agent-maintainer==0.1.0b3`, then smoke-test the real PyPI install.
+- [ ] Publish and smoke-test `agent-maintainer==0.1.0b4` only after this
+      metadata refresh merges, release checklist passes, and the protected
+      `pypi` environment job is approved.
 
 ## Next: Context-Safe Legacy Ratchets
 
@@ -107,7 +108,7 @@ Planned work:
 - [x] Phase 34D: Change-Plan Authority Over Legacy Overrides
 - [x] Phase 34E: Coverage Semantics Hardening
 - [x] Phase 34F: Exact Repair Facts From Structured Artifacts
-- [ ] Phase 34G: Beta Release Metadata Refresh
+- [x] Phase 34G: Beta Release Metadata Refresh
 - [ ] Phase 35: External Case Studies Measured Proof Harness
 - [ ] Phase 36: Monorepo / Multi-Package Support
 - [ ] Phase 37: Team Policy Templates

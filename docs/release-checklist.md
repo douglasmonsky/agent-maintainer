@@ -14,6 +14,8 @@ discipline, not the normal local edit loop.
   project URLs.
 - [ ] README links to the license and this release checklist.
 - [ ] Repo visibility and GitHub URLs are correct for public release.
+- [ ] Pre-release stabilization phases are complete or explicitly deferred in
+  `docs/ROADMAP.md`.
 - [ ] PyPI project name availability is rechecked immediately before first
   publish: `https://pypi.org/project/agent-maintainer/`.
 - [ ] PyPI Trusted Publisher is configured with project name
@@ -29,6 +31,8 @@ discipline, not the normal local edit loop.
 
 - [ ] `pyproject.toml` has the intended version.
 - [ ] `CHANGELOG.md` has an entry for the version being published.
+- [ ] Changelog summarizes stabilization work since the previous beta, including
+  known limitations.
 - [ ] `config/dev-dependencies.txt` and `config/dev-lock.txt` are in sync.
 - [ ] If files under `docs/assets/graphics/` changed, run `just render-graphics`
   and `just check-graphics`.
@@ -89,6 +93,8 @@ artifacts.
   changes.
 - [ ] Include verification evidence, including release-only packaging command.
 - [ ] List known risks and current beta limitations.
+- [ ] Confirm agent-facing hook output stays quiet on success and bounded on
+  failure, with full detail routed to `.verify-logs` and uploaded artifacts.
 - [ ] Mention Semgrep is excluded from `manual` and `all` extras on Python
   3.13+ while resolver compatibility is unstable there, if still true.
 

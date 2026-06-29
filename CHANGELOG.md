@@ -2,6 +2,61 @@
 
 ## Unreleased
 
+## 0.1.0b4 - 2026-06-29
+
+Fourth beta release of Agent Maintainer.
+
+### Added In 0.1.0b4
+
+- Context-safe repair loop commands for bounded failure summaries, log excerpts,
+  file outlines, diff context, and context packs.
+- Ratchet baseline status, ranked repair targets, and generated
+  `AGENTS.ratchet.md` guidance for legacy-repo cleanup.
+- Test-intelligence hints for changed-source tests, Hypothesis candidates,
+  Mutmut targets, and CrossHair candidates.
+- Cohesive change plans, change-budget integration, and integration branch
+  series support for intentional large migrations.
+- Optional context compression backend interface with experimental Headroom
+  support.
+- GitHub Actions/PR summary reports, policy-pack onboarding presets, Archguard
+  impact analysis, repair-plan command, agent adapter API, and static HTML
+  verification reports.
+- Exact repair facts from structured Ruff, Pyright, and Bandit artifacts.
+
+### Changed In 0.1.0b4
+
+- Hook output is quiet on success and bounded on failure: failures now route
+  agents to context-pack pointers and verification artifacts instead of dumping
+  full logs into the turn.
+- Successful post-edit hooks remain silent; Stop/SubagentStop hooks only emit the
+  minimal continue response required by agent-client protocols.
+- Tach contracts were refit into explicit domain files so every source file stays
+  assigned under `root_module = "forbid"` without lumping unrelated paths
+  together.
+- Changed-code coverage now separates changed source-file coverage from true
+  changed-line coverage.
+- Explicit change-plan failures take precedence over legacy cohesive-change
+  overrides.
+
+### Fixed In 0.1.0b4
+
+- Headroom compression now calls the adapter with message lists and consumes
+  compressed result messages correctly.
+- Coverage reporting no longer presents whole-file coverage averages as changed
+  line coverage.
+- Legacy cohesive-change overrides can no longer clear invalid, expired, or
+  out-of-scope change-plan failures.
+
+### Beta Notes For 0.1.0b4
+
+- Headroom compression remains optional and experimental. Agent Maintainer works
+  without context compression.
+- Semgrep remains excluded from `manual` and `all` extras on Python 3.13+ while
+  upstream dependency resolution is unstable there.
+- Agent-facing failure output is intentionally token-bounded; inspect
+  `.verify-logs/LAST_FAILURE.md`, context packs, and uploaded CI artifacts for
+  full detail.
+
 ## 0.1.0b3 - 2026-06-28
 
 Third beta release of Agent Maintainer.
