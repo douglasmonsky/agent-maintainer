@@ -46,6 +46,7 @@ paths = [
   "agent_maintainer.doctor.setup",
   "agent_maintainer.doctor.support.logs",
   "agent_maintainer.core.bootstrap",
+  "agent_maintainer.core.init_presets",
   "agent_maintainer.core.init_templates",
   "agent_maintainer.core.initializer",
   "agent_maintainer.context.cli",

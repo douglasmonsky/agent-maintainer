@@ -5,11 +5,12 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from agent_maintainer.core.init_presets import DEFAULT_PRESET, PRESETS
 from agent_maintainer.core.init_templates import (
     CORE_TRACK,
-    STARTER_FILES,
     TRACKS,
     StarterFile,
+    starter_files_for_preset,
 )
 
 
@@ -28,6 +29,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=CORE_TRACK,
         help="adoption track to initialize",
     )
+    parser.add_argument(
+        "--preset",
+        choices=PRESETS,
+        default=DEFAULT_PRESET,
+        help="starter policy preset to write into config",
+    )
     parser.add_argument("--force", action="store_true", help="overwrite existing generated files")
     parser.add_argument(
         "--dry-run",
@@ -41,7 +48,7 @@ def main(argv: list[str]) -> int:
     """Write starter maintainer files for a package-first install."""
     args = parse_args(argv)
     target = args.target.resolve()
-    files = files_for_track(args.track)
+    files = files_for_track(args.track, args.preset)
     conflicts = [
         starter.path for starter in files if (target / starter.path).exists() and not args.force
     ]
@@ -61,6 +68,7 @@ def main(argv: list[str]) -> int:
     return 0
 
 
-def files_for_track(track: str) -> tuple[StarterFile, ...]:
-    """Return starter files included in an adoption track."""
-    return tuple(starter for starter in STARTER_FILES if track in starter.tracks)
+def files_for_track(track: str, preset: str = DEFAULT_PRESET) -> tuple[StarterFile, ...]:
+    """Return starter files included in adoption track."""
+
+    return tuple(starter for starter in starter_files_for_preset(preset) if track in starter.tracks)

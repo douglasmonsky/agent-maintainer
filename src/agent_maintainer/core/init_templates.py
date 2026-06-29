@@ -5,6 +5,7 @@ from __future__ import annotations
 import textwrap
 from dataclasses import dataclass
 
+from agent_maintainer.core.init_presets import apply_preset
 from agent_maintainer.core.init_template_config import STARTER_PYPROJECT
 from agent_maintainer.hooks import templates as hook_templates
 
@@ -121,8 +122,9 @@ class StarterFile:
     tracks: tuple[str, ...]
 
 
-STARTER_FILES = (
-    StarterFile("config/pyproject.agent-maintainer.toml", STARTER_PYPROJECT, TRACKS),
+STARTER_CONFIG_PATH = "config/pyproject.agent-maintainer.toml"
+
+STATIC_STARTER_FILES = (
     StarterFile("config/dev-dependencies.txt", DEV_DEPENDENCIES, TRACKS),
     StarterFile(".pre-commit-config.yaml", PRE_COMMIT_CONFIG, TRACKS),
     StarterFile(".github/workflows/verify.yml", WORKFLOW, TRACKS),
@@ -169,3 +171,14 @@ STARTER_FILES = (
     ),
     StarterFile("package.json", PACKAGE_JSON, (HARDENING_TRACK,)),
 )
+
+
+def starter_files_for_preset(preset: str) -> tuple[StarterFile, ...]:
+    """Return starter files with preset-specific maintainer config."""
+
+    config_file = StarterFile(
+        STARTER_CONFIG_PATH,
+        apply_preset(STARTER_PYPROJECT, preset),
+        TRACKS,
+    )
+    return (config_file, *STATIC_STARTER_FILES)

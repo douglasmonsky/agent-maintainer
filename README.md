@@ -44,7 +44,7 @@ python -m pip install "agent-maintainer[core]"
 Initialize a repository:
 
 ```bash
-agent-maintainer init --track core
+agent-maintainer init --track core --preset existing-app
 ```
 
 Merge `config/pyproject.agent-maintainer.toml` into your `pyproject.toml`, tune
@@ -99,6 +99,25 @@ python3 -m agent_maintainer init --track agent --dry-run
 ```
 
 Existing files are not overwritten unless `--force` is passed.
+
+## Policy Presets
+
+`--track` chooses which files are written. `--preset` tunes the starter policy in
+`config/pyproject.agent-maintainer.toml`:
+
+| Preset | Use When |
+|---|---|
+| `small-library` | A compact Python package can start with tighter budgets. |
+| `existing-app` | An existing app needs useful defaults without immediate strict-mode friction. |
+| `ai-agent-heavy` | Coding agents will frequently change code and source-without-test changes should fail. |
+| `legacy-ratchet` | Existing debt should improve by baseline and ranked repair targets. |
+| `strict-new-repo` | A clean new repo can start with strict budgets and wemake enabled. |
+
+Example:
+
+```bash
+python3 -m agent_maintainer init --track agent --preset ai-agent-heavy
+```
 
 ## Common Commands
 

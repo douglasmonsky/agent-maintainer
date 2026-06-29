@@ -96,7 +96,7 @@ Planned work:
 - [x] Phase 27: Doctor Integration
 - [x] Phase 28: Examples Proof Repos
 - [x] Phase 29: PR / GitHub Actions Summary Report
-- [ ] Phase 30: Policy Packs Onboarding Presets
+- [x] Phase 30: Policy Packs Onboarding Presets
 - [ ] Phase 31: Archguard Impact Analysis
 - [ ] Phase 32: Repair Plan Command
 - [ ] Phase 33: Agent Adapter API

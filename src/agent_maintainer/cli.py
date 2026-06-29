@@ -40,7 +40,7 @@ python -m agent_maintainer guidance
 python -m agent_maintainer guidance --check
 python -m agent_maintainer hooks install all
 python -m agent_maintainer hooks status
-  python -m agent_maintainer init --track core
+  python -m agent_maintainer init --track core --preset existing-app
   python -m agent_maintainer install
   python -m agent_maintainer ratchet status
   python -m agent_maintainer test-intel changed
