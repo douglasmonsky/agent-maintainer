@@ -110,6 +110,9 @@ paths = [
   "agent_maintainer.context.failures",
   "agent_maintainer.context.logs",
   "agent_maintainer.context.python_outline",
+  "agent_maintainer.ratchet",
+  "agent_maintainer.ratchet.findings",
+  "agent_maintainer.ratchet.status",
   "agent_maintainer.test_intel",
   "agent_maintainer.test_intel.changed",
   "agent_maintainer.test_intel.coverage",
@@ -140,6 +143,7 @@ paths = [
   "agent_maintainer.models",
   "agent_maintainer.context.models",
   "agent_maintainer.doctor.support.models",
+  "agent_maintainer.ratchet.models",
   "agent_maintainer.test_intel.models",
 ]
 layer = "models"
