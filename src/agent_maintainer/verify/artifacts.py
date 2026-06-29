@@ -13,6 +13,7 @@ from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.context.budget import bound_text
 from agent_maintainer.context.models import BoundedText, ContextBudget
 from agent_maintainer.models import CheckResult
+from agent_maintainer.verify.pr_summary import PR_SUMMARY_NAME, render_pr_summary
 
 MANIFEST_NAME = "manifest.json"
 LAST_FAILURE_NAME = "LAST_FAILURE.md"
@@ -47,6 +48,10 @@ def write_run_artifacts(
     log_dir.mkdir(parents=True, exist_ok=True)
     write_manifest(log_dir, context, results)
     write_last_failure(log_dir, context, [result for result in results if not result.passed])
+    (log_dir / PR_SUMMARY_NAME).write_text(
+        render_pr_summary(log_dir=log_dir, context=context, results=results),
+        encoding="utf-8",
+    )
 
 
 def write_manifest(

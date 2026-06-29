@@ -1,0 +1,183 @@
+"""Render bounded GitHub PR verification summaries."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+from agent_maintainer.models import CheckResult
+from agent_maintainer.verify import pr_summary_support as summary_support
+
+if TYPE_CHECKING:
+    from agent_maintainer.verify.artifacts import RunContext
+
+PR_SUMMARY_NAME = "pr-summary.md"
+
+
+def render_pr_summary(
+    *,
+    log_dir: Path,
+    context: RunContext,
+    results: list[CheckResult],
+) -> str:
+    """Return bounded GitHub step summary markdown."""
+
+    sections = (
+        header_lines(),
+        verification_result_lines(context, results),
+        top_failure_lines(results),
+        test_intelligence_lines(context, results),
+        ratchet_target_lines(context),
+        change_budget_lines(results),
+        change_plan_lines(context, results),
+        context_pack_lines(log_dir, context),
+        expansion_command_lines(results),
+    )
+    text = "\n".join(line for section in sections for line in (*section, ""))
+    return summary_support.bounded_summary(text.rstrip(), context)
+
+
+def header_lines() -> list[str]:
+    """Return summary heading lines."""
+
+    return ["# Agent Maintainer Verification Summary"]
+
+
+def verification_result_lines(context: RunContext, results: list[CheckResult]) -> list[str]:
+    """Return overall verification result section."""
+
+    result = "FAIL" if summary_support.failed_results(results) else "PASS"
+    return [
+        "## Verification Result",
+        f"- Result: **{result}**",
+        f"- Profile: `{context.profile}`",
+        f"- Base ref: `{context.base_ref}`",
+        f"- Compare branch: `{context.compare_branch}`",
+        f"- Rerun: `{summary_support.summary_rerun_command(context)}`",
+    ]
+
+
+def top_failure_lines(results: list[CheckResult]) -> list[str]:
+    """Return top failed checks section."""
+
+    failures = summary_support.failed_results(results)
+    lines = ["## Top Failures"]
+    if not failures:
+        return [*lines, "- No failed checks."]
+    for failure in failures[: summary_support.MAX_FAILURES]:
+        lines.extend(failure_lines(failure))
+    omitted = len(failures) - summary_support.MAX_FAILURES
+    if omitted > 0:
+        lines.append(f"- {omitted} additional failure(s) omitted.")
+    return lines
+
+
+def failure_lines(failure: CheckResult) -> list[str]:
+    """Return summary lines for one failed check."""
+
+    lines = [
+        f"- `{failure.name}` failed with exit code `{failure.exit_code}`.",
+        f"  - Log: `{failure.log_path}`",
+    ]
+    lines.extend(f"  - {line}" for line in summary_support.compact_output_lines(failure.output))
+    return lines
+
+
+def test_intelligence_lines(
+    context: RunContext,
+    results: list[CheckResult],
+) -> list[str]:
+    """Return test-intelligence section."""
+
+    lines = [
+        "## Test Intelligence",
+        (
+            "- Changed-source map: "
+            f"`python -m agent_maintainer test-intel changed --base-ref {context.base_ref}`"
+        ),
+    ]
+    related = summary_support.matching_results(
+        results,
+        ("pytest", "coverage", "diff-cover", "change-budget"),
+    )
+    if not related:
+        return [*lines, "- No test-intelligence-related check output in this run."]
+    lines.extend(summary_support.result_status_lines(related))
+    return lines
+
+
+def ratchet_target_lines(context: RunContext) -> list[str]:
+    """Return ratchet target section."""
+
+    lines = ["## Ratchet Targets"]
+    if not context.config.ratchet_enabled:
+        return [*lines, "- Ratchet mode disabled for this repository."]
+    base_ref = context.base_ref
+    baseline_path = context.config.ratchet_baseline_path
+    next_command = "python -m agent_maintainer ratchet next --base-ref"
+    return [
+        *lines,
+        f"- Next targets: `{next_command} {base_ref}`",
+        f"- Baseline: `{baseline_path}`",
+    ]
+
+
+def change_budget_lines(results: list[CheckResult]) -> list[str]:
+    """Return change-budget section."""
+
+    lines = ["## Change Budget"]
+    budget_result = summary_support.first_result(results, "change-budget")
+    if budget_result is None:
+        return [*lines, "- Change-budget check did not run in this profile."]
+    status = summary_support.result_state(budget_result)
+    return [
+        *lines,
+        f"- Status: `{status}`",
+        *summary_support.compact_output_bullets(budget_result.output),
+    ]
+
+
+def change_plan_lines(context: RunContext, results: list[CheckResult]) -> list[str]:
+    """Return change-plan status section."""
+
+    lines = ["## Change Plan Status"]
+    if context.config.large_changes_enabled:
+        lines.append("- Configured large-change plans are enabled.")
+    else:
+        lines.append("- Large-change plans are disabled unless a check opts into them.")
+    budget_result = summary_support.first_result(results, "change-budget")
+    if budget_result is not None and "change plan" in budget_result.output.lower():
+        lines.extend(summary_support.compact_output_bullets(budget_result.output))
+    lines.append("- Check plans: `python -m agent_maintainer change-plan check`")
+    return lines
+
+
+def context_pack_lines(log_dir: Path, context: RunContext) -> list[str]:
+    """Return context pack artifact section."""
+
+    pack_path = log_dir / "context" / "PACK.md"
+    lines = ["## Context Pack Path"]
+    if pack_path.exists():
+        lines.append(f"- Context pack: `{pack_path.as_posix()}`")
+    else:
+        lines.append("- Context pack not generated in this run.")
+    pack_budget = context.config.context_pack_budget_chars
+    command = f"python -m agent_maintainer context pack --budget {pack_budget}"
+    lines.append(f"- Generate one: `{command}`")
+    return lines
+
+
+def expansion_command_lines(results: list[CheckResult]) -> list[str]:
+    """Return expansion commands section."""
+
+    lines = ["## Expansion Commands"]
+    failures = summary_support.failed_results(results)
+    if not failures:
+        return [*lines, "- No failure expansion commands needed."]
+    commands = [
+        command
+        for failure in failures[: summary_support.MAX_FAILURES]
+        for command in summary_support.summary_expansion_commands(failure.name)
+    ]
+    lines.extend(f"- `{command}`" for command in commands)
+    return lines

@@ -163,6 +163,8 @@ paths = [
   "agent_maintainer.context.formatting",
   "agent_maintainer.context.sanitize",
   "agent_maintainer.verify.artifacts",
+  "agent_maintainer.verify.pr_summary",
+  "agent_maintainer.verify.pr_summary_support",
 ]
 layer = "shared"
 
