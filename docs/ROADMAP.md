@@ -84,7 +84,7 @@ Planned work:
 - [x] Phase 20: Mutmut Target Suggestions
 - [x] Phase 21: CrossHair Candidate Guidance
 - [x] Phase 22: Cohesive Change Plans
-- [ ] Phase 23: Change-Budget Integration Change Plans
+- [x] Phase 23: Change-Budget Integration Change Plans
 - [ ] Phase 24: Integration Branch Series
 - [ ] Phase 25: Compression Backend Interface
 - [ ] Phase 26: Optional Headroom Backend

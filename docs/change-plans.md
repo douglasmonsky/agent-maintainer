@@ -26,5 +26,8 @@ markdown sections that explain why the work is intentionally large, why it
 should not be split smaller, what may change, what must not change, how it will
 be verified, how it can be rolled back, and what ratchet work remains.
 
-This phase makes plans parseable and checkable. Change-budget integration is a
-separate follow-up so large planned diffs do not become silent bypasses.
+When a valid active plan exists, the change-budget gate can bend normal changed
+line/file limits and source-without-test heuristics for the scoped migration.
+Out-of-plan paths, expired plans, and missing required sections still fail.
+Coverage, type checks, Ruff, architecture checks, suppression budgets, security
+checks, generated guidance freshness, and doctor checks still run normally.
