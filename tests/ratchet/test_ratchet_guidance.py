@@ -36,6 +36,7 @@ def test_render_ratchet_guidance_is_deterministic() -> None:
     assert "Top Ratchet Targets" in first
     assert "One Target At A Time" in first
     assert "Safe Context Commands" in first
+    assert "context pack --budget" in first
     assert "Change-Plan Warning" in first
     assert "Generated at" not in first
 

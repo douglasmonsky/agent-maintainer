@@ -47,6 +47,7 @@ def render_ratchet_guidance(config: MaintainerConfig) -> str:
         "- `python3 -m agent_maintainer context file <path> --symbol <name>`",
         "- `python3 -m agent_maintainer context diff --path <path> --hunks 5`",
         "- `python3 -m agent_maintainer context failures --limit 20`",
+        f"- `python3 -m agent_maintainer context pack --budget {config.context_pack_budget_chars}`",
         "",
         "## Failure Discipline",
         "",

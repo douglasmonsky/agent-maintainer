@@ -35,6 +35,7 @@ configuration first, then regenerate it.
 - `python3 -m agent_maintainer context file <path> --symbol <name>`
 - `python3 -m agent_maintainer context diff --path <path> --hunks 5`
 - `python3 -m agent_maintainer context failures --limit 20`
+- `python3 -m agent_maintainer context pack --budget 24000`
 
 ## Failure Discipline
 

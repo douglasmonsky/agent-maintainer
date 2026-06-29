@@ -29,6 +29,12 @@ from agent_maintainer.context.files import (
     select_file_context,
 )
 from agent_maintainer.context.logs import LogRequest, render_log_json, render_log_text, select_log
+from agent_maintainer.context.packs import (
+    ContextPackRequest,
+    render_pack_json,
+    write_context_pack,
+)
+from agent_maintainer.core.config import load_config
 
 FORMAT_JSON = "json"
 FORMAT_TEXT = "text"
@@ -45,6 +51,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     add_file_parser(subparsers)
     add_failures_parser(subparsers)
     add_log_parser(subparsers)
+    add_pack_parser(subparsers)
     return parser.parse_args(argv)
 
 
@@ -115,6 +122,17 @@ def add_log_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParse
     parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
 
 
+def add_pack_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register context pack subcommand."""
+
+    parser = subparsers.add_parser("pack", help="Write bounded repair context pack.")
+    parser.add_argument("--budget", type=int)
+    parser.add_argument("--check")
+    parser.add_argument("--file", action="append", type=Path, default=[])
+    parser.add_argument("--base-ref", default="HEAD")
+    parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
+
+
 def main(argv: list[str]) -> int:
     """Run context command."""
 
@@ -135,6 +153,7 @@ def run_context_command(args: argparse.Namespace) -> int:
         "failures": run_failures,
         "file": run_file,
         "log": run_log,
+        "pack": run_pack,
     }.get(args.command)
     if runner is not None:
         return runner(args)
@@ -236,3 +255,25 @@ def run_log(args: argparse.Namespace) -> int:
     )
     print(output)
     return 1 if selection.refused else 0
+
+
+def run_pack(args: argparse.Namespace) -> int:
+    """Run context pack subcommand."""
+
+    config = load_config()
+    budget = args.budget if isinstance(args.budget, int) else config.context_pack_budget_chars
+    pack = write_context_pack(
+        ContextPackRequest(
+            log_dir=args.log_dir,
+            budget=budget,
+            check=args.check,
+            files=tuple(args.file),
+            base_ref=args.base_ref,
+            baseline_path=Path(config.ratchet_baseline_path),
+            failure_limit=config.context_max_failure_items,
+            target_limit=config.ratchet_target_limit,
+        ),
+    )
+    output = render_pack_json(pack.payload) if args.format == FORMAT_JSON else pack.markdown
+    print(output.rstrip())
+    return 0
