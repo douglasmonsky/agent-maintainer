@@ -10,6 +10,9 @@ from agent_maintainer.context.budget import bound_text
 from agent_maintainer.context.formatting import UNTRUSTED_EXCERPT_LABEL
 from agent_maintainer.context.models import ContextBudget
 
+HOOK_FACT_LIMIT = 3
+HOOK_COMMAND_LIMIT = 3
+
 
 def render_pack_markdown(
     payload: dict[str, Any],
@@ -61,6 +64,58 @@ def render_pack_json(payload: dict[str, Any]) -> str:
     """Return stable JSON context pack."""
 
     return f"{json.dumps(payload, indent=2, sort_keys=True)}\n"
+
+
+def render_pack_pointer(
+    payload: dict[str, object],
+    *,
+    display_path: str,
+    fact_limit: int = HOOK_FACT_LIMIT,
+    command_limit: int = HOOK_COMMAND_LIMIT,
+) -> str:
+    """Return compact hook-safe pointer to a context pack."""
+
+    lines = [f"Read: {display_path}"]
+    lines.extend(fact_pointer_lines(payload.get("exact_repair_facts"), fact_limit))
+    lines.extend(command_pointer_lines(payload.get("expansion_commands"), command_limit))
+    return "\n".join(lines)
+
+
+def fact_pointer_lines(facts: object, limit: int) -> list[str]:
+    """Return top exact fact lines for hook output."""
+
+    if not isinstance(facts, list):
+        return []
+    return [
+        f"Top finding: {fact_summary(fact)}" for fact in facts[:limit] if isinstance(fact, dict)
+    ]
+
+
+def fact_summary(fact: dict[object, object]) -> str:
+    """Return compact exact-fact summary."""
+
+    check = str(fact.get("check", "unknown"))
+    message = str(fact.get("message", "")).strip()
+    detail = "".join((fact_location(fact.get("path"), fact.get("line")), message))
+    return f"{check}: {detail}".strip()
+
+
+def fact_location(path: object, line: object) -> str:
+    """Return compact location prefix for an exact fact."""
+
+    if not path:
+        return ""
+    if isinstance(line, int):
+        return f"{path}:{line} "
+    return f"{path} "
+
+
+def command_pointer_lines(commands: object, limit: int) -> list[str]:
+    """Return expansion command lines for hook output."""
+
+    if not isinstance(commands, list):
+        return []
+    return [f"Expand: {command}" for command in commands[:limit]]
 
 
 def enforce_pack_budget(

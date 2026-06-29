@@ -9,6 +9,7 @@ from types import ModuleType
 
 import pytest
 
+from agent_maintainer.hooks import context as hook_context
 from agent_maintainer.hooks import runtime
 from tests.support.paths import REPO_ROOT
 
@@ -76,6 +77,6 @@ def test_runtime_verifier_python_falls_back_to_current_interpreter(tmp_path: Pat
 def test_runtime_truncates_long_failure_output() -> None:
     """Hook output is bounded for agent feedback."""
 
-    assert runtime.truncate_output("abcdef", 3) == (
+    assert hook_context.truncate_output("abcdef", 3) == (
         "abc\n... hook output omitted 3 chars and 0 lines. Full logs are in .verify-logs/."
     )

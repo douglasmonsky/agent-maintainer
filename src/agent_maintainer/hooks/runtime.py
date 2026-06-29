@@ -11,9 +11,8 @@ import time
 from contextlib import suppress
 from pathlib import Path
 
-from agent_maintainer.config import loader
-from agent_maintainer.context.budget import bound_single_item_text
 from agent_maintainer.hooks import audit as hook_audit
+from agent_maintainer.hooks import context as hook_context
 
 CODEX_PLATFORM = "codex"
 CLAUDE_CODE_PLATFORM = "claude-code"
@@ -112,12 +111,16 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
     if result.returncode == 0:
         return emit_success(event)
 
-    output = (result.stdout or result.stderr or "Verification failed with no output.").strip()
-    limit = hook_context_limit(repo_root)
+    config = hook_context.hook_config(repo_root)
     return emit_block(
         event=event,
         reason=block_reason(event),
-        context=truncate_output(output, limit),
+        context=hook_context.failure_context(
+            repo_root,
+            result,
+            config,
+            config.context_hook_budget_chars,
+        ),
     )
 
 
@@ -250,34 +253,6 @@ def block_reason(event: str) -> str:
     if event == POST_TOOL_USE_EVENT:
         return "Fast Agent Maintainer checks failed after edit."
     return "Final verification failed. Fix issues before finishing."
-
-
-def hook_context_limit(repo_root: Path) -> int:
-    """Return configured hook context character budget."""
-
-    config = loader.apply_pyproject(
-        loader.schema.MaintainerConfig(),
-        loader.read_pyproject(repo_root / "pyproject.toml"),
-    )
-    return loader.apply_env(config).context_hook_budget_chars
-
-
-def truncate_output(output: str, limit: int) -> str:
-    """Return bounded hook output with log-location hint."""
-
-    bounded = bound_single_item_text(output, limit)
-    if not bounded.truncated:
-        return bounded.text
-    return "\n".join(
-        (
-            bounded.text.rstrip(),
-            (
-                "... hook output omitted "
-                f"{bounded.omitted_chars} chars and {bounded.omitted_lines} lines. "
-                "Full logs are in .verify-logs/."
-            ),
-        )
-    )
 
 
 if __name__ == "__main__":

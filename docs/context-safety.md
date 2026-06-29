@@ -119,3 +119,14 @@ repository and tool excerpts as untrusted, includes ratchet state and top
 targets when a baseline exists, records omitted counts, and ends with safe
 expansion commands. Use the JSON pack for automation and the Markdown pack for
 human or agent handoff.
+
+## Hook Failure Pointers
+
+Agent Maintainer hooks generate a context pack when verification fails and then
+emit a compact pointer instead of dumping raw verifier output into the agent
+conversation. Hook output includes the pack path, up to three exact repair
+facts, and safe expansion commands while remaining bounded by
+`context_hook_budget_chars`.
+
+If pack generation fails, hooks fall back to bounded verifier output and include
+the pack-generation error so the failure remains diagnosable.
