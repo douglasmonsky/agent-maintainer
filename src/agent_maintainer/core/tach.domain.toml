@@ -1,0 +1,104 @@
+# Tach domain contract for agent_maintainer.core.
+# Keep this file close to the code it governs.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "args"
+depends_on = [
+  "//agent_maintainer.config.modes",
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "bootstrap"
+depends_on = [
+  "runtime",
+  "tool_capabilities",
+  "//agent_maintainer.hooks.manager",
+]
+
+[[modules]]
+path = "config"
+depends_on = [
+  "//agent_maintainer.config.loader",
+  "//agent_maintainer.config.modes",
+  "//agent_maintainer.config.schema",
+]
+
+[[modules]]
+path = "executor"
+depends_on = [
+  "reporting",
+  "runtime",
+  "tool_capabilities",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "guidance"
+depends_on = [
+  "config",
+  "//agent_maintainer.ratchet.guidance",
+]
+
+[[modules]]
+path = "init_presets"
+depends_on = []
+
+[[modules]]
+path = "init_template_config"
+depends_on = []
+
+[[modules]]
+path = "init_templates"
+depends_on = [
+  "init_presets",
+  "init_template_config",
+  "//agent_maintainer.hooks.templates",
+]
+
+[[modules]]
+path = "initializer"
+depends_on = [
+  "init_presets",
+  "init_templates",
+]
+
+[[modules]]
+path = "layout"
+depends_on = [
+  "config",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "reporting"
+depends_on = [
+  "//agent_maintainer.context.budget",
+  "//agent_maintainer.context.models",
+]
+
+[[modules]]
+path = "runtime"
+depends_on = []
+
+[[modules]]
+path = "tool_capabilities"
+depends_on = [
+  "tool_capability_registry",
+  "tool_capability_types",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "tool_capability_registry"
+depends_on = [
+  "tool_capability_types",
+]
+
+[[modules]]
+path = "tool_capability_types"
+depends_on = []

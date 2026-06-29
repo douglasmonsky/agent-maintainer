@@ -1,0 +1,41 @@
+# Tach domain contract for archguard.
+# Keep this file close to the code it governs.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "__main__"
+depends_on = ["cli"]
+
+[[modules]]
+path = "cli"
+depends_on = ["decision_notes", "impact", "tach_config"]
+
+[[modules]]
+path = "decision_notes"
+depends_on = ["git_diff", "models"]
+
+[[modules]]
+path = "git_diff"
+depends_on = []
+
+[[modules]]
+path = "impact"
+depends_on = []
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "tach_config"
+depends_on = ["tach_config_domains", "tach_config_sources"]
+
+[[modules]]
+path = "tach_config_domains"
+depends_on = ["tach_config_sources"]
+
+[[modules]]
+path = "tach_config_sources"
+depends_on = []

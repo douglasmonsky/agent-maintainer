@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.checks import change_budget as check_change_budget
+from agent_maintainer.checks import change_budget_plans
 from agent_maintainer.core.config import MaintainerConfig
 
 
@@ -237,6 +238,11 @@ def test_change_budget_main_handles_runtime_error(
 def test_change_budget_main_can_fail_warnings_as_errors(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    monkeypatch.setattr(
+        check_change_budget,
+        "evaluate_change_plan",
+        lambda _context: change_budget_plans.ChangePlanDecision(),
+    )
     monkeypatch.setattr(
         check_change_budget,
         "run_git_numstat",

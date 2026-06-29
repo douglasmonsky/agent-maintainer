@@ -1,0 +1,144 @@
+# Tach domain contract for agent_maintainer.context.
+# Keep this file close to the code it governs.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "budget"
+depends_on = [
+  "models",
+]
+
+[[modules]]
+path = "cli"
+depends_on = [
+  "compression_backends",
+  "diff",
+  "diff_git",
+  "estimate",
+  "failures",
+  "files",
+  "headroom_backend",
+  "logs",
+  "pack_rendering",
+  "packs",
+  "//agent_maintainer.core.config",
+]
+
+[[modules]]
+path = "compression"
+depends_on = []
+
+[[modules]]
+path = "compression_backends"
+depends_on = [
+  "compression",
+  "headroom_backend",
+]
+
+[[modules]]
+path = "diff"
+depends_on = [
+  "budget",
+  "diff_classify",
+  "diff_git",
+  "models",
+]
+
+[[modules]]
+path = "diff_classify"
+depends_on = []
+
+[[modules]]
+path = "diff_git"
+depends_on = []
+
+[[modules]]
+path = "estimate"
+depends_on = [
+  "failures",
+  "logs",
+]
+
+[[modules]]
+path = "failures"
+depends_on = [
+  "budget",
+  "models",
+  "//agent_maintainer.verify.artifacts",
+]
+
+[[modules]]
+path = "file_safety"
+depends_on = []
+
+[[modules]]
+path = "files"
+depends_on = [
+  "budget",
+  "failures",
+  "file_safety",
+  "models",
+  "python_outline",
+]
+
+[[modules]]
+path = "formatting"
+depends_on = [
+  "models",
+]
+
+[[modules]]
+path = "headroom_backend"
+depends_on = [
+  "compression",
+]
+
+[[modules]]
+path = "logs"
+depends_on = [
+  "failures",
+]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "pack_compression"
+depends_on = [
+  "compression",
+  "compression_backends",
+  "headroom_backend",
+]
+
+[[modules]]
+path = "pack_rendering"
+depends_on = [
+  "budget",
+  "formatting",
+  "models",
+]
+
+[[modules]]
+path = "packs"
+depends_on = [
+  "failures",
+  "files",
+  "logs",
+  "pack_compression",
+  "pack_rendering",
+  "sanitize",
+  "//agent_maintainer.ratchet.baseline",
+  "//agent_maintainer.ratchet.ranking",
+  "//agent_maintainer.ratchet.status",
+]
+
+[[modules]]
+path = "python_outline"
+depends_on = []
+
+[[modules]]
+path = "sanitize"
+depends_on = []
