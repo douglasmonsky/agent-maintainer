@@ -166,7 +166,10 @@ def test_run_check_summarizes_command_failure(
     assert result.exit_code == 1
     assert result.log_path == str(tmp_path / "logs" / "tool.log")
     assert "line 0" in result.output
-    assert "more lines omitted" in result.output
+    assert "output omitted" in result.output
+    assert "chars" in result.output
+    assert "lines" in result.output
+    assert ".verify-logs/" in result.output
 
 
 def test_run_check_records_existing_declared_artifacts(

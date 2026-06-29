@@ -26,6 +26,12 @@ def bound_text(text: str, budget: ContextBudget) -> BoundedText:
     )
 
 
+def bound_single_item_text(text: str, max_chars: int) -> BoundedText:
+    """Return text bounded as one agent feedback item."""
+
+    return bound_text(text, ContextBudget(max_chars=max_chars, max_items=1))
+
+
 def apply_line_limit(text: str, max_lines: int | None) -> str:
     """Return at most max_lines from text while preserving line endings."""
 

@@ -1,8 +1,14 @@
 # Roadmap
 
-This file is the implementation tracker for the full Agent Maintainer roadmap.
-The detailed source-of-truth blueprint is
+This file is the implementation tracker for the Agent Maintainer roadmap. It is
+only a checklist and recovery index. The detailed source-of-truth blueprint is:
+
 [`docs/roadmap/full-roadmap-blueprint.md`](roadmap/full-roadmap-blueprint.md).
+
+Before implementing any phase, read the matching phase in the full blueprint and
+follow its scope, tests, documentation requirements, acceptance criteria, and
+explicit out-of-scope rules. If this chat context is compacted or interrupted,
+resume from this checklist only after reopening the full blueprint.
 
 Agent Maintainer is in beta. The current major roadmap is context-safe legacy
 ratchets, test intelligence, planned large-change support, and optional
@@ -47,7 +53,7 @@ Planned work:
 - [x] Phase 3: Public Roadmap Docs Stubs
 - [x] Phase 4: Config Scaffolding
 - [x] Phase 5: Context Contract Implementation
-- [ ] Phase 6: Bounded Verifier, Hook, LAST_FAILURE Output
+- [x] Phase 6: Bounded Verifier, Hook, LAST_FAILURE Output
 - [ ] Phase 7: Test Intelligence MVP
 - [ ] Phase 8: Smarter Source-Without-Test Guidance
 - [ ] Phase 9: `context failures` and `context log`

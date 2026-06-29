@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from agent_maintainer.context.budget import bound_text
+from agent_maintainer.context.budget import bound_single_item_text, bound_text
 from agent_maintainer.context.models import ContextBudget
 
 TRUNCATION_ORIGINAL_LINES = 3
 LINE_LIMIT_ORIGINAL_LINES = 4
 LINE_LIMIT_OMITTED_LINES = 2
+SINGLE_ITEM_CHAR_LIMIT = 3
 
 
 def test_bound_text_tracks_char_and_line_omissions() -> None:
@@ -36,6 +37,16 @@ def test_bound_text_respects_line_limit_before_char_limit() -> None:
     assert bounded.text == "one\ntwo\n"
     assert bounded.original_lines == LINE_LIMIT_ORIGINAL_LINES
     assert bounded.omitted_lines == LINE_LIMIT_OMITTED_LINES
+    assert bounded.truncated is True
+
+
+def test_bound_single_item_text_caps_chars() -> None:
+    """Single-item helper uses character budget."""
+
+    bounded = bound_single_item_text("abcdef", SINGLE_ITEM_CHAR_LIMIT)
+
+    assert bounded.text == "abc"
+    assert bounded.omitted_chars == SINGLE_ITEM_CHAR_LIMIT
     assert bounded.truncated is True
 
 

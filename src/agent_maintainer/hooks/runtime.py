@@ -11,22 +11,15 @@ import time
 from contextlib import suppress
 from pathlib import Path
 
-from agent_maintainer.hooks.audit import (
-    HookAuditRecord,
-    duration_since,
-    hook_env_with_src,
-    record_hook_result,
-    status_for_exit,
-    utc_timestamp,
-)
+from agent_maintainer.config import loader
+from agent_maintainer.context.budget import bound_single_item_text
+from agent_maintainer.hooks import audit as hook_audit
 
 CODEX_PLATFORM = "codex"
 CLAUDE_CODE_PLATFORM = "claude-code"
 POST_TOOL_USE_EVENT = "PostToolUse"
 STOP_EVENT = "Stop"
 SUBAGENT_STOP_EVENT = "SubagentStop"
-MAX_POST_CONTEXT = 6_000
-MAX_STOP_CONTEXT = 8_000
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -63,13 +56,13 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
     if not maintainer_configured(repo_root):
         return emit_success(event)
 
-    started_at = utc_timestamp()
+    started_at = hook_audit.utc_timestamp()
     started = time.monotonic()
     if not verifier_available(repo_root):
         expected_package = repo_root / "src" / "agent_maintainer"
-        record_hook_result(
+        hook_audit.record_hook_result(
             repo_root,
-            HookAuditRecord(
+            hook_audit.HookAuditRecord(
                 platform=platform,
                 hook_name=event,
                 profile=profile,
@@ -77,8 +70,8 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
                 command=(),
                 exit_code=None,
                 started_at=started_at,
-                ended_at=utc_timestamp(),
-                duration_seconds=duration_since(started),
+                ended_at=hook_audit.utc_timestamp(),
+                duration_seconds=hook_audit.duration_since(started),
                 reason="missing verifier",
             ),
         )
@@ -97,30 +90,30 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
     result = subprocess.run(  # nosec B603
         command,
         cwd=repo_root,
-        env=hook_env_with_src(repo_root),
+        env=hook_audit.hook_env_with_src(repo_root),
         text=True,
         capture_output=True,
         check=False,
     )
-    record_hook_result(
+    hook_audit.record_hook_result(
         repo_root,
-        HookAuditRecord(
+        hook_audit.HookAuditRecord(
             platform=platform,
             hook_name=event,
             profile=profile,
-            status=status_for_exit(result.returncode),
+            status=hook_audit.status_for_exit(result.returncode),
             command=tuple(command),
             exit_code=result.returncode,
             started_at=started_at,
-            ended_at=utc_timestamp(),
-            duration_seconds=duration_since(started),
+            ended_at=hook_audit.utc_timestamp(),
+            duration_seconds=hook_audit.duration_since(started),
         ),
     )
     if result.returncode == 0:
         return emit_success(event)
 
     output = (result.stdout or result.stderr or "Verification failed with no output.").strip()
-    limit = MAX_STOP_CONTEXT if event in {STOP_EVENT, SUBAGENT_STOP_EVENT} else MAX_POST_CONTEXT
+    limit = hook_context_limit(repo_root)
     return emit_block(
         event=event,
         reason=block_reason(event),
@@ -259,13 +252,32 @@ def block_reason(event: str) -> str:
     return "Final verification failed. Fix issues before finishing."
 
 
+def hook_context_limit(repo_root: Path) -> int:
+    """Return configured hook context character budget."""
+
+    config = loader.apply_pyproject(
+        loader.schema.MaintainerConfig(),
+        loader.read_pyproject(repo_root / "pyproject.toml"),
+    )
+    return loader.apply_env(config).context_hook_budget_chars
+
+
 def truncate_output(output: str, limit: int) -> str:
     """Return bounded hook output with log-location hint."""
 
-    if len(output) <= limit:
-        return output
-    snippet = output[:limit].rstrip()
-    return f"{snippet}\n... truncated. Full logs are in .verify-logs/."
+    bounded = bound_single_item_text(output, limit)
+    if not bounded.truncated:
+        return bounded.text
+    return "\n".join(
+        (
+            bounded.text.rstrip(),
+            (
+                "... hook output omitted "
+                f"{bounded.omitted_chars} chars and {bounded.omitted_lines} lines. "
+                "Full logs are in .verify-logs/."
+            ),
+        )
+    )
 
 
 if __name__ == "__main__":

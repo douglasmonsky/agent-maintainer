@@ -77,5 +77,5 @@ def test_runtime_truncates_long_failure_output() -> None:
     """Hook output is bounded for agent feedback."""
 
     assert runtime.truncate_output("abcdef", 3) == (
-        "abc\n... truncated. Full logs are in .verify-logs/."
+        "abc\n... hook output omitted 3 chars and 0 lines. Full logs are in .verify-logs/."
     )
