@@ -101,6 +101,7 @@ paths = [
   "agent_maintainer.doctor.support",
   "agent_maintainer.doctor.support.hook_audit",
   "agent_maintainer.doctor.support.policy",
+  "agent_maintainer.context.estimate",
   "agent_maintainer.context.failures",
   "agent_maintainer.context.logs",
   "agent_maintainer.test_intel",

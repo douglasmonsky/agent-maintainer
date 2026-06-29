@@ -9,6 +9,7 @@ from pathlib import Path
 from agent_maintainer.context.failures import DEFAULT_CONTEXT_BUDGET, load_manifest
 
 DEFAULT_TAIL_LINES = 120
+TOKEN_CHAR_RATIO = 4
 
 
 @dataclass(frozen=True)
@@ -88,7 +89,8 @@ def select_log(
     selected_chars = len(selected)
     original_chars = len(text)
     if selected_chars > request.budget and not request.confirm_large:
-        refusal = refusal_message(selected_chars, request.budget)
+        estimate_command = estimate_log_command(check_name, request)
+        refusal = refusal_message(selected_chars, request.budget, estimate_command)
         return LogSelection(
             check_name, path, refusal, original_chars, len(refusal), omitted_lines, True
         )
@@ -147,12 +149,28 @@ def join_selection(lines: list[str], omitted_lines: int) -> tuple[str, int]:
     return ("\n".join(lines), max(0, omitted_lines))
 
 
-def refusal_message(requested_chars: int, budget: int) -> str:
+def estimate_log_command(check_name: str, request: LogRequest) -> str:
+    """Return matching log estimate command."""
+
+    pieces = ["python", "-m", "agent_maintainer", "context", "estimate", "--log", check_name]
+    if request.head is not None:
+        pieces.extend(("--head", str(request.head)))
+    if request.tail is not None:
+        pieces.extend(("--tail", str(request.tail)))
+    if request.line_range is not None:
+        pieces.extend(("--lines", request.line_range))
+    return " ".join(pieces)
+
+
+def refusal_message(requested_chars: int, budget: int, estimate_command: str) -> str:
     """Return bounded refusal for large log output."""
 
+    tokens = (requested_chars + TOKEN_CHAR_RATIO - 1) // TOKEN_CHAR_RATIO
     return (
-        f"Requested output approximately {requested_chars:,} characters. "
-        f"Default budget {budget:,} characters. "
+        f"Requested output is approximately {requested_chars:,} characters. "
+        f"Estimated tokens: ~{tokens}. "
+        f"Default budget is {budget:,} characters. "
+        f"Estimate first: {estimate_command}. "
         "Safer options: --tail 120, --lines 1:120, or --budget "
         f"{requested_chars} --confirm-large."
     )

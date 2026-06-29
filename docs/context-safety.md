@@ -43,3 +43,18 @@ python -m agent_maintainer context log pyright --confirm-large
 
 Large log selections are refused by default with safer expansion options. Use
 `--confirm-large` only when the larger output is intentionally needed.
+
+## Context Estimates
+
+Use `context estimate` before expanding large files, logs, or diffs:
+
+```bash
+python -m agent_maintainer context estimate
+python -m agent_maintainer context estimate --file src/legacy/big.py
+python -m agent_maintainer context estimate --log pyright --tail 500
+python -m agent_maintainer context estimate --diff --summary
+```
+
+Estimates report approximate character and token cost using `tokens ~= chars / 4`.
+Large log refusals include a matching estimate command so agents can inspect
+cost before raising `--budget` or using `--confirm-large`.
