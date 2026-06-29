@@ -26,3 +26,12 @@ change-budget integration phase.
 The package may depend on the standard library, local models, and Git scope
 helpers. Verifier checks may depend on this package in the later integration
 phase, but this phase does not let plans bypass enforcement.
+
+Phase 23 adds `agent_maintainer.checks.change_budget_plans` as the adapter
+between the change-budget check and the change-plan package. Keeping that logic
+outside `change_budget.py` preserves the existing file-length boundary and makes
+the planned-large-change bypass auditable as a distinct policy layer.
+
+The reusable change-plan parser, models, validation, and Git scope modules live
+in the runtime layer so verifier checks can depend on them. The
+`change_plan.cli` and starter template renderer remain orchestration concerns.

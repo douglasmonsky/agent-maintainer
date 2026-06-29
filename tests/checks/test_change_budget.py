@@ -9,6 +9,7 @@ import pytest
 
 from agent_maintainer.checks import change_budget as check_change_budget
 from agent_maintainer.core.config import MaintainerConfig
+from tests.change_plan.test_parser import valid_plan_text
 
 
 def test_change_budget_classifies_python_source_and_tests() -> None:
@@ -50,7 +51,7 @@ def test_change_budget_reports_missing_tests_when_required(tmp_path: Path) -> No
         config,
         [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
         [],
-        repo_root=tmp_path,
+        context=check_change_budget.BudgetContext(repo_root=tmp_path),
     )
 
     assert failures == []
@@ -75,7 +76,7 @@ def test_change_budget_accepts_relevant_test_change(tmp_path: Path) -> None:
         config,
         [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
         [check_change_budget.FileChange("tests/test_tool.py", 1, 0)],
-        repo_root=tmp_path,
+        context=check_change_budget.BudgetContext(repo_root=tmp_path),
     )
 
     assert failures == []
@@ -93,7 +94,7 @@ def test_change_budget_warns_on_irrelevant_test_change(tmp_path: Path) -> None:
         config,
         [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
         [check_change_budget.FileChange("tests/test_other.py", 1, 0)],
-        repo_root=tmp_path,
+        context=check_change_budget.BudgetContext(repo_root=tmp_path),
     )
 
     assert failures == []
@@ -114,7 +115,7 @@ def test_change_budget_missing_test_warning_mentions_staged_mode(tmp_path: Path)
         config,
         [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
         [],
-        repo_root=tmp_path,
+        context=check_change_budget.BudgetContext(repo_root=tmp_path),
     )
 
     assert "Run: python -m agent_maintainer test-intel changed --staged" in warnings[0]
@@ -334,9 +335,114 @@ def test_change_budget_main_passes_clean_diff(monkeypatch: pytest.MonkeyPatch) -
     assert check_change_budget.main([]) == 0
 
 
+def test_change_budget_active_plan_bends_size_and_test_budget(tmp_path: Path) -> None:
+    """Valid active plan can bend normal change-budget thresholds."""
+
+    write_change_plan(tmp_path, allow_source_without_test_change=True)
+    args = check_change_budget.parse_args(
+        ["--warn-lines", "1", "--block-lines", "2", "--warn-files", "1", "--block-files", "1"]
+    )
+    changes = [
+        check_change_budget.FileChange("src/package/a.py", 10, 0),
+        check_change_budget.FileChange("src/package/b.py", 10, 0),
+    ]
+    failures, warnings = check_change_budget.budget_messages(
+        args,
+        MaintainerConfig(source_roots=("src",), test_roots=("tests",), require_tests=True),
+        changes,
+        [],
+        context=check_change_budget.BudgetContext(
+            repo_root=tmp_path,
+            all_changes=tuple(changes),
+        ),
+    )
+
+    assert failures == []
+    assert any("CHANGE PLAN ACTIVE" in warning for warning in warnings)
+    assert not any("Source changed without" in warning for warning in warnings)
+
+
+def test_change_budget_active_plan_rejects_out_of_scope_path(tmp_path: Path) -> None:
+    """Active plan fails when the current diff exceeds declared scope."""
+
+    write_change_plan(tmp_path)
+    args = check_change_budget.parse_args([])
+    changes = [check_change_budget.FileChange("README.md", 1, 0)]
+
+    failures, warnings = check_change_budget.budget_messages(
+        args,
+        MaintainerConfig(source_roots=("src",), test_roots=("tests",), require_tests=True),
+        [],
+        [],
+        context=check_change_budget.BudgetContext(
+            repo_root=tmp_path,
+            all_changes=tuple(changes),
+        ),
+    )
+
+    assert warnings == []
+    assert any("outside allowed scope" in failure for failure in failures)
+
+
+def test_change_budget_invalid_active_plan_does_not_bend_budget(tmp_path: Path) -> None:
+    """Invalid active plans fail instead of silently bending thresholds."""
+
+    write_change_plan(tmp_path, expires="2026-06-01")
+    args = check_change_budget.parse_args(["--block-lines", "2"])
+    changes = [check_change_budget.FileChange("src/package/a.py", 10, 0)]
+
+    failures, _warnings = check_change_budget.budget_messages(
+        args,
+        MaintainerConfig(source_roots=("src",), test_roots=("tests",), require_tests=True),
+        changes,
+        [],
+        context=check_change_budget.BudgetContext(
+            repo_root=tmp_path,
+            all_changes=tuple(changes),
+        ),
+    )
+
+    assert any("expired" in failure for failure in failures)
+    assert any("Python source diff is too large" in failure for failure in failures)
+
+
+def test_change_budget_failure_report_points_to_change_plans(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Budget failures tell users to create scoped plans, not raise thresholds."""
+
+    check_change_budget.print_failure_report(["too large"], [])
+
+    output = capsys.readouterr().out
+    assert "change-plan new <slug>" in output
+    assert "Do not raise change-budget thresholds directly." in output
+
+
 def write_test_file(root: Path, relative_path: str, content: str) -> None:
     """Write a pytest fixture file."""
 
     path = root / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def write_change_plan(
+    root: Path,
+    *,
+    expires: str = "2099-01-01",
+    allow_source_without_test_change: bool = False,
+) -> None:
+    """Write active change-plan fixture."""
+
+    plan_dir = root / ".agent-maintainer" / "change-plans"
+    plan_dir.mkdir(parents=True)
+    text = valid_plan_text(expires=expires)
+    if allow_source_without_test_change:
+        text = text.replace(
+            "allow_source_without_test_change = false",
+            "allow_source_without_test_change = true",
+        )
+    (plan_dir / "package-migration.md").write_text(
+        text,
+        encoding="utf-8",
+    )

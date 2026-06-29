@@ -16,6 +16,12 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from agent_maintainer.checks import cohesive_override, test_relevance
+from agent_maintainer.checks.change_budget_plans import (
+    BudgetContext,
+    change_plan_failures,
+    change_plan_messages,
+    evaluate_change_plan,
+)
 from agent_maintainer.core.config import MaintainerConfig, load_config, path_matches_roots
 
 NUMSTAT_FIELD_COUNT = 3
@@ -252,12 +258,18 @@ def budget_messages(
     config: MaintainerConfig,
     py_source_changes: list[FileChange],
     py_test_changes: list[FileChange],
-    repo_root: Path | None = None,
+    context: BudgetContext | None = None,
 ) -> tuple[list[str], list[str]]:
     """Return blocking failures and softer warnings for a diff."""
 
     warnings: list[str] = []
     failures: list[str] = []
+    decision = evaluate_change_plan(context)
+    if decision.plan is not None:
+        if decision.allowed:
+            warnings.extend(change_plan_messages(decision))
+            return failures, warnings
+        failures.extend(change_plan_failures(decision))
     failures.extend(line_budget_failures(args, config, py_source_changes, warnings))
     failures.extend(file_budget_failures(args, config, py_source_changes, warnings))
 
@@ -267,7 +279,7 @@ def budget_messages(
             config,
             py_source_changes,
             py_test_changes,
-            repo_root,
+            None if context is None else context.repo_root,
         )
     )
 
@@ -327,6 +339,11 @@ def print_failure_report(failures: list[str], warnings: list[str]) -> None:
         for warning in warnings:
             print(f"  WARN: {warning}")
     print("\nSplit the work into smaller commits/tasks or document why this is mechanical.")
+    print(
+        "If this is a cohesive migration, create a scoped plan: "
+        "python -m agent_maintainer change-plan new <slug>"
+    )
+    print("Do not raise change-budget thresholds directly.")
 
 
 def print_warning_report(warnings: list[str]) -> None:
@@ -350,7 +367,13 @@ def main(argv: list[str]) -> int:
         return 1
 
     py_source_changes, py_test_changes = changed_python_files(changes, config)
-    failures, warnings = budget_messages(args, config, py_source_changes, py_test_changes)
+    failures, warnings = budget_messages(
+        args,
+        config,
+        py_source_changes,
+        py_test_changes,
+        context=BudgetContext(repo_root=Path.cwd(), all_changes=tuple(changes)),
+    )
     if failures:
         override_decision = cohesive_override.evaluate_override(config, py_source_changes)
         if override_decision.allowed:
