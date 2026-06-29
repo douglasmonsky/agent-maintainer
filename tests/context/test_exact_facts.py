@@ -14,6 +14,9 @@ RUFF_COLUMN = 3
 PYRIGHT_LINE = 5
 PYRIGHT_COLUMN = 9
 BANDIT_LINE = 12
+PACK_BUDGET = 4_000
+APP_PATH = "src/pkg/app.py"
+ENCODING = "utf-8"
 
 
 def test_ruff_artifact_extracts_path_line_symbol(tmp_path: Path) -> None:
@@ -23,14 +26,14 @@ def test_ruff_artifact_extracts_path_line_symbol(tmp_path: Path) -> None:
         json.dumps(
             [
                 {
-                    "filename": "src/pkg/app.py",
+                    "filename": APP_PATH,
                     "location": {"row": RUFF_LINE, "column": RUFF_COLUMN},
                     "code": "F401",
                     "message": "Unused import",
                 },
             ],
         ),
-        encoding="utf-8",
+        encoding=ENCODING,
     )
 
     facts = exact_facts.repair_facts(tmp_path, (record("ruff", artifact),))
@@ -38,7 +41,7 @@ def test_ruff_artifact_extracts_path_line_symbol(tmp_path: Path) -> None:
     assert facts == [
         {
             "check": "ruff",
-            "path": "src/pkg/app.py",
+            "path": APP_PATH,
             "line": RUFF_LINE,
             "column": RUFF_COLUMN,
             "symbol": "F401",
@@ -48,7 +51,7 @@ def test_ruff_artifact_extracts_path_line_symbol(tmp_path: Path) -> None:
     ]
 
 
-def test_pyright_artifact_extracts_one_based_location(tmp_path: Path) -> None:
+def test_pyright_artifact_is_one_based(tmp_path: Path) -> None:
     """Pyright JSON zero-based ranges become one-based repair facts."""
     artifact = tmp_path / "pyright.json"
     artifact.write_text(
@@ -56,7 +59,7 @@ def test_pyright_artifact_extracts_one_based_location(tmp_path: Path) -> None:
             {
                 "generalDiagnostics": [
                     {
-                        "file": "src/pkg/app.py",
+                        "file": APP_PATH,
                         "range": {"start": {"line": 4, "character": 8}},
                         "rule": "reportArgumentType",
                         "message": "Bad argument",
@@ -65,15 +68,16 @@ def test_pyright_artifact_extracts_one_based_location(tmp_path: Path) -> None:
                 ],
             },
         ),
-        encoding="utf-8",
+        encoding=ENCODING,
     )
 
     facts = exact_facts.repair_facts(tmp_path, (record("pyright", artifact),))
+    fact = first_fact(facts)
 
-    assert facts[0]["path"] == "src/pkg/app.py"
-    assert facts[0]["line"] == PYRIGHT_LINE
-    assert facts[0]["column"] == PYRIGHT_COLUMN
-    assert facts[0]["symbol"] == "reportArgumentType"
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == PYRIGHT_LINE
+    assert fact["column"] == PYRIGHT_COLUMN
+    assert fact["symbol"] == "reportArgumentType"
 
 
 def test_bandit_artifact_extracts_security_fact(tmp_path: Path) -> None:
@@ -84,7 +88,7 @@ def test_bandit_artifact_extracts_security_fact(tmp_path: Path) -> None:
             {
                 "results": [
                     {
-                        "filename": "src/pkg/app.py",
+                        "filename": APP_PATH,
                         "line_number": BANDIT_LINE,
                         "col_offset": 4,
                         "test_id": "B603",
@@ -94,18 +98,128 @@ def test_bandit_artifact_extracts_security_fact(tmp_path: Path) -> None:
                 ],
             },
         ),
-        encoding="utf-8",
+        encoding=ENCODING,
     )
 
     facts = exact_facts.repair_facts(tmp_path, (record("bandit", artifact),))
+    fact = first_fact(facts)
 
-    assert facts[0]["path"] == "src/pkg/app.py"
-    assert facts[0]["line"] == BANDIT_LINE
-    assert facts[0]["symbol"] == "B603"
-    assert facts[0]["severity"] == "high"
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == BANDIT_LINE
+    assert fact["symbol"] == "B603"
+    assert fact["severity"] == "high"
 
 
-def test_context_pack_uses_structured_artifact_fact(tmp_path: Path) -> None:
+def test_relative_artifact_uses_log_dir(tmp_path: Path) -> None:
+    """Relative artifact paths resolve against log directory by filename."""
+    artifact = tmp_path / "ruff.json"
+    artifact.write_text(
+        json.dumps(
+            [
+                {
+                    "filename": APP_PATH,
+                    "location": {"row": RUFF_LINE, "column": RUFF_COLUMN},
+                    "code": "F401",
+                    "message": "Unused import",
+                },
+            ],
+        ),
+        encoding=ENCODING,
+    )
+
+    failure = FailureRecord(
+        name="ruff",
+        status="failed",
+        category="test",
+        priority=1,
+        exit_code=1,
+        log_path=str(tmp_path / "ruff.log"),
+        log_bytes=0,
+        expansion_commands=(),
+        artifact_paths=("logs/ruff.json",),
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (failure,))
+    fact = first_fact(facts)
+
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == RUFF_LINE
+
+
+def test_missing_artifact_uses_generic(tmp_path: Path) -> None:
+    """Missing structured artifacts fall back to generic failure facts."""
+    facts = exact_facts.repair_facts(tmp_path, (record("ruff", tmp_path / "missing.json"),))
+
+    assert facts == [
+        {
+            "check": "ruff",
+            "path": None,
+            "line": None,
+            "column": None,
+            "symbol": None,
+            "message": "ruff failed with exit code 1",
+            "severity": "error",
+        },
+    ]
+
+
+def test_malformed_artifacts_use_generic(tmp_path: Path) -> None:
+    """Malformed structured artifacts do not replace generic failure facts."""
+    ruff_artifact = write_json(tmp_path / "ruff.json", {})
+    pyright_payload_artifact = write_json(tmp_path / "pyright-payload.json", [])
+    pyright_diagnostics_artifact = write_json(
+        tmp_path / "pyright-diagnostics.json",
+        {"generalDiagnostics": {}},
+    )
+    bandit_payload_artifact = write_json(tmp_path / "bandit-payload.json", [])
+    bandit_results_artifact = write_json(tmp_path / "bandit-results.json", {"results": {}})
+
+    cases = (
+        ("ruff", ruff_artifact),
+        ("pyright", pyright_payload_artifact),
+        ("pyright", pyright_diagnostics_artifact),
+        ("bandit", bandit_payload_artifact),
+        ("bandit", bandit_results_artifact),
+    )
+
+    for check, artifact in cases:
+        facts = exact_facts.repair_facts(tmp_path, (record(check, artifact),))
+        fact = first_fact(facts)
+
+        assert fact["check"] == check
+        assert fact["path"] is None
+        assert fact["symbol"] is None
+        assert fact["message"] == f"{check} failed with exit code 1"
+
+
+def test_pyright_fact_tolerates_missing_range(tmp_path: Path) -> None:
+    """Pyright diagnostics without ranges still produce useful facts."""
+    artifact = tmp_path / "pyright.json"
+    artifact.write_text(
+        json.dumps(
+            {
+                "generalDiagnostics": [
+                    {
+                        "file": APP_PATH,
+                        "rule": "reportUnknownMemberType",
+                        "message": "Unknown member",
+                    },
+                ],
+            },
+        ),
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record("pyright", artifact),))
+    fact = first_fact(facts)
+
+    assert fact["path"] == APP_PATH
+    assert fact["line"] is None
+    assert fact["column"] is None
+    assert fact["symbol"] == "reportUnknownMemberType"
+
+
+def test_pack_uses_structured_fact(tmp_path: Path) -> None:
     """Context packs expose structured artifact facts before log expansion."""
     log_dir = tmp_path / ".verify-logs"
     log_dir.mkdir()
@@ -114,16 +228,16 @@ def test_context_pack_uses_structured_artifact_fact(tmp_path: Path) -> None:
         json.dumps(
             [
                 {
-                    "filename": "src/pkg/app.py",
+                    "filename": APP_PATH,
                     "location": {"row": RUFF_LINE, "column": RUFF_COLUMN},
                     "code": "F401",
                     "message": "Unused import",
                 },
             ],
         ),
-        encoding="utf-8",
+        encoding=ENCODING,
     )
-    (log_dir / "ruff.log").write_text("ruff failed\n", encoding="utf-8")
+    (log_dir / "ruff.log").write_text("ruff failed\n", encoding=ENCODING)
     (log_dir / "manifest.json").write_text(
         json.dumps(
             {
@@ -138,22 +252,34 @@ def test_context_pack_uses_structured_artifact_fact(tmp_path: Path) -> None:
                 ],
             },
         ),
-        encoding="utf-8",
+        encoding=ENCODING,
     )
 
     pack = build_context_pack(
         ContextPackRequest(
             log_dir=log_dir,
-            budget=4_000,
+            budget=PACK_BUDGET,
             baseline_path=tmp_path / "missing-baseline.json",
         ),
     )
     facts = pack.payload["exact_repair_facts"]
 
     assert isinstance(facts, list)
-    assert facts[0]["path"] == "src/pkg/app.py"
-    assert facts[0]["line"] == RUFF_LINE
-    assert f"Location: `src/pkg/app.py:{RUFF_LINE}`" in pack.markdown
+    fact = first_fact(facts)
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == RUFF_LINE
+    assert f"Location: `{APP_PATH}:{RUFF_LINE}`" in pack.markdown
+
+
+def write_json(path: Path, payload: object) -> Path:
+    """Write JSON fixture and return the path."""
+    path.write_text(json.dumps(payload), encoding=ENCODING)
+    return path
+
+
+def first_fact(facts: list[dict[str, object]]) -> dict[str, object]:
+    """Return the first exact fact from fixture output."""
+    return facts[0]
 
 
 def record(check: str, artifact: Path) -> FailureRecord:
