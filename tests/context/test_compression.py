@@ -96,8 +96,13 @@ def test_headroom_backend_uses_optional_compress_callable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Headroom backend uses optional package when available."""
+    received: list[list[dict[str, str]]] = []
 
-    fake_module = SimpleNamespace(compress=lambda content: f"compressed: {content}")
+    def compress_messages(messages: list[dict[str, str]]) -> object:
+        received.append(messages)
+        return SimpleNamespace(messages=[{"content": "compressed: content"}])
+
+    fake_module = SimpleNamespace(compress=compress_messages)
     monkeypatch.setattr(
         headroom_backend.importlib,
         "import_module",
@@ -108,6 +113,7 @@ def test_headroom_backend_uses_optional_compress_callable(
 
     assert result.backend == BACKEND_HEADROOM
     assert result.content == "compressed: content"
+    assert received == [[{"role": "user", "content": "content"}]]
 
 
 def test_headroom_backend_reports_missing_dependency(
@@ -145,7 +151,7 @@ def test_headroom_backend_reports_provider_failure(
 ) -> None:
     """Headroom provider failures are normalized."""
 
-    def fail_compress(_content: str) -> str:
+    def fail_compress(_messages: list[dict[str, str]]) -> str:
         raise RuntimeError("provider failed")
 
     fake_module = SimpleNamespace(compress=fail_compress)
@@ -163,6 +169,23 @@ def test_headroom_backend_normalizes_common_result_shapes() -> None:
     """Headroom adapter accepts common provider response shapes."""
 
     assert headroom_backend.normalized_headroom_content({"compressed": "dict text"})
+    assert (
+        headroom_backend.normalized_headroom_content(
+            {"messages": [{"content": "dict message"}]},
+        )
+        == "dict message"
+    )
+    assert (
+        headroom_backend.normalized_headroom_content(
+            SimpleNamespace(
+                messages=[
+                    {"content": "first"},
+                    SimpleNamespace(content="second"),
+                ],
+            ),
+        )
+        == "first\nsecond"
+    )
     assert (
         headroom_backend.normalized_headroom_content(
             SimpleNamespace(content="content attr"),
