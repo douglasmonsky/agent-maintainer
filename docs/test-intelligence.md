@@ -34,11 +34,29 @@ Change-budget warnings use this same mapping when source changes do not include
 likely relevant test changes. The warning stays non-blocking unless existing
 strict warning-as-error options are enabled.
 
+## Hypothesis Candidate Guidance
+
+Run:
+
+```bash
+python -m agent_maintainer test-intel hypothesis-candidates
+python -m agent_maintainer test-intel hypothesis-candidates --changed
+python -m agent_maintainer test-intel hypothesis-candidates --format json
+```
+
+The command scans configured source roots and ranks functions that look like good
+property-test candidates: typed functions, branchy decision logic, pure-ish
+parsers, validators, normalizers, and numeric or string boundary behavior.
+
+Output is advisory only. Suggested scaffolds are starting points, not verified
+contracts, and the command does not import Hypothesis, run tests, or modify
+files.
+
 ## Planned Next Layers
 
 Planned capabilities include smarter source-without-test guidance, branch
-coverage signals, mutation-test target suggestions, Hypothesis candidate
-guidance, and CrossHair candidate guidance for pure typed functions.
+coverage signals, mutation-test target suggestions, and CrossHair candidate
+guidance for pure typed functions.
 
 These signals should guide better tests without encouraging coverage theater or
 turning slow research tools into normal precommit gates.
