@@ -101,7 +101,13 @@ Planned work:
 - [x] Phase 32: Repair Plan Command
 - [x] Phase 33: Agent Adapter API
 - [x] Phase 33A: Tach Architecture Contract Refit
-- [ ] Phase 34: Static HTML Report
+- [x] Phase 34: Static HTML Report
+- [ ] Phase 34B: Review-Driven Stabilization Plan
+- [ ] Phase 34C: Headroom Backend Correctness
+- [ ] Phase 34D: Change-Plan Authority Over Legacy Overrides
+- [ ] Phase 34E: Coverage Semantics Hardening
+- [ ] Phase 34F: Exact Repair Facts From Structured Artifacts
+- [ ] Phase 34G: Beta Release Metadata Refresh
 - [ ] Phase 35: External Case Studies Measured Proof Harness
 - [ ] Phase 36: Monorepo / Multi-Package Support
 - [ ] Phase 37: Team Policy Templates
