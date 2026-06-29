@@ -7,6 +7,7 @@ from pathlib import Path
 
 from agent_maintainer.config import schema as maintainer_config_schema
 from agent_maintainer.core import config as maintainer_config
+from agent_maintainer.doctor.support import context_artifacts
 from agent_maintainer.doctor.support.models import (
     ACTIVE,
     DISABLED,
@@ -17,6 +18,8 @@ from agent_maintainer.doctor.support.models import (
     DoctorResult,
 )
 from agent_maintainer.models import SECURITY_PROFILE, VALID_PROFILES
+
+check_context_pack_upload_policy = context_artifacts.check_context_pack_upload_policy
 
 
 def check_pyright_config(

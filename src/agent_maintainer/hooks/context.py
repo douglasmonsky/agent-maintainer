@@ -31,6 +31,11 @@ def failure_context(
     """Return compact bounded hook failure context."""
 
     raw_output = failure_output(result)
+    if not config.context_write_context_packs:
+        return truncate_output(
+            f"{raw_output}\n\nContext pack writing disabled by config.",
+            limit,
+        )
     try:
         pack = write_hook_context_pack(repo_root, config)
     except (OSError, ValueError) as exc:

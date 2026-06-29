@@ -71,6 +71,9 @@ BOOL_ENVS = (
         "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_ENABLED",
     ),
     ("diagnostic_artifacts_enabled", "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED"),
+    ("context_write_context_packs", "AGENT_MAINTAINER_CONTEXT_WRITE_CONTEXT_PACKS"),
+    ("context_packs_local_only", "AGENT_MAINTAINER_CONTEXT_PACKS_LOCAL_ONLY"),
+    ("context_pack_contains_source", "AGENT_MAINTAINER_CONTEXT_PACK_CONTAINS_SOURCE"),
     (
         "context_require_outline_for_large_files",
         "AGENT_MAINTAINER_CONTEXT_REQUIRE_OUTLINE_FOR_LARGE_FILES",

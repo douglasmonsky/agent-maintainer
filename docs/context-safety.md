@@ -120,6 +120,41 @@ targets when a baseline exists, records omitted counts, and ends with safe
 expansion commands. Use the JSON pack for automation and the Markdown pack for
 human or agent handoff.
 
+## Retention and Upload Policy
+
+Context packs are local-only by default because they may include source excerpts
+and selected verification output:
+
+```text
+.verify-logs/context/PACK.md
+.verify-logs/context/PACK.json
+```
+
+Keep normal verification artifacts upload-safe by uploading explicit top-level
+paths such as:
+
+```text
+.verify-logs/manifest.json
+.verify-logs/LAST_FAILURE.md
+.verify-logs/*.log
+.verify-logs/*.json
+!.verify-logs/context/**
+```
+
+Do not upload the whole `.verify-logs/` directory unless context packs are
+explicitly disabled or marked upload-safe with:
+
+```toml
+[tool.agent_maintainer]
+context_write_context_packs = false
+# or:
+context_packs_local_only = false
+context_pack_contains_source = false
+```
+
+`agent-maintainer doctor` warns when GitHub Actions artifact upload settings can
+include local-only source-bearing context packs.
+
 ## Hook Failure Pointers
 
 Agent Maintainer hooks generate a context pack when verification fails and then

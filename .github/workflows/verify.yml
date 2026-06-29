@@ -116,10 +116,15 @@ jobs:
           python3 -m agent_maintainer verify --profile ci \
             --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
 
-      - name: Upload full verification logs
+      - name: Upload safe verification logs
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: verify-logs
-          path: .verify-logs/
+          path: |
+            .verify-logs/manifest.json
+            .verify-logs/LAST_FAILURE.md
+            .verify-logs/*.log
+            .verify-logs/*.json
+            !.verify-logs/context/**
           if-no-files-found: ignore

@@ -137,6 +137,9 @@ BOOL_FIELDS = frozenset(
         "allow_source_without_test_change",
         "cohesive_change_override_enabled",
         "diagnostic_artifacts_enabled",
+        "context_write_context_packs",
+        "context_packs_local_only",
+        "context_pack_contains_source",
         "context_require_outline_for_large_files",
         "context_compression_enabled",
         "context_compression_require_backend",
@@ -247,6 +250,9 @@ class MaintainerConfig:
     context_max_direct_log_read_lines: int = 200
     context_max_failure_items: int = 10
     context_max_paths_default: int = 50
+    context_write_context_packs: bool = True
+    context_packs_local_only: bool = True
+    context_pack_contains_source: bool = True
     context_require_outline_for_large_files: bool = True
     context_compression_enabled: bool = False
     context_compression_backend: str = EXTRACTIVE_COMPRESSION_BACKEND

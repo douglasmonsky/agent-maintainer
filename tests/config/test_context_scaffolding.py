@@ -21,6 +21,9 @@ EXPECTED_SCAFFOLDING_DEFAULTS = {
     "context_max_direct_log_read_lines": 200,
     "context_max_failure_items": 10,
     "context_max_paths_default": 50,
+    "context_write_context_packs": True,
+    "context_packs_local_only": True,
+    "context_pack_contains_source": True,
     "context_require_outline_for_large_files": True,
     "context_compression_enabled": False,
     "context_compression_backend": "extractive",
@@ -49,6 +52,9 @@ PYPROJECT_OVERRIDE_EXPECTED = {
     "context_max_direct_log_read_lines": 170,
     "context_max_failure_items": 18,
     "context_max_paths_default": 19,
+    "context_write_context_packs": False,
+    "context_packs_local_only": False,
+    "context_pack_contains_source": False,
     "context_require_outline_for_large_files": False,
     "context_compression_enabled": True,
     "context_compression_backend": "extractive",
@@ -69,6 +75,9 @@ PYPROJECT_OVERRIDE_EXPECTED = {
 ENV_OVERRIDE_EXPECTED = {
     "context_default_budget_chars": 2000,
     "context_hook_budget_chars": 2100,
+    "context_write_context_packs": False,
+    "context_packs_local_only": False,
+    "context_pack_contains_source": False,
     "context_compression_enabled": True,
     "context_compression_backend": "extractive",
     "context_compression_target_ratio": 0.4,
@@ -100,6 +109,9 @@ def scaffolding_values(config: schema.MaintainerConfig) -> dict[str, object]:
         "context_max_direct_log_read_lines": config.context_max_direct_log_read_lines,
         "context_max_failure_items": config.context_max_failure_items,
         "context_max_paths_default": config.context_max_paths_default,
+        "context_write_context_packs": config.context_write_context_packs,
+        "context_packs_local_only": config.context_packs_local_only,
+        "context_pack_contains_source": config.context_pack_contains_source,
         "context_require_outline_for_large_files": (config.context_require_outline_for_large_files),
         "context_compression_enabled": config.context_compression_enabled,
         "context_compression_backend": config.context_compression_backend,
@@ -141,6 +153,9 @@ context_max_direct_file_read_lines = 160
 context_max_direct_log_read_lines = 170
 context_max_failure_items = 18
 context_max_paths_default = 19
+context_write_context_packs = false
+context_packs_local_only = false
+context_pack_contains_source = false
 context_require_outline_for_large_files = false
 context_compression_enabled = true
 context_compression_backend = "extractive"
@@ -175,6 +190,9 @@ def test_context_scaffolding_environment_overrides(
     envs = {
         "AGENT_MAINTAINER_CONTEXT_DEFAULT_BUDGET_CHARS": "2000",
         "AGENT_MAINTAINER_CONTEXT_HOOK_BUDGET_CHARS": "2100",
+        "AGENT_MAINTAINER_CONTEXT_WRITE_CONTEXT_PACKS": "false",
+        "AGENT_MAINTAINER_CONTEXT_PACKS_LOCAL_ONLY": "false",
+        "AGENT_MAINTAINER_CONTEXT_PACK_CONTAINS_SOURCE": "false",
         "AGENT_MAINTAINER_CONTEXT_COMPRESSION_ENABLED": "true",
         "AGENT_MAINTAINER_CONTEXT_COMPRESSION_BACKEND": "extractive",
         "AGENT_MAINTAINER_CONTEXT_COMPRESSION_TARGET_RATIO": "0.4",
