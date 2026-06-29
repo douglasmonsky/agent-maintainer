@@ -1,0 +1,14 @@
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.agent_maintainer]
+mode = "fresh-strict"
+source_roots = ["src"]
+test_roots = ["tests"]
+package_paths = ["src"]
+coverage_source = ["src"]
+file_length_paths = ["src", "tests"]
+source_without_test_change_error_profiles = ["precommit", "full", "ci"]
+enable_pip_audit = false
+enable_secret_scanning = false

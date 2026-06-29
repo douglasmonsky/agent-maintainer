@@ -1,0 +1,21 @@
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.agent_maintainer]
+mode = "legacy-ratchet"
+source_roots = ["src"]
+test_roots = ["tests"]
+package_paths = ["src"]
+coverage_source = ["src"]
+file_length_paths = ["src", "tests"]
+ratchet_enabled = true
+ratchet_baseline_path = ".agent-maintainer/ratchet-baseline.json"
+context_write_context_packs = true
+context_packs_local_only = true
+context_pack_contains_source = true
+context_require_outline_for_large_files = true
+context_large_file_threshold_lines = 80
+context_large_file_threshold_bytes = 12000
+enable_pip_audit = false
+enable_secret_scanning = false

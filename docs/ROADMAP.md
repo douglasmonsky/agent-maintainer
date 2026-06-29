@@ -94,7 +94,7 @@ Planned work:
 - [x] Phase 25: Compression Backend Interface
 - [x] Phase 26: Optional Headroom Backend
 - [x] Phase 27: Doctor Integration
-- [ ] Phase 28: Examples Proof Repos
+- [x] Phase 28: Examples Proof Repos
 - [ ] Phase 29: PR / GitHub Actions Summary Report
 - [ ] Phase 30: Policy Packs Onboarding Presets
 - [ ] Phase 31: Archguard Impact Analysis
