@@ -74,7 +74,9 @@ def test_large_log_refuses_without_confirmation(tmp_path: Path) -> None:
     )
 
     assert selection.refused is True
-    assert "Requested output approximately" in selection.text
+    assert "Requested output is approximately" in selection.text
+    assert "Estimated tokens:" in selection.text
+    assert "context estimate --log pyright" in selection.text
     assert "--confirm-large" in selection.text
 
 

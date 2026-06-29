@@ -6,6 +6,12 @@ import argparse
 import sys
 from pathlib import Path
 
+from agent_maintainer.context.estimate import (
+    EstimateRequest,
+    estimate_context,
+    render_estimate_json,
+    render_estimate_text,
+)
 from agent_maintainer.context.failures import (
     DEFAULT_CONTEXT_BUDGET,
     DEFAULT_FAILURE_LIMIT,
@@ -25,9 +31,25 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="python -m agent_maintainer context")
     parser.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     subparsers = parser.add_subparsers(dest="command", required=True)
+    add_estimate_parser(subparsers)
     add_failures_parser(subparsers)
     add_log_parser(subparsers)
     return parser.parse_args(argv)
+
+
+def add_estimate_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register estimate subcommand."""
+
+    parser = subparsers.add_parser("estimate", help="Estimate context expansion size.")
+    parser.add_argument("--file", type=Path)
+    parser.add_argument("--log")
+    parser.add_argument("--diff", action="store_true")
+    parser.add_argument("--summary", action="store_true")
+    parser.add_argument("--head", type=int)
+    parser.add_argument("--tail", type=int)
+    parser.add_argument("--lines")
+    parser.add_argument("--budget", type=int, default=DEFAULT_CONTEXT_BUDGET)
+    parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
 
 
 def add_failures_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -67,11 +89,36 @@ def main(argv: list[str]) -> int:
 def run_context_command(args: argparse.Namespace) -> int:
     """Run parsed context subcommand."""
 
+    if args.command == "estimate":
+        return run_estimate(args)
     if args.command == "failures":
         return run_failures(args)
     if args.command == "log":
         return run_log(args)
     return 2
+
+
+def run_estimate(args: argparse.Namespace) -> int:
+    """Run estimate subcommand."""
+
+    estimate = estimate_context(
+        EstimateRequest(
+            log_dir=args.log_dir,
+            file_path=args.file,
+            log_check=args.log,
+            log_request=LogRequest(head=args.head, tail=args.tail, line_range=args.lines),
+            diff=args.diff,
+            diff_summary=args.summary,
+            budget=args.budget,
+        ),
+    )
+    output = (
+        render_estimate_json(estimate)
+        if args.format == FORMAT_JSON
+        else render_estimate_text(estimate)
+    )
+    print(output)
+    return 0
 
 
 def run_failures(args: argparse.Namespace) -> int:
