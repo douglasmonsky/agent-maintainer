@@ -106,7 +106,7 @@ Planned work:
 - [x] Phase 34C: Headroom Backend Correctness
 - [x] Phase 34D: Change-Plan Authority Over Legacy Overrides
 - [x] Phase 34E: Coverage Semantics Hardening
-- [ ] Phase 34F: Exact Repair Facts From Structured Artifacts
+- [x] Phase 34F: Exact Repair Facts From Structured Artifacts
 - [ ] Phase 34G: Beta Release Metadata Refresh
 - [ ] Phase 35: External Case Studies Measured Proof Harness
 - [ ] Phase 36: Monorepo / Multi-Package Support

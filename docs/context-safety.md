@@ -120,6 +120,12 @@ targets when a baseline exists, records omitted counts, and ends with safe
 expansion commands. Use the JSON pack for automation and the Markdown pack for
 human or agent handoff.
 
+Exact repair facts are structured and bounded. When verifier artifacts provide
+machine-readable locations, such as Ruff, Pyright, or Bandit JSON, context packs
+surface the check, file, line, symbol, severity, and message before any log
+expansion. Logs remain supporting evidence, not the primary source of repair
+facts.
+
 ## Retention and Upload Policy
 
 Context packs are local-only by default because they may include source excerpts
