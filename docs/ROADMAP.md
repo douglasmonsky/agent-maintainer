@@ -2,26 +2,31 @@
 
 ## Read This First
 
-This file is the implementation tracker for the Agent Maintainer roadmap. It is
-only a checklist and recovery index, not the detailed implementation spec.
+This file is an implementation tracker for the Agent Maintainer roadmap. It is
+only a checklist recovery index, not the detailed implementation spec.
+
+The roadmap guide explains how to use the detailed spec:
+
+[`docs/roadmap/README.md`](roadmap/README.md).
 
 The full roadmap blueprint is intentionally vendored into this repository here:
 
 [`docs/roadmap/full-roadmap-blueprint.md`](roadmap/full-roadmap-blueprint.md).
 
-Before implementing a phase, reopen the matching phase in that blueprint first
-and follow its scope, file targets, tests, documentation requirements,
-acceptance criteria, and explicit out-of-scope rules. Do not infer phase
-requirements from this checklist alone. If chat context is compacted or
-interrupted, resume from this checklist only after reopening the full blueprint.
+Before implementing a phase, reopen the roadmap guide and the matching phase in
+the full blueprint first. Follow the blueprint's scope, file targets, tests,
+documentation requirements, acceptance criteria, and explicit out-of-scope
+rules. Do not infer phase requirements from this checklist alone. If chat
+context is compacted or interrupted, resume from this checklist only after
+reopening the roadmap guide and full blueprint.
 
-If the detailed blueprint appears missing or stale, restore it from the source
-document named `agent-maintainer-full-roadmap-blueprint.md` before continuing
+If the detailed blueprint appears missing or stale, restore the source document
+named `agent-maintainer-full-roadmap-blueprint.md` before continuing
 implementation.
 
-Agent Maintainer is in beta. The current major roadmap is context-safe legacy
-ratchets, test intelligence, planned large-change support, and optional
-compression. Do not collapse this into one large PR. The blueprint requires one
+Agent Maintainer is in beta. The current major roadmap covers context-safe
+legacy ratchets, test intelligence, planned large-change support, and optional
+compression. Do not collapse it into one large PR. The blueprint requires one
 phase per PR unless the user explicitly changes that rule.
 
 ## Current Baseline
@@ -74,7 +79,7 @@ Planned work:
 - [x] Phase 15: Generate `AGENTS.ratchet.md`
 - [x] Phase 16: Context Packs
 - [x] Phase 17: Hook Output Uses Context Packs
-- [ ] Phase 18: Context Artifact Retention Upload Policy
+- [x] Phase 18: Context Artifact Retention Upload Policy
 - [ ] Phase 19: Hypothesis Candidate Guidance
 - [ ] Phase 20: Mutmut Target Suggestions
 - [ ] Phase 21: CrossHair Candidate Guidance

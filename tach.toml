@@ -102,6 +102,7 @@ paths = [
   "agent_maintainer.core.tool_capability_types",
   "agent_maintainer.core.tool_capabilities",
   "agent_maintainer.doctor.support",
+  "agent_maintainer.doctor.support.context_artifacts",
   "agent_maintainer.doctor.support.hook_audit",
   "agent_maintainer.doctor.support.policy",
   "agent_maintainer.context.diff_classify",
