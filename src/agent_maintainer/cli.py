@@ -44,6 +44,7 @@ python -m agent_maintainer hooks status
   python -m agent_maintainer install
   python -m agent_maintainer ratchet status
   python -m agent_maintainer test-intel changed
+  python -m agent_maintainer test-intel hypothesis-candidates --changed
   python -m agent_maintainer verify --profile fast
   python -m agent_maintainer verify --profile precommit
   python -m agent_maintainer verify --profile full

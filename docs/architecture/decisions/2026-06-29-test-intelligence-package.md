@@ -17,7 +17,10 @@ CLI argument handling and command assembly.
 
 Add `agent_maintainer.test_intel`, `changed`, `coverage`, `mapping`, and
 `reporting` to the runtime layer because they read local repository state,
-inspect files, and format deterministic command output.
+inspect files, and format deterministic command output. Add
+`hypothesis_candidates`, `hypothesis_scaffolds`, and `hypothesis_reporting` to
+the same runtime layer because they inspect source ASTs and emit advisory
+property-test guidance without changing verifier outcomes.
 
 Add `agent_maintainer.test_intel.models` to the models layer because it contains
 pure report value objects.

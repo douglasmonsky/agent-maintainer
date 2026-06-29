@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from agent_maintainer.config import loader
+from agent_maintainer.test_intel import hypothesis_candidates, hypothesis_reporting
 from agent_maintainer.test_intel.changed import changed_source_paths
 from agent_maintainer.test_intel.coverage import coverage_for_changed_sources
 from agent_maintainer.test_intel.mapping import likely_tests_for_changes
@@ -37,6 +38,23 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         choices=(FORMAT_TEXT, FORMAT_JSON),
         default=FORMAT_TEXT,
     )
+    hypothesis_parser = subparsers.add_parser(
+        "hypothesis-candidates",
+        help="Suggest advisory Hypothesis property-test candidates.",
+    )
+    hypothesis_parser.add_argument("--changed", action="store_true")
+    hypothesis_parser.add_argument("--base-ref", default="HEAD")
+    hypothesis_parser.add_argument("--staged", action="store_true")
+    hypothesis_parser.add_argument(
+        "--limit",
+        type=int,
+        default=hypothesis_candidates.DEFAULT_LIMIT,
+    )
+    hypothesis_parser.add_argument(
+        "--format",
+        choices=(FORMAT_TEXT, FORMAT_JSON),
+        default=FORMAT_TEXT,
+    )
     return parser.parse_args(argv)
 
 
@@ -46,6 +64,8 @@ def main(argv: list[str]) -> int:
     args = parse_args(argv)
     if args.command == "changed":
         return run_changed(args)
+    if args.command == "hypothesis-candidates":
+        return run_hypothesis_candidates(args)
     return 2
 
 
@@ -78,6 +98,42 @@ def build_changed_report(*, base_ref: str, staged: bool, repo_root: Path) -> Tes
         coverage=coverage,
         suggested_actions=suggested_actions(matches),
     )
+
+
+def run_hypothesis_candidates(args: argparse.Namespace) -> int:
+    """Run advisory Hypothesis candidate report."""
+
+    repo_root = Path.cwd()
+    config = loader.load_config()
+    try:
+        changed_source = (
+            changed_source_paths(config, base_ref=args.base_ref, staged=args.staged)
+            if args.changed
+            else ()
+        )
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    report = hypothesis_candidates.build_hypothesis_candidate_report(
+        config,
+        repo_root,
+        changed_only=args.changed,
+        changed_source=changed_source,
+        limit=args.limit,
+    )
+    print(render_hypothesis_report(report, args.format))
+    return 0
+
+
+def render_hypothesis_report(
+    report: hypothesis_candidates.HypothesisCandidateReport,
+    output_format: str,
+) -> str:
+    """Render Hypothesis candidate report in selected format."""
+
+    if output_format == FORMAT_JSON:
+        return hypothesis_reporting.render_json(report)
+    return hypothesis_reporting.render_text(report)
 
 
 def render_report(report: TestIntelReport, output_format: str) -> str:
