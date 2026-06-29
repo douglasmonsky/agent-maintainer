@@ -114,6 +114,8 @@ paths = [
   "agent_maintainer.ratchet",
   "agent_maintainer.ratchet.baseline",
   "agent_maintainer.ratchet.findings",
+  "agent_maintainer.ratchet.ranking",
+  "agent_maintainer.ratchet.reporting",
   "agent_maintainer.ratchet.status",
   "agent_maintainer.test_intel",
   "agent_maintainer.test_intel.changed",

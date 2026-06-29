@@ -7,6 +7,7 @@ import json
 import sys
 from pathlib import Path
 
+from agent_maintainer.core.config import load_config
 from agent_maintainer.ratchet.baseline import (
     create_baseline,
     default_baseline_path,
@@ -15,6 +16,8 @@ from agent_maintainer.ratchet.baseline import (
 )
 from agent_maintainer.ratchet.findings import DEFAULT_CHECKS
 from agent_maintainer.ratchet.models import RatchetStatusReport
+from agent_maintainer.ratchet.ranking import changed_paths, ranked_targets
+from agent_maintainer.ratchet.reporting import render_targets_json, render_targets_text
 from agent_maintainer.ratchet.status import status_report
 
 
@@ -26,6 +29,8 @@ def main(argv: list[str] | None = None) -> int:
         return baseline_command(args)
     if args.command == "status":
         return status_command(args)
+    if args.command == "next":
+        return next_command(args)
     if args.command == "explain":
         return explain_command()
     return 2
@@ -37,6 +42,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="python -m agent_maintainer ratchet")
     subparsers = parser.add_subparsers(dest="command", required=True)
     add_status_parser(subparsers)
+    add_next_parser(subparsers)
     add_explain_parser(subparsers)
     add_baseline_parser(subparsers)
     return parser.parse_args(argv)
@@ -49,6 +55,16 @@ def add_status_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPa
     status_parser.add_argument("--baseline")
     status_parser.add_argument("--base-ref", default="HEAD")
     status_parser.add_argument("--format", choices=("text", "json"), default="text")
+
+
+def add_next_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Add next-target subcommand parser."""
+
+    next_parser = subparsers.add_parser("next")
+    next_parser.add_argument("--baseline")
+    next_parser.add_argument("--base-ref", default="HEAD")
+    next_parser.add_argument("--limit", type=int)
+    next_parser.add_argument("--format", choices=("text", "json"), default="text")
 
 
 def add_explain_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -122,6 +138,27 @@ def status_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def next_command(args: argparse.Namespace) -> int:
+    """Print ranked ratchet targets."""
+
+    path = selected_baseline_path(args)
+    if not path.exists():
+        print(f"ratchet baseline not found: {path}", file=sys.stderr)
+        return 1
+    limit = selected_limit(args)
+    report = status_report(read_baseline(path), base_ref=args.base_ref)
+    targets = ranked_targets(
+        report,
+        changed_path_set=changed_paths(args.base_ref),
+        limit=limit,
+    )
+    if args.format == "json":
+        print(render_targets_json(targets))
+        return 0
+    print(render_targets_text(targets))
+    return 0
+
+
 def explain_command() -> int:
     """Explain supported ratchet checks."""
 
@@ -144,6 +181,14 @@ def selected_checks(args: argparse.Namespace) -> tuple[str, ...]:
     """Return checks selected for baseline generation."""
 
     return tuple(args.check) if args.check else DEFAULT_CHECKS
+
+
+def selected_limit(args: argparse.Namespace) -> int:
+    """Return CLI or configured target limit."""
+
+    if args.limit is not None:
+        return args.limit
+    return load_config().ratchet_target_limit
 
 
 def print_status(path: Path, report: RatchetStatusReport) -> None:

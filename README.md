@@ -117,6 +117,7 @@ python3 -m agent_maintainer hooks status all
 python3 -m agent_maintainer hooks install all --dry-run
 python3 -m agent_maintainer hooks install claude-code --scope user
 python3 -m agent_maintainer ratchet status
+python3 -m agent_maintainer ratchet next
 python3 -m archguard tach-config --strict-root-module
 python3 -m archguard decision-check --base-ref HEAD
 ```
