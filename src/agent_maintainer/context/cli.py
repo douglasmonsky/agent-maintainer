@@ -6,6 +6,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from agent_maintainer.context.diff import render_diff
+from agent_maintainer.context.diff_git import DEFAULT_DIFF_PATH_LIMIT, DiffRequest
 from agent_maintainer.context.estimate import (
     EstimateRequest,
     estimate_context,
@@ -38,11 +40,26 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="python -m agent_maintainer context")
     parser.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     subparsers = parser.add_subparsers(dest="command", required=True)
+    add_diff_parser(subparsers)
     add_estimate_parser(subparsers)
     add_file_parser(subparsers)
     add_failures_parser(subparsers)
     add_log_parser(subparsers)
     return parser.parse_args(argv)
+
+
+def add_diff_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register diff subcommand."""
+
+    parser = subparsers.add_parser("diff", help="Show bounded Git diff context.")
+    parser.add_argument("--summary", action="store_true")
+    parser.add_argument("--name-only", action="store_true")
+    parser.add_argument("--path")
+    parser.add_argument("--hunks", type=int)
+    parser.add_argument("--base-ref", default="HEAD")
+    parser.add_argument("--staged", action="store_true")
+    parser.add_argument("--limit", type=int, default=DEFAULT_DIFF_PATH_LIMIT)
+    parser.add_argument("--budget", type=int, default=DEFAULT_CONTEXT_BUDGET)
 
 
 def add_estimate_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -112,14 +129,15 @@ def main(argv: list[str]) -> int:
 def run_context_command(args: argparse.Namespace) -> int:
     """Run parsed context subcommand."""
 
-    if args.command == "estimate":
-        return run_estimate(args)
-    if args.command == "file":
-        return run_file(args)
-    if args.command == "failures":
-        return run_failures(args)
-    if args.command == "log":
-        return run_log(args)
+    runner = {
+        "diff": run_diff,
+        "estimate": run_estimate,
+        "failures": run_failures,
+        "file": run_file,
+        "log": run_log,
+    }.get(args.command)
+    if runner is not None:
+        return runner(args)
     return 2
 
 
@@ -143,6 +161,26 @@ def run_estimate(args: argparse.Namespace) -> int:
         else render_estimate_text(estimate)
     )
     print(output)
+    return 0
+
+
+def run_diff(args: argparse.Namespace) -> int:
+    """Run diff subcommand."""
+
+    result = render_diff(
+        DiffRequest(
+            repo=Path.cwd(),
+            base_ref=args.base_ref,
+            staged=args.staged,
+            summary=args.summary,
+            name_only=args.name_only,
+            path=args.path,
+            limit=args.limit,
+            hunks=args.hunks,
+            budget=args.budget,
+        ),
+    )
+    print(result.text)
     return 0
 
 
