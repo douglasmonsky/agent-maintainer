@@ -79,7 +79,7 @@ Tach and Import Linter are supported architecture boundary backends. `architectu
 
 This repository uses Tach for its own Agent Maintainer modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules. In strict mode, the config check also requires each non-init Python source file under Tach's checked roots to appear explicitly in a Tach module entry, and each configured module entry must still resolve to source, so broad parent modules and stale references cannot hide ownership drift.
 
-Archguard runs alongside Tach when `architecture_tool = "tach"`. Tach enforces the current architecture contract. Archguard governs changes to that contract. If `tach.toml` or `tach.domain.toml` changes, Archguard requires an architecture decision note in `docs/architecture/decisions/`.
+Archguard runs alongside Tach when `architecture_tool = "tach"`. Tach enforces the current architecture contract. Archguard governs changes to that contract. If `tach.toml` or `tach.domain.toml` changes, Archguard requires an architecture decision note in `docs/architecture/decisions/`. `archguard map`, `archguard impact <path>`, and `archguard explain-boundary <source> <target>` provide read-only ownership, dependency-direction, affected-test, boundary-violation, and decision-note context before editing architecture-sensitive files.
 
 ## Diff hygiene gates
 

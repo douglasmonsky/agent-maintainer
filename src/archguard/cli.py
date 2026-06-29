@@ -12,6 +12,12 @@ from archguard.decision_notes import (
     decision_check_failures,
     new_decision_note,
 )
+from archguard.impact import (
+    load_architecture,
+    render_boundary,
+    render_impact,
+    render_map,
+)
 from archguard.tach_config import tach_config_issues
 
 
@@ -20,12 +26,22 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="archguard")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    map_parser = subparsers.add_parser("map")
+    map_parser.set_defaults(handler=map_main_from_args)
+    impact_parser = subparsers.add_parser("impact")
+    impact_parser.add_argument("path", type=Path)
+    impact_parser.set_defaults(handler=impact_main_from_args)
+    boundary_parser = subparsers.add_parser("explain-boundary")
+    boundary_parser.add_argument("source", type=Path)
+    boundary_parser.add_argument("target", type=Path)
+    boundary_parser.set_defaults(handler=boundary_main_from_args)
     tach_parser = subparsers.add_parser("tach-config")
     tach_parser.add_argument(
         "--strict-root-module",
         action="store_true",
         help='Require root_module = "forbid".',
     )
+    tach_parser.set_defaults(handler=tach_config_main_from_args)
 
     decision_parser = subparsers.add_parser("decision-check")
     decision_parser.add_argument("--base-ref", default="HEAD")
@@ -42,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         default=[],
         help="Architecture policy pattern to watch. May be repeated.",
     )
+    decision_parser.set_defaults(handler=decision_check_main_from_args)
 
     decision_group = subparsers.add_parser("decision")
     decision_subparsers = decision_group.add_subparsers(
@@ -56,15 +73,9 @@ def main(argv: list[str] | None = None) -> int:
         help="Directory where the decision note should be created.",
     )
 
+    new_parser.set_defaults(handler=decision_new_main_from_args)
     args = parser.parse_args(argv)
-    if args.command == "tach-config":
-        return tach_config_main_from_args(args)
-    if args.command == "decision-check":
-        return decision_check_main_from_args(args)
-    if args.command == "decision" and args.decision_command == "new":
-        return decision_new_main_from_args(args)
-    parser.error(f"Unknown command: {args.command}")
-    return 2
+    return args.handler(args)
 
 
 def console_main() -> None:
@@ -81,6 +92,48 @@ def tach_config_main(argv: list[str] | None = None) -> int:
         help='Require root_module = "forbid".',
     )
     return tach_config_main_from_args(parser.parse_args(argv))
+
+
+def map_main_from_args(_args: argparse.Namespace) -> int:
+    """Run map command from parsed args."""
+
+    return map_main()
+
+
+def impact_main_from_args(args: argparse.Namespace) -> int:
+    """Run impact command from parsed args."""
+
+    return impact_main(args.path)
+
+
+def boundary_main_from_args(args: argparse.Namespace) -> int:
+    """Run boundary command from parsed args."""
+
+    return boundary_main(args.source, args.target)
+
+
+def map_main() -> int:
+    """Print Tach module ownership map."""
+
+    architecture = load_architecture(Path.cwd())
+    print(render_map(architecture))
+    return 0
+
+
+def impact_main(path: Path) -> int:
+    """Print architecture impact for one path."""
+
+    architecture = load_architecture(Path.cwd())
+    print(render_impact(Path.cwd(), architecture, path))
+    return 0
+
+
+def boundary_main(source: Path, target: Path) -> int:
+    """Print boundary explanation between two paths."""
+
+    architecture = load_architecture(Path.cwd())
+    print(render_boundary(Path.cwd(), architecture, source, target))
+    return 0
 
 
 def tach_config_main_from_args(args: argparse.Namespace) -> int:

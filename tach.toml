@@ -76,6 +76,7 @@ paths = [
   "archguard.cli",
   "archguard.decision_notes",
   "archguard.git_diff",
+  "archguard.impact",
   "archguard.models",
   "archguard.tach_config",
   "agent_maintainer.hooks",
