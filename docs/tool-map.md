@@ -64,6 +64,10 @@ terminal output stays compact; agents should use these artifacts for command,
 exit-code, threshold, log-path, and rerun context.
 Managed agent-client hooks append local execution evidence to
 `.verify-logs/hooks.jsonl`, and `doctor` reports latest audited hook status.
+Hook install/status behavior is routed through agent-client adapters. Current
+adapters are Codex and Claude Code; they own client-specific config paths and
+hook script paths, while the hook manager owns prompts, backups, merges, and
+writes.
 
 `repair-plan` prints a non-mutating repair sequence for the next agent loop.
 Use `python3 -m agent_maintainer repair-plan` for the latest failure,
@@ -83,9 +87,18 @@ wemake-python-styleguide is an opt-in strictness gate for fresh repos and clean 
 
 Interrogate checks docstring coverage. It runs only when `enable_interrogate = true` or `AGENT_MAINTAINER_ENABLE_INTERROGATE=1`; use `interrogate_fail_under` as a ratchet floor rather than forcing a legacy repo to document every helper at once.
 
-Tach and Import Linter are supported architecture boundary backends. `architecture_tool = "import-linter"` is the backward-compatible default. `architecture_tool = "tach"` runs an Archguard Tach config check and then `tach check --exact`.
+Tach and Import Linter are supported architecture boundary backends.
+`architecture_tool = "import-linter"` is the backward-compatible default.
+`architecture_tool = "tach"` runs Archguard Tach config check and then
+`tach check --exact`.
 
-This repository uses Tach for its own Agent Maintainer modules. Its `tach.toml` keeps entrypoints and orchestration depending inward on shared config, reporting, and model modules. In strict mode, the config check also requires each non-init Python source file under Tach's checked roots to appear explicitly in a Tach module entry, and each configured module entry must still resolve to source, so broad parent modules and stale references cannot hide ownership drift.
+This repository uses Tach for its own Agent Maintainer modules. Root
+`tach.toml` stays short; package-level contracts live beside code in
+`tach.domain.toml` files. In strict mode, the config check also requires each
+non-init Python source file under Tach's checked roots to appear explicitly in a
+Tach module entry, configured module entries to still resolve to source, every
+module to declare `depends_on`, and broad `paths = [...]` buckets to stay below
+the configured limit.
 
 Archguard runs alongside Tach when `architecture_tool = "tach"`. Tach enforces the current architecture contract. Archguard governs changes to that contract. If `tach.toml` or `tach.domain.toml` changes, Archguard requires an architecture decision note in `docs/architecture/decisions/`. `archguard map`, `archguard impact <path>`, and `archguard explain-boundary <source> <target>` provide read-only ownership, dependency-direction, affected-test, boundary-violation, and decision-note context before editing architecture-sensitive files.
 
@@ -201,9 +214,8 @@ Mode can be `custom`, `legacy-ratchet`, or `fresh-strict`. Built-in defaults app
 
 Missing required roots fail in `precommit`, `full`, and `ci`; optional integrations are reported as skipped. In `fresh-strict` mode with `architecture_tool = "tach"`, `tach.toml` must exist, use `root_module = "forbid"`, explicitly assign each non-init Python source module under Tach's checked roots, and avoid module entries that no longer resolve to source files.
 
-`doctor` checks that verifier diagnostics are coherent: logs exist, the manifest
-is present and newer than the latest raw log, manifest-referenced logs and
-artifacts still exist, `LAST_FAILURE.md` matches the pass/fail state of the
-latest manifest, and the latest manifest does not reference disabled or removed
-checks. It also checks the agent hook audit trail when repo-local hooks are
-enabled.
+`doctor` checks verifier diagnostics coherence: logs exist, the manifest is
+newer than the latest raw log, manifest-referenced log artifacts still exist,
+`LAST_FAILURE.md` matches the latest manifest pass/fail state, and the latest
+manifest does not reference disabled or removed checks. It also checks the
+agent hook audit trail when repo-local hooks are enabled.

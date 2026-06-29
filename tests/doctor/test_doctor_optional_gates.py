@@ -54,7 +54,7 @@ def test_optional_gates_warn_when_tach_config_is_missing(tmp_path: Path) -> None
     result = maintainer_doctor.check_optional_gates(tmp_path, config)
 
     assert result.status == maintainer_doctor.WARNING
-    assert "tach.toml is absent" in result.message
+    assert "tach.toml absent" in result.message
 
 
 def test_optional_gates_warn_when_fresh_strict_tach_is_permissive(tmp_path: Path) -> None:
@@ -65,6 +65,7 @@ root_module = "ignore"
 
 [[modules]]
 path = "scripts"
+depends_on = []
 """.strip(),
         encoding="utf-8",
     )
@@ -93,6 +94,7 @@ root_module = "forbid"
 
 [[modules]]
 path = "scripts"
+depends_on = []
 """.strip(),
         encoding="utf-8",
     )

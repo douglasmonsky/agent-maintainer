@@ -14,174 +14,59 @@ exclude = [
   "venv/",
 ]
 
-layers = ["entrypoint", "orchestration", "runtime", "shared", "models"]
+# Package-level contracts live beside code in tach.domain.toml files.
+# Do not add broad root path buckets just to make root_module pass.
 
 [[modules]]
-paths = [
-  "agent_maintainer.cli",
-  "agent_maintainer.__main__",
-  "agent_maintainer.hooks.cli",
-  "hook_audit",
-  "post_edit_fast_gate",
-  "post_tool_use",
-  "stop",
-  "stop_full_verify",
-  "subagent_stop",
-]
-layer = "entrypoint"
+path = "agent_maintainer.__main__"
+depends_on = ["agent_maintainer.cli"]
 
 [[modules]]
-paths = [
-  "agent_maintainer.catalogs",
-  "agent_maintainer.catalogs.catalog",
-  "agent_maintainer.catalogs.docs",
-  "agent_maintainer.catalogs.python",
-  "agent_maintainer.catalogs.security",
-  "agent_maintainer.change_plan.cli",
-  "agent_maintainer.change_plan.templates",
-  "agent_maintainer.checks.pip_audit_config",
-  "agent_maintainer.checks.tach_config",
-  "agent_maintainer.doctor",
-  "agent_maintainer.doctor.cli",
-  "agent_maintainer.doctor.setup",
-  "agent_maintainer.doctor.support.logs",
-  "agent_maintainer.core.bootstrap",
-  "agent_maintainer.core.init_presets",
-  "agent_maintainer.core.init_templates",
-  "agent_maintainer.core.initializer",
+path = "agent_maintainer.cli"
+depends_on = [
   "agent_maintainer.context.cli",
-  "agent_maintainer.context.packs",
-  "agent_maintainer.hooks.context",
-  "agent_maintainer.hooks.manager",
-  "agent_maintainer.hooks.merge",
-  "agent_maintainer.hooks.runtime",
-  "agent_maintainer.hooks.templates",
-  "agent_maintainer.ratchet.cli",
-  "agent_maintainer.repair_plan.cli",
-  "agent_maintainer.runners",
-  "agent_maintainer.runners.bandit",
-  "agent_maintainer.runners.mutmut",
-  "agent_maintainer.runners.pyright",
-  "agent_maintainer.runners.ruff",
-  "agent_maintainer.runners.secret_scan",
+  "agent_maintainer.core.bootstrap",
+  "agent_maintainer.core.guidance",
+  "agent_maintainer.core.initializer",
+  "agent_maintainer.core.runtime",
+  "agent_maintainer.doctor.cli",
+  "agent_maintainer.hooks.cli",
   "agent_maintainer.test_intel.cli",
-  "agent_maintainer.verify",
   "agent_maintainer.verify.quiet",
 ]
-layer = "orchestration"
 
 [[modules]]
-paths = [
-  "archguard",
-  "archguard.__main__",
-  "archguard.cli",
-  "archguard.decision_notes",
-  "archguard.git_diff",
-  "archguard.impact",
-  "archguard.models",
-  "archguard.tach_config",
-  "agent_maintainer.hooks",
-  "agent_maintainer.hooks.audit",
-]
-layer = "runtime"
+path = "hook_audit"
+depends_on = []
 
 [[modules]]
-paths = [
-  "agent_maintainer.checks",
-  "agent_maintainer.checks.change_budget",
-  "agent_maintainer.checks.change_budget_plans",
-  "agent_maintainer.checks.cohesive_override",
-  "agent_maintainer.checks.file_lengths",
-  "agent_maintainer.checks.structure",
-  "agent_maintainer.checks.suppression_budget",
-  "agent_maintainer.checks.test_relevance",
-  "agent_maintainer.change_plan",
-  "agent_maintainer.change_plan.git_scope",
-  "agent_maintainer.change_plan.models",
-  "agent_maintainer.change_plan.parser",
-  "agent_maintainer.change_plan.validation",
-  "agent_maintainer.core",
-  "agent_maintainer.core.args",
-  "agent_maintainer.core.config",
-  "agent_maintainer.core.executor",
-  "agent_maintainer.core.guidance",
-  "agent_maintainer.core.init_template_config",
-  "agent_maintainer.core.layout",
-  "agent_maintainer.core.reporting",
-  "agent_maintainer.core.runtime",
-  "agent_maintainer.core.tool_capability_registry",
-  "agent_maintainer.core.tool_capability_types",
-  "agent_maintainer.core.tool_capabilities",
-  "agent_maintainer.doctor.support",
-  "agent_maintainer.doctor.support.context_artifacts",
-  "agent_maintainer.doctor.support.context_health",
-  "agent_maintainer.doctor.support.hook_audit",
-  "agent_maintainer.doctor.support.policy",
-  "agent_maintainer.context.compression_backends",
-  "agent_maintainer.context.diff_classify",
-  "agent_maintainer.context.diff_git",
-  "agent_maintainer.context.diff",
-  "agent_maintainer.context.estimate",
-  "agent_maintainer.context.file_safety",
-  "agent_maintainer.context.files",
-  "agent_maintainer.context.failures",
-  "agent_maintainer.context.headroom_backend",
-  "agent_maintainer.context.logs",
-  "agent_maintainer.context.pack_rendering",
-  "agent_maintainer.context.pack_compression",
-  "agent_maintainer.context.python_outline",
-  "agent_maintainer.ratchet",
-  "agent_maintainer.ratchet.baseline",
-  "agent_maintainer.ratchet.findings",
-  "agent_maintainer.ratchet.guidance",
-  "agent_maintainer.ratchet.ranking",
-  "agent_maintainer.ratchet.reporting",
-  "agent_maintainer.ratchet.status",
-  "agent_maintainer.repair_plan",
-  "agent_maintainer.repair_plan.planning",
-  "agent_maintainer.repair_plan.rendering",
-  "agent_maintainer.test_intel",
-  "agent_maintainer.test_intel.changed",
-  "agent_maintainer.test_intel.crosshair_candidates",
-  "agent_maintainer.test_intel.crosshair_reporting",
-  "agent_maintainer.test_intel.coverage",
-  "agent_maintainer.test_intel.hypothesis_candidates",
-  "agent_maintainer.test_intel.hypothesis_reporting",
-  "agent_maintainer.test_intel.hypothesis_scaffolds",
-  "agent_maintainer.test_intel.mapping",
-  "agent_maintainer.test_intel.mutation_reporting",
-  "agent_maintainer.test_intel.mutation_targets",
-  "agent_maintainer.test_intel.reporting",
-  "agent_maintainer.tach",
-]
-layer = "runtime"
+path = "post_edit_fast_gate"
+depends_on = []
 
 [[modules]]
-paths = [
-  "agent_maintainer",
-  "agent_maintainer.config",
-  "agent_maintainer.config.coercion",
-  "agent_maintainer.config.loader",
-  "agent_maintainer.config.modes",
-  "agent_maintainer.config.schema",
-  "agent_maintainer.context",
-  "agent_maintainer.context.budget",
-  "agent_maintainer.context.formatting",
-  "agent_maintainer.context.sanitize",
-  "agent_maintainer.verify.artifacts",
-  "agent_maintainer.verify.pr_summary",
-  "agent_maintainer.verify.pr_summary_support",
-]
-layer = "shared"
+path = "post_tool_use"
+depends_on = []
 
 [[modules]]
-paths = [
-  "agent_maintainer.models",
-  "agent_maintainer.context.compression",
-  "agent_maintainer.context.models",
-  "agent_maintainer.doctor.support.models",
-  "agent_maintainer.ratchet.models",
-  "agent_maintainer.repair_plan.models",
-  "agent_maintainer.test_intel.models",
-]
-layer = "models"
+path = "stop"
+depends_on = []
+
+[[modules]]
+path = "stop_full_verify"
+depends_on = []
+
+[[modules]]
+path = "subagent_stop"
+depends_on = []
+
+[[modules]]
+path = "agent_maintainer"
+depends_on = []
+
+[[modules]]
+path = "agent_maintainer.models"
+depends_on = []
+
+[[modules]]
+path = "agent_maintainer.tach"
+depends_on = ["archguard.tach_config"]

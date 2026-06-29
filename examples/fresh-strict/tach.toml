@@ -4,3 +4,4 @@ exact = true
 
 [[modules]]
 path = "fresh_strict_example"
+depends_on = []

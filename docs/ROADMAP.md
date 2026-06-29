@@ -99,7 +99,8 @@ Planned work:
 - [x] Phase 30: Policy Packs Onboarding Presets
 - [x] Phase 31: Archguard Impact Analysis
 - [x] Phase 32: Repair Plan Command
-- [ ] Phase 33: Agent Adapter API
+- [x] Phase 33: Agent Adapter API
+- [x] Phase 33A: Tach Architecture Contract Refit
 - [ ] Phase 34: Static HTML Report
 - [ ] Phase 35: External Case Studies Measured Proof Harness
 - [ ] Phase 36: Monorepo / Multi-Package Support

@@ -11,6 +11,10 @@ Supported clients:
 | Codex | `.codex/config.toml` | `.codex/hooks/post_edit_fast_gate.py`, `.codex/hooks/stop_full_verify.py` |
 | Claude Code | `.claude/settings.json` | `.claude/hooks/post_tool_use.py`, `.claude/hooks/stop.py`, `.claude/hooks/subagent_stop.py` |
 
+Internally, each client is represented by an `AgentClientAdapter`. Adapters own
+client-specific config and hook paths. The shared hook manager still owns
+permission prompts, dry-run behavior, backups, merge policy, and file writes.
+
 Install repo-local hook files:
 
 ```bash

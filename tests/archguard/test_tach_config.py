@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from archguard import tach_config
+from archguard import tach_config, tach_config_domains, tach_config_sources
 from archguard.cli import tach_config_main
 
 
@@ -32,7 +32,7 @@ def test_tach_config_issues_reports_invalid_toml(tmp_path: Path) -> None:
 
     issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
-    assert issues[0].startswith("tach.toml is invalid:")
+    assert issues[0].startswith("tach.toml invalid:")
 
 
 def test_tach_config_issues_requires_source_roots(tmp_path: Path) -> None:
@@ -70,16 +70,18 @@ exclude = ["tests/"]
 
 [[modules]]
 path = "package"
+depends_on = []
 
 [[modules]]
 path = "package.known"
+depends_on = []
 """.strip(),
         encoding="utf-8",
     )
 
     issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
-    assert issues == ["tach.toml must explicitly assign source modules: package.stale"]
+    assert issues == ["tach.toml must explicitly list source modules: package.stale"]
 
 
 def test_tach_config_issues_truncates_many_missing_modules(tmp_path: Path) -> None:
@@ -97,6 +99,7 @@ root_module = "forbid"
 
 [[modules]]
 paths = ["package.known"]
+depends_on = []
 """.strip(),
         encoding="utf-8",
     )
@@ -104,7 +107,7 @@ paths = ["package.known"]
     issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
     assert issues == [
-        "tach.toml must explicitly assign source modules: "
+        "tach.toml must explicitly list source modules: "
         "package.stale_0, package.stale_1, package.stale_2, "
         "package.stale_3, package.stale_4, ... (1 more)"
     ]
@@ -123,6 +126,7 @@ root_module = "forbid"
 
 [[modules]]
 paths = ["package.known", "package.missing"]
+depends_on = []
 """.strip(),
         encoding="utf-8",
     )
@@ -145,13 +149,185 @@ modules = ["not-a-module-table"]
 
     issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
-    assert issues == ["each tach module must define path or paths"]
+    assert issues == ["each tach.toml module must define path or paths"]
+
+
+def test_tach_config_issues_require_dependency_contracts(tmp_path: Path) -> None:
+    """Require modules to declare dependency contracts, even when empty."""
+    package_path = tmp_path / "package"
+    package_path.mkdir()
+    (package_path / "__init__.py").write_text("", encoding="utf-8")
+    (package_path / "known.py").write_text("", encoding="utf-8")
+    (tmp_path / "tach.toml").write_text(
+        """
+source_roots = ["."]
+root_module = "forbid"
+
+[[modules]]
+path = "package.known"
+""".strip(),
+        encoding="utf-8",
+    )
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert issues == ["each tach.toml module must define depends_on: package.known"]
+
+
+def test_tach_config_issues_rejects_large_path_groups(tmp_path: Path) -> None:
+    """Reject broad path buckets that hide architecture ownership."""
+    package_path = tmp_path / "package"
+    package_path.mkdir()
+    (package_path / "__init__.py").write_text("", encoding="utf-8")
+    module_names = [f"module_{index}" for index in range(9)]
+    for module_name in module_names:
+        (package_path / f"{module_name}.py").write_text("", encoding="utf-8")
+    configured_paths = ", ".join(f'"package.{module_name}"' for module_name in module_names)
+    (tmp_path / "tach.toml").write_text(
+        f"""
+source_roots = ["."]
+root_module = "forbid"
+
+[[modules]]
+paths = [{configured_paths}]
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert issues == [
+        "tach.toml module path groups must be <= 8 paths: package.module_0",
+    ]
+
+
+def test_tach_config_issues_validates_domain_root_and_module_shape(
+    tmp_path: Path,
+) -> None:
+    """Validate domain-file root and module table shape."""
+    package_path = tmp_path / "src" / "package"
+    package_path.mkdir(parents=True)
+    (package_path / "__init__.py").write_text("", encoding="utf-8")
+    (package_path / "module.py").write_text("", encoding="utf-8")
+    (tmp_path / "tach.toml").write_text(
+        """
+source_roots = ["src"]
+root_module = "forbid"
+
+[[modules]]
+path = "package.module"
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+    (package_path / "tach.domain.toml").write_text(
+        """
+modules = "not-a-list"
+
+[root]
+""".strip(),
+        encoding="utf-8",
+    )
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert issues == [
+        "tach.domain.toml root depends_on missing: package",
+        "tach.domain.toml modules must be a list: package",
+    ]
+
+
+def test_tach_config_issues_validates_domain_module_contracts(
+    tmp_path: Path,
+) -> None:
+    """Validate domain-file dependency contracts and broad path groups."""
+    package_path = tmp_path / "src" / "package"
+    package_path.mkdir(parents=True)
+    (package_path / "__init__.py").write_text("", encoding="utf-8")
+    module_names = [f"module_{index}" for index in range(9)]
+    for module_name in module_names:
+        (package_path / f"{module_name}.py").write_text("", encoding="utf-8")
+    configured_paths = ", ".join(f'"{module_name}"' for module_name in module_names)
+    (tmp_path / "tach.toml").write_text(
+        """
+source_roots = ["src"]
+root_module = "forbid"
+
+[[modules]]
+path = "package"
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+    (package_path / "tach.domain.toml").write_text(
+        f"""
+[root]
+depends_on = []
+
+[[modules]]
+paths = [{configured_paths}]
+""".strip(),
+        encoding="utf-8",
+    )
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert issues == [
+        "each tach.domain.toml module must define depends_on: module_0",
+        "tach.domain.toml module path groups must be <= 8 paths: module_0",
+    ]
+
+
+def test_tach_domain_helpers_expand_domain_local_paths(tmp_path: Path) -> None:
+    """Expand domain roots and domain-local module paths."""
+    package_path = tmp_path / "src" / "package"
+    package_path.mkdir(parents=True)
+    (package_path / "tach.domain.toml").write_text(
+        """
+[root]
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+    ignored_path = tmp_path / "src" / "ignored"
+    ignored_path.mkdir()
+    (ignored_path / "tach.domain.toml").write_text("root = [", encoding="utf-8")
+
+    payloads = tach_config_domains.domain_payloads(tmp_path, ["src"])
+
+    assert payloads == (("package", {"root": {"depends_on": []}}),)
+    assert tach_config_domains.domain_module_path("package", ".") == "package"
+    assert tach_config_domains.domain_module_path("package", "module") == ("package.module")
+    assert tach_config_domains.configured_domain_module_paths(
+        (
+            (
+                "package",
+                {
+                    "root": {},
+                    "modules": [
+                        42,
+                        {"path": "."},
+                        {"path": "service"},
+                        {"paths": ["models", "views"]},
+                    ],
+                },
+            ),
+        )
+    ) == frozenset(
+        {
+            "package",
+            "package.service",
+            "package.models",
+            "package.views",
+        }
+    )
 
 
 def test_tach_config_defensive_helpers_handle_invalid_inputs(tmp_path: Path) -> None:
     """Keep defensive helper branches stable for malformed TOML values."""
-    assert tach_config._source_module_names(tmp_path, "scripts", None) == ()
-    assert not tach_config._matches_exclude("package/file.py", ("package",), " ")
+    assert tach_config_sources.source_module_names(tmp_path, "scripts", None) == ()
+    assert not tach_config_sources.matches_exclude("package/file.py", ("package",), " ")
 
 
 def test_tach_config_main_reports_success(
@@ -171,6 +347,7 @@ root_module = "forbid"
 
 [[modules]]
 path = "scripts"
+depends_on = []
 """.strip(),
         encoding="utf-8",
     )
