@@ -22,6 +22,10 @@ compression.
 
 ## Optional Headroom Backend
 
+Headroom support is optional and experimental in beta. Keep deterministic
+backends as the default unless you explicitly want to test provider-backed
+compression on sanitized supporting context.
+
 Install optional Headroom support explicitly:
 
 ```bash
@@ -47,5 +51,6 @@ Agent Maintainer warns and uses deterministic extractive compression.
 ## Safety Boundary
 
 Optional providers receive only sanitized supporting context from selected logs
-and file outlines. They do not receive exact repair facts, structured manifests,
-ratchet fingerprints, change-plan scopes, or raw unredacted logs.
+and file outlines, passed as a single Headroom-compatible user message. They do
+not receive exact repair facts, structured manifests, ratchet fingerprints,
+change-plan scopes, or raw unredacted logs.

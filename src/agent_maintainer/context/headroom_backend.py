@@ -13,6 +13,7 @@ HEADROOM_INSTALL_MESSAGE = (
     "Headroom compression requested but not installed. Install: python -m pip "
     'install "agent-maintainer[compression]"'
 )
+MESSAGE_ROLE = "user"
 
 
 class CompressionBackendUnavailable(RuntimeError):
@@ -20,19 +21,17 @@ class CompressionBackendUnavailable(RuntimeError):
 
 
 class CompressionBackendError(RuntimeError):
-    """Raised when an optional compression backend fails."""
+    """Raised when a compression backend fails."""
 
 
 def headroom_content(request: CompressionRequest) -> str:
-    """Return Headroom-compressed text through optional dependency."""
-
+    """Return Headroom-compressed text through the optional dependency."""
     compressor = load_headroom_compressor()
     return run_headroom_compressor(compressor, request)
 
 
 def load_headroom_compressor() -> Callable[..., Any]:
-    """Return Headroom compression callable from optional dependency."""
-
+    """Return the Headroom compression callable from the optional dependency."""
     try:
         module = importlib.import_module("headroom")
     except ImportError as exc:
@@ -43,23 +42,37 @@ def load_headroom_compressor() -> Callable[..., Any]:
     return compressor
 
 
-def run_headroom_compressor(compressor: Callable[..., Any], request: CompressionRequest) -> str:
+def run_headroom_compressor(
+    compressor: Callable[..., Any],
+    request: CompressionRequest,
+) -> str:
     """Run Headroom compressor and normalize common result shapes."""
-
     try:
-        result = compressor(request.content)
+        result = compressor(headroom_messages(request))
     except Exception as exc:
         raise CompressionBackendError("Headroom compression failed") from exc
     return normalized_headroom_content(result)
 
 
+def headroom_messages(request: CompressionRequest) -> list[dict[str, str]]:
+    """Return Headroom-compatible messages for sanitized supporting context."""
+    return [
+        {
+            "role": MESSAGE_ROLE,
+            "content": request.content,
+        },
+    ]
+
+
 def normalized_headroom_content(result: object) -> str:
     """Return compressed text from common Headroom result shapes."""
-
     if isinstance(result, str):
         return result
     if isinstance(result, dict):
         return dict_result_content(result)
+    messages_text = messages_content(getattr(result, "messages", None))
+    if messages_text:
+        return messages_text
     content = getattr(result, "content", None)
     if isinstance(content, str):
         return content
@@ -69,11 +82,36 @@ def normalized_headroom_content(result: object) -> str:
     raise CompressionBackendError("Headroom compression returned unsupported result")
 
 
-def dict_result_content(result: dict[object, object]) -> str:
-    """Return compressed text from dictionary result."""
-
+def dict_result_content(result: dict[str, Any]) -> str:
+    """Return compressed text from a dictionary result."""
+    messages_text = messages_content(result.get("messages"))
+    if messages_text:
+        return messages_text
     for key in ("content", "text", "compressed"):
         value = result.get(key)
         if isinstance(value, str):
             return value
     raise CompressionBackendError("Headroom compression returned unsupported result")
+
+
+def messages_content(messages: object) -> str:
+    """Return joined content from Headroom-style messages."""
+    if not isinstance(messages, list):
+        return ""
+    parts: list[str] = []
+    for message in messages:
+        content = message_content(message)
+        if content:
+            parts.append(content)
+    return "\n".join(parts)
+
+
+def message_content(message: object) -> str:
+    """Return content from one Headroom-style message."""
+    if isinstance(message, dict):
+        content = message.get("content")
+    else:
+        content = getattr(message, "content", None)
+    if isinstance(content, str):
+        return content
+    return ""

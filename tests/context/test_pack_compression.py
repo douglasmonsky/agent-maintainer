@@ -26,7 +26,13 @@ def test_context_pack_compresses_supporting_context_not_exact_facts(
     """Headroom compression only receives selected supporting context."""
 
     log_dir = write_failure_log(tmp_path, "ruff", "line one\nline two\n")
-    fake_module = SimpleNamespace(compress=lambda content: "compressed support")
+    received: list[list[dict[str, str]]] = []
+
+    def compress_messages(messages: list[dict[str, str]]) -> str:
+        received.append(messages)
+        return "compressed support"
+
+    fake_module = SimpleNamespace(compress=compress_messages)
     monkeypatch.setattr(
         headroom_backend.importlib,
         "import_module",
@@ -49,6 +55,7 @@ def test_context_pack_compresses_supporting_context_not_exact_facts(
     assert exact_facts[0]["message"] == "ruff failed with exit code 1"
     assert selected_logs[0]["text"] == "compressed support"
     assert compression["backend"] == "headroom"
+    assert received == [[{"role": "user", "content": "line one\nline two"}]]
 
 
 def test_context_pack_headroom_failure_falls_back_when_optional(
