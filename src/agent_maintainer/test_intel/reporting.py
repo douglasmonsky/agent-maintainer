@@ -74,13 +74,18 @@ def render_coverage(report: TestIntelReport) -> list[str]:
     """Return coverage report lines."""
 
     coverage = report.coverage
-    percent = coverage.changed_line_coverage
+    source_percent = coverage.changed_source_file_coverage
+    line_percent = coverage.changed_line_coverage
     gaps = coverage.branch_coverage_gaps
     lines = ["Coverage:"]
-    if percent is None:
+    if source_percent is None:
+        lines.append("- changed source-file coverage: unknown")
+    else:
+        lines.append(f"- changed source-file coverage: {source_percent:.2f}%")
+    if line_percent is None:
         lines.append("- changed-line coverage: unknown")
     else:
-        lines.append(f"- changed-line coverage: {percent:.2f}%")
+        lines.append(f"- changed-line coverage: {line_percent:.2f}%")
     if gaps is None:
         lines.append("- branch coverage gaps: unknown")
     else:

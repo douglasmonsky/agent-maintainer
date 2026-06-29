@@ -30,6 +30,16 @@ Output includes changed source files, likely test files, reasons, coverage
 metadata when `coverage.json` or `coverage.xml` is present, and suggested
 focused pytest commands.
 
+Coverage output separates two advisory signals:
+
+- `changed_source_file_coverage`: average whole-file coverage for changed
+  source files.
+- `changed_line_coverage`: coverage for executable lines that are both changed
+  in the Git diff and present in coverage artifacts.
+
+The blocking changed-code coverage gate remains `diff-cover`; test intelligence
+reports these values only to help agents pick focused repair commands.
+
 Change-budget warnings use this same mapping when source changes do not include
 likely relevant test changes. The warning stays non-blocking unless existing
 strict warning-as-error options are enabled.

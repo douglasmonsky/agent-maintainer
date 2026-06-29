@@ -31,8 +31,13 @@ depends_on = [
 [[modules]]
 path = "coverage"
 depends_on = [
+  "coverage_lines",
   "models",
 ]
+
+[[modules]]
+path = "coverage_lines"
+depends_on = []
 
 [[modules]]
 path = "crosshair_candidates"

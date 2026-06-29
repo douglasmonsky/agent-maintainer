@@ -39,6 +39,7 @@ class TestMatch:
 class CoverageSummary:
     """Coverage information for changed source."""
 
+    changed_source_file_coverage: float | None = None
     changed_line_coverage: float | None = None
     branch_coverage_gaps: int | None = None
 
@@ -46,6 +47,7 @@ class CoverageSummary:
         """Return stable JSON payload."""
 
         return {
+            "changed_source_file_coverage": self.changed_source_file_coverage,
             "changed_line_coverage": self.changed_line_coverage,
             "branch_coverage_gaps": self.branch_coverage_gaps,
         }
