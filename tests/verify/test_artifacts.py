@@ -68,9 +68,19 @@ def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -
     ]
 
     failure_note = (log_dir / artifacts.LAST_FAILURE_NAME).read_text(encoding="utf-8")
+    pr_summary = (log_dir / artifacts.PR_SUMMARY_NAME).read_text(encoding="utf-8")
     assert "### ruff" in failure_note
     assert "lint failed" in failure_note
     assert "python3 -m agent_maintainer verify --profile full" in failure_note
+    assert "## Verification Result" in pr_summary
+    assert "## Top Failures" in pr_summary
+    assert "## Test Intelligence" in pr_summary
+    assert "## Ratchet Targets" in pr_summary
+    assert "## Change Budget" in pr_summary
+    assert "## Change Plan Status" in pr_summary
+    assert "## Context Pack Path" in pr_summary
+    assert "## Expansion Commands" in pr_summary
+    assert "lint failed" in pr_summary
 
 
 def test_write_run_artifacts_removes_stale_failure_note_on_success(tmp_path: Path) -> None:
@@ -92,4 +102,6 @@ def test_write_run_artifacts_removes_stale_failure_note_on_success(tmp_path: Pat
 
     assert not failure_note.exists()
     manifest = json.loads((log_dir / artifacts.MANIFEST_NAME).read_text(encoding="utf-8"))
+    pr_summary = (log_dir / artifacts.PR_SUMMARY_NAME).read_text(encoding="utf-8")
     assert manifest["checks"][0]["status"] == "passed"
+    assert "Result: **PASS**" in pr_summary

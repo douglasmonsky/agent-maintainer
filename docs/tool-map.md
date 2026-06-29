@@ -56,6 +56,10 @@ inside WSL.
 
 Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable run
 metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails. The
+`.verify-logs/pr-summary.md` is a bounded GitHub-friendly report with result,
+top failures, test intelligence, ratchet targets, change-budget status,
+change-plan status, context-pack path, and expansion commands. CI appends it
+to the GitHub Actions step summary and uploads it with the safe verification logs.
 terminal output stays compact; agents should use these artifacts for command,
 exit-code, threshold, log-path, and rerun context.
 Managed agent-client hooks append local execution evidence to

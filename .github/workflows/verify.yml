@@ -116,6 +116,13 @@ jobs:
           python3 -m agent_maintainer verify --profile ci \
             --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
 
+      - name: Append verification summary
+        if: always()
+        run: |
+          if [ -f .verify-logs/pr-summary.md ]; then
+            cat .verify-logs/pr-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Upload safe verification logs
         if: always()
         uses: actions/upload-artifact@v6
@@ -124,6 +131,7 @@ jobs:
           path: |
             .verify-logs/manifest.json
             .verify-logs/LAST_FAILURE.md
+            .verify-logs/pr-summary.md
             .verify-logs/*.log
             .verify-logs/*.json
             !.verify-logs/context/**

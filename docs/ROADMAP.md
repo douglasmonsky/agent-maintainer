@@ -5,7 +5,7 @@
 This file is only the implementation tracker for the Agent Maintainer roadmap.
 It is a recovery checklist, not the detailed implementation spec.
 
-The canonical detailed spec is vendored into this repository here:
+The canonical detailed spec is vendored into the repository here:
 
 [`docs/roadmap/full-roadmap-blueprint.md`](roadmap/full-roadmap-blueprint.md).
 
@@ -95,7 +95,7 @@ Planned work:
 - [x] Phase 26: Optional Headroom Backend
 - [x] Phase 27: Doctor Integration
 - [x] Phase 28: Examples Proof Repos
-- [ ] Phase 29: PR / GitHub Actions Summary Report
+- [x] Phase 29: PR / GitHub Actions Summary Report
 - [ ] Phase 30: Policy Packs Onboarding Presets
 - [ ] Phase 31: Archguard Impact Analysis
 - [ ] Phase 32: Repair Plan Command
