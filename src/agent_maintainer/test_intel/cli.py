@@ -137,7 +137,12 @@ def build_changed_report(*, base_ref: str, staged: bool, repo_root: Path) -> Tes
     config = loader.load_config()
     changed_source = changed_source_paths(config, base_ref=base_ref, staged=staged)
     matches = likely_tests_for_changes(changed_source, config, repo_root)
-    coverage = coverage_for_changed_sources(repo_root, changed_source)
+    coverage = coverage_for_changed_sources(
+        repo_root,
+        changed_source,
+        base_ref=base_ref,
+        staged=staged,
+    )
     return TestIntelReport(
         changed_source=changed_source,
         likely_tests=matches,
