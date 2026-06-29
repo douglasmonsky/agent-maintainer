@@ -4,21 +4,15 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.context import models as context_models
 from agent_maintainer.context.budget import bound_text
-from agent_maintainer.context.models import BoundedText, ContextBudget
 from agent_maintainer.models import CheckResult
+from agent_maintainer.verify import history as verify_history
+from agent_maintainer.verify import timing as verify_timing
 from agent_maintainer.verify.git_state import git_state
-from agent_maintainer.verify.history import (
-    SnapshotArtifacts,
-    copy_run_logs,
-    path_text,
-    prune_run_history,
-    run_snapshot_dir,
-)
 from agent_maintainer.verify.pr_summary import PR_SUMMARY_NAME, render_pr_summary
 
 MANIFEST_NAME = "manifest.json"
@@ -39,12 +33,6 @@ class RunContext:
     run_id: str
 
 
-def utc_timestamp() -> str:
-    """Return a stable UTC timestamp for JSON artifacts."""
-
-    return datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
-
-
 def write_run_artifacts(
     log_dir: Path,
     context: RunContext,
@@ -54,11 +42,15 @@ def write_run_artifacts(
 
     log_dir.mkdir(parents=True, exist_ok=True)
     failures = [result for result in results if not result.passed]
-    snapshot_dir = run_snapshot_dir(log_dir, context.run_id)
-    snapshot_artifacts = SnapshotArtifacts(
+    snapshot_dir = verify_history.run_snapshot_dir(log_dir, context.run_id)
+    snapshot_artifacts = verify_history.SnapshotArtifacts(
         failure_snapshot=snapshot_dir / LAST_FAILURE_NAME if failures else None,
-        log_path_overrides=copy_run_logs(snapshot_dir, context.repo_root, results),
-        context_log_dir=path_text(snapshot_dir, context.repo_root),
+        log_path_overrides=verify_history.copy_run_logs(
+            snapshot_dir,
+            context.repo_root,
+            results,
+        ),
+        context_log_dir=verify_history.path_text(snapshot_dir, context.repo_root),
     )
     write_manifest(
         log_dir,
@@ -79,7 +71,7 @@ def write_run_artifacts(
         failure_snapshot=snapshot_artifacts.failure_snapshot,
         context_log_dir=snapshot_artifacts.context_log_dir,
     )
-    prune_run_history(log_dir, context.config.diagnostic_run_history_limit)
+    verify_history.prune_run_history(log_dir, context.config.diagnostic_run_history_limit)
     (log_dir / PR_SUMMARY_NAME).write_text(
         render_pr_summary(log_dir=log_dir, context=context, results=results),
         encoding="utf-8",
@@ -107,7 +99,7 @@ def write_history_manifest(
     context: RunContext,
     results: list[CheckResult],
     *,
-    snapshot_artifacts: SnapshotArtifacts,
+    snapshot_artifacts: verify_history.SnapshotArtifacts,
 ) -> None:
     """Write run-scoped manifest snapshot for stable agent references."""
 
@@ -138,14 +130,14 @@ def manifest_payload(
     return {
         "version": 1,
         "run_id": context.run_id,
-        "generated_at": utc_timestamp(),
+        "generated_at": verify_timing.utc_timestamp(),
         "profile": context.profile,
         "base_ref": context.base_ref,
         "compare_branch": context.compare_branch,
         "staged": context.staged,
-        "failure_snapshot": path_text(failure_snapshot, context.repo_root),
+        "failure_snapshot": verify_history.path_text(failure_snapshot, context.repo_root),
         "git": git_state(context.repo_root),
-        "timing": run_timing(results),
+        "timing": verify_timing.run_timing(results),
         "thresholds": threshold_snapshot(context.config),
         "checks": [
             check_payload(
@@ -174,7 +166,8 @@ def write_last_failure(
         path.unlink(missing_ok=True)
         return
     snapshot_path = (
-        failure_snapshot or run_snapshot_dir(log_dir, context.run_id) / LAST_FAILURE_NAME
+        failure_snapshot
+        or verify_history.run_snapshot_dir(log_dir, context.run_id) / LAST_FAILURE_NAME
     )
     lines = [
         "# Last Maintainer Failure",
@@ -182,7 +175,7 @@ def write_last_failure(
         f"Run ID: `{context.run_id}`",
         f"Profile: `{context.profile}`",
         f"Rerun: `{rerun_command(context)}`",
-        f"Stable snapshot: `{path_text(snapshot_path, context.repo_root)}`",
+        f"Stable snapshot: `{verify_history.path_text(snapshot_path, context.repo_root)}`",
         "",
         "`LAST_FAILURE.md` is the latest pointer and can change after later runs.",
         "",
@@ -255,7 +248,7 @@ def bounded_last_failure_text(text: str, config: MaintainerConfig) -> str:
 
     bounded = bound_text(
         text,
-        ContextBudget(
+        context_models.ContextBudget(
             max_chars=config.context_last_failure_budget_chars,
             max_items=config.context_max_failure_items,
         ),
@@ -265,19 +258,22 @@ def bounded_last_failure_text(text: str, config: MaintainerConfig) -> str:
     return "\n\n".join((bounded.text.rstrip(), truncation_note(bounded)))
 
 
-def summary_metadata(result: CheckResult, config: MaintainerConfig) -> BoundedText:
+def summary_metadata(
+    result: CheckResult,
+    config: MaintainerConfig,
+) -> context_models.BoundedText:
     """Return bounded-summary metadata for manifest output."""
 
     return bound_text(
         result.output,
-        ContextBudget(
+        context_models.ContextBudget(
             max_chars=config.context_last_failure_budget_chars,
             max_items=config.context_max_failure_items,
         ),
     )
 
 
-def truncation_note(bounded: BoundedText) -> str:
+def truncation_note(bounded: context_models.BoundedText) -> str:
     """Return human-readable truncation note with exact omitted counts."""
 
     return (
@@ -332,33 +328,6 @@ def result_status(result: CheckResult) -> str:
     if result.warning:
         return "warning"
     return "passed"
-
-
-def run_timing(results: list[CheckResult]) -> dict[str, object]:
-    """Return run-level timing metadata derived from check timestamps."""
-
-    started_at = sorted(result.started_at for result in results if result.started_at)
-    ended_at = sorted(result.ended_at for result in results if result.ended_at)
-    start = started_at[0] if started_at else ""
-    end = ended_at[-1] if ended_at else ""
-    return {
-        "started_at": start,
-        "ended_at": end,
-        "duration_seconds": duration_seconds(start, end),
-    }
-
-
-def duration_seconds(started_at: str, ended_at: str) -> float | None:
-    """Return elapsed seconds for two ISO UTC timestamps when parseable."""
-
-    if not started_at or not ended_at:
-        return None
-    try:
-        start = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
-        end = datetime.fromisoformat(ended_at.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    return max(0.0, (end - start).total_seconds())
 
 
 def threshold_snapshot(config: MaintainerConfig) -> dict[str, object]:

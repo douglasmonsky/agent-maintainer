@@ -28,6 +28,9 @@ Generated tool artifacts remain canonical fixed paths. Tool wrappers may remove
 their own configured report path before execution when the tool otherwise
 preserves prior reports with numbered filenames.
 
+Keep run timing metadata in `agent_maintainer.verify.timing` so artifact writing
+does not grow into a timing/parsing utility module.
+
 ## Consequences
 
 Overlapping identical hook/manual requests converge on one verifier result.

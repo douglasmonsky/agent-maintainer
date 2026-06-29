@@ -250,12 +250,6 @@ def print_success(skipped: list[Any], warnings: list[Any] | None = None) -> None
     print_skipped(skipped, "SKIPPED optional checks:")
 
 
-def rerun_command(profile: str) -> str:
-    """Return smallest supported verifier rerun command for a failed profile."""
-
-    return f"python3 -m agent_maintainer verify --profile {profile}"
-
-
 def print_failures(
     profile: str,
     failures: list[Any],
@@ -280,4 +274,4 @@ def print_failures(
         print_skipped(skipped, "Skipped optional checks:")
         print()
     print("Full logs are in .verify-logs/.")
-    print(f"Smallest rerun after fixes: `{rerun_command(profile)}`")
+    print(f"Smallest rerun after fixes: `python3 -m agent_maintainer verify --profile {profile}`")

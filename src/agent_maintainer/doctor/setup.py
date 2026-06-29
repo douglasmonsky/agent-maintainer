@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import importlib.util
 import re
 import sys
+from importlib import util as importlib_util
 from pathlib import Path
 
 from agent_maintainer.catalogs.catalog import make_checks
@@ -146,7 +146,7 @@ def check_source_checkout_dogfood(repo_root: Path) -> DoctorResult:
             state=maintainer_doctor_models.NOT_APPLICABLE,
         )
 
-    spec = importlib.util.find_spec("agent_maintainer")
+    spec = importlib_util.find_spec("agent_maintainer")
     if spec is None or spec.origin is None:
         return DoctorResult(
             "dogfood-source",

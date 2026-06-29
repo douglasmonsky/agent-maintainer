@@ -11,9 +11,10 @@ depends_on = [
   "//agent_maintainer.context.budget",
   "//agent_maintainer.context.models",
   "//agent_maintainer.models",
-  "git_state",
-  "history",
-  "pr_summary",
+    "git_state",
+    "history",
+    "pr_summary",
+    "timing",
 ]
 
 [[modules]]
@@ -68,10 +69,16 @@ depends_on = [
 [[modules]]
 path = "run_steps"
 depends_on = [
-  "//agent_maintainer.core.check_run",
-  "//agent_maintainer.core.config",
+    "//agent_maintainer.core.check_run",
+    "//agent_maintainer.core.config",
   "//agent_maintainer.core.executor",
   "//agent_maintainer.core.layout",
   "//agent_maintainer.models",
-  "artifacts",
+    "artifacts",
+]
+
+[[modules]]
+path = "timing"
+depends_on = [
+    "//agent_maintainer.models",
 ]

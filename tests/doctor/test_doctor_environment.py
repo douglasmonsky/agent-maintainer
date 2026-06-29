@@ -32,7 +32,7 @@ def test_source_checkout_dogfood_passes_for_local_package(
     package_init.parent.mkdir(parents=True)
     package_init.write_text("", encoding="utf-8")
     monkeypatch.setattr(
-        maintainer_doctor_setup.importlib.util,
+        maintainer_doctor_setup.importlib_util,
         "find_spec",
         lambda _name: SimpleNamespace(origin=str(package_init)),
     )
@@ -53,7 +53,7 @@ def test_source_checkout_dogfood_fails_for_stale_import(
     package_init.write_text("", encoding="utf-8")
     stale_path = tmp_path / ".venv" / "lib" / "site-packages" / "agent_maintainer"
     monkeypatch.setattr(
-        maintainer_doctor_setup.importlib.util,
+        maintainer_doctor_setup.importlib_util,
         "find_spec",
         lambda _name: SimpleNamespace(origin=str(stale_path)),
     )
