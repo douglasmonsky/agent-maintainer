@@ -7,6 +7,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from agent_maintainer.context.budget import bound_text
+from agent_maintainer.context.models import ContextBudget
+
 PYRIGHT_DIAGNOSTIC_LIMIT = 50
 STRUCTURED_DIAGNOSTIC_LIMIT = 50
 
@@ -44,7 +47,22 @@ def compact_output(text: str, max_lines: int, max_chars: int) -> str:
     lines = nonblank_lines(text)
     if not lines:
         return "(no output)"
-    return truncate_chars("\n".join(truncate_lines(lines, max_lines)), max_chars)
+    bounded = bound_text(
+        "\n".join(lines),
+        ContextBudget(max_chars=max_chars, max_items=max_lines, max_lines=max_lines),
+    )
+    if not bounded.truncated:
+        return bounded.text
+    return "\n".join(
+        (
+            bounded.text.rstrip(),
+            (
+                "... output omitted "
+                f"{bounded.omitted_chars} chars and {bounded.omitted_lines} lines. "
+                "Full output is in .verify-logs/."
+            ),
+        )
+    )
 
 
 def pyright_summary_payload(payload: dict[str, object]) -> str | None:

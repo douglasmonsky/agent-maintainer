@@ -10,10 +10,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.context.budget import bound_text
+from agent_maintainer.context.models import BoundedText, ContextBudget
 from agent_maintainer.models import CheckResult
 
 MANIFEST_NAME = "manifest.json"
 LAST_FAILURE_NAME = "LAST_FAILURE.md"
+TRUNCATION_NOTE_ALLOWANCE = 240
 
 
 @dataclass(frozen=True)
@@ -62,7 +65,7 @@ def write_manifest(
         "staged": context.staged,
         "git": git_state(context.repo_root),
         "thresholds": threshold_snapshot(context.config),
-        "checks": [check_payload(result) for result in results],
+        "checks": [check_payload(result, context) for result in results],
     }
     (log_dir / MANIFEST_NAME).write_text(
         f"{json.dumps(payload, indent=2, sort_keys=True)}\n",
@@ -92,7 +95,7 @@ def write_last_failure(
     ]
     for failure in failures:
         lines.extend(failure_section(failure))
-    text = "\n".join(lines).rstrip()
+    text = bounded_last_failure_text("\n".join(lines).rstrip(), context.config)
     path.write_text(f"{text}\n", encoding="utf-8")
 
 
@@ -104,6 +107,8 @@ def failure_section(failure: CheckResult) -> list[str]:
         "",
         f"- Exit code: `{failure.exit_code}`",
         f"- Log: `{failure.log_path}`",
+        "- Expansion commands:",
+        *[f"  - `{command}`" for command in expansion_commands(failure.name)],
     ]
     if failure.output:
         lines.extend(("", "```text", failure.output, "```"))
@@ -111,19 +116,94 @@ def failure_section(failure: CheckResult) -> list[str]:
     return lines
 
 
-def check_payload(result: CheckResult) -> dict[str, object]:
+def check_payload(result: CheckResult, context: RunContext) -> dict[str, object]:
     """Return manifest JSON for one check result."""
 
+    metadata = summary_metadata(result, context.config)
     return {
         "name": result.name,
         "status": result_status(result),
         "command": list(result.command),
         "exit_code": result.exit_code,
         "log_path": result.log_path,
+        "log_bytes": log_bytes(result.log_path, context.repo_root),
+        "summary_chars": len(result.output),
+        "summary_truncated": metadata.truncated,
+        "omitted_chars": metadata.omitted_chars,
+        "omitted_lines": metadata.omitted_lines,
+        "expansion_commands": result_expansion_commands(result),
         "started_at": result.started_at,
         "ended_at": result.ended_at,
         "artifacts": list(result.artifact_paths),
     }
+
+
+def bounded_last_failure_text(text: str, config: MaintainerConfig) -> str:
+    """Return LAST_FAILURE text capped by configured context budget."""
+
+    bounded = bound_text(
+        text,
+        ContextBudget(
+            max_chars=config.context_last_failure_budget_chars,
+            max_items=config.context_max_failure_items,
+        ),
+    )
+    if not bounded.truncated:
+        return bounded.text
+    return "\n\n".join((bounded.text.rstrip(), truncation_note(bounded)))
+
+
+def summary_metadata(result: CheckResult, config: MaintainerConfig) -> BoundedText:
+    """Return bounded-summary metadata for manifest output."""
+
+    return bound_text(
+        result.output,
+        ContextBudget(
+            max_chars=config.context_last_failure_budget_chars,
+            max_items=config.context_max_failure_items,
+        ),
+    )
+
+
+def truncation_note(bounded: BoundedText) -> str:
+    """Return human-readable truncation note with exact omitted counts."""
+
+    return (
+        "... failure summary omitted "
+        f"{bounded.omitted_chars} chars and {bounded.omitted_lines} lines. "
+        "Full logs and artifacts remain in .verify-logs/."
+    )
+
+
+def expansion_commands(check_name: str) -> list[str]:
+    """Return stable placeholder context expansion commands."""
+
+    return [
+        f"python -m agent_maintainer context failures --check {check_name} --limit 20",
+        f"python -m agent_maintainer context log {check_name} --tail 120",
+    ]
+
+
+def result_expansion_commands(result: CheckResult) -> list[str]:
+    """Return expansion commands when result has failed."""
+
+    if result.passed:
+        return []
+    return expansion_commands(result.name)
+
+
+def log_bytes(log_path: str, repo_root: Path) -> int:
+    """Return raw log size in bytes, or zero when absent."""
+
+    if not log_path:
+        return 0
+    path = Path(log_path)
+    if not path.is_absolute():
+        path = repo_root / path
+    try:
+        return len(path.read_bytes())
+    except OSError:
+        return 0
 
 
 def result_status(result: CheckResult) -> str:
