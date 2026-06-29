@@ -260,3 +260,14 @@ def test_invalid_context_compression_backend_is_rejected() -> None:
             schema.MaintainerConfig(),
             {"context_compression_backend": "unknown"},
         )
+
+
+def test_headroom_context_compression_backend_is_allowed() -> None:
+    """Headroom is allowed only as an optional compression backend."""
+
+    config = loader.apply_pyproject(
+        schema.MaintainerConfig(),
+        {"context_compression_backend": "headroom"},
+    )
+
+    assert config.context_compression_backend == "headroom"

@@ -112,6 +112,7 @@ manual = [
   "pip-licenses",
   "semgrep; python_version < '3.13'",
 ]
+compression = ["headroom-ai"]
 all = [
   "actionlint-py",
   "bandit",
@@ -325,6 +326,7 @@ known_first_party = [
   "hook_audit",
   "legacy_ratchet_example",
 ]
+package_module_name_map = { "headroom-ai" = "headroom" }
 requirements_files = ["requirements.txt"]
 requirements_files_dev = [
   "config/dev-dependencies.txt",
@@ -344,6 +346,7 @@ DEP002 = [
   "cyclonedx-bom",
   "deptry",
   "diff-cover",
+  "headroom-ai",
   "import-linter",
   "interrogate",
   "mutmut",

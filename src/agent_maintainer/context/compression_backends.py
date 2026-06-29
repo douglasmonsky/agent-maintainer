@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from agent_maintainer.context.compression import CompressionRequest, CompressionResult
+from agent_maintainer.context.headroom_backend import BACKEND_HEADROOM, headroom_content
 
 BACKEND_NONE = "none"
 BACKEND_TRUNCATE = "truncate"
@@ -15,7 +16,7 @@ Backend = Callable[[CompressionRequest], CompressionResult]
 
 
 def compress(request: CompressionRequest, *, backend: str) -> CompressionResult:
-    """Compress context with a named deterministic backend."""
+    """Compress context with a named backend."""
 
     selected = backend_function(backend)
     result = selected(request)
@@ -29,6 +30,7 @@ def backend_function(backend: str) -> Backend:
     """Return backend implementation or reject unknown names."""
 
     backends: dict[str, Backend] = {
+        BACKEND_HEADROOM: headroom_compress,
         BACKEND_NONE: none_compress,
         BACKEND_TRUNCATE: truncate_compress,
         BACKEND_EXTRACTIVE: extractive_compress,
@@ -55,9 +57,8 @@ def none_compress(request: CompressionRequest) -> CompressionResult:
 def truncate_compress(request: CompressionRequest) -> CompressionResult:
     """Return deterministic prefix-bounded content."""
 
-    if len(request.content) <= request.target_chars:
-        content = request.content
-    else:
+    content = request.content
+    if len(request.content) > request.target_chars:
         content = request.content[: request.target_chars]
     return result_for(
         request,
@@ -81,6 +82,18 @@ def extractive_compress(request: CompressionRequest) -> CompressionResult:
         content=content,
         backend=BACKEND_EXTRACTIVE,
         warnings=warnings,
+    )
+
+
+def headroom_compress(request: CompressionRequest) -> CompressionResult:
+    """Return Headroom-compressed content through optional dependency."""
+
+    compressed = headroom_content(request)
+    return result_for(
+        request,
+        content=compressed,
+        backend=BACKEND_HEADROOM,
+        warnings=forbidden_warnings(request, compressed),
     )
 
 

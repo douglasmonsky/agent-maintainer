@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import sys
+from types import SimpleNamespace
 
 import pytest
 
+from agent_maintainer.context import headroom_backend
 from agent_maintainer.context.compression import CompressionRequest
 from agent_maintainer.context.compression_backends import (
     BACKEND_EXTRACTIVE,
@@ -15,6 +17,11 @@ from agent_maintainer.context.compression_backends import (
     extractive_compress,
     none_compress,
     truncate_compress,
+)
+from agent_maintainer.context.headroom_backend import (
+    BACKEND_HEADROOM,
+    CompressionBackendError,
+    CompressionBackendUnavailable,
 )
 
 
@@ -82,7 +89,90 @@ def test_named_compression_rejects_unknown_backend() -> None:
     """Unknown compression backends fail clearly."""
 
     with pytest.raises(ValueError, match="unknown compression backend"):
-        compress(request_for("content"), backend="headroom")
+        compress(request_for("content"), backend="missing")
+
+
+def test_headroom_backend_uses_optional_compress_callable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Headroom backend uses optional package when available."""
+
+    fake_module = SimpleNamespace(compress=lambda content: f"compressed: {content}")
+    monkeypatch.setattr(
+        headroom_backend.importlib,
+        "import_module",
+        lambda name: fake_module,
+    )
+
+    result = compress(request_for("content", preserve_terms=()), backend=BACKEND_HEADROOM)
+
+    assert result.backend == BACKEND_HEADROOM
+    assert result.content == "compressed: content"
+
+
+def test_headroom_backend_reports_missing_dependency(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Headroom backend reports install guidance when missing."""
+
+    def missing_module(_name: str) -> object:
+        raise ImportError("missing")
+
+    monkeypatch.setattr(headroom_backend.importlib, "import_module", missing_module)
+
+    with pytest.raises(CompressionBackendUnavailable, match="agent-maintainer"):
+        compress(request_for("content"), backend=BACKEND_HEADROOM)
+
+
+def test_headroom_backend_reports_missing_compress_callable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Headroom backend reports package shape mismatch."""
+
+    fake_module = SimpleNamespace()
+    monkeypatch.setattr(
+        headroom_backend.importlib,
+        "import_module",
+        lambda name: fake_module,
+    )
+
+    with pytest.raises(CompressionBackendUnavailable, match="does not expose compress"):
+        compress(request_for("content"), backend=BACKEND_HEADROOM)
+
+
+def test_headroom_backend_reports_provider_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Headroom provider failures are normalized."""
+
+    def fail_compress(_content: str) -> str:
+        raise RuntimeError("provider failed")
+
+    fake_module = SimpleNamespace(compress=fail_compress)
+    monkeypatch.setattr(
+        headroom_backend.importlib,
+        "import_module",
+        lambda name: fake_module,
+    )
+
+    with pytest.raises(CompressionBackendError, match="Headroom compression failed"):
+        compress(request_for("content"), backend=BACKEND_HEADROOM)
+
+
+def test_headroom_backend_normalizes_common_result_shapes() -> None:
+    """Headroom adapter accepts common provider response shapes."""
+
+    assert headroom_backend.normalized_headroom_content({"compressed": "dict text"})
+    assert (
+        headroom_backend.normalized_headroom_content(
+            SimpleNamespace(content="content attr"),
+        )
+        == "content attr"
+    )
+    assert (
+        headroom_backend.normalized_headroom_content(SimpleNamespace(text="text attr"))
+        == "text attr"
+    )
 
 
 def test_request_rejects_invalid_values() -> None:
