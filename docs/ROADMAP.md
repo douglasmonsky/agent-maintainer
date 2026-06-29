@@ -91,7 +91,7 @@ Planned work:
 - [x] Phase 22: Cohesive Change Plans
 - [x] Phase 23: Change-Budget Integration Change Plans
 - [x] Phase 24: Integration Branch Series
-- [ ] Phase 25: Compression Backend Interface
+- [x] Phase 25: Compression Backend Interface
 - [ ] Phase 26: Optional Headroom Backend
 - [ ] Phase 27: Doctor Integration
 - [ ] Phase 28: Examples Proof Repos
