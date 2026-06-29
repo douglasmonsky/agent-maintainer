@@ -141,3 +141,50 @@ def test_module_entrypoint_exits_with_main_result(monkeypatch: pytest.MonkeyPatc
         runpy.run_module("archguard", run_name="__main__")
 
     assert exc_info.value.code == expected_code
+
+
+def test_main_dispatches_map(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Run architecture map command through top-level parser."""
+
+    monkeypatch.setattr(archguard_cli, "load_architecture", lambda repo_root: object())
+    monkeypatch.setattr(archguard_cli, "render_map", lambda architecture: "mapped")
+
+    assert archguard_cli.main(["map"]) == 0
+    assert "mapped" in capsys.readouterr().out
+
+
+def test_main_dispatches_impact(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Run architecture impact command through top-level parser."""
+
+    monkeypatch.setattr(archguard_cli, "load_architecture", lambda repo_root: object())
+    monkeypatch.setattr(
+        archguard_cli,
+        "render_impact",
+        lambda repo_root, architecture, path: f"impact {path}",
+    )
+
+    assert archguard_cli.main(["impact", "src/example.py"]) == 0
+    assert "impact src/example.py" in capsys.readouterr().out
+
+
+def test_main_dispatches_explain_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Run boundary explanation command through top-level parser."""
+
+    monkeypatch.setattr(archguard_cli, "load_architecture", lambda repo_root: object())
+    monkeypatch.setattr(
+        archguard_cli,
+        "render_boundary",
+        lambda repo_root, architecture, source, target: f"boundary {source} {target}",
+    )
+
+    assert archguard_cli.main(["explain-boundary", "src/a.py", "src/b.py"]) == 0
+    assert "boundary src/a.py src/b.py" in capsys.readouterr().out
