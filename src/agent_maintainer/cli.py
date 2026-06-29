@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from collections.abc import Callable
 
+from agent_maintainer.context.cli import main as context_main
 from agent_maintainer.core.bootstrap import bootstrap, install
 from agent_maintainer.core.guidance import main as guidance_main
 from agent_maintainer.core.initializer import main as init_main
@@ -19,8 +20,9 @@ disable_bytecode_writes()
 CommandRunner = Callable[[list[str]], int]
 
 USAGE = """Usage:
-python -m agent_maintainer bootstrap
-python -m agent_maintainer doctor [doctor options]
+  python -m agent_maintainer bootstrap
+  python -m agent_maintainer context [context options]
+  python -m agent_maintainer doctor [doctor options]
 python -m agent_maintainer guidance [guidance options]
   python -m agent_maintainer hooks [hooks options]
   python -m agent_maintainer init [init options]
@@ -29,8 +31,10 @@ python -m agent_maintainer guidance [guidance options]
   python -m agent_maintainer verify [verify options]
 
 Examples:
-python -m agent_maintainer bootstrap
-python -m agent_maintainer doctor --strict
+  python -m agent_maintainer bootstrap
+  python -m agent_maintainer context failures
+  python -m agent_maintainer context log pyright --tail 120
+  python -m agent_maintainer doctor --strict
 python -m agent_maintainer guidance
 python -m agent_maintainer guidance --check
 python -m agent_maintainer hooks install all
@@ -78,6 +82,7 @@ def command_handlers() -> dict[str, CommandRunner]:
 
     return {
         "bootstrap": bootstrap_command,
+        "context": context_main,
         "doctor": doctor_main,
         "guidance": guidance_main,
         "hooks": hooks_main,
