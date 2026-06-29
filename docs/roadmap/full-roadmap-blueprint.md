@@ -2616,7 +2616,7 @@ Do not add more agent clients in this phase.
 
 ---
 
-# Phase 33A: Tach Architecture Contract Refit
+# Phase 34: Tach Architecture Contract Refit
 
 ## PR Title
 
@@ -2652,7 +2652,7 @@ enough if modules are lumped into broad `paths = [...]` groups without real
 
 ---
 
-# Phase 34: Static HTML Report
+# Phase 35: Static HTML Report
 
 ## PR Title
 
@@ -2695,7 +2695,7 @@ release readiness
 
 ---
 
-# Phase 34B: Review-Driven Stabilization Plan
+# Phase 36: Review-Driven Stabilization Plan
 
 ## PR Title
 
@@ -2705,29 +2705,29 @@ docs: add pre-case-study stabilization roadmap
 
 ## Goal
 
-Stop feature expansion before Phase 35 and record the hardening work required
+Stop feature expansion before Future Work and record the hardening work required
 by the fresh static review. These items address trust risks in optional
 compression, change-budget policy integrity, coverage wording, exact repair
 facts, and beta release metadata.
 
 ## Requirements
 
-- Mark Phase 34 complete only after static report PR and post-merge CI pass.
-- Add phases 34C through 34G before Phase 35 in `docs/ROADMAP.md`.
+- Mark Phase 35 complete only after static report PR and post-merge CI pass.
+- Add phases 37 through 41 before the postponed Future Work section in `docs/ROADMAP.md`.
 - Add detailed scope, acceptance criteria, and out-of-scope rules for each
   stabilization phase in this blueprint.
-- Keep Phase 35 external case studies blocked until all stabilization phases
+- Keep external case studies blocked until all stabilization phases
   are implemented, merged, and post-merge CI passes.
 
 ## Acceptance Criteria
 
-- Roadmap shows Phase 35 after stabilization phases.
+- Roadmap shows Future Work after stabilization phases.
 - Detailed blueprint has explicit stabilization sections.
 - Precommit passes.
 
 ---
 
-# Phase 34C: Headroom Backend Correctness
+# Phase 37: Headroom Backend Correctness
 
 ## PR Title
 
@@ -2769,7 +2769,7 @@ Headroom is missing or fails.
 
 ---
 
-# Phase 34D: Change-Plan Authority Over Legacy Overrides
+# Phase 38: Change-Plan Authority Over Legacy Overrides
 
 ## PR Title
 
@@ -2808,7 +2808,7 @@ out-of-scope, or otherwise failing change-plan decisions.
 
 ---
 
-# Phase 34E: Coverage Semantics Hardening
+# Phase 39: Coverage Semantics Hardening
 
 ## PR Title
 
@@ -2845,7 +2845,7 @@ coverage line data.
 
 ---
 
-# Phase 34F: Exact Repair Facts From Structured Artifacts
+# Phase 40: Exact Repair Facts From Structured Artifacts
 
 ## PR Title
 
@@ -2884,7 +2884,7 @@ before expanding logs.
 
 ---
 
-# Phase 34G: Beta Release Metadata Refresh
+# Phase 41: Beta Release Metadata Refresh
 
 ## PR Title
 
@@ -2920,7 +2920,182 @@ not imply the current implementation still matches the older `0.1.0b3` surface.
 
 ---
 
-# Phase 35: External Case Studies and Measured Proof Harness
+# Phase 42: Pre-Case-Study Hardening Plan
+
+## PR Title
+
+```text
+docs: add pre-case-study hardening plan
+```
+
+## Goal
+
+Pause future external case studies until the repository hardens the surfaces
+that the case studies would otherwise expose: context package boundaries,
+agent-facing output volume, release ergonomics, and release-state drift.
+
+## Requirements
+
+- Record `0.1.0b4` release evidence in `docs/releases/0.1.0b4.md`, including
+  TestPyPI/PyPI workflow runs, package hashes, GitHub release assets, and smoke
+  tests.
+- Add explicit pre-case-study roadmap items for:
+  - context package boundary split;
+  - hook-output invariant tests;
+  - release-check ergonomics;
+  - release-state drift check.
+- Keep future case-study work postponed until those items are complete or explicitly
+  deferred.
+- Keep this phase documentation-only.
+
+## Out Of Scope
+
+- Do not start measured external case studies in this phase.
+- Do not refactor source code in this phase.
+- Do not publish another package version in this phase.
+
+## Acceptance Criteria
+
+- Roadmap shows `0.1.0b4` published and smoke-tested.
+- Detailed release evidence exists.
+- Roadmap has concrete hardening phases before future case-study work.
+- Precommit passes.
+
+---
+
+# Phase 43: Context Package Boundary Split
+
+## PR Title
+
+```text
+refactor: split context package boundaries
+```
+
+## Goal
+
+Reduce `src/agent_maintainer/context` from one broad package with more than 20
+Python files into clearer subpackages before adding public case studies that rely
+on context commands.
+
+## Requirements
+
+- Split by responsibility, preserving CLI behavior:
+  - file/log/diff reading and safety;
+  - context-pack construction and rendering;
+  - compression backends;
+  - exact repair facts.
+- Update imports, tests, and Tach domain contracts.
+- Add or update an ADR under `docs/architecture/decisions/` explaining the
+  boundary split and what remains forbidden.
+- Keep `root_module = "forbid"` coverage; do not relax Tach.
+
+## Acceptance Criteria
+
+- `tach check --exact` passes.
+- Context-focused tests pass.
+- `verify --profile precommit` and `verify --profile full` pass.
+- The structure-cohesion warning for `src/agent_maintainer/context` is resolved
+  or replaced by a narrower, justified warning.
+
+---
+
+# Phase 44: Hook Output Invariant Tests
+
+## PR Title
+
+```text
+test: enforce quiet hook output invariants
+```
+
+## Goal
+
+Make the token budget behavior explicit and regression-tested: agent hooks should
+be silent on success where the client allows silence, emit only required minimal
+continue payloads for stop hooks, and keep failures bounded with artifact
+pointers.
+
+## Requirements
+
+- Add tests for Codex and Claude Code hook success paths.
+- Add tests proving failure output respects `context_hook_budget_chars`.
+- Add tests proving full logs are not embedded in successful or bounded failure
+  hook payloads.
+- Document the invariant in hook docs.
+
+## Acceptance Criteria
+
+- Hook runtime tests pass.
+- Precommit passes.
+- Docs explain silent-success and bounded-failure behavior.
+
+---
+
+# Phase 45: Release-Check Ergonomics
+
+## PR Title
+
+```text
+feat: add release-check command
+```
+
+## Goal
+
+Remove the PATH-dependent `just` friction from release verification while keeping
+the existing `just release-check` workflow.
+
+## Requirements
+
+- Add a package-native release check command or documented wrapper that runs the
+  same release-only tests as `just release-check`.
+- Keep `just release-check` working.
+- Update release docs to prefer the package-native command when the CLI is
+  installed and mention `.venv/bin/just` as the local fallback.
+- Add tests for command construction if a new CLI command is introduced.
+
+## Acceptance Criteria
+
+- Release-check command works without relying on shell PATH containing
+  `.venv/bin`.
+- Existing release tests still pass.
+- Precommit passes.
+
+---
+
+# Phase 46: Release-State Drift Check
+
+## PR Title
+
+```text
+feat: add release state drift check
+```
+
+## Goal
+
+Make version drift visible before release: package metadata, changelog, Git tags,
+GitHub releases, TestPyPI, and PyPI should not silently disagree.
+
+## Requirements
+
+- Add a non-default release/state command or doctor support that reports:
+  - local package version;
+  - latest matching changelog entry;
+  - local/remote Git tag presence;
+  - GitHub release presence;
+  - TestPyPI and PyPI latest versions when network access is allowed.
+- Keep network checks opt-in or release-profile only.
+- Document the command in `docs/release-checklist.md`.
+
+## Acceptance Criteria
+
+- Unit tests cover local parsing and network-disabled behavior.
+- Release checklist includes the drift check.
+- Precommit passes.
+
+---
+
+# Future Work: External Case Studies and Measured Proof Harness
+
+The following items are postponed and are not part of the active roadmap completion gate.
 
 ## PR Title
 
@@ -2960,7 +3135,7 @@ docs/case-studies/context-safe-ratchet-repair.md
 
 ---
 
-# Phase 36: Monorepo / Multi-Package Support
+# Future Work: Monorepo / Multi-Package Support
 
 ## PR Title
 
@@ -3002,7 +3177,7 @@ shared root policies
 
 ---
 
-# Phase 37: Team Policy Templates
+# Future Work: Team Policy Templates
 
 ## PR Title
 
@@ -3064,11 +3239,19 @@ This roadmap is complete when:
 31. Policy presets exist.
 32. Archguard impact commands exist.
 33. Repair plan command exists.
-34. Agent adapter API exists.
+34. Tach architecture contracts are refit into explicit domain files.
 35. Static HTML report exists.
-36. Measured case studies exist.
-37. Monorepo support exists.
-38. Team policy templates exist.
+36. Review-driven stabilization plan exists.
+37. Headroom backend correctness is verified.
+38. Change-plan authority cannot be cleared by legacy overrides.
+39. Coverage semantics distinguish source-file and changed-line coverage.
+40. Exact repair facts are extracted from structured artifacts.
+41. Beta release metadata is refreshed and release evidence is recorded.
+42. Pre-case-study hardening plan exists.
+43. Context package boundaries are split by responsibility.
+44. Hook output invariant tests enforce quiet success and bounded failure output.
+45. Release-check ergonomics do not rely on shell PATH containing `.venv/bin`.
+46. Release-state drift check exists.
 
 ---
 

@@ -41,11 +41,16 @@ profiles, diagnostics, release checks, public packaging metadata, TestPyPI/PyPI
 Trusted Publishing workflow, Codex and Claude Code hooks, generated guidance,
 example repos, and the first cohesive-change budget exception.
 
-Current external release gate:
+Current external release state:
 
-- [ ] Publish and smoke-test `agent-maintainer==0.1.0b4` only after this
-      metadata refresh merges, release checklist passes, and the protected
-      `pypi` environment job is approved.
+- [x] `agent-maintainer==0.1.0b4` is published to TestPyPI and PyPI,
+      attached to GitHub prerelease `v0.1.0b4`, and smoke-tested from both
+      package indexes. Release evidence is recorded in
+      [`docs/releases/0.1.0b4.md`](releases/0.1.0b4.md).
+
+Current pre-case-study decision:
+
+- [ ] Postpone Future Work until pre-case-study hardening is complete.
 
 ## Next: Context-Safe Legacy Ratchets
 
@@ -68,8 +73,8 @@ Planned work:
 
 ## Implementation Phases
 
-- [x] Phase 1: ADR for Context-Safe Legacy Ratchets
-- [x] Phase 2: ADR for Test Intelligence Ladder
+- [x] Phase 1: ADR Context-Safe Legacy Ratchets
+- [x] Phase 2: ADR Test Intelligence Ladder
 - [x] Phase 3: Public Roadmap Docs Stubs
 - [x] Phase 4: Config Scaffolding
 - [x] Phase 5: Context Contract Implementation
@@ -101,20 +106,31 @@ Planned work:
 - [x] Phase 31: Archguard Impact Analysis
 - [x] Phase 32: Repair Plan Command
 - [x] Phase 33: Agent Adapter API
-- [x] Phase 33A: Tach Architecture Contract Refit
-- [x] Phase 34: Static HTML Report
-- [x] Phase 34B: Review-Driven Stabilization Plan
-- [x] Phase 34C: Headroom Backend Correctness
-- [x] Phase 34D: Change-Plan Authority Over Legacy Overrides
-- [x] Phase 34E: Coverage Semantics Hardening
-- [x] Phase 34F: Exact Repair Facts From Structured Artifacts
-- [x] Phase 34G: Beta Release Metadata Refresh
-- [ ] Phase 35: External Case Studies Measured Proof Harness
-- [ ] Phase 36: Monorepo / Multi-Package Support
-- [ ] Phase 37: Team Policy Templates
+- [x] Phase 34: Tach Architecture Contract Refit
+- [x] Phase 35: Static HTML Report
+- [x] Phase 36: Review-Driven Stabilization Plan
+- [x] Phase 37: Headroom Backend Correctness
+- [x] Phase 38: Change-Plan Authority Over Legacy Overrides
+- [x] Phase 39: Coverage Semantics Hardening
+- [x] Phase 40: Exact Repair Facts From Structured Artifacts
+- [x] Phase 41: Beta Release Metadata Refresh
+- [x] Phase 42: Pre-Case-Study Hardening Plan
+- [ ] Phase 43: Context Package Boundary Split
+- [ ] Phase 44: Hook Output Invariant Tests
+- [ ] Phase 45: Release-Check Ergonomics
+- [ ] Phase 46: Release-State Drift Check
+
+## Future Work
+
+These items are intentionally postponed and are not part of the current
+roadmap completion gate.
+
+- External Case Studies and Measured Proof Harness
+- Monorepo / Multi-Package Support
+- Team Policy Templates
 
 ## Final Definition Of Done
 
 The roadmap is complete only when every phase above is implemented, tested,
-documented, merged through CI, and verified against the final definition of done
-in the full blueprint.
+documented, merged through CI, and verified against the final definition of
+done in the full blueprint.
