@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
+from typing import cast
 
 import pytest
 
+from agent_maintainer.change_plan.models import ChangePlan, ValidationIssue
 from agent_maintainer.checks import change_budget as check_change_budget
 from agent_maintainer.checks import change_budget_plans
 from agent_maintainer.core.config import MaintainerConfig
@@ -316,6 +318,51 @@ def test_change_budget_main_reports_requested_override_failures(
     output = capsys.readouterr().out
     assert "Change budget failed" in output
     assert "Cohesive-change overrides are disabled" in output
+
+
+def test_change_plan_failure_survives_legacy_override(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Invalid active plans stay blocking under legacy override."""
+
+    monkeypatch.delenv("GITHUB_EVENT_NAME", raising=False)
+    monkeypatch.delenv("GITHUB_EVENT_PATH", raising=False)
+    monkeypatch.setenv("AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_REQUESTED", "true")
+    monkeypatch.setattr(
+        check_change_budget,
+        "evaluate_change_plan",
+        lambda _context: change_budget_plans.ChangePlanDecision(
+            plan=cast(ChangePlan, object()),
+            issues=(ValidationIssue(path="plan.md", message="path outside allowed scope"),),
+        ),
+    )
+    monkeypatch.setattr(
+        check_change_budget,
+        "run_git_numstat",
+        lambda base_ref, staged=False: [
+            check_change_budget.FileChange("src/a.py", 4, 0),
+        ],
+    )
+    monkeypatch.setattr(
+        check_change_budget,
+        "load_config",
+        lambda: MaintainerConfig(
+            source_roots=("src",),
+            test_roots=("tests",),
+            change_warn_lines=1,
+            change_block_lines=2,
+            cohesive_change_override_enabled=True,
+            cohesive_change_override_paths=("src/**",),
+            cohesive_change_override_max_lines=10,
+            cohesive_change_override_max_files=5,
+        ),
+    )
+
+    assert check_change_budget.main([]) == 1
+    output = capsys.readouterr().out
+    assert "Change plan invalid: plan.md: path outside allowed scope" in output
+    assert "Cohesive-change override ignored" in output
 
 
 def test_change_budget_can_allow_source_changes_without_test_changes() -> None:
