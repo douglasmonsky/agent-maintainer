@@ -113,6 +113,7 @@ paths = [
   "agent_maintainer.doctor.support.context_artifacts",
   "agent_maintainer.doctor.support.hook_audit",
   "agent_maintainer.doctor.support.policy",
+  "agent_maintainer.context.compression_backends",
   "agent_maintainer.context.diff_classify",
   "agent_maintainer.context.diff_git",
   "agent_maintainer.context.diff",
@@ -165,6 +166,7 @@ layer = "shared"
 [[modules]]
 paths = [
   "agent_maintainer.models",
+  "agent_maintainer.context.compression",
   "agent_maintainer.context.models",
   "agent_maintainer.doctor.support.models",
   "agent_maintainer.ratchet.models",
