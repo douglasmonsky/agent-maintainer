@@ -148,6 +148,7 @@ where = ["src"]
 [tool.agent_maintainer]
 mode = "fresh-strict"
 architecture_tool = "tach"
+ratchet_enabled = true
 source_roots = [
   "src/agent_maintainer",
   "src/archguard",

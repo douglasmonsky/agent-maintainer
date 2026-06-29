@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent_maintainer.core.config import MaintainerConfig, load_config
+from agent_maintainer.ratchet.guidance import render_ratchet_guidance
 
 DEFAULT_GUIDANCE_PATH = Path("AGENTS.agent-maintainer.md")
 CURRENT_STATUS = "current"
@@ -59,9 +60,30 @@ def main(argv: list[str]) -> int:
 def check_guidance(repo_root: Path, config: MaintainerConfig, output_path: Path) -> int:
     """Report whether generated guidance matches current config."""
 
-    state = guidance_state(repo_root, config, output_path)
-    print(state.message)
-    return 0 if state.status == CURRENT_STATUS else 1
+    states = guidance_states(repo_root, config, output_path)
+    for guidance_result in states:
+        print(guidance_result.message)
+    return 0 if all(result.status == CURRENT_STATUS for result in states) else 1
+
+
+def guidance_states(
+    repo_root: Path,
+    config: MaintainerConfig,
+    output_path: Path = DEFAULT_GUIDANCE_PATH,
+) -> tuple[GuidanceState, ...]:
+    """Return freshness states for every active guidance sidecar."""
+
+    states = [guidance_state(repo_root, config, output_path)]
+    if config.ratchet_enabled:
+        ratchet_path = Path(config.ratchet_guidance_path)
+        states.append(
+            file_guidance_state(
+                repo_root,
+                ratchet_path,
+                render_ratchet_guidance(config),
+            ),
+        )
+    return tuple(states)
 
 
 def guidance_state(
@@ -71,8 +93,17 @@ def guidance_state(
 ) -> GuidanceState:
     """Return whether the generated guidance sidecar is current."""
 
+    return file_guidance_state(repo_root, output_path, render_guidance(config))
+
+
+def file_guidance_state(
+    repo_root: Path,
+    output_path: Path,
+    expected: str,
+) -> GuidanceState:
+    """Return whether one generated guidance file is current."""
+
     path = repo_root / output_path
-    expected = render_guidance(config)
     if not path.exists():
         return GuidanceState(
             MISSING_STATUS,
@@ -97,6 +128,9 @@ def write_guidance(
 
     path = repo_root / output_path
     path.write_text(render_guidance(config), encoding="utf-8")
+    if config.ratchet_enabled:
+        ratchet_path = repo_root / config.ratchet_guidance_path
+        ratchet_path.write_text(render_ratchet_guidance(config), encoding="utf-8")
     return path
 
 
@@ -111,6 +145,7 @@ def render_guidance(config: MaintainerConfig) -> str:
         "`python3 -m agent_maintainer guidance`. Do not edit it by hand; update",
         "configuration first, then regenerate it.",
         "",
+        *ratchet_link_lines(config),
         "## Operating Intent",
         "",
         "- Prefer small, coherent commits that keep maintenance feedback easy to review.",
@@ -265,6 +300,19 @@ def render_guidance(config: MaintainerConfig) -> str:
     ]
     lines.append("")
     return "\n".join(lines)
+
+
+def ratchet_link_lines(config: MaintainerConfig) -> list[str]:
+    """Return main-guidance ratchet link lines when active."""
+
+    if not config.ratchet_enabled:
+        return []
+    return [
+        "## Ratchet Guidance",
+        "",
+        f"- Read `{config.ratchet_guidance_path}` for legacy ratchet repair guidance.",
+        "",
+    ]
 
 
 def format_inline_paths(paths: tuple[str, ...]) -> str:
