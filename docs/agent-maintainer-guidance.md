@@ -35,6 +35,37 @@ in this repo. The sidecar focuses on:
 - active gates only;
 - commands required before completion.
 
+## Quiet Agent Workflow
+
+Agent Maintainer should reduce repair-loop noise, not become another source of
+context waste. Agent-facing output should be summary-first:
+
+- completed check, actionable failure, or material plan change;
+- pass/fail status, profile, run id, failed checks, exact next commands;
+- no routine "still running" updates for expected long checks;
+- no narration for every focused rerun;
+- no pasted raw logs when a run-scoped artifact can be referenced instead.
+
+Manual file edits should use `apply_patch`. Avoid heredoc rewrite commands such
+as `python3 - <<'PY'` for ordinary source edits because they are noisy, harder
+to review, and bypass the repo's preferred patch workflow.
+
+## Verification Cadence
+
+The final verification bar should stay strict, but inner-loop checks should be
+proportional to the change:
+
+- small edit loop: run affected tests and touched-file lint only;
+- coherent chunk: run the related focused suite plus `tach check --exact` or
+  `python3 -m agent_maintainer change-plan check` when architecture or change
+  budgets are involved;
+- before commit: run `python3 -m agent_maintainer verify --profile precommit`;
+- before PR or merge: run `full`, `ci`, `security`, and `manual` once;
+- before release: run release-only packaging checks.
+
+Failure summaries should recommend the smallest useful rerun command instead of
+implying every profile must be rerun after every small fix.
+
 ## Failure Expansion
 
 Passing runs should stay quiet. Failed runs should provide just-in-time context

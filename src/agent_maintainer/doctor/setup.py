@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import importlib.util
+import re
 import sys
 from pathlib import Path
 
@@ -19,6 +21,8 @@ OK = maintainer_doctor_models.OK
 WARNING = maintainer_doctor_models.WARNING
 
 MIN_PYTHON = (3, 11)
+DUPLICATE_ARTIFACT_ROOTS = ("src", "tests", ".codex/hooks", ".claude/hooks")
+DUPLICATE_ARTIFACT_PATTERN = re.compile(r" \d+(?:\.[^.]+)?$")
 
 
 def check_architecture_backend(
@@ -128,6 +132,84 @@ def check_tool_capabilities(
         else maintainer_doctor_models.ACTIVE
     )
     return DoctorResult("tool-capabilities", status, message, state=result_state)
+
+
+def check_source_checkout_dogfood(repo_root: Path) -> DoctorResult:
+    """Report whether this source checkout imports local package code."""
+
+    expected = repo_root / "src" / "agent_maintainer" / "__init__.py"
+    if not expected.exists():
+        return DoctorResult(
+            "dogfood-source",
+            OK,
+            "No local src/agent_maintainer package.",
+            state=maintainer_doctor_models.NOT_APPLICABLE,
+        )
+
+    spec = importlib.util.find_spec("agent_maintainer")
+    if spec is None or spec.origin is None:
+        return DoctorResult(
+            "dogfood-source",
+            ERROR,
+            "Cannot resolve active agent_maintainer import.",
+            state=maintainer_doctor_models.MISSING,
+            hint="Run with PYTHONPATH=src python3 -m agent_maintainer.",
+        )
+
+    resolved = Path(spec.origin).resolve()
+    if resolved == expected.resolve():
+        return DoctorResult("dogfood-source", OK, "Imports local src/agent_maintainer.")
+
+    return DoctorResult(
+        "dogfood-source",
+        ERROR,
+        f"Imports {resolved}; expected {expected.resolve()}.",
+        state=maintainer_doctor_models.UNSAFE_CONFIG,
+        hint=(
+            "Run with PYTHONPATH=src python3 -m agent_maintainer or reinstall "
+            "editable with python -m pip install -e ."
+        ),
+    )
+
+
+def check_duplicate_generated_artifacts(repo_root: Path) -> DoctorResult:
+    """Report likely macOS-style duplicate artifacts in generated/source roots."""
+
+    matches = duplicate_artifact_paths(repo_root)
+    if not matches:
+        return DoctorResult("duplicate-artifacts", OK, "No duplicate artifacts found.")
+
+    preview = ", ".join(matches[:5])
+    hidden = len(matches) - 5
+    suffix = f"; {hidden} more" if hidden > 0 else ""
+    return DoctorResult(
+        "duplicate-artifacts",
+        WARNING,
+        f"Suspicious duplicate artifacts: {preview}{suffix}.",
+        state=maintainer_doctor_models.UNSAFE_CONFIG,
+        hint="Verify they are generated duplicates before deleting them.",
+    )
+
+
+def duplicate_artifact_paths(repo_root: Path) -> list[str]:
+    """Return suspicious duplicate artifact paths under checked roots."""
+
+    matches: list[str] = []
+    for root_name in DUPLICATE_ARTIFACT_ROOTS:
+        root = repo_root / root_name
+        if root.exists():
+            matches.extend(duplicate_artifacts_in_root(repo_root, root))
+    return sorted(matches)
+
+
+def duplicate_artifacts_in_root(repo_root: Path, root: Path) -> list[str]:
+    """Return suspicious duplicate artifact paths under one root."""
+
+    matches: list[str] = []
+    for path in root.rglob("*"):
+        if path.is_file() and DUPLICATE_ARTIFACT_PATTERN.search(path.name):
+            matches.append(path.relative_to(repo_root).as_posix())
+    return matches
 
 
 def check_layout(config: maintainer_config.MaintainerConfig) -> DoctorResult:

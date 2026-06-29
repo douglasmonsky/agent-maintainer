@@ -74,6 +74,30 @@ def test_runtime_noops_without_repo_opt_in(
     assert not (tmp_path / ".verify-logs").exists()
 
 
+def test_codex_runtime_noops_without_repo_opt_in(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Codex hooks also skip repositories without maintainer config."""
+
+    def fail_run(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        pytest.fail("unconfigured repository should not run verification")
+
+    monkeypatch.setattr(runtime.subprocess, "run", fail_run)
+
+    status = runtime.run_hook(
+        platform=runtime.CODEX_PLATFORM,
+        event=runtime.POST_TOOL_USE_EVENT,
+        profile="fast",
+        repo_root=tmp_path,
+    )
+
+    assert status == 0
+    assert capsys.readouterr().out == ""
+    assert not (tmp_path / ".verify-logs").exists()
+
+
 def test_discover_repo_root_falls_back_without_git(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

@@ -24,6 +24,7 @@ check_python_version = maintainer_doctor_setup.check_python_version
 check_agent_guidance = maintainer_doctor_setup.check_agent_guidance
 check_layout = maintainer_doctor_setup.check_layout
 check_optional_gates = maintainer_doctor_setup.check_optional_gates
+check_source_checkout_dogfood = maintainer_doctor_setup.check_source_checkout_dogfood
 check_tests = maintainer_doctor_setup.check_tests
 check_tool_capabilities = maintainer_doctor_setup.check_tool_capabilities
 
@@ -64,6 +65,7 @@ def run_doctor(repo_root: Path, config: maintainer_config.MaintainerConfig) -> l
         check_python_version(),
         check_repo_root(repo_root),
         check_virtualenv(repo_root),
+        check_source_checkout_dogfood(repo_root),
         check_tool_capabilities(repo_root, config),
         maintainer_doctor_setup.check_architecture_backend(repo_root, config),
         check_layout(config),
@@ -80,6 +82,7 @@ def run_doctor(repo_root: Path, config: maintainer_config.MaintainerConfig) -> l
         maintainer_doctor_policy.check_context_pack_upload_policy(repo_root, config),
         *maintainer_doctor_policy.check_context_health(repo_root, config),
         check_optional_gates(repo_root, config),
+        maintainer_doctor_setup.check_duplicate_generated_artifacts(repo_root),
         check_canonical_commands(repo_root),
         check_agent_guidance(repo_root, config),
         check_git_state(repo_root),

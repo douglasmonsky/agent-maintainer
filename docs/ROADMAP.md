@@ -144,12 +144,12 @@ context noise while preserving strict verification. Planned work:
 
 ## Quiet Control Plane Phases
 
-- [ ] Phase 47: Commit Context Boundary And Run Artifact Refactor
-- [ ] Phase 48: Quiet Agent Output And Guidance Discipline
-- [ ] Phase 49: Verification Cadence Recommendations
-- [ ] Phase 50: Dogfood Drift Doctor Check
-- [ ] Phase 51: Duplicate Artifact Detection And Cleanup Guard
-- [ ] Phase 52: Configured-Repo Hook No-Op Tests
+- [x] Phase 47: Commit Context Boundary And Run Artifact Refactor
+- [x] Phase 48: Quiet Agent Output And Guidance Discipline
+- [x] Phase 49: Verification Cadence Recommendations
+- [x] Phase 50: Dogfood Drift Doctor Check
+- [x] Phase 51: Duplicate Artifact Detection And Cleanup Guard
+- [x] Phase 52: Configured-Repo Hook No-Op Tests
 
 ## Future Work
 

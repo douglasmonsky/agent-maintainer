@@ -62,6 +62,7 @@ def main(argv: list[str]) -> int:
             args.profile,
             results,
             context_log_dir_value=context_log_dir(config, log_dir, run_id),
+            run_id=run_id,
         )
         verifier_lock.write_result(exit_code)
         return exit_code

@@ -60,6 +60,9 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "## Active Gates" in text
     assert "## Required Commands" in text
     assert "## Optional Gates" not in text
+    assert "Keep chat updates summary-first" in text
+    assert "Do not emit routine `still running` updates" in text
+    assert "Use `apply_patch` for manual edits" in text
     assert "Mode: `fresh-strict`" in text
     assert (
         "Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`"
@@ -82,6 +85,7 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "TOML formatting: `pyproject.toml tach.toml`" in text
     assert "Schema validation: `--builtin-schema vendor.github-workflows" in text
     assert "python3 -m agent_maintainer verify --profile precommit" in text
+    assert "Before PR/merge: run `full`, `ci`, `security`, and `manual` once" in text
     assert "Structure hint patterns advisory" not in text
 
 

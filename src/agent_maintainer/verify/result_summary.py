@@ -37,6 +37,7 @@ def print_result_summary(
     results: list[CheckResult],
     *,
     context_log_dir_value: str | None = None,
+    run_id: str | None = None,
 ) -> int:
     """Print compact verifier result and return the process exit code."""
 
@@ -53,6 +54,7 @@ def print_result_summary(
         failures,
         skipped,
         context_log_dir=context_log_dir_value,
+        run_id=run_id,
     )
     return 1
 

@@ -59,6 +59,10 @@ Generated from `[tool.agent_maintainer]` by
 
 ## Failure Loop
 
+- Keep chat updates summary-first: completed check, actionable failure,
+ or plan change.
+- Do not emit routine `still running` updates for expected long checks.
+- Use `apply_patch` for manual edits; avoid heredoc rewrite commands.
 - Read `.verify-logs/LAST_FAILURE.md` before changing code or config.
 - Prefer run-scoped `context --log-dir ...` commands from failures.
 - Expand only needed context:
@@ -69,6 +73,7 @@ Generated from `[tool.agent_maintainer]` by
 
 - Normal finish: `python3 -m agent_maintainer verify --profile precommit`
 - Larger/shared changes: `python3 -m agent_maintainer verify --profile full`
+- Before PR/merge: run `full`, `ci`, `security`, and `manual` once.
 - Config changes: `python3 -m agent_maintainer guidance` and
   `python3 -m agent_maintainer doctor`
 
