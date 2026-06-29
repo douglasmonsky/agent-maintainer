@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -39,19 +40,84 @@ def test_change_budget_parse_csv_like_normalizes_values() -> None:
     )
 
 
-def test_change_budget_reports_missing_tests_when_required() -> None:
+def test_change_budget_reports_missing_tests_when_required(tmp_path: Path) -> None:
     args = check_change_budget.parse_args([])
     config = MaintainerConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
+    write_test_file(tmp_path, "tests/test_tool.py", "import tool\n")
 
     failures, warnings = check_change_budget.budget_messages(
         args,
         config,
         [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
         [],
+        repo_root=tmp_path,
     )
 
     assert failures == []
-    assert warnings == ["Python source changed, but no configured Python test files changed."]
+    assert warnings == [
+        "\n".join(
+            (
+                "Source changed without likely relevant test changes.",
+                "Likely test files: tests/test_tool.py",
+                "Run: python -m agent_maintainer test-intel changed --base-ref HEAD",
+            )
+        )
+    ]
+
+
+def test_change_budget_accepts_relevant_test_change(tmp_path: Path) -> None:
+    args = check_change_budget.parse_args([])
+    config = MaintainerConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
+    write_test_file(tmp_path, "tests/test_tool.py", "import tool\n")
+
+    failures, warnings = check_change_budget.budget_messages(
+        args,
+        config,
+        [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
+        [check_change_budget.FileChange("tests/test_tool.py", 1, 0)],
+        repo_root=tmp_path,
+    )
+
+    assert failures == []
+    assert warnings == []
+
+
+def test_change_budget_warns_on_irrelevant_test_change(tmp_path: Path) -> None:
+    args = check_change_budget.parse_args([])
+    config = MaintainerConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
+    write_test_file(tmp_path, "tests/test_tool.py", "import tool\n")
+    write_test_file(tmp_path, "tests/test_other.py", "def test_other() -> None:\n    pass\n")
+
+    failures, warnings = check_change_budget.budget_messages(
+        args,
+        config,
+        [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
+        [check_change_budget.FileChange("tests/test_other.py", 1, 0)],
+        repo_root=tmp_path,
+    )
+
+    assert failures == []
+    assert len(warnings) == 1
+    assert warnings[0].startswith(
+        "A test file changed, but no likely relevant test changed for modified source."
+    )
+    assert "Likely test files: tests/test_tool.py" in warnings[0]
+
+
+def test_change_budget_missing_test_warning_mentions_staged_mode(tmp_path: Path) -> None:
+    args = check_change_budget.parse_args(["--staged"])
+    config = MaintainerConfig(source_roots=("scripts",), test_roots=("tests",), require_tests=True)
+    write_test_file(tmp_path, "tests/test_tool.py", "import tool\n")
+
+    _failures, warnings = check_change_budget.budget_messages(
+        args,
+        config,
+        [check_change_budget.FileChange("scripts/tool.py", 1, 0)],
+        [],
+        repo_root=tmp_path,
+    )
+
+    assert "Run: python -m agent_maintainer test-intel changed --staged" in warnings[0]
 
 
 def test_run_git_numstat_parses_output(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -266,3 +332,11 @@ def test_change_budget_main_passes_clean_diff(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setattr(check_change_budget, "load_config", MaintainerConfig)
 
     assert check_change_budget.main([]) == 0
+
+
+def write_test_file(root: Path, relative_path: str, content: str) -> None:
+    """Write a pytest fixture file."""
+
+    path = root / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")

@@ -84,6 +84,7 @@ paths = [
   "agent_maintainer.checks.file_lengths",
   "agent_maintainer.checks.structure",
   "agent_maintainer.checks.suppression_budget",
+  "agent_maintainer.checks.test_relevance",
   "agent_maintainer.core",
   "agent_maintainer.core.args",
   "agent_maintainer.core.config",

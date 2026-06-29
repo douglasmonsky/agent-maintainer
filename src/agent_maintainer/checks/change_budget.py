@@ -13,8 +13,9 @@ import shutil
 import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass, replace
+from pathlib import Path
 
-from agent_maintainer.checks import cohesive_override
+from agent_maintainer.checks import cohesive_override, test_relevance
 from agent_maintainer.core.config import MaintainerConfig, load_config, path_matches_roots
 
 NUMSTAT_FIELD_COUNT = 3
@@ -41,7 +42,6 @@ EXCLUDED_NAMES = frozenset(
         "yarn.lock",
     )
 )
-MISSING_TEST_CHANGE_WARNING = "Python source changed, but no configured Python test files changed."
 
 
 @dataclass(frozen=True)
@@ -252,6 +252,7 @@ def budget_messages(
     config: MaintainerConfig,
     py_source_changes: list[FileChange],
     py_test_changes: list[FileChange],
+    repo_root: Path | None = None,
 ) -> tuple[list[str], list[str]]:
     """Return blocking failures and softer warnings for a diff."""
 
@@ -260,13 +261,15 @@ def budget_messages(
     failures.extend(line_budget_failures(args, config, py_source_changes, warnings))
     failures.extend(file_budget_failures(args, config, py_source_changes, warnings))
 
-    if (
-        py_source_changes
-        and not py_test_changes
-        and config.require_tests
-        and not args.allow_source_without_test_change
-    ):
-        warnings.append(MISSING_TEST_CHANGE_WARNING)
+    warnings.extend(
+        test_relevance.warnings_for_changes(
+            args,
+            config,
+            py_source_changes,
+            py_test_changes,
+            repo_root,
+        )
+    )
 
     return failures, warnings
 
@@ -363,7 +366,7 @@ def main(argv: list[str]) -> int:
     if warnings:
         print_warning_report(warnings)
         if args.warnings_as_errors or (
-            args.missing_test_change_as_error and MISSING_TEST_CHANGE_WARNING in warnings
+            args.missing_test_change_as_error and test_relevance.has_warning(warnings)
         ):
             return 1
 
