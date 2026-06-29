@@ -65,6 +65,14 @@ exit-code, threshold, log-path, and rerun context.
 Managed agent-client hooks append local execution evidence to
 `.verify-logs/hooks.jsonl`, and `doctor` reports latest audited hook status.
 
+`repair-plan` prints a non-mutating repair sequence for the next agent loop.
+Use `python3 -m agent_maintainer repair-plan` for the latest failure,
+`--ratchet` for the next ratchet target, `--check pyright` for one verifier
+check, or `--target path/to/file.py` for one file. Markdown output is the
+human/default format; `--format json` exists for automation. The command only
+prints bounded guidance and context/test/verification commands; it does not edit
+files, update baselines, or run checks.
+
 ## Maintainability gates
 
 Radon reports cyclomatic complexity and maintainability metrics. Xenon converts complexity thresholds into a failing gate.
