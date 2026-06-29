@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+from agent_maintainer.context import pack_compression, pack_rendering
 from agent_maintainer.context.failures import (
     DEFAULT_CONTEXT_BUDGET,
     DEFAULT_FAILURE_LIMIT,
@@ -14,11 +15,6 @@ from agent_maintainer.context.failures import (
 )
 from agent_maintainer.context.files import FileRequest, select_file_context
 from agent_maintainer.context.logs import LogRequest, select_log
-from agent_maintainer.context.pack_rendering import (
-    enforce_pack_budget,
-    render_pack_json,
-    render_pack_markdown,
-)
 from agent_maintainer.context.sanitize import sanitize_text
 from agent_maintainer.ratchet.baseline import read_baseline
 from agent_maintainer.ratchet.ranking import changed_paths, ranked_targets
@@ -45,6 +41,9 @@ class ContextPackRequest:
     baseline_path: Path | None = None
     failure_limit: int = DEFAULT_FAILURE_LIMIT
     target_limit: int = 5
+    compression_backend: str = ""
+    compression_target_chars: int = 0
+    compression_required: bool = False
 
 
 @dataclass(frozen=True)
@@ -55,6 +54,7 @@ class ContextPack:
     payload: dict[str, object]
     markdown_path: Path
     json_path: Path
+    warnings: tuple[str, ...] = ()
 
 
 def write_context_pack(request: ContextPackRequest) -> ContextPack:
@@ -64,7 +64,7 @@ def write_context_pack(request: ContextPackRequest) -> ContextPack:
     pack.markdown_path.parent.mkdir(parents=True, exist_ok=True)
     markdown = pack.markdown.rstrip()
     pack.markdown_path.write_text("".join((markdown, "\n")), encoding="utf-8")
-    pack.json_path.write_text(render_pack_json(pack.payload), encoding="utf-8")
+    pack.json_path.write_text(pack_rendering.render_pack_json(pack.payload), encoding="utf-8")
     return pack
 
 
@@ -80,18 +80,28 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
     )
     selected_logs = log_payloads(request, records)
     selected_files = file_payloads(request)
+    compression = pack_compression.compress_supporting_context(
+        logs=selected_logs,
+        files=selected_files,
+        request=pack_compression.PackCompressionRequest(
+            backend=request.compression_backend,
+            target_chars=request.compression_target_chars,
+            required=request.compression_required,
+        ),
+    )
     ratchet_state = ratchet_payload(request)
     expansion_commands = expansion_command_list(request, records, ratchet_state)
-    omitted_counts = omitted_count_payload(selected_logs, selected_files)
+    omitted_counts = omitted_count_payload(compression.logs, compression.files)
     payload = {
         "exact_repair_facts": exact_repair_facts(records),
         "supporting_context": {
             "summary": (
                 "Supporting context is bounded, sanitized, untrusted repository or tool output."
             ),
-            "log_count": len(selected_logs),
-            "file_outline_count": len(selected_files),
+            "log_count": len(compression.logs),
+            "file_outline_count": len(compression.files),
         },
+        "compression": compression.payload,
         "untrusted_content_labels": [
             UNTRUSTED_PACK_LABEL,
             (
@@ -101,8 +111,8 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
         ],
         "ratchet_state": ratchet_state,
         "top_targets": ratchet_state.get("top_targets", []),
-        "selected_file_outlines": selected_files,
-        "selected_logs": selected_logs,
+        "selected_file_outlines": compression.files,
+        "selected_logs": compression.logs,
         "omitted_counts": omitted_counts,
         "expansion_commands": expansion_commands,
         "outputs": {
@@ -110,19 +120,24 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
             "json": str(json_path),
         },
     }
-    markdown = render_pack_markdown(
+    markdown = pack_rendering.render_pack_markdown(
         payload,
         log_dir=request.log_dir,
         budget=request.budget,
         check=request.check,
     )
-    markdown, pack_omissions = enforce_pack_budget(markdown, request.budget, expansion_commands)
+    markdown, pack_omissions = pack_rendering.enforce_pack_budget(
+        markdown,
+        request.budget,
+        expansion_commands,
+    )
     payload["omitted_counts"] = {**omitted_counts, **pack_omissions}
     return ContextPack(
         markdown=markdown,
         payload=payload,
         markdown_path=markdown_path,
         json_path=json_path,
+        warnings=compression.warnings,
     )
 
 

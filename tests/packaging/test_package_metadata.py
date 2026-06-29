@@ -44,7 +44,7 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     )
     assert "License :: OSI Approved :: MIT License" not in metadata["project"]["classifiers"]
     assert "Programming Language :: Python :: 3.14" in metadata["project"]["classifiers"]
-    assert {"core", "agent", "hardening", "manual", "all"} <= set(
+    assert {"core", "agent", "hardening", "manual", "compression", "all"} <= set(
         metadata["project"]["optional-dependencies"]
     )
 
@@ -65,6 +65,8 @@ def test_optional_dependency_extras_are_flattened() -> None:
     assert set(extras["core"]) <= set(extras["all"])
     assert set(extras["manual"]) <= set(extras["all"])
     assert set(extras["hardening"]) <= set(extras["all"])
+    assert extras["compression"] == ["headroom-ai"]
+    assert "headroom-ai" not in extras["all"]
     assert all("hypothesis" not in dependencies for dependencies in extras.values())
     assert all("rust-just" not in dependencies for dependencies in extras.values())
     assert "semgrep; python_version < '3.13'" in extras["manual"]

@@ -92,7 +92,7 @@ Planned work:
 - [x] Phase 23: Change-Budget Integration Change Plans
 - [x] Phase 24: Integration Branch Series
 - [x] Phase 25: Compression Backend Interface
-- [ ] Phase 26: Optional Headroom Backend
+- [x] Phase 26: Optional Headroom Backend
 - [ ] Phase 27: Doctor Integration
 - [ ] Phase 28: Examples Proof Repos
 - [ ] Phase 29: PR / GitHub Actions Summary Report
