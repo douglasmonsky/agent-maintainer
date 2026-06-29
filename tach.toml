@@ -124,6 +124,8 @@ paths = [
   "agent_maintainer.ratchet.status",
   "agent_maintainer.test_intel",
   "agent_maintainer.test_intel.changed",
+  "agent_maintainer.test_intel.crosshair_candidates",
+  "agent_maintainer.test_intel.crosshair_reporting",
   "agent_maintainer.test_intel.coverage",
   "agent_maintainer.test_intel.hypothesis_candidates",
   "agent_maintainer.test_intel.hypothesis_reporting",
