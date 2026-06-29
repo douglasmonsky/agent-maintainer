@@ -87,6 +87,7 @@ def command_handlers() -> dict[str, CommandRunner]:
 
     return {
         "bootstrap": bootstrap_command,
+        "change-plan": change_plan_command,
         "context": context_main,
         "doctor": doctor_main,
         "guidance": guidance_main,
@@ -103,6 +104,13 @@ def bootstrap_command(_command_args: list[str]) -> int:
     """Adapt bootstrap to the shared command handler signature."""
 
     return bootstrap()
+
+
+def change_plan_command(command_args: list[str]) -> int:
+    """Run change-plan command lazily to keep entrypoint light."""
+
+    module = __import__("agent_maintainer.change_plan.cli", fromlist=("main",))
+    return module.main(command_args)
 
 
 def install_command(_command_args: list[str]) -> int:
