@@ -76,3 +76,20 @@ The command refuses symlinks, binary or non-UTF-8 files, notebooks, lock files,
 cache/build paths, generated files, and minified JSON. Python outlines use AST
 metadata when possible and fall back to regex/chunk navigation when syntax is
 broken.
+
+## Bounded Diff Context
+
+Use `context diff` to inspect changed code without dumping full diffs:
+
+```bash
+python -m agent_maintainer context diff --summary
+python -m agent_maintainer context diff --name-only --limit 80
+python -m agent_maintainer context diff --path src/example.py
+python -m agent_maintainer context diff --path src/example.py --hunks 5
+python -m agent_maintainer context diff --base-ref origin/main
+python -m agent_maintainer context diff --staged
+```
+
+Summaries include changed file counts, Python/test/docs/generated categories,
+largest changed files, rename/move candidates, import-only candidates,
+shown/omitted path counts, and expansion commands.

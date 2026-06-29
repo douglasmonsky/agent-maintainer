@@ -68,7 +68,7 @@ Planned work:
 - [x] Phase 9: `context failures` and `context log`
 - [x] Phase 10: Context Budget Estimation
 - [x] Phase 11: Safe Large-File Reading
-- [ ] Phase 12: Diff Context Safety
+- [x] Phase 12: Diff Context Safety
 - [ ] Phase 13: Ratchet Baseline Status
 - [ ] Phase 14: Ratchet Target Ranking
 - [ ] Phase 15: Generate `AGENTS.ratchet.md`
