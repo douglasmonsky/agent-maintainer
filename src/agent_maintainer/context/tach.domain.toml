@@ -62,6 +62,12 @@ depends_on = [
 ]
 
 [[modules]]
+path = "exact_facts"
+depends_on = [
+  "failures",
+]
+
+[[modules]]
 path = "failures"
 depends_on = [
   "budget",
@@ -124,6 +130,7 @@ depends_on = [
 [[modules]]
 path = "packs"
 depends_on = [
+  "exact_facts",
   "failures",
   "files",
   "logs",

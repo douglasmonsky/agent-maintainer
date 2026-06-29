@@ -157,10 +157,14 @@ def exact_fact_lines(facts: object) -> list[str]:
         if not isinstance(fact, dict):
             lines.append("- Unknown failure fact.")
             continue
+        location = fact_location(fact.get("path"), fact.get("line")).strip()
+        symbol = fact.get("symbol")
         lines.extend(
             (
                 f"- Check: `{fact.get('check', 'unknown')}`",
                 f"  - Severity: `{fact.get('severity', 'unknown')}`",
+                f"  - Location: `{location}`" if location else "  - Location: `<none>`",
+                f"  - Symbol: `{symbol}`" if symbol else "  - Symbol: `<none>`",
                 f"  - Message: {fact.get('message', '')}",
             ),
         )

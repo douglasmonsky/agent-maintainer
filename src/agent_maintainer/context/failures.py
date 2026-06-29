@@ -51,6 +51,7 @@ class FailureRecord:
     log_path: str
     log_bytes: int
     expansion_commands: tuple[str, ...]
+    artifact_paths: tuple[str, ...] = ()
 
     def to_json(self) -> dict[str, object]:
         """Return stable JSON payload."""
@@ -64,6 +65,7 @@ class FailureRecord:
             "log_path": self.log_path,
             "log_bytes": self.log_bytes,
             "expansion_commands": list(self.expansion_commands),
+            "artifact_paths": list(self.artifact_paths),
         }
 
 
@@ -125,6 +127,7 @@ def record_from_payload(payload: object) -> FailureRecord | None:
         log_path=str(payload.get("log_path", "")),
         log_bytes=optional_int(payload.get("log_bytes")) or 0,
         expansion_commands=string_tuple(payload.get("expansion_commands", [])),
+        artifact_paths=string_tuple(payload.get("artifacts", [])),
     )
 
 

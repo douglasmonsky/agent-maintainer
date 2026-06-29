@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-from agent_maintainer.context import pack_compression, pack_rendering
+from agent_maintainer.context import exact_facts, pack_compression, pack_rendering
 from agent_maintainer.context.failures import (
     DEFAULT_CONTEXT_BUDGET,
     DEFAULT_FAILURE_LIMIT,
@@ -93,7 +93,7 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
     expansion_commands = expansion_command_list(request, records, ratchet_state)
     omitted_counts = omitted_count_payload(compression.logs, compression.files)
     payload = {
-        "exact_repair_facts": exact_repair_facts(records),
+        "exact_repair_facts": exact_facts.repair_facts(request.log_dir, records),
         "supporting_context": {
             "summary": (
                 "Supporting context is bounded, sanitized, untrusted repository or tool output."
@@ -139,30 +139,6 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
         json_path=json_path,
         warnings=compression.warnings,
     )
-
-
-def exact_repair_facts(records: tuple[FailureRecord, ...]) -> list[dict[str, object]]:
-    """Return exact failure facts that should not be summarized."""
-
-    return [
-        {
-            "check": record.name,
-            "path": None,
-            "line": None,
-            "column": None,
-            "symbol": None,
-            "message": failure_message(record),
-            "severity": "error",
-        }
-        for record in records
-    ]
-
-
-def failure_message(record: FailureRecord) -> str:
-    """Return exact message for one failure record."""
-
-    exit_text = "unknown" if record.exit_code is None else str(record.exit_code)
-    return f"{record.name} failed with exit code {exit_text}"
 
 
 def log_payloads(
