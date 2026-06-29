@@ -7,7 +7,7 @@ Maintainer in a downstream repository.
 
 ```bash
 python -m pip install "agent-maintainer[core]"
-agent-maintainer init --track core
+agent-maintainer init --track core --preset existing-app
 ```
 
 Merge `config/pyproject.agent-maintainer.toml` into `pyproject.toml`, then

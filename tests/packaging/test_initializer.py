@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import py_compile
+import tomllib
 from pathlib import Path
 
 from yamllint import linter
@@ -119,3 +120,114 @@ def test_initializer_dry_run_writes_nothing(tmp_path: Path) -> None:
     assert status == 0
     assert not (tmp_path / "config").exists()
     assert not (tmp_path / ".pre-commit-config.yaml").exists()
+
+
+PRESET_EXPECTATIONS = {
+    "small-library": {
+        "mode": "custom",
+        "coverage_fail_under": 90,
+        "change_warn_lines": 200,
+        "change_block_files": 12,
+        "suppression_max_new": 1,
+        "ruff_max_complexity": 8,
+        "ratchet_enabled": False,
+        "enable_wemake": False,
+    },
+    "existing-app": {
+        "mode": "custom",
+        "coverage_fail_under": 80,
+        "change_warn_lines": 300,
+        "change_block_files": 20,
+        "suppression_max_new": 3,
+        "ruff_max_complexity": 10,
+        "ratchet_enabled": False,
+        "enable_wemake": False,
+    },
+    "ai-agent-heavy": {
+        "mode": "fresh-strict",
+        "coverage_fail_under": 90,
+        "change_warn_lines": 200,
+        "change_block_files": 12,
+        "source_without_test_change_error_profiles": ["precommit", "full", "ci"],
+        "suppression_max_new": 1,
+        "ratchet_enabled": False,
+        "enable_wemake": False,
+    },
+    "legacy-ratchet": {
+        "mode": "legacy-ratchet",
+        "coverage_fail_under": 70,
+        "diff_cover_fail_under": 80,
+        "change_warn_lines": 500,
+        "change_block_files": 30,
+        "suppression_max_new": 5,
+        "ratchet_enabled": True,
+        "file_length_baseline": ".agent-maintainer/file-length-baseline.json",
+    },
+    "strict-new-repo": {
+        "mode": "fresh-strict",
+        "coverage_fail_under": 90,
+        "change_warn_lines": 150,
+        "change_block_files": 10,
+        "source_without_test_change_error_profiles": ["precommit", "full", "ci"],
+        "suppression_max_new": 0,
+        "pyright_type_checking_mode": "strict",
+        "ratchet_enabled": False,
+        "enable_wemake": True,
+    },
+}
+
+
+def test_initializer_presets_write_deterministic_parseable_configs(tmp_path: Path) -> None:
+    """Each onboarding preset writes deterministic starter config."""
+
+    for preset, expected_values in PRESET_EXPECTATIONS.items():
+        first_target = tmp_path / f"{preset}-first"
+        second_target = tmp_path / f"{preset}-second"
+        assert initializer.main(["--target", str(first_target), "--preset", preset]) == 0
+        assert initializer.main(["--target", str(second_target), "--preset", preset]) == 0
+
+        first_config = (first_target / STARTER_CONFIG).read_text(encoding="utf-8")
+        second_config = (second_target / STARTER_CONFIG).read_text(encoding="utf-8")
+        parsed = tomllib.loads(first_config)
+        config = parsed["tool"]["agent_maintainer"]
+
+        assert first_config == second_config
+        assert f"# Onboarding preset: {preset}." in first_config
+        for key, expected in expected_values.items():
+            assert config[key] == expected
+
+
+def test_initializer_default_preset_matches_existing_app(tmp_path: Path) -> None:
+    """No-preset init keeps existing app starter behavior."""
+
+    default_target = tmp_path / "default"
+    explicit_target = tmp_path / "explicit"
+    assert initializer.main(["--target", str(default_target)]) == 0
+    assert initializer.main(["--target", str(explicit_target), "--preset", "existing-app"]) == 0
+
+    default_config = (default_target / STARTER_CONFIG).read_text(encoding="utf-8")
+    explicit_config = (explicit_target / STARTER_CONFIG).read_text(encoding="utf-8")
+    assert default_config == explicit_config
+
+
+def test_initializer_preset_preserves_track_file_selection(tmp_path: Path) -> None:
+    """Preset tunes config while track still controls generated files."""
+
+    status = initializer.main(
+        [
+            "--target",
+            str(tmp_path),
+            "--track",
+            "agent",
+            "--preset",
+            "ai-agent-heavy",
+        ],
+    )
+
+    assert status == 0
+    assert (tmp_path / STARTER_CONFIG).exists()
+    assert (tmp_path / ".codex" / "hooks" / "stop_full_verify.py").exists()
+    assert (tmp_path / ".claude" / "hooks" / "stop.py").exists()
+    assert not (tmp_path / "package.json").exists()
+    config = tomllib.loads((tmp_path / STARTER_CONFIG).read_text(encoding="utf-8"))
+    assert config["tool"]["agent_maintainer"]["mode"] == "fresh-strict"
