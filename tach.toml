@@ -31,7 +31,6 @@ depends_on = [
   "agent_maintainer.core.runtime",
   "agent_maintainer.doctor.cli",
   "agent_maintainer.hooks.cli",
-  "agent_maintainer.test_intel.cli",
   "agent_maintainer.verify.quiet",
 ]
 

@@ -132,6 +132,7 @@ python3 -m agent_maintainer verify --profile full
 python3 -m agent_maintainer verify --profile ci
 python3 -m agent_maintainer verify --profile security
 python3 -m agent_maintainer verify --profile manual
+python3 -m agent_maintainer report html
 python3 -m agent_maintainer hooks status all
 python3 -m agent_maintainer hooks install all --dry-run
 python3 -m agent_maintainer hooks install claude-code --scope user
