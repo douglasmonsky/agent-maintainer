@@ -54,7 +54,7 @@ Planned work:
 - [x] Phase 4: Config Scaffolding
 - [x] Phase 5: Context Contract Implementation
 - [x] Phase 6: Bounded Verifier, Hook, LAST_FAILURE Output
-- [ ] Phase 7: Test Intelligence MVP
+- [x] Phase 7: Test Intelligence MVP
 - [ ] Phase 8: Smarter Source-Without-Test Guidance
 - [ ] Phase 9: `context failures` and `context log`
 - [ ] Phase 10: Context Budget Estimation
