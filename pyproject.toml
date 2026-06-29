@@ -322,9 +322,12 @@ markers = [
 known_first_party = [
   "agent_maintainer",
   "archguard",
+  "catalog",
   "fresh_strict_example",
   "hook_audit",
   "legacy_ratchet_example",
+  "legacy",
+  "scoring",
 ]
 package_module_name_map = { "headroom-ai" = "headroom" }
 requirements_files = ["requirements.txt"]

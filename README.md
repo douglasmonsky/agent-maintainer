@@ -272,3 +272,6 @@ Example starter projects:
 
 - [Fresh-strict example](examples/fresh-strict)
 - [Legacy-ratchet example](examples/legacy-ratchet)
+- [Context-safe ratchet proof example](examples/context-safe-ratchet)
+- [Cohesive change-plan proof example](examples/cohesive-change-plan)
+- [Test-intelligence proof example](examples/test-intelligence)
