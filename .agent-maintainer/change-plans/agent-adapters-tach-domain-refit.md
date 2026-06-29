@@ -1,7 +1,7 @@
 +++
 id = "agent-adapters-tach-domain-refit"
 kind = "refactor"
-status = "active"
+status = "completed"
 base_ref = "origin/main"
 expires = 2026-07-13
 allowed_paths = [".agent-maintainer/change-plans/**", "src/**", "tests/**", "docs/**", "examples/**", "tach.toml", "pyproject.toml"]
