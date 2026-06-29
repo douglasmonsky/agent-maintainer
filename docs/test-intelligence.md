@@ -30,6 +30,10 @@ Output includes changed source files, likely test files, reasons, coverage
 metadata when `coverage.json` or `coverage.xml` is present, and suggested
 focused pytest commands.
 
+Change-budget warnings use this same mapping when source changes do not include
+likely relevant test changes. The warning stays non-blocking unless existing
+strict warning-as-error options are enabled.
+
 ## Planned Next Layers
 
 Planned capabilities include smarter source-without-test guidance, branch

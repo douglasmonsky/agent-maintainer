@@ -55,7 +55,7 @@ Planned work:
 - [x] Phase 5: Context Contract Implementation
 - [x] Phase 6: Bounded Verifier, Hook, LAST_FAILURE Output
 - [x] Phase 7: Test Intelligence MVP
-- [ ] Phase 8: Smarter Source-Without-Test Guidance
+- [x] Phase 8: Smarter Source-Without-Test Guidance
 - [ ] Phase 9: `context failures` and `context log`
 - [ ] Phase 10: Context Budget Estimation
 - [ ] Phase 11: Safe Large-File Reading
