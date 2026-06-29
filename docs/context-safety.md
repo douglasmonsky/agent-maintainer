@@ -58,3 +58,21 @@ python -m agent_maintainer context estimate --diff --summary
 Estimates report approximate character and token cost using `tokens ~= chars / 4`.
 Large log refusals include a matching estimate command so agents can inspect
 cost before raising `--budget` or using `--confirm-large`.
+
+## Safe File Context
+
+Use `context file` for bounded file navigation instead of dumping large files:
+
+```bash
+python -m agent_maintainer context file src/example.py --outline
+python -m agent_maintainer context file src/example.py --symbols
+python -m agent_maintainer context file src/example.py --symbol Example.method
+python -m agent_maintainer context file src/example.py --lines 40:80
+python -m agent_maintainer context file src/example.py --around 120 --context 20
+python -m agent_maintainer context file src/example.py --format json
+```
+
+The command refuses symlinks, binary or non-UTF-8 files, notebooks, lock files,
+cache/build paths, generated files, and minified JSON. Python outlines use AST
+metadata when possible and fall back to regex/chunk navigation when syntax is
+broken.

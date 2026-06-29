@@ -103,6 +103,7 @@ paths = [
   "agent_maintainer.doctor.support.policy",
   "agent_maintainer.context.estimate",
   "agent_maintainer.context.file_safety",
+  "agent_maintainer.context.files",
   "agent_maintainer.context.failures",
   "agent_maintainer.context.logs",
   "agent_maintainer.context.python_outline",
