@@ -46,6 +46,7 @@ python -m agent_maintainer hooks status
   python -m agent_maintainer test-intel changed
   python -m agent_maintainer test-intel hypothesis-candidates --changed
   python -m agent_maintainer test-intel mutation-targets --changed
+  python -m agent_maintainer test-intel crosshair-candidates --changed
   python -m agent_maintainer verify --profile fast
   python -m agent_maintainer verify --profile precommit
   python -m agent_maintainer verify --profile full

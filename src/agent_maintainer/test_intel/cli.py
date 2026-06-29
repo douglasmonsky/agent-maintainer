@@ -8,6 +8,8 @@ from pathlib import Path
 
 from agent_maintainer.config import loader
 from agent_maintainer.test_intel import (
+    crosshair_candidates,
+    crosshair_reporting,
     hypothesis_candidates,
     hypothesis_reporting,
     mutation_reporting,
@@ -78,6 +80,23 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         choices=(FORMAT_TEXT, FORMAT_JSON),
         default=FORMAT_TEXT,
     )
+    crosshair_parser = subparsers.add_parser(
+        "crosshair-candidates",
+        help="Suggest advisory CrossHair contract-analysis candidates.",
+    )
+    crosshair_parser.add_argument("--changed", action="store_true")
+    crosshair_parser.add_argument("--base-ref", default="HEAD")
+    crosshair_parser.add_argument("--staged", action="store_true")
+    crosshair_parser.add_argument(
+        "--limit",
+        type=int,
+        default=crosshair_candidates.DEFAULT_LIMIT,
+    )
+    crosshair_parser.add_argument(
+        "--format",
+        choices=(FORMAT_TEXT, FORMAT_JSON),
+        default=FORMAT_TEXT,
+    )
     return parser.parse_args(argv)
 
 
@@ -91,6 +110,8 @@ def main(argv: list[str]) -> int:
         return run_hypothesis_candidates(args)
     if args.command == "mutation-targets":
         return run_mutation_targets(args)
+    if args.command == "crosshair-candidates":
+        return run_crosshair_candidates(args)
     return 2
 
 
@@ -199,6 +220,44 @@ def render_mutation_report(
     if output_format == FORMAT_JSON:
         return mutation_reporting.render_json(report)
     return mutation_reporting.render_text(report)
+
+
+def run_crosshair_candidates(args: argparse.Namespace) -> int:
+    """Run advisory CrossHair candidate report."""
+
+    repo_root = Path.cwd()
+    config = loader.load_config()
+    try:
+        changed_source = (
+            changed_source_paths(config, base_ref=args.base_ref, staged=args.staged)
+            if args.changed
+            else ()
+        )
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    report = crosshair_candidates.build_crosshair_candidate_report(
+        crosshair_candidates.CrosshairCandidateRequest(
+            config=config,
+            repo_root=repo_root,
+            changed_only=args.changed,
+            changed_source=changed_source,
+            limit=args.limit,
+        )
+    )
+    print(render_crosshair_report(report, args.format))
+    return 0
+
+
+def render_crosshair_report(
+    report: crosshair_candidates.CrosshairCandidateReport,
+    output_format: str,
+) -> str:
+    """Render CrossHair candidate report in selected format."""
+
+    if output_format == FORMAT_JSON:
+        return crosshair_reporting.render_json(report)
+    return crosshair_reporting.render_text(report)
 
 
 def render_report(report: TestIntelReport, output_format: str) -> str:

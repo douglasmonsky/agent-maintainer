@@ -70,10 +70,28 @@ logic, and parser/validator/decision names.
 Output is advisory only. The command does not run Mutmut and does not make
 mutation testing a normal precommit gate.
 
+## CrossHair Candidate Guidance
+
+Run:
+
+```bash
+python -m agent_maintainer test-intel crosshair-candidates
+python -m agent_maintainer test-intel crosshair-candidates --changed
+python -m agent_maintainer test-intel crosshair-candidates --format json
+```
+
+The command suggests functions that are likely safer manual CrossHair targets:
+fully typed public functions with visible `assert`, docstring, `icontract`, or
+`deal` contracts, small bounded bodies, and no obvious filesystem, network,
+subprocess, or database access.
+
+Output is advisory only. The command does not run CrossHair and does not make
+formal analysis a normal precommit gate.
+
 ## Planned Next Layers
 
 Planned capabilities include smarter source-without-test guidance, branch
-coverage signals and CrossHair candidate guidance for pure typed functions.
+coverage signals and richer repair planning for larger changes.
 
 These signals should guide better tests without encouraging coverage theater or
 turning slow research tools into normal precommit gates.
