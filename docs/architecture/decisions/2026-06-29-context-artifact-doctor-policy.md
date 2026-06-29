@@ -6,28 +6,33 @@ Accepted.
 
 ## Context
 
-Phase 18 adds a doctor check for workflow artifact uploads that could publish
-local-only context packs. The check needs to inspect GitHub Actions workflow
-text and report unsafe `.verify-logs/` uploads when context packs are configured
-as source-bearing local artifacts.
+Phase 18 added doctor checks for workflow artifact uploads that could publish
+local-only context packs. Phase 27 extends doctor health reporting across
+context config, ratchets, change plans, compression, and test-intelligence
+artifacts. These checks inspect repository setup and configuration; they should
+not execute verifier profiles or generate context packs.
 
 ## Decision
 
-Add `agent_maintainer.doctor.support.context_artifacts` as a doctor support
-module and assign it explicitly in `tach.toml`.
+Add `agent_maintainer.doctor.support.context_artifacts` and
+`agent_maintainer.doctor.support.context_health` as doctor support modules and
+assign them explicitly in `tach.toml`.
 
-The module stays in the doctor support area because it only evaluates setup
-policy and returns `DoctorResult` values. It does not run verification checks or
-write context packs.
+The modules stay in the doctor support area and only evaluate setup policy into
+`DoctorResult` values. They may read configuration, safe metadata files, and
+workflow text, but they do not run verification checks or write context packs.
 
 ## Alternatives Considered
 
-- Put the logic in `doctor.support.policy`: rejected because that module already
+- Put logic in `doctor.support.policy`: rejected because that module already
   owns unrelated Pyright, pip-audit, and secret-scanning policy checks.
-- Put the logic in `context`: rejected because this is a doctor setup-policy
-  check, not context pack generation.
+- Put logic in `context`: rejected because these are doctor setup-policy checks,
+  not context pack generation.
+- Put Phase 27 rows directly in `doctor.cli`: rejected because row-specific
+  policy logic would make CLI orchestration harder to scan and test.
 
 ## Boundaries
 
-The module may depend on configuration and doctor result models. It must not
-depend on verifier execution, hook runtime, or context pack generation.
+Doctor support modules may depend on configuration, doctor result models, and
+safe read-only project metadata. They must not depend on verifier execution,
+hook runtime, or context pack generation.

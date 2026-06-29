@@ -93,7 +93,7 @@ Planned work:
 - [x] Phase 24: Integration Branch Series
 - [x] Phase 25: Compression Backend Interface
 - [x] Phase 26: Optional Headroom Backend
-- [ ] Phase 27: Doctor Integration
+- [x] Phase 27: Doctor Integration
 - [ ] Phase 28: Examples Proof Repos
 - [ ] Phase 29: PR / GitHub Actions Summary Report
 - [ ] Phase 30: Policy Packs Onboarding Presets

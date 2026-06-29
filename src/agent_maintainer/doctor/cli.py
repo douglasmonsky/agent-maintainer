@@ -78,6 +78,7 @@ def run_doctor(repo_root: Path, config: maintainer_config.MaintainerConfig) -> l
         maintainer_doctor_policy.check_pip_audit_safety(config),
         maintainer_doctor_policy.check_secret_scanning_policy(config),
         maintainer_doctor_policy.check_context_pack_upload_policy(repo_root, config),
+        *maintainer_doctor_policy.check_context_health(repo_root, config),
         check_optional_gates(repo_root, config),
         check_canonical_commands(repo_root),
         check_agent_guidance(repo_root, config),
