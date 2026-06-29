@@ -11,7 +11,11 @@ import pytest
 
 from agent_maintainer.context import cli as context_cli
 from agent_maintainer.context.pack_rendering import (
+    command_pointer_lines,
     exact_fact_lines,
+    fact_location,
+    fact_pointer_lines,
+    fact_summary,
     omitted_count_lines,
     ratchet_lines,
     supporting_context_lines,
@@ -129,6 +133,15 @@ def test_context_pack_helpers_handle_defensive_branches() -> None:
 
     assert selected_log_names(ContextPackRequest(), ()) == ()
     assert target_commands({"top_targets": "invalid"}) == ()
+    assert fact_pointer_lines("invalid", 1) == []
+    assert command_pointer_lines("invalid", 1) == []
+    assert fact_location("src/example.py", None) == "src/example.py "
+    assert (
+        fact_summary(
+            {"check": "pyright", "path": "src/example.py", "line": 2, "message": "bad"},
+        )
+        == "pyright: src/example.py:2 bad"
+    )
     assert exact_fact_lines([object()]) == ["- Unknown failure fact."]
     assert supporting_context_lines(object()) == ["- No supporting context selected."]
     assert "- Stale reasons:" in ratchet_lines(

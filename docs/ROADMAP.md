@@ -73,7 +73,7 @@ Planned work:
 - [x] Phase 14: Ratchet Target Ranking
 - [x] Phase 15: Generate `AGENTS.ratchet.md`
 - [x] Phase 16: Context Packs
-- [ ] Phase 17: Hook Output Uses Context Packs
+- [x] Phase 17: Hook Output Uses Context Packs
 - [ ] Phase 18: Context Artifact Retention Upload Policy
 - [ ] Phase 19: Hypothesis Candidate Guidance
 - [ ] Phase 20: Mutmut Target Suggestions

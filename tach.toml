@@ -48,8 +48,10 @@ paths = [
   "agent_maintainer.core.initializer",
   "agent_maintainer.context.cli",
   "agent_maintainer.context.packs",
+  "agent_maintainer.hooks.context",
   "agent_maintainer.hooks.manager",
   "agent_maintainer.hooks.merge",
+  "agent_maintainer.hooks.runtime",
   "agent_maintainer.hooks.templates",
   "agent_maintainer.ratchet.cli",
   "agent_maintainer.runners",
@@ -75,7 +77,6 @@ paths = [
   "archguard.tach_config",
   "agent_maintainer.hooks",
   "agent_maintainer.hooks.audit",
-  "agent_maintainer.hooks.runtime",
 ]
 layer = "runtime"
 

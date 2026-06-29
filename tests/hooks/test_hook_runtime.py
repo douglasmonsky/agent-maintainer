@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.hooks import audit, runtime
+from agent_maintainer.hooks import context as hook_context
 
 HOOK_STATUS = 23
 
@@ -30,6 +31,25 @@ def installed_repo(tmp_path: Path) -> Path:
     package_root.mkdir(parents=True)
     (package_root / "__main__.py").write_text("", encoding="utf-8")
     return tmp_path
+
+
+def write_failure_manifest(repo_root: Path, check_name: str) -> None:
+    """Write verifier failure manifest consumed by context packs."""
+
+    log_dir = repo_root / ".verify-logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    (log_dir / f"{check_name}.log").write_text("failure log\n", encoding="utf-8")
+    manifest = {
+        "checks": [
+            {
+                "name": check_name,
+                "status": "failed",
+                "exit_code": 1,
+                "log_path": str(log_dir / f"{check_name}.log"),
+            },
+        ],
+    }
+    (log_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
 
 
 def test_runtime_noops_without_repo_opt_in(
@@ -196,9 +216,10 @@ def test_failed_post_tool_use_blocks_with_context(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """PostToolUse failures emit hook-specific blocking context."""
+    """PostToolUse failures emit hook-specific context pack pointer."""
 
     installed_repo(tmp_path)
+    write_failure_manifest(tmp_path, "pyright")
 
     def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "post failed", "")
@@ -216,19 +237,27 @@ def test_failed_post_tool_use_blocks_with_context(
     )
 
     payload = json.loads(capsys.readouterr().out)
+    context = payload["hookSpecificOutput"]["additionalContext"]
     assert payload["decision"] == "block"
     assert payload["hookSpecificOutput"]["hookEventName"] == runtime.POST_TOOL_USE_EVENT
-    assert payload["hookSpecificOutput"]["additionalContext"] == "post failed"
+    assert "Read: .verify-logs/context/PACK.md" in context
+    assert "Top finding: pyright:" in context
+    assert "Expand: python -m agent_maintainer context failures" in context
+    assert "post failed" not in context
+    assert (tmp_path / ".verify-logs" / "context" / "PACK.md").exists()
 
 
-def test_failed_stop_blocks_with_reason(
+@pytest.mark.parametrize("event", (runtime.STOP_EVENT, runtime.SUBAGENT_STOP_EVENT))
+def test_failed_stop_events_block_with_context_pack(
+    event: str,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Stop failures put verifier output in the block reason."""
+    """Stop-like failures put context pack pointer in block reason."""
 
     installed_repo(tmp_path)
+    write_failure_manifest(tmp_path, "ruff")
 
     def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "", "stop failed")
@@ -238,7 +267,7 @@ def test_failed_stop_blocks_with_reason(
     assert (
         runtime.run_hook(
             platform=runtime.CODEX_PLATFORM,
-            event=runtime.STOP_EVENT,
+            event=event,
             profile="precommit",
             repo_root=tmp_path,
         )
@@ -248,7 +277,92 @@ def test_failed_stop_blocks_with_reason(
     payload = json.loads(capsys.readouterr().out)
     assert payload["decision"] == "block"
     assert "Final verification failed" in payload["reason"]
-    assert "stop failed" in payload["reason"]
+    assert "Read: .verify-logs/context/PACK.md" in payload["reason"]
+    assert "Top finding: ruff:" in payload["reason"]
+    assert "stop failed" not in payload["reason"]
+
+
+def test_hook_failure_falls_back_when_context_pack_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Hook failure falls back to bounded verifier output when pack fails."""
+
+    installed_repo(tmp_path)
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 1, "raw failure", "")
+
+    def fail_pack(*_args: object, **_kwargs: object) -> hook_context.context_packs.ContextPack:
+        raise OSError("pack failed")
+
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(hook_context.context_packs, "write_context_pack", fail_pack)
+
+    assert (
+        runtime.run_hook(
+            platform=runtime.CODEX_PLATFORM,
+            event=runtime.POST_TOOL_USE_EVENT,
+            profile="fast",
+            repo_root=tmp_path,
+        )
+        == 0
+    )
+
+    context = json.loads(capsys.readouterr().out)["hookSpecificOutput"]["additionalContext"]
+    assert "raw failure" in context
+    assert "Context pack generation failed: pack failed" in context
+
+
+def test_hook_context_pack_pointer_respects_budget(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Hook context pack pointer remains bounded by hook budget."""
+
+    installed_repo(tmp_path)
+    (tmp_path / "pyproject.toml").write_text(
+        "[tool.agent_maintainer]\ncontext_hook_budget_chars = 40\n",
+        encoding="utf-8",
+    )
+    pack = hook_context.context_packs.ContextPack(
+        markdown="",
+        payload={},
+        markdown_path=tmp_path / ".verify-logs" / "context" / "PACK.md",
+        json_path=tmp_path / ".verify-logs" / "context" / "PACK.json",
+    )
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 1, "failed", "")
+
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(hook_context.context_packs, "write_context_pack", lambda *_args: pack)
+    monkeypatch.setattr(
+        hook_context.pack_rendering, "render_pack_pointer", lambda *_args, **_kwargs: "x" * 200
+    )
+
+    assert (
+        runtime.run_hook(
+            platform=runtime.CODEX_PLATFORM,
+            event=runtime.POST_TOOL_USE_EVENT,
+            profile="fast",
+            repo_root=tmp_path,
+        )
+        == 0
+    )
+
+    context = json.loads(capsys.readouterr().out)["hookSpecificOutput"]["additionalContext"]
+    assert "hook output omitted" in context
+
+
+def test_hook_context_display_path_falls_back_to_absolute(tmp_path: Path) -> None:
+    """Hook context display path handles paths outside repo root."""
+
+    outside_path = tmp_path.parent / "outside-pack.md"
+
+    assert hook_context.display_path(outside_path, tmp_path) == str(outside_path)
 
 
 def test_verifier_helpers_cover_virtualenv_and_global_command(
