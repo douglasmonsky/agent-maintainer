@@ -93,3 +93,29 @@ python -m agent_maintainer context diff --staged
 Summaries include changed file counts, Python/test/docs/generated categories,
 largest changed files, rename/move candidates, import-only candidates,
 shown/omitted path counts, and expansion commands.
+
+## Context Packs
+
+Use `context pack` to generate a bounded repair packet agents can reopen
+without dumping full logs, files, or diffs:
+
+```bash
+python -m agent_maintainer context pack
+python -m agent_maintainer context pack --budget 16000
+python -m agent_maintainer context pack --check pytest-coverage
+python -m agent_maintainer context pack --file src/legacy/big.py
+python -m agent_maintainer context pack --format json
+```
+
+The command always writes:
+
+```text
+.verify-logs/context/PACK.md
+.verify-logs/context/PACK.json
+```
+
+The Markdown pack separates exact repair facts from supporting context, labels
+repository and tool excerpts as untrusted, includes ratchet state and top
+targets when a baseline exists, records omitted counts, and ends with safe
+expansion commands. Use the JSON pack for automation and the Markdown pack for
+human or agent handoff.
