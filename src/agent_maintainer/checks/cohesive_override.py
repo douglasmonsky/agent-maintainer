@@ -44,12 +44,12 @@ class FileChangeLike(Protocol):
     @property
     def path(self) -> str:
         """Return changed file path."""
-        ...
+        raise NotImplementedError
 
     @property
     def changed(self) -> int:
         """Return total changed lines for the file."""
-        ...
+        raise NotImplementedError
 
 
 def evaluate_override(
