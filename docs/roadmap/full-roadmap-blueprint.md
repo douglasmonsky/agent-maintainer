@@ -2695,6 +2695,231 @@ release readiness
 
 ---
 
+# Phase 34B: Review-Driven Stabilization Plan
+
+## PR Title
+
+```text
+docs: add pre-case-study stabilization roadmap
+```
+
+## Goal
+
+Stop feature expansion before Phase 35 and record the hardening work required
+by the fresh static review. These items address trust risks in optional
+compression, change-budget policy integrity, coverage wording, exact repair
+facts, and beta release metadata.
+
+## Requirements
+
+- Mark Phase 34 complete only after static report PR and post-merge CI pass.
+- Add phases 34C through 34G before Phase 35 in `docs/ROADMAP.md`.
+- Add detailed scope, acceptance criteria, and out-of-scope rules for each
+  stabilization phase in this blueprint.
+- Keep Phase 35 external case studies blocked until all stabilization phases
+  are implemented, merged, and post-merge CI passes.
+
+## Acceptance Criteria
+
+- Roadmap shows Phase 35 after stabilization phases.
+- Detailed blueprint has explicit stabilization sections.
+- Precommit passes.
+
+---
+
+# Phase 34C: Headroom Backend Correctness
+
+## PR Title
+
+```text
+fix: align headroom compression adapter with message API
+```
+
+## Goal
+
+Make the optional Headroom backend correct and explicitly experimental. The
+adapter must pass sanitized supporting context as a message list, normalize
+`CompressResult.messages`, and keep deterministic fallback behavior when
+Headroom is missing or fails.
+
+## Requirements
+
+- Call Headroom with a `list[dict[str, Any]]` message payload rather than a raw
+  string.
+- Extract compressed text from returned messages when the result exposes a
+  `messages` attribute or mapping key.
+- Preserve existing string and mapping fallbacks only as compatibility paths.
+- Keep sanitized supporting context as the only content passed to Headroom.
+- Update docs to label Headroom optional and experimental until live integration
+  has broader coverage.
+- Add unit tests for message payload construction and `CompressResult.messages`
+  normalization.
+
+## Out Of Scope
+
+- Do not make Headroom part of core dependencies.
+- Do not require network credentials in normal verification.
+- Do not change deterministic compression defaults.
+
+## Acceptance Criteria
+
+- Mocked Headroom adapter tests prove input shape and output normalization.
+- Pack compression tests still prove fallback behavior.
+- Precommit and focused context compression tests pass.
+
+---
+
+# Phase 34D: Change-Plan Authority Over Legacy Overrides
+
+## PR Title
+
+```text
+fix: prevent legacy override from clearing change-plan failures
+```
+
+## Goal
+
+Make cohesive change plans authoritative. The older
+`cohesive_change_override` mechanism must not clear invalid, expired,
+out-of-scope, or otherwise failing change-plan decisions.
+
+## Requirements
+
+- Identify change-budget failures created by change-plan validation or scope
+  violations.
+- Ensure legacy cohesive override cannot remove those failures.
+- Prefer making legacy override subordinate to valid active plans.
+- Update docs so users understand change plans are the preferred explicit
+  mechanism for intentional large changes.
+- Add tests where an invalid or out-of-scope active plan remains blocking even
+  when legacy override settings would otherwise allow the diff.
+
+## Out Of Scope
+
+- Do not remove legacy override config entirely unless tests prove it is unused
+  and migration docs are updated.
+- Do not loosen change-budget thresholds.
+
+## Acceptance Criteria
+
+- Change-plan validation failures remain failures under legacy override.
+- Valid plans can still bend normal change-budget size limits.
+- Precommit and targeted change-budget tests pass.
+
+---
+
+# Phase 34E: Coverage Semantics Hardening
+
+## PR Title
+
+```text
+fix: clarify changed coverage semantics
+```
+
+## Goal
+
+Remove ambiguity in test-intelligence coverage output. If a value represents
+coverage of files touched by a change, name it accordingly. If changed-line
+coverage is exposed, compute it by intersecting changed diff hunks with
+coverage line data.
+
+## Requirements
+
+- Audit current `changed_coverage` fields and docs.
+- Rename existing file-average semantics to `changed_source_file_coverage`, or
+  implement real `changed_line_coverage` and expose both separately.
+- Keep CLI text clear enough that agents do not confuse file coverage with
+  changed-line coverage.
+- Update tests and docs for the new field names.
+
+## Out Of Scope
+
+- Do not replace `diff-cover` as the blocking changed-code coverage gate.
+- Do not invent branch coverage semantics unless existing artifacts support it.
+
+## Acceptance Criteria
+
+- Test-intelligence JSON/text output names coverage semantics accurately.
+- Tests prove XML/JSON coverage parsing produces the documented field.
+- Precommit and focused test-intelligence tests pass.
+
+---
+
+# Phase 34F: Exact Repair Facts From Structured Artifacts
+
+## PR Title
+
+```text
+feat: extract exact repair facts from verifier artifacts
+```
+
+## Goal
+
+Improve context packs from "check failed" summaries toward exact, bounded repair
+facts. Agents should see the first actionable file/line/symbol/threshold facts
+before expanding logs.
+
+## Requirements
+
+- Add structured fact extractors for artifacts already produced by the verifier,
+  starting with high-value local artifacts such as Ruff JSON, Pyright JSON,
+  Bandit JSON, coverage JSON/XML, file-length output, structure output, and
+  change-budget output where available.
+- Keep facts bounded and sorted by severity/check priority.
+- Preserve expansion commands for full logs.
+- Add tests for at least three artifact families with path/line/message facts.
+
+## Out Of Scope
+
+- Do not print whole logs or source files into context packs.
+- Do not require all tools to emit structured artifacts before this phase can
+  land.
+
+## Acceptance Criteria
+
+- Context packs include concrete file/line facts for supported structured
+  artifacts.
+- Existing context safety tests still prove bounded output.
+- Precommit and focused context tests pass.
+
+---
+
+# Phase 34G: Beta Release Metadata Refresh
+
+## PR Title
+
+```text
+chore: refresh beta release metadata
+```
+
+## Goal
+
+Prepare the next beta after the stabilization fixes. The release metadata must
+not imply the current implementation still matches the older `0.1.0b3` surface.
+
+## Requirements
+
+- Update `CHANGELOG.md` Unreleased section with context packs, ratchets,
+  change plans, compression, PR summaries, policy presets, Archguard impact,
+  repair plan, Tach domain contracts, static reports, and stabilization fixes.
+- Decide next version, expected `0.1.0b4`, after stabilization phases are
+  merged.
+- Update package metadata only when ready to tag/publish that beta.
+- Document Headroom limitations and any manual extra constraints that remain.
+
+## Out Of Scope
+
+- Do not publish to PyPI in this phase unless explicitly requested.
+- Do not add new scanners or feature categories.
+
+## Acceptance Criteria
+
+- Changelog accurately describes post-`0.1.0b3` implementation.
+- Versioning decision is recorded before the next tag.
+- Release checklist references stabilization completion before publishing.
+
+---
+
 # Phase 35: External Case Studies and Measured Proof Harness
 
 ## PR Title
