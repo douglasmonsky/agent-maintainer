@@ -14,7 +14,7 @@ from agent_maintainer.context.estimate import (
     estimate_context,
     render_estimate_text,
 )
-from agent_maintainer.context.logs import LogRequest
+from agent_maintainer.context.reading.logs import LogRequest
 
 FOUR_CHARS = 4
 ONE_TOKEN = 1

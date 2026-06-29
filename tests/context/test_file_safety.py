@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from agent_maintainer.context.file_safety import inspect_file
+from agent_maintainer.context.reading.file_safety import inspect_file
 
 MINIFIED_JSON_CHARS = 2_100
 

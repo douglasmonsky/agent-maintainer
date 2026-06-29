@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from agent_maintainer.context.compression import CompressionRequest, CompressionResult
-from agent_maintainer.context.headroom_backend import BACKEND_HEADROOM, headroom_content
+from agent_maintainer.context.compression.headroom import BACKEND_HEADROOM, headroom_content
+from agent_maintainer.context.compression.models import CompressionRequest, CompressionResult
 
 BACKEND_NONE = "none"
 BACKEND_TRUNCATE = "truncate"

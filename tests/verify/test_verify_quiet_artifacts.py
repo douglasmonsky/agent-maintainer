@@ -10,6 +10,7 @@ import pytest
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.models import Check, CheckResult
 from agent_maintainer.verify import quiet as verify_quiet
+from agent_maintainer.verify import run_steps as verify_run_steps
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
@@ -40,7 +41,7 @@ def test_main_writes_artifacts_for_selected_profile(
         ],
     )
     monkeypatch.setattr(
-        verify_quiet,
+        verify_run_steps,
         "run_check",
         lambda check, log_dir, max_lines, max_chars: CheckResult(
             check.name,
@@ -51,7 +52,7 @@ def test_main_writes_artifacts_for_selected_profile(
         ),
     )
     monkeypatch.setattr(
-        verify_quiet,
+        verify_run_steps,
         "write_run_artifacts",
         lambda log_dir, context, results: calls.append((log_dir, context, results)),
     )
@@ -62,7 +63,55 @@ def test_main_writes_artifacts_for_selected_profile(
     log_dir, context, results = calls[0]
     assert log_dir == Path(".verify-logs")
     assert context.profile == "fast"
+    assert context.run_id
     assert results[0].name == "custom"
+
+
+def test_failed_run_prints_snapshot_scoped_context_commands(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "scripts").mkdir()
+    monkeypatch.setattr(
+        verify_quiet,
+        "load_config",
+        lambda: replace(
+            MaintainerConfig(),
+            source_roots=("scripts",),
+            package_paths=("scripts",),
+            require_tests=False,
+        ),
+    )
+    monkeypatch.setattr(
+        verify_quiet,
+        "make_checks",
+        lambda config, base_ref, compare_branch, staged=False: [
+            Check("custom", ["false"], frozenset(("fast",)))
+        ],
+    )
+    monkeypatch.setattr(
+        verify_run_steps,
+        "run_check",
+        lambda check, log_dir, max_lines, max_chars: CheckResult(
+            check.name,
+            passed=False,
+            output="custom failed",
+            command=tuple(check.command),
+            exit_code=1,
+            log_path=str(log_dir / f"{check.name}.log"),
+        ),
+    )
+
+    assert verify_quiet.main(["--profile", "fast"]) == 1
+
+    output = capsys.readouterr().out
+    assert "FAIL: 1 check(s) failed [fast]" in output
+    assert "Next context:" in output
+    assert "python -m agent_maintainer context --log-dir .verify-logs/runs/" in output
+    assert "failures --check custom --limit 20" in output
+    assert "log custom --tail 120" in output
 
 
 def test_main_skips_artifacts_when_diagnostics_are_disabled(
@@ -89,12 +138,12 @@ def test_main_skips_artifacts_when_diagnostics_are_disabled(
         ],
     )
     monkeypatch.setattr(
-        verify_quiet,
+        verify_run_steps,
         "run_check",
         lambda check, log_dir, max_lines, max_chars: CheckResult(check.name, passed=True),
     )
     monkeypatch.setattr(
-        verify_quiet,
+        verify_run_steps,
         "write_run_artifacts",
         lambda log_dir, context, results: pytest.fail("artifacts should be disabled"),
     )

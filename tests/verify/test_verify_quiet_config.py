@@ -9,7 +9,7 @@ import pytest
 
 from agent_maintainer.core import args as maintainer_args
 from agent_maintainer.core.config import MaintainerConfig
-from agent_maintainer.verify import quiet as verify_quiet
+from agent_maintainer.core.layout import layout_failures
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
@@ -135,7 +135,7 @@ def test_layout_failures_require_tests_when_enabled(
         require_tests=True,
     )
 
-    failures = verify_quiet.layout_failures(config, "precommit")
+    failures = layout_failures(config, "precommit")
 
     assert any("test root" in failure for failure in failures)
 
@@ -153,6 +153,6 @@ def test_layout_failures_validate_pyright_mode(
         pyright_type_checking_mode="maximum",
     )
 
-    assert verify_quiet.layout_failures(config, "full") == [
+    assert layout_failures(config, "full") == [
         "pyright_type_checking_mode must be one of: basic, off, standard, strict"
     ]

@@ -12,7 +12,7 @@ from agent_maintainer.context.failures import (
     failure_records,
     render_failures_text,
 )
-from agent_maintainer.context.logs import LogRequest, resolve_log_path, slice_text
+from agent_maintainer.context.reading.logs import LogRequest, resolve_log_path, slice_text
 
 TOKEN_CHAR_RATIO = 4
 DEFAULT_DIFF_CONTEXT_LINES = 3

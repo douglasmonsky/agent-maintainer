@@ -135,171 +135,153 @@ def write_guidance(
 
 
 def render_guidance(config: MaintainerConfig) -> str:
-    """Render deterministic agent guidance for a resolved config."""
+    """Render deterministic compact agent guidance from resolved config."""
 
-    tests_required = str(config.require_tests).lower()
     lines = [
         "# Generated Agent Maintainer Guidance",
         "",
-        "This file is generated from `[tool.agent_maintainer]` by",
-        "`python3 -m agent_maintainer guidance`. Do not edit it by hand; update",
-        "configuration first, then regenerate it.",
+        "Generated from `[tool.agent_maintainer]` by",
+        "`python3 -m agent_maintainer guidance`. Do not edit by hand.",
         "",
         *ratchet_link_lines(config),
-        "## Operating Intent",
+        "## Working Rules",
         "",
-        "- Prefer small, coherent commits that keep maintenance feedback easy to review.",
-        "- Keep source, tests, documentation, and configuration moving together.",
-        "- Treat failing checks as design feedback before reaching for suppressions.",
-        "- Preserve the configured architecture boundaries instead of adding imports around them.",
-        "- Add or update tests for behavior changes unless tests are explicitly disabled.",
+        "- Keep commits small, tested, and aligned with configured boundaries.",
+        "- Treat failing checks as design feedback before adding suppressions.",
+        "- Update source, tests, docs, and config together when behavior changes.",
+        "- Do not relax thresholds or architecture rules to make checks pass.",
         "",
-        "## File Inspection Safety",
+        "## Safe Context",
         "",
-        "- Prefer `rg --files` or `git ls-files` when enumerating files to inspect.",
-        "- Restrict bulk reads to relevant text/source globs instead of every file under a tree.",
-        "- Do not read generated or binary artifacts unless the task explicitly targets them:",
+        "- Prefer `rg --files` or `git ls-files` for file discovery.",
+        "- Do not bulk-read generated/cache/binary paths:",
         "  `__pycache__`, `*.pyc`, `.venv`, `venv`, `.verify-logs`, `.coverage`,",
-        "  `coverage.xml`, `htmlcov`, `mutants`, `build`, and `dist`.",
-        "- Agent Maintainer and hook subprocesses set `PYTHONDONTWRITEBYTECODE=1` by",
-        "  default. Set `AGENT_MAINTAINER_WRITE_BYTECODE=true` only when explicitly",
-        "  debugging bytecode-cache behavior.",
-        "- Manual Mutmut runs remove `mutants` after success. Set",
+        "  `coverage.xml`, `htmlcov`, `mutants`, `build`, `dist`.",
+        "- Use `AGENT_MAINTAINER_WRITE_BYTECODE=true` or",
         "  `AGENT_MAINTAINER_KEEP_MUTANTS=true` only when explicitly debugging",
-        "  mutation artifacts.",
-        "- When a broad command is unavoidable, exclude generated, binary, cache, and",
-        "  virtualenv paths before printing file contents.",
+        "  those artifacts.",
         "",
-        "## Active Configuration",
+        "## Repo Boundaries",
         "",
         f"- Mode: `{config.mode}`",
         f"- Source roots: {format_inline_paths(config.source_roots)}",
-        f"- Test roots: {format_inline_paths(config.test_roots)}",
-        f"- Package paths: {format_inline_paths(config.package_paths)}",
-        f"- Coverage source: {format_inline_paths(config.coverage_source)}",
-        f"- Architecture backend: `{config.architecture_tool}`",
-        f"- Tests required: `{tests_required}`",
+        f"- Tests: {format_inline_paths(config.test_roots)}",
+        f"- Architecture: `{config.architecture_tool}` with Tach domain contracts",
+        "- If Tach policy changes, add or update an ADR under",
+        "  `docs/architecture/decisions/`.",
+        "",
+        "## Coding Limits",
+        "",
         (
-            "- Diagnostic artifacts: "
-            f"{enabled_word(config.diagnostic_artifacts_enabled)} at "
-            f"`{config.diagnostic_artifacts_dir}`"
+            "- Coverage floors: "
+            f"total `{config.coverage_fail_under}%`, "
+            f"changed `{config.diff_cover_fail_under}%`"
         ),
         (
-            "- Source-without-test-change errors in profiles: "
-            f"{format_inline_paths(config.source_without_test_change_error_profiles)}"
+            "- File length: "
+            f"`{config.file_length_max_physical}` physical / "
+            f"`{config.file_length_max_source}` source lines"
         ),
+        (
+            "- Change budget blocks: "
+            f"`{config.change_block_lines}` lines or "
+            f"`{config.change_block_files}` files"
+        ),
+        f"- New suppression budget: `{config.suppression_max_new}`",
+        f"- Complexity: Ruff `{config.ruff_max_complexity}`, Xenon `{config.xenon_max_absolute}`",
         (
             "- Source-only changes without test-file changes: "
             f"{allowed_word(config.allow_source_without_test_change)}"
         ),
         "",
-        "## Architecture Policy Changes",
+        *active_gate_lines(config),
         "",
-        "- `tach.toml`, `tach.domain.toml`, and architecture boundary",
-        " configuration are policy files.",
-        "- If a policy file changes, add or update a decision note under",
-        " `docs/architecture/decisions/`.",
-        "- The note must explain why the policy change is intentional and why",
-        " it is not architecture drift.",
-        "- Prefer refactoring code to preserve an existing boundary before",
-        " changing the boundary.",
+        "## Failure Loop",
         "",
-        "## Verification Flow",
+        "- Keep chat updates summary-first: completed check, actionable failure,",
+        " or plan change.",
+        "- Do not emit routine `still running` updates for expected long checks.",
+        "- Use `apply_patch` for manual edits; avoid heredoc rewrite commands.",
+        "- Read `.verify-logs/LAST_FAILURE.md` before changing code or config.",
+        "- Prefer run-scoped `context --log-dir ...` commands from failures.",
+        "- Expand only needed context:",
+        " `python3 -m agent_maintainer context failures --limit 20`.",
+        "- Fix the root cause; do not lower thresholds or add broad suppressions.",
         "",
-        "- Trusted agent hooks normally run fast checks after edits and the precommit profile",
-        "  before completion.",
-        "- Run the precommit profile manually when hooks are unavailable, after bypassing hooks,",
-        "  or when reproducing a hook failure:",
-        "  `python3 -m agent_maintainer verify --profile precommit`.",
-        "- Run the full profile before merging larger changes or changing shared verifier logic:",
-        "  `python3 -m agent_maintainer verify --profile full`.",
-        "- After changing `[tool.agent_maintainer]`, run",
-        "  `python3 -m agent_maintainer guidance` and `python3 -m agent_maintainer doctor`.",
+        "## Required Commands",
         "",
-        "## Thresholds To Preserve",
-        "",
-        f"- Total coverage floor: `{config.coverage_fail_under}%`",
-        f"- Changed-code coverage floor: `{config.diff_cover_fail_under}%`",
-        (
-            "- File length limits: "
-            f"`{config.file_length_max_physical}` physical lines, "
-            f"`{config.file_length_max_source}` source lines"
-        ),
-        f"- File length baseline: {disabled_or_path(config.file_length_baseline)}",
-        (
-            "- Change budget warnings: "
-            f"`{config.change_warn_lines}` lines or `{config.change_warn_files}` files"
-        ),
-        (
-            "- Change budget blocks: "
-            f"`{config.change_block_lines}` lines or `{config.change_block_files}` files"
-        ),
-        (
-            "- Cohesive-change override: "
-            f"{enabled_word(config.cohesive_change_override_enabled)}; "
-            f"allowlist {format_inline_paths(config.cohesive_change_override_paths)}; "
-            f"max `{config.cohesive_change_override_max_lines}` lines / "
-            f"`{config.cohesive_change_override_max_files}` files"
-        ),
-        f"- New suppression budget: `{config.suppression_max_new}`",
-        f"- Ruff McCabe complexity: `{config.ruff_max_complexity}`",
-        (
-            "- Xenon complexity: "
-            f"absolute `{config.xenon_max_absolute}`, modules `{config.xenon_max_modules}`, "
-            f"average `{config.xenon_max_average}`"
-        ),
-        f"- Pyright mode: `{config.pyright_type_checking_mode}`",
-        f"- Interrogate floor: `{config.interrogate_fail_under}%`",
-        (
-            "- Folder Python-file warning/block thresholds: "
-            f"`{config.folder_file_warn}` / `{config.folder_file_block}` "
-            "(block active in fresh-strict)"
-        ),
-        (
-            "- Structure hint patterns are advisory refactor prompts; split by "
-            "responsibility when a folder no longer has one clear boundary."
-        ),
-        "",
-        "## Optional Gates",
-        "",
-        f"- pip-audit: {enabled_with_args(config.enable_pip_audit, config.pip_audit_args)}",
-        f"- Mutmut: {enabled_with_args(config.enable_mutmut, config.mutmut_args)}",
-        f"- Semgrep: {enabled_with_args(config.enable_semgrep, config.semgrep_args)}",
-        f"- OSV Scanner: {enabled_with_args(config.enable_osv_scanner, config.osv_scanner_args)}",
-        f"- Trivy: {enabled_with_args(config.enable_trivy, config.trivy_args)}",
-        f"- Python SBOM: {enabled_with_args(config.enable_sbom, config.sbom_args)}",
-        (
-            "- License checking: "
-            f"{enabled_with_args(config.enable_license_check, config.license_check_args)}"
-        ),
-        f"- Secret scanning: {secret_scanning_summary(config)}",
-        f"- wemake-python-styleguide: {enabled_word(config.enable_wemake)}",
-        f"- Interrogate: {enabled_word(config.enable_interrogate)}",
-        (
-            "- Markdown linting: "
-            f"{enabled_with_args(config.enable_markdownlint, config.markdownlint_paths)}"
-        ),
-        f"- YAML linting: {enabled_with_args(config.enable_yamllint, config.yamllint_paths)}",
-        f"- TOML formatting: {enabled_with_args(config.enable_taplo, config.taplo_paths)}",
-        (
-            "- Schema validation: "
-            f"{enabled_with_args(config.enable_check_jsonschema, config.check_jsonschema_args)}"
-        ),
+        "- Normal finish: `python3 -m agent_maintainer verify --profile precommit`",
+        "- Larger/shared changes: `python3 -m agent_maintainer verify --profile full`",
+        "- Before PR/merge: run `full`, `ci`, `security`, and `manual` once.",
+        "- Config changes: `python3 -m agent_maintainer guidance` and",
+        "  `python3 -m agent_maintainer doctor`",
         "",
         "## Escape Hatches",
         "",
-        "- Prefer config changes over one-off command drift when repository layout changes.",
-        "- Keep temporary CLI or environment overrides out of committed config "
-        "unless they are policy.",
-        "- Use `require_tests = false` only for repositories that intentionally have no tests.",
-        (
-            "- Use `allow_source_without_test_change = true` only when existing "
-            "tests already cover the change."
-        ),
-        "- If a check is wrong, make the smallest correction to the check, config, or docs.",
+        "- Prefer config or code fixes over one-off environment overrides.",
+        "- Use cohesive change plans for intentional large diffs; include a reason",
+        "  and verification plan.",
+        "- If a check is wrong, make the smallest fix to the check, config, or docs.",
     ]
     lines.append("")
     return "\n".join(lines)
+
+
+def active_gate_lines(config: MaintainerConfig) -> list[str]:
+    """Return concise active gate guidance omitting disabled integrations."""
+
+    gates = [
+        *active_gate("pip-audit", config.enable_pip_audit, config.pip_audit_args),
+        *active_gate("Mutmut", config.enable_mutmut, config.mutmut_args),
+        *active_gate("Semgrep", config.enable_semgrep, config.semgrep_args),
+        *active_gate("OSV Scanner", config.enable_osv_scanner, config.osv_scanner_args),
+        *active_gate("Trivy", config.enable_trivy, config.trivy_args),
+        *active_gate("Python SBOM", config.enable_sbom, config.sbom_args),
+        *active_gate("License checking", config.enable_license_check, config.license_check_args),
+        *active_secret_scanning_gate(config),
+        *active_boolean_gate("wemake-python-styleguide", config.enable_wemake),
+        *active_boolean_gate("Interrogate", config.enable_interrogate),
+        *active_gate("Markdown linting", config.enable_markdownlint, config.markdownlint_paths),
+        *active_gate("YAML linting", config.enable_yamllint, config.yamllint_paths),
+        *active_gate("TOML formatting", config.enable_taplo, config.taplo_paths),
+        *active_gate(
+            "Schema validation",
+            config.enable_check_jsonschema,
+            config.check_jsonschema_args,
+        ),
+    ]
+    if not gates:
+        return []
+    return ["## Active Gates", "", *gates]
+
+
+def active_gate(name: str, enabled: bool, args: tuple[str, ...]) -> list[str]:
+    """Return one active gate line or no line when disabled."""
+
+    if not enabled:
+        return []
+    if not args:
+        return [f"- {name}"]
+    return [f"- {name}: `{shlex.join(args)}`"]
+
+
+def active_boolean_gate(name: str, enabled: bool) -> list[str]:
+    """Return one active boolean gate line."""
+
+    return [f"- {name}"] if enabled else []
+
+
+def active_secret_scanning_gate(config: MaintainerConfig) -> list[str]:
+    """Return active secret-scanning gate summary."""
+
+    if not config.enable_secret_scanning:
+        return []
+    profiles = ", ".join(config.secret_scan_profiles) or "none"
+    history_profiles = ", ".join(config.secret_scan_history_profiles) or "none"
+    return [
+        f"- Secret scanning: `{config.secret_scanner}` "
+        f"(profiles: {profiles}; history: {history_profiles})"
+    ]
 
 
 def ratchet_link_lines(config: MaintainerConfig) -> list[str]:
@@ -323,44 +305,10 @@ def format_inline_paths(paths: tuple[str, ...]) -> str:
     return ", ".join(f"`{path}`" for path in paths)
 
 
-def enabled_word(enabled: bool) -> str:
-    """Return a compact enabled/disabled token."""
-
-    return "`enabled`" if enabled else "`disabled`"
-
-
-def disabled_or_path(value: str) -> str:
-    """Return a compact disabled token or inline path."""
-
-    return f"`{value}`" if value else "`disabled`"
-
-
 def allowed_word(enabled: bool) -> str:
     """Return a compact allowed/blocked token."""
 
     return "`allowed`" if enabled else "`blocked`"
-
-
-def enabled_with_args(enabled: bool, args: tuple[str, ...]) -> str:
-    """Return enabled state plus command arguments when present."""
-
-    if not enabled:
-        return "`disabled`"
-    if not args:
-        return "`enabled` with no pinned input"
-    return f"enabled with `{shlex.join(args)}`"
-
-
-def secret_scanning_summary(config: MaintainerConfig) -> str:
-    """Return enabled secret scanner backend and profile summary."""
-    if not config.enable_secret_scanning:
-        return "`disabled`"
-    profiles = ", ".join(config.secret_scan_profiles) or "none"
-    history_profiles = ", ".join(config.secret_scan_history_profiles) or "none"
-    return (
-        f"enabled with `{config.secret_scanner}` "
-        f"(profiles: {profiles}; history: {history_profiles})"
-    )
 
 
 if __name__ == "__main__":

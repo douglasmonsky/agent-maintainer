@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context.files import (
+from agent_maintainer.context.reading.files import (
     FileRequest,
     render_file_json,
     render_file_text,

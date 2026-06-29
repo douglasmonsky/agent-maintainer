@@ -278,6 +278,7 @@ check_jsonschema_args = [
 [tool.agent_maintainer.diagnostics]
 enabled = true
 log_dir = ".verify-logs"
+run_history_limit = 10
 
 [tool.mutmut]
 source_paths = ["src/agent_maintainer/"]

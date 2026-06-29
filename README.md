@@ -193,6 +193,7 @@ diff_cover_fail_under = 90
 [tool.agent_maintainer.diagnostics]
 enabled = true
 log_dir = ".verify-logs"
+run_history_limit = 10
 ```
 
 `mode = "fresh-strict"` is for new repositories that can block strict checks on
@@ -219,6 +220,9 @@ python3 -m agent_maintainer guidance --check
 
 This writes `AGENTS.agent-maintainer.md` from `[tool.agent_maintainer]`. Update
 configuration first, then regenerate the sidecar.
+
+For the human-readable explanation of what belongs in the generated sidecar, see
+[Agent Maintainer guidance](docs/agent-maintainer-guidance.md).
 
 ## Optional Tooling
 
@@ -283,6 +287,7 @@ PYTHONPATH=src python3 -m agent_maintainer bootstrap
 - [Fresh-strict mode](docs/fresh-strict.md)
 - [Legacy-ratchet mode](docs/legacy-ratchet.md)
 - [Agent client hooks](docs/agent-client-hooks.md)
+- [Agent Maintainer guidance](docs/agent-maintainer-guidance.md)
 - [Cohesive-change overrides](docs/cohesive-change-overrides.md)
 - [Release checklist](docs/release-checklist.md)
 - [Troubleshooting](docs/troubleshooting.md)

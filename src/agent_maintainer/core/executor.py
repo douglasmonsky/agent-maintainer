@@ -6,31 +6,16 @@ import os
 import shutil
 import subprocess  # nosec B404
 import sys
-from dataclasses import dataclass
-from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilities
+from agent_maintainer.core.artifact_environment import artifact_environment
+from agent_maintainer.core.check_run import CheckRun, utc_timestamp
 from agent_maintainer.core.reporting import summarize_check, summarize_check_from_artifacts
 from agent_maintainer.core.runtime import hardened_subprocess_env
 from agent_maintainer.models import Check, CheckResult
 
 OutputLimits = tuple[int, int]
-
-
-@dataclass(frozen=True)
-class CheckRun:
-    """Metadata captured for one check execution."""
-
-    log_path: Path
-    started_at: str
-    ended_at: str
-
-
-def utc_timestamp() -> str:
-    """Return a stable UTC timestamp for verifier metadata."""
-
-    return datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def tool_search_path() -> str:
@@ -144,7 +129,8 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
     if missing:
         return missing_requirement_result(check, log_path, missing, started_at)
     try:
-        returncode, output = run_command(check.command)
+        with artifact_environment(log_dir):
+            returncode, output = run_command(check.command)
     except OSError as exc:
         ended_at = utc_timestamp()
         output = f"could not run {check.command!r}: {exc}"

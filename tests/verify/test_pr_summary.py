@@ -78,4 +78,5 @@ def run_context(
         compare_branch="origin/main",
         staged=False,
         config=active_config,
+        run_id="20260625T100000Z-ci-test",
     )

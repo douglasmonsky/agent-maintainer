@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from agent_maintainer.context import exact_facts
 from agent_maintainer.context.failures import FailureRecord
-from agent_maintainer.context.packs import ContextPackRequest, build_context_pack
+from agent_maintainer.context.pack import exact_facts
+from agent_maintainer.context.pack.builder import ContextPackRequest, build_context_pack
 
 RUFF_LINE = 7
 RUFF_COLUMN = 3

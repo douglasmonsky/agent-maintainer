@@ -175,11 +175,13 @@ def test_local_override_request_warns_ci_must_verify(
 
 
 def test_change_budget_main_accepts_eligible_local_override(
+    tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Change-budget command downgrades eligible override failures to warnings."""
 
+    monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("GITHUB_EVENT_NAME", raising=False)
     monkeypatch.delenv("GITHUB_EVENT_PATH", raising=False)
     monkeypatch.setattr(

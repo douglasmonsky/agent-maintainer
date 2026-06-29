@@ -10,13 +10,14 @@ from typing import cast
 import pytest
 
 from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context import headroom_backend
-from agent_maintainer.context.pack_compression import (
+from agent_maintainer.context.compression import headroom as headroom_backend
+from agent_maintainer.context.pack import cli as pack_cli
+from agent_maintainer.context.pack.builder import ContextPackRequest, build_context_pack
+from agent_maintainer.context.pack.compression import (
     PackCompressionRequest,
     compress_supporting_context,
     headroom_fallback_message,
 )
-from agent_maintainer.context.packs import ContextPackRequest, build_context_pack
 
 
 def test_context_pack_compresses_supporting_context_not_exact_facts(
@@ -161,7 +162,7 @@ def test_context_pack_uses_configured_compression_backend(
     log_dir = write_failure_log(tmp_path, "ruff", "alpha beta gamma\n")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(
-        context_cli,
+        pack_cli,
         "load_config",
         lambda: SimpleNamespace(
             context_compression_backend="truncate",

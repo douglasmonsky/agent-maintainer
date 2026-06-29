@@ -172,7 +172,12 @@ def test_print_success_and_failures(capsys: pytest.CaptureFixture[str]) -> None:
         "full",
         [CheckResult("ruff", passed=False, output="lint failed")],
         skipped,
+        run_id="20260625T100000Z-full-test",
     )
     output = capsys.readouterr().out
     assert "FAIL: 1 check(s) failed [full]" in output
+    assert "Run ID: 20260625T100000Z-full-test" in output
     assert "lint failed" in output
+    assert (
+        "Smallest rerun after fixes: `python3 -m agent_maintainer verify --profile full`"
+    ) in output

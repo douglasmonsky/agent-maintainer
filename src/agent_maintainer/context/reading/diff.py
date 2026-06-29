@@ -5,14 +5,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from agent_maintainer.context.budget import bound_text
-from agent_maintainer.context.diff_classify import (
+from agent_maintainer.context.models import ContextBudget
+from agent_maintainer.context.reading.diff_classify import (
     count_matching,
     is_docs_path,
     is_generated_or_lock_path,
     is_python_path,
     is_test_path,
 )
-from agent_maintainer.context.diff_git import (
+from agent_maintainer.context.reading.diff_git import (
     DiffRequest,
     FileChange,
     changed_paths,
@@ -20,7 +21,6 @@ from agent_maintainer.context.diff_git import (
     git_diff,
     name_status_lines,
 )
-from agent_maintainer.context.models import ContextBudget
 
 DEFAULT_DIFF_HUNKS = 5
 

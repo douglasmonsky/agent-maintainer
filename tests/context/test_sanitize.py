@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from agent_maintainer.context.sanitize import sanitize_text
+from agent_maintainer.context.pack.sanitize import sanitize_text
 
 
 def test_sanitize_text_redacts_common_secret_shapes() -> None:

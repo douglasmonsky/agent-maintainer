@@ -8,11 +8,17 @@ from pathlib import Path
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.models import CheckResult
 from agent_maintainer.verify import artifacts
+from agent_maintainer.verify.history import RUNS_DIR_NAME
 
 DEFAULT_COVERAGE_FLOOR = 80
 
 
-def run_context(repo_root: Path) -> artifacts.RunContext:
+def run_context(
+    repo_root: Path,
+    *,
+    config: MaintainerConfig | None = None,
+    run_id: str = "20260625T100000Z-full-test",
+) -> artifacts.RunContext:
     """Return a stable verifier run context for artifact tests."""
 
     return artifacts.RunContext(
@@ -21,7 +27,8 @@ def run_context(repo_root: Path) -> artifacts.RunContext:
         base_ref="HEAD",
         compare_branch="origin/main",
         staged=False,
-        config=MaintainerConfig(),
+        config=config or MaintainerConfig(),
+        run_id=run_id,
     )
 
 
@@ -44,6 +51,11 @@ def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -
     manifest = json.loads((log_dir / artifacts.MANIFEST_NAME).read_text(encoding="utf-8"))
     assert manifest["profile"] == "full"
     assert manifest["base_ref"] == "HEAD"
+    assert manifest["timing"] == {
+        "started_at": "2026-06-25T10:00:00Z",
+        "ended_at": "2026-06-25T10:00:01Z",
+        "duration_seconds": 1.0,
+    }
     assert manifest["thresholds"]["coverage_fail_under"] == DEFAULT_COVERAGE_FLOOR
     assert manifest["checks"] == [
         {
@@ -81,6 +93,51 @@ def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -
     assert "## Context Pack Path" in pr_summary
     assert "## Expansion Commands" in pr_summary
     assert "lint failed" in pr_summary
+
+
+def test_run_artifacts_keep_stable_snapshot_and_prune_history(tmp_path: Path) -> None:
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    current_log = log_dir / "ruff.log"
+    current_log.write_text("raw lint output\n", encoding="utf-8")
+    result = CheckResult(
+        "ruff",
+        passed=False,
+        output="lint failed",
+        command=("ruff", "check"),
+        exit_code=1,
+        log_path=str(current_log),
+    )
+    config = MaintainerConfig(diagnostic_run_history_limit=1)
+
+    artifacts.write_run_artifacts(
+        log_dir,
+        run_context(tmp_path, config=config, run_id="older-full-test"),
+        [result],
+    )
+    artifacts.write_run_artifacts(
+        log_dir,
+        run_context(tmp_path, config=config, run_id="newer-full-test"),
+        [result],
+    )
+
+    runs_dir = log_dir / RUNS_DIR_NAME
+    assert not (runs_dir / "older-full-test").exists()
+    snapshot_dir = runs_dir / "newer-full-test"
+    assert (snapshot_dir / artifacts.LAST_FAILURE_NAME).exists()
+    assert (snapshot_dir / "ruff.log").read_text(encoding="utf-8") == "raw lint output\n"
+    snapshot_manifest = json.loads(
+        (snapshot_dir / artifacts.MANIFEST_NAME).read_text(encoding="utf-8"),
+    )
+    snapshot_log_dir = ".verify-logs/runs/newer-full-test"
+    assert snapshot_manifest["checks"][0]["log_path"] == f"{snapshot_log_dir}/ruff.log"
+    assert snapshot_manifest["checks"][0]["expansion_commands"] == [
+        (
+            "python -m agent_maintainer context --log-dir "
+            f"{snapshot_log_dir} failures --check ruff --limit 20"
+        ),
+        f"python -m agent_maintainer context --log-dir {snapshot_log_dir} log ruff --tail 120",
+    ]
 
 
 def test_write_run_artifacts_removes_stale_failure_note_on_success(tmp_path: Path) -> None:
