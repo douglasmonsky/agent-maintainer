@@ -120,6 +120,37 @@ Planned work:
 - [ ] Phase 45: Release-Check Ergonomics
 - [ ] Phase 46: Release-State Drift Check
 
+## Next: Quiet Control Plane And Dogfood Drift
+
+Before external case studies resume, Agent Maintainer should reduce agent
+context noise while preserving strict verification. Planned work:
+
+- Commit current context-boundary and verifier-artifact refactor as an early
+  milestone after cleanup.
+- Keep agent-facing verifier output summary-first: pass/fail, profile, run id,
+  failed checks, exact next commands.
+- Keep raw logs and long diagnostics in run-scoped `.verify-logs/runs/<run-id>/`
+  artifacts instead of chat output.
+- Document agent narration discipline: no routine waiting chatter, no narrating
+  every focused rerun, batch check results, and use `apply_patch` for manual
+  edits.
+- Encode verification cadence: focused checks during the edit loop, `precommit`
+  before commit, full profile set once before PR/merge, release checks only for
+  release work.
+- Add dogfood drift detection so this repository verifies against local
+  `src/agent_maintainer` code, not stale installed package code.
+- Preserve configured-repo-only hooks: global hook install may exist, but hooks
+  no-op outside repos with `[tool.agent_maintainer]`.
+
+## Quiet Control Plane Phases
+
+- [ ] Phase 47: Commit Context Boundary And Run Artifact Refactor
+- [ ] Phase 48: Quiet Agent Output And Guidance Discipline
+- [ ] Phase 49: Verification Cadence Recommendations
+- [ ] Phase 50: Dogfood Drift Doctor Check
+- [ ] Phase 51: Duplicate Artifact Detection And Cleanup Guard
+- [ ] Phase 52: Configured-Repo Hook No-Op Tests
+
 ## Future Work
 
 These items are intentionally postponed and are not part of the current
