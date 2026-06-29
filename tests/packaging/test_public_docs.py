@@ -27,6 +27,9 @@ def test_license_and_changelog_are_public_beta_ready() -> None:
 
     assert license_text.startswith("MIT License\n")
     assert "Copyright (c) 2026 Doug Monsky" in license_text
+    assert "## 0.1.0b4 - 2026-06-29" in changelog
+    assert "Fourth beta release of Agent Maintainer." in changelog
+    assert "quiet on success and bounded on failure" in changelog
     assert "## 0.1.0b3 - 2026-06-28" in changelog
     assert "Second beta release of Agent Maintainer." in changelog
     assert "Semgrep is excluded from `manual` and `all` extras" in changelog
