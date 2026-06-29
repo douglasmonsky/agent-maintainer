@@ -102,9 +102,9 @@ Planned work:
 - [x] Phase 33: Agent Adapter API
 - [x] Phase 33A: Tach Architecture Contract Refit
 - [x] Phase 34: Static HTML Report
-- [ ] Phase 34B: Review-Driven Stabilization Plan
-- [ ] Phase 34C: Headroom Backend Correctness
-- [ ] Phase 34D: Change-Plan Authority Over Legacy Overrides
+- [x] Phase 34B: Review-Driven Stabilization Plan
+- [x] Phase 34C: Headroom Backend Correctness
+- [x] Phase 34D: Change-Plan Authority Over Legacy Overrides
 - [ ] Phase 34E: Coverage Semantics Hardening
 - [ ] Phase 34F: Exact Repair Facts From Structured Artifacts
 - [ ] Phase 34G: Beta Release Metadata Refresh

@@ -122,7 +122,7 @@ ignored. See `docs/structure-cohesion.md`.
 
 The change-budget check prevents huge or overly diffuse changes from becoming a single opaque commit. It uses configured `source_roots` and `test_roots`, not hard-coded `src/` and `tests/`. Trivial package marker changes such as empty `__init__.py` additions are ignored because they do not add review complexity. In pre-commit, `--staged` limits diff-budget checks to the staged patch. Nonfatal warnings are shown in the aggregate verifier output; in `fresh-strict`, source changes without configured test-file changes fail in `precommit` unless explicitly allowed.
 
-Cohesive-change overrides are a narrow exception for large infrastructure migrations where smaller PRs would make the repository less coherent. They are disabled unless `cohesive_change_override_enabled = true`, require an allowlist of paths and maximum size, and require a filled `## Cohesive-Change Override` PR section before CI accepts the override.
+Cohesive-change overrides are a narrow legacy exception for large infrastructure migrations where smaller PRs would make the repository less coherent. Prefer explicit change plans for intentional large changes. Legacy overrides are disabled unless `cohesive_change_override_enabled = true`, require an allowlist of paths and maximum size, and require a filled `## Cohesive-Change Override` PR section before CI accepts the override. They cannot clear invalid, expired, or out-of-scope active change-plan failures.
 
 The suppression-budget check prevents broad `noqa`, `type: ignore`, `pylint: disable`, and `pragma: no cover` usage from hiding quality failures.
 

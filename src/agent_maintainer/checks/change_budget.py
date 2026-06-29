@@ -15,7 +15,8 @@ import sys
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from agent_maintainer.checks import cohesive_override, test_relevance
+from agent_maintainer.checks import test_relevance
+from agent_maintainer.checks.change_budget_overrides import apply_cohesive_override
 from agent_maintainer.checks.change_budget_plans import (
     BudgetContext,
     change_plan_failures,
@@ -374,13 +375,12 @@ def main(argv: list[str]) -> int:
         py_test_changes,
         context=BudgetContext(repo_root=Path.cwd(), all_changes=tuple(changes)),
     )
-    if failures:
-        override_decision = cohesive_override.evaluate_override(config, py_source_changes)
-        if override_decision.allowed:
-            failures = []
-            warnings.extend(override_decision.warnings)
-        elif override_decision.requested:
-            failures.extend(override_decision.failures)
+    failures, warnings = apply_cohesive_override(
+        failures,
+        warnings,
+        config,
+        py_source_changes,
+    )
 
     if failures:
         print_failure_report(failures, warnings)

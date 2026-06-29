@@ -9,12 +9,9 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Protocol
 
 from agent_maintainer.config.schema import MaintainerConfig
-
-if TYPE_CHECKING:
-    from agent_maintainer.checks.change_budget import FileChange
 
 OVERRIDE_SECTION_PATTERN = re.compile(
     r"(?ims)^#{2,6}\s*cohesive-change override\s*$"
@@ -41,9 +38,23 @@ class OverrideDecision:
     warnings: tuple[str, ...] = ()
 
 
+class FileChangeLike(Protocol):
+    """Minimal changed-file shape needed for cohesive override policy."""
+
+    @property
+    def path(self) -> str:
+        """Return changed file path."""
+        raise NotImplementedError
+
+    @property
+    def changed(self) -> int:
+        """Return total changed lines for the file."""
+        raise NotImplementedError
+
+
 def evaluate_override(
     config: MaintainerConfig,
-    changes: Sequence[FileChange],
+    changes: Sequence[FileChangeLike],
 ) -> OverrideDecision:
     """Return cohesive-change override decision for current diff context."""
 
@@ -167,7 +178,7 @@ def useful_field_value(value: str) -> bool:
 
 def eligibility_failures(
     config: MaintainerConfig,
-    changes: Sequence[FileChange],
+    changes: Sequence[FileChangeLike],
 ) -> tuple[str, ...]:
     """Return config, path, and maximum-size override eligibility failures."""
 

@@ -22,6 +22,16 @@ def enabled_config() -> MaintainerConfig:
     )
 
 
+def test_file_change_shape_accepted() -> None:
+    """Override policy accepts change-budget file-change records."""
+    failures = cohesive_override.eligibility_failures(
+        enabled_config(),
+        [change_budget.FileChange("src/agent_maintainer/core/config.py", 2, 3)],
+    )
+
+    assert failures == ()
+
+
 def valid_body() -> str:
     """Return valid PR body override section."""
 

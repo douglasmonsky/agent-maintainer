@@ -7,9 +7,16 @@ depends_on = []
 [[modules]]
 path = "change_budget"
 depends_on = [
+  "change_budget_overrides",
   "change_budget_plans",
-  "cohesive_override",
   "test_relevance",
+  "//agent_maintainer.core.config",
+]
+
+[[modules]]
+path = "change_budget_overrides"
+depends_on = [
+  "cohesive_override",
   "//agent_maintainer.core.config",
 ]
 
