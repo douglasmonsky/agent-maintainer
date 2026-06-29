@@ -19,6 +19,7 @@ INSTALL_STATUS = 12
 VERIFY_STATUS = 13
 GUIDANCE_STATUS = 15
 INIT_STATUS = 16
+RATCHET_STATUS = 17
 UNKNOWN_COMMAND_STATUS = 2
 
 
@@ -52,6 +53,7 @@ def test_maintainer_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(maintainer_cli, "guidance_main", lambda args: GUIDANCE_STATUS)
     monkeypatch.setattr(maintainer_cli, "init_main", lambda args: INIT_STATUS)
     monkeypatch.setattr(maintainer_cli, "install", lambda: INSTALL_STATUS)
+    monkeypatch.setattr(maintainer_cli, "ratchet_command", lambda args: RATCHET_STATUS)
     monkeypatch.setattr(maintainer_cli, "verify_main", lambda args: VERIFY_STATUS)
 
     assert maintainer_cli.main(["bootstrap"]) == BOOTSTRAP_STATUS
@@ -59,6 +61,7 @@ def test_maintainer_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> Non
     assert maintainer_cli.main(["guidance", "--check"]) == GUIDANCE_STATUS
     assert maintainer_cli.main(["init", "--track", "core"]) == INIT_STATUS
     assert maintainer_cli.main(["install"]) == INSTALL_STATUS
+    assert maintainer_cli.main(["ratchet", "status"]) == RATCHET_STATUS
     assert maintainer_cli.main(["verify", "--profile", "fast"]) == VERIFY_STATUS
     assert maintainer_cli.main(["unknown"]) == UNKNOWN_COMMAND_STATUS
 

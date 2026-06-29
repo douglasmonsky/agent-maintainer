@@ -81,6 +81,11 @@ Archguard runs alongside Tach when `architecture_tool = "tach"`. Tach enforces t
 
 The file-length check stops giant files. In `legacy-ratchet`, it can use `file_length_baseline` so old oversized files are tolerated only while they stay unchanged or improve; new and worsened oversized files fail.
 
+`python3 -m agent_maintainer ratchet` records multi-check baselines under
+`.agent-maintainer/ratchet-baseline.json` by default. Phase 13 supports
+file-length and structure-cohesion findings, reporting `new`, `worsened`,
+`unchanged`, `improved`, and `resolved` status plus stale-baseline signals.
+
 The structure-cohesion check warns when one folder accumulates many Python files
 and uses regex/layer hints to point at likely split candidates. It is advisory by
 default and blocks only at the configured block threshold in `fresh-strict`.

@@ -27,6 +27,7 @@ python -m agent_maintainer guidance [guidance options]
   python -m agent_maintainer hooks [hooks options]
   python -m agent_maintainer init [init options]
   python -m agent_maintainer install
+  python -m agent_maintainer ratchet [ratchet options]
   python -m agent_maintainer test-intel [test-intel options]
   python -m agent_maintainer verify [verify options]
 
@@ -41,6 +42,7 @@ python -m agent_maintainer hooks install all
 python -m agent_maintainer hooks status
   python -m agent_maintainer init --track core
   python -m agent_maintainer install
+  python -m agent_maintainer ratchet status
   python -m agent_maintainer test-intel changed
   python -m agent_maintainer verify --profile fast
   python -m agent_maintainer verify --profile precommit
@@ -88,6 +90,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "hooks": hooks_main,
         "init": init_main,
         "install": install_command,
+        "ratchet": ratchet_command,
         "test-intel": test_intel_main,
         "verify": verify_main,
     }
@@ -103,6 +106,13 @@ def install_command(_command_args: list[str]) -> int:
     """Adapt install to the shared command handler signature."""
 
     return install()
+
+
+def ratchet_command(command_args: list[str]) -> int:
+    """Run ratchet command with lazy import to keep entrypoint light."""
+
+    module = __import__("agent_maintainer.ratchet.cli", fromlist=("main",))
+    return module.main(command_args)
 
 
 if __name__ == "__main__":
