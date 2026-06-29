@@ -13,6 +13,7 @@ from agent_maintainer.change_plan.models import (
 from agent_maintainer.change_plan.parser import normalized_heading
 
 MIN_SECTION_LENGTH = 12
+INTEGRATION_BRANCH_SERIES = "integration-branch-series"
 
 
 def validate_plan(plan: ChangePlan, *, today: date | None = None) -> tuple[ValidationIssue, ...]:
@@ -45,7 +46,61 @@ def metadata_issues(plan: ChangePlan, today: date) -> tuple[ValidationIssue, ...
         issues.append(issue(plan, "requires_full_verify must be true"))
     if any(not target.endswith(".py") for target in metadata.ratchet_targets):
         issues.append(issue(plan, "ratchet_targets must point to Python files"))
+    issues.extend(integration_branch_issues(plan))
     return tuple(issues)
+
+
+def integration_branch_issues(plan: ChangePlan) -> tuple[ValidationIssue, ...]:
+    """Return integration-branch-series metadata issues."""
+
+    metadata = plan.metadata
+    if metadata.kind != INTEGRATION_BRANCH_SERIES:
+        return ()
+    issues: list[ValidationIssue] = []
+    for key, value in (
+        ("integration_branch", metadata.integration_branch),
+        ("target_branch", metadata.target_branch),
+        ("merge_strategy", metadata.merge_strategy),
+    ):
+        if not value:
+            issues.append(issue(plan, f"{key} must be set for integration-branch-series"))
+        elif has_invalid_branch_field_chars(value):
+            issues.append(issue(plan, f"{key} must not contain whitespace or control characters"))
+    if not metadata.expected_units:
+        issues.append(issue(plan, "expected_units must list planned integration units"))
+    return tuple(issues)
+
+
+def has_invalid_branch_field_chars(value: str) -> bool:
+    """Return whether branch-series metadata contains unsafe spacing."""
+
+    return any(character.isspace() for character in value)
+
+
+def branch_state_issues(plan: ChangePlan, current_branch: str) -> tuple[ValidationIssue, ...]:
+    """Return branch-state issues for integration branch series plans."""
+
+    metadata = plan.metadata
+    if metadata.kind != INTEGRATION_BRANCH_SERIES:
+        return ()
+    if not current_branch:
+        return (
+            issue(
+                plan,
+                "current branch must be available for integration-branch-series",
+            ),
+        )
+    if current_branch != metadata.integration_branch:
+        return (
+            issue(
+                plan,
+                (
+                    f"current branch {current_branch!r} does not match "
+                    f"integration_branch {metadata.integration_branch!r}"
+                ),
+            ),
+        )
+    return ()
 
 
 def section_issues(plan: ChangePlan) -> tuple[ValidationIssue, ...]:

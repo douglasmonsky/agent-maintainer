@@ -34,6 +34,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     new_parser.add_argument("slug")
     new_parser.add_argument("--kind", default="mechanical-migration")
     new_parser.add_argument("--base-ref", default="origin/main")
+    new_parser.add_argument("--integration-branch", default="")
+    new_parser.add_argument("--target-branch", default="main")
+    new_parser.add_argument("--merge-strategy", default="squash-after-series")
+    new_parser.add_argument("--expected-unit", action="append", default=[])
     new_parser.add_argument("--force", action="store_true")
 
     subparsers.add_parser("status", help="List change plans.")
@@ -54,7 +58,17 @@ def new_command(args: argparse.Namespace) -> int:
         return 1
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(
-        templates.render_plan_template(args.slug, kind=args.kind, base_ref=args.base_ref),
+        templates.render_plan_template(
+            args.slug,
+            kind=args.kind,
+            base_ref=args.base_ref,
+            integration_branch=templates.IntegrationBranchTemplate(
+                branch=args.integration_branch,
+                target_branch=args.target_branch,
+                merge_strategy=args.merge_strategy,
+                expected_units=tuple(args.expected_unit),
+            ),
+        ),
         encoding="utf-8",
     )
     print(target.as_posix())
@@ -83,9 +97,12 @@ def check_command(args: argparse.Namespace) -> int:
     """Validate change plans and optional current Git scope."""
 
     plans, issues = load_plans(args.plan_dir)
+    current_branch = ""
     for plan in plans:
         issues.extend(validation.validate_plan(plan))
         if not args.no_git_scope and plan.metadata.status == ACTIVE_STATUS:
+            current_branch = current_branch or git_scope.current_branch(Path.cwd())
+            issues.extend(validation.branch_state_issues(plan, current_branch))
             base_ref = args.base_ref or plan.metadata.base_ref
             changes = git_scope.git_changes(Path.cwd(), base_ref=base_ref, staged=args.staged)
             issues.extend(git_scope.scope_issues(plan, changes))

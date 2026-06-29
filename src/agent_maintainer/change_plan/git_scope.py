@@ -34,6 +34,19 @@ def git_numstat_command(base_ref: str, *, staged: bool) -> list[str]:
     return command
 
 
+def current_branch(repo_root: Path) -> str:
+    """Return current Git branch name, or empty string when detached."""
+
+    result = subprocess.run(  # nosec B603
+        [shutil.which("git") or "git", "branch", "--show-current"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
 def parse_numstat(output: str) -> tuple[ChangedPath, ...]:
     """Parse Git numstat output."""
 

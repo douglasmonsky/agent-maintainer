@@ -38,6 +38,10 @@ class PlanMetadata:
     requires_tests: bool
     requires_full_verify: bool
     ratchet_targets: tuple[str, ...]
+    integration_branch: str = ""
+    target_branch: str = ""
+    merge_strategy: str = ""
+    expected_units: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
