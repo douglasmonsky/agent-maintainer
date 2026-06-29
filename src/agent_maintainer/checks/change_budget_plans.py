@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess  # nosec B404
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -58,6 +59,7 @@ class BudgetContext:
 
     repo_root: Path | None = None
     all_changes: tuple[FileChangeLike, ...] = ()
+    branch_name: str = ""
 
 
 def evaluate_change_plan(context: BudgetContext | None) -> ChangePlanDecision:
@@ -75,6 +77,9 @@ def evaluate_change_plan(context: BudgetContext | None) -> ChangePlanDecision:
         *parse_issues,
         *change_plan_validation.validate_plan(plan),
         *change_plan_scope.scope_issues(plan, plan_changes),
+        *change_plan_validation.branch_state_issues(
+            plan, context.branch_name or current_branch_name(context)
+        ),
     ]
     if len(active_plans) > 1:
         issues.append(
@@ -84,6 +89,17 @@ def evaluate_change_plan(context: BudgetContext | None) -> ChangePlanDecision:
             )
         )
     return ChangePlanDecision(plan=plan, issues=tuple(issues), changes=plan_changes)
+
+
+def current_branch_name(context: BudgetContext) -> str:
+    """Return current Git branch name for plan validation."""
+
+    if context.repo_root is None:
+        return ""
+    try:
+        return change_plan_scope.current_branch(context.repo_root)
+    except (OSError, subprocess.CalledProcessError):
+        return ""
 
 
 def load_change_plans(plan_dir: Path) -> tuple[list[ChangePlan], list[ValidationIssue]]:

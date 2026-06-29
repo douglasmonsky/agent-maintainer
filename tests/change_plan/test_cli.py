@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from argparse import Namespace
 from pathlib import Path
 
@@ -25,6 +26,76 @@ def test_change_plan_new_refuses_overwrite(
     assert change_plan_cli.main(["new", "package-migration"]) == 0
     assert change_plan_cli.main(["new", "package-migration"]) == 1
     assert "already exists" in capsys.readouterr().err
+
+
+def test_change_plan_new_can_create_integration_branch_series(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Starter plan creation supports integration branch series."""
+
+    monkeypatch.chdir(tmp_path)
+
+    assert (
+        change_plan_cli.main(
+            [
+                "new",
+                "package-migration",
+                "--kind",
+                "integration-branch-series",
+                "--integration-branch",
+                "ratchet/package-migration",
+                "--expected-unit",
+                "move config modules",
+            ]
+        )
+        == 0
+    )
+
+    text = (tmp_path / ".agent-maintainer/change-plans/package-migration.md").read_text()
+    assert 'kind = "integration-branch-series"' in text
+    assert 'integration_branch = "ratchet/package-migration"' in text
+    assert '"move config modules"' in text
+
+
+def test_change_plan_check_rejects_wrong_integration_branch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Plan checks fail when branch state does not match metadata."""
+
+    subprocess.run(
+        ["git", "init", "-b", "main"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "switch", "-c", "feature/unplanned-change"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    monkeypatch.chdir(tmp_path)
+    assert (
+        change_plan_cli.main(
+            [
+                "new",
+                "package-migration",
+                "--kind",
+                "integration-branch-series",
+                "--integration-branch",
+                "ratchet/package-migration",
+                "--expected-unit",
+                "move config modules",
+            ]
+        )
+        == 0
+    )
+
+    assert change_plan_cli.main(["check", "--staged"]) == 1
+    assert "does not match integration_branch" in capsys.readouterr().out
 
 
 def test_change_plan_check_validates_without_git_scope(

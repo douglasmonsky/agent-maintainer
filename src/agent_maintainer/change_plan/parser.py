@@ -85,6 +85,10 @@ def metadata_from_raw(raw: dict[str, Any], *, path: Path) -> PlanMetadata:
             requires_tests=required_bool(raw, "requires_tests"),
             requires_full_verify=required_bool(raw, "requires_full_verify"),
             ratchet_targets=string_tuple(raw.get("ratchet_targets", ())),
+            integration_branch=optional_str(raw, "integration_branch"),
+            target_branch=optional_str(raw, "target_branch"),
+            merge_strategy=optional_str(raw, "merge_strategy"),
+            expected_units=string_tuple(raw.get("expected_units", ())),
         )
     except (TypeError, ValueError, KeyError) as exc:
         raise PlanParseError(f"{path}: invalid plan metadata: {exc}") from exc
@@ -94,6 +98,17 @@ def required_str(raw: dict[str, Any], key: str) -> str:
     """Return required non-empty string metadata."""
 
     value = raw[key]
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{key} must be a non-empty string")
+    return value.strip()
+
+
+def optional_str(raw: dict[str, Any], key: str) -> str:
+    """Return optional stripped string metadata."""
+
+    value = raw.get(key, "")
+    if value == "":
+        return ""
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{key} must be a non-empty string")
     return value.strip()

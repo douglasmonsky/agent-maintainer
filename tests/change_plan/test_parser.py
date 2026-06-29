@@ -25,6 +25,28 @@ def test_parse_valid_plan_metadata_and_sections(tmp_path: Path) -> None:
     assert all(parser.normalized_heading(section) in plan.sections for section in REQUIRED_SECTIONS)
 
 
+def test_parse_integration_branch_series_metadata(tmp_path: Path) -> None:
+    """Integration branch series metadata parses when present."""
+
+    metadata = (
+        'integration_branch = "ratchet/package-migration"\n'
+        'target_branch = "main"\n'
+        'merge_strategy = "squash-after-series"\n'
+        'expected_units = ["move config modules", "update tests"]\n'
+    )
+    plan = parser.parse_plan_text(
+        valid_plan_text(extra_metadata=metadata).replace(
+            'kind = "mechanical-migration"', 'kind = "integration-branch-series"'
+        ),
+        path=tmp_path / "plan.md",
+    )
+
+    assert plan.metadata.integration_branch == "ratchet/package-migration"
+    assert plan.metadata.target_branch == "main"
+    assert plan.metadata.merge_strategy == "squash-after-series"
+    assert plan.metadata.expected_units == ("move config modules", "update tests")
+
+
 def test_parse_rejects_missing_front_matter(tmp_path: Path) -> None:
     """Plan files must use TOML front matter delimiters."""
 
@@ -67,7 +89,9 @@ def test_parse_rejects_invalid_string_list_metadata(tmp_path: Path) -> None:
         parser.parse_plan_text(text, path=tmp_path / "bad.md")
 
 
-def valid_plan_text(*, expires: str = "2099-01-01", omit_section: str = "") -> str:
+def valid_plan_text(
+    *, expires: str = "2099-01-01", omit_section: str = "", extra_metadata: str = ""
+) -> str:
     """Return a valid cohesive change plan fixture."""
 
     sections = [
@@ -81,6 +105,7 @@ def valid_plan_text(*, expires: str = "2099-01-01", omit_section: str = "") -> s
         'kind = "mechanical-migration"\n'
         'status = "active"\n'
         'base_ref = "origin/main"\n'
+        f"{extra_metadata}"
         f"expires = {expires}\n"
         'allowed_paths = ["src/**", "tests/**"]\n'
         'forbidden_paths = ["config/prod/**"]\n'

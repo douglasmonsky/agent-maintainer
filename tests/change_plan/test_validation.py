@@ -50,6 +50,90 @@ def test_template_contains_required_sections() -> None:
     assert all(f"## {section}" in rendered for section in validation.REQUIRED_SECTIONS)
 
 
+def test_template_contains_integration_branch_series_fields() -> None:
+    """Generated integration branch templates include branch metadata."""
+
+    rendered = templates.render_plan_template(
+        "package-migration",
+        kind="integration-branch-series",
+        integration_branch=templates.IntegrationBranchTemplate(
+            branch="ratchet/package-migration",
+            expected_units=("move config modules", "update tests"),
+        ),
+        today=date(2026, 6, 29),
+    )
+
+    assert 'kind = "integration-branch-series"' in rendered
+    assert 'integration_branch = "ratchet/package-migration"' in rendered
+    assert 'target_branch = "main"' in rendered
+    assert 'merge_strategy = "squash-after-series"' in rendered
+    assert '"move config modules"' in rendered
+    assert '"update tests"' in rendered
+
+
+def test_integration_branch_series_metadata_passes_validation(tmp_path: Path) -> None:
+    """Complete integration branch metadata passes validation."""
+
+    metadata = (
+        'integration_branch = "ratchet/package-migration"\n'
+        'target_branch = "main"\n'
+        'merge_strategy = "squash-after-series"\n'
+        'expected_units = ["move config modules", "update tests"]\n'
+    )
+    plan = parser.parse_plan_text(
+        valid_plan_text(extra_metadata=metadata).replace(
+            'kind = "mechanical-migration"', 'kind = "integration-branch-series"'
+        ),
+        path=tmp_path / "plan.md",
+    )
+
+    assert validation.validate_plan(plan, today=date(2026, 6, 29)) == ()
+
+
+def test_integration_branch_series_requires_branch_fields(tmp_path: Path) -> None:
+    """Integration branch plans must describe the branch series."""
+
+    plan = parser.parse_plan_text(
+        valid_plan_text().replace(
+            'kind = "mechanical-migration"', 'kind = "integration-branch-series"'
+        ),
+        path=tmp_path / "plan.md",
+    )
+
+    issues = validation.validate_plan(plan, today=date(2026, 6, 29))
+    messages = {issue.message for issue in issues}
+
+    assert "integration_branch must be set for integration-branch-series" in messages
+    assert "target_branch must be set for integration-branch-series" in messages
+    assert "merge_strategy must be set for integration-branch-series" in messages
+    assert "expected_units must list planned integration units" in messages
+
+
+def test_integration_branch_series_rejects_whitespace_branch_names(
+    tmp_path: Path,
+) -> None:
+    """Branch-series metadata must not contain whitespace."""
+
+    metadata = (
+        'integration_branch = "ratchet/package migration"\n'
+        'target_branch = "main"\n'
+        'merge_strategy = "squash-after-series"\n'
+        'expected_units = ["move config modules"]\n'
+    )
+    plan = parser.parse_plan_text(
+        valid_plan_text(extra_metadata=metadata).replace(
+            'kind = "mechanical-migration"', 'kind = "integration-branch-series"'
+        ),
+        path=tmp_path / "plan.md",
+    )
+
+    issues = validation.validate_plan(plan, today=date(2026, 6, 29))
+
+    assert any(
+        "integration_branch must not contain whitespace" in issue.message for issue in issues
+    )
+
+
 def test_requires_full_verify_must_be_true(tmp_path: Path) -> None:
     """Large-change plans must keep full verification required."""
 
