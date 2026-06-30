@@ -8,13 +8,13 @@ import uuid
 from datetime import UTC, datetime
 
 from agent_maintainer.runners import mutmut_stats
-from agent_maintainer.test_intel.mutation_sweep import MutationSweepReport
-from agent_maintainer.test_intel.mutation_sweep_execution import (
+from agent_maintainer.test_intel.mutation.sweep import MutationSweepReport
+from agent_maintainer.test_intel.mutation.sweep_execution import (
     MutationSweepCandidateResult,
     MutationSweepExecutionReport,
     MutationSweepExecutionRequest,
 )
-from agent_maintainer.test_intel.mutation_sweep_runner import execute_candidate
+from agent_maintainer.test_intel.mutation.sweep_runner import execute_candidate
 
 
 def execute_mutation_sweep(

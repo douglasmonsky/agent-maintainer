@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 
 from agent_maintainer.runners import mutmut_stats
-from agent_maintainer.test_intel.mutation_sweep import (
+from agent_maintainer.test_intel.mutation.sweep import (
     MutationSweepCandidate,
     MutationSweepReport,
 )
-from agent_maintainer.test_intel.mutation_sweep_execution import (
+from agent_maintainer.test_intel.mutation.sweep_execution import (
     MutationSweepCandidateResult,
     MutationSweepExecutionReport,
 )

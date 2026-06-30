@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.test_intel import coverage, mapping, mutation_targets
+from agent_maintainer.test_intel import coverage, mapping
+from agent_maintainer.test_intel.mutation import targets as mutation_targets
 
 ADVISORY_NOTE = "Advisory only; does not run mutmut."
 DEFAULT_LIMIT = 5

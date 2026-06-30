@@ -11,9 +11,11 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.test_intel import cli as maintainer_test_intel_cli
-from agent_maintainer.test_intel import hypothesis_candidates, mutation_reporting, mutation_targets
+from agent_maintainer.test_intel import hypothesis_candidates
 from agent_maintainer.test_intel.cli import main as run_test_intel_cli
+from agent_maintainer.test_intel.mutation import cli as mutation_cli
+from agent_maintainer.test_intel.mutation import results_reporting as mutation_reporting
+from agent_maintainer.test_intel.mutation import targets as mutation_targets
 
 EXPECTED_FULL_SIGNAL_SCORE = 20
 
@@ -305,7 +307,7 @@ def test_mutation_target_cli_reports_changed_source_errors(
     def fail_changed_source(*_args: object, **_kwargs: object) -> tuple[str, ...]:
         raise RuntimeError("git failed")
 
-    monkeypatch.setattr(maintainer_test_intel_cli, "changed_source_paths", fail_changed_source)
+    monkeypatch.setattr(mutation_cli, "changed_source_paths", fail_changed_source)
 
     assert run_test_intel_cli(["mutation-targets", "--changed"]) == 1
     assert "git failed" in capsys.readouterr().err

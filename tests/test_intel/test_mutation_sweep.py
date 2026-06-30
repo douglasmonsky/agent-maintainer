@@ -9,12 +9,10 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.test_intel import (
-    cli,
-    mutation_sweep,
-    mutation_sweep_cli,
-    mutation_sweep_reporting,
-)
+from agent_maintainer.test_intel import cli
+from agent_maintainer.test_intel.mutation import sweep as mutation_sweep
+from agent_maintainer.test_intel.mutation import sweep_cli as mutation_sweep_cli
+from agent_maintainer.test_intel.mutation import sweep_reporting as mutation_sweep_reporting
 
 SCORE_COVERAGE = 90.0
 SCORE_CHURN = 5

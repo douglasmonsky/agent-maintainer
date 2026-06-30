@@ -15,11 +15,11 @@ the source checkout.
 
 Add dedicated test-intelligence modules for mutation sweep execution:
 
-- `mutation_sweep_execution` owns execution request/result data.
-- `mutation_sweep_config` patches Mutmut config only inside copied worktrees.
-- `mutation_sweep_runner` owns temp worktree setup, Mutmut process execution,
+- `mutation.sweep_execution` owns execution request/result data.
+- `mutation.sweep_config` patches Mutmut config only inside copied worktrees.
+- `mutation.sweep_runner` owns temp worktree setup, Mutmut process execution,
   stats collection, and promotion readiness checks.
-- `mutation_sweep_executor` orchestrates ranked candidate execution and
+- `mutation.sweep_executor` orchestrates ranked candidate execution and
   run-scoped artifacts.
 
 The Tach contract explicitly assigns each module instead of broadening the

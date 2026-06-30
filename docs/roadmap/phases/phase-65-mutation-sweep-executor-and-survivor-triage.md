@@ -17,10 +17,10 @@ artifact-backed results under `.verify-logs/mutation-sweeps/<run-id>/`.
 ## File Targets
 
 ```text
-src/agent_maintainer/test_intel/mutation_sweep.py
-src/agent_maintainer/test_intel/mutation_sweep_cli.py
-src/agent_maintainer/test_intel/mutation_sweep_reporting.py
-src/agent_maintainer/test_intel/mutation_sweep_executor.py
+src/agent_maintainer/test_intel/mutation/sweep.py
+src/agent_maintainer/test_intel/mutation/sweep_cli.py
+src/agent_maintainer/test_intel/mutation/sweep_reporting.py
+src/agent_maintainer/test_intel/mutation/sweep_executor.py
 tests/test_intel/test_mutation_sweep.py
 tests/test_intel/test_mutation_sweep_executor.py
 docs/mutation-testing.md

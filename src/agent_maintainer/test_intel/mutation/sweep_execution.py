@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Final
 
 from agent_maintainer.runners import mutmut_stats
-from agent_maintainer.test_intel.mutation_sweep import MutationSweepCandidate
+from agent_maintainer.test_intel.mutation.sweep import MutationSweepCandidate
 
 DEFAULT_OUTPUT_DIR: Final = Path(".verify-logs/mutation-sweeps")
 DEFAULT_EXECUTION_CANDIDATE_LIMIT: Final = 1

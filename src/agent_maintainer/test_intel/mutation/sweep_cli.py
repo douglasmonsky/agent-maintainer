@@ -7,13 +7,13 @@ import sys
 from pathlib import Path
 
 from agent_maintainer.config import loader
-from agent_maintainer.test_intel import (
-    mutation_sweep,
-    mutation_sweep_execution,
-    mutation_sweep_executor,
-    mutation_sweep_reporting,
-)
 from agent_maintainer.test_intel.changed import changed_source_paths
+from agent_maintainer.test_intel.mutation import sweep as mutation_sweep
+from agent_maintainer.test_intel.mutation import (
+    sweep_execution as mutation_sweep_execution,
+)
+from agent_maintainer.test_intel.mutation import sweep_executor as mutation_sweep_executor
+from agent_maintainer.test_intel.mutation import sweep_reporting as mutation_sweep_reporting
 
 FORMAT_JSON = "json"
 FORMAT_TEXT = "text"

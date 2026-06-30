@@ -19,7 +19,7 @@ Add `agent_maintainer.test_intel`, `changed`, `coverage`, `mapping`, and
 `reporting` to the runtime layer because they read local repository state,
 inspect files, and format deterministic command output. Add
 `hypothesis_candidates`, `hypothesis_scaffolds`, `hypothesis_reporting`,
-`mutation_targets`, `mutation_reporting`, `crosshair_candidates`, and
+`mutation.targets`, `mutation.results_reporting`, `crosshair_candidates`, and
 `crosshair_reporting` to the same runtime layer because they inspect source ASTs
 and emit advisory test-improvement guidance without changing verifier outcomes.
 
