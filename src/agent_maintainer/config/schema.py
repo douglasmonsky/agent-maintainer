@@ -173,6 +173,7 @@ NON_NEGATIVE_INT_FIELDS = frozenset(
         "context_max_failure_items",
         "context_max_paths_default",
         "diagnostic_run_history_limit",
+        "mutmut_target_min",
         "ratchet_target_limit",
         "large_change_max_active_plans",
     )
@@ -284,6 +285,7 @@ class MaintainerConfig:
     pip_audit_args: tuple[str, ...] = ()
     enable_mutmut: bool = False
     mutmut_args: tuple[str, ...] = ("run",)
+    mutmut_target_min: int = 0
     enable_semgrep: bool = False
     semgrep_args: tuple[str, ...] = (
         "scan",

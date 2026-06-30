@@ -48,6 +48,10 @@ diagnostics and CI artifacts.
 Mutmut provides mutation testing in the `manual` profile only. It is disabled by
 default for drop-in use; enable it with `enable_mutmut = true` and configure
 `mutmut_args` plus `[tool.mutmut]` source/test paths for nonstandard layouts.
+`mutmut_target_min` is a cheap ratchet for repositories that want to prevent
+the explicit `[tool.mutmut].only_mutate` target list from shrinking. When set
+above zero, `full` and `ci` validate the target count and path-like target
+existence without running mutation tests.
 The verifier runs Mutmut through `agent_maintainer.runners.mutmut`, which removes the
 generated `mutants` directory after successful runs. Set
 `AGENT_MAINTAINER_KEEP_MUTANTS=true` only when explicitly debugging mutation

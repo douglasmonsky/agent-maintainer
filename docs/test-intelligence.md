@@ -80,6 +80,12 @@ logic, and parser/validator/decision names.
 Output is advisory only. The command does not run Mutmut and does not make
 mutation testing a normal precommit gate.
 
+For repositories with targeted `[tool.mutmut].only_mutate` lists,
+`[tool.agent_maintainer].mutmut_target_min` ratchets configured target count.
+The ratchet runs in `full` and `ci` because it only validates configuration
+shape and path-like target existence; actual Mutmut execution stays in
+`manual`.
+
 ## CrossHair Candidate Guidance
 
 Run:

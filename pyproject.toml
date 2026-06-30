@@ -222,6 +222,7 @@ enable_pip_audit = true
 pip_audit_args = ["-r", "config/dev-lock.txt"]
 enable_mutmut = true
 mutmut_args = ["run"]
+mutmut_target_min = 3
 enable_semgrep = true
 semgrep_args = [
   "scan",
@@ -290,8 +291,19 @@ run_history_limit = 10
 
 [tool.mutmut]
 source_paths = ["src/agent_maintainer/"]
-only_mutate = ["src/agent_maintainer/core/runtime.py"]
-pytest_add_cli_args_test_selection = ["tests/core/test_runtime.py"]
+only_mutate = [
+  "src/agent_maintainer/config/coercion.py",
+  "src/agent_maintainer/core/runtime.py",
+  "src/agent_maintainer/test_intel/mutation_targets.py",
+]
+pytest_add_cli_args_test_selection = [
+  "tests/config/test_config_loading.py",
+  "tests/core/test_runtime.py",
+  "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_ranks_branchy_tested_logic",
+  "tests/test_intel/test_mutation_targets.py::test_mutation_target_renderers_are_advisory",
+  "tests/test_intel/test_mutation_targets.py::test_mutation_targets_ratchet_boost",
+  "tests/test_intel/test_mutation_targets.py::test_mutation_targets_cover_defensive_branches",
+]
 pytest_add_cli_args = ["-p", "no:tach"]
 mutate_only_covered_lines = true
 use_setproctitle = false

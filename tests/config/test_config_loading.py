@@ -26,6 +26,8 @@ ENV_OVERRIDE_MAX_LINES = 2_345
 ENV_OVERRIDE_MAX_FILES = 24
 CONFIG_RUN_HISTORY_LIMIT = 7
 ENV_RUN_HISTORY_LIMIT = 3
+CONFIG_MUTMUT_TARGET_MIN = 3
+ENV_MUTMUT_TARGET_MIN = 4
 
 
 def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
@@ -47,6 +49,7 @@ enable_pip_audit = true
 pip_audit_args = ["-r", "requirements.txt"]
 enable_mutmut = true
 mutmut_args = ["run", "agent_maintainer.core.runtime*"]
+mutmut_target_min = 3
 enable_semgrep = true
 semgrep_args = ["scan", "--config", "semgrep.yml", "--metrics=off", "."]
 semgrep_profiles = ["manual"]
@@ -102,6 +105,7 @@ run_history_limit = 7
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True
     assert loaded.mutmut_args == ("run", "agent_maintainer.core.runtime*")
+    assert loaded.mutmut_target_min == CONFIG_MUTMUT_TARGET_MIN
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml", "--metrics=off", ".")
     assert loaded.semgrep_profiles == ("manual",)
@@ -255,6 +259,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
             "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_FILES": str(
                 ENV_OVERRIDE_MAX_FILES,
             ),
+            "AGENT_MAINTAINER_MUTMUT_TARGET_MIN": str(ENV_MUTMUT_TARGET_MIN),
         },
     )
     monkeypatch.setenv(
@@ -276,6 +281,7 @@ def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True
     assert loaded.mutmut_args == ("run", "agent_maintainer.core.runtime*")
+    assert loaded.mutmut_target_min == ENV_MUTMUT_TARGET_MIN
     assert loaded.enable_semgrep is True
     assert loaded.semgrep_args == ("scan", "--config", "semgrep.yml")
     assert loaded.semgrep_profiles == ("manual", "security")

@@ -136,6 +136,26 @@ def mutmut_check(config: MaintainerConfig) -> models.Check:
     )
 
 
+def mutmut_target_ratchet_check(config: MaintainerConfig) -> models.Check:
+    """Build cheap Mutmut target-count ratchet check."""
+
+    command = [
+        sys.executable,
+        "-m",
+        "agent_maintainer.checks.mutmut_targets",
+        "--min-targets",
+        str(config.mutmut_target_min),
+    ]
+    if config.mutmut_target_min <= 0:
+        return models.Check(
+            "mutmut-target-ratchet",
+            command,
+            models.FULL_PROFILES,
+            optional_skip_reason="mutmut_target_min = 0; no explicit mutation target floor",
+        )
+    return models.Check("mutmut-target-ratchet", command, models.FULL_PROFILES)
+
+
 def pyright_check(config: MaintainerConfig) -> models.Check:
     """Build the Pyright check through the generated-project wrapper."""
 
