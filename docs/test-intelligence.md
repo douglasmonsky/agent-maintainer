@@ -88,6 +88,24 @@ shape, supported Mutmut keys, path-like target existence, and concrete
 `manual`. Agent Maintainer intentionally rejects unsupported Mutmut keys rather
 than letting the pinned Mutmut version ignore them silently.
 
+## Mutation Results
+
+Run:
+
+```bash
+python -m agent_maintainer test-intel mutation-results
+python -m agent_maintainer test-intel mutation-results --format json
+python -m agent_maintainer test-intel mutation-results --path mutants/mutmut-cicd-stats.json
+```
+
+The command reads Mutmut's exported CI/CD stats and summarizes killed,
+survived, suspicious, and timed-out mutants. It does not run Mutmut.
+
+Repositories can enable `[tool.agent_maintainer].mutmut_result_ratchet_enabled`
+to make the manual Mutmut gate fail when survivor, suspicious, timeout, or
+mutation score budgets regress. This repo currently dogfoods that ratchet
+against the measured targeted baseline.
+
 ## CrossHair Candidate Guidance
 
 Run:

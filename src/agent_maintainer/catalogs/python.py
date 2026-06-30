@@ -117,7 +117,21 @@ def pip_audit_check(config: MaintainerConfig) -> models.Check:
 def mutmut_check(config: MaintainerConfig) -> models.Check:
     """Build mutation-testing check reserved for the manual profile."""
 
-    command = [sys.executable, "-m", "agent_maintainer.runners.mutmut", *config.mutmut_args]
+    command = [sys.executable, "-m", "agent_maintainer.runners.mutmut"]
+    if config.mutmut_result_ratchet_enabled:
+        command.extend(
+            (
+                "--max-survivors",
+                str(config.mutmut_max_survivors),
+                "--max-suspicious",
+                str(config.mutmut_max_suspicious),
+                "--max-timeouts",
+                str(config.mutmut_max_timeouts),
+                "--min-score",
+                str(config.mutmut_min_score),
+            )
+        )
+    command.extend(config.mutmut_args)
     if not config.enable_mutmut:
         return models.Check(
             "mutmut",

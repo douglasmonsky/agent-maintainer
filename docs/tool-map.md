@@ -64,6 +64,12 @@ dogfoods supported hardening knobs such as `max_stack_depth`, `also_copy`, and
 explicit excluded wrapper files. Unsupported Mutmut keys are rejected rather
 than silently ignored by the pinned Mutmut version.
 
+When `[tool.agent_maintainer].mutmut_result_ratchet_enabled = true`, the Mutmut
+runner exports `mutants/mutmut-cicd-stats.json` after a successful run and
+fails the manual gate if configured survivor, suspicious, timeout, or score
+budgets regress. Inspect the same stats with
+`python -m agent_maintainer test-intel mutation-results`.
+
 Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable
 run metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails.
 `.verify-logs/pr-summary.md` is a bounded GitHub-friendly report with top

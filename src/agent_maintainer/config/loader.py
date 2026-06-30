@@ -53,6 +53,7 @@ BOOL_ENVS = (
     ("require_tests", "AGENT_MAINTAINER_REQUIRE_TESTS"),
     ("enable_pip_audit", "AGENT_MAINTAINER_ENABLE_PIP_AUDIT"),
     ("enable_mutmut", "AGENT_MAINTAINER_ENABLE_MUTMUT"),
+    ("mutmut_result_ratchet_enabled", "AGENT_MAINTAINER_MUTMUT_RESULT_RATCHET_ENABLED"),
     ("enable_semgrep", "AGENT_MAINTAINER_ENABLE_SEMGREP"),
     ("enable_osv_scanner", "AGENT_MAINTAINER_ENABLE_OSV_SCANNER"),
     ("enable_trivy", "AGENT_MAINTAINER_ENABLE_TRIVY"),

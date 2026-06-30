@@ -167,6 +167,38 @@ def test_pip_audit_unsafe_config_fails_only_in_fresh_strict() -> None:
     assert "pinned input" in custom_check.optional_skip_reason
 
 
+def test_mutmut_check_passes_result_ratchet_thresholds() -> None:
+    """Enabled Mutmut result ratchets are passed to the runner."""
+
+    config = replace(
+        MaintainerConfig(),
+        enable_mutmut=True,
+        mutmut_args=("run",),
+        mutmut_result_ratchet_enabled=True,
+        mutmut_max_survivors=84,
+        mutmut_max_suspicious=0,
+        mutmut_max_timeouts=0,
+        mutmut_min_score=71,
+    )
+
+    check = maintainer_catalog_python.mutmut_check(config)
+
+    assert check.command == [
+        maintainer_catalog.sys.executable,
+        "-m",
+        "agent_maintainer.runners.mutmut",
+        "--max-survivors",
+        "84",
+        "--max-suspicious",
+        "0",
+        "--max-timeouts",
+        "0",
+        "--min-score",
+        "71",
+        "run",
+    ]
+
+
 def test_mutmut_target_ratchet_runs_when_floor_configured() -> None:
     """Mutmut target floor is a cheap full/CI ratchet, not mutation execution."""
 

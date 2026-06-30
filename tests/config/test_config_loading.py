@@ -28,6 +28,9 @@ CONFIG_RUN_HISTORY_LIMIT = 7
 ENV_RUN_HISTORY_LIMIT = 3
 CONFIG_MUTMUT_TARGET_MIN = 3
 ENV_MUTMUT_TARGET_MIN = 4
+CONFIG_MUTMUT_MAX_SURVIVORS = 84
+ENV_MUTMUT_MAX_SURVIVORS = 83
+CONFIG_MUTMUT_MIN_SCORE = 71
 
 
 def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
@@ -151,6 +154,33 @@ run_history_limit = 7
     assert loaded.diagnostic_run_history_limit == CONFIG_RUN_HISTORY_LIMIT
 
 
+def test_read_pyproject_loads_mutmut_result_ratchet_config(tmp_path: Path) -> None:
+    """Mutmut result ratchet settings load from pyproject."""
+
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(
+        """
+        [tool.agent_maintainer]
+        mutmut_result_ratchet_enabled = true
+        mutmut_max_survivors = 84
+        mutmut_max_suspicious = 0
+        mutmut_max_timeouts = 0
+        mutmut_min_score = 71
+        """,
+        encoding="utf-8",
+    )
+
+    loaded = maintainer_config_loader.apply_pyproject(
+        MaintainerConfig(), maintainer_config_loader.read_pyproject(pyproject)
+    )
+
+    assert loaded.mutmut_result_ratchet_enabled is True
+    assert loaded.mutmut_max_survivors == CONFIG_MUTMUT_MAX_SURVIVORS
+    assert loaded.mutmut_max_suspicious == 0
+    assert loaded.mutmut_max_timeouts == 0
+    assert loaded.mutmut_min_score == CONFIG_MUTMUT_MIN_SCORE
+
+
 def test_invalid_config_values_raise_clear_type_errors() -> None:
     with pytest.raises(TypeError, match="source_roots"):
         maintainer_config_coercion.as_tuple(12, "source_roots")
@@ -208,6 +238,29 @@ def test_environment_mode_applies_before_explicit_environment(
     assert loaded.mode == "fresh-strict"
     assert loaded.ruff_max_complexity == STRICT_COMPLEXITY
     assert loaded.enable_wemake is False
+
+
+def test_environment_overrides_mutmut_result_ratchet(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Mutmut result ratchet settings load from environment variables."""
+
+    set_envs(
+        monkeypatch,
+        {
+            "AGENT_MAINTAINER_MUTMUT_RESULT_RATCHET_ENABLED": "true",
+            "AGENT_MAINTAINER_MUTMUT_MAX_SURVIVORS": str(ENV_MUTMUT_MAX_SURVIVORS),
+            "AGENT_MAINTAINER_MUTMUT_MAX_SUSPICIOUS": "0",
+            "AGENT_MAINTAINER_MUTMUT_MAX_TIMEOUTS": "0",
+            "AGENT_MAINTAINER_MUTMUT_MIN_SCORE": str(CONFIG_MUTMUT_MIN_SCORE),
+        },
+    )
+
+    loaded = maintainer_config_loader.apply_env(MaintainerConfig())
+
+    assert loaded.mutmut_result_ratchet_enabled is True
+    assert loaded.mutmut_max_survivors == ENV_MUTMUT_MAX_SURVIVORS
+    assert loaded.mutmut_max_suspicious == 0
+    assert loaded.mutmut_max_timeouts == 0
+    assert loaded.mutmut_min_score == CONFIG_MUTMUT_MIN_SCORE
 
 
 def test_environment_overrides_config(monkeypatch: pytest.MonkeyPatch) -> None:

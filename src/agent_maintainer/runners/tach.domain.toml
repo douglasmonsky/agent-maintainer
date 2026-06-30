@@ -16,7 +16,12 @@ path = "mutmut"
 depends_on = [
   "//agent_maintainer.core.executor",
   "//agent_maintainer.core.runtime",
+  "mutmut_stats",
 ]
+
+[[modules]]
+path = "mutmut_stats"
+depends_on = []
 
 [[modules]]
 path = "pyright"
