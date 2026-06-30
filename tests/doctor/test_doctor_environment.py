@@ -87,3 +87,17 @@ def test_duplicate_generated_artifacts_warn_when_present(tmp_path: Path) -> None
     assert result.status == maintainer_doctor.WARNING
     assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
     assert "src/agent_maintainer/verify 2.py" in result.message
+
+
+def test_duplicate_generated_artifacts_include_change_plans(tmp_path: Path) -> None:
+    """Doctor warns for duplicate change-plan copies from local tools."""
+
+    duplicate = tmp_path / ".agent-maintainer" / "change-plans" / "plan 2.md"
+    duplicate.parent.mkdir(parents=True)
+    duplicate.write_text("", encoding="utf-8")
+
+    result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
+
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
+    assert ".agent-maintainer/change-plans/plan 2.md" in result.message
