@@ -35,15 +35,8 @@ test-backed, type-checked, covered, diagnosable, and aligned with repository
 structure.
 
 It is strongest when an AI agent is actively editing your repo: the agent gets a
-compact pass/fail summary, a run id, failed checks, and exact next commands. The
+compact pass/fail summary, a run id, failed checks, and exact next commands while
 raw evidence stays in run-scoped artifacts.
-
-## What It Is Not
-
-Agent Maintainer is not a runtime AI safety product. It does not moderate model
-outputs, filter prompts, block jailbreaks, inspect end-user conversations, or
-validate chatbot responses. It focuses on repository health while humans and
-coding agents change code.
 
 ## Quick Start
 
