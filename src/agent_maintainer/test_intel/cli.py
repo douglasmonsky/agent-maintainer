@@ -14,6 +14,7 @@ from agent_maintainer.test_intel import (
     hypothesis_reporting,
     mutation_reporting,
     mutation_results,
+    mutation_sweep_cli,
     mutation_targets,
 )
 from agent_maintainer.test_intel.changed import changed_source_paths
@@ -29,6 +30,7 @@ from agent_maintainer.test_intel.reporting import (
 FORMAT_JSON = "json"
 FORMAT_TEXT = "text"
 FORMAT_CHOICES = (FORMAT_TEXT, FORMAT_JSON)
+ACTION_STORE_TRUE = "store_true"
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -41,7 +43,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Show likely tests for changed source files.",
     )
     changed_parser.add_argument("--base-ref", default="HEAD")
-    changed_parser.add_argument("--staged", action="store_true")
+    changed_parser.add_argument("--staged", action=ACTION_STORE_TRUE)
     changed_parser.add_argument(
         "--format",
         choices=FORMAT_CHOICES,
@@ -51,9 +53,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "hypothesis-candidates",
         help="Suggest advisory Hypothesis property-test candidates.",
     )
-    hypothesis_parser.add_argument("--changed", action="store_true")
+    hypothesis_parser.add_argument("--changed", action=ACTION_STORE_TRUE)
     hypothesis_parser.add_argument("--base-ref", default="HEAD")
-    hypothesis_parser.add_argument("--staged", action="store_true")
+    hypothesis_parser.add_argument("--staged", action=ACTION_STORE_TRUE)
     hypothesis_parser.add_argument(
         "--limit",
         type=int,
@@ -68,10 +70,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "mutation-targets",
         help="Suggest advisory mutation testing targets.",
     )
-    mutation_parser.add_argument("--changed", action="store_true")
-    mutation_parser.add_argument("--ratchet", action="store_true")
+    mutation_parser.add_argument("--changed", action=ACTION_STORE_TRUE)
+    mutation_parser.add_argument("--ratchet", action=ACTION_STORE_TRUE)
     mutation_parser.add_argument("--base-ref", default="HEAD")
-    mutation_parser.add_argument("--staged", action="store_true")
+    mutation_parser.add_argument("--staged", action=ACTION_STORE_TRUE)
     mutation_parser.add_argument(
         "--limit",
         type=int,
@@ -96,13 +98,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         choices=FORMAT_CHOICES,
         default=FORMAT_TEXT,
     )
+    mutation_sweep_cli.add_parser(subparsers)
     crosshair_parser = subparsers.add_parser(
         "crosshair-candidates",
         help="Suggest advisory CrossHair contract-analysis candidates.",
     )
-    crosshair_parser.add_argument("--changed", action="store_true")
+    crosshair_parser.add_argument("--changed", action=ACTION_STORE_TRUE)
     crosshair_parser.add_argument("--base-ref", default="HEAD")
-    crosshair_parser.add_argument("--staged", action="store_true")
+    crosshair_parser.add_argument("--staged", action=ACTION_STORE_TRUE)
     crosshair_parser.add_argument(
         "--limit",
         type=int,
@@ -125,6 +128,7 @@ def main(argv: list[str]) -> int:
         "hypothesis-candidates": run_hypothesis_candidates,
         "mutation-targets": run_mutation_targets,
         "mutation-results": run_mutation_results,
+        "mutation-sweep": mutation_sweep_cli.run,
         "crosshair-candidates": run_crosshair_candidates,
     }
     return handlers[args.command](args)

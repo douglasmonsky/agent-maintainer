@@ -22,11 +22,12 @@ depends_on = [
   "hypothesis_candidates",
   "hypothesis_reporting",
   "mapping",
-  "models",
-  "mutation_reporting",
-  "mutation_results",
-  "mutation_targets",
-  "reporting",
+    "models",
+    "mutation_reporting",
+    "mutation_results",
+    "mutation_sweep_cli",
+    "mutation_targets",
+    "reporting",
 ]
 
 [[modules]]
@@ -92,7 +93,31 @@ depends_on = [
 
 path = "mutation_results"
 depends_on = [
-  "//agent_maintainer.runners.mutmut_stats",
+    "//agent_maintainer.runners.mutmut_stats",
+]
+
+[[modules]]
+path = "mutation_sweep"
+depends_on = [
+    "//agent_maintainer.config.schema",
+    "coverage",
+    "mapping",
+    "mutation_targets",
+]
+
+[[modules]]
+path = "mutation_sweep_cli"
+depends_on = [
+    "//agent_maintainer.config.loader",
+    "changed",
+    "mutation_sweep",
+    "mutation_sweep_reporting",
+]
+
+[[modules]]
+path = "mutation_sweep_reporting"
+depends_on = [
+    "mutation_sweep",
 ]
 
 [[modules]]

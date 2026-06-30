@@ -106,6 +106,27 @@ to make the manual Mutmut gate fail when survivor, suspicious, timeout, or
 mutation score budgets regress. This repo currently dogfoods that ratchet
 against the measured targeted baseline.
 
+## Mutation Sweep
+
+Run:
+
+```bash
+python -m agent_maintainer test-intel mutation-sweep
+python -m agent_maintainer test-intel mutation-sweep --changed
+python -m agent_maintainer test-intel mutation-sweep --format json
+```
+
+The sweep planner ranks module-level mutation targets by changed files,
+likely focused tests, coverage artifacts, branch complexity, recent Git churn,
+and ratchet hotspots. It is advisory by default and does not run Mutmut.
+
+Because Mutmut targeting is config-driven, each candidate recommends a
+`[tool.mutmut].only_mutate` promotion plus the manual verification command
+to run after the config update. Use sweep output when expanding mutation
+coverage deliberately. Keep blocking mutation testing targeted and ratcheted
+in `manual`; broad sweeps remain release/manual research until runtime and
+signal quality are stable.
+
 ## CrossHair Candidate Guidance
 
 Run:
