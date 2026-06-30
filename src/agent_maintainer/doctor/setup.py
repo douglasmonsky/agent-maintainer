@@ -27,6 +27,7 @@ DUPLICATE_ARTIFACT_ROOTS = (
     ".agent-maintainer",
     ".codex/hooks",
     ".claude/hooks",
+    ".verify-logs",
 )
 DUPLICATE_ARTIFACT_PATTERN = re.compile(r" \d+(?:\.[^.]+)?$")
 

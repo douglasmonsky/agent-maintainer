@@ -101,3 +101,17 @@ def test_duplicate_generated_artifacts_include_change_plans(tmp_path: Path) -> N
     assert result.status == maintainer_doctor.WARNING
     assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
     assert ".agent-maintainer/change-plans/plan 2.md" in result.message
+
+
+def test_duplicate_generated_artifacts_include_verify_logs(tmp_path: Path) -> None:
+    """Doctor warns for duplicate verifier artifacts under diagnostics."""
+
+    duplicate = tmp_path / ".verify-logs" / "secret-scan-full 2.json"
+    duplicate.parent.mkdir(parents=True)
+    duplicate.write_text("[]", encoding="utf-8")
+
+    result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
+
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
+    assert ".verify-logs/secret-scan-full 2.json" in result.message

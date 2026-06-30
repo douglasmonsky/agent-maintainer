@@ -96,9 +96,19 @@ def copy_run_logs(
         if source is None or not source.exists():
             continue
         destination = snapshot_dir / f"{slug(result.name)}.log"
-        shutil.copyfile(source, destination)
+        if not same_path(source, destination):
+            shutil.copyfile(source, destination)
         copied[result.name] = path_text(destination, repo_root)
     return copied
+
+
+def same_path(left: Path, right: Path) -> bool:
+    """Return whether two paths point to the same filesystem location."""
+
+    try:
+        return left.resolve() == right.resolve()
+    except OSError:
+        return False
 
 
 def resolve_path(raw_path: str, repo_root: Path) -> Path | None:

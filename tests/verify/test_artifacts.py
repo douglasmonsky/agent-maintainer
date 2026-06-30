@@ -140,6 +140,38 @@ def test_run_artifacts_keep_stable_snapshot_and_prune_history(tmp_path: Path) ->
     ]
 
 
+def test_run_artifacts_accept_log_already_in_snapshot(tmp_path: Path) -> None:
+    """Run-scoped execution writes logs directly into the retained snapshot."""
+
+    log_dir = tmp_path / ".verify-logs"
+    snapshot_dir = log_dir / RUNS_DIR_NAME / "current-full-test"
+    snapshot_dir.mkdir(parents=True)
+    current_log = snapshot_dir / "ruff.log"
+    current_log.write_text("raw lint output\n", encoding="utf-8")
+    result = CheckResult(
+        "ruff",
+        passed=False,
+        output="lint failed",
+        command=("ruff", "check"),
+        exit_code=1,
+        log_path=str(current_log),
+    )
+
+    artifacts.write_run_artifacts(
+        log_dir,
+        run_context(tmp_path, run_id="current-full-test"),
+        [result],
+    )
+
+    assert current_log.read_text(encoding="utf-8") == "raw lint output\n"
+    snapshot_manifest = json.loads(
+        (snapshot_dir / artifacts.MANIFEST_NAME).read_text(encoding="utf-8"),
+    )
+    assert snapshot_manifest["checks"][0]["log_path"] == (
+        ".verify-logs/runs/current-full-test/ruff.log"
+    )
+
+
 def test_write_run_artifacts_removes_stale_failure_note_on_success(tmp_path: Path) -> None:
     log_dir = tmp_path / ".verify-logs"
     log_dir.mkdir()
