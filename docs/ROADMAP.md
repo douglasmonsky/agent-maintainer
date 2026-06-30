@@ -153,6 +153,60 @@ context noise while preserving strict verification. Planned work:
 - [x] Phase 51: Duplicate Artifact Detection And Cleanup Guard
 - [x] Phase 52: Configured-Repo Hook No-Op Tests
 
+## Next: Overnight Hardening
+
+Before external case studies resume, Agent Maintainer should stay strict
+without flooding agent context. This hardening pass is the active recovery
+checklist and must be implemented in small PRs.
+
+Planned work:
+
+- Ship the current Mutmut target-ratchet branch as the first behavior
+  milestone.
+- Mature mutation testing beyond target count: better Mutmut config, result
+  ratchets, and an advisory deep sweep.
+- Keep verifier output summary-first: pass/fail, profile, run id, duration,
+  failed checks, exact next commands.
+- Keep raw logs and long diagnostics in run-scoped
+  `.verify-logs/runs/<run-id>/` artifacts instead of chat or hook transcripts.
+- Encode verification cadence: focused checks during edit loop, `precommit`
+  before commit, full profile set once before PR/merge, release checks only for
+  release work.
+- Add dogfood drift detection so this checkout verifies local
+  `src/agent_maintainer` code, not stale installed package code.
+- Preserve configured-repo-only hooks: global hook install may exist, but hooks
+  no-op outside repos with `[tool.agent_maintainer]`.
+- Slim generated agent guidance and move detailed gate explanation into
+  human-readable docs.
+
+## Overnight Hardening Phases
+
+- [x] Phase 53: Roadmap-First Overnight Hardening Plan
+- [ ] Phase 54: Ship Mutmut Target Ratchet Branch
+- [ ] Phase 55: Mutmut Config Hardening
+- [ ] Phase 56: Mutation Result Ratchets
+- [ ] Phase 57: Advisory Deep Mutation Sweep
+- [ ] Phase 58: Quiet Verifier Output Contract
+- [ ] Phase 59: Smarter Verification Cadence Guidance
+- [ ] Phase 60: Dogfood Source-Checkout Drift Detection
+- [ ] Phase 61: Run-Scoped Diagnostic Retention
+- [ ] Phase 62: Duplicate Generated Artifact Detection
+- [ ] Phase 63: Configured-Repo-Only Codex and Claude Hooks
+- [ ] Phase 64: Documentation and Generated Guidance Slimming
+
+Acceptance criteria for this sequence:
+
+- Targeted Mutmut remains the blocking mutation gate; broad sweeps are advisory
+  until runtime and signal quality are proven.
+- Downstream defaults remain conservative; this repository dogfoods every
+  relevant enabled feature.
+- Verifier and hook output stays compact, with detailed evidence linked by run
+  id.
+- Existing CLI and profiles remain valid. No new scanners, old-name
+  compatibility, or Headroom integration are included in this pass.
+- Each behavior phase has focused tests, relevant docs, local verification, PR
+  CI, merge, and post-merge `main` CI confirmation.
+
 ## Future Work
 
 These items are intentionally postponed and are not part of the current
@@ -160,7 +214,9 @@ roadmap completion gate.
 
 - External Case Studies and Measured Proof Harness
 - Monorepo / Multi-Package Support
+- Optional Compression Backends
 - Team Policy Templates
+- Headroom Integration
 
 ## Final Definition Of Done
 
