@@ -48,6 +48,23 @@ def test_setup_advisor_json_cli(
     assert payload["evidence"]["has_agent_config"] is True
 
 
+def test_setup_advisor_inspects_non_python_repo(tmp_path: Path) -> None:
+    """Non-Python targets stay low-confidence and dry-run first."""
+    (tmp_path / "package.json").write_text("{}", encoding="utf-8")
+
+    report = build_setup_report(collect_evidence(tmp_path))
+
+    assert report.track == "inspect"
+    assert report.preset == "manual-review"
+    assert report.confidence == "low"
+    assert any("No Python package" in reason for reason in report.reasons)
+    assert report.next_commands == (
+        "agent-maintainer assess setup --target . --json",
+        "agent-maintainer init --track core --dry-run",
+        "Ask an agent to identify the repo language, test command, and generated paths.",
+    )
+
+
 def test_setup_advisor_recommends_hardening_track(tmp_path: Path) -> None:
     """CI plus config files can justify the hardening track."""
 

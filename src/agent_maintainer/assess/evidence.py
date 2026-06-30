@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import os
+import shutil
+import subprocess  # nosec B404
 import tomllib
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 
 from agent_maintainer.assess.models import RepoEvidence
+
+DEFAULT_MAX_EVIDENCE_FILES = 5_000
+GIT_LIST_TIMEOUT_SECONDS = 10
 
 IGNORED_PARTS = frozenset(
     (
@@ -29,10 +35,24 @@ IGNORED_PARTS = frozenset(
 )
 
 
-def collect_evidence(target: Path) -> RepoEvidence:
-    """Collect cheap local repository evidence."""
+@dataclass(frozen=True)
+class FileScan:
+    """Bounded repository file scan result."""
+
+    paths: tuple[Path, ...]
+    source: str
+    truncated: bool
+
+
+def collect_evidence(
+    target: Path,
+    *,
+    max_files: int = DEFAULT_MAX_EVIDENCE_FILES,
+) -> RepoEvidence:
+    """Collect cheap bounded repository evidence."""
     root = target.resolve()
-    paths = tuple(_walk_files(root))
+    scan = _scan_files(root, max_files=max_files)
+    paths = scan.paths
     python_files = tuple(path for path in paths if path.suffix == ".py")
     test_files = tuple(path for path in python_files if _is_test_path(root, path))
     source_files = tuple(path for path in python_files if not _is_test_path(root, path))
@@ -71,7 +91,56 @@ def collect_evidence(target: Path) -> RepoEvidence:
         yaml_files=_count_suffixes(paths, (".yml", ".yaml")),
         toml_files=_count_suffixes(paths, (".toml",)),
         json_files=_count_suffixes(paths, (".json",)),
+        scanned_files=len(paths),
+        scan_source=scan.source,
+        scan_truncated=scan.truncated,
     )
+
+
+def _scan_files(root: Path, *, max_files: int) -> FileScan:
+    """Return tracked files when available, otherwise a bounded filesystem walk."""
+    limit = max(1, max_files)
+    if (root / ".git").exists():
+        git_scan = _git_file_scan(root, limit)
+        if git_scan is not None:
+            return git_scan
+    return _walk_file_scan(root, limit)
+
+
+def _git_file_scan(root: Path, max_files: int) -> FileScan | None:
+    """Return Git-tracked files or ``None`` when Git listing is unavailable."""
+    command = [shutil.which("git") or "git", "ls-files", "-z"]
+    try:
+        result = subprocess.run(  # nosec B603
+            command,
+            cwd=root,
+            check=False,
+            capture_output=True,
+            timeout=GIT_LIST_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    raw_paths = tuple(part for part in result.stdout.decode().split("\0") if part)
+    paths = tuple(root / path for path in raw_paths[:max_files])
+    return FileScan(
+        paths=paths,
+        source="git-ls-files",
+        truncated=len(raw_paths) > max_files,
+    )
+
+
+def _walk_file_scan(root: Path, max_files: int) -> FileScan:
+    """Return bounded non-generated files under root."""
+    paths: list[Path] = []
+    truncated = False
+    for path in _walk_files(root):
+        if len(paths) >= max_files:
+            truncated = True
+            break
+        paths.append(path)
+    return FileScan(paths=tuple(paths), source="filesystem-walk", truncated=truncated)
 
 
 def _walk_files(root: Path) -> Iterable[Path]:
@@ -90,7 +159,7 @@ def _walk_files(root: Path) -> Iterable[Path]:
 
 
 def _has_agent_config(root: Path) -> bool:
-    """Return whether pyproject declares Agent Maintainer config."""
+    """Return whether pyproject contains Agent Maintainer config."""
     pyproject = root / "pyproject.toml"
     if not pyproject.exists():
         return False
@@ -121,5 +190,5 @@ def _has_container_or_iac(root: Path, paths: tuple[Path, ...]) -> bool:
 
 
 def _count_suffixes(paths: tuple[Path, ...], suffixes: tuple[str, ...]) -> int:
-    """Count files with matching suffixes."""
+    """Count files matching suffixes."""
     return sum(1 for path in paths if path.suffix in suffixes)

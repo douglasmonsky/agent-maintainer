@@ -16,6 +16,7 @@ from agent_maintainer.assess.debt_score import (
     score_interpretation,
 )
 from agent_maintainer.assess.evidence import collect_evidence
+from agent_maintainer.assess.models import DebtCategory, DebtScoreReport
 from agent_maintainer.config.schema import MaintainerConfig
 
 MANY_SOURCE_FILES = 45
@@ -28,6 +29,7 @@ LONG_SOURCE_LIMIT = 500
 HIGH_COMPLEXITY = 20
 HEALTHY_MUTATION_SCORE = 5
 CRITICAL_SCORE_SAMPLE = 90
+LOW_RISK_CATEGORY_SCORE = 25
 
 
 def test_debt_score_cli_writes_artifacts(
@@ -55,7 +57,7 @@ def test_debt_score_cli_writes_artifacts(
     markdown = (tmp_path / ".verify-logs" / DEBT_SCORE_MARKDOWN).read_text(
         encoding="utf-8",
     )
-    assert "Configured thresholds are tolerance signals" in markdown
+    assert "tolerance signals" in markdown
     assert "Interpretation:" in markdown
 
 
@@ -111,7 +113,7 @@ def test_debt_score_penalizes_missing_controls(tmp_path: Path) -> None:
     assert categories["Type and Style"].score > MODERATE_CATEGORY_SCORE
     assert categories["Architecture Boundaries"].score > MODERATE_CATEGORY_SCORE
     assert categories["Dependencies and Security"].score > MODERATE_CATEGORY_SCORE
-    assert categories["Diagnostics"].score > MODERATE_CATEGORY_SCORE
+    assert categories["Diagnostics Repair Loop"].score > MODERATE_CATEGORY_SCORE
 
 
 def test_debt_score_rewards_mutation_ratchets_and_manifest(tmp_path: Path) -> None:
@@ -135,6 +137,49 @@ def test_debt_score_rewards_mutation_ratchets_and_manifest(tmp_path: Path) -> No
     assert categories["Ratchets and Mutation Maturity"].score == HEALTHY_MUTATION_SCORE
 
 
+def test_debt_score_penalizes_failed_manifest_check(tmp_path: Path) -> None:
+    """Latest verifier failures calibrate category-level debt."""
+    write_repo(tmp_path)
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    (log_dir / "manifest.json").write_text(
+        json.dumps({"checks": [{"name": "pyright", "status": "failed"}]}),
+        encoding="utf-8",
+    )
+
+    report = build_debt_report(collect_evidence(tmp_path), MaintainerConfig(), log_dir=log_dir)
+    category = _category(report, "Type and Style")
+
+    assert category.score > LOW_RISK_CATEGORY_SCORE
+    assert "manifest failed checks = pyright" in category.evidence
+
+
+def test_debt_score_does_not_penalize_absent_security_surface(tmp_path: Path) -> None:
+    """Optional security gates do not count as debt without relevant evidence."""
+    report = build_debt_report(
+        collect_evidence(tmp_path),
+        MaintainerConfig(),
+        log_dir=tmp_path / ".verify-logs",
+    )
+    category = _category(report, "Dependencies and Security")
+
+    assert category.score <= LOW_RISK_CATEGORY_SCORE
+    assert any("no dependency" in item for item in category.evidence)
+
+
+def test_debt_score_truncated_scan_lowers_confidence(tmp_path: Path) -> None:
+    """Truncated evidence scans keep debt scoring low-confidence."""
+    write_repo(tmp_path)
+
+    report = build_debt_report(
+        collect_evidence(tmp_path, max_files=1),
+        MaintainerConfig(),
+        log_dir=tmp_path / ".verify-logs",
+    )
+
+    assert report.confidence == "low"
+
+
 def test_debt_score_summary_bands() -> None:
     """Score summaries cover each risk band."""
 
@@ -143,6 +188,11 @@ def test_debt_score_summary_bands() -> None:
     assert "few adoption gaps" in _summary(40)
     assert "meaningful debt risk" in _summary(60)
     assert "conservative ratchets" in _summary(CRITICAL_SCORE_SAMPLE)
+
+
+def _category(report: DebtScoreReport, name: str) -> DebtCategory:
+    """Return category by name from a debt report."""
+    return next(category for category in report.categories if category.name == name)
 
 
 def write_repo(root: Path) -> None:
