@@ -165,3 +165,30 @@ def test_pip_audit_unsafe_config_fails_only_in_fresh_strict() -> None:
     ]
     assert custom_check.optional_skip_reason
     assert "pinned input" in custom_check.optional_skip_reason
+
+
+def test_mutmut_target_ratchet_runs_when_floor_configured() -> None:
+    """Mutmut target floor is a cheap full/CI ratchet, not mutation execution."""
+
+    config = replace(MaintainerConfig(), mutmut_target_min=3)
+
+    check = maintainer_catalog_python.mutmut_target_ratchet_check(config)
+
+    assert check.name == "mutmut-target-ratchet"
+    assert check.profiles == maintainer_catalog.models.FULL_PROFILES
+    assert check.command == [
+        maintainer_catalog.sys.executable,
+        "-m",
+        "agent_maintainer.checks.mutmut_targets",
+        "--min-targets",
+        "3",
+    ]
+
+
+def test_mutmut_target_ratchet_skips_without_floor() -> None:
+    """Default installs do not require explicit Mutmut target floors."""
+
+    check = maintainer_catalog_python.mutmut_target_ratchet_check(MaintainerConfig())
+
+    assert check.optional_skip_reason
+    assert "mutmut_target_min = 0" in check.optional_skip_reason

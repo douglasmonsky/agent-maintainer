@@ -42,6 +42,11 @@ depends_on = [
 ]
 
 [[modules]]
+path = "mutmut_targets"
+depends_on = []
+
+[[modules]]
+
 path = "pip_audit_config"
 depends_on = []
 

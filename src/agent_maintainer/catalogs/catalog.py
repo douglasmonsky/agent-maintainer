@@ -177,6 +177,7 @@ def make_checks(
         python_checks.ruff_check(config),
         python_checks.pyright_check(config),
         python_checks.pytest_check(config),
+        python_checks.mutmut_target_ratchet_check(config),
         models.Check(
             "radon-cc-report",
             ["radon", "cc", *package_paths, "-a", "-s"],
