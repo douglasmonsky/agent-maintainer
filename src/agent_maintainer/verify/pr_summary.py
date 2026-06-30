@@ -88,12 +88,15 @@ def technical_debt_score_lines(log_dir: Path) -> list[str]:
     risk = payload.get("risk", "unknown")
     confidence = payload.get("confidence", "unknown")
     summary = payload.get("summary")
+    interpretation = payload.get("interpretation")
     debt_lines = [
         *lines,
         f"- Score: `{score}/100` (`{risk}` risk, `{confidence}` confidence)",
     ]
     if isinstance(summary, str) and summary:
         debt_lines.append(f"- Summary: {summary}")
+    if isinstance(interpretation, str) and interpretation:
+        debt_lines.append(f"- Interpretation: {interpretation}")
     debt_lines.extend(_debt_category_summary_lines(payload))
     debt_lines.append(f"- Artifact: `{score_path.as_posix()}`")
     return debt_lines

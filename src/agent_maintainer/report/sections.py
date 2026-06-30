@@ -105,10 +105,12 @@ def _debt_score_body(
     score = text(payload.get("score"), UNKNOWN_TEXT)
     risk = text(payload.get("risk"), UNKNOWN_TEXT)
     confidence = text(payload.get("confidence"), UNKNOWN_TEXT)
+    interpretation = text(payload.get("interpretation"), "")
     href = local_href(score_path, output_dir)
     return (
         f"<p><strong>{escape(score)}/100</strong> risk: {escape(risk)}; "
         f"confidence: {escape(confidence)}</p>"
+        f"{paragraph(interpretation)}"
         f"{list_items(_debt_category_items(payload))}"
         f'<p><a href="{href}">Open score artifact</a></p>'
     )
@@ -125,8 +127,17 @@ def _debt_category_items(payload: dict[str, Any]) -> list[str]:
                 name = text(category.get("name"), UNKNOWN_TEXT)
                 value = text(category.get("score"), UNKNOWN_TEXT)
                 status = text(category.get("status"), UNKNOWN_TEXT)
-                category_items.append(f"{name}: {value}/100 ({status})")
+                interpretation = text(category.get("interpretation"), "")
+                suffix = f" - {interpretation}" if interpretation else ""
+                category_items.append(f"{name}: {value}/100 ({status}){suffix}")
     return category_items
+
+
+def paragraph(value: str) -> str:
+    """Render paragraph only when value present."""
+    if not value:
+        return ""
+    return f"<p>{escape(value)}</p>"
 
 
 def header_html(payload: dict[str, Any], checks: list[dict[str, Any]]) -> str:

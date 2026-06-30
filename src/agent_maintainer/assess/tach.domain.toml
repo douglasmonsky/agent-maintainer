@@ -34,7 +34,7 @@ depends_on = []
 
 [[modules]]
 path = "reporting"
-depends_on = ["models"]
+depends_on = ["debt_score", "models"]
 
 [[modules]]
 path = "setup_advisor"

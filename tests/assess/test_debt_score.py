@@ -13,6 +13,7 @@ from agent_maintainer.assess.debt_score import (
     DEBT_SCORE_MARKDOWN,
     _summary,
     build_debt_report,
+    score_interpretation,
 )
 from agent_maintainer.assess.evidence import collect_evidence
 from agent_maintainer.config.schema import MaintainerConfig
@@ -42,13 +43,20 @@ def test_debt_score_cli_writes_artifacts(
     payload = json.loads(capsys.readouterr().out)
     assert payload["score"] >= 0
     assert payload["risk"] in {"low", "moderate", "high", "critical"}
+    assert payload["interpretation"]
     assert {category["name"] for category in payload["categories"]} >= {
         "Reviewability",
         "Tests and Coverage",
         "Architecture Boundaries",
     }
+    assert all("interpretation" in category for category in payload["categories"])
     assert (tmp_path / ".verify-logs" / DEBT_SCORE_JSON).exists()
     assert (tmp_path / ".verify-logs" / DEBT_SCORE_MARKDOWN).exists()
+    markdown = (tmp_path / ".verify-logs" / DEBT_SCORE_MARKDOWN).read_text(
+        encoding="utf-8",
+    )
+    assert "Configured thresholds are tolerance signals" in markdown
+    assert "Interpretation:" in markdown
 
 
 def test_debt_score_no_write_skips_artifacts(
@@ -131,6 +139,7 @@ def test_debt_score_summary_bands() -> None:
     """Score summaries cover each risk band."""
 
     assert "strong maintenance controls" in _summary(10)
+    assert "watch items" in score_interpretation(10)
     assert "few adoption gaps" in _summary(40)
     assert "meaningful debt risk" in _summary(60)
     assert "conservative ratchets" in _summary(CRITICAL_SCORE_SAMPLE)

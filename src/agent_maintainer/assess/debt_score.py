@@ -70,6 +70,11 @@ def render_debt_markdown(report: DebtScoreReport) -> str:
         "",
         report.summary,
         "",
+        f"Interpretation: {score_interpretation(report.score)}",
+        "",
+        "Configured thresholds are tolerance signals; repository counts and"
+        " artifact presence are observed evidence.",
+        "",
         "## Categories",
         "",
     ]
@@ -79,6 +84,7 @@ def render_debt_markdown(report: DebtScoreReport) -> str:
                 f"### {category.name}: {category.score}/100",
                 "",
                 f"Status: {category.status}",
+                f"Interpretation: {category_interpretation(category)}",
                 "",
                 "Evidence:",
                 *[f"- {item}" for item in category.evidence],
@@ -102,6 +108,28 @@ def _summary(score: int) -> str:
     if score <= HIGH_RISK_MAX:
         return "The repo has meaningful debt risk; prioritize tests and boundaries."
     return "The repo should start with conservative ratchets before stricter gates."
+
+
+def score_interpretation(score: int) -> str:
+    """Return reader-facing advisory interpretation for score."""
+    if score <= LOW_RISK_MAX:
+        return "Healthy overall; treat listed categories as watch items, not failures."
+    if score <= MODERATE_RISK_MAX:
+        return "Usable baseline with tightening opportunities before stricter adoption."
+    if score <= HIGH_RISK_MAX:
+        return "Meaningful debt; prioritize tests, boundaries, and diagnostics first."
+    return "High debt; introduce conservative ratchets before raising strictness."
+
+
+def category_interpretation(category: DebtCategory) -> str:
+    """Return reader-facing category interpretation."""
+    if category.status == "low":
+        return "Healthy or intentionally controlled; monitor drift."
+    if category.status == "moderate":
+        return "Watch item; review evidence before tightening thresholds."
+    if category.status == "high":
+        return "Action item; address before expanding strictness."
+    return "Critical action item; stabilize before relying on stricter automation."
 
 
 def _confidence(evidence: RepoEvidence, log_dir: Path) -> str:
@@ -133,12 +161,14 @@ def _to_json(report: DebtScoreReport) -> dict[str, object]:
         "risk": report.risk,
         "confidence": report.confidence,
         "summary": report.summary,
+        "interpretation": score_interpretation(report.score),
         "categories": [
             {
                 "name": category.name,
                 "score": category.score,
                 "weight": category.weight,
                 "status": category.status,
+                "interpretation": category_interpretation(category),
                 "evidence": list(category.evidence),
                 "recommendations": list(category.recommendations),
             }
