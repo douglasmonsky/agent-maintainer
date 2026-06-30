@@ -20,11 +20,12 @@ path = "setup"
 depends_on = [
   "//agent_maintainer.catalogs.catalog",
   "//agent_maintainer.core.config",
-  "//agent_maintainer.core.guidance",
-  "//agent_maintainer.core.layout",
-  "//agent_maintainer.core.tool_capabilities",
-  "support.models",
-  "//agent_maintainer.tach",
+    "//agent_maintainer.core.guidance",
+    "//agent_maintainer.core.layout",
+    "//agent_maintainer.core.tool_capabilities",
+    "support.dogfood",
+    "support.models",
+    "//agent_maintainer.tach",
 ]
 
 [[modules]]
@@ -56,8 +57,14 @@ depends_on = [
 [[modules]]
 path = "support.hook_audit"
 depends_on = [
-  "//agent_maintainer.core.config",
-  "support.models",
+    "//agent_maintainer.core.config",
+    "support.models",
+]
+
+[[modules]]
+path = "support.dogfood"
+depends_on = [
+    "support.models",
 ]
 
 [[modules]]

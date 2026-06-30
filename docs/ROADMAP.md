@@ -188,7 +188,7 @@ Planned work:
 - [x] Phase 57: Advisory Deep Mutation Sweep
 - [x] Phase 58: Quiet Verifier Output Contract
 - [x] Phase 59: Smarter Verification Cadence Guidance
-- [ ] Phase 60: Dogfood Source-Checkout Drift Detection
+- [x] Phase 60: Dogfood Source-Checkout Drift Detection
 - [ ] Phase 61: Run-Scoped Diagnostic Retention
 - [ ] Phase 62: Duplicate Generated Artifact Detection
 - [ ] Phase 63: Configured-Repo-Only Codex and Claude Hooks
