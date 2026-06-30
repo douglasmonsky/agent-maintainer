@@ -52,6 +52,20 @@ verification profile semantics.
 - No new scanner category, public profile, or default blocking gate is added.
 - PRs remain small enough for review and preserve quiet verifier output.
 
+## Progress
+
+- [x] Added roadmap-first Phase 73 recovery checklist.
+- [x] Taught `test-intel mutation-results` to read latest run-scoped Mutmut
+  artifacts when `mutants/` cleanup removed live stats.
+- [x] Clarified Technical Debt Score interpretation across text, JSON,
+  Markdown, HTML, and PR-summary output.
+- [x] Added Hypothesis property coverage for change-plan scope and safe context
+  path refusal rules.
+- [x] Split mutation test-intelligence modules into
+  `agent_maintainer.test_intel.mutation` with explicit Tach modules and ADR.
+- [ ] Split or otherwise reduce the remaining `src/agent_maintainer/core`
+  structure-cohesion warning in a follow-up PR.
+
 ## Verification
 
 ```bash
