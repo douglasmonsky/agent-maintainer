@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shlex
 from dataclasses import replace
 from pathlib import Path
 
@@ -55,10 +56,18 @@ def print_result_summary(
         profile,
         failures,
         skipped,
-        context_log_dir=context_log_dir_value,
         run_details=details,
+        footer=(context_log_dir_value, smallest_rerun_command(profile, failures)),
     )
     return 1
+
+
+def smallest_rerun_command(profile: str, failures: list[CheckResult]) -> str:
+    """Return smallest useful command after verifier failure."""
+
+    if len(failures) == 1 and failures[0].command:
+        return " ".join(shlex.quote(part) for part in failures[0].command)
+    return f"python3 -m agent_maintainer verify --profile {profile}"
 
 
 def run_details(

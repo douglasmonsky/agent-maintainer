@@ -262,11 +262,12 @@ def print_failures(
     failures: list[Any],
     skipped: list[Any],
     *,
-    context_log_dir: str | None = None,
     run_details: tuple[str, ...] = (),
+    footer: tuple[str | None, str | None] = (None, None),
 ) -> None:
     """Print a compact failure report for the selected verifier profile."""
 
+    context_log_dir, rerun_command = footer
     print(f"FAIL: {len(failures)} check(s) failed [{profile}]\n")
     for detail in run_details:
         print(detail)
@@ -285,6 +286,6 @@ def print_failures(
         print_skipped(skipped, "Skipped optional checks:")
         print()
     logs_dir = context_log_dir or ".verify-logs/"
-    rerun_command = f"python3 -m agent_maintainer verify --profile {profile}"
+    rerun_command = rerun_command or f"python3 -m agent_maintainer verify --profile {profile}"
     print(f"Full logs are in {logs_dir}.")
     print(f"Smallest rerun after fixes: `{rerun_command}`")
