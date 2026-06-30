@@ -185,7 +185,7 @@ Planned work:
 - [x] Phase 54: Ship Mutmut Target Ratchet Branch
 - [x] Phase 55: Mutmut Config Hardening
 - [x] Phase 56: Mutation Result Ratchets
-- [ ] Phase 57: Advisory Deep Mutation Sweep
+- [x] Phase 57: Advisory Deep Mutation Sweep
 - [ ] Phase 58: Quiet Verifier Output Contract
 - [ ] Phase 59: Smarter Verification Cadence Guidance
 - [ ] Phase 60: Dogfood Source-Checkout Drift Detection

@@ -70,6 +70,12 @@ fails the manual gate if configured survivor, suspicious, timeout, or score
 budgets regress. Inspect the same stats with
 `python -m agent_maintainer test-intel mutation-results`.
 
+Use `python -m agent_maintainer test-intel mutation-sweep` to rank advisory
+deep mutation sweep candidates by change, coverage, complexity, churn, and
+ratchet signals. The command does not run Mutmut. It suggests
+`[tool.mutmut].only_mutate` promotions plus the manual verification command
+for deliberate target expansion.
+
 Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable
 run metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails.
 `.verify-logs/pr-summary.md` is a bounded GitHub-friendly report with top
