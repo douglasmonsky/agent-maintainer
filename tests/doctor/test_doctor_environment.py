@@ -204,6 +204,16 @@ def test_dupe_artifacts_warn_when_present(tmp_path: Path) -> None:
     assert "src/agent_maintainer/verify 2.py" in result.message
 
 
+def test_dupe_artifacts_warn_for_copy_names(tmp_path: Path) -> None:
+    """Doctor warns for generated copy-style artifact names."""
+    duplicate = tmp_path / ".verify-logs" / "manifest copy 2.json"
+    duplicate.parent.mkdir(parents=True)
+    duplicate.write_text("{}", encoding=ENCODING)
+    result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
+    assert result.status == maintainer_doctor.WARNING
+    assert ".verify-logs/manifest copy 2.json" in result.message
+
+
 def test_dupe_artifacts_include_change_plans(tmp_path: Path) -> None:
     """Doctor warns for duplicate change-plan copies from local tools."""
     duplicate = tmp_path / ".agent-maintainer" / "change-plans" / "plan 2.md"
