@@ -13,13 +13,15 @@ from agent_maintainer.doctor import setup as maintainer_doctor_setup
 from agent_maintainer.doctor.support import dogfood as maintainer_doctor_dogfood
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
 
+ENCODING = "utf-8"
+
 
 def write_local_package(repo_root: Path) -> Path:
     """Create a minimal local package for dogfood checks."""
 
     package_init = repo_root / "src" / "agent_maintainer" / "__init__.py"
     package_init.parent.mkdir(parents=True)
-    package_init.write_text("", encoding="utf-8")
+    package_init.write_text("", encoding=ENCODING)
     return package_init
 
 
@@ -70,6 +72,13 @@ def test_source_dogfood_warns_stale_import(tmp_path: Path, monkeypatch: pytest.M
     assert "python -m pip install -e ." in result.hint
 
 
+def test_console_dogfood_skips_without_package(tmp_path: Path) -> None:
+    """Console dogfood check skips repos without local package."""
+    result = maintainer_doctor_setup.check_console_script_dogfood(tmp_path)
+    assert result.status == maintainer_doctor.OK
+    assert result.state == maintainer_doctor_models.NOT_APPLICABLE
+
+
 def test_console_dogfood_skips_without_script(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -85,9 +94,30 @@ def test_console_dogfood_skips_without_script(
     assert result.status == maintainer_doctor.OK
     assert result.state == maintainer_doctor_models.NOT_APPLICABLE
     bad_script = tmp_path / "agent-maintainer"
-    bad_script.write_text("#!/bin/sh\n", encoding="utf-8")
+    bad_script.write_text("#!/bin/sh\n", encoding=ENCODING)
     assert maintainer_doctor_dogfood.console_script_python(bad_script) is None
     assert maintainer_doctor_dogfood.console_script_import_path(bad_script) is None
+
+
+def test_console_dogfood_warns_uninspectable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Console dogfood check warns when script target cannot be inspected."""
+    write_local_package(tmp_path)
+    script_path = tmp_path / "bin" / "agent-maintainer"
+    monkeypatch.setattr(
+        maintainer_doctor_dogfood.shutil,
+        "which",
+        lambda _name: str(script_path),
+    )
+    monkeypatch.setattr(
+        maintainer_doctor_dogfood,
+        "console_script_import_path",
+        lambda _script_path: None,
+    )
+    result = maintainer_doctor_setup.check_console_script_dogfood(tmp_path)
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.MISSING
 
 
 def test_console_dogfood_passes_local_import(
@@ -98,7 +128,7 @@ def test_console_dogfood_passes_local_import(
     package_init = write_local_package(tmp_path)
     script_path = tmp_path / "bin" / "agent-maintainer"
     script_path.parent.mkdir(parents=True)
-    script_path.write_text(f"#!{sys.executable}\n", encoding="utf-8")
+    script_path.write_text(f"#!{sys.executable}\n", encoding=ENCODING)
     monkeypatch.setenv("PYTHONPATH", str(tmp_path / "src"))
     monkeypatch.setattr(
         maintainer_doctor_dogfood.shutil,
@@ -121,7 +151,7 @@ def test_console_dogfood_warns_stale_import(
     script_path = tmp_path / "bin" / "agent-maintainer"
     stale_path = tmp_path / "site-packages" / "agent_maintainer" / "__init__.py"
     stale_path.parent.mkdir(parents=True)
-    stale_path.write_text("", encoding="utf-8")
+    stale_path.write_text("", encoding=ENCODING)
     monkeypatch.setattr(
         maintainer_doctor_dogfood.shutil,
         "which",
@@ -138,6 +168,24 @@ def test_console_dogfood_warns_stale_import(
     assert result.hint == "Run python -m pip install -e ."
 
 
+def test_console_helpers_handle_failed_probe(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Console helper functions skip failed or invalid script probes."""
+    script_path = tmp_path / "agent-maintainer"
+    script_path.write_text(f"#!{sys.executable}\n", encoding=ENCODING)
+    monkeypatch.setattr(
+        maintainer_doctor_dogfood.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=1, stdout=""),
+    )
+    no_shebang = tmp_path / "plain-script"
+    no_shebang.write_text("python\n", encoding=ENCODING)
+    assert maintainer_doctor_dogfood.console_script_import_path(script_path) is None
+    assert maintainer_doctor_dogfood.console_script_python(no_shebang) is None
+    assert maintainer_doctor_dogfood.console_script_python(tmp_path / "missing") is None
+
+
 def test_dupe_artifacts_pass_when_absent(tmp_path: Path) -> None:
     """Doctor passes when no macOS-style duplicate artifact names are present."""
     (tmp_path / "src" / "agent_maintainer").mkdir(parents=True)
@@ -149,7 +197,7 @@ def test_dupe_artifacts_warn_when_present(tmp_path: Path) -> None:
     """Doctor warns for likely duplicate generated artifact names."""
     duplicate = tmp_path / "src" / "agent_maintainer" / "verify 2.py"
     duplicate.parent.mkdir(parents=True)
-    duplicate.write_text("", encoding="utf-8")
+    duplicate.write_text("", encoding=ENCODING)
     result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
     assert result.status == maintainer_doctor.WARNING
     assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
@@ -160,7 +208,7 @@ def test_dupe_artifacts_include_change_plans(tmp_path: Path) -> None:
     """Doctor warns for duplicate change-plan copies from local tools."""
     duplicate = tmp_path / ".agent-maintainer" / "change-plans" / "plan 2.md"
     duplicate.parent.mkdir(parents=True)
-    duplicate.write_text("", encoding="utf-8")
+    duplicate.write_text("", encoding=ENCODING)
     result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
     assert result.status == maintainer_doctor.WARNING
     assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
@@ -171,7 +219,7 @@ def test_dupe_artifacts_include_verify_logs(tmp_path: Path) -> None:
     """Doctor warns for duplicate verifier artifacts under diagnostics."""
     duplicate = tmp_path / ".verify-logs" / "secret-scan-full 2.json"
     duplicate.parent.mkdir(parents=True)
-    duplicate.write_text("[]", encoding="utf-8")
+    duplicate.write_text("[]", encoding=ENCODING)
     result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
     assert result.status == maintainer_doctor.WARNING
     assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
