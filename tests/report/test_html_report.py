@@ -64,6 +64,35 @@ def test_report_cli_writes_custom_output(
     assert str(output) in capsys.readouterr().out
 
 
+def test_html_report_handles_missing_debt_score(tmp_path: Path) -> None:
+    """Report gives the assess command when debt score was not run."""
+
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    write_report_artifacts(log_dir)
+    (log_dir / "technical-debt-score.json").unlink()
+
+    output = generate_html_report(log_dir)
+    html = output.read_text(encoding="utf-8")
+
+    assert "No Technical Debt Score artifact found" in html
+    assert "python -m agent_maintainer assess debt" in html
+
+
+def test_html_report_handles_invalid_debt_score(tmp_path: Path) -> None:
+    """Report handles a malformed score artifact without failing."""
+
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    write_report_artifacts(log_dir)
+    (log_dir / "technical-debt-score.json").write_text("{bad", encoding="utf-8")
+
+    output = generate_html_report(log_dir)
+    html = output.read_text(encoding="utf-8")
+
+    assert "Technical Debt Score artifact is not valid JSON" in html
+
+
 def write_report_artifacts(log_dir: Path) -> None:
     """Write minimal verifier artifacts."""
     manifest = {

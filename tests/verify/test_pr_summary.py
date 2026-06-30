@@ -108,6 +108,23 @@ def test_pr_summary_reports_technical_debt_score_not_run(tmp_path: Path) -> None
     assert "python -m agent_maintainer assess debt" in summary
 
 
+def test_pr_summary_reports_unreadable_debt_score(tmp_path: Path) -> None:
+    """PR summary keeps verifier output usable when score JSON is malformed."""
+
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    (log_dir / "technical-debt-score.json").write_text("{bad", encoding="utf-8")
+
+    summary = render_pr_summary(
+        log_dir=log_dir,
+        context=run_context(tmp_path),
+        results=[],
+    )
+
+    assert "Status: `unreadable`" in summary
+    assert "Re-run: `python -m agent_maintainer assess debt`" in summary
+
+
 def test_pr_summary_is_bounded(tmp_path: Path) -> None:
     """PR summary respects configured context budget."""
 

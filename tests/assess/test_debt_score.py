@@ -8,7 +8,25 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.assess import cli
-from agent_maintainer.assess.debt_score import DEBT_SCORE_JSON, DEBT_SCORE_MARKDOWN
+from agent_maintainer.assess.debt_score import (
+    DEBT_SCORE_JSON,
+    DEBT_SCORE_MARKDOWN,
+    _summary,
+    build_debt_report,
+)
+from agent_maintainer.assess.evidence import collect_evidence
+from agent_maintainer.config.schema import MaintainerConfig
+
+MANY_SOURCE_FILES = 45
+HIGH_CATEGORY_SCORE = 50
+MODERATE_CATEGORY_SCORE = 40
+STRICT_CHANGE_FILES = 30
+STRICT_CHANGE_LINES = 1_000
+LOW_COVERAGE_FLOOR = 50
+LONG_SOURCE_LIMIT = 500
+HIGH_COMPLEXITY = 20
+HEALTHY_MUTATION_SCORE = 5
+CRITICAL_SCORE_SAMPLE = 90
 
 
 def test_debt_score_cli_writes_artifacts(
@@ -45,6 +63,77 @@ def test_debt_score_no_write_skips_artifacts(
     assert status == 0
     assert "Technical Debt Score" in capsys.readouterr().out
     assert not (tmp_path / ".verify-logs" / DEBT_SCORE_JSON).exists()
+
+
+def test_debt_score_penalizes_missing_controls(tmp_path: Path) -> None:
+    """Weak repo evidence raises the relevant category scores."""
+
+    write_repo(tmp_path)
+    (tmp_path / "tests" / "test_example.py").unlink()
+    (tmp_path / "tests").rmdir()
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "requirements.txt").write_text("example==1\n", encoding="utf-8")
+    package = tmp_path / "src" / "example"
+    for index in range(MANY_SOURCE_FILES):
+        (package / f"module_{index}.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+    config = MaintainerConfig(
+        architecture_tool="tach",
+        change_block_files=STRICT_CHANGE_FILES,
+        change_block_lines=STRICT_CHANGE_LINES,
+        coverage_fail_under=LOW_COVERAGE_FLOOR,
+        diagnostic_artifacts_enabled=False,
+        enable_wemake=False,
+        file_length_max_source=LONG_SOURCE_LIMIT,
+        mode="fresh-strict",
+        pyright_type_checking_mode="basic",
+        require_tests=False,
+        ruff_max_complexity=HIGH_COMPLEXITY,
+    )
+
+    report = build_debt_report(
+        collect_evidence(tmp_path),
+        config,
+        log_dir=tmp_path / ".verify-logs",
+    )
+    categories = {category.name: category for category in report.categories}
+
+    assert categories["Reviewability"].score > HIGH_CATEGORY_SCORE
+    assert categories["Tests and Coverage"].score > HIGH_CATEGORY_SCORE
+    assert categories["Type and Style"].score > MODERATE_CATEGORY_SCORE
+    assert categories["Architecture Boundaries"].score > MODERATE_CATEGORY_SCORE
+    assert categories["Dependencies and Security"].score > MODERATE_CATEGORY_SCORE
+    assert categories["Diagnostics"].score > MODERATE_CATEGORY_SCORE
+
+
+def test_debt_score_rewards_mutation_ratchets_and_manifest(tmp_path: Path) -> None:
+    """Healthy ratchet evidence lowers mutation debt and raises confidence."""
+
+    write_repo(tmp_path)
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    (log_dir / "manifest.json").write_text("{}", encoding="utf-8")
+    config = MaintainerConfig(
+        enable_mutmut=True,
+        mutmut_result_ratchet_enabled=True,
+        mutmut_target_min=3,
+        ratchet_enabled=True,
+    )
+
+    report = build_debt_report(collect_evidence(tmp_path), config, log_dir=log_dir)
+    categories = {category.name: category for category in report.categories}
+
+    assert report.confidence == "high"
+    assert categories["Ratchets and Mutation Maturity"].score == HEALTHY_MUTATION_SCORE
+
+
+def test_debt_score_summary_bands() -> None:
+    """Score summaries cover each risk band."""
+
+    assert "strong maintenance controls" in _summary(10)
+    assert "few adoption gaps" in _summary(40)
+    assert "meaningful debt risk" in _summary(60)
+    assert "conservative ratchets" in _summary(CRITICAL_SCORE_SAMPLE)
 
 
 def write_repo(root: Path) -> None:
