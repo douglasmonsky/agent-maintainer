@@ -213,15 +213,20 @@ def duplicate_artifacts_in_root(repo_root: Path, root: Path) -> list[str]:
 
     matches: list[str] = []
     for path in root.rglob("*"):
-        if path.is_file() and is_numeric_copy_artifact(path):
+        if path.is_file() and is_duplicate_artifact(path):
             matches.append(path.relative_to(repo_root).as_posix())
     return matches
 
 
-def is_numeric_copy_artifact(path: Path) -> bool:
-    """Return whether a filename looks like a generated numeric copy."""
+def is_duplicate_artifact(path: Path) -> bool:
+    """Return whether a filename looks like a generated duplicate copy."""
 
-    return path.stem.rsplit(" ", maxsplit=1)[-1].isdigit()
+    normalized_stem = path.stem.casefold()
+    return (
+        normalized_stem.rsplit(" ", maxsplit=1)[-1].isdigit()
+        or normalized_stem.endswith(" copy")
+        or " copy " in normalized_stem
+    )
 
 
 def check_layout(config: maintainer_config.MaintainerConfig) -> DoctorResult:

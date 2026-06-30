@@ -244,5 +244,7 @@ Missing required roots fail in `precommit`, `full`, and `ci`; optional integrati
 `doctor` checks verifier diagnostics coherence: logs exist, the manifest is
 newer than the latest raw log, manifest-referenced log artifacts still exist,
 `LAST_FAILURE.md` matches the latest manifest pass/fail state, and the latest
-manifest does not reference disabled or removed checks. It also checks the
-agent hook audit trail when repo-local hooks are enabled.
+manifest does not reference disabled or removed checks. It also warns about
+generated duplicate names such as `* 2*` and `* copy*`; inspect those files
+before deleting them. It also checks the agent hook audit trail when repo-local
+hooks are enabled.
