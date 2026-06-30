@@ -72,7 +72,9 @@ budgets regress. Inspect the same stats with
 
 Use `python -m agent_maintainer test-intel mutation-sweep` to rank advisory
 deep mutation sweep candidates by change, coverage, complexity, churn, and
-ratchet signals. The command does not run Mutmut. It suggests
+ratchet signals. Planner mode does not run Mutmut. Add `--execute` to run
+selected candidates in temporary copied worktrees and collect artifact-backed
+stats without editing the source checkout. It suggests
 `[tool.mutmut].only_mutate` promotions plus the manual verification command
 for deliberate target expansion.
 
