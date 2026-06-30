@@ -183,7 +183,7 @@ Planned work:
 
 - [x] Phase 53: Roadmap-First Overnight Hardening Plan
 - [x] Phase 54: Ship Mutmut Target Ratchet Branch
-- [ ] Phase 55: Mutmut Config Hardening
+- [x] Phase 55: Mutmut Config Hardening
 - [ ] Phase 56: Mutation Result Ratchets
 - [ ] Phase 57: Advisory Deep Mutation Sweep
 - [ ] Phase 58: Quiet Verifier Output Contract

@@ -65,6 +65,60 @@ def test_mutmut_target_ratchet_fails_missing_path_target(tmp_path: Path) -> None
     assert issues == ("mutmut target path does not exist: src/package/missing.py",)
 
 
+def test_mutmut_target_ratchet_fails_missing_also_copy_path(tmp_path: Path) -> None:
+    """Concrete also_copy paths must exist before Mutmut runs."""
+
+    write_pyproject(
+        tmp_path,
+        """
+        [tool.mutmut]
+        only_mutate = ["src/package/runtime.py"]
+        also_copy = ["src/package/support"]
+        """,
+    )
+    write_source(tmp_path, "src/package/runtime.py")
+
+    issues = mutmut_targets.mutmut_target_issues(tmp_path, "pyproject.toml", 1)
+
+    assert issues == ("mutmut also_copy path does not exist: src/package/support",)
+
+
+def test_mutmut_target_ratchet_fails_missing_do_not_mutate_path(tmp_path: Path) -> None:
+    """Concrete do_not_mutate paths must point at existing excluded files."""
+
+    write_pyproject(
+        tmp_path,
+        """
+        [tool.mutmut]
+        only_mutate = ["src/package/runtime.py"]
+        do_not_mutate = ["src/package/generated.py"]
+        """,
+    )
+    write_source(tmp_path, "src/package/runtime.py")
+
+    issues = mutmut_targets.mutmut_target_issues(tmp_path, "pyproject.toml", 1)
+
+    assert issues == ("mutmut do_not_mutate path does not exist: src/package/generated.py",)
+
+
+def test_mutmut_target_ratchet_rejects_unsupported_keys(tmp_path: Path) -> None:
+    """Unsupported Mutmut config keys are probably ignored by Mutmut."""
+
+    write_pyproject(
+        tmp_path,
+        """
+        [tool.mutmut]
+        only_mutate = ["src/package/runtime.py"]
+        cache_invalidation_files = ["pyproject.toml"]
+        """,
+    )
+    write_source(tmp_path, "src/package/runtime.py")
+
+    issues = mutmut_targets.mutmut_target_issues(tmp_path, "pyproject.toml", 1)
+
+    assert issues == ("unsupported mutmut config key: cache_invalidation_files",)
+
+
 def test_mutmut_target_ratchet_ignores_non_path_patterns(tmp_path: Path) -> None:
     """Module-like and glob targets count but are not filesystem path checked."""
 
