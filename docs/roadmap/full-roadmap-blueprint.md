@@ -71,6 +71,7 @@ index into a monolithic blueprint.
 | 63 | [Configured-Repo-Only Codex and Claude Hooks](phases/phase-63-configured-repo-only-codex-and-claude-hooks.md) |
 | 64 | [Documentation and Generated Guidance Slimming](phases/phase-64-documentation-and-generated-guidance-slimming.md) |
 | 65 | [Mutation Sweep Executor and Survivor Triage](phases/phase-65-mutation-sweep-executor-and-survivor-triage.md) |
+| 66 | [Advisory Sweep Survivor Triage](phases/phase-66-advisory-sweep-survivor-triage.md) |
 
 ## Future Work
 

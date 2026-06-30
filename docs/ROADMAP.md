@@ -209,6 +209,24 @@ Acceptance criteria for this sequence:
 - Each behavior phase has focused tests, relevant docs, local verification, PR
   CI, merge, and post-merge `main` CI confirmation.
 
+## Next: Advisory Sweep Survivor Triage
+
+- [x] Phase 65: Mutation Sweep Executor Survivor Triage
+- [ ] Phase 66: Advisory Sweep Survivor Triage
+
+Current advisory sweep findings remain non-blocking backlog:
+
+- `src/agent_maintainer/core/reporting.py`: 124 survivors, not promotion-ready.
+- `src/agent_maintainer/doctor/cli.py`: 270 survivors, not promotion-ready.
+
+Planned work:
+
+- Reduce `core/reporting.py` survivors first and document before/after counts.
+- Refactor `doctor/cli.py` before survivor-chasing if survivor clusters show CLI
+  plumbing rather than behavior contracts.
+- Keep current blocking Mutmut targets unchanged until advisory candidates are
+  promotion-ready.
+
 ## Future Work
 
 These items are intentionally postponed and are not part of the current
