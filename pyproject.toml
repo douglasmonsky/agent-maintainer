@@ -300,7 +300,7 @@ also_copy = ["src/archguard"]
 only_mutate = [
   "src/agent_maintainer/config/coercion.py",
   "src/agent_maintainer/core/runtime.py",
-  "src/agent_maintainer/test_intel/mutation_targets.py",
+  "src/agent_maintainer/test_intel/mutation/targets.py",
 ]
 do_not_mutate = [
   "src/agent_maintainer/__init__.py",

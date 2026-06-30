@@ -10,13 +10,11 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.runners import mutmut_stats
-from agent_maintainer.test_intel import (
-    mutation_sweep,
-    mutation_sweep_execution,
-    mutation_sweep_executor,
-    mutation_sweep_reporting,
-    mutation_sweep_runner,
-)
+from agent_maintainer.test_intel.mutation import sweep as mutation_sweep
+from agent_maintainer.test_intel.mutation import sweep_execution as mutation_sweep_execution
+from agent_maintainer.test_intel.mutation import sweep_executor as mutation_sweep_executor
+from agent_maintainer.test_intel.mutation import sweep_reporting as mutation_sweep_reporting
+from agent_maintainer.test_intel.mutation import sweep_runner as mutation_sweep_runner
 
 EXECUTABLE_MODE = 0o755
 FAKE_KILLED_MUTANTS = 4

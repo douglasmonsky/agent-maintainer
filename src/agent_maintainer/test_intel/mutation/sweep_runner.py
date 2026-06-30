@@ -11,9 +11,9 @@ import time
 from pathlib import Path
 
 from agent_maintainer.runners import mutmut_stats
-from agent_maintainer.test_intel.mutation_sweep import MutationSweepCandidate
-from agent_maintainer.test_intel.mutation_sweep_config import patch_mutmut_config
-from agent_maintainer.test_intel.mutation_sweep_execution import (
+from agent_maintainer.test_intel.mutation.sweep import MutationSweepCandidate
+from agent_maintainer.test_intel.mutation.sweep_config import patch_mutmut_config
+from agent_maintainer.test_intel.mutation.sweep_execution import (
     MutationSweepCandidateResult,
     MutationSweepExecutionRequest,
 )

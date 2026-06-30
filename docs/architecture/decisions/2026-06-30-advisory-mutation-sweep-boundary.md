@@ -19,19 +19,20 @@ coupling and make the Tach boundary less useful.
 
 Add explicit Tach modules for:
 
-- `mutation_sweep`: pure planning/ranking domain logic.
-- `mutation_sweep_reporting`: text and JSON rendering.
-- `mutation_sweep_cli`: command-line adapter that loads config, reads changed
+- `mutation.sweep`: pure planning/ranking domain logic.
+- `mutation.sweep_reporting`: text and JSON rendering.
+- `mutation.sweep_cli`: command-line adapter that loads config, reads changed
   paths, and delegates to the domain/reporting modules.
 
-The top-level `test_intel.cli` module depends on `mutation_sweep_cli` only.
+The top-level `test_intel.cli` module depends on `mutation.cli`, which delegates
+to `mutation.sweep_cli` for sweep-specific command handling.
 
 ## Consequences
 
 This keeps the main CLI dispatcher small while making the sweep command
-independently testable. `mutation_sweep` remains free of CLI config-loading and
-stdout/stderr behavior. `mutation_sweep_cli` is allowed to depend on loader and
+independently testable. `mutation.sweep` remains free of CLI config-loading and
+stdout/stderr behavior. `mutation.sweep_cli` is allowed to depend on loader and
 changed-path helpers because it is an adapter.
 
 Future mutation sweep execution work should keep long-running Mutmut orchestration
-outside `mutation_sweep` unless the planner grows into a separate runner domain.
+outside `mutation.sweep` unless the planner grows into a separate runner domain.

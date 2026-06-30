@@ -53,6 +53,7 @@ def test_pr_summary_reports_technical_debt_score(tmp_path: Path) -> None:
                 "risk": "low",
                 "confidence": "high",
                 "summary": "The repo has strong maintenance controls.",
+                "interpretation": "Healthy overall; treat listed categories as watch items.",
                 "categories": [
                     {
                         "name": "Tests and Coverage",
@@ -87,6 +88,7 @@ def test_pr_summary_reports_technical_debt_score(tmp_path: Path) -> None:
     assert "## Technical Debt Score" in summary
     assert "Score: `17/100` (`low` risk, `high` confidence)" in summary
     assert "The repo has strong maintenance controls." in summary
+    assert "Healthy overall; treat listed categories as watch items." in summary
     assert "Top debt drivers" in summary
     assert "`Reviewability`: `30/100` (`moderate`)" in summary
     assert "`Dependencies and Security`: `25/100` (`low`)" in summary

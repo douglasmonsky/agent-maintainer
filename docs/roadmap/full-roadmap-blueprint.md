@@ -72,6 +72,7 @@ index into a monolithic blueprint.
 | 64 | [Documentation and Generated Guidance Slimming](phases/phase-64-documentation-and-generated-guidance-slimming.md) |
 | 65 | [Mutation Sweep Executor and Survivor Triage](phases/phase-65-mutation-sweep-executor-and-survivor-triage.md) |
 | 66 | [Advisory Sweep Survivor Triage](phases/phase-66-advisory-sweep-survivor-triage.md) |
+| 73 | [Release Polish, Debt Score Clarity, Mutation UX, and Cohesion](phases/phase-73-release-polish-debt-mutation-and-cohesion.md) |
 
 ## Future Work
 

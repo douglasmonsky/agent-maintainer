@@ -3,7 +3,12 @@
 from __future__ import annotations
 
 import json
+from typing import cast
 
+from agent_maintainer.assess.debt_score import (
+    category_interpretation,
+    score_interpretation,
+)
 from agent_maintainer.assess.models import (
     DebtScoreReport,
     SetupAdvisorReport,
@@ -49,6 +54,7 @@ def render_debt_text(report: DebtScoreReport) -> str:
         f"Score: {report.score}/100 ({report.risk})",
         f"Confidence: {report.confidence}",
         report.summary,
+        f"Interpretation: {score_interpretation(report.score)}",
         "",
         "Categories:",
     ]
@@ -65,4 +71,25 @@ def render_debt_text(report: DebtScoreReport) -> str:
 
 def render_json(report: object) -> str:
     """Render report as stable JSON."""
+    if isinstance(report, DebtScoreReport):
+        return json.dumps(debt_to_dict(report), indent=2, sort_keys=True)
     return json.dumps(model_to_dict(report), indent=2, sort_keys=True)
+
+
+def debt_to_dict(report: DebtScoreReport) -> dict[str, object]:
+    """Return debt report JSON with advisory interpretation fields."""
+    payload = cast("dict[str, object]", model_to_dict(report))
+    payload["interpretation"] = score_interpretation(report.score)
+    payload["categories"] = [
+        {
+            "name": category.name,
+            "score": category.score,
+            "weight": category.weight,
+            "status": category.status,
+            "interpretation": category_interpretation(category),
+            "evidence": list(category.evidence),
+            "recommendations": list(category.recommendations),
+        }
+        for category in report.categories
+    ]
+    return payload

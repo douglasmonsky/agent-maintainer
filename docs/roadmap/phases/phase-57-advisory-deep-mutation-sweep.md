@@ -16,9 +16,9 @@ artifacts, complexity, recent Git churn, and ratchet hotspots.
 ## File Targets
 
 ```text
-src/agent_maintainer/test_intel/mutation_sweep.py
-src/agent_maintainer/test_intel/mutation_sweep_reporting.py
-src/agent_maintainer/test_intel/mutation_sweep_cli.py
+src/agent_maintainer/test_intel/mutation/sweep.py
+src/agent_maintainer/test_intel/mutation/sweep_reporting.py
+src/agent_maintainer/test_intel/mutation/sweep_cli.py
 src/agent_maintainer/test_intel/cli.py
 tests/test_intel/test_mutation_sweep.py
 docs/test-intelligence.md

@@ -38,6 +38,8 @@ def test_html_report_renders_sections(tmp_path: Path) -> None:
         "lint failed &lt;bad&gt;",
         "Technical Debt Score",
         "23/100",
+        "watch items",
+        "Watch item.",
         "../ruff.log",
         "../../coverage.xml",
         "python -m agent_maintainer context log ruff --tail 120",
@@ -164,11 +166,13 @@ def write_report_artifacts(log_dir: Path) -> None:
                 "score": 23,
                 "risk": "low",
                 "confidence": "high",
+                "interpretation": "Healthy overall; treat listed categories as watch items.",
                 "categories": [
                     {
                         "name": "Reviewability",
                         "score": 30,
                         "status": "moderate",
+                        "interpretation": "Watch item.",
                     },
                 ],
             },

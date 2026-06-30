@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from agent_maintainer.test_intel.mutation_targets import (
+from agent_maintainer.test_intel.mutation.targets import (
     MutationTarget,
     MutationTargetReport,
 )

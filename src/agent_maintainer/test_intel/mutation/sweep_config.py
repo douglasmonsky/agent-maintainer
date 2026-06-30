@@ -7,7 +7,7 @@ import tomllib
 from pathlib import Path
 from typing import Final
 
-from agent_maintainer.test_intel.mutation_sweep import MutationSweepCandidate
+from agent_maintainer.test_intel.mutation.sweep import MutationSweepCandidate
 
 MUTMUT_SECTION: Final = "[tool.mutmut]"
 MUTMUT_PATCH_KEYS: Final = (

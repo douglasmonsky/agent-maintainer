@@ -18,7 +18,7 @@ places:
 
 Keep Mutmut stats parsing in `agent_maintainer.runners.mutmut_stats`, next to
 the runner that produces and consumes those artifacts. Add a small
-`agent_maintainer.test_intel.mutation_results` adapter for user-facing
+`agent_maintainer.test_intel.mutation.results` adapter for user-facing
 rendering, and allow the test-intelligence CLI to depend on that adapter.
 
 ## Consequences
