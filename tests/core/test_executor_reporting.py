@@ -57,7 +57,7 @@ def test_run_command_bounds_stdout_without_labelling_simple_output() -> None:
     assert exit_code == 0
     assert output.startswith("x" * 100)
     assert "## stdout" not in output
-    assert "command output truncated at 100 characters" in output
+    assert "stream truncated" in output
 
 
 def test_run_command_returns_timeout_result() -> None:
