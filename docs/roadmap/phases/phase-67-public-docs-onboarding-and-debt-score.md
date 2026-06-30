@@ -8,70 +8,64 @@ docs: sharpen public onboarding and score roadmap
 
 ## Scope
 
-Make the public documentation easier to trust, easier to try, and easier for an
-AI agent to use correctly. Keep the first PR docs-first, then implement setup
-recommendations and the Technical Debt Score as focused follow-up PRs.
+Make public documentation easier to trust, easier to try, and easier for coding
+agents to use correctly. Keep the README outcome-first while moving detailed
+reference material into linked docs.
 
 ## Requirements
 
-- Rewrite the README around a package-first first-run story:
+- Rewrite the README around the package-first first-run story:
   - what Agent Maintainer does;
   - why users should trust it;
-  - the fastest successful trial path;
+  - fastest successful trial path;
   - fresh-repo strict trial path;
   - agent-assisted adoption path;
   - supported checks/scanners;
   - ratcheting and mutation testing;
-  - diagnostics and repair loop;
-  - links to deeper docs placed next to relevant sections, not only at bottom.
-- Keep the top social-preview graphic and consider additional graphics in the
-  same style for:
-  - run profiles;
-  - ratcheting;
-  - setup advisor;
-  - Technical Debt Score.
-- Add or improve docs that explain:
+  - diagnostics repair loop;
+  - links to deeper docs beside relevant sections, not only at the bottom.
+- Keep the top social-preview graphic and static run-profile graphic.
+- Add or improve docs explaining:
   - all supported scan categories;
   - which checks are default, optional, manual, security, or release-oriented;
   - how agents should use generated guidance, hooks, `.verify-logs`, context
     expansion commands, ratchet targets, and repair plans;
   - how to dogfood strict mode on a fresh repo safely.
-- Add a setup-recommendation feature plan:
-  - automated repository inspection for layout, tests, package metadata, CI,
-    lock files, architecture files, agents/hooks, and scanner-relevant assets;
-  - generated recommendations for `--track`, `--preset`, enabled optional gates,
-    and follow-up questions for an AI agent to answer from repo context;
-  - output as text and JSON for both humans and agents.
-- Add a Technical Debt Score feature plan:
-  - transparent composite score, not opaque grade;
+- Implement setup recommendations:
+  - inspect layout, tests, package metadata, CI, lock files, architecture files,
+    agents/hooks, and scanner-relevant assets;
+  - recommend `--track`, `--preset`, optional gates, and follow-up questions a
+    coding agent should answer from repo context;
+  - emit text and JSON for humans and agents.
+- Implement a Technical Debt Score:
+  - transparent composite score, not an opaque grade;
   - category sub-scores for reviewability, tests/coverage, type/style,
     architecture, dependencies/security, docs/config hygiene, diagnostics, and
     ratchet/mutation maturity;
-  - confidence level based on which evidence exists;
-  - explicit “why this score changed” deltas;
-  - advisory by default, never a hidden pass/fail gate.
+  - confidence level based on available evidence;
+  - advisory default, never a hidden pass/fail gate.
 
 ## Acceptance Criteria
 
-- README has a clear public-beta first impression and no compressed wall-of-text
-  command blocks.
-- README includes every supported check/scanner category with links to deeper
-  docs beside the relevant section.
-- README explicitly encourages a fresh strict trial repo and explains why that is
-  the easiest way to feel the product value quickly.
+- README has a clear public-beta first impression and no compressed wall of
+  commands.
+- README includes every supported check/scanner category and links deeper docs
+  beside relevant sections.
+- README explicitly encourages a fresh strict trial repo as the easiest way to
+  feel product value quickly.
 - `docs/tool-map.md` remains the exhaustive reference while README stays
   outcome-first.
-- Roadmap clearly separates docs polish, setup advisor, and Technical Debt Score
-  implementation into follow-up PRs.
-- No verifier behavior or scanner policy changes are made in the docs-only PR.
+- Roadmap separates docs polish, setup advisor, and Technical Debt Score work.
+- No raw generated report logs are committed.
 
-## Follow-up Implementation Phases
+## Completed Implementation Phases
 
-- Phase 68: README and docs information architecture rewrite.
+- Phase 68: README docs information architecture rewrite.
 - Phase 69: Supported scan matrix and agent-utilization guide.
 - Phase 70: Setup advisor command and JSON output.
 - Phase 71: Technical Debt Score v0 scorecard and report integration.
-- Phase 72: Additional graphics for run profiles, ratchets, and scorecard.
+- Phase 72: Static graphics strategy cleanup; the repo keeps committed PNGs and
+  removes the old HTML render pipeline.
 
 ## Verification
 

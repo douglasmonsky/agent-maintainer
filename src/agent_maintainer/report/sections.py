@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from html import escape
+from pathlib import Path
 from typing import Any
 
 from agent_maintainer.report.markdown import summary_markdown_section
@@ -41,6 +43,8 @@ RELEASE_CHECK_PREFIXES = (
     "twine",
     "zizmor",
 )
+DEBT_SCORE_NAME = "technical-debt-score.json"
+UNKNOWN_TEXT = "unknown"
 
 
 def render_sections(
@@ -54,6 +58,7 @@ def render_sections(
     """Render all static report sections in display order."""
     leading_sections = [
         _summary_section(payload, checks, paths),
+        _debt_score_section(paths),
         _failed_checks_section(checks, paths),
         _markdown_section("test-intelligence", "Test Intelligence", pr_summary),
         _markdown_section("ratchet-status", "Ratchet Status", pr_summary),
@@ -68,10 +73,66 @@ def render_sections(
     return tuple(leading_sections + focused_sections)
 
 
+def _debt_score_section(paths: ReportPaths) -> str:
+    """Render Technical Debt Score artifact when present."""
+    score_path = paths.log_dir / DEBT_SCORE_NAME
+    if not score_path.exists():
+        body = (
+            "<p>No Technical Debt Score artifact found. Run "
+            "<code>python -m agent_maintainer assess debt</code>.</p>"
+        )
+        return _panel("technical-debt-score", "Technical Debt Score", body)
+    try:
+        payload = json.loads(score_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return _panel(
+            "technical-debt-score",
+            "Technical Debt Score",
+            "<p>Technical Debt Score artifact is not valid JSON.</p>",
+        )
+    body = _debt_score_body(payload, score_path=score_path, output_dir=paths.output_dir)
+    return _panel("technical-debt-score", "Technical Debt Score", body)
+
+
+def _debt_score_body(
+    payload: dict[str, Any],
+    *,
+    score_path: Path,
+    output_dir: Path,
+) -> str:
+    """Render Technical Debt Score panel body."""
+
+    score = text(payload.get("score"), UNKNOWN_TEXT)
+    risk = text(payload.get("risk"), UNKNOWN_TEXT)
+    confidence = text(payload.get("confidence"), UNKNOWN_TEXT)
+    href = local_href(score_path, output_dir)
+    return (
+        f"<p><strong>{escape(score)}/100</strong> risk: {escape(risk)}; "
+        f"confidence: {escape(confidence)}</p>"
+        f"{list_items(_debt_category_items(payload))}"
+        f'<p><a href="{href}">Open score artifact</a></p>'
+    )
+
+
+def _debt_category_items(payload: dict[str, Any]) -> list[str]:
+    """Return Technical Debt Score category list items."""
+
+    categories = payload.get("categories", [])
+    category_items = []
+    if isinstance(categories, list):
+        for category in categories[:8]:
+            if isinstance(category, dict):
+                name = text(category.get("name"), UNKNOWN_TEXT)
+                value = text(category.get("score"), UNKNOWN_TEXT)
+                status = text(category.get("status"), UNKNOWN_TEXT)
+                category_items.append(f"{name}: {value}/100 ({status})")
+    return category_items
+
+
 def header_html(payload: dict[str, Any], checks: list[dict[str, Any]]) -> str:
     """Render static report header."""
     result = "FAIL" if _failed_checks(checks) else "PASS"
-    generated_at = text(payload.get("generated_at"), "unknown")
+    generated_at = text(payload.get("generated_at"), UNKNOWN_TEXT)
     return (
         '<header class="hero">'
         "<h1>Agent Maintainer Verification Report</h1>"
@@ -87,9 +148,9 @@ def _summary_section(
     paths: ReportPaths,
 ) -> str:
     rows = {
-        "Profile": text(payload.get("profile"), "unknown"),
-        "Base ref": text(payload.get("base_ref"), "unknown"),
-        "Compare branch": text(payload.get("compare_branch"), "unknown"),
+        "Profile": text(payload.get("profile"), UNKNOWN_TEXT),
+        "Base ref": text(payload.get("base_ref"), UNKNOWN_TEXT),
+        "Compare branch": text(payload.get("compare_branch"), UNKNOWN_TEXT),
         "Checks": str(len(checks)),
     }
     metrics = "".join(

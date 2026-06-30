@@ -231,39 +231,35 @@ Planned work:
 
 ## Next: Public Docs, Setup Advisor, and Technical Debt Score
 
-Agent Maintainer needs a sharper public first impression before external case
-studies and broader promotion. The next phase is docs-first: make the README
-easy to trust, easy to try, and easy for coding agents to use without drowning
-humans in implementation history.
+Agent Maintainer public onboarding now presents the product as a package-first
+maintenance layer for AI-assisted Python repositories. README links deeper docs
+at the point of need, and the implemented `assess` commands help users and
+agents choose setup and prioritize hardening work.
 
 Detailed scope:
 
 [`docs/roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md`](roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md)
 
-Planned work:
+Completed work:
 
-- Rewrite README around package-first onboarding, first successful run, trust,
-  fresh strict trial, agent-assisted adoption, supported scans, ratchets, and
-  diagnostics.
-- Move additional reading links next to relevant sections while preserving a
-  compact bottom index.
-- Keep `docs/tool-map.md` as exhaustive reference, but make README
-  outcome-first.
-- Plan a setup advisor that recommends track, preset, optional gates, and
-  follow-up AI inspection prompts from repo evidence.
-- Plan a transparent Technical Debt Score with sub-scores, confidence, and
-  delta explanations.
-- Consider additional graphics matching the current social-preview style for
-  run profiles, ratchets, setup advisor, and scorecard.
+- README emphasizes package-first onboarding, fresh strict trial, supported
+  scans, ratchets, setup advisor, debt score, and just-in-time links.
+- `docs/supported-scans-and-agent-use.md` documents scan/profile/agent usage.
+- `python3 -m agent_maintainer assess setup` recommends track, preset, optional
+  gates, and follow-up AI prompts from local repo evidence.
+- `python3 -m agent_maintainer assess debt` writes transparent advisory score
+  artifacts and the HTML report renders the score when present.
+- The old HTML graphics render pipeline was removed; README keeps static PNG
+  assets without adding image-generation tooling to the developer workflow.
 
 ## Public Docs And Score Phases
 
 - [x] Phase 67: Public Docs, Setup Advisor, and Technical Debt Score
-- [ ] Phase 68: README and Docs Information Architecture Rewrite
-- [ ] Phase 69: Supported Scan Matrix and Agent Utilization Guide
-- [ ] Phase 70: Setup Advisor Command and JSON Output
-- [ ] Phase 71: Technical Debt Score v0 Scorecard and Report Integration
-- [ ] Phase 72: Additional Product Graphics
+- [x] Phase 68: README Docs Information Architecture Rewrite
+- [x] Phase 69: Supported Scan Matrix Agent Utilization Guide
+- [x] Phase 70: Setup Advisor Command JSON Output
+- [x] Phase 71: Technical Debt Score v0 Scorecard Report Integration
+- [x] Phase 72: Static Product Graphics Strategy Cleanup
 
 ## Future Work
 

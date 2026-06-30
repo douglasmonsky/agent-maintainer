@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,6 +13,9 @@ if TYPE_CHECKING:
     from agent_maintainer.verify.artifacts import RunContext
 
 PR_SUMMARY_NAME = "pr-summary.md"
+DEBT_SCORE_NAME = "technical-debt-score.json"
+DEBT_SCORE_COMMAND = "python -m agent_maintainer assess debt"
+DEBT_DRIVER_LIMIT = 3
 
 
 def render_pr_summary(
@@ -25,6 +29,7 @@ def render_pr_summary(
     sections = (
         header_lines(),
         verification_result_lines(context, results),
+        technical_debt_score_lines(log_dir),
         top_failure_lines(results),
         test_intelligence_lines(context, results),
         ratchet_target_lines(context),
@@ -55,6 +60,78 @@ def verification_result_lines(context: RunContext, results: list[CheckResult]) -
         f"- Compare branch: `{context.compare_branch}`",
         f"- Rerun: `{summary_support.summary_rerun_command(context)}`",
     ]
+
+
+def technical_debt_score_lines(log_dir: Path) -> list[str]:
+    """Return current technical debt score summary lines."""
+
+    lines = ["## Technical Debt Score"]
+    score_path = log_dir / DEBT_SCORE_NAME
+    if not score_path.exists():
+        return [
+            *lines,
+            "- Status: `not run`",
+            f"- Run: `{DEBT_SCORE_COMMAND}`",
+        ]
+
+    try:
+        payload = json.loads(score_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return [
+            *lines,
+            "- Status: `unreadable`",
+            f"- Re-run: `{DEBT_SCORE_COMMAND}`",
+            f"- Artifact: `{score_path.as_posix()}`",
+        ]
+
+    score = payload.get("score", "unknown")
+    risk = payload.get("risk", "unknown")
+    confidence = payload.get("confidence", "unknown")
+    summary = payload.get("summary")
+    debt_lines = [
+        *lines,
+        f"- Score: `{score}/100` (`{risk}` risk, `{confidence}` confidence)",
+    ]
+    if isinstance(summary, str) and summary:
+        debt_lines.append(f"- Summary: {summary}")
+    debt_lines.extend(_debt_category_summary_lines(payload))
+    debt_lines.append(f"- Artifact: `{score_path.as_posix()}`")
+    return debt_lines
+
+
+def _debt_category_summary_lines(payload: dict[str, object]) -> list[str]:
+    """Return compact debt category driver lines."""
+
+    categories = payload.get("categories")
+    if not isinstance(categories, list):
+        return []
+
+    drivers = sorted(
+        (category for category in categories if isinstance(category, dict)),
+        key=_debt_category_rank,
+        reverse=True,
+    )
+    if not drivers:
+        return []
+
+    lines = ["- Top debt drivers:"]
+    for category in drivers[:DEBT_DRIVER_LIMIT]:
+        name = category.get("name", "unknown")
+        score = category.get("score", "unknown")
+        status = category.get("status", "unknown")
+        lines.append(f"  - `{name}`: `{score}/100` (`{status}`)")
+    return lines
+
+
+def _debt_category_rank(category: dict[object, object]) -> tuple[int, int]:
+    """Return category sort key for debt driver summary."""
+
+    score = category.get("score")
+    weight = category.get("weight")
+    return (
+        score if isinstance(score, int) else -1,
+        weight if isinstance(weight, int) else -1,
+    )
 
 
 def top_failure_lines(results: list[CheckResult]) -> list[str]:

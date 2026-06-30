@@ -22,6 +22,7 @@ USAGE = """Usage:
   python -m agent_maintainer <command> [options]
 
 Core commands:
+  assess          Recommend setup and score maintenance debt.
   bootstrap       Install development dependencies for this checkout.
   doctor          Inspect setup health and configuration drift.
   guidance        Generate or check AGENTS.agent-maintainer.md.
@@ -42,6 +43,8 @@ Operations:
 
 Examples:
   python -m agent_maintainer doctor --strict
+  python -m agent_maintainer assess setup
+  python -m agent_maintainer assess debt
   python -m agent_maintainer verify --profile precommit
   python -m agent_maintainer verify --profile full
   python -m agent_maintainer context failures
@@ -84,6 +87,7 @@ def command_handlers() -> dict[str, CommandRunner]:
     """Return command handlers keyed by top-level subcommand name."""
 
     return {
+        "assess": assess_command,
         "bootstrap": bootstrap_command,
         "change-plan": change_plan_command,
         "context": context_main,
@@ -98,6 +102,13 @@ def command_handlers() -> dict[str, CommandRunner]:
         "test-intel": test_intel_command,
         "verify": verify_main,
     }
+
+
+def assess_command(command_args: list[str]) -> int:
+    """Run assess command lazily to keep entrypoint light."""
+
+    module = __import__("agent_maintainer.assess.cli", fromlist=("main",))
+    return module.main(command_args)
 
 
 def bootstrap_command(_command_args: list[str]) -> int:
