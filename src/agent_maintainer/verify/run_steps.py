@@ -8,8 +8,9 @@ from agent_maintainer.core.check_run import utc_timestamp
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.core.executor import run_check
 from agent_maintainer.core.layout import layout_failures
-from agent_maintainer.models import Check, CheckResult
+from agent_maintainer.models import CI_PROFILE, Check, CheckResult
 from agent_maintainer.verify.artifacts import RunContext, write_run_artifacts
+from agent_maintainer.verify.git_refs import ref_failures
 
 
 def log_dir_for(config: MaintainerConfig) -> Path:
@@ -37,6 +38,25 @@ def emit_layout_failure(failures: list[str], log_dir: Path) -> CheckResult:
     )
 
 
+def emit_ref_failure(failures: list[str], log_dir: Path) -> CheckResult:
+    """Write and return synthetic failure for invalid Git refs."""
+
+    timestamp = utc_timestamp()
+    log_dir.mkdir(parents=True, exist_ok=True)
+    failure_lines = "\n".join(f"  {failure}" for failure in failures)
+    output = f"Git reference validation failed:\n\n{failure_lines}"
+    log_path = log_dir / "git-ref-validation.log"
+    log_path.write_text(f"{output}\n", encoding="utf-8")
+    return CheckResult(
+        "git-ref-validation",
+        passed=False,
+        output=output,
+        log_path=str(log_path),
+        started_at=timestamp,
+        ended_at=timestamp,
+    )
+
+
 def collect_results(
     args,
     config: MaintainerConfig,
@@ -49,6 +69,14 @@ def collect_results(
     layout = layout_failures(config, args.profile)
     if layout:
         return [emit_layout_failure(layout, selected_log_dir)]
+    invalid_refs = ref_failures(
+        Path.cwd(),
+        base_ref=args.base_ref,
+        compare_branch=args.compare_branch,
+        validate_compare_branch=args.profile == CI_PROFILE,
+    )
+    if invalid_refs:
+        return [emit_ref_failure(list(invalid_refs), selected_log_dir)]
     return [
         run_check(check, selected_log_dir, args.max_lines, args.max_chars) for check in selected
     ]

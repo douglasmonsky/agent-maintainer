@@ -16,7 +16,7 @@ def test_run_check_prefers_structured_artifact_summary(
 ) -> None:
     artifact = tmp_path / "logs" / "ruff.json"
 
-    def fake_run(command: list[str]) -> tuple[int, str]:
+    def fake_run(command: list[str], **_kwargs: object) -> tuple[int, str]:
         assert command == ["ruff"]
         artifact.write_text(
             """[

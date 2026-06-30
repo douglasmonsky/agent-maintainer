@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 import pytest
 
+from agent_maintainer.core import command_run as maintainer_command_run
 from agent_maintainer.core import executor as maintainer_executor
 from agent_maintainer.models import Check
 
@@ -43,6 +45,75 @@ def test_command_env_adds_local_package_pythonpath(
     assert maintainer_executor.command_env()["PYTHONPATH"] == f"src{os.pathsep}existing"
 
 
+def test_run_command_bounds_stdout_without_labelling_simple_output() -> None:
+    """Bounded command execution caps output while preserving simple stdout."""
+
+    exit_code, output = maintainer_executor.run_command(
+        [sys.executable, "-c", "print('x' * 2000)"],
+        timeout_seconds=10,
+        output_limit_chars=100,
+    )
+
+    assert exit_code == 0
+    assert output.startswith("x" * 100)
+    assert "## stdout" not in output
+    assert "command output truncated at 100 characters" in output
+
+
+def test_run_command_returns_timeout_result() -> None:
+    """A hung command returns a compact timeout result instead of blocking."""
+
+    exit_code, output = maintainer_executor.run_command(
+        [
+            sys.executable,
+            "-c",
+            "import time; print('start', flush=True); time.sleep(2)",
+        ],
+        timeout_seconds=1,
+        output_limit_chars=200,
+    )
+
+    assert exit_code == maintainer_command_run.TIMEOUT_EXIT_CODE
+    assert "start" in output
+    assert "Command timed out after 1 second(s)." in output
+
+
+def test_run_check_passes_check_specific_execution_limits(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Check metadata controls timeout and output cap for subprocess runs."""
+
+    captured: dict[str, object] = {}
+
+    def fake_run(command: list[str], **kwargs: object) -> tuple[int, str]:
+        captured["command"] = command
+        captured.update(kwargs)
+        return 0, ""
+
+    monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
+
+    result = maintainer_executor.run_check(
+        Check(
+            "tool",
+            ["tool"],
+            frozenset(),
+            timeout_seconds=7,
+            output_limit_chars=11,
+        ),
+        tmp_path / "logs",
+        5,
+        200,
+    )
+
+    assert result.passed is True
+    assert captured == {
+        "command": ["tool"],
+        "timeout_seconds": 7,
+        "output_limit_chars": 11,
+    }
+
+
 def test_run_check_scopes_coverage_file_to_log_dir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -53,7 +124,7 @@ def test_run_check_scopes_coverage_file_to_log_dir(
     seen: list[str | None] = []
     diagnostics_seen: list[str | None] = []
 
-    def fake_run(command: list[str]) -> tuple[int, str]:
+    def fake_run(command: list[str], **_kwargs: object) -> tuple[int, str]:
         assert command == ["tool"]
         seen.append(os.environ.get("COVERAGE_FILE"))
         diagnostics_seen.append(os.environ.get("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"))
@@ -82,7 +153,7 @@ def test_run_check_preserves_explicit_coverage_file(
     seen: list[str | None] = []
     diagnostics_seen: list[str | None] = []
 
-    def fake_run(_command: list[str]) -> tuple[int, str]:
+    def fake_run(_command: list[str], **_kwargs: object) -> tuple[int, str]:
         seen.append(os.environ.get("COVERAGE_FILE"))
         diagnostics_seen.append(os.environ.get("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"))
         return 0, ""
@@ -205,7 +276,7 @@ def test_run_check_writes_skip_log(tmp_path: Path, monkeypatch: pytest.MonkeyPat
 def test_run_check_summarizes_command_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    def fake_run(command: list[str]) -> tuple[int, str]:
+    def fake_run(command: list[str], **_kwargs: object) -> tuple[int, str]:
         assert command == ["tool"]
         return 1, "\n".join(f"line {index}" for index in range(10))
 
@@ -231,7 +302,7 @@ def test_run_check_records_existing_declared_artifacts(
 ) -> None:
     artifact = tmp_path / "coverage.xml"
 
-    def fake_run(command: list[str]) -> tuple[int, str]:
+    def fake_run(command: list[str], **_kwargs: object) -> tuple[int, str]:
         assert command == ["pytest"]
         artifact.write_text("<coverage />\n", encoding="utf-8")
         return 0, "ok\n"
@@ -258,7 +329,7 @@ def test_run_check_creates_log_dir_before_command_runs(
     monkeypatch.chdir(tmp_path)
     artifact = Path("logs/pytest-junit.xml")
 
-    def fake_run(command: list[str]) -> tuple[int, str]:
+    def fake_run(command: list[str], **_kwargs: object) -> tuple[int, str]:
         assert command == ["pytest"]
         assert artifact.parent.is_dir()
         artifact.write_text("<testsuite />\n", encoding="utf-8")

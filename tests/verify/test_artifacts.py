@@ -77,6 +77,7 @@ def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -
             "started_at": "2026-06-25T10:00:00Z",
             "ended_at": "2026-06-25T10:00:01Z",
             "artifacts": ["coverage.xml"],
+            "artifact_sensitivity": "safe",
         }
     ]
 

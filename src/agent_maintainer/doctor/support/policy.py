@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from agent_maintainer.config import loader as maintainer_config_loader
 from agent_maintainer.config import schema as maintainer_config_schema
+from agent_maintainer.config import validation as maintainer_config_validation
 from agent_maintainer.core import config as maintainer_config
 from agent_maintainer.doctor.support import context_artifacts, context_health
 from agent_maintainer.doctor.support.models import (
@@ -21,6 +23,27 @@ from agent_maintainer.models import SECURITY_PROFILE, VALID_PROFILES
 
 check_context_pack_upload_policy = context_artifacts.check_context_pack_upload_policy
 check_context_health = context_health.check_context_health
+
+
+def check_unknown_config_keys(repo_root: Path) -> DoctorResult:
+    """Warn when pyproject contains unsupported Agent Maintainer keys."""
+
+    raw = maintainer_config_loader.read_pyproject(repo_root / "pyproject.toml")
+    unknown = maintainer_config_validation.unknown_keys(raw)
+    if not unknown:
+        return DoctorResult(
+            "config-keys",
+            OK,
+            "[tool.agent_maintainer] keys are recognized.",
+        )
+    unknown_keys = ", ".join(unknown)
+    return DoctorResult(
+        "config-keys",
+        WARNING,
+        f"Unknown config key(s): {unknown_keys}",
+        state=UNSAFE_CONFIG,
+        hint="Fix typos or remove unsupported [tool.agent_maintainer] keys.",
+    )
 
 
 def check_pyright_config(

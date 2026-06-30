@@ -283,4 +283,5 @@ def secret_scan_check(
         frozenset((profile,)),
         required_executable=required_executable,
         artifact_paths=(str(artifacts_dir / report_name),),
+        artifact_sensitivity="redacted-secrets",
     )

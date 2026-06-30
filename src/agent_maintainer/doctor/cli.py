@@ -27,6 +27,7 @@ check_optional_gates = maintainer_doctor_setup.check_optional_gates
 check_source_checkout_dogfood = maintainer_doctor_setup.check_source_checkout_dogfood
 check_tests = maintainer_doctor_setup.check_tests
 check_tool_capabilities = maintainer_doctor_setup.check_tool_capabilities
+check_unknown_config_keys = maintainer_doctor_policy.check_unknown_config_keys
 
 check_repo_root = maintainer_doctor_environment.check_repo_root
 check_virtualenv = maintainer_doctor_environment.check_virtualenv
@@ -80,6 +81,7 @@ def run_doctor(
     return [
         check_python_version(),
         check_repo_root(repo_root),
+        check_unknown_config_keys(repo_root),
         check_virtualenv(repo_root),
         check_source_checkout_dogfood(repo_root),
         maintainer_doctor_setup.check_console_script_dogfood(repo_root),

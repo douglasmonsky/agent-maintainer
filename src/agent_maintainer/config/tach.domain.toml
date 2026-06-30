@@ -27,3 +27,10 @@ depends_on = [
 [[modules]]
 path = "schema"
 depends_on = []
+
+[[modules]]
+path = "validation"
+depends_on = [
+  "coercion",
+  "schema",
+]

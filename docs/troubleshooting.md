@@ -12,6 +12,18 @@ Use `--strict` after setup or after pushing when warnings should fail:
 python3 -m agent_maintainer doctor --strict
 ```
 
+If `doctor` reports unknown `[tool.agent_maintainer]` keys, fix the typo or
+remove the unsupported key before trusting the policy. Strict doctor mode turns
+that warning into a failing setup result.
+
+Verifier subprocess output is bounded and written to run-scoped artifacts under
+`.verify-logs/`. A timed-out check exits as code `124`; inspect the referenced
+log before widening timeouts or rerunning every profile.
+
+For passthrough tool options such as `--semgrep-arg` and
+`--check-jsonschema-arg`, repeat the option for each tool argument. Commas are
+preserved inside those values.
+
 ## Common Issues
 
 | Symptom | Fix |

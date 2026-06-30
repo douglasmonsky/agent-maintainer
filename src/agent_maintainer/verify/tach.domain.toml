@@ -22,6 +22,10 @@ path = "git_state"
 depends_on = []
 
 [[modules]]
+path = "git_refs"
+depends_on = []
+
+[[modules]]
 path = "history"
 depends_on = [
   "//agent_maintainer.models",
@@ -70,12 +74,13 @@ depends_on = [
 [[modules]]
 path = "run_steps"
 depends_on = [
-    "//agent_maintainer.core.check_run",
-    "//agent_maintainer.core.config",
+  "//agent_maintainer.core.check_run",
+  "//agent_maintainer.core.config",
   "//agent_maintainer.core.executor",
   "//agent_maintainer.core.layout",
   "//agent_maintainer.models",
-    "artifacts",
+  "artifacts",
+  "git_refs",
 ]
 
 [[modules]]

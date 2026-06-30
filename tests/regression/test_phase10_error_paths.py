@@ -126,7 +126,7 @@ def test_tach_config_main_reports_issues(
 def test_executor_run_check_reports_oserror(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    def fail_run(command: list[str]) -> tuple[int, str]:
+    def fail_run(command: list[str], **_kwargs: object) -> tuple[int, str]:
         raise OSError("missing executable")
 
     monkeypatch.setattr(maintainer_executor, "run_command", fail_run)

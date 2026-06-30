@@ -241,6 +241,7 @@ def check_payload(
         "started_at": result.started_at,
         "ended_at": result.ended_at,
         "artifacts": list(result.artifact_paths),
+        "artifact_sensitivity": result.artifact_sensitivity,
     }
 
 
