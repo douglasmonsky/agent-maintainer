@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 import sys
 from importlib import util as importlib_util
 from pathlib import Path
@@ -12,6 +11,7 @@ from agent_maintainer.core import config as maintainer_config
 from agent_maintainer.core import guidance as maintainer_guidance
 from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilities
 from agent_maintainer.core.layout import layout_failures
+from agent_maintainer.doctor.support import dogfood as maintainer_doctor_dogfood
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
 from agent_maintainer.tach import tach_config_issues
 
@@ -29,7 +29,6 @@ DUPLICATE_ARTIFACT_ROOTS = (
     ".claude/hooks",
     ".verify-logs",
 )
-DUPLICATE_ARTIFACT_PATTERN = re.compile(r" \d+(?:\.[^.]+)?$")
 
 
 def check_architecture_backend(
@@ -172,11 +171,11 @@ def check_source_checkout_dogfood(repo_root: Path) -> DoctorResult:
         ERROR,
         f"Imports {resolved}; expected {expected.resolve()}.",
         state=maintainer_doctor_models.UNSAFE_CONFIG,
-        hint=(
-            "Run with PYTHONPATH=src python3 -m agent_maintainer or reinstall "
-            "editable with python -m pip install -e ."
-        ),
+        hint=("Run PYTHONPATH=src python3 -m agent_maintainer or python -m pip install -e ."),
     )
+
+
+check_console_script_dogfood = maintainer_doctor_dogfood.check_console_script_dogfood
 
 
 def check_duplicate_generated_artifacts(repo_root: Path) -> DoctorResult:
@@ -214,9 +213,15 @@ def duplicate_artifacts_in_root(repo_root: Path, root: Path) -> list[str]:
 
     matches: list[str] = []
     for path in root.rglob("*"):
-        if path.is_file() and DUPLICATE_ARTIFACT_PATTERN.search(path.name):
+        if path.is_file() and is_numeric_copy_artifact(path):
             matches.append(path.relative_to(repo_root).as_posix())
     return matches
+
+
+def is_numeric_copy_artifact(path: Path) -> bool:
+    """Return whether a filename looks like a generated numeric copy."""
+
+    return path.stem.rsplit(" ", maxsplit=1)[-1].isdigit()
 
 
 def check_layout(config: maintainer_config.MaintainerConfig) -> DoctorResult:

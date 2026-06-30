@@ -66,6 +66,7 @@ def run_doctor(repo_root: Path, config: maintainer_config.MaintainerConfig) -> l
         check_repo_root(repo_root),
         check_virtualenv(repo_root),
         check_source_checkout_dogfood(repo_root),
+        maintainer_doctor_setup.check_console_script_dogfood(repo_root),
         check_tool_capabilities(repo_root, config),
         maintainer_doctor_setup.check_architecture_backend(repo_root, config),
         check_layout(config),
