@@ -47,6 +47,7 @@ class VerificationFingerprint:
     head: str
     index_hash: str
     worktree_hash: str
+    untracked_hash: str
     config_hash: str
 
     def to_dict(self) -> dict[str, object]:
@@ -60,6 +61,7 @@ class VerificationFingerprint:
             "head": self.head,
             "index_hash": self.index_hash,
             "worktree_hash": self.worktree_hash,
+            "untracked_hash": self.untracked_hash,
             "config_hash": self.config_hash,
         }
 
@@ -192,6 +194,7 @@ def build_fingerprint(
         head=git_output(repo_root, "rev-parse", "HEAD"),
         index_hash=git_hash(repo_root, "diff", "--cached", "--binary"),
         worktree_hash=git_hash(repo_root, "diff", "--binary"),
+        untracked_hash=untracked_files_hash(repo_root),
         config_hash=files_hash(repo_root, CONFIG_FINGERPRINT_PATHS),
     )
 
@@ -240,5 +243,27 @@ def files_hash(repo_root: Path, paths: tuple[str, ...]) -> str:
         digest.update(relative_path.encode())
         digest.update(b"\0")
         digest.update(file_hash(path).encode())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def untracked_files_hash(repo_root: Path) -> str:
+    """Return stable hash of untracked, non-ignored repository files."""
+
+    relative_paths = sorted(
+        path
+        for path in git_output(
+            repo_root,
+            "ls-files",
+            "--others",
+            "--exclude-standard",
+        ).splitlines()
+        if path
+    )
+    digest = hashlib.sha256()
+    for relative_path in relative_paths:
+        digest.update(relative_path.encode())
+        digest.update(b"\0")
+        digest.update(file_hash(repo_root / relative_path).encode())
         digest.update(b"\0")
     return digest.hexdigest()

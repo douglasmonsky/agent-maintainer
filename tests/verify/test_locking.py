@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from dataclasses import replace
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from agent_maintainer.verify.locking import (
     VerificationFingerprint,
     VerificationLock,
     files_hash,
+    untracked_files_hash,
 )
 
 
@@ -25,11 +27,12 @@ def fingerprint() -> VerificationFingerprint:
         head="abc123",
         index_hash="index",
         worktree_hash="worktree",
+        untracked_hash="untracked",
         config_hash="config",
     )
 
 
-def test_verification_lock_reuses_completed_same_state_result(tmp_path: Path) -> None:
+def test_lock_reuses_same_state_result(tmp_path: Path) -> None:
     """Same-state overlapping verification can point at the prior result."""
 
     log_dir = tmp_path / ".verify-logs"
@@ -46,7 +49,7 @@ def test_verification_lock_reuses_completed_same_state_result(tmp_path: Path) ->
         assert not (log_dir / LOCK_NAME).exists()
 
 
-def test_verification_lock_does_not_reuse_different_repo_state(tmp_path: Path) -> None:
+def test_lock_skips_changed_repo_state(tmp_path: Path) -> None:
     """A changed repo fingerprint must run fresh instead of reusing old output."""
 
     log_dir = tmp_path / ".verify-logs"
@@ -61,7 +64,25 @@ def test_verification_lock_does_not_reuse_different_repo_state(tmp_path: Path) -
         assert (log_dir / LOCK_NAME).exists()
 
 
-def test_config_fingerprint_includes_external_tool_config(tmp_path: Path) -> None:
+def test_untracked_hash_changes(tmp_path: Path) -> None:
+    """Untracked source files must affect verifier reuse identity."""
+
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    before = untracked_files_hash(tmp_path)
+
+    source = tmp_path / "src" / "example.py"
+    source.parent.mkdir()
+    source.write_text("VALUE = 1\n", encoding="utf-8")
+    after = untracked_files_hash(tmp_path)
+
+    source.write_text("VALUE = 2\n", encoding="utf-8")
+    changed = untracked_files_hash(tmp_path)
+
+    assert before != after
+    assert after != changed
+
+
+def test_config_hash_includes_tool_config(tmp_path: Path) -> None:
     """Changing a verifier-adjacent config file changes reuse fingerprint."""
 
     (tmp_path / "pyproject.toml").write_text("[tool.agent_maintainer]\n", encoding="utf-8")
