@@ -2,19 +2,20 @@
 
 Generated from `[tool.agent_maintainer]` by
 `python3 -m agent_maintainer guidance`. Do not edit by hand.
+Details: `docs/agent-maintainer-guidance.md`.
 
 ## Ratchet Guidance
 
 - Read `AGENTS.ratchet.md` for legacy ratchet repair guidance.
 
-## Working Rules
+## Hard Rules
 
 - Keep commits small, tested, and aligned with configured boundaries.
 - Treat failing checks as design feedback before adding suppressions.
 - Update source, tests, docs, and config together when behavior changes.
 - Do not relax thresholds or architecture rules to make checks pass.
 
-## Safe Context
+## Context Hygiene
 
 - Prefer `rg --files` or `git ls-files` for file discovery.
 - Do not bulk-read generated/cache/binary paths:
@@ -24,7 +25,7 @@ Generated from `[tool.agent_maintainer]` by
   `AGENT_MAINTAINER_KEEP_MUTANTS=true` only when explicitly debugging
   those artifacts.
 
-## Repo Boundaries
+## Repo Contract
 
 - Mode: `fresh-strict`
 - Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`
@@ -33,7 +34,7 @@ Generated from `[tool.agent_maintainer]` by
 - If Tach policy changes, add or update an ADR under
   `docs/architecture/decisions/`.
 
-## Coding Limits
+## Blocking Limits
 
 - Coverage floors: total `90%`, changed `90%`
 - File length: `500` physical / `375` source lines
@@ -44,19 +45,19 @@ Generated from `[tool.agent_maintainer]` by
 
 ## Active Gates
 
-- pip-audit: `-r config/dev-lock.txt`
-- Mutmut: `run`
-- Semgrep: `scan --config semgrep.yml --error --metrics=off src/agent_maintainer src/archguard .codex/hooks .claude/hooks`
-- OSV Scanner: `scan source -r . --config osv-scanner.toml`
-- Python SBOM: `requirements config/dev-lock.txt --output-reproducible --of JSON`
-- License checking: `--from=mixed --format=json`
-- Secret scanning: `gitleaks` (profiles: full, ci; history: security)
+- pip-audit
+- Mutmut
+- Semgrep
+- OSV Scanner
+- Python SBOM
+- License checking
+- Secret scanning: gitleaks
 - wemake-python-styleguide
 - Interrogate
-- Markdown linting: `'**/*.md'`
-- YAML linting: `.github/workflows .github/dependabot.yml .pre-commit-config.yaml .markdownlint-cli2.yaml .yamllint zizmor.yml`
-- TOML formatting: `pyproject.toml tach.toml osv-scanner.toml 'config/*.toml'`
-- Schema validation: `--builtin-schema vendor.github-workflows .github/workflows/verify.yml .github/workflows/publish.yml`
+- Markdown linting
+- YAML linting
+- TOML formatting
+- Schema validation
 
 ## Failure Loop
 

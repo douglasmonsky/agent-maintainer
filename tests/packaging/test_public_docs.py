@@ -5,6 +5,17 @@ from __future__ import annotations
 from pathlib import Path
 
 README = Path("README.md")
+MIN_READ_MORE_LINKS = 8
+
+REQUIRED_README_LINKS = (
+    "docs/quick-start.md",
+    "docs/diagnostics-repair-loop.md",
+    "docs/agent-client-hooks.md",
+    "docs/optional-gates.md",
+    "docs/mutation-testing.md",
+    "docs/architecture-policy.md",
+    "docs/release-checklist.md",
+)
 
 
 def test_readme_uses_public_beta_framing() -> None:
@@ -18,6 +29,8 @@ def test_readme_uses_public_beta_framing() -> None:
     assert "[Release checklist](docs/release-checklist.md)" in text
     assert "[MIT License](LICENSE)" in text
     assert "[Changelog](CHANGELOG.md)" in text
+    assert "docs/assets/graphics/agent-maintainer-social-preview.png" in text
+    assert "![Python 3.11-3.14]" in text
 
 
 def test_license_and_changelog_are_public_beta_ready() -> None:
@@ -51,3 +64,14 @@ def test_readme_omits_private_history_terms() -> None:
 
     offenders = [fragment for fragment in forbidden if fragment in text]
     assert offenders == []
+
+
+def test_readme_has_strategic_read_more_links() -> None:
+    """README links detailed docs beside the sections that need them."""
+
+    text = README.read_text(encoding="utf-8")
+
+    assert text.count("Read more:") >= MIN_READ_MORE_LINKS
+    for link_path in REQUIRED_README_LINKS:
+        assert f"]({link_path})" in text
+        assert Path(link_path).exists(), link_path

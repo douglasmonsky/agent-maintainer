@@ -55,13 +55,17 @@ def test_render_guidance_includes_active_configuration() -> None:
     text = maintainer_guidance.render_guidance(strict_config())
 
     assert "Generated Agent Maintainer Guidance" in text
-    assert "## Working Rules" in text
-    assert "## Safe Context" in text
-    assert "## Repo Boundaries" in text
-    assert "## Coding Limits" in text
+    assert "Details: `docs/agent-maintainer-guidance.md`." in text
+    assert "## Hard Rules" in text
+    assert "## Context Hygiene" in text
+    assert "## Repo Contract" in text
+    assert "## Blocking Limits" in text
     assert "## Active Gates" in text
     assert "## Required Commands" in text
     assert "## Optional Gates" not in text
+    assert "config/dev-lock.txt" not in text
+    assert "semgrep.yml" not in text
+    assert "--builtin-schema" not in text
     assert "Keep chat updates summary-first" in text
     assert "Do not emit routine `still running` updates" in text
     assert "Use `apply_patch` for manual edits" in text
@@ -74,18 +78,18 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Coverage floors: total `80%`, changed `90%`" in text
     assert "Change budget blocks: `600` lines or `12` files" in text
     assert "Source-only changes without test-file changes: `blocked`" in text
-    assert "pip-audit: `-r config/dev-lock.txt`" in text
-    assert "Mutmut: `run`" in text
-    assert "Semgrep: `scan --config semgrep.yml --metrics=off .`" in text
-    assert "OSV Scanner: `scan source -r . --config osv-scanner.toml`" in text
+    assert "- pip-audit" in text
+    assert "- Mutmut" in text
+    assert "- Semgrep" in text
+    assert "- OSV Scanner" in text
     assert "Trivy" not in text
-    assert "Python SBOM: `requirements config/dev-lock.txt --of JSON`" in text
-    assert "License checking: `--from=mixed --format=json`" in text
-    assert "Secret scanning: `gitleaks`" in text
-    assert "Markdown linting: `'**/*.md'`" in text
-    assert "YAML linting: `.github/workflows .pre-commit-config.yaml`" in text
-    assert "TOML formatting: `pyproject.toml tach.toml osv-scanner.toml`" in text
-    assert "Schema validation: `--builtin-schema vendor.github-workflows" in text
+    assert "- Python SBOM" in text
+    assert "- License checking" in text
+    assert "- Secret scanning: gitleaks" in text
+    assert "- Markdown linting" in text
+    assert "- YAML linting" in text
+    assert "- TOML formatting" in text
+    assert "- Schema validation" in text
     assert "python3 -m agent_maintainer verify --profile precommit" in text
     assert "Before PR/merge: run `full`, `ci`, `security`, and `manual` once" in text
     assert "Structure hint patterns advisory" not in text

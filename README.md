@@ -1,19 +1,18 @@
 # Agent Maintainer
 
-[![CI](https://github.com/douglasmonsky/agent-maintainer/actions/workflows/verify.yml/badge.svg)](https://github.com/douglasmonsky/agent-maintainer/actions/workflows/verify.yml)
-[![PyPI](https://img.shields.io/pypi/v/agent-maintainer.svg)](https://pypi.org/project/agent-maintainer/)
-![Python 3.10-3.14](https://img.shields.io/badge/python-3.10--3.14-blue)
-[![License: MIT](https://img.shields.io/pypi/l/agent-maintainer.svg)](LICENSE)
-
-Maintainability checks and repair-loop diagnostics for AI-assisted Python
-repositories.
-
-> Agent Maintainer is in beta. The core workflow is usable, but starter files
-> and defaults may change as it is tested across more Python repository layouts.
-
 <p align="center">
   <img src="docs/assets/graphics/agent-maintainer-social-preview.png" alt="Make AI agents edit better. Agent Maintainer guides coding agents with maintainability checks, repair feedback, and workflow guardrails." width="900">
 </p>
+
+[![CI](https://github.com/douglasmonsky/agent-maintainer/actions/workflows/verify.yml/badge.svg)](https://github.com/douglasmonsky/agent-maintainer/actions/workflows/verify.yml)
+[![PyPI](https://img.shields.io/pypi/v/agent-maintainer.svg)](https://pypi.org/project/agent-maintainer/)
+![Python 3.11-3.14](https://img.shields.io/badge/python-3.11--3.14-blue)
+[![License: MIT](https://img.shields.io/pypi/l/agent-maintainer.svg)](LICENSE)
+
+Maintainability checks and repair-loop diagnostics for AI-assisted Python repositories.
+
+> Agent Maintainer is in beta. The core workflow is usable, but starter files
+> and defaults may change as it is tested across more Python repository layouts.
 
 Agent Maintainer helps Python repositories stay maintainable under AI-assisted
 development. It combines low-noise verification, change budgets, suppression
@@ -26,12 +25,14 @@ Agent Maintainer is a repository maintenance control layer for AI-assisted code
 changes. It checks whether changes are small enough to review, test-backed,
 type-checked, covered, diagnosable, and aligned with repo structure.
 
+Read more: [diagnostics and repair loop](docs/diagnostics-repair-loop.md).
+
 ## What This Is Not
 
 Agent Maintainer is not a runtime AI safety system. It does not moderate model
-outputs, filter prompts, block jailbreaks, or validate chatbot responses. It is
-also not a prompt/output moderation framework; it focuses on repository health
-during AI-assisted software development.
+outputs, filter prompts, block jailbreaks, validate chatbot responses, or act as
+a prompt/output moderation framework. It focuses on repository health during
+AI-assisted software development.
 
 ## Quick Start
 
@@ -48,48 +49,50 @@ agent-maintainer init --track core --preset existing-app
 ```
 
 Merge `config/pyproject.agent-maintainer.toml` into your `pyproject.toml`, tune
-paths for your repo, then check setup health:
+paths for the repo, then check setup health:
 
 ```bash
 agent-maintainer doctor
 agent-maintainer verify --profile precommit
 ```
 
+Read more: [quick start](docs/quick-start.md) and
+[first run walkthrough](docs/onboarding-first-run.md).
+
 ## First Successful Run
 
-Healthy setup output should be quiet:
+Healthy verification output should be quiet:
 
 ```text
 PASS
 ```
 
 `doctor` prints one compact `PASS`, `WARN`, or `FAIL` row per setup check. If
-verification fails, inspect generated diagnostics before changing thresholds or
-suppressions:
+verification fails, inspect the generated diagnostics before changing thresholds
+or suppressions:
 
 ```bash
 cat .verify-logs/LAST_FAILURE.md
 ```
 
-The failure note includes failed checks, relevant artifact paths, and an exact
-rerun command.
-
-The console command is convenient for local use. Committed automation should use
-the module entrypoint because it works reliably in editable local-source
-contexts:
+Failure notes include failed checks, run-scoped artifact paths, and exact rerun
+commands. Committed automation should prefer the module entrypoint because it
+works reliably in editable local-source contexts:
 
 ```bash
 python3 -m agent_maintainer verify --profile precommit
 ```
 
+Read more: [diagnostics and repair loop](docs/diagnostics-repair-loop.md).
+
 ## Adoption Tracks
 
-`init` writes starter files for three adoption levels:
+`init` writes starter files at three adoption levels.
 
 | Track | Use When | Writes |
 |---|---|---|
 | `core` | You want the minimum useful maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |
-| `agent` | Coding agents actively edit the repo. | Core files plus `AGENTS.md`, Codex hooks, and Claude Code hooks. |
+| `agent` | Coding agents actively edit the repo. | Core files plus `AGENTS.md`, Codex hooks, Claude Code hooks. |
 | `hardening` | You want docs/config hygiene and security-adjacent surfaces. | Agent files plus Node-backed tooling metadata. |
 
 Preview writes before changing a repo:
@@ -100,17 +103,20 @@ python3 -m agent_maintainer init --track agent --dry-run
 
 Existing files are not overwritten unless `--force` is passed.
 
+Read more: [agent hooks](docs/agent-client-hooks.md) and
+[optional gates](docs/optional-gates.md).
+
 ## Policy Presets
 
-`--track` chooses which files are written. `--preset` tunes the starter policy in
-`config/pyproject.agent-maintainer.toml`:
+`--track` chooses the files written. `--preset` tunes starter policy in
+`config/pyproject.agent-maintainer.toml`.
 
 | Preset | Use When |
 |---|---|
 | `small-library` | A compact Python package can start with tighter budgets. |
 | `existing-app` | An existing app needs useful defaults without immediate strict-mode friction. |
-| `ai-agent-heavy` | Coding agents will frequently change code and source-without-test changes should fail. |
-| `legacy-ratchet` | Existing debt should improve by baseline and ranked repair targets. |
+| `ai-agent-heavy` | Coding agents frequently change code and source-without-test changes should fail. |
+| `legacy-ratchet` | Existing debt should improve through baseline-ranked repair targets. |
 | `strict-new-repo` | A clean new repo can start with strict budgets and wemake enabled. |
 
 Example:
@@ -118,6 +124,10 @@ Example:
 ```bash
 python3 -m agent_maintainer init --track agent --preset ai-agent-heavy
 ```
+
+Read more: [fresh-strict mode](docs/fresh-strict.md),
+[legacy-ratchet mode](docs/legacy-ratchet.md), and
+[ratcheting](docs/ratcheting.md).
 
 ## Common Commands
 
@@ -142,7 +152,7 @@ python3 -m archguard tach-config --strict-root-module
 python3 -m archguard decision-check --base-ref HEAD
 ```
 
-Profiles are intentionally stable:
+Profiles are intentionally stable.
 
 | Profile | Purpose |
 |---|---|
@@ -152,6 +162,8 @@ Profiles are intentionally stable:
 | `ci` | GitHub Actions gate. |
 | `security` | Security-oriented scan profile. |
 | `manual` | Slow opt-in tools such as mutation testing and Semgrep. |
+
+Read more: [tool map](docs/tool-map.md).
 
 ## What The Tool Checks
 
@@ -165,7 +177,7 @@ Profiles are intentionally stable:
 | Type discipline | Pyright |
 | Test coverage | Pytest, pytest-cov, coverage, diff-cover |
 | Complexity | Radon reports and Xenon gate |
-| Architecture boundaries and policy governance | Tach or Import Linter; Archguard for Tach policy-change decisions |
+| Architecture boundaries | Tach or Import Linter; Archguard for Tach policy changes |
 | Dependency hygiene | deptry |
 | Dead code | vulture |
 | Security checks | Bandit, pip-audit, Gitleaks, Semgrep when enabled |
@@ -173,6 +185,10 @@ Profiles are intentionally stable:
 | GitHub Actions checks | actionlint and zizmor when workflows exist |
 | Docs/config hygiene | markdownlint-cli2, yamllint, Taplo, check-jsonschema when enabled |
 | Agent feedback | `AGENTS.agent-maintainer.md` and `.verify-logs` diagnostics |
+
+Read more: [optional gates](docs/optional-gates.md),
+[mutation testing](docs/mutation-testing.md), and
+[architecture policy](docs/architecture-policy.md).
 
 ## Configuration
 
@@ -198,31 +214,35 @@ run_history_limit = 10
 
 `mode = "fresh-strict"` is for new repositories that can block strict checks on
 day one. `mode = "legacy-ratchet"` is for existing repositories where heavier
-gates should remain opt-in while changed-code discipline ramps up. This
-repository self-enforces stricter settings than the starter template, including
-90 percent total coverage.
+gates should remain opt-in while changed-code discipline ramps up.
 
-Environment overrides use the `AGENT_MAINTAINER_*` prefix:
+This repository self-enforces stricter settings than the starter template,
+including 90 percent total coverage. Environment overrides use the
+`AGENT_MAINTAINER_*` prefix:
 
 ```bash
 AGENT_MAINTAINER_SOURCE_ROOTS=src,tests python3 -m agent_maintainer doctor
 ```
 
+Read more: [quick start](docs/quick-start.md) and
+[structure cohesion](docs/structure-cohesion.md).
+
 ## Agent Guidance
 
-The generated sidecar gives coding agents current repo policy without copying
-long instructions into every prompt:
+Generated guidance gives coding agents current repo policy without copying long
+instructions into every prompt:
 
 ```bash
 python3 -m agent_maintainer guidance
 python3 -m agent_maintainer guidance --check
 ```
 
-This writes `AGENTS.agent-maintainer.md` from `[tool.agent_maintainer]`. Update
-configuration first, then regenerate the sidecar.
+The command writes `AGENTS.agent-maintainer.md` from `[tool.agent_maintainer]`.
+Update configuration first, then regenerate the sidecar.
 
-For the human-readable explanation of what belongs in the generated sidecar, see
-[Agent Maintainer guidance](docs/agent-maintainer-guidance.md).
+Read more: [Agent Maintainer guidance](docs/agent-maintainer-guidance.md),
+[agent hooks](docs/agent-client-hooks.md), and
+[context safety](docs/context-safety.md).
 
 ## Optional Tooling
 
@@ -241,6 +261,9 @@ Node-backed tools such as `markdownlint-cli2` and Taplo are managed through
 ```bash
 npm ci
 ```
+
+Read more: [optional gates](docs/optional-gates.md) and
+[Release checklist](docs/release-checklist.md).
 
 ## Install From Source
 
@@ -272,26 +295,18 @@ PYTHONPATH=src python3 -m agent_maintainer bootstrap
 .venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
 ```
 
+Read more: [Release checklist](docs/release-checklist.md),
+[troubleshooting](docs/troubleshooting.md), and [roadmap](docs/ROADMAP.md).
+
 ## Further Reading
 
-- [MIT License](LICENSE)
 - [Changelog](CHANGELOG.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Context safety](docs/context-safety.md)
-- [Test intelligence](docs/test-intelligence.md)
-- [Ratcheting](docs/ratcheting.md)
-- [Cohesive change plans](docs/cohesive-change-plans.md)
+- [MIT License](LICENSE)
 - [Context compression](docs/context-compression.md)
-- [Tool map](docs/tool-map.md)
-- [First run walkthrough](docs/onboarding-first-run.md)
-- [Fresh-strict mode](docs/fresh-strict.md)
-- [Legacy-ratchet mode](docs/legacy-ratchet.md)
-- [Agent client hooks](docs/agent-client-hooks.md)
-- [Agent Maintainer guidance](docs/agent-maintainer-guidance.md)
+- [Cohesive change plans](docs/cohesive-change-plans.md)
 - [Cohesive-change overrides](docs/cohesive-change-overrides.md)
-- [Release checklist](docs/release-checklist.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Structure cohesion](docs/structure-cohesion.md)
+- [Test intelligence](docs/test-intelligence.md)
+- [Full roadmap blueprint](docs/roadmap/full-roadmap-blueprint.md)
 
 Example starter projects:
 
