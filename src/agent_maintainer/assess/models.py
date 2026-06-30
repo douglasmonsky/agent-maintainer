@@ -34,6 +34,9 @@ class RepoEvidence:
     yaml_files: int
     toml_files: int
     json_files: int
+    scanned_files: int = 0
+    scan_source: str = "unknown"
+    scan_truncated: bool = False
 
 
 @dataclass(frozen=True)

@@ -8,11 +8,12 @@ from hypothesis import strategies as st
 from agent_maintainer.assess.models import RepoEvidence
 from agent_maintainer.assess.setup_advisor import build_setup_report
 
-TRACKS = {"core", "agent", "hardening"}
+TRACKS = {"core", "agent", "hardening", "inspect"}
 PRESETS = {
     "ai-agent-heavy",
     "existing-app",
     "legacy-ratchet",
+    "manual-review",
     "strict-new-repo",
 }
 
@@ -64,6 +65,9 @@ def test_setup_advisor_commands_match_recommendation(
     assert len({gate.name for gate in report.optional_gates}) == len(
         report.optional_gates,
     )
+    if report.track == "inspect":
+        assert report.next_commands[1] == "agent-maintainer init --track core --dry-run"
+        return
     dry_run, install, doctor, verify = report.next_commands
     expected_init = f"agent-maintainer init --track {report.track} --preset {report.preset}"
     assert dry_run == f"{expected_init} --dry-run"

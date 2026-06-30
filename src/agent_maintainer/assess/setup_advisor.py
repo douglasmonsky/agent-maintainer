@@ -32,7 +32,9 @@ def build_setup_report(evidence: RepoEvidence) -> SetupAdvisorReport:
 
 
 def _recommended_track(evidence: RepoEvidence) -> str:
-    """Return core, agent, or hardening track."""
+    """Return core, agent, hardening, or inspect track."""
+    if not _has_python_surface(evidence):
+        return "inspect"
     if evidence.has_codex_hooks or evidence.has_claude_hooks or evidence.has_agent_guidance:
         return "agent"
     if evidence.has_ci and (evidence.yaml_files or evidence.toml_files or evidence.json_files):
@@ -42,12 +44,14 @@ def _recommended_track(evidence: RepoEvidence) -> str:
 
 def _recommended_preset(evidence: RepoEvidence) -> str:
     """Return initializer preset recommendation."""
+    if not _has_python_surface(evidence):
+        return "manual-review"
     if (
         evidence.source_files <= SMALL_REPO_FILE_LIMIT
         and evidence.test_files <= SMALL_REPO_FILE_LIMIT
     ):
         return "strict-new-repo"
-    if not evidence.has_tests or evidence.source_files >= LARGE_SOURCE_FILE_COUNT:
+    if not evidence.has_tests and evidence.source_files >= LARGE_SOURCE_FILE_COUNT:
         return "legacy-ratchet"
     if evidence.has_agent_guidance:
         return "ai-agent-heavy"
@@ -56,6 +60,8 @@ def _recommended_preset(evidence: RepoEvidence) -> str:
 
 def _confidence(evidence: RepoEvidence) -> str:
     """Return confidence level based on available repo signals."""
+    if not _has_python_surface(evidence) or evidence.scan_truncated:
+        return "low"
     signal_count = sum(
         (
             evidence.has_pyproject,
@@ -78,13 +84,21 @@ def _reasons(evidence: RepoEvidence, track: str, preset: str) -> tuple[str, ...]
     reasons = [
         f"Recommended track `{track}` from current agent, CI, and config evidence.",
         f"Recommended preset `{preset}` from source/test size and adoption state.",
+        f"Evidence scan `{evidence.scan_source}` inspected {evidence.scanned_files} files.",
     ]
+    if evidence.scan_truncated:
+        reasons.append("Evidence scan was truncated; review recommendations manually.")
+    if not _has_python_surface(evidence):
+        reasons.append(
+            "No Python package or source files detected; inspect repo type before init.",
+        )
+        return tuple(reasons)
     if not evidence.has_agent_config:
-        reasons.append("No `[tool.agent_maintainer]` config was found yet.")
+        reasons.append("No `[tool.agent_maintainer]` config found yet.")
     if evidence.has_tests:
         reasons.append(f"Detected {evidence.test_files} Python test files.")
     else:
-        reasons.append("No test tree was detected; require_tests may need staged adoption.")
+        reasons.append("No test tree detected; require_tests may need staged adoption.")
     if evidence.has_pre_commit:
         reasons.append("Detected pre-commit configuration for local verification.")
     return tuple(reasons)
@@ -158,23 +172,42 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
 
 def _agent_prompts(evidence: RepoEvidence) -> tuple[str, ...]:
     """Return follow-up prompts for an AI agent adopting the repo."""
+    if not _has_python_surface(evidence):
+        return (
+            "Identify the repo language, package manager, test command, and CI command.",
+            "Confirm Agent Maintainer is appropriate before writing starter files.",
+            "Run only a dry-run initializer until Python surfaces are confirmed.",
+        )
     prompts = [
-        "Identify generated, vendored, migration, and fixture paths that checks should ignore.",
+        "Identify generated, vendored, migration, and fixture paths checks should ignore.",
         "Map source modules into likely architecture boundaries before enabling strict Tach.",
-        "List commands that already represent the repo's real test, lint, type, and build gates.",
+        "List commands that are already the repo's real test, lint, type, and build gates.",
     ]
     if not evidence.has_tests:
         prompts.append("Find the smallest behavior surface where tests should be added first.")
     if evidence.source_files >= LARGE_SOURCE_FILE_COUNT:
-        prompts.append("Group large folders by responsibility before tightening file-count gates.")
+        prompts.append(
+            "Group large folders by responsibility before tightening file-count gates.",
+        )
     return tuple(prompts)
 
 
 def _next_commands(track: str, preset: str) -> tuple[str, ...]:
     """Return likely next setup commands."""
+    if track == "inspect":
+        return (
+            "agent-maintainer assess setup --target . --json",
+            "agent-maintainer init --track core --dry-run",
+            "Ask an agent to identify the repo language, test command, and generated paths.",
+        )
     return (
         f"agent-maintainer init --track {track} --preset {preset} --dry-run",
         f"agent-maintainer init --track {track} --preset {preset}",
         "agent-maintainer doctor",
         "agent-maintainer verify --profile precommit",
     )
+
+
+def _has_python_surface(evidence: RepoEvidence) -> bool:
+    """Return whether evidence looks like a Python repository."""
+    return evidence.has_pyproject or evidence.source_files > 0 or evidence.test_files > 0

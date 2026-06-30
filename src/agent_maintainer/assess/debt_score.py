@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from agent_maintainer.assess import debt_manifest
 from agent_maintainer.assess.debt_categories import (
     build_debt_categories,
     risk_label,
@@ -60,20 +61,26 @@ def write_debt_artifacts(report: DebtScoreReport, log_dir: Path) -> tuple[Path, 
 
 
 def render_debt_markdown(report: DebtScoreReport) -> str:
-    """Render scorecard Markdown."""
+    """Render debt score as Markdown."""
 
     lines = [
         "# Technical Debt Score",
         "",
-        f"Score: **{report.score}/100** ({report.risk})",
-        f"Confidence: **{report.confidence}**",
+        f"Target: `{report.target}`",
+        f"Score: `{report.score}/100` (`{report.risk}`)",
+        f"Confidence: `{report.confidence}`",
         "",
         report.summary,
         "",
         f"Interpretation: {score_interpretation(report.score)}",
         "",
-        "Configured thresholds are tolerance signals; repository counts and"
-        " artifact presence are observed evidence.",
+        "## Configured thresholds and tolerance signals",
+        "",
+        (
+            "Category scores combine observed repository evidence, configured "
+            "tolerance, and latest verifier outcomes when available."
+        ),
+        "Configured thresholds tolerance signals are advisory, not release gates.",
         "",
         "## Categories",
         "",
@@ -81,16 +88,14 @@ def render_debt_markdown(report: DebtScoreReport) -> str:
     for category in report.categories:
         lines.extend(
             (
-                f"### {category.name}: {category.score}/100",
+                f"### {category.name}",
                 "",
-                f"Status: {category.status}",
-                f"Interpretation: {category_interpretation(category)}",
-                "",
-                "Evidence:",
-                *[f"- {item}" for item in category.evidence],
-                "",
-                "Recommended next steps:",
-                *[f"- {item}" for item in category.recommendations],
+                f"- Score: `{category.score}/100` (`{category.status}`)",
+                f"- Interpretation: {category_interpretation(category)}",
+                "- Evidence:",
+                *[f"  - {item}" for item in category.evidence],
+                "- Recommendations:",
+                *[f"  - {item}" for item in category.recommendations],
                 "",
             ),
         )
@@ -98,20 +103,9 @@ def render_debt_markdown(report: DebtScoreReport) -> str:
     return "\n".join(lines)
 
 
-def _summary(score: int) -> str:
-    """Return plain-language score summary."""
-
-    if score <= LOW_RISK_MAX:
-        return "The repo has strong maintenance controls; focus on keeping ratchets fresh."
-    if score <= MODERATE_RISK_MAX:
-        return "The repo has useful controls with a few adoption gaps worth tightening."
-    if score <= HIGH_RISK_MAX:
-        return "The repo has meaningful debt risk; prioritize tests and boundaries."
-    return "The repo should start with conservative ratchets before stricter gates."
-
-
 def score_interpretation(score: int) -> str:
     """Return reader-facing advisory interpretation for score."""
+
     if score <= LOW_RISK_MAX:
         return "Healthy overall; treat listed categories as watch items, not failures."
     if score <= MODERATE_RISK_MAX:
@@ -123,6 +117,7 @@ def score_interpretation(score: int) -> str:
 
 def category_interpretation(category: DebtCategory) -> str:
     """Return reader-facing category interpretation."""
+
     if category.status == "low":
         return "Healthy or intentionally controlled; monitor drift."
     if category.status == "moderate":
@@ -132,18 +127,33 @@ def category_interpretation(category: DebtCategory) -> str:
     return "Critical action item; stabilize before relying on stricter automation."
 
 
+def _summary(score: int) -> str:
+    """Return plain-language score summary."""
+
+    if score <= LOW_RISK_MAX:
+        return "The repo has strong maintenance controls; keep ratchets fresh."
+    if score <= MODERATE_RISK_MAX:
+        return "The repo has useful controls with a few adoption gaps worth tightening."
+    if score <= HIGH_RISK_MAX:
+        return "The repo has meaningful debt risk; prioritize tests and boundaries."
+    return "The repo should start with conservative ratchets before stricter gates."
+
+
 def _confidence(evidence: RepoEvidence, log_dir: Path) -> str:
     """Return score confidence."""
 
-    if evidence.has_agent_config and (log_dir / "manifest.json").exists():
+    manifest = debt_manifest.manifest_signals(log_dir)
+    if evidence.scan_truncated or manifest.malformed:
+        return "low"
+    if evidence.has_agent_config and manifest.present:
         return "high"
-    if evidence.has_agent_config and evidence.has_pyproject:
+    if evidence.has_agent_config or evidence.has_pyproject:
         return "medium"
     return "low"
 
 
 def _next_actions(categories: tuple[DebtCategory, ...]) -> tuple[str, ...]:
-    """Return next actions from the highest-risk categories."""
+    """Return next actions from highest-risk categories."""
 
     highest = sorted(categories, key=lambda category: category.score, reverse=True)[:3]
     actions: list[str] = []

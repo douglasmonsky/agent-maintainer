@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from agent_maintainer.assess.debt_score import build_debt_report, write_debt_artifacts
-from agent_maintainer.assess.evidence import collect_evidence
+from agent_maintainer.assess.evidence import DEFAULT_MAX_EVIDENCE_FILES, collect_evidence
 from agent_maintainer.assess.reporting import (
     render_debt_text,
     render_json,
@@ -23,15 +23,16 @@ def main(argv: list[str] | None = None) -> int:
     """Run assessment subcommands."""
     args = parse_args([] if argv is None else argv)
     target = args.target.resolve()
+    evidence = collect_evidence(target, max_files=args.max_files)
     if args.command == "setup":
-        report = build_setup_report(collect_evidence(target))
+        report = build_setup_report(evidence)
         print(render_json(report) if args.json else render_setup_text(report))
         return 0
     if args.command == "debt":
         with _working_directory(target):
             config = load_config()
         log_dir = args.log_dir if args.log_dir.is_absolute() else target / args.log_dir
-        report = build_debt_report(collect_evidence(target), config, log_dir=log_dir)
+        report = build_debt_report(evidence, config, log_dir=log_dir)
         if not args.no_write:
             write_debt_artifacts(report, log_dir)
         print(render_json(report) if args.json else render_debt_text(report))
@@ -45,9 +46,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command", required=True)
     setup = subparsers.add_parser("setup", help="Recommend track, preset, and gates.")
     setup.add_argument("--target", type=Path, default=Path("."))
+    setup.add_argument("--max-files", type=int, default=DEFAULT_MAX_EVIDENCE_FILES)
     setup.add_argument("--json", action="store_true")
     debt = subparsers.add_parser("debt", help="Render advisory Technical Debt Score.")
     debt.add_argument("--target", type=Path, default=Path("."))
+    debt.add_argument("--max-files", type=int, default=DEFAULT_MAX_EVIDENCE_FILES)
     debt.add_argument("--json", action="store_true")
     debt.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     debt.add_argument("--no-write", action="store_true")
