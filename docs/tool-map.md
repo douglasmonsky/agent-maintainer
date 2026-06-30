@@ -85,7 +85,9 @@ change-plan status, context-pack path, and expansion commands.
 local `.verify-logs/report/index.html` report with links back to local logs,
 coverage, architecture, release-readiness, and context-pack artifacts. CI
 appends summary output to GitHub Actions and uploads safe verification logs.
-Terminal output stays compact; agents should use these artifacts for command,
+Terminal output stays compact: pass/fail, profile, run id, duration with
+expected profile hint, failed checks, exact expansion commands, and the
+run-scoped log directory. Agents should use artifacts for raw stdout/stderr,
 exit-code, threshold, log-path, and rerun context.
 Managed agent-client hooks append local execution evidence to
 `.verify-logs/hooks.jsonl`, and `doctor` reports latest audited hook status.

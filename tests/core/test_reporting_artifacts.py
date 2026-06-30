@@ -165,18 +165,26 @@ def test_pyright_summary_formats_diagnostics() -> None:
 
 def test_print_success_and_failures(capsys: pytest.CaptureFixture[str]) -> None:
     skipped = [CheckResult("optional", passed=True, output="not configured", skipped=True)]
-    maintainer_reporting.print_success(skipped)
-    assert "SKIPPED optional checks" in capsys.readouterr().out
+    maintainer_reporting.print_success(
+        skipped,
+        run_details=("Profile: full", "Run ID: 20260625T100000Z-full-test"),
+    )
+    success_output = capsys.readouterr().out
+    assert "Profile: full" in success_output
+    assert "Run ID: 20260625T100000Z-full-test" in success_output
+    assert "SKIPPED optional checks" in success_output
 
     maintainer_reporting.print_failures(
         "full",
         [CheckResult("ruff", passed=False, output="lint failed")],
         skipped,
-        run_id="20260625T100000Z-full-test",
+        run_details=("Run ID: 20260625T100000Z-full-test", "Duration: 1.0s"),
     )
     output = capsys.readouterr().out
     assert "FAIL: 1 check(s) failed [full]" in output
     assert "Run ID: 20260625T100000Z-full-test" in output
+    assert "Duration: 1.0s" in output
+    assert "Failed checks: ruff" in output
     assert "lint failed" in output
     assert (
         "Smallest rerun after fixes: `python3 -m agent_maintainer verify --profile full`"

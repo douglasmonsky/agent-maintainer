@@ -49,9 +49,10 @@ depends_on = [
 [[modules]]
 path = "result_summary"
 depends_on = [
-  "//agent_maintainer.core.config",
-  "//agent_maintainer.core.reporting",
-  "//agent_maintainer.models",
+    "//agent_maintainer.core.config",
+    "//agent_maintainer.core.reporting",
+    "//agent_maintainer.models",
+    "timing",
 ]
 
 [[modules]]

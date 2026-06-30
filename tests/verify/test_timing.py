@@ -38,3 +38,18 @@ def test_duration_seconds_handles_missing_or_invalid_values() -> None:
 
     assert timing.duration_seconds("", "2026-06-25T10:00:00Z") is None
     assert timing.duration_seconds("not-a-date", "2026-06-25T10:00:00Z") is None
+
+
+def test_profile_duration_hint_defaults_for_unknown_profile() -> None:
+    """Unknown profiles still get a safe generic duration hint."""
+
+    assert timing.profile_duration_hint("fast") == "expected quick edit check"
+    assert timing.profile_duration_hint("custom") == "expected verifier check"
+
+
+def test_format_duration_handles_unknown_seconds_and_minutes() -> None:
+    """Duration formatting stays compact for terminal summaries."""
+
+    assert timing.format_duration(None) == "unknown"
+    assert timing.format_duration(12.34) == "12.3s"
+    assert timing.format_duration(125.0) == "2m 5s"

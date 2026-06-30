@@ -41,7 +41,8 @@ Agent Maintainer should reduce repair-loop noise, not become another source of
 context waste. Agent-facing output should be summary-first:
 
 - completed check, actionable failure, or material plan change;
-- pass/fail status, profile, run id, failed checks, exact next commands;
+- pass/fail status, profile, run id, duration, failed checks, exact next
+  commands;
 - no routine "still running" updates for expected long checks;
 - no narration for every focused rerun;
 - no pasted raw logs when a run-scoped artifact can be referenced instead.
@@ -84,6 +85,10 @@ Those snapshots include a run-scoped manifest, failure note, and copied check
 logs. Snapshot expansion commands include `--log-dir .verify-logs/runs/<run-id>`
 so agents can inspect the exact failed run even if another verifier run happens
 later.
+
+Terminal summaries stay compact: profile, run id, duration, failed checks,
+expansion commands, and the run-scoped log directory. Raw stdout/stderr stays
+in the run directory.
 
 Retention is controlled by:
 
