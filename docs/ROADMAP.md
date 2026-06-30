@@ -191,7 +191,7 @@ Planned work:
 - [x] Phase 60: Dogfood Source-Checkout Drift Detection
 - [x] Phase 61: Run-Scoped Diagnostic Retention
 - [x] Phase 62: Duplicate Generated Artifact Detection
-- [ ] Phase 63: Configured-Repo-Only Codex and Claude Hooks
+- [x] Phase 63: Configured-Repo-Only Codex and Claude Hooks
 - [ ] Phase 64: Documentation and Generated Guidance Slimming
 
 Acceptance criteria for this sequence:
