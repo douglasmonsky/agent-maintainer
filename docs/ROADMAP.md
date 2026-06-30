@@ -186,7 +186,7 @@ Planned work:
 - [x] Phase 55: Mutmut Config Hardening
 - [x] Phase 56: Mutation Result Ratchets
 - [x] Phase 57: Advisory Deep Mutation Sweep
-- [ ] Phase 58: Quiet Verifier Output Contract
+- [x] Phase 58: Quiet Verifier Output Contract
 - [ ] Phase 59: Smarter Verification Cadence Guidance
 - [ ] Phase 60: Dogfood Source-Checkout Drift Detection
 - [ ] Phase 61: Run-Scoped Diagnostic Retention

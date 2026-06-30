@@ -123,4 +123,7 @@ def test_main_prints_success_for_passing_selected_check(
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0
-    assert capsys.readouterr().out.strip() == "PASS"
+    output = capsys.readouterr().out
+    assert "PASS" in output
+    assert "Profile: fast" in output
+    assert "Duration: unknown (expected quick edit check)" in output

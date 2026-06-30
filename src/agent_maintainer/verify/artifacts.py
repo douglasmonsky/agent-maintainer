@@ -138,6 +138,7 @@ def manifest_payload(
         "failure_snapshot": verify_history.path_text(failure_snapshot, context.repo_root),
         "git": git_state(context.repo_root),
         "timing": verify_timing.run_timing(results),
+        "expected_duration_hint": verify_timing.profile_duration_hint(context.profile),
         "thresholds": threshold_snapshot(context.config),
         "checks": [
             check_payload(

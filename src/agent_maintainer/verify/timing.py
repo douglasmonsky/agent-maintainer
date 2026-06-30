@@ -6,6 +6,16 @@ import datetime as dt
 
 from agent_maintainer.models import CheckResult
 
+SECONDS_PER_MINUTE = 60
+PROFILE_DURATION_HINTS = (
+    ("fast", "expected quick edit check"),
+    ("precommit", "expected local commit check"),
+    ("full", "expected broad local check"),
+    ("ci", "expected CI-equivalent check"),
+    ("security", "expected security-focused check"),
+    ("manual", "expected slow manual check"),
+)
+
 
 def utc_timestamp() -> str:
     """Return stable UTC timestamp for JSON artifacts."""
@@ -32,6 +42,27 @@ def run_timing(results: list[CheckResult]) -> dict[str, object]:
         "ended_at": end,
         "duration_seconds": duration_seconds(start, end),
     }
+
+
+def profile_duration_hint(profile: str) -> str:
+    """Return expected duration hint for a verifier profile."""
+
+    for profile_name, hint in PROFILE_DURATION_HINTS:
+        if profile == profile_name:
+            return hint
+    return "expected verifier check"
+
+
+def format_duration(seconds: float | None) -> str:
+    """Return compact human-readable duration text."""
+
+    if seconds is None:
+        return "unknown"
+    if seconds < SECONDS_PER_MINUTE:
+        return f"{seconds:.1f}s"
+    minutes = int(seconds // SECONDS_PER_MINUTE)
+    remainder = int(seconds % SECONDS_PER_MINUTE)
+    return f"{minutes}m {remainder}s"
 
 
 def duration_seconds(started_at: str, ended_at: str) -> float | None:

@@ -56,6 +56,7 @@ def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -
         "ended_at": "2026-06-25T10:00:01Z",
         "duration_seconds": 1.0,
     }
+    assert manifest["expected_duration_hint"] == "expected broad local check"
     assert manifest["thresholds"]["coverage_fail_under"] == DEFAULT_COVERAGE_FLOOR
     assert manifest["checks"] == [
         {

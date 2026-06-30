@@ -8,6 +8,7 @@ from pathlib import Path
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.core.reporting import print_failures, print_success
 from agent_maintainer.models import CheckResult
+from agent_maintainer.verify import timing as verify_timing
 
 
 def apply_optional_skip_policy(
@@ -44,9 +45,10 @@ def print_result_summary(
     failures = [result for result in results if not result.passed]
     skipped = [result for result in results if result.skipped]
     warnings = [result for result in results if result.warning]
+    details = run_details(profile, results, run_id)
 
     if not failures:
-        print_success(skipped, warnings)
+        print_success(skipped, warnings, run_details=details)
         return 0
 
     print_failures(
@@ -54,9 +56,28 @@ def print_result_summary(
         failures,
         skipped,
         context_log_dir=context_log_dir_value,
-        run_id=run_id,
+        run_details=details,
     )
     return 1
+
+
+def run_details(
+    profile: str,
+    results: list[CheckResult],
+    run_id: str | None,
+) -> tuple[str, ...]:
+    """Return compact run metadata lines for terminal output."""
+
+    timing = verify_timing.run_timing(results)
+    duration = timing.get("duration_seconds")
+    duration_text = verify_timing.format_duration(
+        duration if isinstance(duration, int | float) else None
+    )
+    details = [f"Profile: {profile}"]
+    if run_id:
+        details.append(f"Run ID: {run_id}")
+    details.append(f"Duration: {duration_text} ({verify_timing.profile_duration_hint(profile)})")
+    return tuple(details)
 
 
 def context_log_dir(config: MaintainerConfig, log_dir: Path, run_id: str) -> str | None:

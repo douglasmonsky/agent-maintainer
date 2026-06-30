@@ -242,10 +242,17 @@ def print_warnings(warnings: list[Any], heading: str) -> None:
         print(f"  {result.name}: {result.output}")
 
 
-def print_success(skipped: list[Any], warnings: list[Any] | None = None) -> None:
+def print_success(
+    skipped: list[Any],
+    warnings: list[Any] | None = None,
+    *,
+    run_details: tuple[str, ...] = (),
+) -> None:
     """Print the passing verifier result, warnings, and optional skips."""
 
     print("PASS")
+    for detail in run_details:
+        print(detail)
     print_warnings(warnings or [], "WARNINGS:")
     print_skipped(skipped, "SKIPPED optional checks:")
 
@@ -256,13 +263,17 @@ def print_failures(
     skipped: list[Any],
     *,
     context_log_dir: str | None = None,
-    run_id: str | None = None,
+    run_details: tuple[str, ...] = (),
 ) -> None:
     """Print a compact failure report for the selected verifier profile."""
 
     print(f"FAIL: {len(failures)} check(s) failed [{profile}]\n")
-    if run_id:
-        print(f"Run ID: {run_id}\n")
+    for detail in run_details:
+        print(detail)
+    if run_details:
+        print()
+    failed_names = ", ".join(result.name for result in failures)
+    print(f"Failed checks: {failed_names}\n")
     for index, result in enumerate(failures, start=1):
         print(f"{index}. {result.name}")
         print(result.output or "(no output)")
@@ -273,5 +284,7 @@ def print_failures(
     if skipped:
         print_skipped(skipped, "Skipped optional checks:")
         print()
-    print("Full logs are in .verify-logs/.")
-    print(f"Smallest rerun after fixes: `python3 -m agent_maintainer verify --profile {profile}`")
+    logs_dir = context_log_dir or ".verify-logs/"
+    rerun_command = f"python3 -m agent_maintainer verify --profile {profile}"
+    print(f"Full logs are in {logs_dir}.")
+    print(f"Smallest rerun after fixes: `{rerun_command}`")
