@@ -79,11 +79,8 @@ Diagnostics
   LAST_FAILURE.md
   structured tool artifacts
 
-Editable graphics generator
-  docs/assets/graphics/*.html
-  docs/assets/graphics/*.css
-  docs/assets/graphics/symbols.svg
-  docs/assets/graphics/render_graphics.py
+Static product graphics
+  docs/assets/graphics/*.png
 
 Release discipline
   release checklist
