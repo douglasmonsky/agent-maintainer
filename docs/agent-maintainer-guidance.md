@@ -1,10 +1,11 @@
 # Agent Maintainer Guidance
 
-`AGENTS.agent-maintainer.md` is intentionally compact because agents load it into
-working context repeatedly. It should tell a coding agent what to do, which
-paths not to bulk-read, what limits matter, and which commands prove the work.
+`AGENTS.agent-maintainer.md` is intentionally compact because agents load it
+into working context repeatedly. It should tell a coding agent what to do now:
+which roots matter, which limits block work, which gates are active, and which
+commands prove the task.
 
-This document is for humans who want the fuller explanation.
+This document is for humans who want the longer explanation.
 
 ## How The Sidecar Is Generated
 
@@ -21,35 +22,36 @@ configuration or the renderer, then regenerate.
 ## Why The Sidecar Is Short
 
 The generated sidecar is part of the agent working context. It should not list
-every disabled integration, default, long rationale, or tool the agent does not
-need for the current repository.
+every disabled integration, default, rationale, or tool an agent does not need
+for the current repository.
 
-Disabled checks are omitted. Active gates are listed only when they affect work
-in this repo. The sidecar focuses on:
+The sidecar focuses on:
 
-- working rules for small, tested, reviewable changes;
-- generated/cache paths agents should not read in bulk;
-- active source/test roots;
-- architecture policy and ADR requirements;
-- coding limits that commonly block work;
+- hard working rules for small, tested, reviewable changes;
+- generated/cache paths agents should not bulk-read;
+- active source and test roots;
+- architecture policy and ADR expectations;
+- coding limits commonly blocking work;
 - active gates only;
-- commands required before completion.
+- exact verification commands.
+
+Disabled checks are omitted. Detailed gate inventories belong in
+[optional gates](optional-gates.md) and the verification catalog.
 
 ## Quiet Agent Workflow
 
 Agent Maintainer should reduce repair-loop noise, not become another source of
-context waste. Agent-facing output should be summary-first:
+context waste. Agent-facing output should stay summary-first:
 
 - completed check, actionable failure, or material plan change;
-- pass/fail status, profile, run id, duration, failed checks, exact next
-  commands;
+- pass/fail status, profile, run id, duration, failed checks, exact next command;
 - no routine "still running" updates for expected long checks;
-- no narration for every focused rerun;
+- no narration of every focused rerun;
 - no pasted raw logs when a run-scoped artifact can be referenced instead.
 
-Manual file edits should use `apply_patch`. Avoid heredoc rewrite commands such
-as `python3 - <<'PY'` for ordinary source edits because they are noisy, harder
-to review, and bypass the repo's preferred patch workflow.
+Manual source edits should use `apply_patch`. Avoid heredoc rewrite commands
+such as `python3 - <<'PY'` for ordinary source edits because they are noisy,
+harder to review, and bypass this repo's preferred patch workflow.
 
 ## Verification Cadence
 
@@ -57,42 +59,36 @@ The final verification bar should stay strict, but inner-loop checks should be
 proportional to the change:
 
 - small edit loop: run affected tests and touched-file lint only;
-- coherent chunk: run the related focused suite plus `tach check --exact` or
+- coherent chunk: run a related focused suite plus `tach check --exact` or
   `python3 -m agent_maintainer change-plan check` when architecture or change
   budgets are involved;
 - before commit: run `python3 -m agent_maintainer verify --profile precommit`;
 - before PR or merge: run `full`, `ci`, `security`, and `manual` once;
 - before release: run release-only packaging checks.
 
-Failure summaries should recommend the smallest useful rerun command instead of
-implying every profile must be rerun after every small fix.
-
-When exactly one check fails and the verifier knows that check command, the
-summary points at that command. When several checks fail, it falls back to the
-current verifier profile.
+Failure summaries should recommend the smallest useful rerun command. When
+several checks fail, the verifier can fall back to the current profile.
 
 ## Failure Expansion
 
 Passing runs should stay quiet. Failed runs should provide just-in-time context
-commands next to the failing checks instead of forcing agents to guess which log
-or manifest to open.
+commands for the failed checks instead of forcing agents to guess which log or
+manifest to open.
 
-`LAST_FAILURE.md` is the latest failure pointer and can change after another
-agent or hook run. To avoid stale context, failed runs also write retained
-snapshots under:
+`LAST_FAILURE.md` is a latest-failure pointer and can change after another agent
+or hook run. Failed runs also write retained snapshots under:
 
 ```text
 .verify-logs/runs/<run-id>/
 ```
 
-Those snapshots include a run-scoped manifest, failure note, and copied check
-logs. Snapshot expansion commands include `--log-dir .verify-logs/runs/<run-id>`
-so agents can inspect the exact failed run even if another verifier run happens
-later.
+Use run-scoped expansion commands when repairing a specific failure:
 
-Terminal summaries stay compact: profile, run id, duration, failed checks,
-expansion commands, and the run-scoped log directory. Raw stdout/stderr stays
-in the run directory.
+```bash
+python3 -m agent_maintainer context failures \
+  --log-dir .verify-logs/runs/<run-id> \
+  --limit 20
+```
 
 Retention is controlled by:
 
@@ -101,17 +97,15 @@ Retention is controlled by:
 run_history_limit = 10
 ```
 
-Use `0` only when run history must be disabled.
-
 ## Active Gates
 
 An active gate is a check the repository currently expects agents to respect.
 Examples include strict style, docstring coverage, security scanners,
-docs/config linters, and release artifacts when enabled in configuration.
+docs/config linters, release artifacts, and mutation testing when enabled.
 
-Disabled optional tools are intentionally absent from the generated sidecar.
-They remain discoverable in `pyproject.toml`, `docs/tool-map.md`, and the
-verification catalog, but they do not need to consume agent context.
+Disabled optional tools are intentionally absent from generated guidance. They
+remain discoverable in `pyproject.toml`, [optional gates](optional-gates.md),
+[tool map](tool-map.md), and the verification catalog.
 
 ## When To Regenerate
 
@@ -119,7 +113,7 @@ Regenerate after changing:
 
 - `[tool.agent_maintainer]`;
 - verification profiles or thresholds;
-- source/test/package roots;
+- source, test, package, or coverage roots;
 - active scanner or docs/config gate settings;
 - architecture-tool configuration.
 
@@ -132,12 +126,15 @@ python3 -m agent_maintainer doctor
 
 ## What Belongs Elsewhere
 
-Long-form rationale, migration notes, and tool inventories belong in normal
-docs, not in `AGENTS.agent-maintainer.md`.
+Long-form rationale, migration notes, and tool inventories belong in docs, not
+in `AGENTS.agent-maintainer.md`.
 
-Use:
-
-- `docs/tool-map.md` for the supported-tool catalog.
-- `docs/architecture/decisions/` for boundary decisions.
-- `docs/troubleshooting.md` for failure recovery.
-- `docs/roadmap/` for future work.
+- [Quick start](quick-start.md)
+- [Diagnostics and repair loop](diagnostics-repair-loop.md)
+- [Optional gates](optional-gates.md)
+- [Mutation testing](mutation-testing.md)
+- [Architecture policy](architecture-policy.md)
+- [Tool map](tool-map.md)
+- [Architecture decisions](architecture/decisions/)
+- [Troubleshooting](troubleshooting.md)
+- [Roadmap](ROADMAP.md)

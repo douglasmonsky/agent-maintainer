@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -142,16 +141,17 @@ def render_guidance(config: MaintainerConfig) -> str:
         "",
         "Generated from `[tool.agent_maintainer]` by",
         "`python3 -m agent_maintainer guidance`. Do not edit by hand.",
+        "Details: `docs/agent-maintainer-guidance.md`.",
         "",
         *ratchet_link_lines(config),
-        "## Working Rules",
+        "## Hard Rules",
         "",
         "- Keep commits small, tested, and aligned with configured boundaries.",
         "- Treat failing checks as design feedback before adding suppressions.",
         "- Update source, tests, docs, and config together when behavior changes.",
         "- Do not relax thresholds or architecture rules to make checks pass.",
         "",
-        "## Safe Context",
+        "## Context Hygiene",
         "",
         "- Prefer `rg --files` or `git ls-files` for file discovery.",
         "- Do not bulk-read generated/cache/binary paths:",
@@ -161,7 +161,7 @@ def render_guidance(config: MaintainerConfig) -> str:
         "  `AGENT_MAINTAINER_KEEP_MUTANTS=true` only when explicitly debugging",
         "  those artifacts.",
         "",
-        "## Repo Boundaries",
+        "## Repo Contract",
         "",
         f"- Mode: `{config.mode}`",
         f"- Source roots: {format_inline_paths(config.source_roots)}",
@@ -170,7 +170,7 @@ def render_guidance(config: MaintainerConfig) -> str:
         "- If Tach policy changes, add or update an ADR under",
         "  `docs/architecture/decisions/`.",
         "",
-        "## Coding Limits",
+        "## Blocking Limits",
         "",
         (
             "- Coverage floors: "
@@ -231,23 +231,22 @@ def active_gate_lines(config: MaintainerConfig) -> list[str]:
     """Return concise active gate guidance omitting disabled integrations."""
 
     gates = [
-        *active_gate("pip-audit", config.enable_pip_audit, config.pip_audit_args),
-        *active_gate("Mutmut", config.enable_mutmut, config.mutmut_args),
-        *active_gate("Semgrep", config.enable_semgrep, config.semgrep_args),
-        *active_gate("OSV Scanner", config.enable_osv_scanner, config.osv_scanner_args),
-        *active_gate("Trivy", config.enable_trivy, config.trivy_args),
-        *active_gate("Python SBOM", config.enable_sbom, config.sbom_args),
-        *active_gate("License checking", config.enable_license_check, config.license_check_args),
+        *active_gate("pip-audit", config.enable_pip_audit),
+        *active_gate("Mutmut", config.enable_mutmut),
+        *active_gate("Semgrep", config.enable_semgrep),
+        *active_gate("OSV Scanner", config.enable_osv_scanner),
+        *active_gate("Trivy", config.enable_trivy),
+        *active_gate("Python SBOM", config.enable_sbom),
+        *active_gate("License checking", config.enable_license_check),
         *active_secret_scanning_gate(config),
         *active_boolean_gate("wemake-python-styleguide", config.enable_wemake),
         *active_boolean_gate("Interrogate", config.enable_interrogate),
-        *active_gate("Markdown linting", config.enable_markdownlint, config.markdownlint_paths),
-        *active_gate("YAML linting", config.enable_yamllint, config.yamllint_paths),
-        *active_gate("TOML formatting", config.enable_taplo, config.taplo_paths),
+        *active_gate("Markdown linting", config.enable_markdownlint),
+        *active_gate("YAML linting", config.enable_yamllint),
+        *active_gate("TOML formatting", config.enable_taplo),
         *active_gate(
             "Schema validation",
             config.enable_check_jsonschema,
-            config.check_jsonschema_args,
         ),
     ]
     if not gates:
@@ -255,14 +254,12 @@ def active_gate_lines(config: MaintainerConfig) -> list[str]:
     return ["## Active Gates", "", *gates]
 
 
-def active_gate(name: str, enabled: bool, args: tuple[str, ...]) -> list[str]:
+def active_gate(name: str, enabled: bool) -> list[str]:
     """Return one active gate line or no line when disabled."""
 
     if not enabled:
         return []
-    if not args:
-        return [f"- {name}"]
-    return [f"- {name}: `{shlex.join(args)}`"]
+    return [f"- {name}"]
 
 
 def active_boolean_gate(name: str, enabled: bool) -> list[str]:
@@ -276,12 +273,7 @@ def active_secret_scanning_gate(config: MaintainerConfig) -> list[str]:
 
     if not config.enable_secret_scanning:
         return []
-    profiles = ", ".join(config.secret_scan_profiles) or "none"
-    history_profiles = ", ".join(config.secret_scan_history_profiles) or "none"
-    return [
-        f"- Secret scanning: `{config.secret_scanner}` "
-        f"(profiles: {profiles}; history: {history_profiles})"
-    ]
+    return [f"- Secret scanning: {config.secret_scanner}"]
 
 
 def ratchet_link_lines(config: MaintainerConfig) -> list[str]:
