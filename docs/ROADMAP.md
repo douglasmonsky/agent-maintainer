@@ -258,7 +258,7 @@ Planned work:
 
 ## Public Docs And Score Phases
 
-- [ ] Phase 67: Public Docs, Setup Advisor, and Technical Debt Score
+- [x] Phase 67: Public Docs, Setup Advisor, and Technical Debt Score
 - [ ] Phase 68: README and Docs Information Architecture Rewrite
 - [ ] Phase 69: Supported Scan Matrix and Agent Utilization Guide
 - [ ] Phase 70: Setup Advisor Command and JSON Output
