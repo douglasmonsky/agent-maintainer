@@ -4,6 +4,7 @@ ruff
 pyright
 pytest
 pytest-cov
+hypothesis
 coverage
 defusedxml
 diff-cover

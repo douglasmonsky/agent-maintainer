@@ -4,7 +4,7 @@ kind = "refactor"
 status = "active"
 base_ref = "origin/main"
 expires = 2026-07-13
-allowed_paths = ["src/**", "tests/**", "docs/**", "CHANGELOG.md", "AGENTS.agent-maintainer.md", "README.md", "config/pyproject.agent-maintainer.toml", ".agent-maintainer/change-plans/**", "pyproject.toml", "justfile", ".github/workflows/**", "package.json", "package-lock.json", "osv-scanner.toml"]
+allowed_paths = ["src/**", "tests/**", "docs/**", "CHANGELOG.md", "AGENTS.agent-maintainer.md", "README.md", "config/pyproject.agent-maintainer.toml", "config/dev-dependencies.txt", "config/dev-lock.txt", ".agent-maintainer/change-plans/**", "pyproject.toml", "justfile", ".github/workflows/**", "package.json", "package-lock.json", "osv-scanner.toml"]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 120
 max_changed_lines = 12000
@@ -35,6 +35,10 @@ move together so the gate is real locally and in CI.
 This branch also removes the obsolete documentation graphics render pipeline,
 including its `justfile` recipes and Playwright-specific deptry exceptions,
 while preserving the committed static PNG assets.
+
+This release-polish follow-up adds Hypothesis as a dev-only test dependency
+and serializes Mutmut's shared generated artifact directory so mutation runs
+cannot overlap with manual verification.
 
 ## Why this should not be split smaller
 
