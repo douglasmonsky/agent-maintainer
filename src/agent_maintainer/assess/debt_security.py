@@ -37,6 +37,7 @@ def security_evidence(
 
     lines = [
         f"dependency files present = {evidence.has_dependency_file}",
+        f"lock file present = {evidence.has_lock_file}",
         f"package.json present = {evidence.has_package_json}",
         f"container/IaC surface = {evidence.has_container_or_iac}",
         f"pip-audit enabled = {config.enable_pip_audit}",

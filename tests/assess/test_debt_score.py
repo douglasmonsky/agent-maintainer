@@ -165,6 +165,7 @@ def test_debt_score_does_not_penalize_absent_security_surface(tmp_path: Path) ->
 
     assert category.score <= LOW_RISK_CATEGORY_SCORE
     assert any("no dependency" in item for item in category.evidence)
+    assert any("lock file present" in item for item in category.evidence)
 
 
 def test_debt_score_truncated_scan_lowers_confidence(tmp_path: Path) -> None:
