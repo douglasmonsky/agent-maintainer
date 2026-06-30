@@ -11,28 +11,39 @@
 
 Maintainability checks and repair-loop diagnostics for AI-assisted Python repositories.
 
-> Agent Maintainer is in beta. The core workflow is usable, but starter files
-> and defaults may change as it is tested across more Python repository layouts.
+> Agent Maintainer is in beta. The core workflow is usable today, but starter
+> files and defaults may change as it is tested across more Python repository
+> layouts.
 
-Agent Maintainer helps Python repositories stay maintainable under AI-assisted
-development. It combines low-noise verification, change budgets, suppression
-controls, coverage gates, type checks, architecture checks, security checks, and
-structured diagnostics into one workflow for humans and coding agents.
+Agent Maintainer helps coding agents make smaller, safer, more reviewable code
+changes. It wraps your existing quality tools in low-noise profiles, adds
+change-budget and ratchet discipline, writes bounded diagnostics to
+`.verify-logs`, and gives agents exact repair commands instead of dumping huge
+logs into the chat.
 
-## What This Is
+Read more where it matters:
+[quick start](docs/quick-start.md),
+[first run walkthrough](docs/onboarding-first-run.md),
+[diagnostics loop](docs/diagnostics-repair-loop.md),
+[tool map](docs/tool-map.md).
 
-Agent Maintainer is a repository maintenance control layer for AI-assisted code
-changes. It checks whether changes are small enough to review, test-backed,
-type-checked, covered, diagnosable, and aligned with repo structure.
+## What It Is
 
-Read more: [diagnostics and repair loop](docs/diagnostics-repair-loop.md).
+Agent Maintainer is a repository maintenance control layer for AI-assisted
+software development. It checks whether changes are small enough to review,
+test-backed, type-checked, covered, diagnosable, and aligned with repository
+structure.
 
-## What This Is Not
+It is strongest when an AI agent is actively editing your repo: the agent gets a
+compact pass/fail summary, a run id, failed checks, and exact next commands. The
+raw evidence stays in run-scoped artifacts.
 
-Agent Maintainer is not a runtime AI safety system. It does not moderate model
-outputs, filter prompts, block jailbreaks, validate chatbot responses, or act as
-a prompt/output moderation framework. It focuses on repository health during
-AI-assisted software development.
+## What It Is Not
+
+Agent Maintainer is not a runtime AI safety product. It does not moderate model
+outputs, filter prompts, block jailbreaks, inspect end-user conversations, or
+validate chatbot responses. It focuses on repository health while humans and
+coding agents change code.
 
 ## Quick Start
 
@@ -42,157 +53,239 @@ Install the core toolset:
 python -m pip install "agent-maintainer[core]"
 ```
 
-Initialize a repository:
+Initialize a repo:
 
 ```bash
 agent-maintainer init --track core --preset existing-app
 ```
 
 Merge `config/pyproject.agent-maintainer.toml` into your `pyproject.toml`, tune
-paths for the repo, then check setup health:
+paths, then run:
 
 ```bash
 agent-maintainer doctor
 agent-maintainer verify --profile precommit
 ```
 
-Read more: [quick start](docs/quick-start.md) and
-[first run walkthrough](docs/onboarding-first-run.md).
-
-## First Successful Run
-
-Healthy verification output should be quiet:
+A healthy verification run is intentionally quiet:
 
 ```text
 PASS
 ```
 
-`doctor` prints one compact `PASS`, `WARN`, or `FAIL` row per setup check. If
-verification fails, inspect the generated diagnostics before changing thresholds
-or suppressions:
+If it fails, read the bounded repair note first:
 
 ```bash
 cat .verify-logs/LAST_FAILURE.md
 ```
 
-Failure notes include failed checks, run-scoped artifact paths, and exact rerun
-commands. Committed automation should prefer the module entrypoint because it
-works reliably in editable local-source contexts:
+That note links to run-scoped logs and gives exact expansion/rerun commands.
+
+## Best First Experience: Try A Fresh Strict Repo
+
+The clearest way to feel the value is to let an agent build something new under
+strict settings before entropy starts.
+
+```bash
+python -m pip install "agent-maintainer[core]"
+agent-maintainer init --track agent --preset strict-new-repo
+```
+
+Then ask your coding agent to build a small package, add tests, and finish by
+running:
 
 ```bash
 python3 -m agent_maintainer verify --profile precommit
 ```
 
-Read more: [diagnostics and repair loop](docs/diagnostics-repair-loop.md).
+The strict preset turns on the pressure that matters for AI-generated code:
+small functions, covered behavior, low complexity, no broad suppressions,
+architecture ownership, and test-backed source changes.
+
+Deeper reads:
+[fresh-strict](docs/fresh-strict.md),
+[agent hooks](docs/agent-client-hooks.md),
+[generated guidance](docs/agent-maintainer-guidance.md).
 
 ## Adoption Tracks
 
-`init` writes starter files at three adoption levels.
+`init` separates files written from policy strictness.
 
-| Track | Use When | Writes |
+| Track | Best For | Writes |
 |---|---|---|
-| `core` | You want the minimum useful maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |
-| `agent` | Coding agents actively edit the repo. | Core files plus `AGENTS.md`, Codex hooks, Claude Code hooks. |
-| `hardening` | You want docs/config hygiene and security-adjacent surfaces. | Agent files plus Node-backed tooling metadata. |
+| `core` | A minimum useful local and CI maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |
+| `agent` | Repos where Codex, Claude Code, or other agents actively edit code. | Core plus `AGENTS.md`, generated guidance target, Codex hooks, Claude Code hooks. |
+| `hardening` | Repos that want docs/config hygiene and security-adjacent surfaces too. | Agent plus Node-backed tooling metadata. |
 
-Preview writes before changing a repo:
+Preview before writing:
 
 ```bash
-python3 -m agent_maintainer init --track agent --dry-run
+agent-maintainer init --track agent --preset ai-agent-heavy --dry-run
 ```
 
-Existing files are not overwritten unless `--force` is passed.
-
-Read more: [agent hooks](docs/agent-client-hooks.md) and
-[optional gates](docs/optional-gates.md).
-
-## Policy Presets
-
-`--track` chooses the files written. `--preset` tunes starter policy in
-`config/pyproject.agent-maintainer.toml`.
+Presets tune policy:
 
 | Preset | Use When |
 |---|---|
-| `small-library` | A compact Python package can start with tighter budgets. |
-| `existing-app` | An existing app needs useful defaults without immediate strict-mode friction. |
-| `ai-agent-heavy` | Coding agents frequently change code and source-without-test changes should fail. |
-| `legacy-ratchet` | Existing debt should improve through baseline-ranked repair targets. |
-| `strict-new-repo` | A clean new repo can start with strict budgets and wemake enabled. |
+| `small-library` | A compact package can start with tighter budgets. |
+| `existing-app` | An existing repo needs useful defaults without immediate strict-mode friction. |
+| `ai-agent-heavy` | Agents frequently change code and source-only changes should fail. |
+| `legacy-ratchet` | Existing debt should improve through ranked repair targets. |
+| `strict-new-repo` | A clean repo can start strict with wemake and tighter budgets. |
 
-Example:
+Read more:
+[quick start](docs/quick-start.md),
+[legacy ratchet](docs/legacy-ratchet.md),
+[fresh strict](docs/fresh-strict.md).
 
-```bash
-python3 -m agent_maintainer init --track agent --preset ai-agent-heavy
-```
+## Run Profiles
 
-Read more: [fresh-strict mode](docs/fresh-strict.md),
-[legacy-ratchet mode](docs/legacy-ratchet.md), and
-[ratcheting](docs/ratcheting.md).
-
-## Common Commands
-
-```bash
-python3 -m agent_maintainer bootstrap
-python3 -m agent_maintainer doctor --strict
-python3 -m agent_maintainer guidance
-python3 -m agent_maintainer guidance --check
-python3 -m agent_maintainer verify --profile fast
-python3 -m agent_maintainer verify --profile precommit
-python3 -m agent_maintainer verify --profile full
-python3 -m agent_maintainer verify --profile ci
-python3 -m agent_maintainer verify --profile security
-python3 -m agent_maintainer verify --profile manual
-python3 -m agent_maintainer report html
-python3 -m agent_maintainer hooks status all
-python3 -m agent_maintainer hooks install all --dry-run
-python3 -m agent_maintainer hooks install claude-code --scope user
-python3 -m agent_maintainer ratchet status
-python3 -m agent_maintainer ratchet next
-python3 -m archguard tach-config --strict-root-module
-python3 -m archguard decision-check --base-ref HEAD
-```
-
-Profiles are intentionally stable.
+<p align="center">
+  <img src="docs/assets/graphics/standard-runs-at-a-glance.png" alt="Agent Maintainer standard runs comparison showing fast, precommit, full, CI, security, and manual verification profiles." width="900">
+</p>
 
 | Profile | Purpose |
 |---|---|
-| `fast` | Hook-friendly checks after edits. |
-| `precommit` | Local completion gate. |
-| `full` | Deeper review gate before larger merges. |
-| `ci` | GitHub Actions gate. |
-| `security` | Security-oriented scan profile. |
-| `manual` | Slow opt-in tools such as mutation testing and Semgrep. |
+| `fast` | Hook-friendly edit feedback. |
+| `precommit` | Local completion gate before finishing a task. |
+| `full` | Deeper review gate before larger changes. |
+| `ci` | GitHub Actions-equivalent verification with branch comparison. |
+| `security` | Security-oriented scans, including history-oriented secret scanning when configured. |
+| `manual` | Slow or intentionally heavy checks such as Mutmut and Semgrep. |
 
-Read more: [tool map](docs/tool-map.md).
+Canonical commands:
 
-## What The Tool Checks
+```bash
+python3 -m agent_maintainer verify --profile precommit
+python3 -m agent_maintainer verify --profile full
+python3 -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
+python3 -m agent_maintainer verify --profile security
+python3 -m agent_maintainer verify --profile manual
+```
 
-| Concern | Enforcement |
+Read more:
+[tool map](docs/tool-map.md),
+[diagnostics repair loop](docs/diagnostics-repair-loop.md),
+[verification cadence](docs/agent-maintainer-guidance.md).
+
+## Supported Checks And Scans
+
+Agent Maintainer does not replace these tools. It coordinates them, gives them
+stable profiles, captures artifacts, and turns failures into bounded repair
+context.
+
+| Area | Supported Checks |
 |---|---|
-| Oversized Python files | `agent_maintainer.checks.file_lengths` |
-| Huge or diffuse changes | `agent_maintainer.checks.change_budget` |
-| Broad suppressions | `agent_maintainer.checks.suppression_budget` |
-| Required repo layout | Verifier layout checks |
-| Style and simple defects | Ruff |
-| Type discipline | Pyright |
-| Test coverage | Pytest, pytest-cov, coverage, diff-cover |
-| Complexity | Radon reports and Xenon gate |
-| Architecture boundaries | Tach or Import Linter; Archguard for Tach policy changes |
-| Dependency hygiene | deptry |
-| Dead code | vulture |
-| Security checks | Bandit, pip-audit, Gitleaks, Semgrep when enabled |
-| Supply-chain artifacts | CycloneDX Python SBOM and pip-licenses when enabled |
-| GitHub Actions checks | actionlint and zizmor when workflows exist |
-| Docs/config hygiene | markdownlint-cli2, yamllint, Taplo, check-jsonschema when enabled |
-| Agent feedback | `AGENTS.agent-maintainer.md` and `.verify-logs` diagnostics |
+| Change control | Change budget, staged diff checks, cohesive change plans, source-without-test-change policy. |
+| Size and structure | File length budgets, folder cohesion hints, suppression budget, required layout checks. |
+| Formatting and lint | Ruff format/check, Pylint, wemake-python-styleguide. |
+| Types and tests | Pyright, pytest, pytest-cov, coverage, diff-cover. |
+| Complexity | Radon reports, Xenon complexity gate. |
+| Architecture | Tach, Import Linter, Archguard decision notes and impact tools. |
+| Dependency hygiene | deptry, vulture. |
+| Python security | Bandit, pip-audit. |
+| Secrets | Gitleaks current-tree, staged/range, and history modes. |
+| SAST | Semgrep in manual profile when enabled. |
+| Multi-ecosystem CVEs | OSV Scanner when enabled. |
+| Containers/IaC | Trivy when relevant to the repo. |
+| SBOM and licenses | CycloneDX Python SBOM, pip-licenses. |
+| GitHub Actions | actionlint, zizmor. |
+| Docs/config hygiene | markdownlint-cli2, yamllint, Taplo, check-jsonschema. |
+| Mutation testing | Mutmut target ratchet, result ratchets, advisory deep sweep executor. |
+| Agent repair loop | `.verify-logs`, context commands, repair plans, PR summaries, static HTML reports. |
 
-Read more: [optional gates](docs/optional-gates.md),
-[mutation testing](docs/mutation-testing.md), and
-[architecture policy](docs/architecture-policy.md).
+Read more:
+[optional gates](docs/optional-gates.md),
+[mutation testing](docs/mutation-testing.md),
+[architecture policy](docs/architecture-policy.md),
+[test intelligence](docs/test-intelligence.md).
+
+## Ratcheting: Improve Existing Repos Without Freezing Them
+
+Legacy repos usually cannot become strict overnight. Agent Maintainer separates
+new regressions from old debt:
+
+- changed-code coverage can block new untested work;
+- suppression budget blocks new broad `noqa`, `type: ignore`, and coverage
+  escapes;
+- file-length and structure checks can warn before they block;
+- ratchet commands rank the next repair targets;
+- mutation target/result ratchets keep high-value mutation testing focused.
+
+Useful commands:
+
+```bash
+python3 -m agent_maintainer ratchet status
+python3 -m agent_maintainer ratchet next
+python3 -m agent_maintainer test-intel mutation-results
+python3 -m agent_maintainer test-intel mutation-sweep
+```
+
+Read more:
+[ratcheting](docs/ratcheting.md),
+[mutation testing](docs/mutation-testing.md),
+[cohesive change plans](docs/cohesive-change-plans.md).
+
+## How Agents Should Use It
+
+For agent-heavy repos, install the `agent` track and commit the generated
+guidance:
+
+```bash
+agent-maintainer init --track agent --preset ai-agent-heavy
+python3 -m agent_maintainer guidance
+```
+
+Then agents should follow this loop:
+
+1. Read `AGENTS.md` and `AGENTS.agent-maintainer.md`.
+2. Make a small, coherent change.
+3. Run focused tests while editing.
+4. Run `python3 -m agent_maintainer verify --profile precommit` before
+   finishing.
+5. If verification fails, inspect `.verify-logs/LAST_FAILURE.md` and use the
+   suggested `context` command instead of dumping raw logs.
+6. For larger work, run `full`, `ci`, `security`, and `manual` once before PR.
+
+Helpful repair commands:
+
+```bash
+python3 -m agent_maintainer context failures --limit 20
+python3 -m agent_maintainer context log pyright --tail 120
+python3 -m agent_maintainer repair-plan
+python3 -m agent_maintainer report html
+```
+
+Read more:
+[agent hooks](docs/agent-client-hooks.md),
+[context safety](docs/context-safety.md),
+[diagnostics repair loop](docs/diagnostics-repair-loop.md).
+
+## Trust Model
+
+Agent Maintainer is designed to be safe to try:
+
+- MIT licensed and open source.
+- Package-first; downstream repos should not vendor `src/agent_maintainer`.
+- Local-first verification; normal checks run against your repo and local tool
+  outputs.
+- Hooks no-op outside repos with `[tool.agent_maintainer]`.
+- Output is bounded; raw logs live in `.verify-logs/runs/<run-id>/`.
+- Secret scan artifacts are treated as sensitive/redacted diagnostics.
+- CI uses least-privilege permissions and package-index publishing uses trusted
+  publishing.
+- This repo dogfoods strict settings, Python 3.11-3.14 compatibility, release
+  checks, mutation ratchets, OSV, SBOM, licenses, docs/config hygiene, Codex
+  hooks, and Claude Code hooks.
+
+Read more:
+[Release checklist](docs/release-checklist.md),
+[troubleshooting](docs/troubleshooting.md),
+[0.1.0b4 release notes](docs/releases/0.1.0b4.md).
 
 ## Configuration
 
-Configuration lives in `pyproject.toml`:
+Configuration lives in `pyproject.toml`.
 
 ```toml
 [tool.agent_maintainer]
@@ -212,64 +305,67 @@ log_dir = ".verify-logs"
 run_history_limit = 10
 ```
 
-`mode = "fresh-strict"` is for new repositories that can block strict checks on
-day one. `mode = "legacy-ratchet"` is for existing repositories where heavier
-gates should remain opt-in while changed-code discipline ramps up.
-
-This repository self-enforces stricter settings than the starter template,
-including 90 percent total coverage. Environment overrides use the
-`AGENT_MAINTAINER_*` prefix:
+Precedence is built-in defaults, mode defaults, explicit `pyproject.toml`
+fields, environment variables, then CLI flags. Environment overrides use the
+`AGENT_MAINTAINER_*` prefix.
 
 ```bash
 AGENT_MAINTAINER_SOURCE_ROOTS=src,tests python3 -m agent_maintainer doctor
 ```
 
-Read more: [quick start](docs/quick-start.md) and
-[structure cohesion](docs/structure-cohesion.md).
+Read more:
+[quick start](docs/quick-start.md),
+[structure cohesion](docs/structure-cohesion.md),
+[tool map](docs/tool-map.md).
 
-## Agent Guidance
+## Setup Recommendations
 
-Generated guidance gives coding agents current repo policy without copying long
-instructions into every prompt:
-
-```bash
-python3 -m agent_maintainer guidance
-python3 -m agent_maintainer guidance --check
-```
-
-The command writes `AGENTS.agent-maintainer.md` from `[tool.agent_maintainer]`.
-Update configuration first, then regenerate the sidecar.
-
-Read more: [Agent Maintainer guidance](docs/agent-maintainer-guidance.md),
-[agent hooks](docs/agent-client-hooks.md), and
-[context safety](docs/context-safety.md).
-
-## Optional Tooling
-
-Install extras by adoption level:
+Today, choose a track and preset from the tables above, then run:
 
 ```bash
-python -m pip install "agent-maintainer[core]"
-python -m pip install "agent-maintainer[hardening]"
-python -m pip install "agent-maintainer[manual]"
-python -m pip install "agent-maintainer[all]"
+agent-maintainer init --track agent --preset ai-agent-heavy --dry-run
+agent-maintainer doctor
 ```
 
-Node-backed tools such as `markdownlint-cli2` and Taplo are managed through
-`package.json` when a repo opts into the hardening track:
+Near-term roadmap work will add a setup advisor that inspects repo evidence and
+recommends:
 
-```bash
-npm ci
-```
+- `core`, `agent`, or `hardening`;
+- `existing-app`, `ai-agent-heavy`, `legacy-ratchet`, or `strict-new-repo`;
+- optional gates worth enabling for the repo;
+- follow-up questions an AI agent should answer from local context.
 
-Read more: [optional gates](docs/optional-gates.md) and
-[Release checklist](docs/release-checklist.md).
+Read the proposed design:
+[setup advisor](docs/setup-advisor.md).
+
+## Technical Debt Score
+
+Planned work will add a transparent Technical Debt Score. It should be a
+decomposed scorecard, not an opaque grade:
+
+- reviewability;
+- tests and coverage;
+- type/style quality;
+- architecture boundaries;
+- dependency and security posture;
+- docs/config hygiene;
+- diagnostics health;
+- ratchet and mutation maturity.
+
+The score should include confidence, evidence links, and “why this changed”
+deltas. It should be advisory by default, with optional policy gates only after a
+repo has agreed on thresholds.
+
+Read the proposed design:
+[Technical Debt Score](docs/technical-debt-score.md).
 
 ## Install From Source
 
-For local development on Agent Maintainer itself, clone the repository and run:
+For local development on Agent Maintainer itself:
 
 ```bash
+git clone https://github.com/douglasmonsky/agent-maintainer.git
+cd agent-maintainer
 python -m pip install -e ".[core]"
 agent-maintainer --help
 ```
@@ -295,8 +391,10 @@ PYTHONPATH=src python3 -m agent_maintainer bootstrap
 .venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
 ```
 
-Read more: [Release checklist](docs/release-checklist.md),
-[troubleshooting](docs/troubleshooting.md), and [roadmap](docs/ROADMAP.md).
+Read more:
+[Release checklist](docs/release-checklist.md),
+[troubleshooting](docs/troubleshooting.md),
+[roadmap](docs/ROADMAP.md).
 
 ## Further Reading
 
@@ -304,8 +402,6 @@ Read more: [Release checklist](docs/release-checklist.md),
 - [MIT License](LICENSE)
 - [Context compression](docs/context-compression.md)
 - [Cohesive change plans](docs/cohesive-change-plans.md)
-- [Cohesive-change overrides](docs/cohesive-change-overrides.md)
-- [Test intelligence](docs/test-intelligence.md)
 - [Roadmap blueprint index](docs/roadmap/full-roadmap-blueprint.md)
 
 Example starter projects:

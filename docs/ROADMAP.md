@@ -229,6 +229,42 @@ Planned work:
 - Keep current blocking Mutmut targets unchanged until advisory candidates are
   promotion-ready.
 
+## Next: Public Docs, Setup Advisor, and Technical Debt Score
+
+Agent Maintainer needs a sharper public first impression before external case
+studies and broader promotion. The next phase is docs-first: make the README
+easy to trust, easy to try, and easy for coding agents to use without drowning
+humans in implementation history.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md`](roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md)
+
+Planned work:
+
+- Rewrite README around package-first onboarding, first successful run, trust,
+  fresh strict trial, agent-assisted adoption, supported scans, ratchets, and
+  diagnostics.
+- Move additional reading links next to relevant sections while preserving a
+  compact bottom index.
+- Keep `docs/tool-map.md` as exhaustive reference, but make README
+  outcome-first.
+- Plan a setup advisor that recommends track, preset, optional gates, and
+  follow-up AI inspection prompts from repo evidence.
+- Plan a transparent Technical Debt Score with sub-scores, confidence, and
+  delta explanations.
+- Consider additional graphics matching the current social-preview style for
+  run profiles, ratchets, setup advisor, and scorecard.
+
+## Public Docs And Score Phases
+
+- [x] Phase 67: Public Docs, Setup Advisor, and Technical Debt Score
+- [ ] Phase 68: README and Docs Information Architecture Rewrite
+- [ ] Phase 69: Supported Scan Matrix and Agent Utilization Guide
+- [ ] Phase 70: Setup Advisor Command and JSON Output
+- [ ] Phase 71: Technical Debt Score v0 Scorecard and Report Integration
+- [ ] Phase 72: Additional Product Graphics
+
 ## Future Work
 
 These items are intentionally postponed and are not part of the current
