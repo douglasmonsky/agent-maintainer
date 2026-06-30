@@ -261,6 +261,17 @@ Completed work:
 - [x] Phase 71: Technical Debt Score v0 Scorecard Report Integration
 - [x] Phase 72: Static Product Graphics Strategy Cleanup
 
+## Next: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion
+
+Continue release polish without adding new scanners or public profile
+semantics. Detailed scope:
+
+[`docs/roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md`](roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md)
+
+Planned work:
+
+- [ ] Phase 73: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion
+
 ## Future Work
 
 These items are intentionally postponed and are not part of the current
