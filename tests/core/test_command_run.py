@@ -43,6 +43,7 @@ def test_combined_output_keeps_stderr() -> None:
     assert "## stdout" in output
     assert "## stderr" in output
     assert "important stderr failure" in output
+    assert "stream truncated" in output
 
 
 def test_combined_output_preserves_stderr_tail() -> None:

@@ -50,20 +50,23 @@ def run_command_to_files(
 ) -> subprocess.CompletedProcess[bytes]:
     """Run command with stdout and stderr redirected to files."""
 
-    with stdout_path.open("wb") as stdout_file, stderr_path.open("wb") as stderr_file:
-        process = subprocess.Popen(  # nosec B603
+    with (
+        stdout_path.open("wb") as stdout_file,
+        stderr_path.open("wb") as stderr_file,
+        subprocess.Popen(  # nosec B603
             command,
             stdout=stdout_file,
             stderr=stderr_file,
             env=env,
             start_new_session=os.name == "posix",
-        )
+        ) as process,
+    ):
         try:
             process.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             terminate_process_tree(process)
             raise
-    return subprocess.CompletedProcess(command, process.returncode)
+        return subprocess.CompletedProcess(command, process.returncode)
 
 
 def terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
