@@ -132,6 +132,7 @@ BOOL_FIELDS = frozenset(
         "require_tests",
         "enable_pip_audit",
         "enable_mutmut",
+        "mutmut_result_ratchet_enabled",
         "enable_semgrep",
         "enable_osv_scanner",
         "enable_trivy",
@@ -174,6 +175,10 @@ NON_NEGATIVE_INT_FIELDS = frozenset(
         "context_max_paths_default",
         "diagnostic_run_history_limit",
         "mutmut_target_min",
+        "mutmut_max_survivors",
+        "mutmut_max_suspicious",
+        "mutmut_max_timeouts",
+        "mutmut_min_score",
         "ratchet_target_limit",
         "large_change_max_active_plans",
     )
@@ -286,6 +291,11 @@ class MaintainerConfig:
     enable_mutmut: bool = False
     mutmut_args: tuple[str, ...] = ("run",)
     mutmut_target_min: int = 0
+    mutmut_result_ratchet_enabled: bool = False
+    mutmut_max_survivors: int = 0
+    mutmut_max_suspicious: int = 0
+    mutmut_max_timeouts: int = 0
+    mutmut_min_score: int = 0
     enable_semgrep: bool = False
     semgrep_args: tuple[str, ...] = (
         "scan",

@@ -223,6 +223,11 @@ pip_audit_args = ["-r", "config/dev-lock.txt"]
 enable_mutmut = true
 mutmut_args = ["run"]
 mutmut_target_min = 3
+mutmut_result_ratchet_enabled = true
+mutmut_max_survivors = 84
+mutmut_max_suspicious = 0
+mutmut_max_timeouts = 0
+mutmut_min_score = 71
 enable_semgrep = true
 semgrep_args = [
   "scan",

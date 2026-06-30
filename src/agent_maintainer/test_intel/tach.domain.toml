@@ -24,6 +24,7 @@ depends_on = [
   "mapping",
   "models",
   "mutation_reporting",
+  "mutation_results",
   "mutation_targets",
   "reporting",
 ]
@@ -85,6 +86,13 @@ depends_on = []
 path = "mutation_reporting"
 depends_on = [
   "mutation_targets",
+]
+
+[[modules]]
+
+path = "mutation_results"
+depends_on = [
+  "//agent_maintainer.runners.mutmut_stats",
 ]
 
 [[modules]]

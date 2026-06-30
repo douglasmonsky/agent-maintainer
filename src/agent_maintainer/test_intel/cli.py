@@ -13,6 +13,7 @@ from agent_maintainer.test_intel import (
     hypothesis_candidates,
     hypothesis_reporting,
     mutation_reporting,
+    mutation_results,
     mutation_targets,
 )
 from agent_maintainer.test_intel.changed import changed_source_paths
@@ -27,6 +28,7 @@ from agent_maintainer.test_intel.reporting import (
 
 FORMAT_JSON = "json"
 FORMAT_TEXT = "text"
+FORMAT_CHOICES = (FORMAT_TEXT, FORMAT_JSON)
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -42,7 +44,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     changed_parser.add_argument("--staged", action="store_true")
     changed_parser.add_argument(
         "--format",
-        choices=(FORMAT_TEXT, FORMAT_JSON),
+        choices=FORMAT_CHOICES,
         default=FORMAT_TEXT,
     )
     hypothesis_parser = subparsers.add_parser(
@@ -59,7 +61,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     hypothesis_parser.add_argument(
         "--format",
-        choices=(FORMAT_TEXT, FORMAT_JSON),
+        choices=FORMAT_CHOICES,
         default=FORMAT_TEXT,
     )
     mutation_parser = subparsers.add_parser(
@@ -77,7 +79,21 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     mutation_parser.add_argument(
         "--format",
-        choices=(FORMAT_TEXT, FORMAT_JSON),
+        choices=FORMAT_CHOICES,
+        default=FORMAT_TEXT,
+    )
+    mutation_results_parser = subparsers.add_parser(
+        "mutation-results",
+        help="Summarize exported Mutmut result statistics.",
+    )
+    mutation_results_parser.add_argument(
+        "--path",
+        default="mutants/mutmut-cicd-stats.json",
+        help="Path to mutmut-cicd-stats.json.",
+    )
+    mutation_results_parser.add_argument(
+        "--format",
+        choices=FORMAT_CHOICES,
         default=FORMAT_TEXT,
     )
     crosshair_parser = subparsers.add_parser(
@@ -94,7 +110,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     crosshair_parser.add_argument(
         "--format",
-        choices=(FORMAT_TEXT, FORMAT_JSON),
+        choices=FORMAT_CHOICES,
         default=FORMAT_TEXT,
     )
     return parser.parse_args(argv)
@@ -104,15 +120,14 @@ def main(argv: list[str]) -> int:
     """Run test-intelligence command."""
 
     args = parse_args(argv)
-    if args.command == "changed":
-        return run_changed(args)
-    if args.command == "hypothesis-candidates":
-        return run_hypothesis_candidates(args)
-    if args.command == "mutation-targets":
-        return run_mutation_targets(args)
-    if args.command == "crosshair-candidates":
-        return run_crosshair_candidates(args)
-    return 2
+    handlers = {
+        "changed": run_changed,
+        "hypothesis-candidates": run_hypothesis_candidates,
+        "mutation-targets": run_mutation_targets,
+        "mutation-results": run_mutation_results,
+        "crosshair-candidates": run_crosshair_candidates,
+    }
+    return handlers[args.command](args)
 
 
 def run_changed(args: argparse.Namespace) -> int:
@@ -225,6 +240,29 @@ def render_mutation_report(
     if output_format == FORMAT_JSON:
         return mutation_reporting.render_json(report)
     return mutation_reporting.render_text(report)
+
+
+def run_mutation_results(args: argparse.Namespace) -> int:
+    """Run mutation result stats summary."""
+
+    try:
+        stats = mutation_results.read_stats(Path(args.path))
+    except (OSError, ValueError) as exc:
+        print(f"mutmut stats unavailable: {exc}", file=sys.stderr)
+        return 1
+    print(render_mutation_results(stats, args.format))
+    return 0
+
+
+def render_mutation_results(
+    stats: mutation_results.MutmutStats,
+    output_format: str,
+) -> str:
+    """Render mutation result stats in selected format."""
+
+    if output_format == FORMAT_JSON:
+        return mutation_results.render_json(stats)
+    return mutation_results.render_text(stats)
 
 
 def run_crosshair_candidates(args: argparse.Namespace) -> int:
