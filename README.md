@@ -12,7 +12,7 @@ repositories.
 > and defaults may change as it is tested across more Python repository layouts.
 
 <p align="center">
-  <img src="docs/assets/graphics/agent-maintainer-overview.png" alt="Agent Maintainer workflow: an agent edits code, hooks run checks, rules and budgets are enforced, diagnostics guide repair, and CI verifies final state." width="900">
+  <img src="docs/assets/graphics/agent-maintainer-social-preview.png" alt="Make AI agents edit better. Agent Maintainer guides coding agents with maintainability checks, repair feedback, and workflow guardrails." width="900">
 </p>
 
 Agent Maintainer helps Python repositories stay maintainable under AI-assisted
@@ -30,8 +30,8 @@ type-checked, covered, diagnosable, and aligned with repo structure.
 
 Agent Maintainer is not a runtime AI safety system. It does not moderate model
 outputs, filter prompts, block jailbreaks, or validate chatbot responses. It is
-also not a prompt/output moderation framework. Agent Maintainer focuses on
-repository health during AI-assisted software development.
+also not a prompt/output moderation framework; it focuses on repository health
+during AI-assisted software development.
 
 ## Quick Start
 
