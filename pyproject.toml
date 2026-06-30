@@ -235,6 +235,9 @@ semgrep_args = [
   ".claude/hooks",
 ]
 semgrep_profiles = ["manual"]
+enable_osv_scanner = true
+osv_scanner_args = ["scan", "source", "-r", ".", "--config", "osv-scanner.toml"]
+osv_scanner_profiles = ["manual"]
 enable_sbom = true
 sbom_args = [
   "requirements",
@@ -266,7 +269,12 @@ yamllint_paths = [
   "zizmor.yml",
 ]
 enable_taplo = true
-taplo_paths = ["pyproject.toml", "tach.toml", "config/*.toml"]
+taplo_paths = [
+  "pyproject.toml",
+  "tach.toml",
+  "osv-scanner.toml",
+  "config/*.toml",
+]
 enable_check_jsonschema = true
 check_jsonschema_args = [
   "--builtin-schema",

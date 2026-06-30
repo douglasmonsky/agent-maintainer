@@ -1,0 +1,4 @@
+[[IgnoredVulns]]
+id = "GHSA-h67p-54hq-rp68"
+ignoreUntil = 2026-09-30
+reason = "markdownlint-cli2 0.22.1 pins js-yaml 4.1.1. Overriding to js-yaml 5.x breaks markdownlint-cli2's ESM import, and downgrading markdownlint-cli2 introduces more vulnerable transitive dependencies. This is dev-only Markdown lint input."

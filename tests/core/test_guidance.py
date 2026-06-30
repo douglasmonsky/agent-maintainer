@@ -26,6 +26,8 @@ def strict_config() -> MaintainerConfig:
         mutmut_args=("run",),
         enable_semgrep=True,
         semgrep_args=("scan", "--config", "semgrep.yml", "--metrics=off", "."),
+        enable_osv_scanner=True,
+        osv_scanner_args=("scan", "source", "-r", ".", "--config", "osv-scanner.toml"),
         enable_sbom=True,
         sbom_args=("requirements", "config/dev-lock.txt", "--of", "JSON"),
         enable_license_check=True,
@@ -39,7 +41,7 @@ def strict_config() -> MaintainerConfig:
         enable_yamllint=True,
         yamllint_paths=(".github/workflows", ".pre-commit-config.yaml"),
         enable_taplo=True,
-        taplo_paths=("pyproject.toml", "tach.toml"),
+        taplo_paths=("pyproject.toml", "tach.toml", "osv-scanner.toml"),
         enable_check_jsonschema=True,
         check_jsonschema_args=(
             "--builtin-schema",
@@ -75,14 +77,14 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "pip-audit: `-r config/dev-lock.txt`" in text
     assert "Mutmut: `run`" in text
     assert "Semgrep: `scan --config semgrep.yml --metrics=off .`" in text
-    assert "OSV Scanner" not in text
+    assert "OSV Scanner: `scan source -r . --config osv-scanner.toml`" in text
     assert "Trivy" not in text
     assert "Python SBOM: `requirements config/dev-lock.txt --of JSON`" in text
     assert "License checking: `--from=mixed --format=json`" in text
     assert "Secret scanning: `gitleaks`" in text
     assert "Markdown linting: `'**/*.md'`" in text
     assert "YAML linting: `.github/workflows .pre-commit-config.yaml`" in text
-    assert "TOML formatting: `pyproject.toml tach.toml`" in text
+    assert "TOML formatting: `pyproject.toml tach.toml osv-scanner.toml`" in text
     assert "Schema validation: `--builtin-schema vendor.github-workflows" in text
     assert "python3 -m agent_maintainer verify --profile precommit" in text
     assert "Before PR/merge: run `full`, `ci`, `security`, and `manual` once" in text
