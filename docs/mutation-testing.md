@@ -79,7 +79,8 @@ successfully.
 
 Current dogfood findings:
 
-- `src/agent_maintainer/core/reporting.py`: 124 survivors, not promotion-ready.
+- `src/agent_maintainer/core/reporting.py`: reduced from 124 to 39 survivors,
+  still not promotion-ready.
 - `src/agent_maintainer/doctor/cli.py`: 270 survivors, not promotion-ready.
 
 See also:
