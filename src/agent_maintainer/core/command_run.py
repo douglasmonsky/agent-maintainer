@@ -7,12 +7,28 @@ import signal
 import subprocess  # nosec B404
 import tempfile
 from pathlib import Path
+from typing import Protocol
 
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 900
 DEFAULT_COMMAND_OUTPUT_LIMIT_CHARS = 1_000_000
 TIMEOUT_EXIT_CODE = 124
 TERMINATE_GRACE_SECONDS = 5
 TRUNCATION_MARKER_ALLOWANCE = 40
+
+
+class TerminableProcess(Protocol):
+    """Process operations required for timeout cleanup."""
+
+    pid: int
+
+    def terminate(self) -> None:
+        """Terminate the process gracefully."""
+
+    def kill(self) -> None:
+        """Kill the process forcefully."""
+
+    def wait(self, timeout: int) -> int | None:
+        """Wait for the process to exit."""
 
 
 def run_command_bounded(
@@ -69,7 +85,7 @@ def run_command_to_files(
         return subprocess.CompletedProcess(command, process.returncode)
 
 
-def terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
+def terminate_process_tree(process: TerminableProcess) -> None:
     """Terminate a process and, on POSIX, its child process group."""
 
     if os.name == "posix":
@@ -158,7 +174,7 @@ def _read_head_tail(path: Path, limit: int) -> tuple[str, bool]:
     return payload.decode("utf-8", errors="replace"), True
 
 
-def _terminate_posix_group(process: subprocess.Popen[bytes]) -> None:
+def _terminate_posix_group(process: TerminableProcess) -> None:
     """Terminate a POSIX process group with a kill fallback."""
 
     try:
@@ -175,7 +191,7 @@ def _terminate_posix_group(process: subprocess.Popen[bytes]) -> None:
         process.wait(timeout=TERMINATE_GRACE_SECONDS)
 
 
-def _terminate_single_process(process: subprocess.Popen[bytes]) -> None:
+def _terminate_single_process(process: TerminableProcess) -> None:
     """Terminate a single process when process groups are unavailable."""
 
     process.terminate()
