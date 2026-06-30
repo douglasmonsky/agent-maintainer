@@ -26,6 +26,14 @@ def test_hardened_subprocess_env_allows_explicit_bytecode_opt_in() -> None:
     assert "PYTHONDONTWRITEBYTECODE" not in environment
 
 
+def test_hardened_subprocess_env_allows_opt_in_without_existing_disable_flag() -> None:
+    environment = maintainer_runtime.hardened_subprocess_env(
+        {"AGENT_MAINTAINER_WRITE_BYTECODE": "true"}
+    )
+
+    assert environment == {"AGENT_MAINTAINER_WRITE_BYTECODE": "true"}
+
+
 def test_disable_bytecode_writes_sets_current_process_flag(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -224,10 +224,10 @@ enable_mutmut = true
 mutmut_args = ["run"]
 mutmut_target_min = 3
 mutmut_result_ratchet_enabled = true
-mutmut_max_survivors = 84
+mutmut_max_survivors = 16
 mutmut_max_suspicious = 0
 mutmut_max_timeouts = 0
-mutmut_min_score = 71
+mutmut_min_score = 94
 enable_semgrep = true
 semgrep_args = [
   "scan",
@@ -307,11 +307,17 @@ do_not_mutate = [
   "src/agent_maintainer/__main__.py",
 ]
 pytest_add_cli_args_test_selection = [
+  "tests/config/test_config_coercion.py",
   "tests/config/test_config_loading.py",
   "tests/core/test_runtime.py",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_ranks_branchy_tested_logic",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_renderers_are_advisory",
   "tests/test_intel/test_mutation_targets.py::test_mutation_targets_ratchet_boost",
+  "tests/test_intel/test_mutation_targets.py::test_target_score_accumulates_all_signal_weights",
+  "tests/test_intel/test_mutation_targets.py::test_target_for_function_keeps_threshold_score_and_details",
+  "tests/test_intel/test_mutation_targets.py::test_target_sort_key_orders_highest_score_first",
+  "tests/test_intel/test_mutation_targets.py::test_targets_for_source_returns_deterministically_sorted_targets",
+  "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_passes_ratchet_context",
   "tests/test_intel/test_mutation_targets.py::test_mutation_targets_cover_defensive_branches",
 ]
 pytest_add_cli_args = ["-p", "no:tach"]

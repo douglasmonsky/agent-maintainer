@@ -15,6 +15,8 @@ from agent_maintainer.test_intel import cli as maintainer_test_intel_cli
 from agent_maintainer.test_intel import hypothesis_candidates, mutation_reporting, mutation_targets
 from agent_maintainer.test_intel.cli import main as run_test_intel_cli
 
+EXPECTED_FULL_SIGNAL_SCORE = 20
+
 
 def test_mutation_target_report_ranks_branchy_tested_logic(tmp_path: Path) -> None:
     """Branchy parser logic with likely tests ranks as mutation target."""
@@ -110,6 +112,166 @@ def test_mutation_targets_ratchet_boost(
     )
 
     assert report.ratchet_enabled is True
+    assert "critical ratchet target" in report.targets[0].reasons
+
+
+def test_target_score_accumulates_all_signal_weights() -> None:
+    """Target score preserves every signal contribution."""
+
+    node = ast.parse(
+        "def parse_score(value: int) -> int:\n"
+        "    if value < 0:\n"
+        "        return 0\n"
+        "    return value\n"
+    ).body[0]
+    assert isinstance(node, ast.FunctionDef)
+    signals = mutation_targets.TargetSignals(
+        complexity=hypothesis_candidates.MIN_BRANCH_COMPLEXITY,
+        changed=True,
+        likely_test_count=2,
+        ratchet_score=5,
+    )
+
+    score, reasons = mutation_targets.target_score(node, "parse_score", signals)
+
+    assert score == EXPECTED_FULL_SIGNAL_SCORE
+    assert reasons == [
+        "changed source",
+        "covered by likely focused tests",
+        "critical ratchet target",
+        "branch complexity 3",
+        "pure-ish function",
+        "parser/validator/decision logic",
+    ]
+
+
+def test_target_for_function_keeps_threshold_score_and_details() -> None:
+    """Target construction keeps inclusive threshold and target detail fields."""
+
+    node = ast.parse("def helper() -> None:\n    print('debug')\n").body[0]
+    assert isinstance(node, ast.FunctionDef)
+
+    target = mutation_targets.target_for_function(
+        "src/pkg/module.py",
+        ("helper", node),
+        changed=True,
+        likely_test_count=0,
+        ratchet_score=0,
+    )
+
+    assert target is not None
+    assert target.score == mutation_targets.MIN_SCORE
+    assert target.complexity == hypothesis_candidates.branch_complexity(node)
+    assert (
+        target.suggested_focus == "Run a manual mutmut slice focused on src/pkg/module.py::helper; "
+        "do not make mutation testing a precommit gate."
+    )
+
+
+def test_target_sort_key_orders_highest_score_first() -> None:
+    """Target sort key ranks higher scores before lower scores."""
+
+    low_target = mutation_targets.MutationTarget(
+        path="src/pkg/a.py",
+        qualname="helper",
+        score=4,
+        complexity=1,
+        reasons=("changed source",),
+        suggested_focus="focus low",
+    )
+    high_target = mutation_targets.MutationTarget(
+        path="src/pkg/b.py",
+        qualname="parse_value",
+        score=10,
+        complexity=3,
+        reasons=("changed source",),
+        suggested_focus="focus high",
+    )
+
+    assert sorted(
+        (low_target, high_target),
+        key=mutation_targets.target_sort_key,
+    ) == [high_target, low_target]
+
+
+def test_targets_for_source_returns_deterministically_sorted_targets(tmp_path: Path) -> None:
+    """Source target discovery preserves target sort order."""
+
+    source_file = tmp_path / "src" / "pkg" / "module.py"
+    source_file.parent.mkdir(parents=True)
+    source_file.write_text(
+        textwrap.dedent(
+            """
+            def helper(value: int) -> int:
+                return value
+
+
+            def parse_value(value: int) -> int:
+                if value < 0:
+                    return 0
+                if value > 10:
+                    return 10
+                return value
+            """
+        ).lstrip(),
+        encoding="utf-8",
+    )
+
+    targets = mutation_targets.targets_for_source(
+        "src/pkg/module.py",
+        tmp_path,
+        changed=True,
+        likely_test_count=1,
+        ratchet_score=0,
+    )
+
+    assert [target.qualname for target in targets] == ["parse_value", "helper"]
+    assert targets[0].score > targets[1].score
+
+
+def test_mutation_target_report_passes_ratchet_context(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Report construction passes ratchet context and changed-source status."""
+
+    write_candidate_project(tmp_path)
+    calls: list[tuple[MaintainerConfig, Path, str, frozenset[str]]] = []
+
+    def fake_ratchet_path_scores(
+        config: MaintainerConfig,
+        repo_root: Path,
+        base_ref: str,
+        changed_paths: frozenset[str],
+    ) -> dict[str, int]:
+        calls.append((config, repo_root, base_ref, changed_paths))
+        return {"src/example_pkg/score.py": 6}
+
+    monkeypatch.setattr(
+        mutation_targets,
+        "ratchet_path_scores",
+        fake_ratchet_path_scores,
+    )
+    config = MaintainerConfig(source_roots=("src",), test_roots=("tests",))
+
+    report = mutation_targets.build_mutation_target_report(
+        mutation_targets.MutationTargetRequest(
+            config=config,
+            repo_root=tmp_path,
+            changed_only=True,
+            ratchet_enabled=True,
+            base_ref="origin/main",
+            changed_source=("src/example_pkg/score.py",),
+            limit=1,
+        )
+    )
+
+    assert calls == [(config, tmp_path, "origin/main", frozenset(("src/example_pkg/score.py",)))]
+    assert report.changed_only is True
+    assert report.changed_source == ("src/example_pkg/score.py",)
+    assert len(report.targets) == 1
+    assert report.targets[0].path == "src/example_pkg/score.py"
+    assert "changed source" in report.targets[0].reasons
     assert "critical ratchet target" in report.targets[0].reasons
 
 
