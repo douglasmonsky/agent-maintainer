@@ -187,7 +187,7 @@ Planned work:
 - [x] Phase 56: Mutation Result Ratchets
 - [x] Phase 57: Advisory Deep Mutation Sweep
 - [x] Phase 58: Quiet Verifier Output Contract
-- [ ] Phase 59: Smarter Verification Cadence Guidance
+- [x] Phase 59: Smarter Verification Cadence Guidance
 - [ ] Phase 60: Dogfood Source-Checkout Drift Detection
 - [ ] Phase 61: Run-Scoped Diagnostic Retention
 - [ ] Phase 62: Duplicate Generated Artifact Detection

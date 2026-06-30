@@ -67,6 +67,10 @@ proportional to the change:
 Failure summaries should recommend the smallest useful rerun command instead of
 implying every profile must be rerun after every small fix.
 
+When exactly one check fails and the verifier knows that check command, the
+summary points at that command. When several checks fail, it falls back to the
+current verifier profile.
+
 ## Failure Expansion
 
 Passing runs should stay quiet. Failed runs should provide just-in-time context
