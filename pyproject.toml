@@ -291,10 +291,15 @@ run_history_limit = 10
 
 [tool.mutmut]
 source_paths = ["src/agent_maintainer/"]
+also_copy = ["src/archguard"]
 only_mutate = [
   "src/agent_maintainer/config/coercion.py",
   "src/agent_maintainer/core/runtime.py",
   "src/agent_maintainer/test_intel/mutation_targets.py",
+]
+do_not_mutate = [
+  "src/agent_maintainer/__init__.py",
+  "src/agent_maintainer/__main__.py",
 ]
 pytest_add_cli_args_test_selection = [
   "tests/config/test_config_loading.py",
@@ -305,6 +310,7 @@ pytest_add_cli_args_test_selection = [
   "tests/test_intel/test_mutation_targets.py::test_mutation_targets_cover_defensive_branches",
 ]
 pytest_add_cli_args = ["-p", "no:tach"]
+max_stack_depth = 8
 mutate_only_covered_lines = true
 use_setproctitle = false
 

@@ -58,6 +58,12 @@ generated `mutants` directory after successful runs. Set
 artifacts. Mutmut requires fork support, so native Windows users should run it
 inside WSL.
 
+For ratcheted Mutmut configs, Agent Maintainer also validates supported Mutmut
+config keys plus concrete `also_copy` and `do_not_mutate` paths. This repo
+dogfoods supported hardening knobs such as `max_stack_depth`, `also_copy`, and
+explicit excluded wrapper files. Unsupported Mutmut keys are rejected rather
+than silently ignored by the pinned Mutmut version.
+
 Verifier diagnostics write `.verify-logs/manifest.json` for machine-readable
 run metadata and `.verify-logs/LAST_FAILURE.md` when the latest run fails.
 `.verify-logs/pr-summary.md` is a bounded GitHub-friendly report with top

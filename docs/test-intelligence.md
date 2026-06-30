@@ -83,8 +83,10 @@ mutation testing a normal precommit gate.
 For repositories with targeted `[tool.mutmut].only_mutate` lists,
 `[tool.agent_maintainer].mutmut_target_min` ratchets configured target count.
 The ratchet runs in `full` and `ci` because it only validates configuration
-shape and path-like target existence; actual Mutmut execution stays in
-`manual`.
+shape, supported Mutmut keys, path-like target existence, and concrete
+`also_copy` / `do_not_mutate` paths; actual Mutmut execution stays in
+`manual`. Agent Maintainer intentionally rejects unsupported Mutmut keys rather
+than letting the pinned Mutmut version ignore them silently.
 
 ## CrossHair Candidate Guidance
 
