@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import tempfile
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -28,7 +29,7 @@ class SnapshotArtifacts:
 def build_run_id(profile: str, fingerprint: Mapping[str, object] | None = None) -> str:
     """Return a human-readable identifier for one verifier run."""
 
-    timestamp = datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%S%fZ")
     digest = run_digest(fingerprint or {"profile": profile})
     return f"{timestamp}-{slug(profile)}-{digest}"
 
@@ -75,11 +76,28 @@ def prune_run_history(log_dir: Path, keep: int) -> None:
         return
     snapshots = sorted(
         (path for path in runs_dir.iterdir() if path.is_dir()),
-        key=lambda path: (path.stat().st_mtime, path.name),
+        key=lambda path: (path.stat().st_mtime_ns, path.name),
         reverse=True,
     )
     for snapshot in snapshots[keep:]:
         shutil.rmtree(snapshot, ignore_errors=True)
+
+
+def atomic_write_text(path: Path, text: str) -> None:
+    """Replace artifact text atomically after writing a temp sibling."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        "w",
+        encoding="utf-8",
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        delete=False,
+    ) as temp_file:
+        temp_file.write(text if text.endswith("\n") else f"{text}\n")
+        temp_path = Path(temp_file.name)
+    temp_path.replace(path)
 
 
 def copy_run_logs(

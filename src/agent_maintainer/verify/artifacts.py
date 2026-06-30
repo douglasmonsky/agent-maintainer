@@ -72,9 +72,9 @@ def write_run_artifacts(
         context_log_dir=snapshot_artifacts.context_log_dir,
     )
     verify_history.prune_run_history(log_dir, context.config.diagnostic_run_history_limit)
-    (log_dir / PR_SUMMARY_NAME).write_text(
+    verify_history.atomic_write_text(
+        log_dir / PR_SUMMARY_NAME,
         render_pr_summary(log_dir=log_dir, context=context, results=results),
-        encoding="utf-8",
     )
 
 
@@ -88,10 +88,7 @@ def write_manifest(
     """Write machine-readable metadata for one verifier run."""
 
     payload = manifest_payload(context, results, failure_snapshot=failure_snapshot)
-    (log_dir / MANIFEST_NAME).write_text(
-        f"{json.dumps(payload, indent=2, sort_keys=True)}\n",
-        encoding="utf-8",
-    )
+    verify_history.atomic_write_text(log_dir / MANIFEST_NAME, json_text(payload))
 
 
 def write_history_manifest(
@@ -111,10 +108,7 @@ def write_history_manifest(
         log_path_overrides=snapshot_artifacts.log_path_overrides,
         context_log_dir=snapshot_artifacts.context_log_dir,
     )
-    (snapshot_dir / MANIFEST_NAME).write_text(
-        f"{json.dumps(payload, indent=2, sort_keys=True)}\n",
-        encoding="utf-8",
-    )
+    verify_history.atomic_write_text(snapshot_dir / MANIFEST_NAME, json_text(payload))
 
 
 def manifest_payload(
@@ -187,8 +181,14 @@ def write_last_failure(
         lines.extend(failure_section(failure, context_log_dir=context_log_dir))
     text = bounded_last_failure_text("\n".join(lines).rstrip(), context.config)
     snapshot_path.parent.mkdir(parents=True, exist_ok=True)
-    snapshot_path.write_text(f"{text}\n", encoding="utf-8")
-    path.write_text(f"{text}\n", encoding="utf-8")
+    verify_history.atomic_write_text(snapshot_path, text)
+    verify_history.atomic_write_text(path, text)
+
+
+def json_text(payload: dict[str, object]) -> str:
+    """Return stable JSON artifact text."""
+
+    return f"{json.dumps(payload, indent=2, sort_keys=True)}\n"
 
 
 def failure_section(
