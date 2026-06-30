@@ -5,29 +5,31 @@
 This file is only the implementation tracker for the Agent Maintainer roadmap.
 It is a recovery checklist, not the detailed implementation spec.
 
-The canonical detailed spec is vendored into the repository here:
+The canonical detailed spec index is vendored into the repository here:
 
 [`docs/roadmap/full-roadmap-blueprint.md`](roadmap/full-roadmap-blueprint.md).
 
-The usage guide for that spec is here:
+The usage guide for the split specs is here:
 
 [`docs/roadmap/README.md`](roadmap/README.md).
 
 Before implementing any phase:
 
 1. Open [`docs/roadmap/README.md`](roadmap/README.md).
-2. Reopen the matching phase in
+2. Open the roadmap index:
    [`docs/roadmap/full-roadmap-blueprint.md`](roadmap/full-roadmap-blueprint.md).
-3. Follow that phase's scope, file targets, tests, documentation requirements,
+3. Reopen the matching split phase file under
+   [`docs/roadmap/phases/`](roadmap/phases/).
+4. Follow the phase's scope, file targets, tests, documentation requirements,
    acceptance criteria, and explicit out-of-scope rules.
-4. Use this file only to track phase completion after implementation,
+5. Use this file only to track phase completion, implementation,
    verification, merge, and post-merge CI confirmation.
 
 Do not infer phase requirements from this checklist alone. If chat context is
-compacted or interrupted, resume from this checklist only after reopening the
-guide and full blueprint. If the detailed blueprint appears missing or stale,
-restore the source document named `agent-maintainer-full-roadmap-blueprint.md`
-before continuing implementation.
+compacted or interrupted, resume from the checklist only after reopening the
+guide and relevant split phase file. If the split roadmap appears missing or
+stale, restore the source document named `agent-maintainer-full-roadmap-blueprint.md`
+and split it back into `docs/roadmap/phases/` before continuing implementation.
 
 Agent Maintainer is in beta. The current major roadmap covers context-safe
 legacy ratchets, test intelligence, planned large-change support, and optional
@@ -222,4 +224,4 @@ roadmap completion gate.
 
 The roadmap is complete only when every phase above is implemented, tested,
 documented, merged through CI, and verified against the final definition of
-done in the full blueprint.
+done in [`docs/roadmap/final-definition-of-done.md`](roadmap/final-definition-of-done.md).

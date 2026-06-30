@@ -306,7 +306,7 @@ Read more: [Release checklist](docs/release-checklist.md),
 - [Cohesive change plans](docs/cohesive-change-plans.md)
 - [Cohesive-change overrides](docs/cohesive-change-overrides.md)
 - [Test intelligence](docs/test-intelligence.md)
-- [Full roadmap blueprint](docs/roadmap/full-roadmap-blueprint.md)
+- [Roadmap blueprint index](docs/roadmap/full-roadmap-blueprint.md)
 
 Example starter projects:
 
