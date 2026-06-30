@@ -11,7 +11,7 @@ from pathlib import Path
 
 from agent_maintainer.core.executor import command_env
 from agent_maintainer.core.runtime import TRUE_ENV_VALUES
-from agent_maintainer.runners import mutmut_stats
+from agent_maintainer.runners import mutmut_lock, mutmut_stats
 
 KEEP_MUTANTS_ENV = "AGENT_MAINTAINER_KEEP_MUTANTS"
 MUTANTS_DIR = Path("mutants")
@@ -59,16 +59,17 @@ def run_mutmut(
 ) -> int:
     """Run Mutmut and clean generated artifacts when the run succeeds."""
 
-    result = run_command([mutmut_executable(), *args])
-    forward_output(result)
-    if result.returncode != 0:
+    with mutmut_lock.mutmut_run_lock():
+        result = run_command([mutmut_executable(), *args])
+        forward_output(result)
+        if result.returncode != 0:
+            return result.returncode
+        if ratchet.enabled:
+            ratchet_status = check_result_ratchet(ratchet)
+            if ratchet_status != 0:
+                return ratchet_status
+        cleanup_mutants()
         return result.returncode
-    if ratchet.enabled:
-        ratchet_status = check_result_ratchet(ratchet)
-        if ratchet_status != 0:
-            return ratchet_status
-    cleanup_mutants()
-    return result.returncode
 
 
 def check_result_ratchet(ratchet: mutmut_stats.MutmutRatchet) -> int:

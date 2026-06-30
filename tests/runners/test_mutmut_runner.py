@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import json
 import subprocess
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
 
 from agent_maintainer.runners import mutmut as run_mutmut
 from agent_maintainer.runners import mutmut_stats
+
+MUTMUT_FAILURE_EXIT = 2
 
 
 def test_main_passes_arguments_to_runner(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -116,6 +120,68 @@ def test_mutmut_run_forwards_output(
     captured = capsys.readouterr()
     assert "ok\n" in captured.out
     assert "warn\n" in captured.err
+
+
+def test_failed_mutmut_run_skips_cleanup(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Failed Mutmut command returns immediately and keeps artifacts."""
+    cleanup_called = False
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, MUTMUT_FAILURE_EXIT, stdout="", stderr="")
+
+    def fake_cleanup() -> None:
+        nonlocal cleanup_called
+        cleanup_called = True
+
+    monkeypatch.setattr(run_mutmut, "mutmut_executable", lambda: "/usr/bin/mutmut")
+    monkeypatch.setattr(run_mutmut.subprocess, "run", fake_run)
+    monkeypatch.setattr(run_mutmut, "cleanup_mutants", fake_cleanup)
+
+    assert run_mutmut.run_mutmut(["run"]) == MUTMUT_FAILURE_EXIT
+    assert cleanup_called is False
+
+
+def test_mutmut_run_holds_lock_through_cleanup(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Runner serializes Mutmut command and generated-artifact cleanup."""
+    events: list[str] = []
+
+    @contextmanager
+    def fake_lock() -> Iterator[None]:
+        events.append("lock")
+        yield
+        events.append("unlock")
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        events.append("run")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    def fake_cleanup() -> None:
+        events.append("cleanup")
+
+    monkeypatch.setattr(run_mutmut.mutmut_lock, "mutmut_run_lock", fake_lock)
+    monkeypatch.setattr(run_mutmut, "mutmut_executable", lambda: "/usr/bin/mutmut")
+    monkeypatch.setattr(run_mutmut.subprocess, "run", fake_run)
+    monkeypatch.setattr(run_mutmut, "cleanup_mutants", fake_cleanup)
+
+    assert run_mutmut.run_mutmut(["run"]) == 0
+
+    assert events == ["lock", "run", "cleanup", "unlock"]
+
+
+def test_mutmut_lock_allows_fcntl_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Lock helper degrades to a no-op on platforms without fcntl."""
+    monkeypatch.setattr(run_mutmut.mutmut_lock, "fcntl", None)
+    monkeypatch.setattr(
+        run_mutmut.mutmut_lock,
+        "MUTMUT_LOCK_PATH",
+        tmp_path / "mutmut.lock",
+    )
+
+    with run_mutmut.mutmut_lock.mutmut_run_lock():
+        assert (tmp_path / "mutmut.lock").exists()
 
 
 def test_mutmut_result_ratchet_fails_and_keeps_artifacts(

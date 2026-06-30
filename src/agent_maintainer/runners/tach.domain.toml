@@ -16,8 +16,13 @@ path = "mutmut"
 depends_on = [
   "//agent_maintainer.core.executor",
   "//agent_maintainer.core.runtime",
+  "mutmut_lock",
   "mutmut_stats",
 ]
+
+[[modules]]
+path = "mutmut_lock"
+depends_on = []
 
 [[modules]]
 path = "mutmut_stats"
