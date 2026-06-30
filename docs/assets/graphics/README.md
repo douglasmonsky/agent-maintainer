@@ -15,6 +15,7 @@ docs/assets/graphics/
   render_graphics.py                  # renderer/checker
   requirements.txt                    # optional renderer dependency
   agent-maintainer-overview.png       # rendered README image
+  agent-maintainer-social-preview.png # README hero and GitHub social preview candidate
   standard-runs-at-a-glance.png       # rendered README image
 ```
 
@@ -39,6 +40,11 @@ Use a system Chromium explicitly:
 AGENT_MAINTAINER_GRAPHICS_CHROMIUM=/usr/bin/chromium \
   python docs/assets/graphics/render_graphics.py
 ```
+
+## Social Preview
+
+`agent-maintainer-social-preview.png` is a 1280 x 640 PNG suitable for GitHub's
+repository social preview. It is intentionally optimized below 1 MB.
 
 ## Check for stale PNGs
 

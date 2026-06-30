@@ -20,6 +20,7 @@ def test_graphics_sources_exist() -> None:
         "render_graphics.py",
         "requirements.txt",
         "agent-maintainer-overview.png",
+        "agent-maintainer-social-preview.png",
         "standard-runs-at-a-glance.png",
     ]
 
@@ -53,13 +54,13 @@ def test_graphics_do_not_use_old_identity_terms() -> None:
     assert offenders == []
 
 
-def test_readme_embeds_overview_graphic() -> None:
-    """README includes the top-level overview graphic with searchable docs intact."""
+def test_readme_embeds_hero_graphic() -> None:
+    """README includes top-level hero graphic and searchable docs remain intact."""
 
     text = README.read_text(encoding="utf-8")
 
-    assert "docs/assets/graphics/agent-maintainer-overview.png" in text
-    assert "Agent Maintainer workflow" in text
+    assert "docs/assets/graphics/agent-maintainer-social-preview.png" in text
+    assert "Make AI agents edit better" in text
     assert "## Quick Start" in text
 
 

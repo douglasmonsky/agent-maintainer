@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/graphics/agent-maintainer-overview.png" alt="Agent Maintainer workflow: agents edit code, hooks run checks, diagnostics guide repair, and CI verifies final state." width="900">
+  <img src="docs/assets/graphics/agent-maintainer-social-preview.png" alt="Make AI agents edit better. Agent Maintainer guides coding agents with maintainability checks, repair feedback, and workflow guardrails." width="900">
 </p>
 
 ## Standard Runs at a Glance
