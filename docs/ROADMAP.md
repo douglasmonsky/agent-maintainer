@@ -212,12 +212,14 @@ Acceptance criteria for this sequence:
 ## Next: Advisory Sweep Survivor Triage
 
 - [x] Phase 65: Mutation Sweep Executor Survivor Triage
-- [ ] Phase 66: Advisory Sweep Survivor Triage
+- [x] Phase 66: Advisory Sweep Survivor Triage
 
 Current advisory sweep findings remain non-blocking backlog:
 
-- `src/agent_maintainer/core/reporting.py`: 124 survivors, not promotion-ready.
-- `src/agent_maintainer/doctor/cli.py`: 270 survivors, not promotion-ready.
+- `src/agent_maintainer/core/reporting.py`: reduced from 124 to 39 survivors,
+  not promotion-ready.
+- `src/agent_maintainer/doctor/cli.py`: reduced from 270 to 11 survivors, not
+  promotion-ready.
 
 Planned work:
 

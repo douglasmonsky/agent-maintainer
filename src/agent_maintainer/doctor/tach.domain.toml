@@ -7,12 +7,15 @@ depends_on = []
 [[modules]]
 path = "cli"
 depends_on = [
-  "//agent_maintainer.core.config",
-  "setup",
-  "support.hook_audit",
-  "support.logs",
-  "support.models",
-  "support.policy",
+    "//agent_maintainer.core.config",
+    "setup",
+    "support.environment",
+    "support.hook_audit",
+    "support.integrations",
+    "support.logs",
+    "support.models",
+    "support.output",
+    "support.policy",
 ]
 
 [[modules]]
@@ -68,6 +71,18 @@ depends_on = [
 ]
 
 [[modules]]
+path = "support.environment"
+depends_on = [
+    "support.models",
+]
+
+[[modules]]
+path = "support.integrations"
+depends_on = [
+    "support.models",
+]
+
+[[modules]]
 path = "support.logs"
 depends_on = [
   "//agent_maintainer.catalogs.catalog",
@@ -79,6 +94,12 @@ depends_on = [
 [[modules]]
 path = "support.models"
 depends_on = []
+
+[[modules]]
+path = "support.output"
+depends_on = [
+    "support.models",
+]
 
 [[modules]]
 path = "support.policy"
