@@ -189,7 +189,7 @@ Planned work:
 - [x] Phase 58: Quiet Verifier Output Contract
 - [x] Phase 59: Smarter Verification Cadence Guidance
 - [x] Phase 60: Dogfood Source-Checkout Drift Detection
-- [ ] Phase 61: Run-Scoped Diagnostic Retention
+- [x] Phase 61: Run-Scoped Diagnostic Retention
 - [ ] Phase 62: Duplicate Generated Artifact Detection
 - [ ] Phase 63: Configured-Repo-Only Codex and Claude Hooks
 - [ ] Phase 64: Documentation and Generated Guidance Slimming
