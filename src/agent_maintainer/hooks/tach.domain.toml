@@ -50,6 +50,13 @@ path = "runtime"
 depends_on = [
   "audit",
   "context",
+  "subprocess_runner",
+]
+
+[[modules]]
+path = "subprocess_runner"
+depends_on = [
+  "audit",
 ]
 
 [[modules]]

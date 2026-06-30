@@ -14,6 +14,8 @@ RUFF_COLUMN = 3
 PYRIGHT_LINE = 5
 PYRIGHT_COLUMN = 9
 BANDIT_LINE = 12
+JUNIT_LINE = 21
+COVERAGE_MISSING_LINE = 44
 PACK_BUDGET = 4_000
 APP_PATH = "src/pkg/app.py"
 ENCODING = "utf-8"
@@ -219,6 +221,106 @@ def test_pyright_fact_tolerates_missing_range(tmp_path: Path) -> None:
     assert fact["symbol"] == "reportUnknownMemberType"
 
 
+def test_pytest_junit_artifact_extracts_failed_test_fact(tmp_path: Path) -> None:
+    """Pytest JUnit XML produces test failure repair facts."""
+
+    junit = tmp_path / "pytest-junit.xml"
+    coverage = write_json(
+        tmp_path / "coverage.json",
+        {"files": {APP_PATH: {"missing_lines": [COVERAGE_MISSING_LINE, 45]}}},
+    )
+    junit.write_text(
+        (
+            '<testsuite><testcase classname="tests.test_app" '
+            f'name="test_app" file="{APP_PATH}" line="{JUNIT_LINE}">'
+            '<failure message="assert 1 == 2">failure detail</failure>'
+            "</testcase></testsuite>"
+        ),
+        encoding=ENCODING,
+    )
+    failure = FailureRecord(
+        name="pytest-coverage",
+        status="failed",
+        category="test",
+        priority=1,
+        exit_code=1,
+        log_path=str(tmp_path / "pytest.log"),
+        log_bytes=0,
+        expansion_commands=(),
+        artifact_paths=(str(coverage), str(junit)),
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (failure,))
+    fact = first_fact(facts)
+
+    assert fact["check"] == "pytest-coverage"
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == JUNIT_LINE
+    assert fact["symbol"] == "pytest-failure"
+    assert "tests.test_app::test_app" in str(fact["message"])
+
+
+def test_coverage_json_artifact_extracts_missing_line_fact(tmp_path: Path) -> None:
+    """Coverage JSON produces missing-line repair facts."""
+
+    artifact = write_json(
+        tmp_path / "coverage.json",
+        {"files": {APP_PATH: {"missing_lines": [COVERAGE_MISSING_LINE, 45]}}},
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record("pytest-coverage", artifact),))
+    fact = first_fact(facts)
+
+    assert fact["check"] == "pytest-coverage"
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == COVERAGE_MISSING_LINE
+    assert fact["symbol"] == "coverage"
+    assert fact["message"] == "2 uncovered line(s) in file."
+
+
+def test_file_length_log_extracts_oversized_file_fact(tmp_path: Path) -> None:
+    """File-length logs produce exact oversized-file facts."""
+
+    log_path = tmp_path / "file-length.log"
+    log_path.write_text(
+        (
+            "File length check failed:\n\n"
+            f"  {APP_PATH}: new oversized file 501 physical lines, "
+            "376 source lines (limits: 500 physical, 375 source)\n"
+        ),
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record_with_log("file-length", log_path),))
+    fact = first_fact(facts)
+
+    assert fact["path"] == APP_PATH
+    assert fact["symbol"] == "file-length"
+    assert "new oversized file" in str(fact["message"])
+
+
+def test_change_budget_log_extracts_blocking_fact(tmp_path: Path) -> None:
+    """Change-budget logs produce exact blocking budget facts."""
+
+    log_path = tmp_path / "change-budget.log"
+    log_path.write_text(
+        (
+            "Change budget failed:\n\n"
+            "  BLOCK: Python source diff too large: "
+            "700 changed lines (block limit: 600).\n"
+        ),
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record_with_log("change-budget", log_path),))
+    fact = first_fact(facts)
+
+    assert fact["check"] == "change-budget"
+    assert fact["path"] is None
+    assert fact["symbol"] == "change-budget"
+    assert "Python source diff too large" in str(fact["message"])
+
+
 def test_pack_uses_structured_fact(tmp_path: Path) -> None:
     """Context packs expose structured artifact facts before log expansion."""
     log_dir = tmp_path / ".verify-logs"
@@ -294,4 +396,20 @@ def record(check: str, artifact: Path) -> FailureRecord:
         log_bytes=0,
         expansion_commands=(),
         artifact_paths=(str(artifact),),
+    )
+
+
+def record_with_log(check: str, log_path: Path) -> FailureRecord:
+    """Return failure record fixture for a log-only check."""
+
+    return FailureRecord(
+        name=check,
+        status="failed",
+        category="test",
+        priority=1,
+        exit_code=1,
+        log_path=str(log_path),
+        log_bytes=log_path.stat().st_size,
+        expansion_commands=(),
+        artifact_paths=(),
     )

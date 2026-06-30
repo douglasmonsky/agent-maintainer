@@ -84,6 +84,9 @@ def test_maintainer_package_entrypoint_help() -> None:
 
     assert result.returncode == 0
     assert "python -m agent_maintainer doctor" in result.stdout
+    assert "python -m agent_maintainer <command> [options]" in result.stdout
+    assert "Core commands:\n" in result.stdout
+    assert "Agent repair commands:\n" in result.stdout
 
 
 def test_project_exposes_console_script_entrypoint() -> None:

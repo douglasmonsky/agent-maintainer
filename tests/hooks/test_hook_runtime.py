@@ -58,10 +58,10 @@ def test_runtime_noops_without_repo_opt_in(
 ) -> None:
     """Global/user hooks skip repositories without maintainer config."""
 
-    def fail_run(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fail_verifier(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
         pytest.fail("unconfigured repository should not run verification")
 
-    monkeypatch.setattr(runtime.subprocess, "run", fail_run)
+    monkeypatch.setattr(runtime, "run_verifier_bounded", fail_verifier)
 
     status = runtime.run_hook(
         platform=runtime.CLAUDE_CODE_PLATFORM,
@@ -81,10 +81,10 @@ def test_codex_runtime_noops_without_repo_opt_in(
 ) -> None:
     """Codex hooks also skip repositories without maintainer config."""
 
-    def fail_run(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fail_verifier(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
         pytest.fail("unconfigured repository should not run verification")
 
-    monkeypatch.setattr(runtime.subprocess, "run", fail_run)
+    monkeypatch.setattr(runtime, "run_verifier_bounded", fail_verifier)
 
     status = runtime.run_hook(
         platform=runtime.CODEX_PLATFORM,
@@ -245,10 +245,10 @@ def test_failed_post_tool_use_blocks_with_context(
     installed_repo(tmp_path)
     write_failure_manifest(tmp_path, "pyright")
 
-    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "post failed", "")
 
-    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
 
     assert (
         runtime.run_hook(
@@ -283,10 +283,10 @@ def test_failed_stop_events_block_with_context_pack(
     installed_repo(tmp_path)
     write_failure_manifest(tmp_path, "ruff")
 
-    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "", "stop failed")
 
-    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
 
     assert (
         runtime.run_hook(
@@ -315,13 +315,13 @@ def test_hook_failure_falls_back_when_context_pack_fails(
 
     installed_repo(tmp_path)
 
-    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "raw failure", "")
 
     def fail_pack(*_args: object, **_kwargs: object) -> hook_context.context_packs.ContextPack:
         raise OSError("pack failed")
 
-    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
     monkeypatch.setattr(hook_context.context_packs, "write_context_pack", fail_pack)
 
     assert (
@@ -358,10 +358,10 @@ def test_hook_context_pack_pointer_respects_budget(
         json_path=tmp_path / ".verify-logs" / "context" / "PACK.json",
     )
 
-    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "failed", "")
 
-    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
     monkeypatch.setattr(hook_context.context_packs, "write_context_pack", lambda *_args: pack)
     monkeypatch.setattr(
         hook_context.pack_rendering, "render_pack_pointer", lambda *_args, **_kwargs: "x" * 200
@@ -431,6 +431,7 @@ def test_audit_helpers_include_reason_and_custom_log_dir(tmp_path: Path) -> None
 def test_runtime_records_platform_in_hook_audit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Shared hook runtime records client platform."""
 
@@ -441,10 +442,10 @@ def test_runtime_records_platform_in_hook_audit(
     )
     (tmp_path / "pyproject.toml").write_text("[tool.agent_maintainer]\n", encoding="utf-8")
 
-    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
 
     status = runtime.run_hook(
         platform=runtime.CLAUDE_CODE_PLATFORM,
@@ -454,6 +455,7 @@ def test_runtime_records_platform_in_hook_audit(
     )
 
     assert status == 0
+    assert capsys.readouterr().out == ""
     payload = json.loads((tmp_path / ".verify-logs" / "hooks.jsonl").read_text())
     assert payload["platform"] == "claude-code"
     assert payload["hook"] == "PostToolUse"

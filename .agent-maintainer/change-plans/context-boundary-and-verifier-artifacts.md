@@ -4,7 +4,7 @@ kind = "refactor"
 status = "active"
 base_ref = "origin/main"
 expires = 2026-07-13
-allowed_paths = ["src/**", "tests/**", "docs/**", "AGENTS.agent-maintainer.md", "README.md", "config/pyproject.agent-maintainer.toml", ".agent-maintainer/change-plans/**", "pyproject.toml"]
+allowed_paths = ["src/**", "tests/**", "docs/**", "CHANGELOG.md", "AGENTS.agent-maintainer.md", "README.md", "config/pyproject.agent-maintainer.toml", ".agent-maintainer/change-plans/**", "pyproject.toml"]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 120
 max_changed_lines = 12000
@@ -53,6 +53,8 @@ Allowed changes:
   diagnostics history and compact agent context.
 - Focused tests under `tests/context`, `tests/hooks`, `tests/verify`,
   `tests/core`, and `tests/runners`.
+- Focused follow-up hardening for bounded hook subprocess output, exact repair
+  fact parsers, CLI help polish, release-state checks, and matching tests/docs.
 - Architecture decision notes documenting the boundary and lock changes.
 
 ## What must not change

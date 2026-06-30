@@ -107,6 +107,38 @@ depends_on = [
 path = "pack.exact_facts"
 depends_on = [
   "failures",
+  "pack.fact_parsers",
+  "pack.fact_payloads",
+]
+
+[[modules]]
+path = "pack.fact_parsers"
+depends_on = [
+  "pack.lint_fact_parsers",
+  "pack.log_fact_parsers",
+  "pack.pytest_fact_parsers",
+]
+
+[[modules]]
+path = "pack.fact_payloads"
+depends_on = []
+
+[[modules]]
+path = "pack.lint_fact_parsers"
+depends_on = [
+  "pack.fact_payloads",
+]
+
+[[modules]]
+path = "pack.log_fact_parsers"
+depends_on = [
+  "pack.fact_payloads",
+]
+
+[[modules]]
+path = "pack.pytest_fact_parsers"
+depends_on = [
+  "pack.fact_payloads",
 ]
 
 [[modules]]

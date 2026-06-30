@@ -13,6 +13,7 @@ from pathlib import Path
 
 from agent_maintainer.hooks import audit as hook_audit
 from agent_maintainer.hooks import context as hook_context
+from agent_maintainer.hooks.subprocess_runner import run_verifier_bounded
 
 CODEX_PLATFORM = "codex"
 CLAUDE_CODE_PLATFORM = "claude-code"
@@ -86,14 +87,7 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
         )
 
     command = verifier_command(repo_root, profile)
-    result = subprocess.run(  # nosec B603
-        command,
-        cwd=repo_root,
-        env=hook_audit.hook_env_with_src(repo_root),
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    result = run_verifier_bounded(command, repo_root)
     hook_audit.record_hook_result(
         repo_root,
         hook_audit.HookAuditRecord(
