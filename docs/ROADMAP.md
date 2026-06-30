@@ -115,10 +115,12 @@ Planned work:
 - [x] Phase 40: Exact Repair Facts From Structured Artifacts
 - [x] Phase 41: Beta Release Metadata Refresh
 - [x] Phase 42: Pre-Case-Study Hardening Plan
-- [ ] Phase 43: Context Package Boundary Split
-- [ ] Phase 44: Hook Output Invariant Tests
-- [ ] Phase 45: Release-Check Ergonomics
-- [ ] Phase 46: Release-State Drift Check
+- [x] Phase 43: Context Package Boundary Split
+      Completed in PR #116. The remaining work after that PR is ordinary
+      domain-specific hardening, not another boundary-split phase.
+- [x] Phase 44: Hook Output Invariant Tests
+- [x] Phase 45: Release-Check Ergonomics
+- [x] Phase 46: Release-State Drift Check
 
 ## Next: Quiet Control Plane And Dogfood Drift
 

@@ -69,8 +69,10 @@ python3 -m pytest -m release tests/release -q
 
 Release tests intentionally build wheel and sdist artifacts in a temporary
 directory, run `twine check`, install each declared extra in clean virtual
-environments without `--no-deps`, and smoke console scripts from built
-artifacts.
+environments without `--no-deps`, smoke console scripts from built artifacts,
+and check release-state drift such as version/changelog alignment, public
+metadata URLs, Trusted Publisher environment names, and existing release evidence
+when present.
 
 ## Publishing
 

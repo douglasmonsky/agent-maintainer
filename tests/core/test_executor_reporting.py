@@ -49,11 +49,14 @@ def test_run_check_scopes_coverage_file_to_log_dir(
     """Generated coverage data defaults to verifier logs instead of repo root."""
 
     monkeypatch.delenv("COVERAGE_FILE", raising=False)
+    monkeypatch.delenv("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR", raising=False)
     seen: list[str | None] = []
+    diagnostics_seen: list[str | None] = []
 
     def fake_run(command: list[str]) -> tuple[int, str]:
         assert command == ["tool"]
         seen.append(os.environ.get("COVERAGE_FILE"))
+        diagnostics_seen.append(os.environ.get("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"))
         return 0, ""
 
     monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
@@ -64,7 +67,9 @@ def test_run_check_scopes_coverage_file_to_log_dir(
 
     assert result.passed is True
     assert seen == [str(tmp_path / "logs" / ".coverage")]
+    assert diagnostics_seen == [str(tmp_path / "logs")]
     assert "COVERAGE_FILE" not in os.environ
+    assert "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR" not in os.environ
 
 
 def test_run_check_preserves_explicit_coverage_file(
@@ -73,10 +78,13 @@ def test_run_check_preserves_explicit_coverage_file(
     """User-provided coverage destination is not overwritten."""
 
     monkeypatch.setenv("COVERAGE_FILE", "custom.coverage")
+    monkeypatch.setenv("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR", "outer-logs")
     seen: list[str | None] = []
+    diagnostics_seen: list[str | None] = []
 
     def fake_run(_command: list[str]) -> tuple[int, str]:
         seen.append(os.environ.get("COVERAGE_FILE"))
+        diagnostics_seen.append(os.environ.get("AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"))
         return 0, ""
 
     monkeypatch.setattr(maintainer_executor, "run_command", fake_run)
@@ -84,7 +92,9 @@ def test_run_check_preserves_explicit_coverage_file(
     maintainer_executor.run_check(Check("tool", ["tool"], frozenset()), tmp_path / "logs", 5, 200)
 
     assert seen == ["custom.coverage"]
+    assert diagnostics_seen == [str(tmp_path / "logs")]
     assert os.environ["COVERAGE_FILE"] == "custom.coverage"
+    assert os.environ["AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"] == "outer-logs"
 
 
 def test_missing_requirement_reports_required_path(tmp_path: Path) -> None:

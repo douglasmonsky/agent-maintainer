@@ -16,12 +16,13 @@ Profiles:
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core.args import apply_cli_overrides, parse_args
 from agent_maintainer.core.config import load_config
-from agent_maintainer.verify.history import build_run_id
+from agent_maintainer.verify.history import build_run_id, run_snapshot_dir
 from agent_maintainer.verify.locking import VerificationLock, build_fingerprint
 from agent_maintainer.verify.result_summary import (
     apply_optional_skip_policy,
@@ -53,9 +54,19 @@ def main(argv: list[str]) -> int:
         if verifier_lock.reused is not None:
             return print_reused_result(log_dir, verifier_lock.reused.exit_code)
 
-        checks = make_checks(config, args.base_ref, args.compare_branch, staged=args.staged)
+        execution_log_dir = run_snapshot_dir(log_dir, run_id)
+        execution_config = replace(
+            config,
+            diagnostic_artifacts_dir=str(execution_log_dir),
+        )
+        checks = make_checks(
+            execution_config,
+            args.base_ref,
+            args.compare_branch,
+            staged=args.staged,
+        )
         selected = [check for check in checks if args.profile in check.profiles]
-        results = collect_results(args, config, selected, log_dir)
+        results = collect_results(args, execution_config, selected, execution_log_dir)
         results = apply_optional_skip_policy(results, args.fail_on_optional_skip)
         write_artifacts_if_enabled(args, config, log_dir, results, run_id)
         exit_code = print_result_summary(

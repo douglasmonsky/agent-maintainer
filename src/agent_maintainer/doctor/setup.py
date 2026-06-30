@@ -21,7 +21,14 @@ OK = maintainer_doctor_models.OK
 WARNING = maintainer_doctor_models.WARNING
 
 MIN_PYTHON = (3, 11)
-DUPLICATE_ARTIFACT_ROOTS = ("src", "tests", ".codex/hooks", ".claude/hooks")
+DUPLICATE_ARTIFACT_ROOTS = (
+    "src",
+    "tests",
+    ".agent-maintainer",
+    ".codex/hooks",
+    ".claude/hooks",
+    ".verify-logs",
+)
 DUPLICATE_ARTIFACT_PATTERN = re.compile(r" \d+(?:\.[^.]+)?$")
 
 

@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Added
+
+- Exact repair facts for pytest JUnit XML, coverage JSON, file-length logs, and
+  change-budget logs.
+- Release-only state drift checks for version/changelog alignment, public
+  metadata URLs, Trusted Publisher environment names, and existing release
+  evidence.
+
+### Changed
+
+- Hook verifier subprocess output now streams through temporary files and returns
+  only bounded stdout/stderr summaries to agent-facing context.
+- Top-level CLI help is grouped by workflow area for easier first-use scanning.
+
 ## 0.1.0b4 - 2026-06-29
 
 Fourth beta release of Agent Maintainer.

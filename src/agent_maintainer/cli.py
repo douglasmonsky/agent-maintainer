@@ -19,41 +19,36 @@ disable_bytecode_writes()
 CommandRunner = Callable[[list[str]], int]
 
 USAGE = """Usage:
-  python -m agent_maintainer bootstrap
-  python -m agent_maintainer context [context options]
-  python -m agent_maintainer doctor [doctor options]
-python -m agent_maintainer guidance [guidance options]
-  python -m agent_maintainer hooks [hooks options]
-  python -m agent_maintainer init [init options]
-python -m agent_maintainer install
-python -m agent_maintainer ratchet [ratchet options]
-python -m agent_maintainer report [report options]
-python -m agent_maintainer repair-plan [repair-plan options]
-  python -m agent_maintainer test-intel [test-intel options]
-  python -m agent_maintainer verify [verify options]
+  python -m agent_maintainer <command> [options]
+
+Core commands:
+  bootstrap       Install development dependencies for this checkout.
+  doctor          Inspect setup health and configuration drift.
+  guidance        Generate or check AGENTS.agent-maintainer.md.
+  init            Write starter files into a target repository.
+  install         Install local hooks for this repository.
+  verify          Run configured verification profiles.
+
+Agent repair commands:
+  change-plan     Manage cohesive change plans.
+  context         Read bounded failure, log, file, and diff context.
+  ratchet         Inspect legacy-ratchet baselines and repair targets.
+  repair-plan     Generate repair guidance from current diagnostics.
+  test-intel      Suggest relevant tests and deeper test targets.
+
+Operations:
+  hooks           Install, audit, and inspect agent-client hooks.
+  report          Render diagnostic reports.
 
 Examples:
-  python -m agent_maintainer bootstrap
-  python -m agent_maintainer context failures
-  python -m agent_maintainer context log pyright --tail 120
   python -m agent_maintainer doctor --strict
-python -m agent_maintainer guidance
-python -m agent_maintainer guidance --check
-python -m agent_maintainer hooks install all
-python -m agent_maintainer hooks status
-  python -m agent_maintainer init --track core --preset existing-app
-python -m agent_maintainer install
-python -m agent_maintainer ratchet status
-python -m agent_maintainer report html
-python -m agent_maintainer repair-plan --ratchet
-  python -m agent_maintainer test-intel changed
-  python -m agent_maintainer test-intel hypothesis-candidates --changed
-  python -m agent_maintainer test-intel mutation-targets --changed
-  python -m agent_maintainer test-intel crosshair-candidates --changed
-  python -m agent_maintainer verify --profile fast
   python -m agent_maintainer verify --profile precommit
   python -m agent_maintainer verify --profile full
-  python -m agent_maintainer verify --profile manual
+  python -m agent_maintainer context failures
+  python -m agent_maintainer context log pyright --tail 120
+  python -m agent_maintainer guidance --check
+  python -m agent_maintainer hooks status
+  python -m agent_maintainer report html
 """
 
 

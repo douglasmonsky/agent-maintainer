@@ -47,6 +47,7 @@ Generated from `[tool.agent_maintainer]` by
 - pip-audit: `-r config/dev-lock.txt`
 - Mutmut: `run`
 - Semgrep: `scan --config semgrep.yml --error --metrics=off src/agent_maintainer src/archguard .codex/hooks .claude/hooks`
+- OSV Scanner: `scan source -r . --config osv-scanner.toml`
 - Python SBOM: `requirements config/dev-lock.txt --output-reproducible --of JSON`
 - License checking: `--from=mixed --format=json`
 - Secret scanning: `gitleaks` (profiles: full, ci; history: security)
@@ -54,7 +55,7 @@ Generated from `[tool.agent_maintainer]` by
 - Interrogate
 - Markdown linting: `'**/*.md'`
 - YAML linting: `.github/workflows .github/dependabot.yml .pre-commit-config.yaml .markdownlint-cli2.yaml .yamllint zizmor.yml`
-- TOML formatting: `pyproject.toml tach.toml 'config/*.toml'`
+- TOML formatting: `pyproject.toml tach.toml osv-scanner.toml 'config/*.toml'`
 - Schema validation: `--builtin-schema vendor.github-workflows .github/workflows/verify.yml .github/workflows/publish.yml`
 
 ## Failure Loop
