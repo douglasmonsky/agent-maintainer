@@ -34,8 +34,8 @@ discipline, not the normal local edit loop.
 - [ ] Changelog summarizes stabilization work since the previous beta, including
   known limitations.
 - [ ] `config/dev-dependencies.txt` and `config/dev-lock.txt` are in sync.
-- [ ] If files under `docs/assets/graphics/` changed, run `just render-graphics`
-  and `just check-graphics`.
+- [ ] If files under `docs/assets/graphics/` changed, confirm the README still
+  renders the static image assets clearly.
 - [ ] Release tag is annotated:
   `git tag -a vX.Y.Z -m "Agent Maintainer X.Y.Z"`.
 - [ ] No generated metadata such as `dist/`, `build/`, `*.egg-info`, or

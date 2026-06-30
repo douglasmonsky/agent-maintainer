@@ -29,20 +29,8 @@ verify-ci:
 verify-manual:
 	python3 -m agent_maintainer verify --profile manual
 
-render-graphics:
-	.venv/bin/python docs/assets/graphics/render_graphics.py
-
-check-graphics:
-	.venv/bin/python docs/assets/graphics/render_graphics.py --check
-
-render-overview-graphic:
-	.venv/bin/python docs/assets/graphics/render_graphics.py --target overview
-
-render-runs-graphic:
-	.venv/bin/python docs/assets/graphics/render_graphics.py --target standard-runs
-
 release-check:
-    PYTHON="$([ -x .venv/bin/python ] && printf '%s' .venv/bin/python || printf '%s' python3)"; AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 "$PYTHON" -m pytest -m release tests/release -q
+	PYTHON="$([ -x .venv/bin/python ] && printf '%s' .venv/bin/python || printf '%s' python3)"; AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 "$PYTHON" -m pytest -m release tests/release -q
 
 # Example for a flat package layout:
 verify-flat PACKAGE:

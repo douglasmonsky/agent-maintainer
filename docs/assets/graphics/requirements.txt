@@ -1,3 +1,0 @@
-# Optional docs/graphics renderer dependency.
-# Install only when editing or regenerating README graphics.
-playwright>=1.45

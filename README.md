@@ -35,15 +35,8 @@ test-backed, type-checked, covered, diagnosable, and aligned with repository
 structure.
 
 It is strongest when an AI agent is actively editing your repo: the agent gets a
-compact pass/fail summary, a run id, failed checks, and exact next commands. The
+compact pass/fail summary, a run id, failed checks, and exact next commands while
 raw evidence stays in run-scoped artifacts.
-
-## What It Is Not
-
-Agent Maintainer is not a runtime AI safety product. It does not moderate model
-outputs, filter prompts, block jailbreaks, inspect end-user conversations, or
-validate chatbot responses. It focuses on repository health while humans and
-coding agents change code.
 
 ## Quick Start
 
@@ -196,6 +189,8 @@ context.
 
 Read more:
 [optional gates](docs/optional-gates.md),
+[supported scans and agent use](docs/supported-scans-and-agent-use.md),
+
 [mutation testing](docs/mutation-testing.md),
 [architecture policy](docs/architecture-policy.md),
 [test intelligence](docs/test-intelligence.md).
@@ -320,43 +315,37 @@ Read more:
 
 ## Setup Recommendations
 
-Today, choose a track and preset from the tables above, then run:
+Ask Agent Maintainer to inspect the repo before choosing a track and preset:
 
 ```bash
-agent-maintainer init --track agent --preset ai-agent-heavy --dry-run
-agent-maintainer doctor
+python3 -m agent_maintainer assess setup
+python3 -m agent_maintainer assess setup --json
 ```
 
-Near-term roadmap work will add a setup advisor that inspects repo evidence and
-recommends:
+The advisor recommends `core`, `agent`, or `hardening`; a starting preset;
+optional gates that match repository evidence; and follow-up prompts a coding
+agent should answer before tightening config.
 
-- `core`, `agent`, or `hardening`;
-- `existing-app`, `ai-agent-heavy`, `legacy-ratchet`, or `strict-new-repo`;
-- optional gates worth enabling for the repo;
-- follow-up questions an AI agent should answer from local context.
-
-Read the proposed design:
+Read more:
 [setup advisor](docs/setup-advisor.md).
 
 ## Technical Debt Score
 
-Planned work will add a transparent Technical Debt Score. It should be a
-decomposed scorecard, not an opaque grade:
+Generate an advisory maintenance-risk scorecard:
 
-- reviewability;
-- tests and coverage;
-- type/style quality;
-- architecture boundaries;
-- dependency and security posture;
-- docs/config hygiene;
-- diagnostics health;
-- ratchet and mutation maturity.
+```bash
+python3 -m agent_maintainer assess debt
+python3 -m agent_maintainer assess debt --json
+python3 -m agent_maintainer report html
+```
 
-The score should include confidence, evidence links, and “why this changed”
-deltas. It should be advisory by default, with optional policy gates only after a
-repo has agreed on thresholds.
+The score is lower-is-better and decomposes into reviewability, tests/coverage,
+type/style, architecture, dependencies/security, docs/config hygiene,
+diagnostics, and ratchet/mutation maturity. It writes JSON and Markdown
+artifacts under `.verify-logs` and appears in the verification summary and HTML
+report when present.
 
-Read the proposed design:
+Read more:
 [Technical Debt Score](docs/technical-debt-score.md).
 
 ## Install From Source

@@ -14,7 +14,7 @@ from agent_maintainer.verify.pr_summary import PR_SUMMARY_NAME
 
 
 def test_html_report_renders_sections(tmp_path: Path) -> None:
-    """Generate a self-contained report from verifier artifacts."""
+    """Generate self-contained report verifier artifacts."""
     log_dir = tmp_path / ".verify-logs"
     log_dir.mkdir()
     write_report_artifacts(log_dir)
@@ -26,6 +26,7 @@ def test_html_report_renders_sections(tmp_path: Path) -> None:
     expected_fragments = (
         "<h1>Agent Maintainer Verification Report</h1>",
         'id="verification-summary"',
+        'id="technical-debt-score"',
         'id="failed-checks"',
         'id="test-intelligence"',
         'id="ratchet-status"',
@@ -35,6 +36,8 @@ def test_html_report_renders_sections(tmp_path: Path) -> None:
         'id="architecture"',
         'id="release-readiness"',
         "lint failed &lt;bad&gt;",
+        "Technical Debt Score",
+        "23/100",
         "../ruff.log",
         "../../coverage.xml",
         "python -m agent_maintainer context log ruff --tail 120",
@@ -61,21 +64,43 @@ def test_report_cli_writes_custom_output(
     assert str(output) in capsys.readouterr().out
 
 
-def test_generate_html_report_requires_manifest(tmp_path: Path) -> None:
-    """Missing manifest gives actionable failure."""
-    with pytest.raises(FileNotFoundError, match="run verification first"):
-        generate_html_report(tmp_path / ".verify-logs")
+def test_html_report_handles_missing_debt_score(tmp_path: Path) -> None:
+    """Report gives the assess command when debt score was not run."""
+
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    write_report_artifacts(log_dir)
+    (log_dir / "technical-debt-score.json").unlink()
+
+    output = generate_html_report(log_dir)
+    html = output.read_text(encoding="utf-8")
+
+    assert "No Technical Debt Score artifact found" in html
+    assert "python -m agent_maintainer assess debt" in html
+
+
+def test_html_report_handles_invalid_debt_score(tmp_path: Path) -> None:
+    """Report handles a malformed score artifact without failing."""
+
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    write_report_artifacts(log_dir)
+    (log_dir / "technical-debt-score.json").write_text("{bad", encoding="utf-8")
+
+    output = generate_html_report(log_dir)
+    html = output.read_text(encoding="utf-8")
+
+    assert "Technical Debt Score artifact is not valid JSON" in html
 
 
 def write_report_artifacts(log_dir: Path) -> None:
-    """Write minimal verifier artifacts for report tests."""
+    """Write minimal verifier artifacts."""
     manifest = {
-        "version": 1,
-        "generated_at": "2026-06-29T16:30:00Z",
         "profile": "full",
         "base_ref": "HEAD",
         "compare_branch": "origin/main",
-        "thresholds": {"coverage_fail_under": 90},
+        "generated_at": "2026-06-30T00:00:00Z",
+        "thresholds": {"coverage": 90},
         "checks": [
             {
                 "name": "ruff",
@@ -115,17 +140,38 @@ def write_report_artifacts(log_dir: Path) -> None:
 # Agent Maintainer Verification Summary
 
 ## Test Intelligence
+
 - Likely tests: tests/test_example.py
 
 ## Ratchet Targets
+
 - No ratchet targets.
 
 ## Change Plan Status
+
 - Check plans: `python -m agent_maintainer change-plan check`
 
 ## Context Pack Path
+
 - Context pack not generated in run.
 """.strip(),
         encoding="utf-8",
     )
     (log_dir / LAST_FAILURE_NAME).write_text("lint failed <bad>", encoding="utf-8")
+    (log_dir / "technical-debt-score.json").write_text(
+        json.dumps(
+            {
+                "score": 23,
+                "risk": "low",
+                "confidence": "high",
+                "categories": [
+                    {
+                        "name": "Reviewability",
+                        "score": 30,
+                        "status": "moderate",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )

@@ -12,8 +12,11 @@ REQUIRED_README_LINKS = (
     "docs/diagnostics-repair-loop.md",
     "docs/agent-client-hooks.md",
     "docs/optional-gates.md",
+    "docs/supported-scans-and-agent-use.md",
     "docs/mutation-testing.md",
     "docs/architecture-policy.md",
+    "docs/setup-advisor.md",
+    "docs/technical-debt-score.md",
     "docs/release-checklist.md",
 )
 
@@ -26,11 +29,22 @@ def test_readme_uses_public_beta_framing() -> None:
     assert "Agent Maintainer is in beta" in text
     assert 'python -m pip install "agent-maintainer[core]"' in text
     assert "agent-maintainer init --track core" in text
+    assert "python3 -m agent_maintainer assess setup" in text
+    assert "python3 -m agent_maintainer assess debt" in text
     assert "[Release checklist](docs/release-checklist.md)" in text
     assert "[MIT License](LICENSE)" in text
     assert "[Changelog](CHANGELOG.md)" in text
     assert "docs/assets/graphics/agent-maintainer-social-preview.png" in text
     assert "![Python 3.11-3.14]" in text
+
+
+def test_readme_documents_implemented_assessment_commands() -> None:
+    """README should not describe setup advisor or debt score as future-only."""
+    text = README.read_text(encoding="utf-8")
+    assessment_section = text[text.index("## Setup Recommendations") :]
+    assert "Near-term roadmap work will add" not in assessment_section
+    assert "Planned work will add" not in assessment_section
+    assert "Read proposed design" not in assessment_section
 
 
 def test_license_and_changelog_are_public_beta_ready() -> None:
