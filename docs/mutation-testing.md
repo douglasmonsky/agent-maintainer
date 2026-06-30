@@ -25,8 +25,8 @@ only_mutate = ["src/my_package/core.py"]
 max_stack_depth = 8
 ```
 
-Prefer adding targets after a module has meaningful coverage and stable runtime.
-Avoid broad `only_mutate` expansion just to advertise a large mutation surface.
+Prefer targets after module behavior, coverage, and runtime are stable. Avoid
+broad `only_mutate` expansion just to advertise a large mutation surface.
 
 ## Result Ratchets
 
@@ -42,8 +42,8 @@ mutmut_max_timeouts = 0
 mutmut_min_score = 90
 ```
 
-Downstream repos keep this off by default. This repo dogfoods it only for
-targets that have proven stable enough to block.
+Downstream repos keep this off by default. This repo dogfoods only targets that
+have proven stable enough to block.
 
 ## Advisory Sweeps
 
@@ -54,8 +54,33 @@ python3 -m agent_maintainer test-intel mutation-sweep
 ```
 
 The sweep ranks candidates by changed files, coverage, complexity, churn, and
-existing ratchet hotspots. It should suggest future target promotions, not
-silently expand the blocking gate.
+existing ratchet hotspots. Planner mode does not run Mutmut. It suggests future
+target promotions, not silent blocking-gate expansion.
+
+Use non-default execution mode when you want measured Mutmut data for the ranked
+candidates without editing `pyproject.toml` by hand:
+
+```bash
+python3 -m agent_maintainer test-intel mutation-sweep \
+  --execute --candidate-limit 2 --target-limit 10 --time-budget-minutes 60
+```
+
+Execution copies the repository to temporary worktrees, patches
+`[tool.mutmut].only_mutate` and likely focused tests only in those copies, runs
+Mutmut there, and writes raw logs plus stats snapshots under
+`.verify-logs/mutation-sweeps/<run-id>/`. Terminal output stays summary-first:
+candidate, score, killed/total, survivors, suspicious/timeouts, promotion
+readiness, and artifact path.
+
+Promotion readiness is advisory. A candidate is ready to consider for the
+blocking manual gate only when survivor count is at or below the configured
+threshold, suspicious and timeout counts are zero, and the runner completed
+successfully.
+
+Current dogfood findings:
+
+- `src/agent_maintainer/core/reporting.py`: 124 survivors, not promotion-ready.
+- `src/agent_maintainer/doctor/cli.py`: 270 survivors, not promotion-ready.
 
 See also:
 

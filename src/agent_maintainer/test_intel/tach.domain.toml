@@ -106,18 +106,53 @@ depends_on = [
 ]
 
 [[modules]]
+path = "mutation_sweep_config"
+depends_on = [
+    "mutation_sweep",
+]
+
+[[modules]]
+path = "mutation_sweep_execution"
+depends_on = [
+    "//agent_maintainer.runners.mutmut_stats",
+    "mutation_sweep",
+]
+
+[[modules]]
+path = "mutation_sweep_executor"
+depends_on = [
+    "//agent_maintainer.runners.mutmut_stats",
+    "mutation_sweep",
+    "mutation_sweep_execution",
+    "mutation_sweep_runner",
+]
+
+[[modules]]
+path = "mutation_sweep_runner"
+depends_on = [
+    "//agent_maintainer.runners.mutmut_stats",
+    "mutation_sweep",
+    "mutation_sweep_config",
+    "mutation_sweep_execution",
+]
+
+[[modules]]
 path = "mutation_sweep_cli"
 depends_on = [
     "//agent_maintainer.config.loader",
     "changed",
     "mutation_sweep",
+    "mutation_sweep_executor",
+    "mutation_sweep_execution",
     "mutation_sweep_reporting",
 ]
 
 [[modules]]
 path = "mutation_sweep_reporting"
 depends_on = [
+    "//agent_maintainer.runners.mutmut_stats",
     "mutation_sweep",
+    "mutation_sweep_execution",
 ]
 
 [[modules]]

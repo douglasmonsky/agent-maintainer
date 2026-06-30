@@ -22,8 +22,8 @@ tests with stable confidence labels.
 
 Signals:
 
-- `high`: test filename matches and imports the changed module.
-- `medium`: test filename matches or imports the changed module.
+- `high`: test filename matches or imports the changed module.
+- `medium`: test filename roughly matches or imports the changed module.
 - `low`: test lives in the same package/domain folder.
 
 Output includes changed source files, likely test files, reasons, coverage
@@ -34,15 +34,14 @@ Coverage output separates two advisory signals:
 
 - `changed_source_file_coverage`: average whole-file coverage for changed
   source files.
-- `changed_line_coverage`: coverage for executable lines that are both changed
-  in the Git diff and present in coverage artifacts.
+- `changed_line_coverage`: coverage for executable lines changed in the Git
+  diff when coverage artifacts are present.
 
 The blocking changed-code coverage gate remains `diff-cover`; test intelligence
-reports these values only to help agents pick focused repair commands.
-
-Change-budget warnings use this same mapping when source changes do not include
-likely relevant test changes. The warning stays non-blocking unless existing
-strict warning-as-error options are enabled.
+reports values only to help agents pick focused repair commands. Change-budget
+warnings use the same mapping so source changes do not ignore likely relevant
+test changes. The warning stays non-blocking unless existing strict
+warning-as-error options are enabled.
 
 ## Hypothesis Candidate Guidance
 
@@ -54,13 +53,13 @@ python -m agent_maintainer test-intel hypothesis-candidates --changed
 python -m agent_maintainer test-intel hypothesis-candidates --format json
 ```
 
-The command scans configured source roots and ranks functions that look like good
-property-test candidates: typed functions, branchy decision logic, pure-ish
-parsers, validators, normalizers, and numeric or string boundary behavior.
+The command scans configured source roots and ranks functions that look like
+good property-test candidates: typed functions, branchy decision logic,
+pure-ish parsers, validators, normalizers, and numeric or string boundary
+behavior.
 
 Output is advisory only. Suggested scaffolds are starting points, not verified
-contracts, and the command does not import Hypothesis, run tests, or modify
-files.
+contracts. The command does not import Hypothesis, run tests, or modify files.
 
 ## Mutation Target Suggestions
 
@@ -74,19 +73,20 @@ python -m agent_maintainer test-intel mutation-targets --format json
 ```
 
 The command ranks functions that look useful for manual mutation testing:
-changed source, likely focused test coverage, ratchet hotspots, branchy pure-ish
-logic, and parser/validator/decision names.
+changed source, likely focused test coverage, ratchet hotspots, branchy
+pure-ish logic, parser/validator/decision names.
 
 Output is advisory only. The command does not run Mutmut and does not make
-mutation testing a normal precommit gate.
+mutation testing a normal precommit gate. Repositories own targeted
+`[tool.mutmut].only_mutate` lists, and
+`[tool.agent_maintainer].mutmut_target_min` ratchets the configured target
+count. The ratchet runs in `full` and `ci` because it only validates
+configuration shape, supported Mutmut keys, path-like target existence, and
+concrete `also_copy` / `do_not_mutate` paths; actual Mutmut execution stays in
+`manual`.
 
-For repositories with targeted `[tool.mutmut].only_mutate` lists,
-`[tool.agent_maintainer].mutmut_target_min` ratchets configured target count.
-The ratchet runs in `full` and `ci` because it only validates configuration
-shape, supported Mutmut keys, path-like target existence, and concrete
-`also_copy` / `do_not_mutate` paths; actual Mutmut execution stays in
-`manual`. Agent Maintainer intentionally rejects unsupported Mutmut keys rather
-than letting the pinned Mutmut version ignore them silently.
+Agent Maintainer intentionally rejects unsupported Mutmut keys rather than
+letting the pinned Mutmut version ignore them silently.
 
 ## Mutation Results
 
@@ -101,10 +101,11 @@ python -m agent_maintainer test-intel mutation-results --path mutants/mutmut-cic
 The command reads Mutmut's exported CI/CD stats and summarizes killed,
 survived, suspicious, and timed-out mutants. It does not run Mutmut.
 
-Repositories can enable `[tool.agent_maintainer].mutmut_result_ratchet_enabled`
-to make the manual Mutmut gate fail when survivor, suspicious, timeout, or
-mutation score budgets regress. This repo currently dogfoods that ratchet
-against the measured targeted baseline.
+Repositories can enable
+`[tool.agent_maintainer].mutmut_result_ratchet_enabled` to make the manual
+Mutmut gate fail when survivor, suspicious, timeout, or mutation score budgets
+regress. This repo currently dogfoods the ratchet against a measured targeted
+baseline.
 
 ## Mutation Sweep
 
@@ -113,19 +114,26 @@ Run:
 ```bash
 python -m agent_maintainer test-intel mutation-sweep
 python -m agent_maintainer test-intel mutation-sweep --changed
+python -m agent_maintainer test-intel mutation-sweep --execute
+python -m agent_maintainer test-intel mutation-sweep --execute --candidate-limit 2
 python -m agent_maintainer test-intel mutation-sweep --format json
 ```
 
-The sweep planner ranks module-level mutation targets by changed files,
+The sweep planner ranks module-level mutation targets using changed files,
 likely focused tests, coverage artifacts, branch complexity, recent Git churn,
-and ratchet hotspots. It is advisory by default and does not run Mutmut.
+and ratchet hotspots. Planner mode is advisory and does not run Mutmut. Because
+Mutmut targeting is config-driven, each candidate recommends a
+`[tool.mutmut].only_mutate` promotion plus the manual verification command to
+run after a config update.
 
-Because Mutmut targeting is config-driven, each candidate recommends a
-`[tool.mutmut].only_mutate` promotion plus the manual verification command
-to run after the config update. Use sweep output when expanding mutation
-coverage deliberately. Keep blocking mutation testing targeted and ratcheted
-in `manual`; broad sweeps remain release/manual research until runtime and
-signal quality are stable.
+`--execute` is still advisory, but it runs selected ranked candidates safely in
+copied temporary worktrees. The temp copy receives the candidate `only_mutate`
+target and likely focused tests; the source checkout's `pyproject.toml` is not
+modified. Raw Mutmut logs and exported stats live under
+`.verify-logs/mutation-sweeps/<run-id>/`, while terminal output stays compact.
+
+Keep blocking mutation testing targeted and ratcheted in `manual`; broad sweeps
+remain release/manual research until runtime and signal quality are stable.
 
 ## CrossHair Candidate Guidance
 
@@ -138,7 +146,7 @@ python -m agent_maintainer test-intel crosshair-candidates --format json
 ```
 
 The command suggests functions that are likely safer manual CrossHair targets:
-fully typed public functions with visible `assert`, docstring, `icontract`, or
+fully typed public functions, visible `assert`, docstring, `icontract`, or
 `deal` contracts, small bounded bodies, and no obvious filesystem, network,
 subprocess, or database access.
 
@@ -148,7 +156,6 @@ formal analysis a normal precommit gate.
 ## Planned Next Layers
 
 Planned capabilities include smarter source-without-test guidance, branch
-coverage signals and richer repair planning for larger changes.
-
-These signals should guide better tests without encouraging coverage theater or
-turning slow research tools into normal precommit gates.
+coverage signals, and richer repair planning for larger changes. These signals
+should guide better tests without encouraging coverage theater or turning slow
+research tools into normal precommit gates.

@@ -69,7 +69,7 @@ tach.toml
 - Documentation records current dogfood findings:
   - `src/agent_maintainer/core/reporting.py`: 124 survivors, not
     promotion-ready.
-  - `src/agent_maintainer/doctor/cli.py`: 269 survivors, not
+  - `src/agent_maintainer/doctor/cli.py`: 270 survivors, not
     promotion-ready.
 - Normal manual Mutmut gate still passes after executor runs.
 - No `mutants/`, `__pycache__`, `*.pyc`, or duplicate generated files remain.
