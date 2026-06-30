@@ -250,23 +250,23 @@ def run_mutation_results(args: argparse.Namespace) -> int:
     """Run mutation result stats summary."""
 
     try:
-        stats = mutation_results.read_stats(Path(args.path))
+        source = mutation_results.read_result_source(Path(args.path))
     except (OSError, ValueError) as exc:
         print(f"mutmut stats unavailable: {exc}", file=sys.stderr)
         return 1
-    print(render_mutation_results(stats, args.format))
+    print(render_mutation_results(source, args.format))
     return 0
 
 
 def render_mutation_results(
-    stats: mutation_results.MutmutStats,
+    source: mutation_results.MutationResultSource,
     output_format: str,
 ) -> str:
     """Render mutation result stats in selected format."""
 
     if output_format == FORMAT_JSON:
-        return mutation_results.render_json(stats)
-    return mutation_results.render_text(stats)
+        return mutation_results.render_json(source.stats, source=source)
+    return mutation_results.render_text(source.stats, source=source)
 
 
 def run_crosshair_candidates(args: argparse.Namespace) -> int:
