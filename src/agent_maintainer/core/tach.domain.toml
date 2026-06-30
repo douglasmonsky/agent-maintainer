@@ -29,6 +29,10 @@ path = "check_run"
 depends_on = []
 
 [[modules]]
+path = "command_run"
+depends_on = []
+
+[[modules]]
 path = "config"
 depends_on = [
   "//agent_maintainer.config.loader",
@@ -41,6 +45,7 @@ path = "executor"
 depends_on = [
   "artifact_environment",
   "check_run",
+  "command_run",
   "reporting",
   "runtime",
   "tool_capabilities",

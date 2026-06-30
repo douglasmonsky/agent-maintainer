@@ -26,6 +26,14 @@ def test_parse_csv_like_normalizes_repeated_values() -> None:
     assert maintainer_args.parse_csv_like([" , "]) is None
 
 
+def test_parse_repeated_values_preserves_tool_arguments() -> None:
+    assert maintainer_args.parse_repeated_values(["scan", "--include=a,b", ""]) == (
+        "scan",
+        "--include=a,b",
+    )
+    assert maintainer_args.parse_repeated_values(None) is None
+
+
 def test_cli_overrides_replace_config_values() -> None:
     args = maintainer_args.parse_args(
         [
@@ -44,7 +52,7 @@ def test_cli_overrides_replace_config_values() -> None:
             "--enable-semgrep",
             "--semgrep-arg",
             "scan",
-            "--semgrep-arg=--config,semgrep.yml",
+            "--semgrep-arg=--config=semgrep.yml,local",
             "--semgrep-profile",
             "manual,security",
             "--enable-secret-scanning",
@@ -67,7 +75,8 @@ def test_cli_overrides_replace_config_values() -> None:
             "--taplo-path",
             "pyproject.toml",
             "--enable-check-jsonschema",
-            "--check-jsonschema-arg=--builtin-schema,vendor.github-workflows,.github/workflows/verify.yml",
+            "--check-jsonschema-arg=--builtin-schema",
+            "--check-jsonschema-arg=vendor.github-workflows,.github/workflows/verify.yml",
         ]
     )
 
@@ -80,7 +89,7 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.enable_mutmut is True
     assert config.mutmut_args == ("run", "agent_maintainer.core.runtime*")
     assert config.enable_semgrep is True
-    assert config.semgrep_args == ("scan", "--config", "semgrep.yml")
+    assert config.semgrep_args == ("scan", "--config=semgrep.yml,local")
     assert config.semgrep_profiles == ("manual", "security")
     assert config.enable_secret_scanning is True
     assert config.secret_scanner == "gitleaks"
@@ -97,8 +106,7 @@ def test_cli_overrides_replace_config_values() -> None:
     assert config.enable_check_jsonschema is True
     assert config.check_jsonschema_args == (
         "--builtin-schema",
-        "vendor.github-workflows",
-        ".github/workflows/verify.yml",
+        "vendor.github-workflows,.github/workflows/verify.yml",
     )
 
 

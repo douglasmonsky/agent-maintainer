@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import os
 import shutil
-import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
 from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilities
 from agent_maintainer.core.artifact_environment import artifact_environment
 from agent_maintainer.core.check_run import CheckRun, utc_timestamp
+from agent_maintainer.core.command_run import run_command_bounded
 from agent_maintainer.core.reporting import summarize_check, summarize_check_from_artifacts
 from agent_maintainer.core.runtime import hardened_subprocess_env
 from agent_maintainer.models import Check, CheckResult
@@ -106,17 +106,20 @@ def missing_requirement(check: Check) -> str | None:
     return None
 
 
-def run_command(command: list[str]) -> tuple[int, str]:
+def run_command(
+    command: list[str],
+    *,
+    timeout_seconds: int | None = None,
+    output_limit_chars: int | None = None,
+) -> tuple[int, str]:
     """Run a command and combine stdout and stderr for log storage."""
 
-    result = subprocess.run(  # nosec B603
+    return run_command_bounded(
         command,
-        text=True,
-        capture_output=True,
         env=command_env(),
-        check=False,
+        timeout_seconds=timeout_seconds,
+        output_limit_chars=output_limit_chars,
     )
-    return result.returncode, "\n".join(part for part in (result.stdout, result.stderr) if part)
 
 
 def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> CheckResult:
@@ -130,7 +133,11 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
         return missing_requirement_result(check, log_path, missing, started_at)
     try:
         with artifact_environment(log_dir):
-            returncode, output = run_command(check.command)
+            returncode, output = run_command(
+                check.command,
+                timeout_seconds=check.timeout_seconds,
+                output_limit_chars=check.output_limit_chars,
+            )
     except OSError as exc:
         ended_at = utc_timestamp()
         output = f"could not run {check.command!r}: {exc}"
@@ -143,6 +150,7 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
             log_path=str(log_path),
             started_at=started_at,
             ended_at=ended_at,
+            artifact_sensitivity=check.artifact_sensitivity,
         )
     ended_at = utc_timestamp()
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -167,6 +175,7 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
         started_at=started_at,
         ended_at=ended_at,
         artifact_paths=artifact_paths,
+        artifact_sensitivity=check.artifact_sensitivity,
     )
 
 
@@ -194,6 +203,7 @@ def missing_requirement_result(
             log_path=str(log_path),
             started_at=started_at,
             ended_at=ended_at,
+            artifact_sensitivity=check.artifact_sensitivity,
         )
     return CheckResult(
         check.name,
@@ -203,6 +213,7 @@ def missing_requirement_result(
         log_path=str(log_path),
         started_at=started_at,
         ended_at=ended_at,
+        artifact_sensitivity=check.artifact_sensitivity,
     )
 
 
@@ -228,6 +239,7 @@ def success_result(
             started_at=check_run.started_at,
             ended_at=check_run.ended_at,
             artifact_paths=artifact_paths,
+            artifact_sensitivity=check.artifact_sensitivity,
         )
     return CheckResult(
         check.name,
@@ -238,4 +250,5 @@ def success_result(
         started_at=check_run.started_at,
         ended_at=check_run.ended_at,
         artifact_paths=artifact_paths,
+        artifact_sensitivity=check.artifact_sensitivity,
     )

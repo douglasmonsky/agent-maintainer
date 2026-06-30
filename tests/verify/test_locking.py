@@ -5,7 +5,13 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from agent_maintainer.verify.locking import LOCK_NAME, VerificationFingerprint, VerificationLock
+from agent_maintainer.verify.locking import (
+    CONFIG_FINGERPRINT_PATHS,
+    LOCK_NAME,
+    VerificationFingerprint,
+    VerificationLock,
+    files_hash,
+)
 
 
 def fingerprint() -> VerificationFingerprint:
@@ -53,3 +59,16 @@ def test_verification_lock_does_not_reuse_different_repo_state(tmp_path: Path) -
     with VerificationLock(log_dir=log_dir, fingerprint=changed) as lock:
         assert lock.reused is None
         assert (log_dir / LOCK_NAME).exists()
+
+
+def test_config_fingerprint_includes_external_tool_config(tmp_path: Path) -> None:
+    """Changing a verifier-adjacent config file changes reuse fingerprint."""
+
+    (tmp_path / "pyproject.toml").write_text("[tool.agent_maintainer]\n", encoding="utf-8")
+    (tmp_path / "tach.toml").write_text("root_module = 'forbid'\n", encoding="utf-8")
+    before = files_hash(tmp_path, CONFIG_FINGERPRINT_PATHS)
+
+    (tmp_path / "tach.toml").write_text("root_module = 'ignore'\n", encoding="utf-8")
+    after = files_hash(tmp_path, CONFIG_FINGERPRINT_PATHS)
+
+    assert before != after

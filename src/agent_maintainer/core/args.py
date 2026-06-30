@@ -33,6 +33,15 @@ def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
     return normalized or None
 
 
+def parse_repeated_values(values: list[str] | None) -> tuple[str, ...] | None:
+    """Preserve repeated option values exactly except empty entries."""
+
+    if not values:
+        return None
+    normalized = tuple(value for value in values if value)
+    return normalized or None
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse quiet verifier command-line options."""
     parser = argparse.ArgumentParser(
@@ -203,15 +212,15 @@ def apply_cli_overrides(config: MaintainerConfig, args: argparse.Namespace) -> M
         "package_paths": parse_csv_like(args.package_path),
         "file_length_paths": parse_csv_like(args.file_length_path),
         "vulture_paths": parse_csv_like(args.vulture_path),
-        "mutmut_args": parse_csv_like(args.mutmut_arg),
-        "semgrep_args": parse_csv_like(args.semgrep_arg),
+        "mutmut_args": parse_repeated_values(args.mutmut_arg),
+        "semgrep_args": parse_repeated_values(args.semgrep_arg),
         "semgrep_profiles": parse_csv_like(args.semgrep_profile),
         "secret_scan_profiles": parse_csv_like(args.secret_scan_profile),
         "secret_scan_history_profiles": parse_csv_like(args.secret_scan_history_profile),
         "markdownlint_paths": parse_csv_like(args.markdownlint_path),
         "yamllint_paths": parse_csv_like(args.yamllint_path),
         "taplo_paths": parse_csv_like(args.taplo_path),
-        "check_jsonschema_args": parse_csv_like(args.check_jsonschema_arg),
+        "check_jsonschema_args": parse_repeated_values(args.check_jsonschema_arg),
     }
     scalar_overrides = {
         "coverage_fail_under": args.coverage_fail_under,

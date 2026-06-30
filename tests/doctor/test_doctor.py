@@ -10,6 +10,7 @@ from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilit
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.doctor import cli as maintainer_doctor
 from agent_maintainer.doctor import setup as maintainer_doctor_setup
+from agent_maintainer.doctor.support import models as maintainer_doctor_models
 from agent_maintainer.models import FULL_PROFILES, Check
 
 
@@ -65,6 +66,32 @@ def test_repo_root_warns_without_pyproject(tmp_path: Path) -> None:
 
     assert result.status == maintainer_doctor.WARNING
     assert "pyproject.toml" in result.message
+
+
+def test_unknown_config_key_check_warns_with_full_key_paths(tmp_path: Path) -> None:
+    """Doctor warns when Agent Maintainer config contains ignored keys."""
+
+    repo_root = write_repo_root(tmp_path)
+    (repo_root / "pyproject.toml").write_text(
+        "\n".join(
+            (
+                "[tool.agent_maintainer]",
+                'mode = "custom"',
+                "coverage_fail_nder = 90",
+                "[tool.agent_maintainer.diagnostics]",
+                "lod_dir = '.verify-logs'",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    result = maintainer_doctor.check_unknown_config_keys(repo_root)
+
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
+    assert "tool.agent_maintainer.coverage_fail_nder" in result.message
+    assert "tool.agent_maintainer.diagnostics.lod_dir" in result.message
+    assert "Fix typos" in result.hint
 
 
 def test_repo_root_fails_when_required_paths_are_missing(tmp_path: Path) -> None:

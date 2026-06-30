@@ -31,6 +31,9 @@ class Check:
     optional_skip_reason: str | None = None
     report_success_output: bool = False
     artifact_paths: tuple[str, ...] = ()
+    timeout_seconds: int | None = None
+    output_limit_chars: int | None = None
+    artifact_sensitivity: str = "safe"
 
 
 @dataclass(frozen=True)
@@ -48,3 +51,4 @@ class CheckResult:
     started_at: str = ""
     ended_at: str = ""
     artifact_paths: tuple[str, ...] = ()
+    artifact_sensitivity: str = "safe"

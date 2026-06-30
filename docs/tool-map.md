@@ -241,6 +241,19 @@ log_dir = ".verify-logs"
 
 Mode can be `custom`, `legacy-ratchet`, or `fresh-strict`. Built-in defaults apply first, then mode defaults, then explicit pyproject fields, environment variables, and CLI flags.
 
+`doctor` reports unknown `[tool.agent_maintainer]` and
+`[tool.agent_maintainer.diagnostics]` keys as warnings so typoed policy does
+not silently disappear. `doctor --strict` turns those warnings into a nonzero
+setup result through normal strict status behavior.
+
+Path and profile CLI options still accept comma-separated values. Tool
+passthrough options preserve each repeated flag exactly; pass separate tool
+arguments by repeating the option instead of relying on comma splitting:
+
+```bash
+python3 -m agent_maintainer verify --semgrep-arg scan --semgrep-arg --config=semgrep.yml,local
+```
+
 Missing required roots fail in `precommit`, `full`, and `ci`; optional integrations are reported as skipped. In `fresh-strict` mode with `architecture_tool = "tach"`, `tach.toml` must exist, use `root_module = "forbid"`, explicitly assign each non-init Python source module under Tach's checked roots, and avoid module entries that no longer resolve to source files.
 
 `doctor` checks verifier diagnostics coherence: logs exist, the manifest is

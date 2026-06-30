@@ -7,9 +7,9 @@ depends_on = []
 [[modules]]
 path = "cli"
 depends_on = [
-    "//agent_maintainer.core.config",
-    "setup",
-    "support.environment",
+  "//agent_maintainer.core.config",
+  "setup",
+  "support.environment",
     "support.hook_audit",
     "support.integrations",
     "support.logs",
@@ -104,7 +104,9 @@ depends_on = [
 [[modules]]
 path = "support.policy"
 depends_on = [
+  "//agent_maintainer.config.loader",
   "//agent_maintainer.config.schema",
+  "//agent_maintainer.config.validation",
   "//agent_maintainer.core.config",
   "support.context_artifacts",
   "support.context_health",

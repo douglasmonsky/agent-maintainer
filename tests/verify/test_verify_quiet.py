@@ -31,6 +31,37 @@ def test_collect_results_stops_on_layout_failure(
     assert results[0].passed is False
 
 
+def test_collect_results_stops_on_invalid_git_refs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Invalid verifier refs fail before running selected checks."""
+
+    monkeypatch.chdir(tmp_path)
+    args = verify_quiet.parse_args(["--profile", "ci"])
+    config = MaintainerConfig()
+    monkeypatch.setattr(
+        verify_run_steps,
+        "layout_failures",
+        lambda _config, _profile: [],
+    )
+    monkeypatch.setattr(
+        verify_run_steps,
+        "ref_failures",
+        lambda *_args, **_kwargs: ("--base-ref 'missing' is not valid commit ref.",),
+    )
+
+    def fail_run_check(*_args: object, **_kwargs: object) -> CheckResult:
+        pytest.fail("checks should not run when refs are invalid")
+
+    monkeypatch.setattr(verify_run_steps, "run_check", fail_run_check)
+
+    results = verify_quiet.collect_results(args, config, [Check("tool", ["tool"], frozenset())])
+
+    assert results[0].name == "git-ref-validation"
+    assert results[0].passed is False
+    assert "--base-ref 'missing'" in results[0].output
+
+
 def test_optional_skip_policy_can_fail_skips() -> None:
     results = [
         CheckResult(

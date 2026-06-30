@@ -21,6 +21,19 @@ SECONDS_PER_MINUTE = 60
 LOCK_STALE_SECONDS = LOCK_STALE_MINUTES * SECONDS_PER_MINUTE
 LOCK_WAIT_SECONDS = 45.0
 LOCK_POLL_SECONDS = 0.25
+CONFIG_FINGERPRINT_PATHS = (
+    "pyproject.toml",
+    "tach.toml",
+    ".pre-commit-config.yaml",
+    ".github/dependabot.yml",
+    ".github/workflows/verify.yml",
+    "semgrep.yml",
+    "osv-scanner.toml",
+    "config/dev-dependencies.txt",
+    "config/dev-lock.txt",
+    "package.json",
+    "package-lock.json",
+)
 
 
 @dataclass(frozen=True)
@@ -179,7 +192,7 @@ def build_fingerprint(
         head=git_output(repo_root, "rev-parse", "HEAD"),
         index_hash=git_hash(repo_root, "diff", "--cached", "--binary"),
         worktree_hash=git_hash(repo_root, "diff", "--binary"),
-        config_hash=file_hash(repo_root / "pyproject.toml"),
+        config_hash=files_hash(repo_root, CONFIG_FINGERPRINT_PATHS),
     )
 
 
@@ -216,3 +229,16 @@ def file_hash(path: Path) -> str:
     except OSError:
         content = b""
     return hashlib.sha256(content).hexdigest()
+
+
+def files_hash(repo_root: Path, paths: tuple[str, ...]) -> str:
+    """Return stable hash of verifier-relevant config files."""
+
+    digest = hashlib.sha256()
+    for relative_path in paths:
+        path = repo_root / relative_path
+        digest.update(relative_path.encode())
+        digest.update(b"\0")
+        digest.update(file_hash(path).encode())
+        digest.update(b"\0")
+    return digest.hexdigest()
