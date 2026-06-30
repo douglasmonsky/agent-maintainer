@@ -30,9 +30,12 @@ unstable targets into the blocking Mutmut gate. Start with
 
 ## Acceptance Criteria
 
-- `core/reporting.py` survivors are materially lower than the current 124.
+- `core/reporting.py` survivors are materially lower than the current 124. Completed:
+  124 to 39, zero suspicious/timeouts.
 - `doctor/cli.py` either has fewer survivors than the current 270 or a
-  documented refactor plan based on survivor clusters.
+  documented refactor plan based on survivor clusters. Completed: 270 to 11
+  after extracting environment, integration, and output support modules, zero
+  suspicious/timeouts.
 - No raw Mutmut logs are committed.
 - No advisory target is added to blocking `[tool.mutmut].only_mutate` unless it
   is near the current blocking policy.

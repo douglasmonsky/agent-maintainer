@@ -10,6 +10,7 @@ import pytest
 from agent_maintainer.core import guidance as maintainer_guidance
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.doctor import cli as maintainer_doctor
+from agent_maintainer.doctor.support import environment as maintainer_doctor_environment
 from agent_maintainer.doctor.support import policy as maintainer_doctor_policy
 
 
@@ -108,7 +109,11 @@ def test_git_state_warns_for_dirty_ahead_branch(
         stdout="## main...origin/main [ahead 1]\n M README.md\n",
         stderr="",
     )
-    monkeypatch.setattr(maintainer_doctor.subprocess, "run", lambda *args, **_kwargs: completed)
+    monkeypatch.setattr(
+        maintainer_doctor_environment.subprocess,
+        "run",
+        lambda *args, **_kwargs: completed,
+    )
 
     result = maintainer_doctor.check_git_state(tmp_path)
 
@@ -120,7 +125,7 @@ def test_git_state_warns_for_dirty_ahead_branch(
 def test_git_state_warns_when_git_is_missing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor.shutil, "which", lambda name: None)
+    monkeypatch.setattr(maintainer_doctor_environment.shutil, "which", lambda name: None)
 
     result = maintainer_doctor.check_git_state(tmp_path)
 
@@ -130,8 +135,16 @@ def test_git_state_warns_when_git_is_missing(
 
 def test_git_state_passes_for_clean_branch(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     completed = subprocess.CompletedProcess(["git"], 0, stdout="## main...origin/main\n", stderr="")
-    monkeypatch.setattr(maintainer_doctor.shutil, "which", lambda name: "/usr/bin/git")
-    monkeypatch.setattr(maintainer_doctor.subprocess, "run", lambda *args, **_kwargs: completed)
+    monkeypatch.setattr(
+        maintainer_doctor_environment.shutil,
+        "which",
+        lambda name: "/usr/bin/git",
+    )
+    monkeypatch.setattr(
+        maintainer_doctor_environment.subprocess,
+        "run",
+        lambda *args, **_kwargs: completed,
+    )
 
     result = maintainer_doctor.check_git_state(tmp_path)
 

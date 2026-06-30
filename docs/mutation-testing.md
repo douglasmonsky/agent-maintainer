@@ -81,7 +81,9 @@ Current dogfood findings:
 
 - `src/agent_maintainer/core/reporting.py`: reduced from 124 to 39 survivors,
   still not promotion-ready.
-- `src/agent_maintainer/doctor/cli.py`: 270 survivors, not promotion-ready.
+- `src/agent_maintainer/doctor/cli.py`: reduced from 270 to 11 survivors after
+  splitting environment, integration, and output helpers out of the CLI module;
+  still not promotion-ready.
 
 See also:
 

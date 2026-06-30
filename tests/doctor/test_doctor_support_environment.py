@@ -1,0 +1,87 @@
+"""Tests for doctor environment diagnostics."""
+
+from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+
+import pytest
+
+from agent_maintainer.doctor.support import environment as doctor_environment
+from agent_maintainer.doctor.support import models as doctor_models
+
+GIT_FATAL_EXIT = 128
+
+
+def test_repo_root_missing_paths(tmp_path: Path) -> None:
+    result = doctor_environment.check_repo_root(tmp_path)
+
+    assert result.status == doctor_models.ERROR
+    assert result.state == doctor_models.MISSING
+    assert ".git" in result.message
+    assert "src/agent_maintainer/__main__.py" in result.message
+
+
+def test_repo_root_missing_pyproject(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    package_path = tmp_path / "src" / "agent_maintainer"
+    package_path.mkdir(parents=True)
+    (package_path / "__main__.py").write_text("", encoding="utf-8")
+
+    result = doctor_environment.check_repo_root(tmp_path)
+
+    assert result.status == doctor_models.WARNING
+    assert result.state == doctor_models.MISSING
+    assert "pyproject.toml" in result.message
+
+
+def test_virtualenv_prefers_dot_venv_python(tmp_path: Path) -> None:
+    venv_python = tmp_path / ".venv" / "bin" / "python"
+    venv_python.parent.mkdir(parents=True)
+    venv_python.write_text("", encoding="utf-8")
+    fallback_python = tmp_path / "venv" / "bin" / "python"
+    fallback_python.parent.mkdir(parents=True)
+    fallback_python.write_text("", encoding="utf-8")
+
+    result = doctor_environment.check_virtualenv(tmp_path)
+
+    assert result.status == doctor_models.OK
+    assert result.message == ".venv/bin/python"
+
+
+def test_git_state_reports_command_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    completed = subprocess.CompletedProcess(
+        ["git"],
+        GIT_FATAL_EXIT,
+        stdout="",
+        stderr="fatal: not a git repository",
+    )
+    monkeypatch.setattr(doctor_environment.shutil, "which", lambda name: "/usr/bin/git")
+    monkeypatch.setattr(doctor_environment.subprocess, "run", lambda *args, **kwargs: completed)
+
+    result = doctor_environment.check_git_state(tmp_path)
+
+    assert result.status == doctor_models.WARNING
+    assert result.message == "fatal: not a git repository"
+
+
+def test_git_state_ahead_dirty(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    completed = subprocess.CompletedProcess(
+        ["git"],
+        0,
+        stdout="## main...origin/main [ahead 1]\n M README.md\n?? scratch.txt\n",
+        stderr="",
+    )
+    monkeypatch.setattr(doctor_environment.shutil, "which", lambda name: "/usr/bin/git")
+    monkeypatch.setattr(doctor_environment.subprocess, "run", lambda *args, **kwargs: completed)
+
+    result = doctor_environment.check_git_state(tmp_path)
+
+    assert result.status == doctor_models.WARNING
+    assert result.message == "main...origin/main [ahead 1]; 2 changed path(s)"
