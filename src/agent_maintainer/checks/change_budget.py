@@ -15,16 +15,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from agent_maintainer.checks import test_relevance
-from agent_maintainer.checks.change_budget_args import (
-    apply_cli_overrides as _apply_cli_overrides,
-)
-from agent_maintainer.checks.change_budget_args import (
-    parse_args as _parse_args,
-)
-from agent_maintainer.checks.change_budget_args import (
-    parse_csv_like as _parse_csv_like,
-)
+from agent_maintainer.checks import change_budget_args, test_relevance
 from agent_maintainer.checks.change_budget_overrides import apply_cohesive_override
 from agent_maintainer.checks.change_budget_plans import (
     BudgetContext,
@@ -77,17 +68,17 @@ class FileChange:
 
 def parse_csv_like(values: list[str] | None) -> tuple[str, ...] | None:
     """Normalize repeated comma-separated CLI path options."""
-    return _parse_csv_like(values)
+    return change_budget_args.parse_csv_like(values)
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse diff-budget command-line options."""
-    return _parse_args(argv)
+    return change_budget_args.parse_args(argv)
 
 
 def apply_cli_overrides(config: MaintainerConfig, args: argparse.Namespace) -> MaintainerConfig:
     """Apply root overrides without changing unrelated maintenance settings."""
-    return _apply_cli_overrides(config, args)
+    return change_budget_args.apply_cli_overrides(config, args)
 
 
 def should_exclude(path: str) -> bool:

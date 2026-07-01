@@ -50,6 +50,7 @@ def test_change_budget_compatibility_wrappers_delegate_to_arg_module() -> None:
     config = check_change_budget.apply_cli_overrides(MaintainerConfig(), args)
 
     assert config.source_roots == ("src/pkg",)
+    assert check_change_budget.parse_args(["--staged"]).staged is True
 
 
 def test_change_budget_reports_missing_tests_when_required(tmp_path: Path) -> None:
