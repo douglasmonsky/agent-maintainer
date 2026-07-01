@@ -120,4 +120,19 @@ def bounded_summary(text: str, context: RunContext) -> str:
         "See `.verify-logs/manifest.json` and `.verify-logs/LAST_FAILURE.md`."
     )
     summary_text = bounded.text.rstrip()
-    return f"{summary_text}{note}\n"
+    preserved = preserved_expansion_footer(text, summary_text)
+    return f"{summary_text}{note}{preserved}\n"
+
+
+def preserved_expansion_footer(original_text: str, bounded_text: str) -> str:
+    """Return command footer when truncation hides repair commands."""
+    commands = [
+        line.strip()
+        for line in original_text.splitlines()
+        if "python -m agent_maintainer context" in line and line.strip()
+    ]
+    hidden_commands = [command for command in commands if command not in bounded_text]
+    if not hidden_commands:
+        return ""
+    command_lines = "\n".join(hidden_commands)
+    return f"\n\n## Preserved Expansion Commands\n{command_lines}"
