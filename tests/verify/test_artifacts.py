@@ -35,6 +35,8 @@ def run_context(
 def test_artifact_manifest_payload_and_status_helpers(tmp_path: Path) -> None:
     """Manifest helpers keep check status and expansion command behavior stable."""
 
+    assert artifacts.PR_SUMMARY_NAME == "pr-summary.md"
+
     failed = CheckResult(
         "ruff",
         passed=False,

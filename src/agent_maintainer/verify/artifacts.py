@@ -10,14 +10,14 @@ from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.context import models as context_models
 from agent_maintainer.context.budget import bound_text
 from agent_maintainer.models import CheckResult
-from agent_maintainer.verify import artifact_manifest
+from agent_maintainer.verify import artifact_manifest, pr_summary
 from agent_maintainer.verify import history as verify_history
 from agent_maintainer.verify import timing as verify_timing
 from agent_maintainer.verify.git_state import git_state
-from agent_maintainer.verify.pr_summary import PR_SUMMARY_NAME, render_pr_summary
 
 MANIFEST_NAME = "manifest.json"
 LAST_FAILURE_NAME = "LAST_FAILURE.md"
+PR_SUMMARY_NAME = pr_summary.PR_SUMMARY_NAME
 TRUNCATION_NOTE_ALLOWANCE = 320
 
 
@@ -74,8 +74,8 @@ def write_run_artifacts(
     )
     verify_history.prune_run_history(log_dir, context.config.diagnostic_run_history_limit)
     verify_history.atomic_write_text(
-        log_dir / PR_SUMMARY_NAME,
-        render_pr_summary(log_dir=log_dir, context=context, results=results),
+        log_dir / pr_summary.PR_SUMMARY_NAME,
+        pr_summary.render_pr_summary(log_dir=log_dir, context=context, results=results),
     )
 
 
