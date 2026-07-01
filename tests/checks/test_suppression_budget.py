@@ -143,3 +143,23 @@ def test_suppression_main_handles_runtime_error(
 
     assert check_suppression_budget.main([]) == 1
     assert "diff failed" in capsys.readouterr().out
+
+
+def test_suppression_main_respects_zero_cli_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Zero suppression limit from CLI is intentional, not fallback to config."""
+    monkeypatch.setattr(
+        check_suppression_budget,
+        "added_python_lines",
+        lambda base_ref, staged=False: [
+            ("scripts/tool.py", f"value = call() {NOQA_SUPPRESSION}"),
+        ],
+    )
+    monkeypatch.setattr(
+        check_suppression_budget,
+        "load_config",
+        lambda: MaintainerConfig(suppression_max_new=100),
+    )
+
+    assert check_suppression_budget.main(["--max-new-suppressions", "0"]) == 1

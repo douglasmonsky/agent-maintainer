@@ -70,7 +70,7 @@ the existing public command surface.
 - [ ] Normalize optional-skip status terminology.
 - [ ] Add scheduled or documented manual/security cadence.
 - [ ] Expand starter adoption tests across tracks.
-- [ ] Fix truthiness-based CLI threshold overrides.
+- [x] Fix truthiness-based CLI threshold overrides.
 - [ ] Expand structured repair summaries.
 - [ ] Add Gitleaks range command tests.
 - [ ] Preserve context-pack expansion commands under tight budgets.

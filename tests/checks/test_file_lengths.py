@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.checks import file_lengths as check_file_lengths
+from agent_maintainer.core.config import MaintainerConfig
 
 
 def test_file_length_helpers_find_eligible_python_files(tmp_path: Path) -> None:
@@ -148,3 +149,20 @@ def test_file_length_can_write_baseline(tmp_path: Path, monkeypatch: pytest.Monk
     assert result == 0
     payload = json.loads(baseline.read_text(encoding="utf-8"))
     assert payload["files"] == {"legacy.py": {"physical": 2, "source": 2}}
+
+
+def test_file_length_respects_zero_cli_physical_limit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Zero physical limit from CLI is intentional, not fallback to config."""
+    monkeypatch.chdir(tmp_path)
+    target = tmp_path / "tiny.py"
+    target.write_text("value = 1\n", encoding="utf-8")
+    monkeypatch.setattr(
+        check_file_lengths,
+        "load_config",
+        lambda: MaintainerConfig(file_length_max_physical=100),
+    )
+
+    assert check_file_lengths.main(["tiny.py", "--max-physical", "0"]) == 1

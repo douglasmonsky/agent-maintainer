@@ -201,7 +201,11 @@ def main(argv: list[str]) -> int:
         print(str(exc))
         return 1
 
-    max_new_suppressions = args.max_new_suppressions or config.suppression_max_new
+    max_new_suppressions = (
+        config.suppression_max_new
+        if args.max_new_suppressions is None
+        else args.max_new_suppressions
+    )
     failures = suppression_failures(added, max_new_suppressions)
 
     if failures:

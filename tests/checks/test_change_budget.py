@@ -405,3 +405,43 @@ def write_test_file(root: Path, relative_path: str, content: str) -> None:
     path = root / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def test_change_budget_respects_zero_cli_line_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Zero line limit from CLI is intentional, not fallback to config."""
+    monkeypatch.setattr(
+        check_change_budget,
+        "run_git_numstat",
+        lambda base_ref, staged=False: [
+            check_change_budget.FileChange("src/app.py", 1, 0),
+        ],
+    )
+    monkeypatch.setattr(
+        check_change_budget,
+        "load_config",
+        lambda: MaintainerConfig(change_block_lines=100),
+    )
+
+    assert check_change_budget.main(["--block-lines", "0"]) == 1
+
+
+def test_change_budget_respects_zero_cli_file_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Zero file limit from CLI is intentional, not fallback to config."""
+    monkeypatch.setattr(
+        check_change_budget,
+        "run_git_numstat",
+        lambda base_ref, staged=False: [
+            check_change_budget.FileChange("src/app.py", 1, 0),
+        ],
+    )
+    monkeypatch.setattr(
+        check_change_budget,
+        "load_config",
+        lambda: MaintainerConfig(change_block_files=100),
+    )
+
+    assert check_change_budget.main(["--block-files", "0"]) == 1

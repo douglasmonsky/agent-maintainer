@@ -236,9 +236,9 @@ def main(argv: list[str] | None = None) -> int:
     paths = selected_paths(args, config)
     ignored_patterns = tuple(args.ignore) or config.structure_ignore_paths
     hint_patterns = tuple(args.hint_pattern) or config.structure_hint_patterns
-    warn_threshold = args.warn_threshold or config.folder_file_warn
+    warn_threshold = config.folder_file_warn if args.warn_threshold is None else args.warn_threshold
     block_threshold = selected_block_threshold(args, config)
-    cluster_min = args.cluster_min or config.structure_cluster_min
+    cluster_min = config.structure_cluster_min if args.cluster_min is None else args.cluster_min
     findings = structure_findings(
         python_files(paths, ignored_patterns),
         warn_threshold=warn_threshold,
