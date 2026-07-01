@@ -58,7 +58,17 @@ def test_semgrep_check_is_disabled_by_default_and_profile_scoped() -> None:
         "origin/main",
     )
     enabled = next(check for check in enabled_checks if check.name == "semgrep")
-    assert enabled.command == ["semgrep", "scan", "--config", "semgrep.yml", "--metrics=off", "."]
+    assert enabled.command == [
+        "semgrep",
+        "scan",
+        "--config",
+        "semgrep.yml",
+        "--metrics=off",
+        ".",
+        "--json-output",
+        ".verify-logs/semgrep.json",
+    ]
+    assert enabled.artifact_paths == (".verify-logs/semgrep.json",)
     assert enabled.profiles == frozenset(("manual", "security"))
     assert enabled.required_executable == "semgrep"
 

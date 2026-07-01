@@ -71,7 +71,7 @@ the existing public command surface.
 - [x] Add scheduled or documented manual/security cadence.
 - [x] Expand starter adoption tests across tracks.
 - [x] Fix truthiness-based CLI threshold overrides.
-- [ ] Expand structured repair summaries.
+- [x] Expand structured repair summaries.
 - [x] Add Gitleaks range command tests.
 - [x] Preserve context-pack expansion commands under tight budgets.
 - [x] Disable stale legacy-ratchet guidance when no baseline exists.

@@ -81,6 +81,9 @@ def diff_cover_check(config: MaintainerConfig, compare_branch: str) -> models.Ch
 def pip_audit_check(config: MaintainerConfig) -> models.Check:
     """Build the dependency vulnerability check or its explicit skip."""
 
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    report_path = artifacts_dir / "pip-audit.json"
+    report_path_text = str(report_path)
     if not config.enable_pip_audit:
         return models.Check(
             "pip-audit",
@@ -108,9 +111,17 @@ def pip_audit_check(config: MaintainerConfig) -> models.Check:
         )
     return models.Check(
         "pip-audit",
-        ["pip-audit", *config.pip_audit_args],
+        [
+            "pip-audit",
+            *config.pip_audit_args,
+            "--format",
+            "json",
+            "--output",
+            report_path_text,
+        ],
         models.FULL_PROFILES,
         required_executable="pip-audit",
+        artifact_paths=(report_path_text,),
     )
 
 

@@ -78,7 +78,14 @@ def test_pip_audit_and_wemake_commands_follow_config() -> None:
         "pip-audit",
         "-r",
         "config/dev-dependencies.txt",
+        "--format",
+        "json",
+        "--output",
+        ".verify-logs/pip-audit.json",
     ]
+    assert maintainer_catalog_python.pip_audit_check(enabled).artifact_paths == (
+        ".verify-logs/pip-audit.json",
+    )
     assert maintainer_catalog_python.wemake_check(enabled, ("scripts",)).command == [
         "flake8",
         "--require-plugins",

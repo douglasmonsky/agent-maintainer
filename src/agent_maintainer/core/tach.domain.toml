@@ -92,13 +92,29 @@ depends_on = [
 [[modules]]
 path = "reporting"
 depends_on = [
-  "//agent_maintainer.context.budget",
-  "//agent_maintainer.context.models",
-  "reporting_context",
+"//agent_maintainer.context.budget",
+"//agent_maintainer.context.models",
+"reporting_context",
+"structured_artifacts",
 ]
 
 [[modules]]
 path = "reporting_context"
+depends_on = []
+
+[[modules]]
+path = "structured_artifacts"
+depends_on = [
+"structured_pytest",
+"structured_security",
+]
+
+[[modules]]
+path = "structured_pytest"
+depends_on = []
+
+[[modules]]
+path = "structured_security"
 depends_on = []
 
 [[modules]]

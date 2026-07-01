@@ -41,9 +41,10 @@ Pyright enforces type discipline. The verifier runs it through a generated proje
 
 Pytest and pytest-cov enforce behavior and coverage. The configured coverage
 gate prevents untested new behavior from quietly entering the repository. The
-verifier keeps root `coverage.xml` for diff-cover and writes
-`.verify-logs/coverage.json` plus `.verify-logs/pytest-junit.xml` for structured
-diagnostics and CI artifacts.
+verifier keeps root `coverage.xml`, run-scoped `coverage.json`, and
+`pytest-junit.xml`; repair summaries use those artifacts to report test counts,
+first failing tests, total coverage, and worst missing-line files without dumping
+raw pytest output.
 
 Mutmut provides mutation testing in the `manual` profile only. It is disabled by
 default for drop-in use; enable it with `enable_mutmut = true` and configure
@@ -91,6 +92,10 @@ Terminal output stays compact: pass/fail, profile, run id, duration with
 expected profile hint, failed checks, exact expansion commands, and the
 run-scoped log directory. Agents should use artifacts for raw stdout/stderr,
 exit-code, threshold, log-path, and rerun context.
+Structured repair summaries prefer safe artifacts for Ruff, Pyright, Bandit,
+pytest/coverage, Semgrep, OSV Scanner, Gitleaks, and pip-audit. Secret scanner
+summaries intentionally omit raw secret values and point to run-scoped artifacts
+for details.
 Managed agent-client hooks append local execution evidence to
 `.verify-logs/hooks.jsonl`, and `doctor` reports latest audited hook status.
 Hook install/status behavior is routed through agent-client adapters. Current
