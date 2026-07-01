@@ -13,6 +13,10 @@ The usage guide for the split specs is here:
 
 [`docs/roadmap/README.md`](roadmap/README.md).
 
+Experimental architecture track:
+
+[`docs/roadmap/polyglot-ecosystem-providers.md`](roadmap/polyglot-ecosystem-providers.md).
+
 Before implementing any phase:
 
 1. Open [`docs/roadmap/README.md`](roadmap/README.md).
@@ -301,6 +305,19 @@ Detailed scope:
 Planned work:
 
 - [x] Phase 75: Below-10 Debt, Strict Pyright Ratchets, and Beacon-Level Dogfooding
+
+## Next: Ecosystem Provider Roadmap
+
+Agent Maintainer should plan the provider architecture before moving Python
+catalog and policy behavior. This phase creates the polyglot provider roadmap
+without runtime behavior changes, provider implementation, new language support,
+or config migration. Detailed scope:
+
+[`docs/roadmap/phases/phase-76-ecosystem-provider-roadmap.md`](roadmap/phases/phase-76-ecosystem-provider-roadmap.md)
+
+Planned work:
+
+- [ ] Phase 76: Ecosystem Provider Roadmap
 
 ## Future Work
 

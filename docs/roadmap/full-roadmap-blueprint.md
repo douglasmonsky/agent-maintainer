@@ -12,10 +12,15 @@ index into a monolithic blueprint.
 
 - [Mission, baseline, architecture target, and execution rules](overview.md)
 
+## Experimental Architecture Tracks
+
+- [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md)
+
 ## Phases
 
 | Phase | Detailed Spec |
 |---:|---|
+| 76 | [Ecosystem Provider Roadmap](phases/phase-76-ecosystem-provider-roadmap.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
