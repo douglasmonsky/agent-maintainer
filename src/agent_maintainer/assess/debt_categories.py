@@ -4,72 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from agent_maintainer.assess import debt_category_constants as constants
 from agent_maintainer.assess import debt_manifest, debt_security
 from agent_maintainer.assess.models import DebtCategory, RepoEvidence
 from agent_maintainer.config.schema import FRESH_STRICT_MODE, MaintainerConfig
-
-LOW_RISK_MAX = 25
-MODERATE_RISK_MAX = 50
-HIGH_RISK_MAX = 75
-MAX_SCORE = 100
-
-REVIEWABILITY_BASE = 15
-CHANGE_BUDGET_PENALTY = 20
-SOURCE_LENGTH_PENALTY = 15
-TRUNCATED_SCAN_PENALTY = 10
-REVIEWABLE_LINE_BLOCK = 800
-REVIEWABLE_FILE_BLOCK = 20
-SOURCE_LENGTH_CAP = 450
-EXCELLENT_SOURCE_LENGTH_CAP = 375
-REVIEWABILITY_WEIGHT = 14
-
-TESTS_BASE = 5
-MISSING_REQUIRED_TESTS_PENALTY = 35
-MISSING_TEST_TREE_PENALTY = 25
-LOW_COVERAGE_PENALTY = 15
-MIN_HEALTHY_COVERAGE = 80
-EXCELLENT_COVERAGE = 90
-TESTS_WEIGHT = 18
-
-STYLE_BASE = 10
-BASIC_TYPE_PENALTY = 15
-HIGH_COMPLEXITY_PENALTY = 10
-MISSING_WEMAKE_PENALTY = 10
-RUFF_COMPLEXITY_CAP = 10
-STRICT_TYPE_REDUCTION = 5
-STYLE_WEIGHT = 12
-
-ARCHITECTURE_BASE = 5
-MISSING_TACH_PENALTY = 30
-MISSING_IMPORT_LINTER_PENALTY = 25
-ARCHITECTURE_WEIGHT = 14
-
-SECURITY_WEIGHT = 14
-
-DOCS_BASE = 5
-MISSING_RELEVANT_DOCS_GATE_PENALTY = 10
-DOCS_MIN_SCORE = 5
-DOCS_WEIGHT = 10
-
-DIAGNOSTICS_BASE = 5
-DIAGNOSTICS_DISABLED_PENALTY = 20
-MISSING_GUIDANCE_PENALTY = 12
-DIAGNOSTICS_WEIGHT = 10
-
-MUTATION_BASE = 25
-MUTATION_DISABLED_PENALTY = 20
-MUTATION_RATCHET_PENALTY = 25
-HEALTHY_MUTATION_SCORE = 5
-MUTATION_WEIGHT = 8
-
-REVIEWABILITY_CHECKS = ("change", "file length", "suppression", "structure")
-TEST_CHECKS = ("pytest", "coverage", "diff-cover", "test")
-STYLE_CHECKS = ("ruff", "pyright", "pylint", "wemake", "xenon", "radon")
-ARCHITECTURE_CHECKS = ("tach", "import-linter", "architecture")
-SECURITY_CHECKS = ("audit", "secret", "bandit", "semgrep", "osv", "sbom", "license")
-DOCS_CHECKS = ("interrogate", "markdown", "yaml", "toml", "jsonschema", "docs")
-DIAGNOSTIC_CHECKS = ("doctor", "guidance", "artifact", "diagnostic")
-MUTATION_CHECKS = ("mutmut", "mutation")
 
 
 def build_debt_categories(
@@ -96,11 +34,11 @@ def build_debt_categories(
 def risk_label(score: int) -> str:
     """Return lower-is-better risk label."""
 
-    if score <= LOW_RISK_MAX:
+    if score <= constants.LOW_RISK_MAX:
         return "low"
-    if score <= MODERATE_RISK_MAX:
+    if score <= constants.MODERATE_RISK_MAX:
         return "moderate"
-    if score <= HIGH_RISK_MAX:
+    if score <= constants.HIGH_RISK_MAX:
         return "high"
     return "critical"
 
@@ -110,7 +48,7 @@ def _reviewability(
     config: MaintainerConfig,
     manifest: debt_manifest.ManifestSignals,
 ) -> DebtCategory:
-    score = REVIEWABILITY_BASE
+    score = constants.REVIEWABILITY_BASE
     evidence_lines = [
         (
             f"change budget blocks {config.change_block_lines} lines / "
@@ -124,26 +62,26 @@ def _reviewability(
         _scan_evidence(evidence),
     ]
     if (
-        config.change_block_lines > REVIEWABLE_LINE_BLOCK
-        or config.change_block_files > REVIEWABLE_FILE_BLOCK
+        config.change_block_lines > constants.REVIEWABLE_LINE_BLOCK
+        or config.change_block_files > constants.REVIEWABLE_FILE_BLOCK
     ):
-        score += CHANGE_BUDGET_PENALTY
-    if config.file_length_max_source > SOURCE_LENGTH_CAP:
-        score += SOURCE_LENGTH_PENALTY
-    elif config.file_length_max_source <= EXCELLENT_SOURCE_LENGTH_CAP:
+        score += constants.CHANGE_BUDGET_PENALTY
+    if config.file_length_max_source > constants.SOURCE_LENGTH_CAP:
+        score += constants.SOURCE_LENGTH_PENALTY
+    elif config.file_length_max_source <= constants.EXCELLENT_SOURCE_LENGTH_CAP:
         evidence_lines.append("excellent source length cap active")
     if evidence.scan_truncated:
-        score += TRUNCATED_SCAN_PENALTY
+        score += constants.TRUNCATED_SCAN_PENALTY
     score = debt_manifest.with_manifest_penalty(
         score,
         evidence_lines,
         manifest,
-        REVIEWABILITY_CHECKS,
+        constants.REVIEWABILITY_CHECKS,
     )
     return _category(
         "Reviewability",
         score,
-        REVIEWABILITY_WEIGHT,
+        constants.REVIEWABILITY_WEIGHT,
         evidence_lines,
         ("Keep change budgets tight enough for human review.",),
     )
@@ -154,7 +92,7 @@ def _tests_coverage(
     config: MaintainerConfig,
     manifest: debt_manifest.ManifestSignals,
 ) -> DebtCategory:
-    score = TESTS_BASE
+    score = constants.TESTS_BASE
     evidence_lines = [
         f"require_tests = {config.require_tests}",
         f"coverage floor = {config.coverage_fail_under}%",
@@ -163,22 +101,24 @@ def _tests_coverage(
     ]
     if _has_python_surface(evidence):
         if not config.require_tests:
-            score += MISSING_REQUIRED_TESTS_PENALTY
+            score += constants.MISSING_REQUIRED_TESTS_PENALTY
         if not evidence.has_tests:
-            score += MISSING_TEST_TREE_PENALTY
-        if config.coverage_fail_under < MIN_HEALTHY_COVERAGE:
-            score += LOW_COVERAGE_PENALTY
-        elif config.coverage_fail_under >= EXCELLENT_COVERAGE:
+            score += constants.MISSING_TEST_TREE_PENALTY
+        if config.coverage_fail_under < constants.MIN_HEALTHY_COVERAGE:
+            score += constants.LOW_COVERAGE_PENALTY
+        elif config.coverage_fail_under >= constants.EXCELLENT_COVERAGE:
             evidence_lines.append("excellent coverage floor active")
-        if config.diff_cover_fail_under >= EXCELLENT_COVERAGE:
+        if config.diff_cover_fail_under >= constants.EXCELLENT_COVERAGE:
             evidence_lines.append("excellent changed-code coverage floor active")
     else:
         evidence_lines.append("no Python surface detected; test debt not scored")
-    score = debt_manifest.with_manifest_penalty(score, evidence_lines, manifest, TEST_CHECKS)
+    score = debt_manifest.with_manifest_penalty(
+        score, evidence_lines, manifest, constants.TEST_CHECKS
+    )
     return _category(
         "Tests and Coverage",
         score,
-        TESTS_WEIGHT,
+        constants.TESTS_WEIGHT,
         evidence_lines,
         ("Keep total and changed-code coverage ratchets active.",),
     )
@@ -188,7 +128,7 @@ def _type_style(
     config: MaintainerConfig,
     manifest: debt_manifest.ManifestSignals,
 ) -> DebtCategory:
-    score = STYLE_BASE
+    score = constants.STYLE_BASE
     evidence_lines = [
         f"pyright mode = {config.pyright_type_checking_mode}",
         f"strict Pyright ratchet enabled = {config.pyright_strict_ratchet_enabled}",
@@ -196,18 +136,20 @@ def _type_style(
         f"wemake enabled = {config.enable_wemake}",
     ]
     if config.pyright_type_checking_mode == "basic":
-        score += BASIC_TYPE_PENALTY
+        score += constants.BASIC_TYPE_PENALTY
     if config.pyright_strict_ratchet_enabled:
-        score = max(0, score - STRICT_TYPE_REDUCTION)
-    if config.ruff_max_complexity > RUFF_COMPLEXITY_CAP:
-        score += HIGH_COMPLEXITY_PENALTY
+        score = max(0, score - constants.STRICT_TYPE_REDUCTION)
+    if config.ruff_max_complexity > constants.RUFF_COMPLEXITY_CAP:
+        score += constants.HIGH_COMPLEXITY_PENALTY
     if config.mode == FRESH_STRICT_MODE and not config.enable_wemake:
-        score += MISSING_WEMAKE_PENALTY
-    score = debt_manifest.with_manifest_penalty(score, evidence_lines, manifest, STYLE_CHECKS)
+        score += constants.MISSING_WEMAKE_PENALTY
+    score = debt_manifest.with_manifest_penalty(
+        score, evidence_lines, manifest, constants.STYLE_CHECKS
+    )
     return _category(
         "Type and Style",
         score,
-        STYLE_WEIGHT,
+        constants.STYLE_WEIGHT,
         evidence_lines,
         ("Use strict style and type pressure where the repo can tolerate it.",),
     )
@@ -218,28 +160,28 @@ def _architecture(
     config: MaintainerConfig,
     manifest: debt_manifest.ManifestSignals,
 ) -> DebtCategory:
-    score = ARCHITECTURE_BASE
+    score = constants.ARCHITECTURE_BASE
     evidence_lines = [
         f"architecture tool = {config.architecture_tool}",
         f"tach.toml present = {evidence.has_tach}",
         f".importlinter present = {evidence.has_import_linter}",
     ]
     if config.architecture_tool == "tach" and not evidence.has_tach:
-        score += MISSING_TACH_PENALTY
+        score += constants.MISSING_TACH_PENALTY
     elif config.architecture_tool == "tach" and evidence.has_tach:
         evidence_lines.append("tach architecture contract present")
     if config.architecture_tool == "import-linter" and not evidence.has_import_linter:
-        score += MISSING_IMPORT_LINTER_PENALTY
+        score += constants.MISSING_IMPORT_LINTER_PENALTY
     score = debt_manifest.with_manifest_penalty(
         score,
         evidence_lines,
         manifest,
-        ARCHITECTURE_CHECKS,
+        constants.ARCHITECTURE_CHECKS,
     )
     return _category(
         "Architecture Boundaries",
         score,
-        ARCHITECTURE_WEIGHT,
+        constants.ARCHITECTURE_WEIGHT,
         evidence_lines,
         ("Add an architecture contract once modules have real boundaries.",),
     )
@@ -252,11 +194,13 @@ def _dependencies_security(
 ) -> DebtCategory:
     evidence_lines = debt_security.security_evidence(evidence, config)
     score = debt_security.security_score(evidence, config)
-    score = debt_manifest.with_manifest_penalty(score, evidence_lines, manifest, SECURITY_CHECKS)
+    score = debt_manifest.with_manifest_penalty(
+        score, evidence_lines, manifest, constants.SECURITY_CHECKS
+    )
     return _category(
         "Dependencies and Security",
         score,
-        SECURITY_WEIGHT,
+        constants.SECURITY_WEIGHT,
         evidence_lines,
         ("Enable security gates only when repo evidence makes them relevant.",),
     )
@@ -267,7 +211,7 @@ def _docs_config(
     config: MaintainerConfig,
     manifest: debt_manifest.ManifestSignals,
 ) -> DebtCategory:
-    score = DOCS_BASE
+    score = constants.DOCS_BASE
     evidence_lines = [
         f"interrogate enabled = {config.enable_interrogate}",
         f"markdownlint enabled = {config.enable_markdownlint}",
@@ -276,21 +220,23 @@ def _docs_config(
     ]
     if _has_docs_config_surface(evidence):
         if evidence.yaml_files and not config.enable_yamllint:
-            score += MISSING_RELEVANT_DOCS_GATE_PENALTY
+            score += constants.MISSING_RELEVANT_DOCS_GATE_PENALTY
         if evidence.toml_files and not config.enable_taplo:
-            score += MISSING_RELEVANT_DOCS_GATE_PENALTY
+            score += constants.MISSING_RELEVANT_DOCS_GATE_PENALTY
         if config.enable_interrogate and config.enable_markdownlint:
             evidence_lines.append("documentation gates active")
         if config.enable_yamllint and config.enable_taplo:
             evidence_lines.append("YAML/TOML config gates active")
     else:
-        score = DOCS_MIN_SCORE
+        score = constants.DOCS_MIN_SCORE
         evidence_lines.append("no docs/config surface detected; optional gates not scored")
-    score = debt_manifest.with_manifest_penalty(score, evidence_lines, manifest, DOCS_CHECKS)
+    score = debt_manifest.with_manifest_penalty(
+        score, evidence_lines, manifest, constants.DOCS_CHECKS
+    )
     return _category(
         "Docs and Config Hygiene",
         score,
-        DOCS_WEIGHT,
+        constants.DOCS_WEIGHT,
         evidence_lines,
         ("Enable docs/config linting for formats that exist in the repo.",),
     )
@@ -302,7 +248,7 @@ def _diagnostics(
     log_dir: Path,
     manifest: debt_manifest.ManifestSignals,
 ) -> DebtCategory:
-    score = DIAGNOSTICS_BASE
+    score = constants.DIAGNOSTICS_BASE
     manifest_present = (log_dir / debt_manifest.MANIFEST_JSON).exists()
     evidence_lines = [
         f"diagnostics enabled = {config.diagnostic_artifacts_enabled}",
@@ -311,14 +257,16 @@ def _diagnostics(
         f"run history limit = {config.diagnostic_run_history_limit}",
     ]
     if not config.diagnostic_artifacts_enabled:
-        score += DIAGNOSTICS_DISABLED_PENALTY
+        score += constants.DIAGNOSTICS_DISABLED_PENALTY
     if not evidence.has_agent_guidance:
-        score += MISSING_GUIDANCE_PENALTY
-    score = debt_manifest.with_manifest_penalty(score, evidence_lines, manifest, DIAGNOSTIC_CHECKS)
+        score += constants.MISSING_GUIDANCE_PENALTY
+    score = debt_manifest.with_manifest_penalty(
+        score, evidence_lines, manifest, constants.DIAGNOSTIC_CHECKS
+    )
     return _category(
         "Diagnostics Repair Loop",
         score,
-        DIAGNOSTICS_WEIGHT,
+        constants.DIAGNOSTICS_WEIGHT,
         evidence_lines,
         ("Keep run-scoped diagnostics and generated agent guidance current.",),
     )
@@ -328,23 +276,25 @@ def _mutation_ratchet(
     config: MaintainerConfig,
     manifest: debt_manifest.ManifestSignals,
 ) -> DebtCategory:
-    score = MUTATION_BASE
+    score = constants.MUTATION_BASE
     evidence_lines = [
         f"mutmut enabled = {config.enable_mutmut}",
         f"mutation ratchet enabled = {config.mutmut_result_ratchet_enabled}",
         f"mutmut target minimum = {config.mutmut_target_min}",
     ]
     if config.enable_mutmut and config.mutmut_result_ratchet_enabled:
-        score = HEALTHY_MUTATION_SCORE
+        score = constants.HEALTHY_MUTATION_SCORE
     elif config.enable_mutmut:
-        score += MUTATION_RATCHET_PENALTY
+        score += constants.MUTATION_RATCHET_PENALTY
     else:
-        score += MUTATION_DISABLED_PENALTY
-    score = debt_manifest.with_manifest_penalty(score, evidence_lines, manifest, MUTATION_CHECKS)
+        score += constants.MUTATION_DISABLED_PENALTY
+    score = debt_manifest.with_manifest_penalty(
+        score, evidence_lines, manifest, constants.MUTATION_CHECKS
+    )
     return _category(
         "Ratchets and Mutation Maturity",
         score,
-        MUTATION_WEIGHT,
+        constants.MUTATION_WEIGHT,
         evidence_lines,
         ("Use targeted mutation ratchets only after stable survivor counts.",),
     )
@@ -390,4 +340,4 @@ def _category(
 def _bounded(score: int) -> int:
     """Return score constrained to public range."""
 
-    return max(0, min(MAX_SCORE, score))
+    return max(0, min(constants.MAX_SCORE, score))

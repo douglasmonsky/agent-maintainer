@@ -65,6 +65,7 @@ mutation/test debt, and split only evidence-backed near-limit modules.
 - [x] Technical Debt Score calibration and docs.
 - [x] Strict Pyright ratchet config, runner, baseline, docs, and tests.
 - [ ] Evidence-backed cleanup refactor for near-limit modules.
+  - [x] Extract Technical Debt Score constants from `assess/debt_categories.py`.
 - [ ] Mutation survivor reduction and documentation.
 
 ## Out Of Scope

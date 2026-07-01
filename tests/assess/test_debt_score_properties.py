@@ -8,16 +8,17 @@ from tempfile import TemporaryDirectory
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from agent_maintainer.assess import debt_category_constants as constants
 from agent_maintainer.assess.debt_categories import risk_label
 from agent_maintainer.assess.debt_score import build_debt_report
 from agent_maintainer.assess.models import RepoEvidence
 from agent_maintainer.config.schema import MaintainerConfig
 
 RISK_LABELS = {"low", "moderate", "high", "critical"}
-LOW_RISK_MAX = 25
-MODERATE_RISK_MAX = 50
-HIGH_RISK_MAX = 75
-MAX_SCORE = 100
+LOW_RISK_MAX = constants.LOW_RISK_MAX
+MODERATE_RISK_MAX = constants.MODERATE_RISK_MAX
+HIGH_RISK_MAX = constants.HIGH_RISK_MAX
+MAX_SCORE = constants.MAX_SCORE
 
 
 def evidence_strategy() -> st.SearchStrategy[RepoEvidence]:
