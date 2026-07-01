@@ -12,23 +12,21 @@ depends_on = [
   "support.environment",
     "support.hook_audit",
     "support.integrations",
-    "support.logs",
-    "support.models",
-    "support.output",
-    "support.policy",
+  "support.logs",
+  "support.models",
+  "support.output",
+  "support.policy",
 ]
 
 [[modules]]
 path = "setup"
 depends_on = [
-  "//agent_maintainer.catalogs.catalog",
   "//agent_maintainer.core.config",
-    "//agent_maintainer.core.guidance",
-    "//agent_maintainer.core.layout",
-    "//agent_maintainer.core.tool_capabilities",
-    "support.dogfood",
-    "support.models",
-    "//agent_maintainer.tach",
+  "//agent_maintainer.core.guidance",
+  "//agent_maintainer.core.layout",
+  "support.dogfood",
+  "support.models",
+  "support.setup_policy",
 ]
 
 [[modules]]
@@ -112,4 +110,15 @@ depends_on = [
   "support.context_health",
   "support.models",
   "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "support.setup_policy"
+depends_on = [
+  "//agent_maintainer.models",
+  "//agent_maintainer.catalogs.catalog",
+  "//agent_maintainer.core.config",
+  "//agent_maintainer.core.tool_capabilities",
+  "support.models",
+  "//agent_maintainer.tach",
 ]

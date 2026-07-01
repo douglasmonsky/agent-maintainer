@@ -1,4 +1,4 @@
-"""Doctor checks for setup backends and active thresholds."""
+"""Doctor setup checks that inspect local repository health."""
 
 from __future__ import annotations
 
@@ -6,14 +6,12 @@ import sys
 from importlib import util as importlib_util
 from pathlib import Path
 
-from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core import config as maintainer_config
 from agent_maintainer.core import guidance as maintainer_guidance
-from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilities
 from agent_maintainer.core.layout import layout_failures
 from agent_maintainer.doctor.support import dogfood as maintainer_doctor_dogfood
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
-from agent_maintainer.tach import tach_config_issues
+from agent_maintainer.doctor.support import setup_policy as maintainer_doctor_policy
 
 DoctorResult = maintainer_doctor_models.DoctorResult
 ERROR = maintainer_doctor_models.ERROR
@@ -30,154 +28,31 @@ DUPLICATE_ARTIFACT_ROOTS = (
     ".verify-logs",
 )
 
-
-def check_architecture_backend(
-    repo_root: Path, config: maintainer_config.MaintainerConfig
-) -> maintainer_doctor_models.DoctorResult:
-    """Report active architecture backend and config-file presence."""
-
-    if config.architecture_tool == maintainer_config.TACH_TOOL:
-        config_path = repo_root / "tach.toml"
-        if not config_path.exists():
-            return maintainer_doctor_models.DoctorResult(
-                "architecture-backend",
-                maintainer_doctor_models.WARNING,
-                "tach configured but tach.toml is missing.",
-                state=maintainer_doctor_models.MISSING,
-                hint="Add tach.toml or switch architecture_tool.",
-            )
-        return maintainer_doctor_models.DoctorResult(
-            "architecture-backend",
-            maintainer_doctor_models.OK,
-            "tach active.",
-            state=maintainer_doctor_models.ACTIVE,
-        )
-
-    config_path = repo_root / ".importlinter"
-    if not config_path.exists():
-        return maintainer_doctor_models.DoctorResult(
-            "architecture-backend",
-            maintainer_doctor_models.WARNING,
-            "import-linter configured but .importlinter is missing.",
-            state=maintainer_doctor_models.MISSING,
-            hint="Add .importlinter or switch architecture_tool.",
-        )
-    return maintainer_doctor_models.DoctorResult(
-        "architecture-backend",
-        maintainer_doctor_models.OK,
-        "import-linter active.",
-        state=maintainer_doctor_models.ACTIVE,
-    )
-
-
-def check_thresholds(
-    config: maintainer_config.MaintainerConfig,
-) -> maintainer_doctor_models.DoctorResult:
-    """Report active enforcement thresholds useful during setup review."""
-
-    file_length = (
-        f"{config.file_length_max_physical} physical/{config.file_length_max_source} source"
-    )
-    baseline = config.file_length_baseline or "disabled"
-    message = (
-        f"coverage={config.coverage_fail_under}%; "
-        f"diff-cover={config.diff_cover_fail_under}%; "
-        f"interrogate={config.interrogate_fail_under}%; "
-        f"ruff-complexity={config.ruff_max_complexity}; "
-        f"xenon={config.xenon_max_absolute}/{config.xenon_max_modules}/"
-        f"{config.xenon_max_average}; "
-        f"file-length={file_length}; file-length-baseline={baseline}."
-    )
-    return maintainer_doctor_models.DoctorResult(
-        "thresholds",
-        maintainer_doctor_models.OK,
-        message,
-        state=maintainer_doctor_models.ACTIVE,
-    )
-
-
-def check_structure_thresholds(
-    config: maintainer_config.MaintainerConfig,
-) -> maintainer_doctor_models.DoctorResult:
-    """Report active structure cohesion thresholds and ignored paths."""
-
-    paths = ", ".join(config.structure_paths or config.source_roots)
-    ignored = ", ".join(config.structure_ignore_paths) or "none"
-    block = (
-        str(config.folder_file_block)
-        if config.mode == maintainer_config.FRESH_STRICT_MODE
-        else "disabled outside fresh-strict"
-    )
-    message = (
-        f"paths={paths}; warn={config.folder_file_warn}; block={block}; "
-        f"cluster-min={config.structure_cluster_min}; ignored={ignored}."
-    )
-    return maintainer_doctor_models.DoctorResult(
-        "structure-thresholds",
-        maintainer_doctor_models.OK,
-        message,
-        state=maintainer_doctor_models.ACTIVE,
-    )
-
-
-def check_ratchet_baseline(
-    repo_root: Path,
-    config: maintainer_config.MaintainerConfig,
-) -> maintainer_doctor_models.DoctorResult:
-    """Report stale legacy-ratchet configuration without a baseline."""
-
-    if not config.ratchet_enabled:
-        return maintainer_doctor_models.DoctorResult(
-            "legacy-ratchet-baseline",
-            maintainer_doctor_models.OK,
-            "legacy ratchet baseline disabled.",
-            state=maintainer_doctor_models.NOT_APPLICABLE,
-        )
-
-    baseline_path = repo_root / config.ratchet_baseline_path
-    if baseline_path.exists():
-        return maintainer_doctor_models.DoctorResult(
-            "legacy-ratchet-baseline",
-            maintainer_doctor_models.OK,
-            f"legacy ratchet baseline present: {config.ratchet_baseline_path}.",
-            state=maintainer_doctor_models.ACTIVE,
-        )
-
-    return maintainer_doctor_models.DoctorResult(
-        "legacy-ratchet-baseline",
-        maintainer_doctor_models.WARNING,
-        f"legacy ratchet enabled but baseline missing: {config.ratchet_baseline_path}.",
-        state=maintainer_doctor_models.MISSING,
-        hint=(
-            "Run python3 -m agent_maintainer ratchet baseline create, "
-            "or set ratchet_enabled = false."
-        ),
-    )
+check_architecture_backend = maintainer_doctor_policy.check_architecture_backend
+check_thresholds = maintainer_doctor_policy.check_thresholds
+check_structure_thresholds = maintainer_doctor_policy.check_structure_thresholds
+check_ratchet_baseline = maintainer_doctor_policy.check_ratchet_baseline
+check_optional_gates = maintainer_doctor_policy.check_optional_gates
+architecture_gate_status = maintainer_doctor_policy.architecture_gate_status
+active_optional_gate_names = maintainer_doctor_policy.active_optional_gate_names
+check_console_script_dogfood = maintainer_doctor_dogfood.check_console_script_dogfood
+make_checks = maintainer_doctor_policy.make_checks
 
 
 def check_tool_capabilities(
-    repo_root: Path, config: maintainer_config.MaintainerConfig
+    repo_root: Path,
+    config: maintainer_config.MaintainerConfig,
 ) -> DoctorResult:
-    """Check active tool capabilities without conflating disabled integrations."""
-
-    checks = make_checks(config, "HEAD", "origin/main")
-    states = [
-        *maintainer_tool_capabilities.states_for_checks(repo_root, checks),
-        *maintainer_tool_capabilities.local_runtime_states(repo_root),
-    ]
-    state, message = maintainer_tool_capabilities.summarize_states(states)
-    status = ERROR if state == maintainer_tool_capabilities.MISSING else OK
-    result_state = (
-        maintainer_doctor_models.MISSING
-        if state == maintainer_tool_capabilities.MISSING
-        else maintainer_doctor_models.ACTIVE
+    """Check active tool capabilities through the public setup seam."""
+    return maintainer_doctor_policy.check_tool_capabilities(
+        repo_root,
+        config,
+        check_factory=make_checks,
     )
-    return DoctorResult("tool-capabilities", status, message, state=result_state)
 
 
 def check_source_checkout_dogfood(repo_root: Path) -> DoctorResult:
-    """Report whether this source checkout imports local package code."""
-
+    """Report whether source checkout imports local package code."""
     expected = repo_root / "src" / "agent_maintainer" / "__init__.py"
     if not expected.exists():
         return DoctorResult(
@@ -194,7 +69,7 @@ def check_source_checkout_dogfood(repo_root: Path) -> DoctorResult:
             ERROR,
             "Cannot resolve active agent_maintainer import.",
             state=maintainer_doctor_models.MISSING,
-            hint="Run with PYTHONPATH=src python3 -m agent_maintainer.",
+            hint="Run PYTHONPATH=src python3 -m agent_maintainer.",
         )
 
     resolved = Path(spec.origin).resolve()
@@ -206,16 +81,12 @@ def check_source_checkout_dogfood(repo_root: Path) -> DoctorResult:
         ERROR,
         f"Imports {resolved}; expected {expected.resolve()}.",
         state=maintainer_doctor_models.UNSAFE_CONFIG,
-        hint=("Run PYTHONPATH=src python3 -m agent_maintainer or python -m pip install -e ."),
+        hint="Run PYTHONPATH=src python3 -m agent_maintainer or python -m pip install -e .",
     )
-
-
-check_console_script_dogfood = maintainer_doctor_dogfood.check_console_script_dogfood
 
 
 def check_duplicate_generated_artifacts(repo_root: Path) -> DoctorResult:
     """Report likely macOS-style duplicate artifacts in generated/source roots."""
-
     matches = duplicate_artifact_paths(repo_root)
     if not matches:
         return DoctorResult("duplicate-artifacts", OK, "No duplicate artifacts found.")
@@ -228,45 +99,38 @@ def check_duplicate_generated_artifacts(repo_root: Path) -> DoctorResult:
         WARNING,
         f"Suspicious duplicate artifacts: {preview}{suffix}.",
         state=maintainer_doctor_models.UNSAFE_CONFIG,
-        hint="Verify they are generated duplicates before deleting them.",
+        hint="Verify generated duplicates before deleting them.",
     )
 
 
 def duplicate_artifact_paths(repo_root: Path) -> list[str]:
-    """Return suspicious duplicate artifact paths under checked roots."""
-
+    """Return suspicious duplicate artifact paths in configured generated roots."""
     matches: list[str] = []
     for root_name in DUPLICATE_ARTIFACT_ROOTS:
         root = repo_root / root_name
-        if root.exists():
-            matches.extend(duplicate_artifacts_in_root(repo_root, root))
+        matches.extend(duplicate_artifacts_in_root(repo_root, root))
     return sorted(matches)
 
 
 def duplicate_artifacts_in_root(repo_root: Path, root: Path) -> list[str]:
-    """Return suspicious duplicate artifact paths under one root."""
-
-    matches: list[str] = []
-    for path in root.rglob("*"):
-        if path.is_file() and is_duplicate_artifact(path):
-            matches.append(path.relative_to(repo_root).as_posix())
-    return matches
+    """Return suspicious duplicate artifacts below one generated root."""
+    if not root.exists():
+        return []
+    return [
+        path.relative_to(repo_root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file() and is_duplicate_artifact(path)
+    ]
 
 
 def is_duplicate_artifact(path: Path) -> bool:
-    """Return whether a filename looks like a generated duplicate copy."""
-
-    normalized_stem = path.stem.casefold()
-    return (
-        normalized_stem.rsplit(" ", maxsplit=1)[-1].isdigit()
-        or normalized_stem.endswith(" copy")
-        or " copy " in normalized_stem
-    )
+    """Return whether path looks like an accidental duplicate artifact."""
+    name = path.name.lower()
+    return any(pattern in name for pattern in (" 2", " copy", " - copy"))
 
 
 def check_layout(config: maintainer_config.MaintainerConfig) -> DoctorResult:
     """Validate configured source, package, test, and coverage roots."""
-
     failures = layout_failures(config, "full")
     if failures:
         return DoctorResult(
@@ -281,16 +145,19 @@ def check_layout(config: maintainer_config.MaintainerConfig) -> DoctorResult:
     return DoctorResult("configured-roots", OK, f"sources={source_roots}; tests={test_roots}")
 
 
-def check_tests(repo_root: Path, config: maintainer_config.MaintainerConfig) -> DoctorResult:
-    """Report whether tests are required and available."""
-
+def check_tests(
+    repo_root: Path,
+    config: maintainer_config.MaintainerConfig,
+) -> DoctorResult:
+    """Report whether required test roots are available."""
     if not config.require_tests:
         return DoctorResult(
             "tests",
             WARNING,
-            "Tests are disabled with require_tests = false.",
+            "Tests are disabled because require_tests = false.",
             state=maintainer_doctor_models.DISABLED,
         )
+
     existing = [path for path in config.test_roots if (repo_root / path).exists()]
     if not existing:
         test_roots = maintainer_config.format_paths(config.test_roots)
@@ -299,79 +166,21 @@ def check_tests(repo_root: Path, config: maintainer_config.MaintainerConfig) -> 
             ERROR,
             f"No configured test roots exist: {test_roots}",
             state=maintainer_doctor_models.MISSING,
-            hint="Create the configured test root or update test_roots.",
+            hint="Create configured test root or update test_roots.",
         )
     existing_roots = ", ".join(existing)
     return DoctorResult("tests", OK, f"Configured test roots exist: {existing_roots}")
 
 
-def check_optional_gates(
-    repo_root: Path, config: maintainer_config.MaintainerConfig
-) -> DoctorResult:
-    """Report whether optional hardening integrations are active."""
-
-    architecture_name, missing = architecture_gate_status(repo_root, config)
-    if not config.enable_pip_audit:
-        missing.append("pip-audit disabled")
-    if not config.enable_wemake:
-        missing.append("wemake disabled")
-    if not config.enable_interrogate:
-        missing.append("interrogate disabled")
-    if missing:
-        result_state = maintainer_doctor_models.DISABLED
-        if any("disabled" not in item for item in missing):
-            result_state = maintainer_doctor_models.MISSING
-        return DoctorResult(
-            "optional-gates",
-            WARNING,
-            "; ".join(missing),
-            state=result_state,
-            hint="Enable the gate or document why it is intentionally disabled.",
-        )
-    active_gate_summary = ", ".join(active_optional_gate_names(architecture_name, config))
-    return DoctorResult(
-        "optional-gates",
-        OK,
-        f"{active_gate_summary} are active.",
-    )
-
-
-def architecture_gate_status(
-    repo_root: Path, config: maintainer_config.MaintainerConfig
-) -> tuple[str, list[str]]:
-    """Return active architecture backend name and missing gate diagnostics."""
-
-    if config.architecture_tool == maintainer_config.TACH_TOOL:
-        return "Tach", tach_config_issues(
-            repo_root,
-            require_strict_root=config.mode == maintainer_config.FRESH_STRICT_MODE,
-        )
-    if not (repo_root / ".importlinter").exists():
-        return "Import Linter", [".importlinter"]
-    return "Import Linter", []
-
-
-def active_optional_gate_names(
-    architecture_name: str, config: maintainer_config.MaintainerConfig
-) -> list[str]:
-    """Return active optional gate names for doctor summary output."""
-
-    active_gates = [architecture_name, "pip-audit", "wemake", "interrogate"]
-    if config.enable_sbom:
-        active_gates.append("sbom")
-    if config.enable_license_check:
-        active_gates.append("license-check")
-    return active_gates
-
-
 def check_agent_guidance(
-    repo_root: Path, config: maintainer_config.MaintainerConfig
+    repo_root: Path,
+    config: maintainer_config.MaintainerConfig,
 ) -> DoctorResult:
-    """Report whether generated agent guidance matches current config."""
-
+    """Report whether generated agent guidance matches config."""
     state = maintainer_guidance.guidance_state(repo_root, config)
     if state.status == "current":
         return DoctorResult("agent-guidance", OK, state.message)
+
     status = ERROR if config.mode == maintainer_config.FRESH_STRICT_MODE else WARNING
     result_state = (
         maintainer_doctor_models.UNSAFE_CONFIG
@@ -388,8 +197,7 @@ def check_agent_guidance(
 
 
 def check_python_version() -> DoctorResult:
-    """Check that the active Python runtime satisfies the verifier minimum."""
-
+    """Report whether Python runtime meets verifier minimum."""
     version = sys.version_info
     detected = f"{version.major}.{version.minor}.{version.micro}"
     if (version.major, version.minor) < MIN_PYTHON:
@@ -397,6 +205,6 @@ def check_python_version() -> DoctorResult:
         return DoctorResult(
             "python-version",
             ERROR,
-            f"Python {detected}; Python {required}+ is required.",
+            f"Python {detected}; Python {required}+ required.",
         )
     return DoctorResult("python-version", OK, f"Python {detected}")
