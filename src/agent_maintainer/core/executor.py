@@ -13,7 +13,16 @@ from agent_maintainer.core.check_run import CheckRun, utc_timestamp
 from agent_maintainer.core.command_run import run_command_bounded
 from agent_maintainer.core.reporting import summarize_check, summarize_check_from_artifacts
 from agent_maintainer.core.runtime import hardened_subprocess_env
-from agent_maintainer.models import Check, CheckResult
+from agent_maintainer.models import (
+    SKIP_STATUS_DISABLED,
+    SKIP_STATUS_MISSING_OPTIONAL,
+    SKIP_STATUS_NOT_APPLICABLE,
+    SKIP_STATUS_REQUIRED,
+    SKIP_STATUS_UNSAFE_CONFIG,
+    SKIP_STATUSES,
+    Check,
+    CheckResult,
+)
 
 OutputLimits = tuple[int, int]
 
@@ -63,6 +72,29 @@ def optional_skip(check: Check) -> str | None:
     if check.optional_skip_reason and optional_skip_applies(check):
         return f"optional skip: {check.optional_skip_reason}"
     return None
+
+
+def optional_skip_status(check: Check) -> str:
+    """Return stable skipped status for optional-skip artifacts."""
+    if (
+        check.optional_skip_status != SKIP_STATUS_DISABLED
+        and check.optional_skip_status in SKIP_STATUSES
+    ):
+        return check.optional_skip_status
+    reason = (check.optional_skip_reason or "").lower()
+    status_markers = (
+        (SKIP_STATUS_REQUIRED, (("require_tests = false",), ("tests are disabled",))),
+        (SKIP_STATUS_UNSAFE_CONFIG, (("active environment",), ("without pinned input",))),
+        (SKIP_STATUS_NOT_APPLICABLE, (("no ", " files matched"),)),
+        (
+            SKIP_STATUS_MISSING_OPTIONAL,
+            (("absent",), ("not configured",), ("no schema",)),
+        ),
+    )
+    for status, marker_groups in status_markers:
+        if any(all(marker in reason for marker in group) for group in marker_groups):
+            return status
+    return SKIP_STATUS_DISABLED
 
 
 def optional_skip_applies(check: Check) -> bool:
@@ -199,6 +231,7 @@ def missing_requirement_result(
             passed=True,
             output=missing.removeprefix("optional skip: "),
             skipped=True,
+            skip_status=optional_skip_status(check),
             command=tuple(check.command),
             log_path=str(log_path),
             started_at=started_at,

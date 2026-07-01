@@ -324,7 +324,7 @@ def result_status(result: CheckResult) -> str:
     """Return a stable manifest status for a check result."""
 
     if result.skipped:
-        return "skipped"
+        return result.skip_status or "skipped"
     if not result.passed:
         return "failed"
     if result.warning:

@@ -129,7 +129,7 @@ def write_report_artifacts(log_dir: Path) -> None:
             },
             {
                 "name": "secret-scan",
-                "status": "skipped",
+                "status": "skipped-disabled",
                 "log_path": ".verify-logs/secret-scan.log",
                 "artifacts": [],
                 "expansion_commands": [],

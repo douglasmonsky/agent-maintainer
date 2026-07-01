@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.models import CheckResult
+from agent_maintainer.models import SKIP_STATUS_MISSING_OPTIONAL, CheckResult
 from agent_maintainer.verify import artifacts
 from agent_maintainer.verify.history import RUNS_DIR_NAME
 
@@ -196,3 +196,21 @@ def test_write_run_artifacts_removes_stale_failure_note_on_success(tmp_path: Pat
     pr_summary = (log_dir / artifacts.PR_SUMMARY_NAME).read_text(encoding="utf-8")
     assert manifest["checks"][0]["status"] == "passed"
     assert "Result: **PASS**" in pr_summary
+
+
+def test_manifest_records_specific_skipped_status(tmp_path: Path) -> None:
+    log_dir = tmp_path / ".verify-logs"
+    result = CheckResult(
+        "zizmor",
+        passed=True,
+        output=".github/workflows is absent",
+        skipped=True,
+        skip_status=SKIP_STATUS_MISSING_OPTIONAL,
+        command=("zizmor",),
+        log_path=".verify-logs/zizmor.log",
+    )
+
+    artifacts.write_run_artifacts(log_dir, run_context(tmp_path), [result])
+
+    manifest = json.loads((log_dir / artifacts.MANIFEST_NAME).read_text(encoding="utf-8"))
+    assert manifest["checks"][0]["status"] == SKIP_STATUS_MISSING_OPTIONAL

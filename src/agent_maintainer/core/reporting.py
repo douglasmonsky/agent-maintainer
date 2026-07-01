@@ -229,7 +229,8 @@ def print_skipped(skipped: list[Any], heading: str) -> None:
         return
     print(heading)
     for result in skipped:
-        print(f"  {result.name}: {result.output}")
+        status = getattr(result, "skip_status", "") or "skipped"
+        print(f"  {result.name} [{status}]: {result.output}")
 
 
 def print_warnings(warnings: list[Any], heading: str) -> None:

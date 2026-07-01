@@ -67,7 +67,7 @@ the existing public command surface.
 
 - [x] Added config metadata inventory and drift tests for schema fields, env
   maps, CLI override fields, diagnostics TOML aliases, and docs labels.
-- [ ] Normalize optional-skip status terminology.
+- [x] Normalize optional-skip status terminology.
 - [x] Add scheduled or documented manual/security cadence.
 - [ ] Expand starter adoption tests across tracks.
 - [x] Fix truthiness-based CLI threshold overrides.
