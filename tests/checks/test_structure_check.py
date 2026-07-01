@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.checks import structure as check_structure
+from agent_maintainer.core.config import MaintainerConfig
 
 
 def write_modules(folder: Path, names: list[str]) -> list[Path]:
@@ -102,3 +103,20 @@ def test_main_returns_success_for_warning_and_failure_for_block(
     assert warning_status == 0
     assert failure_status == 1
     assert "Consider splitting by responsibility" in output
+
+
+def test_main_respects_explicit_empty_argv(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Explicit empty argv does not fall back to process arguments."""
+    monkeypatch.chdir(tmp_path)
+    write_modules(tmp_path / "src", ["one"])
+    monkeypatch.setattr(
+        check_structure,
+        "load_config",
+        lambda: MaintainerConfig(structure_paths=("src",), folder_file_warn=10),
+    )
+    monkeypatch.setattr("sys.argv", ["structure", "--warn-threshold", "not-int"])
+
+    assert check_structure.main([]) == 0

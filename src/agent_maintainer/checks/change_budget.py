@@ -296,8 +296,8 @@ def line_budget_failures(
     """Return a blocking failure when changed source lines exceed the hard limit."""
 
     total = sum(change.changed for change in py_source_changes)
-    warn_limit = args.warn_lines or config.change_warn_lines
-    block_limit = args.block_lines or config.change_block_lines
+    warn_limit = config.change_warn_lines if args.warn_lines is None else args.warn_lines
+    block_limit = config.change_block_lines if args.block_lines is None else args.block_lines
     if total > block_limit:
         return [
             f"Python source diff is too large: {total} changed lines (block limit: {block_limit})."
@@ -318,8 +318,8 @@ def file_budget_failures(
     """Return a blocking failure when changed source file count exceeds the hard limit."""
 
     total = len(py_source_changes)
-    warn_limit = args.warn_files or config.change_warn_files
-    block_limit = args.block_files or config.change_block_files
+    warn_limit = config.change_warn_files if args.warn_files is None else args.warn_files
+    block_limit = config.change_block_files if args.block_files is None else args.block_files
     if total > block_limit:
         return [f"Too many Python source files touched: {total} (block limit: {block_limit})."]
     if total > warn_limit:

@@ -322,8 +322,10 @@ def main(argv: list[str]) -> int:
     config = load_config()
     configured_roots = parse_csv_like(args.root)
     paths = args.paths or configured_roots
-    max_physical = args.max_physical or config.file_length_max_physical
-    max_source = args.max_source or config.file_length_max_source
+    max_physical = (
+        config.file_length_max_physical if args.max_physical is None else args.max_physical
+    )
+    max_source = config.file_length_max_source if args.max_source is None else args.max_source
     expanded = expand_paths(paths, args.changed_only)
     eligible = eligible_python_paths(expanded, args.include_generated)
     if args.write_baseline:
