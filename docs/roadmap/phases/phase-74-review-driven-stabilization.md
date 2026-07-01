@@ -69,7 +69,7 @@ the existing public command surface.
   maps, CLI override fields, diagnostics TOML aliases, and docs labels.
 - [x] Normalize optional-skip status terminology.
 - [x] Add scheduled or documented manual/security cadence.
-- [ ] Expand starter adoption tests across tracks.
+- [x] Expand starter adoption tests across tracks.
 - [x] Fix truthiness-based CLI threshold overrides.
 - [ ] Expand structured repair summaries.
 - [x] Add Gitleaks range command tests.
