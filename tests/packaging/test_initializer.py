@@ -9,7 +9,7 @@ from pathlib import Path
 from yamllint import linter
 from yamllint.config import YamlLintConfig
 
-from agent_maintainer.core import init_template_config, initializer
+from agent_maintainer.core.scaffold import initializer, template_config
 from tests.support.paths import REPO_ROOT
 
 STARTER_CONFIG = Path("config") / "pyproject.agent-maintainer.toml"
@@ -52,7 +52,7 @@ def test_starter_config_template_matches_initializer() -> None:
 
     template = (REPO_ROOT / STARTER_CONFIG).read_text(encoding="utf-8")
 
-    assert template == init_template_config.STARTER_PYPROJECT
+    assert template == template_config.STARTER_PYPROJECT
 
 
 def test_agent_init_includes_codex_hooks_and_agent_guidance(tmp_path: Path) -> None:

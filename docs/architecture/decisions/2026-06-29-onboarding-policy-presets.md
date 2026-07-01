@@ -12,8 +12,8 @@ configuration template owns generated `[tool.agent_maintainer]` policy.
 
 ## Decision
 
-Add `agent_maintainer.core.init_presets` as a core module and assign it
-explicitly in `tach.toml`.
+Add `agent_maintainer.core.scaffold.presets` as a core scaffolding module and
+assign it explicitly in the local Tach domain contract.
 
 The module contains preset policy values and deterministic template overlay
 logic. `init --track` remains responsible for which files are written.

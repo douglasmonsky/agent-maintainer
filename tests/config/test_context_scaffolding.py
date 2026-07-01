@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.config import loader, schema
-from agent_maintainer.core import init_template_config
+from agent_maintainer.core.scaffold import template_config
 
 EXPECTED_SCAFFOLDING_DEFAULTS = {
     "context_default_budget_chars": 12_000,
@@ -223,7 +223,7 @@ def test_starter_config_contains_context_scaffolding_defaults() -> None:
 
     starter_path = Path("config/pyproject.agent-maintainer.toml")
     starter_text = starter_path.read_text(encoding="utf-8")
-    template_text = init_template_config.STARTER_PYPROJECT
+    template_text = template_config.STARTER_PYPROJECT
 
     assert starter_text == template_text
     parsed = tomllib.loads(starter_text)["tool"]["agent_maintainer"]

@@ -19,7 +19,7 @@ src/agent_maintainer/config/schema.py
 src/agent_maintainer/config/loader.py
 src/agent_maintainer/config/coercion.py
 config/pyproject.agent-maintainer.toml
-src/agent_maintainer/core/init_template_config.py
+src/agent_maintainer/core/scaffold/template_config.py
 tests/config/
 ```
 
