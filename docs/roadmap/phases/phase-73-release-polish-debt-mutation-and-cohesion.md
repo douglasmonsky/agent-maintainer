@@ -8,14 +8,14 @@ feat: polish mutation results debt score and cohesion
 
 ## Scope
 
-Improve release polish after the Phase 67 public-docs and assessment work and
-the PR #139 Mutmut/Hypothesis hardening pass. This phase should improve user
-trust and agent usability without adding new scanners or changing public
-verification profile semantics.
+Improve release polish after Phase 67 public-docs assessment work and PR #139
+Mutmut/Hypothesis hardening pass. This phase improves user trust and agent
+usability without adding new scanners or changing public verification profile
+semantics.
 
 ## Requirements
 
-- Make this roadmap phase the first commit before behavior changes.
+- Make roadmap phase first commit before behavior changes.
 - Improve `test-intel mutation-results` so successful cleaned Mutmut runs remain
   readable from run-scoped manual artifacts.
 - Keep `mutants/mutmut-cicd-stats.json` as the highest-priority stats source
@@ -23,21 +23,21 @@ verification profile semantics.
 - Report stats source clearly: live `mutants/` artifact or
   `.verify-logs/runs/<run-id>/mutmut.log`.
 - Preserve default cleanup of `mutants/`; do not keep generated mutation files
-  just to support reporting.
-- Refine Technical Debt Score output so low scores read as healthy with watch
-  items rather than urgent debt.
+  only to support reporting.
+- Refine Technical Debt Score output so low scores read as healthy watch items
+  rather than urgent debt.
 - Make debt category output clearer about observed debt versus configured
   tolerance where practical.
 - Keep Technical Debt Score advisory-only and lower-is-better.
 - Add focused tests for healthy current-repo-style debt output and missing or
   unreadable report fallback behavior.
-- Add Hypothesis tests only for deterministic pure logic, such as change-plan
-  path matching, scope validation, and safe context path rejection.
+- Add Hypothesis tests only for deterministic pure logic: change-plan path
+  matching, scope validation, and safe context path rejection.
 - Keep Hypothesis dev-only; do not add it to package extras.
-- Start cohesion refactor only for recurring warning packages:
+- Start cohesion refactors only for recurring warning packages:
   `src/agent_maintainer/core` and `src/agent_maintainer/test_intel`.
-- Do one cohesion target per PR unless the first split is tiny.
-- Add or update Tach domain files and ADRs for any architecture policy changes.
+- Do one cohesion target per PR unless the split is tiny.
+- Add or update Tach domain files and ADRs for architecture policy changes.
 
 ## Acceptance Criteria
 
@@ -47,10 +47,10 @@ verification profile semantics.
   watch items from failures.
 - New Hypothesis tests cover at least one additional pure policy surface beyond
   assessment scoring.
-- Cohesion warnings are either reduced for one target package or documented with
-  a concrete follow-up split plan based on actual module clusters.
+- Cohesion warnings are reduced for one target package, or a concrete follow-up
+  split plan is documented based on actual module clusters.
 - No new scanner category, public profile, or default blocking gate is added.
-- PRs remain small enough for review and preserve quiet verifier output.
+- PRs remain small enough to review and preserve quiet verifier output.
 
 ## Progress
 
@@ -63,7 +63,7 @@ verification profile semantics.
   path refusal rules.
 - [x] Split mutation test-intelligence modules into
   `agent_maintainer.test_intel.mutation` with explicit Tach modules and ADR.
-- [ ] Split or otherwise reduce the remaining `src/agent_maintainer/core`
+- [x] Split otherwise reduce remaining `src/agent_maintainer/core`
   structure-cohesion warning in a follow-up PR.
 
 ## Verification
