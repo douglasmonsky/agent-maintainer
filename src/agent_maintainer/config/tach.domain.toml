@@ -19,6 +19,13 @@ depends_on = [
 ]
 
 [[modules]]
+path = "metadata"
+depends_on = [
+  "loader",
+  "schema",
+]
+
+[[modules]]
 path = "modes"
 depends_on = [
   "schema",
