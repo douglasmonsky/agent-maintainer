@@ -270,7 +270,22 @@ semantics. Detailed scope:
 
 Planned work:
 
-- [ ] Phase 73: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion
+- [x] Phase 73: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion
+
+## Next: Review-Driven Stabilization
+
+Static review identified the next release-risk area as drift across Agent
+Maintainer's broad public surface: config fields, env vars, CLI overrides,
+starter files, optional gates, generated artifacts, and docs. Stabilization
+should take priority over new scanner categories.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-74-review-driven-stabilization.md`](roadmap/phases/phase-74-review-driven-stabilization.md)
+
+Planned work:
+
+- [ ] Phase 74: Review-Driven Stabilization Metadata, Schedules, and Output Contracts
 
 ## Future Work
 
