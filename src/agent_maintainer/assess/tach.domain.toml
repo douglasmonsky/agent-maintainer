@@ -27,7 +27,17 @@ depends_on = [
 [[modules]]
 
 path = "debt_categories"
-depends_on = ["//agent_maintainer.config.schema", "debt_manifest", "debt_security", "models"]
+depends_on = [
+  "//agent_maintainer.config.schema",
+  "debt_category_constants",
+  "debt_manifest",
+  "debt_security",
+  "models",
+]
+
+[[modules]]
+path = "debt_category_constants"
+depends_on = []
 
 [[modules]]
 path = "debt_manifest"
