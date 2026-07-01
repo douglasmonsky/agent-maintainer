@@ -64,7 +64,7 @@ def test_deep_verify_workflow_installs_required_external_tools() -> None:
 
     assert "npm ci" in workflow
     assert "GITLEAKS_VERSION=8.30.1" in workflow
-    assert "OSV_SCANNER_VERSION=2.2.3" in workflow
+    assert "OSV_SCANNER_VERSION=2.4.0" in workflow
     assert "sha256sum" in workflow
     assert "python -m pip install -e ." in workflow
 
