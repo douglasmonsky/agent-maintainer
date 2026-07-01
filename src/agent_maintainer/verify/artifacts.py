@@ -17,7 +17,7 @@ from agent_maintainer.verify.pr_summary import PR_SUMMARY_NAME, render_pr_summar
 
 MANIFEST_NAME = "manifest.json"
 LAST_FAILURE_NAME = "LAST_FAILURE.md"
-TRUNCATION_NOTE_ALLOWANCE = 240
+TRUNCATION_NOTE_ALLOWANCE = 320
 
 
 @dataclass(frozen=True)
@@ -257,7 +257,24 @@ def bounded_last_failure_text(text: str, config: MaintainerConfig) -> str:
     )
     if not bounded.truncated:
         return bounded.text
-    return "\n\n".join((bounded.text.rstrip(), truncation_note(bounded)))
+    preserved = preserved_expansion_footer(text, bounded.text)
+    parts = [bounded.text.rstrip(), truncation_note(bounded)]
+    if preserved:
+        parts.append(preserved)
+    return "\n\n".join(parts)
+
+
+def preserved_expansion_footer(original_text: str, bounded_text: str) -> str:
+    """Return command footer when truncation hides repair commands."""
+    commands = [
+        line.strip()
+        for line in original_text.splitlines()
+        if "python -m agent_maintainer context" in line and " failures " in line and line.strip()
+    ]
+    hidden_commands = [command for command in commands if command not in bounded_text]
+    if not hidden_commands:
+        return ""
+    return "\n".join(("## Preserved Expansion Commands", "", *hidden_commands))
 
 
 def summary_metadata(

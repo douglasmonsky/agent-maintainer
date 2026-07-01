@@ -68,3 +68,43 @@ def test_last_failure_is_bounded_and_manifest_has_context_metadata(
         "python -m agent_maintainer context failures --check ruff --limit 20",
         "python -m agent_maintainer context log ruff --tail 120",
     ]
+
+
+def test_tight_budget_preserves_expansion_commands(tmp_path: Path) -> None:
+    """Small valid budgets keep just-in-time repair commands reachable."""
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    log_path = log_dir / "ruff.log"
+    log_path.write_text(LARGE_OUTPUT, encoding="utf-8")
+    context = artifacts.RunContext(
+        repo_root=tmp_path,
+        profile="full",
+        base_ref="HEAD",
+        compare_branch="origin/main",
+        staged=False,
+        config=MaintainerConfig(context_last_failure_budget_chars=240),
+        run_id="20260625T100000Z-full-test",
+    )
+    result = CheckResult(
+        "ruff",
+        passed=False,
+        output=LARGE_OUTPUT,
+        command=("ruff", "check"),
+        exit_code=1,
+        log_path=str(log_path),
+    )
+
+    artifacts.write_run_artifacts(log_dir, context, [result])
+
+    failure_note = (log_dir / artifacts.LAST_FAILURE_NAME).read_text(encoding="utf-8")
+    pr_summary = (log_dir / artifacts.PR_SUMMARY_NAME).read_text(encoding="utf-8")
+    manifest = json.loads((log_dir / artifacts.MANIFEST_NAME).read_text(encoding="utf-8"))
+    commands = manifest["checks"][0]["expansion_commands"]
+    assert "## Preserved Expansion Commands" in failure_note
+    assert "## Preserved Expansion Commands" in pr_summary
+    assert (
+        "python -m agent_maintainer context --log-dir "
+        ".verify-logs/runs/20260625T100000Z-full-test "
+        "failures --check ruff --limit 20"
+    ) in failure_note
+    assert commands[0] in pr_summary

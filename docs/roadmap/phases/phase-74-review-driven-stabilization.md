@@ -73,7 +73,7 @@ the existing public command surface.
 - [x] Fix truthiness-based CLI threshold overrides.
 - [ ] Expand structured repair summaries.
 - [x] Add Gitleaks range command tests.
-- [ ] Preserve context-pack expansion commands under tight budgets.
+- [x] Preserve context-pack expansion commands under tight budgets.
 
 ## Out Of Scope
 
