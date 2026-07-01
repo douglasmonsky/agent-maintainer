@@ -120,6 +120,41 @@ def check_structure_thresholds(
     )
 
 
+def check_ratchet_baseline(
+    repo_root: Path,
+    config: maintainer_config.MaintainerConfig,
+) -> maintainer_doctor_models.DoctorResult:
+    """Report stale legacy-ratchet configuration without a baseline."""
+
+    if not config.ratchet_enabled:
+        return maintainer_doctor_models.DoctorResult(
+            "legacy-ratchet-baseline",
+            maintainer_doctor_models.OK,
+            "legacy ratchet baseline disabled.",
+            state=maintainer_doctor_models.NOT_APPLICABLE,
+        )
+
+    baseline_path = repo_root / config.ratchet_baseline_path
+    if baseline_path.exists():
+        return maintainer_doctor_models.DoctorResult(
+            "legacy-ratchet-baseline",
+            maintainer_doctor_models.OK,
+            f"legacy ratchet baseline present: {config.ratchet_baseline_path}.",
+            state=maintainer_doctor_models.ACTIVE,
+        )
+
+    return maintainer_doctor_models.DoctorResult(
+        "legacy-ratchet-baseline",
+        maintainer_doctor_models.WARNING,
+        f"legacy ratchet enabled but baseline missing: {config.ratchet_baseline_path}.",
+        state=maintainer_doctor_models.MISSING,
+        hint=(
+            "Run python3 -m agent_maintainer ratchet baseline create, "
+            "or set ratchet_enabled = false."
+        ),
+    )
+
+
 def check_tool_capabilities(
     repo_root: Path, config: maintainer_config.MaintainerConfig
 ) -> DoctorResult:

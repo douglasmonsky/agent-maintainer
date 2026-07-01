@@ -4,10 +4,6 @@ Generated from `[tool.agent_maintainer]` by
 `python3 -m agent_maintainer guidance`. Do not edit by hand.
 Details: `docs/agent-maintainer-guidance.md`.
 
-## Ratchet Guidance
-
-- Read `AGENTS.ratchet.md` for legacy ratchet repair guidance.
-
 ## Hard Rules
 
 - Keep commits small, tested, and aligned with configured boundaries.

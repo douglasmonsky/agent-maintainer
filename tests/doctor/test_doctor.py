@@ -215,6 +215,45 @@ def test_tests_check_fails_and_passes_for_required_tests(tmp_path: Path) -> None
     assert maintainer_doctor.check_tests(tmp_path, config).status == maintainer_doctor.OK
 
 
+def test_ratchet_baseline_check_is_not_applicable_when_disabled(tmp_path: Path) -> None:
+    """Legacy ratchet baseline is ignored when legacy ratchet is disabled."""
+
+    config = MaintainerConfig(ratchet_enabled=False)
+
+    result = maintainer_doctor_setup.check_ratchet_baseline(tmp_path, config)
+
+    assert result.status == maintainer_doctor.OK
+    assert result.state == maintainer_doctor_models.NOT_APPLICABLE
+
+
+def test_ratchet_baseline_check_passes_when_baseline_exists(tmp_path: Path) -> None:
+    """Legacy ratchet baseline check passes when enabled baseline exists."""
+
+    baseline_path = tmp_path / ".agent-maintainer" / "ratchet-baseline.json"
+    baseline_path.parent.mkdir()
+    baseline_path.write_text("{}", encoding="utf-8")
+    config = MaintainerConfig(ratchet_enabled=True)
+
+    result = maintainer_doctor_setup.check_ratchet_baseline(tmp_path, config)
+
+    assert result.status == maintainer_doctor.OK
+    assert result.state == maintainer_doctor_models.ACTIVE
+
+
+def test_ratchet_baseline_check_warns_when_enabled_baseline_missing(
+    tmp_path: Path,
+) -> None:
+    """Legacy ratchet baseline check warns when guidance would be unusable."""
+
+    config = MaintainerConfig(ratchet_enabled=True)
+
+    result = maintainer_doctor_setup.check_ratchet_baseline(tmp_path, config)
+
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.MISSING
+    assert "ratchet_enabled = false" in result.hint
+
+
 def test_pre_commit_hook_warns_when_config_exists_but_hook_is_absent(tmp_path: Path) -> None:
     (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n", encoding="utf-8")
     (tmp_path / ".git" / "hooks").mkdir(parents=True)

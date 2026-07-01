@@ -91,6 +91,7 @@ def run_doctor(
         check_tests(repo_root, config),
         maintainer_doctor_setup.check_thresholds(config),
         maintainer_doctor_setup.check_structure_thresholds(config),
+        maintainer_doctor_setup.check_ratchet_baseline(repo_root, config),
         maintainer_doctor_policy.check_pyright_config(repo_root, config),
         check_pre_commit(repo_root),
         check_codex_hooks(repo_root),
