@@ -231,7 +231,7 @@ def print_finding(finding: FolderFinding, warn_threshold: int, block_threshold: 
 def main(argv: list[str] | None = None) -> int:
     """Run structure cohesion check."""
 
-    args = parse_args(argv or sys.argv[1:])
+    args = parse_args(sys.argv[1:] if argv is None else argv)
     config = load_config()
     paths = selected_paths(args, config)
     ignored_patterns = tuple(args.ignore) or config.structure_ignore_paths
