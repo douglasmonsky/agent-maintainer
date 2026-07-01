@@ -91,6 +91,18 @@ def test_secret_scan_checks_use_gitleaks_backend_when_enabled() -> None:
     assert "history" in history.command
 
 
+def test_secret_scan_ci_uses_base_ref() -> None:
+    config = MaintainerConfig(
+        enable_secret_scanning=True,
+        secret_scan_profiles=("ci",),
+    )
+
+    checks = maintainer_catalog.make_checks(config, "origin/main", "origin/main")
+    secret_scan = next(check for check in checks if check.name == "secret-scan")
+
+    assert secret_scan.command[secret_scan.command.index("--base-ref") + 1] == "origin/main"
+
+
 def test_secret_scan_checks_use_staged_mode_for_staged_precommit() -> None:
     config = MaintainerConfig(
         enable_secret_scanning=True,

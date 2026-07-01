@@ -199,9 +199,10 @@ backend-neutral so a future Betterleaks backend can be added without changing
 the public config shape.
 
 Normal scans run through `agent_maintainer.runners.secret_scan`: `full` scans the current
-tree, `ci` scans the comparison range, and staged verifier runs scan the staged
-diff through stdin. The manual `security` profile runs a full-history scan.
-Gitleaks reports are written under `.verify-logs/` and run with redaction.
+tree, `ci` scans the explicit `BASE_REF..HEAD` comparison range passed by the
+verifier, and staged verifier runs scan the staged diff through stdin. The
+manual `security` profile runs a full-history scan. Gitleaks reports are
+written under `.verify-logs/` and run with redaction.
 
 `config/dev-dependencies.txt` is the human-edited dependency input. `config/dev-lock.txt` is the pinned install and audit artifact when present; bootstrap and CI prefer it automatically.
 
