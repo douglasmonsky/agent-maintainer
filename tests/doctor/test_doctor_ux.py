@@ -5,13 +5,24 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from agent_maintainer import models as maintainer_models
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.doctor import cli as maintainer_doctor
 from agent_maintainer.doctor import setup as maintainer_doctor_setup
 from agent_maintainer.doctor.support import logs as maintainer_doctor_logs
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
 from agent_maintainer.doctor.support import policy as maintainer_doctor_policy
+from agent_maintainer.doctor.support import setup_policy as maintainer_doctor_setup_policy
 from agent_maintainer.verify.artifacts import MANIFEST_NAME
+
+
+def no_checks_factory(
+    _config: MaintainerConfig,
+    _base_ref: str,
+    _compare_branch: str,
+) -> list[maintainer_models.Check]:
+    """Return an empty check catalog for injection tests."""
+    return []
 
 
 def test_architecture_backend_reports_active_tach(tmp_path: Path) -> None:
@@ -37,6 +48,16 @@ def test_architecture_backend_reports_missing_config(tmp_path: Path) -> None:
     assert result.state == maintainer_doctor_models.MISSING
     assert "tach.toml" in result.message
     assert result.hint
+
+
+def test_tool_capability_injected_catalog(tmp_path: Path) -> None:
+    result = maintainer_doctor_setup_policy.check_tool_capabilities(
+        tmp_path,
+        MaintainerConfig(),
+        check_factory=no_checks_factory,
+    )
+
+    assert result.status == maintainer_doctor.OK
 
 
 def test_thresholds_report_active_enforcement_values() -> None:
