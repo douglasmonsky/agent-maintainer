@@ -60,26 +60,26 @@ depends_on = [
 ]
 
 [[modules]]
-path = "init_presets"
+path = "scaffold.presets"
 depends_on = []
 
 [[modules]]
-path = "init_template_config"
+path = "scaffold.template_config"
 depends_on = []
 
 [[modules]]
-path = "init_templates"
+path = "scaffold.templates"
 depends_on = [
-  "init_presets",
-  "init_template_config",
+  "scaffold.presets",
+  "scaffold.template_config",
   "//agent_maintainer.hooks.templates",
 ]
 
 [[modules]]
-path = "initializer"
+path = "scaffold.initializer"
 depends_on = [
-  "init_presets",
-  "init_templates",
+  "scaffold.presets",
+  "scaffold.templates",
 ]
 
 [[modules]]

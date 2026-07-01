@@ -5,8 +5,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from agent_maintainer.core.init_presets import DEFAULT_PRESET, PRESETS
-from agent_maintainer.core.init_templates import (
+from agent_maintainer.core.scaffold.presets import DEFAULT_PRESET, PRESETS
+from agent_maintainer.core.scaffold.templates import (
     CORE_TRACK,
     TRACKS,
     StarterFile,

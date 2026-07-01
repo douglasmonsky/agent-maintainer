@@ -8,8 +8,8 @@ from collections.abc import Callable
 from agent_maintainer.context.cli import main as context_main
 from agent_maintainer.core.bootstrap import bootstrap, install
 from agent_maintainer.core.guidance import main as guidance_main
-from agent_maintainer.core.initializer import main as init_main
 from agent_maintainer.core.runtime import disable_bytecode_writes
+from agent_maintainer.core.scaffold.initializer import main as init_main
 from agent_maintainer.doctor.cli import main as doctor_main
 from agent_maintainer.hooks.cli import main as hooks_main
 from agent_maintainer.verify.quiet import main as verify_main
