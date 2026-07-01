@@ -61,9 +61,9 @@ mutation/test debt, and split only evidence-backed near-limit modules.
 
 ## Progress
 
-- [ ] Roadmap-first phase entry and Phase 74 status cleanup.
-- [ ] Technical Debt Score calibration and docs.
-- [ ] Strict Pyright ratchet config, runner, baseline, docs, and tests.
+- [x] Roadmap-first phase entry and Phase 74 status cleanup.
+- [x] Technical Debt Score calibration and docs.
+- [x] Strict Pyright ratchet config, runner, baseline, docs, and tests.
 - [ ] Evidence-backed cleanup refactor for near-limit modules.
 - [ ] Mutation survivor reduction and documentation.
 

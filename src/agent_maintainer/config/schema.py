@@ -40,6 +40,8 @@ DEFAULT_SECRET_SCAN_HISTORY_PROFILES = ("security",)
 DEFAULT_SEMGREP_PROFILES = ("manual",)
 DEFAULT_OSV_SCANNER_ARGS = ("scan", "source", "-r", ".")
 DEFAULT_OSV_SCANNER_PROFILES = ("manual",)
+DEFAULT_PYRIGHT_STRICT_BASELINE = "config/pyright-strict-baseline.json"
+DEFAULT_PYRIGHT_STRICT_PROFILES = ("manual",)
 DEFAULT_TRIVY_ARGS = (
     "fs",
     "--scanners",
@@ -106,6 +108,7 @@ TUPLE_FIELDS = frozenset(
         "vulture_paths",
         "pip_audit_args",
         "mutmut_args",
+        "pyright_strict_profiles",
         "semgrep_args",
         "semgrep_profiles",
         "osv_scanner_args",
@@ -133,6 +136,7 @@ BOOL_FIELDS = frozenset(
         "enable_pip_audit",
         "enable_mutmut",
         "mutmut_result_ratchet_enabled",
+        "pyright_strict_ratchet_enabled",
         "enable_semgrep",
         "enable_osv_scanner",
         "enable_trivy",
@@ -179,6 +183,7 @@ NON_NEGATIVE_INT_FIELDS = frozenset(
         "mutmut_max_suspicious",
         "mutmut_max_timeouts",
         "mutmut_min_score",
+        "pyright_strict_max_errors",
         "ratchet_target_limit",
         "large_change_max_active_plans",
     )
@@ -212,6 +217,7 @@ STR_FIELDS = frozenset(
         "xenon_max_modules",
         "xenon_max_average",
         "pyright_type_checking_mode",
+        "pyright_strict_baseline",
         "file_length_baseline",
         "diagnostic_artifacts_dir",
         "secret_scanner",
@@ -257,6 +263,10 @@ class MaintainerConfig:
     xenon_max_average: str = "A"
     ruff_max_complexity: int = 10
     pyright_type_checking_mode: str = "standard"
+    pyright_strict_ratchet_enabled: bool = False
+    pyright_strict_baseline: str = DEFAULT_PYRIGHT_STRICT_BASELINE
+    pyright_strict_max_errors: int = 0
+    pyright_strict_profiles: tuple[str, ...] = DEFAULT_PYRIGHT_STRICT_PROFILES
     context_default_budget_chars: int = 12_000
     context_hook_budget_chars: int = 8_000
     context_last_failure_budget_chars: int = 16_000

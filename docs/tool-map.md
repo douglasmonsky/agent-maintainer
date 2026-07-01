@@ -37,7 +37,7 @@ The verifier preserves Ruff JSON as `.verify-logs/ruff.json` and prints compact
 diagnostics instead of dumping raw JSON into terminal output. It is the fastest
 feedback loop and should run after most edits.
 
-Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.agent_maintainer].pyright_type_checking_mode` affects the actual Pyright invocation. Pyright JSON is also preserved as `.verify-logs/pyright.json` and listed in the verifier manifest.
+Pyright enforces type discipline. The verifier runs it through a generated project config so `[tool.agent_maintainer].pyright_type_checking_mode` affects the actual Pyright invocation. Pyright JSON is also preserved as `.verify-logs/pyright.json` and listed in the verifier manifest. `pyright-strict-ratchet` is a separate manual-profile check: it runs strict Pyright, compares against `config/pyright-strict-baseline.json`, and fails only on configured regressions so repos can ratchet toward strict typing without making normal Pyright noisy.
 
 Pytest and pytest-cov enforce behavior and coverage. The configured coverage
 gate prevents untested new behavior from quietly entering the repository. The

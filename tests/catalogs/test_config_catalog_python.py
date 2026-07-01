@@ -131,6 +131,39 @@ def test_pyright_check_uses_generated_project_runner() -> None:
     )
 
 
+def test_pyright_strict_ratchet_is_manual_and_disabled_by_default() -> None:
+    """Strict Pyright ratchet is opt-in and manual-profile scoped."""
+
+    config = MaintainerConfig(diagnostic_artifacts_dir=".custom-logs")
+    check = maintainer_catalog_python.pyright_strict_ratchet_check(config)
+
+    assert check.name == "pyright-strict-ratchet"
+    assert check.profiles == maintainer_catalog.models.MANUAL_PROFILES
+    assert check.optional_skip_reason
+    assert check.command == [
+        maintainer_catalog.sys.executable,
+        "-m",
+        "agent_maintainer.runners.pyright_strict",
+    ]
+
+
+def test_pyright_strict_ratchet_declares_artifacts_when_enabled() -> None:
+    """Enabled strict Pyright ratchet captures strict artifacts."""
+
+    config = MaintainerConfig(
+        diagnostic_artifacts_dir=".custom-logs",
+        pyright_strict_ratchet_enabled=True,
+    )
+    check = maintainer_catalog_python.pyright_strict_ratchet_check(config)
+
+    assert check.required_executable == "pyright"
+    assert check.optional_skip_reason is None
+    assert check.artifact_paths == (
+        ".custom-logs/pyright-strict.json",
+        ".custom-logs/pyrightconfig.strict.generated.json",
+    )
+
+
 def test_ruff_check_uses_json_artifact_runner() -> None:
     config = MaintainerConfig(diagnostic_artifacts_dir=".custom-logs")
     checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")

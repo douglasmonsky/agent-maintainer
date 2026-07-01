@@ -16,41 +16,42 @@ MAX_SCORE = 100
 REVIEWABILITY_BASE = 15
 CHANGE_BUDGET_PENALTY = 20
 SOURCE_LENGTH_PENALTY = 15
-LARGE_SOURCE_PENALTY = 15
 TRUNCATED_SCAN_PENALTY = 10
 REVIEWABLE_LINE_BLOCK = 800
 REVIEWABLE_FILE_BLOCK = 20
 SOURCE_LENGTH_CAP = 450
-LARGE_SOURCE_FILE_COUNT = 40
+EXCELLENT_SOURCE_LENGTH_CAP = 375
 REVIEWABILITY_WEIGHT = 14
 
-TESTS_BASE = 10
+TESTS_BASE = 5
 MISSING_REQUIRED_TESTS_PENALTY = 35
 MISSING_TEST_TREE_PENALTY = 25
 LOW_COVERAGE_PENALTY = 15
 MIN_HEALTHY_COVERAGE = 80
+EXCELLENT_COVERAGE = 90
 TESTS_WEIGHT = 18
 
-STYLE_BASE = 15
+STYLE_BASE = 10
 BASIC_TYPE_PENALTY = 15
 HIGH_COMPLEXITY_PENALTY = 10
 MISSING_WEMAKE_PENALTY = 10
 RUFF_COMPLEXITY_CAP = 10
+STRICT_TYPE_REDUCTION = 5
 STYLE_WEIGHT = 12
 
-ARCHITECTURE_BASE = 15
+ARCHITECTURE_BASE = 5
 MISSING_TACH_PENALTY = 30
 MISSING_IMPORT_LINTER_PENALTY = 25
 ARCHITECTURE_WEIGHT = 14
 
 SECURITY_WEIGHT = 14
 
-DOCS_BASE = 10
+DOCS_BASE = 5
 MISSING_RELEVANT_DOCS_GATE_PENALTY = 10
-DOCS_MIN_SCORE = 10
+DOCS_MIN_SCORE = 5
 DOCS_WEIGHT = 10
 
-DIAGNOSTICS_BASE = 15
+DIAGNOSTICS_BASE = 5
 DIAGNOSTICS_DISABLED_PENALTY = 20
 MISSING_GUIDANCE_PENALTY = 12
 DIAGNOSTICS_WEIGHT = 10
@@ -119,6 +120,7 @@ def _reviewability(
             f"file length caps {config.file_length_max_physical} physical / "
             f"{config.file_length_max_source} source lines"
         ),
+        f"folder file-count warning/block = {config.folder_file_warn}/{config.folder_file_block}",
         _scan_evidence(evidence),
     ]
     if (
@@ -128,8 +130,8 @@ def _reviewability(
         score += CHANGE_BUDGET_PENALTY
     if config.file_length_max_source > SOURCE_LENGTH_CAP:
         score += SOURCE_LENGTH_PENALTY
-    if evidence.source_files >= LARGE_SOURCE_FILE_COUNT:
-        score += LARGE_SOURCE_PENALTY
+    elif config.file_length_max_source <= EXCELLENT_SOURCE_LENGTH_CAP:
+        evidence_lines.append("excellent source length cap active")
     if evidence.scan_truncated:
         score += TRUNCATED_SCAN_PENALTY
     score = debt_manifest.with_manifest_penalty(
@@ -156,6 +158,7 @@ def _tests_coverage(
     evidence_lines = [
         f"require_tests = {config.require_tests}",
         f"coverage floor = {config.coverage_fail_under}%",
+        f"diff coverage floor = {config.diff_cover_fail_under}%",
         f"detected {evidence.test_files} Python test files",
     ]
     if _has_python_surface(evidence):
@@ -165,6 +168,10 @@ def _tests_coverage(
             score += MISSING_TEST_TREE_PENALTY
         if config.coverage_fail_under < MIN_HEALTHY_COVERAGE:
             score += LOW_COVERAGE_PENALTY
+        elif config.coverage_fail_under >= EXCELLENT_COVERAGE:
+            evidence_lines.append("excellent coverage floor active")
+        if config.diff_cover_fail_under >= EXCELLENT_COVERAGE:
+            evidence_lines.append("excellent changed-code coverage floor active")
     else:
         evidence_lines.append("no Python surface detected; test debt not scored")
     score = debt_manifest.with_manifest_penalty(score, evidence_lines, manifest, TEST_CHECKS)
@@ -184,11 +191,14 @@ def _type_style(
     score = STYLE_BASE
     evidence_lines = [
         f"pyright mode = {config.pyright_type_checking_mode}",
+        f"strict Pyright ratchet enabled = {config.pyright_strict_ratchet_enabled}",
         f"Ruff complexity cap = {config.ruff_max_complexity}",
         f"wemake enabled = {config.enable_wemake}",
     ]
     if config.pyright_type_checking_mode == "basic":
         score += BASIC_TYPE_PENALTY
+    if config.pyright_strict_ratchet_enabled:
+        score = max(0, score - STRICT_TYPE_REDUCTION)
     if config.ruff_max_complexity > RUFF_COMPLEXITY_CAP:
         score += HIGH_COMPLEXITY_PENALTY
     if config.mode == FRESH_STRICT_MODE and not config.enable_wemake:
@@ -216,6 +226,8 @@ def _architecture(
     ]
     if config.architecture_tool == "tach" and not evidence.has_tach:
         score += MISSING_TACH_PENALTY
+    elif config.architecture_tool == "tach" and evidence.has_tach:
+        evidence_lines.append("tach architecture contract present")
     if config.architecture_tool == "import-linter" and not evidence.has_import_linter:
         score += MISSING_IMPORT_LINTER_PENALTY
     score = debt_manifest.with_manifest_penalty(
@@ -267,6 +279,10 @@ def _docs_config(
             score += MISSING_RELEVANT_DOCS_GATE_PENALTY
         if evidence.toml_files and not config.enable_taplo:
             score += MISSING_RELEVANT_DOCS_GATE_PENALTY
+        if config.enable_interrogate and config.enable_markdownlint:
+            evidence_lines.append("documentation gates active")
+        if config.enable_yamllint and config.enable_taplo:
+            evidence_lines.append("YAML/TOML config gates active")
     else:
         score = DOCS_MIN_SCORE
         evidence_lines.append("no docs/config surface detected; optional gates not scored")
@@ -292,6 +308,7 @@ def _diagnostics(
         f"diagnostics enabled = {config.diagnostic_artifacts_enabled}",
         f"agent guidance present = {evidence.has_agent_guidance}",
         f"manifest present = {manifest_present}",
+        f"run history limit = {config.diagnostic_run_history_limit}",
     ]
     if not config.diagnostic_artifacts_enabled:
         score += DIAGNOSTICS_DISABLED_PENALTY

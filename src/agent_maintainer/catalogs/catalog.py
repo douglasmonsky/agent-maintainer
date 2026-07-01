@@ -176,6 +176,7 @@ def make_checks(
         ),
         python_checks.ruff_check(config),
         python_checks.pyright_check(config),
+        python_checks.pyright_strict_ratchet_check(config),
         python_checks.pytest_check(config),
         python_checks.mutmut_target_ratchet_check(config),
         models.Check(

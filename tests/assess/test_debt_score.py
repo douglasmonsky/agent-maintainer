@@ -28,6 +28,7 @@ LOW_COVERAGE_FLOOR = 50
 LONG_SOURCE_LIMIT = 500
 HIGH_COMPLEXITY = 20
 HEALTHY_MUTATION_SCORE = 5
+EXCELLENT_DEBT_SCORE = 10
 CRITICAL_SCORE_SAMPLE = 90
 LOW_RISK_CATEGORY_SCORE = 25
 
@@ -108,12 +109,12 @@ def test_debt_score_penalizes_missing_controls(tmp_path: Path) -> None:
     )
     categories = {category.name: category for category in report.categories}
 
-    assert categories["Reviewability"].score > HIGH_CATEGORY_SCORE
+    assert categories["Reviewability"].score >= HIGH_CATEGORY_SCORE
     assert categories["Tests and Coverage"].score > HIGH_CATEGORY_SCORE
     assert categories["Type and Style"].score > MODERATE_CATEGORY_SCORE
-    assert categories["Architecture Boundaries"].score > MODERATE_CATEGORY_SCORE
+    assert categories["Architecture Boundaries"].score > LOW_RISK_CATEGORY_SCORE
     assert categories["Dependencies and Security"].score > MODERATE_CATEGORY_SCORE
-    assert categories["Diagnostics Repair Loop"].score > MODERATE_CATEGORY_SCORE
+    assert categories["Diagnostics Repair Loop"].score > LOW_RISK_CATEGORY_SCORE
 
 
 def test_debt_score_rewards_mutation_ratchets_and_manifest(tmp_path: Path) -> None:
@@ -135,6 +136,49 @@ def test_debt_score_rewards_mutation_ratchets_and_manifest(tmp_path: Path) -> No
 
     assert report.confidence == "high"
     assert categories["Ratchets and Mutation Maturity"].score == HEALTHY_MUTATION_SCORE
+
+
+def test_debt_score_allows_excellent_repos_below_ten(tmp_path: Path) -> None:
+    """Excellent active controls can produce an excellent advisory score."""
+
+    write_repo(tmp_path)
+    (tmp_path / "AGENTS.agent-maintainer.md").write_text("generated\n", encoding="utf-8")
+    (tmp_path / "tach.toml").write_text(
+        'source_roots = ["src"]\nroot_module = "forbid"\n',
+        encoding="utf-8",
+    )
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    (config_dir / "dev-lock.txt").write_text("example==1\n", encoding="utf-8")
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    (log_dir / "manifest.json").write_text(
+        json.dumps({"checks": [{"name": "pyright", "status": "passed"}]}),
+        encoding="utf-8",
+    )
+    config = MaintainerConfig(
+        architecture_tool="tach",
+        coverage_fail_under=90,
+        diff_cover_fail_under=90,
+        enable_interrogate=True,
+        enable_license_check=True,
+        enable_markdownlint=True,
+        enable_mutmut=True,
+        enable_pip_audit=True,
+        enable_sbom=True,
+        enable_secret_scanning=True,
+        enable_taplo=True,
+        enable_wemake=True,
+        file_length_max_source=375,
+        mutmut_result_ratchet_enabled=True,
+        mutmut_target_min=3,
+        pyright_strict_ratchet_enabled=True,
+        ruff_max_complexity=8,
+    )
+
+    report = build_debt_report(collect_evidence(tmp_path), config, log_dir=log_dir)
+
+    assert report.score < EXCELLENT_DEBT_SCORE
 
 
 def test_debt_score_penalizes_failed_manifest_check(tmp_path: Path) -> None:
