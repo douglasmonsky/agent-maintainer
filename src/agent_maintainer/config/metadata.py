@@ -13,11 +13,11 @@ STABILITY_STABLE = "stable"
 VALID_CLI_OVERRIDE_STATUSES = frozenset((CLI_OVERRIDE_NONE, CLI_OVERRIDE_VERIFY))
 VALID_STABILITY_LEVELS = frozenset((STABILITY_BETA, STABILITY_STABLE))
 
-DIAGNOSTIC_TOML_KEYS = {
-    "diagnostic_artifacts_enabled": "diagnostics.enabled",
-    "diagnostic_artifacts_dir": "diagnostics.log_dir",
-    "diagnostic_run_history_limit": "diagnostics.run_history_limit",
-}
+DIAGNOSTIC_TOML_KEYS = (
+    ("diagnostic_artifacts_enabled", "diagnostics.enabled"),
+    ("diagnostic_artifacts_dir", "diagnostics.log_dir"),
+    ("diagnostic_run_history_limit", "diagnostics.run_history_limit"),
+)
 
 CLI_OVERRIDE_FIELDS = frozenset(
     (
@@ -149,7 +149,10 @@ def build_field_metadata() -> dict[str, ConfigFieldMetadata]:
 
 def toml_key_for(field_name: str) -> str:
     """Return TOML key path for a config field."""
-    return DIAGNOSTIC_TOML_KEYS.get(field_name, field_name)
+    for diagnostic_field_name, toml_key in DIAGNOSTIC_TOML_KEYS:
+        if field_name == diagnostic_field_name:
+            return toml_key
+    return field_name
 
 
 def cli_override_for(field_name: str) -> str:

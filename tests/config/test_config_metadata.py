@@ -17,11 +17,7 @@ def test_every_config_field_has_metadata() -> None:
 
     assert set(metadata.FIELD_METADATA) == field_names
     for field_name, field_metadata in metadata.FIELD_METADATA.items():
-        assert field_metadata.field_name == field_name
-        assert field_metadata.toml_key
-        assert field_metadata.docs_label
-        assert field_metadata.cli_override in metadata.VALID_CLI_OVERRIDE_STATUSES
-        assert field_metadata.stability in metadata.VALID_STABILITY_LEVELS
+        assert_metadata_complete(field_name, field_metadata)
 
 
 def test_metadata_env_vars_match_loader_env_maps() -> None:
@@ -31,9 +27,10 @@ def test_metadata_env_vars_match_loader_env_maps() -> None:
     assert expected_env_vars == loader_env_vars_by_field()
     for field_name, field_metadata in metadata.FIELD_METADATA.items():
         assert field_metadata.env_var == expected_env_vars.get(field_name, "")
+        assert field_metadata.has_env_override is bool(field_metadata.env_var)
 
 
-def test_diagnostic_fields_record_nested_toml_keys() -> None:
+def test_diagnostic_toml_keys_are_nested() -> None:
     """Nested diagnostics table fields advertise their public TOML paths."""
     assert metadata.FIELD_METADATA["diagnostic_artifacts_enabled"].toml_key == "diagnostics.enabled"
     assert metadata.FIELD_METADATA["diagnostic_artifacts_dir"].toml_key == "diagnostics.log_dir"
@@ -43,7 +40,7 @@ def test_diagnostic_fields_record_nested_toml_keys() -> None:
     )
 
 
-def test_metadata_cli_override_fields_match_verify_cli() -> None:
+def test_cli_override_metadata_matches_verify_cli() -> None:
     """CLI override metadata matches fields actually used by verifier CLI."""
     cli_override_fields = {
         field_name
@@ -52,6 +49,18 @@ def test_metadata_cli_override_fields_match_verify_cli() -> None:
     }
 
     assert cli_override_fields == implemented_cli_override_fields()
+
+
+def assert_metadata_complete(
+    field_name: str,
+    field_metadata: metadata.ConfigFieldMetadata,
+) -> None:
+    """Assert one metadata row has required public annotations."""
+    assert field_metadata.field_name == field_name
+    assert field_metadata.toml_key
+    assert field_metadata.docs_label
+    assert field_metadata.cli_override in metadata.VALID_CLI_OVERRIDE_STATUSES
+    assert field_metadata.stability in metadata.VALID_STABILITY_LEVELS
 
 
 def loader_env_vars_by_field() -> dict[str, str]:
