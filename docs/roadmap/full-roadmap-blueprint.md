@@ -73,6 +73,8 @@ index into a monolithic blueprint.
 | 65 | [Mutation Sweep Executor and Survivor Triage](phases/phase-65-mutation-sweep-executor-and-survivor-triage.md) |
 | 66 | [Advisory Sweep Survivor Triage](phases/phase-66-advisory-sweep-survivor-triage.md) |
 | 73 | [Release Polish, Debt Score Clarity, Mutation UX, and Cohesion](phases/phase-73-release-polish-debt-mutation-and-cohesion.md) |
+| 74 | [Review-Driven Stabilization](phases/phase-74-review-driven-stabilization.md) |
+| 75 | [Below-10 Debt And Strict Typing Ratchets](phases/phase-75-below-10-debt-and-strict-typing-ratchets.md) |
 
 ## Future Work
 

@@ -285,7 +285,22 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 74: Review-Driven Stabilization Metadata, Schedules, and Output Contracts
+- [x] Phase 74: Review-Driven Stabilization Metadata, Schedules, and Output Contracts
+
+## Next: Below-10 Debt And Strict Typing Ratchets
+
+Agent Maintainer should be a beacon-level dogfood repo before external case
+studies resume. This phase lowers the advisory Technical Debt Score below 10,
+adds strict Pyright ratcheting without flipping the whole repo to strict mode,
+reduces real mutation survivors, and keeps cleanup refactors evidence-backed.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-75-below-10-debt-and-strict-typing-ratchets.md`](roadmap/phases/phase-75-below-10-debt-and-strict-typing-ratchets.md)
+
+Planned work:
+
+- [ ] Phase 75: Below-10 Debt, Strict Pyright Ratchets, and Beacon-Level Dogfooding
 
 ## Future Work
 
