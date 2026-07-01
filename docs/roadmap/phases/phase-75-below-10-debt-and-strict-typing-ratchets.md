@@ -67,6 +67,7 @@ mutation/test debt, and split only evidence-backed near-limit modules.
 - [ ] Evidence-backed cleanup refactor for near-limit modules.
 - [x] Extract Technical Debt Score constants from `assess/debt_categories.py`.
 - [x] Extract Change Budget argument parsing from `checks/change_budget.py`.
+- [x] Extract Verify artifact manifest helpers from `verify/artifacts.py`.
 - [x] Mutation survivor reduction and documentation.
 
 ## Out Of Scope

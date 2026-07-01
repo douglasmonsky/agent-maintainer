@@ -7,14 +7,24 @@ depends_on = []
 [[modules]]
 path = "artifacts"
 depends_on = [
-  "//agent_maintainer.config.schema",
-  "//agent_maintainer.context.budget",
-  "//agent_maintainer.context.models",
-  "//agent_maintainer.models",
+"artifact_manifest",
+"//agent_maintainer.config.schema",
+"//agent_maintainer.context.budget",
+"//agent_maintainer.context.models",
+"//agent_maintainer.models",
     "git_state",
     "history",
     "pr_summary",
     "timing",
+]
+
+[[modules]]
+path = "artifact_manifest"
+depends_on = [
+"//agent_maintainer.config.schema",
+"//agent_maintainer.context.budget",
+"//agent_maintainer.context.models",
+"//agent_maintainer.models",
 ]
 
 [[modules]]
