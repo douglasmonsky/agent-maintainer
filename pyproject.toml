@@ -228,10 +228,10 @@ enable_mutmut = true
 mutmut_args = ["run"]
 mutmut_target_min = 3
 mutmut_result_ratchet_enabled = true
-mutmut_max_survivors = 16
+mutmut_max_survivors = 2
 mutmut_max_suspicious = 0
 mutmut_max_timeouts = 0
-mutmut_min_score = 94
+mutmut_min_score = 99
 enable_semgrep = true
 semgrep_args = [
   "scan",
@@ -322,6 +322,8 @@ pytest_add_cli_args_test_selection = [
   "tests/test_intel/test_mutation_targets.py::test_target_sort_key_orders_highest_score_first",
   "tests/test_intel/test_mutation_targets.py::test_targets_for_source_returns_deterministically_sorted_targets",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_passes_ratchet_context",
+  "tests/test_intel/test_mutation_target_survivors.py::test_mutation_target_report_defaults_missing_metadata_to_zero",
+  "tests/test_intel/test_mutation_target_survivors.py::test_ratchet_path_scores_reads_existing_baseline",
   "tests/test_intel/test_mutation_targets.py::test_mutation_targets_cover_defensive_branches",
 ]
 pytest_add_cli_args = ["-p", "no:tach"]
