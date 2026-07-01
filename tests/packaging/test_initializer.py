@@ -39,6 +39,8 @@ def test_core_init_writes_minimum_adoption_files(tmp_path: Path) -> None:
     assert '--base-ref "$BASE_REF"' in workflow
     assert '--compare-branch "$BASE_REF"' in workflow
     assert "python -m pip install -e ." in workflow
+    assert "if [ -f package.json ]; then" in workflow
+    assert "npm ci" in workflow
     assert "--no-deps" not in workflow
     assert "scripts" not in config
     yaml_config = YamlLintConfig((REPO_ROOT / ".yamllint").read_text(encoding="utf-8"))
@@ -94,7 +96,13 @@ def test_hardening_init_includes_package_metadata(tmp_path: Path) -> None:
 
     assert status == 0
     assert (tmp_path / STARTER_CONFIG).exists()
-    assert (tmp_path / "package.json").exists()
+    package_json = (tmp_path / "package.json").read_text(encoding="utf-8")
+    workflow = (tmp_path / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
+
+    assert '"markdownlint-cli2"' in package_json
+    assert '"@taplo/cli"' in package_json
+    assert "if [ -f package.json ]; then" in workflow
+    assert "npm ci" in workflow
     assert (tmp_path / ".codex" / "hooks" / "stop_full_verify.py").exists()
     assert (tmp_path / ".claude" / "hooks" / "stop.py").exists()
 

@@ -69,6 +69,9 @@ WORKFLOW = textwrap.dedent(
                 python -m pip install -r config/dev-dependencies.txt
               fi
               python -m pip install -e .
+              if [ -f package.json ]; then
+                npm ci
+              fi
           - name: Verify
             run: |
               BASE_REF="origin/${GITHUB_BASE_REF:-main}"

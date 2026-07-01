@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import json
 
+import yaml
+
+from agent_maintainer.core.scaffold import templates as scaffold_templates
 from agent_maintainer.hooks import templates
 
 
@@ -41,3 +44,16 @@ def test_hook_wrappers_are_valid_python() -> None:
         templates.hook_audit_shim(),
     ):
         compile(source, "<hook-template>", "exec")
+
+
+def test_starter_workflow_installs_node_dependencies_inside_run_block() -> None:
+    """Starter workflow keeps optional Node install shell inside YAML run block."""
+
+    workflow = yaml.safe_load(scaffold_templates.WORKFLOW)
+    steps = workflow["jobs"]["verify"]["steps"]
+    install_step = next(
+        step for step in steps if step.get("name") == "Install project and Agent Maintainer tools"
+    )
+
+    assert "if [ -f package.json ]; then" in install_step["run"]
+    assert "npm ci" in install_step["run"]
