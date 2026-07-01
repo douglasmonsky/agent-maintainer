@@ -15,6 +15,12 @@ def test_hardened_subprocess_env_disables_bytecode_writes_by_default() -> None:
     assert environment["PYTHONDONTWRITEBYTECODE"] == "1"
 
 
+def test_bytecode_writes_disallowed_without_opt_in() -> None:
+    """Missing bytecode opt-in environment value is explicit false."""
+
+    assert maintainer_runtime.bytecode_writes_allowed({}) is False
+
+
 def test_hardened_subprocess_env_allows_explicit_bytecode_opt_in() -> None:
     environment = maintainer_runtime.hardened_subprocess_env(
         {

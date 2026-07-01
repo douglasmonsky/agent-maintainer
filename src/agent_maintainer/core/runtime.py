@@ -14,7 +14,10 @@ TRUE_ENV_VALUES = frozenset(("1", "true", "yes", "on"))
 def bytecode_writes_allowed(environment: Mapping[str, str] | None = None) -> bool:
     """Return whether maintainer runtime should allow Python bytecode writes."""
     source = os.environ if environment is None else environment
-    return source.get(ALLOW_BYTECODE_ENV, "").casefold() in TRUE_ENV_VALUES
+    value = source.get(ALLOW_BYTECODE_ENV)
+    if value is None:
+        return False
+    return value.casefold() in TRUE_ENV_VALUES
 
 
 def disable_bytecode_writes() -> None:

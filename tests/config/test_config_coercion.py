@@ -92,5 +92,5 @@ def test_coerce_updates_loads_context_compression_backend() -> None:
 def test_coerce_updates_preserves_context_compression_backend_error_context() -> None:
     """Compression backend errors keep the public config field name."""
 
-    with pytest.raises(TypeError, match="context_compression_backend"):
+    with pytest.raises(TypeError, match=r"^context_compression_backend must be one of"):
         coercion.coerce_updates({"context_compression_backend": "external"})

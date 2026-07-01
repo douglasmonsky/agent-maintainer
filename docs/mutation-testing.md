@@ -79,6 +79,9 @@ successfully.
 
 Current dogfood findings:
 
+- Blocking manual target set: reduced from `16` survivors at `94.86%` to `2`
+  survivors at `99.37%`, with `0` suspicious and `0` timeout outcomes. The
+  remaining survivors are encoding-equivalent mutations in `targets_for_source`.
 - `src/agent_maintainer/core/reporting.py`: reduced from 124 to 39 survivors,
   still not promotion-ready.
 - `src/agent_maintainer/doctor/cli.py`: reduced from 270 to 11 survivors after

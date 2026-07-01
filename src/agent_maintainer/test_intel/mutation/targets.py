@@ -235,27 +235,33 @@ def target_score(
 ) -> tuple[int, list[str]]:
     """Return mutation target score and explanation reasons."""
 
-    score = 0
-    reasons: list[str] = []
-    if signals.changed:
-        score += 4
-        reasons.append("changed source")
-    if signals.likely_test_count > 0:
-        score += 3
-        reasons.append("covered by likely focused tests")
-    if signals.ratchet_score:
-        score += signals.ratchet_score
-        reasons.append("critical ratchet target")
-    if signals.complexity >= hypothesis_candidates.MIN_BRANCH_COMPLEXITY:
-        score += signals.complexity
-        reasons.append(f"branch complexity {signals.complexity}")
-    if hypothesis_candidates.is_pureish(node):
-        score += 2
-        reasons.append("pure-ish function")
-    if hypothesis_candidates.has_boundary_name(qualname):
-        score += 3
-        reasons.append("parser/validator/decision logic")
+    weighted_reasons = target_score_weighted_reasons(node, qualname, signals)
+    score = sum(weight for weight, _reason in weighted_reasons)
+    reasons = [reason for _weight, reason in weighted_reasons]
     return score, reasons
+
+
+def target_score_weighted_reasons(
+    node: hypothesis_candidates.ast.FunctionDef,
+    qualname: str,
+    signals: TargetSignals,
+) -> list[tuple[int, str]]:
+    """Return weighted mutation target reasons."""
+
+    weighted_reasons: list[tuple[int, str]] = []
+    if signals.changed:
+        weighted_reasons.append((4, "changed source"))
+    if signals.likely_test_count > 0:
+        weighted_reasons.append((3, "covered by likely focused tests"))
+    if signals.ratchet_score:
+        weighted_reasons.append((signals.ratchet_score, "critical ratchet target"))
+    if signals.complexity >= hypothesis_candidates.MIN_BRANCH_COMPLEXITY:
+        weighted_reasons.append((signals.complexity, f"branch complexity {signals.complexity}"))
+    if hypothesis_candidates.is_pureish(node):
+        weighted_reasons.append((2, "pure-ish function"))
+    if hypothesis_candidates.has_boundary_name(qualname):
+        weighted_reasons.append((3, "parser/validator/decision logic"))
+    return weighted_reasons
 
 
 def mutation_focus(source_path: str, qualname: str) -> str:
