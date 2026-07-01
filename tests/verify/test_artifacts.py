@@ -92,6 +92,7 @@ def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -
     manifest = json.loads((log_dir / artifacts.MANIFEST_NAME).read_text(encoding="utf-8"))
     assert manifest["profile"] == "full"
     assert manifest["base_ref"] == "HEAD"
+    assert manifest["thresholds"]["coverage_fail_under"] == DEFAULT_COVERAGE_FLOOR
     assert manifest["timing"] == {
         "started_at": "2026-06-25T10:00:00Z",
         "ended_at": "2026-06-25T10:00:01Z",

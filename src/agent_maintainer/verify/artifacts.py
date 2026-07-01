@@ -10,13 +10,9 @@ from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.context import models as context_models
 from agent_maintainer.context.budget import bound_text
 from agent_maintainer.models import CheckResult
+from agent_maintainer.verify import artifact_manifest
 from agent_maintainer.verify import history as verify_history
 from agent_maintainer.verify import timing as verify_timing
-from agent_maintainer.verify.artifact_manifest import (
-    check_payload,
-    expansion_commands,
-    threshold_snapshot,
-)
 from agent_maintainer.verify.git_state import git_state
 from agent_maintainer.verify.pr_summary import PR_SUMMARY_NAME, render_pr_summary
 
@@ -138,9 +134,9 @@ def manifest_payload(
         "git": git_state(context.repo_root),
         "timing": verify_timing.run_timing(results),
         "expected_duration_hint": verify_timing.profile_duration_hint(context.profile),
-        "thresholds": threshold_snapshot(context.config),
+        "thresholds": artifact_manifest.threshold_snapshot(context.config),
         "checks": [
-            check_payload(
+            artifact_manifest.check_payload(
                 result,
                 context.repo_root,
                 context.config,
@@ -212,7 +208,9 @@ def failure_section(
         "- Expansion commands:",
         *[
             f"  - `{command}`"
-            for command in expansion_commands(failure.name, log_dir=context_log_dir)
+            for command in artifact_manifest.expansion_commands(
+                failure.name, log_dir=context_log_dir
+            )
         ],
     ]
     if failure.output:
