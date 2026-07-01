@@ -37,6 +37,29 @@ def test_gitleaks_range_command_uses_base_ref_log_opts() -> None:
 
     assert command[:2] == ["gitleaks", "git"]
     assert "--log-opts=--all origin/main..HEAD" in command
+    assert command[-1] == "."
+
+
+def test_gitleaks_range_exact_base_to_head() -> None:
+    command = run_secret_scan.gitleaks_command(
+        run_secret_scan.RANGE_MODE,
+        "origin/release",
+        Path(".verify-logs/secret-scan-ci.json"),
+    )
+
+    assert command == [
+        "gitleaks",
+        "git",
+        "--no-banner",
+        "--no-color",
+        "--redact",
+        "--report-format",
+        "json",
+        "--report-path",
+        ".verify-logs/secret-scan-ci.json",
+        "--log-opts=--all origin/release..HEAD",
+        ".",
+    ]
 
 
 def test_gitleaks_history_command_uses_all_history_log_opts() -> None:
