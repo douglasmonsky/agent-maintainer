@@ -4,17 +4,23 @@
 
 ### Added
 
-- Exact repair facts for pytest JUnit XML, coverage JSON, file-length logs, and
-  change-budget logs.
-- Release-only state drift checks for version/changelog alignment, public
-  metadata URLs, Trusted Publisher environment names, and existing release
-  evidence.
+- Exact repair facts for pytest JUnit XML, coverage JSON, file-length logs, and change-budget logs.
+- Release-only state drift checks for version/changelog alignment, public metadata URLs, Trusted Publisher environment names, and existing release evidence.
+- `agent-maintainer assess setup` for repository onboarding recommendations with capped evidence collection.
+- `agent-maintainer assess debt` Technical Debt Score artifacts with category explanations, confidence, and next actions.
 
 ### Changed
 
-- Hook verifier subprocess output now streams through temporary files and returns
-  only bounded stdout/stderr summaries to agent-facing context.
+- Hook verifier subprocess output now streams through temporary files and returns only bounded stdout/stderr summaries to agent-facing context.
 - Top-level CLI help is grouped by workflow area for easier first-use scanning.
+- Main verifier command execution now preserves stderr visibility when stdout is large and cleans up POSIX process groups on timeout.
+- Verifier reuse fingerprints include broader repository state and verification-relevant config inputs to avoid stale pass reuse.
+- Mutmut run serialization now writes its lock under the active diagnostic artifact directory.
+- Assessment debt scoring now uses latest verifier manifest outcomes when available and avoids penalizing irrelevant optional gates.
+
+### Fixed
+
+- Git reference validation now fails early on invalid comparison refs instead of producing ambiguous downstream verifier failures.
 
 ## 0.1.0b4 - 2026-06-29
 

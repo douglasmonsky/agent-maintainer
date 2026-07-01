@@ -172,16 +172,30 @@ def test_mutmut_lock_allows_fcntl_missing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Lock helper degrades to a no-op on platforms without fcntl."""
+    """Lock helper degrades to no-op on platforms without fcntl."""
+
     monkeypatch.setattr(run_mutmut.mutmut_lock, "fcntl", None)
-    monkeypatch.setattr(
-        run_mutmut.mutmut_lock,
-        "MUTMUT_LOCK_PATH",
-        tmp_path / "mutmut.lock",
+    monkeypatch.setenv(
+        run_mutmut.mutmut_lock.DIAGNOSTIC_ARTIFACTS_DIR_ENV,
+        str(tmp_path),
     )
 
     with run_mutmut.mutmut_lock.mutmut_run_lock():
         assert (tmp_path / "mutmut.lock").exists()
+
+
+def test_mutmut_lock_defaults_to_verify_logs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Lock helper defaults to local verification logs."""
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv(run_mutmut.mutmut_lock.DIAGNOSTIC_ARTIFACTS_DIR_ENV, raising=False)
+    monkeypatch.setattr(run_mutmut.mutmut_lock, "fcntl", None)
+
+    with run_mutmut.mutmut_lock.mutmut_run_lock():
+        assert (tmp_path / ".verify-logs" / "mutmut.lock").exists()
 
 
 def test_mutmut_result_ratchet_fails_and_keeps_artifacts(
