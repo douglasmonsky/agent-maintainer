@@ -172,22 +172,29 @@ def license_check_checks(config: MaintainerConfig) -> list[models.Check]:
 def semgrep_checks(config: MaintainerConfig) -> list[models.Check]:
     """Build optional Semgrep checks for configured profiles."""
 
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    report_path = artifacts_dir / "semgrep.json"
+    report_path_text = str(report_path)
+    command = ["semgrep", *config.semgrep_args, "--json-output", report_path_text]
+    artifact_paths = (report_path_text,)
     profiles = frozenset(config.semgrep_profiles)
     if not config.enable_semgrep:
         return [
             models.Check(
                 "semgrep",
-                ["semgrep", *config.semgrep_args],
+                command,
                 profiles,
                 optional_skip_reason=SEMGREP_SKIP_REASON,
+                artifact_paths=artifact_paths,
             )
         ]
     return [
         models.Check(
             "semgrep",
-            ["semgrep", *config.semgrep_args],
+            command,
             profiles,
             required_executable="semgrep",
+            artifact_paths=artifact_paths,
         )
     ]
 

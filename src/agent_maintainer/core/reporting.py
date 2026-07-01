@@ -10,6 +10,9 @@ from typing import Any
 from agent_maintainer.context.budget import bound_text
 from agent_maintainer.context.models import ContextBudget
 from agent_maintainer.core.reporting_context import context_commands
+from agent_maintainer.core.structured_artifacts import (
+    structured_artifact_summary as expanded_artifact_summary,
+)
 
 PYRIGHT_DIAGNOSTIC_LIMIT = 50
 STRUCTURED_DIAGNOSTIC_LIMIT = 50
@@ -132,7 +135,7 @@ def structured_artifact_summary(check_name: str, artifact_paths: tuple[str, ...]
         return summarize_json_artifact(artifact_paths, "ruff.json", summarize_ruff_payload)
     if check_name == "bandit":
         return summarize_json_artifact(artifact_paths, "bandit.json", summarize_bandit_payload)
-    return None
+    return expanded_artifact_summary(check_name, artifact_paths)
 
 
 def summarize_json_artifact(
