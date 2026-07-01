@@ -300,7 +300,7 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 75: Below-10 Debt, Strict Pyright Ratchets, and Beacon-Level Dogfooding
+- [x] Phase 75: Below-10 Debt, Strict Pyright Ratchets, and Beacon-Level Dogfooding
 
 ## Future Work
 
