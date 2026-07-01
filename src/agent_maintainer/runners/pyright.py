@@ -37,11 +37,16 @@ def main() -> int:
     return run_pyright(config_path, output_dir / PYRIGHT_JSON_NAME)
 
 
-def write_pyright_config(directory: Path, config: MaintainerConfig) -> Path:
+def write_pyright_config(
+    directory: Path,
+    config: MaintainerConfig,
+    *,
+    config_name: str = PYRIGHT_CONFIG_NAME,
+) -> Path:
     """Write a Pyright config derived from maintainer roots and mode."""
 
     directory.mkdir(parents=True, exist_ok=True)
-    path = directory / PYRIGHT_CONFIG_NAME
+    path = directory / config_name
     repo_root = Path.cwd()
     payload = {
         "include": relative_config_paths(

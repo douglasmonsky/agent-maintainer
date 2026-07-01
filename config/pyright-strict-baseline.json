@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "type_checking_mode": "strict",
+  "total_errors": 889,
+  "by_rule": {
+    "reportUnknownArgumentType": 313,
+    "reportUnknownLambdaType": 252,
+    "reportUnknownMemberType": 148,
+    "reportUnknownVariableType": 130,
+    "reportPrivateUsage": 20,
+    "reportMissingParameterType": 10,
+    "reportUnknownParameterType": 10,
+    "reportDeprecated": 4,
+    "reportConstantRedefinition": 1,
+    "reportUnnecessaryIsInstance": 1
+  },
+  "notes": "Initial strict Pyright baseline for ratcheting toward strict typing without making normal Pyright noisy."
+}

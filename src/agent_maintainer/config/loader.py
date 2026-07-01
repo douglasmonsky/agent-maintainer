@@ -23,6 +23,7 @@ TUPLE_ENVS = (
     ("structure_hint_patterns", "AGENT_MAINTAINER_STRUCTURE_HINT_PATTERNS"),
     ("vulture_paths", "AGENT_MAINTAINER_VULTURE_PATHS"),
     ("mutmut_args", "AGENT_MAINTAINER_MUTMUT_ARGS"),
+    ("pyright_strict_profiles", "AGENT_MAINTAINER_PYRIGHT_STRICT_PROFILES"),
     ("semgrep_args", "AGENT_MAINTAINER_SEMGREP_ARGS"),
     ("semgrep_profiles", "AGENT_MAINTAINER_SEMGREP_PROFILES"),
     ("osv_scanner_args", "AGENT_MAINTAINER_OSV_SCANNER_ARGS"),
@@ -54,6 +55,10 @@ BOOL_ENVS = (
     ("enable_pip_audit", "AGENT_MAINTAINER_ENABLE_PIP_AUDIT"),
     ("enable_mutmut", "AGENT_MAINTAINER_ENABLE_MUTMUT"),
     ("mutmut_result_ratchet_enabled", "AGENT_MAINTAINER_MUTMUT_RESULT_RATCHET_ENABLED"),
+    (
+        "pyright_strict_ratchet_enabled",
+        "AGENT_MAINTAINER_PYRIGHT_STRICT_RATCHET_ENABLED",
+    ),
     ("enable_semgrep", "AGENT_MAINTAINER_ENABLE_SEMGREP"),
     ("enable_osv_scanner", "AGENT_MAINTAINER_ENABLE_OSV_SCANNER"),
     ("enable_trivy", "AGENT_MAINTAINER_ENABLE_TRIVY"),
@@ -136,6 +141,7 @@ THRESHOLD_ENVS = (
 STRING_ENVS = (
     ("file_length_baseline", "AGENT_MAINTAINER_FILE_LENGTH_BASELINE"),
     ("pyright_type_checking_mode", "AGENT_MAINTAINER_PYRIGHT_TYPE_CHECKING_MODE"),
+    ("pyright_strict_baseline", "AGENT_MAINTAINER_PYRIGHT_STRICT_BASELINE"),
     ("xenon_max_absolute", "AGENT_MAINTAINER_XENON_MAX_ABSOLUTE"),
     ("xenon_max_modules", "AGENT_MAINTAINER_XENON_MAX_MODULES"),
     ("xenon_max_average", "AGENT_MAINTAINER_XENON_MAX_AVERAGE"),

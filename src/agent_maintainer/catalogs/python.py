@@ -197,6 +197,35 @@ def pyright_check(config: MaintainerConfig) -> models.Check:
     )
 
 
+def pyright_strict_ratchet_check(config: MaintainerConfig) -> models.Check:
+    """Build strict Pyright baseline ratchet check."""
+
+    artifacts_dir = Path(config.diagnostic_artifacts_dir)
+    command = [sys.executable, "-m", "agent_maintainer.runners.pyright_strict"]
+    profiles = frozenset(config.pyright_strict_profiles)
+    if not config.pyright_strict_ratchet_enabled:
+        return models.Check(
+            "pyright-strict-ratchet",
+            command,
+            profiles,
+            optional_skip_reason=(
+                "disabled by default; enable "
+                "AGENT_MAINTAINER_PYRIGHT_STRICT_RATCHET_ENABLED=1 or "
+                "[tool.agent_maintainer].pyright_strict_ratchet_enabled = true"
+            ),
+        )
+    return models.Check(
+        "pyright-strict-ratchet",
+        command,
+        profiles,
+        required_executable="pyright",
+        artifact_paths=(
+            str(artifacts_dir / "pyright-strict.json"),
+            str(artifacts_dir / "pyrightconfig.strict.generated.json"),
+        ),
+    )
+
+
 def ruff_check(config: MaintainerConfig) -> models.Check:
     """Build the Ruff check through the JSON-artifact wrapper."""
 
