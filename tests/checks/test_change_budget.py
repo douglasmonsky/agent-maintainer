@@ -10,7 +10,7 @@ import pytest
 
 from agent_maintainer.change_plan.models import ChangePlan, ValidationIssue
 from agent_maintainer.checks import change_budget as check_change_budget
-from agent_maintainer.checks import change_budget_plans
+from agent_maintainer.checks import change_budget_args, change_budget_plans
 from agent_maintainer.core.config import MaintainerConfig
 
 
@@ -41,6 +41,15 @@ def test_change_budget_parse_csv_like_normalizes_values() -> None:
         "tests",
         "scripts",
     )
+
+
+def test_change_budget_compatibility_wrappers_delegate_to_arg_module() -> None:
+    """Public compatibility wrappers keep using the argument module."""
+
+    args = change_budget_args.parse_args(["--source-root", "src/pkg"])
+    config = check_change_budget.apply_cli_overrides(MaintainerConfig(), args)
+
+    assert config.source_roots == ("src/pkg",)
 
 
 def test_change_budget_reports_missing_tests_when_required(tmp_path: Path) -> None:
