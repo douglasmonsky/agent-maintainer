@@ -17,6 +17,20 @@ FULL_PROFILES = frozenset((FULL_PROFILE, CI_PROFILE))
 CI_ONLY_PROFILES = frozenset((CI_PROFILE,))
 MANUAL_PROFILES = frozenset((MANUAL_PROFILE,))
 VALID_PROFILES = frozenset((*ALL_PROFILES, SECURITY_PROFILE, MANUAL_PROFILE))
+SKIP_STATUS_DISABLED = "skipped-disabled"
+SKIP_STATUS_MISSING_OPTIONAL = "skipped-missing-optional"
+SKIP_STATUS_NOT_APPLICABLE = "skipped-not-applicable"
+SKIP_STATUS_UNSAFE_CONFIG = "skipped-unsafe-config"
+SKIP_STATUS_REQUIRED = "skipped-required"
+SKIP_STATUSES = frozenset(
+    (
+        SKIP_STATUS_DISABLED,
+        SKIP_STATUS_MISSING_OPTIONAL,
+        SKIP_STATUS_NOT_APPLICABLE,
+        SKIP_STATUS_UNSAFE_CONFIG,
+        SKIP_STATUS_REQUIRED,
+    )
+)
 
 
 @dataclass(frozen=True)
@@ -29,6 +43,7 @@ class Check:
     required_paths: tuple[str, ...] = ()
     required_executable: str | None = None
     optional_skip_reason: str | None = None
+    optional_skip_status: str = SKIP_STATUS_DISABLED
     report_success_output: bool = False
     artifact_paths: tuple[str, ...] = ()
     timeout_seconds: int | None = None
@@ -44,6 +59,7 @@ class CheckResult:
     passed: bool
     output: str = ""
     skipped: bool = False
+    skip_status: str = ""
     warning: bool = False
     command: tuple[str, ...] = ()
     exit_code: int | None = None

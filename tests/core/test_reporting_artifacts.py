@@ -216,7 +216,15 @@ def test_artifact_fallback_preserves_check_specific_summary() -> None:
 
 
 def test_print_success_and_failures(capsys: pytest.CaptureFixture[str]) -> None:
-    skipped = [CheckResult("optional", passed=True, output="not configured", skipped=True)]
+    skipped = [
+        CheckResult(
+            "optional",
+            passed=True,
+            output="not configured",
+            skipped=True,
+            skip_status="skipped-missing-optional",
+        )
+    ]
     maintainer_reporting.print_success(
         skipped,
         run_details=("Profile: full", "Run ID: 20260625T100000Z-full-test"),
@@ -225,6 +233,7 @@ def test_print_success_and_failures(capsys: pytest.CaptureFixture[str]) -> None:
     assert "Profile: full" in success_output
     assert "Run ID: 20260625T100000Z-full-test" in success_output
     assert "SKIPPED optional checks" in success_output
+    assert "optional [skipped-missing-optional]: not configured" in success_output
 
     maintainer_reporting.print_failures(
         "full",
@@ -260,7 +269,7 @@ def test_print_success_exact_sections(capsys: pytest.CaptureFixture[str]) -> Non
         "WARNINGS:",
         "  change-budget: warning",
         "SKIPPED optional checks:",
-        "  optional: not configured",
+        "  optional [skipped]: not configured",
     ]
 
 

@@ -10,7 +10,14 @@ import pytest
 
 from agent_maintainer.core import command_run as maintainer_command_run
 from agent_maintainer.core import executor as maintainer_executor
-from agent_maintainer.models import Check
+from agent_maintainer.models import (
+    SKIP_STATUS_DISABLED,
+    SKIP_STATUS_MISSING_OPTIONAL,
+    SKIP_STATUS_NOT_APPLICABLE,
+    SKIP_STATUS_REQUIRED,
+    SKIP_STATUS_UNSAFE_CONFIG,
+    Check,
+)
 
 
 def test_tool_search_path_prefers_local_virtualenv(
@@ -258,6 +265,37 @@ def test_external_manual_scanner_skip_reports_configured_reason(tmp_path: Path) 
         assert maintainer_executor.missing_requirement(check) == "optional skip: disabled"
 
 
+@pytest.mark.parametrize(
+    ("reason", "expected"),
+    (
+        ("disabled by default", SKIP_STATUS_DISABLED),
+        (".github/workflows is absent", SKIP_STATUS_MISSING_OPTIONAL),
+        ("enabled but no YAML files matched: docs/**", SKIP_STATUS_NOT_APPLICABLE),
+        (
+            "enabled without pinned input; skipped to avoid auditing the active environment",
+            SKIP_STATUS_UNSAFE_CONFIG,
+        ),
+        ("tests are disabled by require_tests = false", SKIP_STATUS_REQUIRED),
+    ),
+)
+def test_optional_skip_status_classifies_reason(reason: str, expected: str) -> None:
+    check = Check("pip-audit", ["pip-audit"], frozenset(), optional_skip_reason=reason)
+
+    assert maintainer_executor.optional_skip_status(check) == expected
+
+
+def test_explicit_optional_skip_status_wins() -> None:
+    check = Check(
+        "custom",
+        ["custom"],
+        frozenset(),
+        optional_skip_reason="disabled",
+        optional_skip_status=SKIP_STATUS_NOT_APPLICABLE,
+    )
+
+    assert maintainer_executor.optional_skip_status(check) == SKIP_STATUS_NOT_APPLICABLE
+
+
 def test_run_check_writes_skip_log(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     check = Check("pip-audit", ["pip-audit"], frozenset(), optional_skip_reason="disabled")
@@ -268,6 +306,7 @@ def test_run_check_writes_skip_log(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     assert result.passed is True
     assert result.output == "disabled"
     assert result.skipped is True
+    assert result.skip_status == SKIP_STATUS_DISABLED
     assert result.command == ("pip-audit",)
     assert result.log_path == str(tmp_path / "logs" / "pip-audit.log")
     assert (tmp_path / "logs" / "pip-audit.log").read_text(encoding="utf-8")

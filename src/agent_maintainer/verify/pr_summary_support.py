@@ -77,7 +77,7 @@ def result_state(result: CheckResult) -> str:
     """Return compact result state for summary."""
 
     if result.skipped:
-        return "skipped"
+        return result.skip_status or "skipped"
     if not result.passed:
         return "failed"
     if result.warning:

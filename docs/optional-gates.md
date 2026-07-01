@@ -49,6 +49,23 @@ Manual gates should usually run before PR merge or release, not after every
 small edit. If a manual gate becomes stable and high-value for a repo, ratchet
 it gradually and document why.
 
+## Skip Statuses
+
+Verifier manifests use specific skipped statuses so agents and humans can tell
+why a gate did not run:
+
+- `skipped-disabled`: disabled by configuration or default policy.
+- `skipped-missing-optional`: optional config, files, or integration surface is
+  absent.
+- `skipped-not-applicable`: enabled check found no matching files.
+- `skipped-unsafe-config`: configuration would inspect the wrong environment or
+  otherwise run unsafely.
+- `skipped-required`: normally expected check skipped because explicit repo
+  policy disabled its prerequisite.
+
+These statuses are advisory on passing runs unless `--fail-on-optional-skip` is
+used. Required paths and required executables still fail normally.
+
 ## Generated Guidance
 
 `AGENTS.agent-maintainer.md` lists active gates only. Disabled optional gates are

@@ -264,4 +264,8 @@ def _failed_checks(checks: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def _status_count(checks: list[dict[str, Any]], status: str) -> int:
+    if status == SKIPPED_STATUS:
+        return sum(
+            1 for check in checks if text(check.get("status"), "").startswith(SKIPPED_STATUS)
+        )
     return sum(1 for check in checks if text(check.get("status"), "") == status)

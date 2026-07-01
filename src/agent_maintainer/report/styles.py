@@ -60,7 +60,7 @@ STYLE_LINES = (
     "pre { overflow-x: auto; padding: 12px; }",
     ".status-failed { color: var(--fail); font-weight: 700; }",
     ".status-warning { color: var(--warn); font-weight: 700; }",
-    ".status-skipped { color: var(--muted); font-weight: 700; }",
+    ".status-skipped, [class^='status-skipped-'] { color: var(--muted); font-weight: 700; }",
     ".status-passed { color: var(--pass); font-weight: 700; }",
     "</style>",
     "</head>",
