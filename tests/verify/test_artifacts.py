@@ -7,7 +7,7 @@ from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.models import SKIP_STATUS_MISSING_OPTIONAL, CheckResult
-from agent_maintainer.verify import artifacts
+from agent_maintainer.verify import artifact_manifest, artifacts
 from agent_maintainer.verify.history import RUNS_DIR_NAME
 
 DEFAULT_COVERAGE_FLOOR = 80
@@ -30,6 +30,47 @@ def run_context(
         config=config or MaintainerConfig(),
         run_id=run_id,
     )
+
+
+def test_artifact_manifest_payload_and_status_helpers(tmp_path: Path) -> None:
+    """Manifest helpers keep check status and expansion command behavior stable."""
+
+    failed = CheckResult(
+        "ruff",
+        passed=False,
+        output="lint failed",
+        command=("ruff", "check"),
+        exit_code=1,
+        log_path=".verify-logs/ruff.log",
+    )
+    warning = CheckResult("style", passed=True, warning=True)
+    skipped = CheckResult(
+        "optional",
+        passed=True,
+        skipped=True,
+        skip_status=SKIP_STATUS_MISSING_OPTIONAL,
+    )
+
+    payload = artifact_manifest.check_payload(
+        failed,
+        tmp_path,
+        MaintainerConfig(),
+        context_log_dir=".verify-logs/runs/run-id",
+    )
+
+    assert payload["status"] == "failed"
+    assert payload["expansion_commands"] == [
+        (
+            "python -m agent_maintainer context --log-dir "
+            ".verify-logs/runs/run-id failures --check ruff --limit 20"
+        ),
+        (
+            "python -m agent_maintainer context --log-dir "
+            ".verify-logs/runs/run-id log ruff --tail 120"
+        ),
+    ]
+    assert artifact_manifest.result_status(warning) == "warning"
+    assert artifact_manifest.result_status(skipped) == SKIP_STATUS_MISSING_OPTIONAL
 
 
 def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -> None:
