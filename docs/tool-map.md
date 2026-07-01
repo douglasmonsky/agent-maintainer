@@ -10,7 +10,7 @@
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state. In an Agent Maintainer source checkout, doctor verifies imports resolve local `src/agent_maintainer` and warns if the interactive `agent-maintainer` console script points at stale installed code; repair with `python -m pip install -e .`.
 
-The `manual` profile is intentionally separate from `full`. Put slow, expensive, or artifact-producing checks there so normal local deep verification stays predictable.
+The `manual` profile is intentionally separate from `full`. Put slow, expensive, or artifact-producing checks there so normal local deep verification stays predictable. This repository also runs `.github/workflows/deep-verify.yml` on a weekly schedule and manual dispatch so the slow `security` and `manual` profiles are dogfooded without turning every pull request into a long-running release check.
 
 `just release-check` is intentionally release-only. It opts into tests marked
 `release`, builds wheel and sdist artifacts in a temporary directory, and
