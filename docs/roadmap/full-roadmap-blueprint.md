@@ -1,7 +1,6 @@
 # Agent Maintainer Roadmap Blueprint
 
-This compact roadmap index points to split specs under `docs/roadmap`.
-Use `docs/ROADMAP.md` as recovery checklist. Do not re-expand this index into a monolithic blueprint.
+This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as recovery checklist. Do not re-expand this index into a monolithic blueprint.
 
 ## Overview
 
@@ -107,6 +106,7 @@ Use `docs/ROADMAP.md` as recovery checklist. Do not re-expand this index into a 
 | 107 | [Roadmap Status Label Cleanup](phases/phase-107-roadmap-status-label-cleanup.md) |
 | 108 | [Repair Capsule Output Contract And Pointer-First Context](phases/phase-108-repair-capsule-output-contract.md) |
 | 109 | [Internal Package Boundary Refactor Roadmap](phases/phase-109-internal-package-boundary-roadmap.md) |
+| 110 | [Internal Package Baseline And Ownership](phases/phase-110-internal-package-baseline-and-ownership.md) |
 
 ## Future Work
 
