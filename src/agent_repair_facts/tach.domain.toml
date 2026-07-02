@@ -1,0 +1,68 @@
+# Tach domain contract for agent_repair_facts.
+# Keep this package reusable: it must not import agent_maintainer.
+
+[root]
+
+depends_on = []
+
+
+[[modules]]
+
+path = "payloads"
+depends_on = []
+
+
+[[modules]]
+
+path = "registry"
+depends_on = [
+  "parsers.lint",
+  "parsers.logs",
+  "parsers.pytest",
+  "parsers.typescript",
+]
+
+
+[[modules]]
+
+path = "parsers"
+depends_on = []
+
+
+[[modules]]
+
+path = "parsers.lint"
+depends_on = [
+  "payloads",
+]
+
+
+[[modules]]
+
+path = "parsers.logs"
+depends_on = [
+  "payloads",
+]
+
+
+[[modules]]
+
+path = "parsers.pytest"
+depends_on = [
+  "payloads",
+]
+
+
+[[modules]]
+
+path = "parsers.typescript"
+depends_on = [
+  "parsers.typescript_diagnostics",
+  "payloads",
+]
+
+
+[[modules]]
+
+path = "parsers.typescript_diagnostics"
+depends_on = []

@@ -127,7 +127,7 @@ depends_on = []
 [[modules]]
 path = "structured_typescript"
 depends_on = [
-"//agent_maintainer.ecosystems.typescript.diagnostics",
+  "//agent_repair_facts.parsers.typescript_diagnostics",
 ]
 
 [[modules]]

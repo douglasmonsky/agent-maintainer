@@ -107,10 +107,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 108 | [Repair Capsule Output Contract And Pointer-First Context](phases/phase-108-repair-capsule-output-contract.md) |
 | 109 | [Internal Package Boundary Refactor Roadmap](phases/phase-109-internal-package-boundary-roadmap.md) |
 | 110 | [Internal Package Baseline And Ownership](phases/phase-110-internal-package-baseline-and-ownership.md) |
-
-## Future Work
-
-No active future-work items remain here. Promote new work to a numbered phase file.
+| 111 | [Agent Repair Facts Internal Package Extraction](phases/phase-111-agent-repair-facts-package.md) |
 
 ## Completion
 
