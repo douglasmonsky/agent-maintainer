@@ -629,6 +629,29 @@ Completed work:
 
 - [x] Phase 110: Internal Package Baseline And Ownership
 
+## Completed: Agent Repair Facts Internal Package Extraction
+
+Agent Maintainer should extract repair-fact payload normalization, parser
+implementations, and parser dispatch into a new internal package,
+`agent_repair_facts`, while preserving current context-pack behavior and old
+import paths through compatibility shims.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-111-agent-repair-facts-package.md`](roadmap/phases/phase-111-agent-repair-facts-package.md)
+
+Internal package roadmap:
+
+[`docs/roadmap/internal-package-boundaries.md`](roadmap/internal-package-boundaries.md)
+
+Implementation guide:
+
+[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
+
+Completed work:
+
+- [x] Phase 111: Agent Repair Facts Internal Package Extraction
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid

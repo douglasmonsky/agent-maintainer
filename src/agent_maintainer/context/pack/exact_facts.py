@@ -6,8 +6,8 @@ from pathlib import Path
 from types import MappingProxyType
 
 from agent_maintainer.context.failures import FailureRecord
-from agent_maintainer.context.pack import fact_parsers
-from agent_maintainer.context.pack.fact_payloads import fact_payload
+from agent_repair_facts import registry as fact_parsers
+from agent_repair_facts.payloads import fact_payload
 
 MAX_FACTS_PER_CHECK = 5
 PYTEST_ARTIFACT_PRIORITY = MappingProxyType(

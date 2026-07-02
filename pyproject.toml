@@ -154,6 +154,7 @@ architecture_tool = "tach"
 ratchet_enabled = false
 source_roots = [
   "src/agent_maintainer",
+  "src/agent_repair_facts",
   "src/archguard",
   "src/docsync",
   ".codex/hooks",
@@ -162,6 +163,7 @@ source_roots = [
 test_roots = ["tests"]
 package_paths = [
   "src/agent_maintainer",
+  "src/agent_repair_facts",
   "src/archguard",
   "src/docsync",
   ".codex/hooks",
@@ -169,6 +171,7 @@ package_paths = [
 ]
 coverage_source = [
   "src/agent_maintainer",
+  "src/agent_repair_facts",
   "src/archguard",
   "src/docsync",
   ".codex/hooks",
@@ -176,6 +179,7 @@ coverage_source = [
 ]
 file_length_paths = [
   "src/agent_maintainer",
+  "src/agent_repair_facts",
   "src/archguard",
   "src/docsync",
   ".codex/hooks",
@@ -185,6 +189,7 @@ file_length_paths = [
 ]
 structure_paths = [
   "src/agent_maintainer",
+  "src/agent_repair_facts",
   "src/archguard",
   "src/docsync",
   ".codex/hooks",
@@ -203,6 +208,7 @@ folder_file_block = 40
 structure_cluster_min = 4
 vulture_paths = [
   "src/agent_maintainer",
+  "src/agent_repair_facts",
   "src/archguard",
   "src/docsync",
   ".codex/hooks",
@@ -217,6 +223,7 @@ allow_source_without_test_change = false
 cohesive_change_override_enabled = true
 cohesive_change_override_paths = [
   "src/agent_maintainer/**",
+  "src/agent_repair_facts/**",
   "src/archguard/**",
   "src/docsync/**",
   "tests/docsync/**",
@@ -252,6 +259,7 @@ semgrep_args = [
   "--error",
   "--metrics=off",
   "src/agent_maintainer",
+  "src/agent_repair_facts",
   "src/archguard",
   "src/docsync",
   ".codex/hooks",
@@ -379,6 +387,7 @@ markers = [
 [tool.deptry]
 known_first_party = [
   "agent_maintainer",
+  "agent_repair_facts",
   "archguard",
   "catalog",
   "docsync",

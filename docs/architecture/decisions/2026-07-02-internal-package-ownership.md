@@ -35,6 +35,20 @@ move prevents broad refactors that only shuffle files to satisfy metrics.
   `docs_evidence`.
 - `archguard` continues to own architecture and configuration validation.
 
+## Phase 111 Boundary Update
+
+`agent_repair_facts` is the first extracted internal package. It owns
+repair-fact payload normalization, structured artifact parsers, log parsers,
+TypeScript diagnostic output parsing used for repair facts, and parser
+dispatch. `agent_maintainer.context.pack.*` keeps compatibility shims during
+the first extraction pass, but active context-pack repair fact extraction now
+depends on `agent_repair_facts`.
+
+This keeps the extracted package cohesive: it owns "tool output into normalized
+repair facts" and does not include context pack building, hook output, run
+artifact retention, vector search, GraphQL, wiki projection, or DocSync
+knowledge-graph work.
+
 ## Dependency Direction
 
 `agent_maintainer` may depend on all internal packages as the orchestrator.

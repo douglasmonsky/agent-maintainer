@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from agent_maintainer.ecosystems.typescript.diagnostics import (
+from agent_repair_facts.parsers.typescript_diagnostics import (
     TypeScriptDiagnostic,
     format_diagnostic,
     parse_eslint_json,

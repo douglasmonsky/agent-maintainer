@@ -107,46 +107,44 @@ depends_on = [
 path = "pack.exact_facts"
 depends_on = [
   "failures",
-  "pack.fact_parsers",
-  "pack.fact_payloads",
+  "//agent_repair_facts.payloads",
+  "//agent_repair_facts.registry",
 ]
 
 [[modules]]
 path = "pack.fact_parsers"
 depends_on = [
-  "pack.lint_fact_parsers",
-  "pack.log_fact_parsers",
-  "pack.pytest_fact_parsers",
-  "pack.typescript_fact_parsers",
+  "//agent_repair_facts.registry",
 ]
 
 [[modules]]
 path = "pack.fact_payloads"
-depends_on = []
+depends_on = [
+  "//agent_repair_facts.payloads",
+]
 
 [[modules]]
 path = "pack.lint_fact_parsers"
 depends_on = [
-  "pack.fact_payloads",
+  "//agent_repair_facts.parsers.lint",
 ]
 
 [[modules]]
 path = "pack.log_fact_parsers"
 depends_on = [
-  "pack.fact_payloads",
+  "//agent_repair_facts.parsers.logs",
 ]
 
 [[modules]]
 path = "pack.pytest_fact_parsers"
 depends_on = [
-  "pack.fact_payloads",
+  "//agent_repair_facts.parsers.pytest",
 ]
 
 [[modules]]
 path = "pack.typescript_fact_parsers"
 depends_on = [
-  "pack.fact_payloads",
-  "//agent_maintainer.ecosystems.typescript.diagnostics",
+  "//agent_repair_facts.parsers.typescript",
 ]
 
 [[modules]]

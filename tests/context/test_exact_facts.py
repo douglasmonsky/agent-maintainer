@@ -7,7 +7,18 @@ from pathlib import Path
 
 from agent_maintainer.context.failures import FailureRecord
 from agent_maintainer.context.pack import exact_facts
+from agent_maintainer.context.pack import fact_parsers as old_registry
+from agent_maintainer.context.pack import fact_payloads as old_payloads
+from agent_maintainer.context.pack import lint_fact_parsers as old_lint_parsers
+from agent_maintainer.context.pack import log_fact_parsers as old_log_parsers
+from agent_maintainer.context.pack import pytest_fact_parsers as old_pytest_parsers
+from agent_maintainer.context.pack import (
+    typescript_fact_parsers as old_typescript_parsers,
+)
 from agent_maintainer.context.pack.builder import ContextPackRequest, build_context_pack
+from agent_repair_facts import registry
+from agent_repair_facts.parsers import lint, logs, pytest, typescript
+from agent_repair_facts.payloads import fact_payload
 
 RUFF_LINE = 7
 RUFF_COLUMN = 3
@@ -19,6 +30,23 @@ COVERAGE_MISSING_LINE = 44
 PACK_BUDGET = 4_000
 APP_PATH = "src/pkg/app.py"
 ENCODING = "utf-8"
+
+
+def test_repair_fact_package_exports_registry_functions() -> None:
+    """The new package exposes the active repair-fact registry."""
+    assert registry.artifact_facts("unknown", Path("missing.json")) == []
+    assert registry.log_facts("unknown", Path("missing.log")) == []
+
+
+def test_old_context_pack_registry_imports_are_compatibility_shims() -> None:
+    """Old context-pack parser imports remain stable through shims."""
+    assert old_registry.artifact_facts is registry.artifact_facts
+    assert old_registry.log_facts is registry.log_facts
+    assert old_payloads.fact_payload is fact_payload
+    assert old_lint_parsers.ruff_facts is lint.ruff_facts
+    assert old_log_parsers.file_length_facts is logs.file_length_facts
+    assert old_pytest_parsers.pytest_artifact_facts is pytest.pytest_artifact_facts
+    assert old_typescript_parsers.typescript_lint_facts is (typescript.typescript_lint_facts)
 
 
 def test_ruff_artifact_extracts_path_line_symbol(tmp_path: Path) -> None:

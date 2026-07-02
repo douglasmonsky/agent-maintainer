@@ -24,7 +24,7 @@ Details: `docs/agent-maintainer-guidance.md`.
 ## Repo Contract
 
 - Mode: `fresh-strict`
-- Source roots: `src/agent_maintainer`, `src/archguard`, `src/docsync`, `.codex/hooks`, `.claude/hooks`
+- Source roots: `src/agent_maintainer`, `src/agent_repair_facts`, `src/archguard`, `src/docsync`, `.codex/hooks`, `.claude/hooks`
 - Tests: `tests`
 - Architecture: `tach` with Tach domain contracts
 - If Tach policy changes, add or update an ADR under
