@@ -1,3 +1,9 @@
+2026-07-02 current-state addendum: DocSync now exists as `src/docsync/` and
+owns the docs/evidence and claim-freshness responsibility that this original
+handoff called `docs_evidence`. Future implementation phases must extend or
+stabilize DocSync for that boundary; do not create a second `docs_evidence`
+package unless a later ADR explicitly reopens the decision.
+
 Below is an end-to-end implementation plan for refactoring Agent Maintainer into cleaner internal packages while preserving the single PyPI distribution initially. The current packaging setup already supports this shape because setuptools auto-discovers packages under `src`.
 
 The intended end state is:
@@ -9,7 +15,7 @@ src/
   agent_context/           # Budgets, context packs, safe expansion, compression
   agent_run_artifacts/     # Versioned verifier artifact schemas and rendering
   agent_client_hooks/      # Client-specific hook config/templates/adapters
-  docs_evidence/           # Code/docs evidence links and stale-doc review triggers
+  docsync/                 # Existing docs evidence and claim-freshness package
   archguard/               # Existing architecture/config validation package
 ```
 
@@ -77,14 +83,14 @@ agent_repair_facts must not import agent_maintainer.
 agent_context must not import agent_maintainer.
 agent_run_artifacts must not import agent_maintainer.
 agent_client_hooks should not import agent_maintainer except through explicit adapter shims.
-docs_evidence must not import agent_maintainer.
+docsync must not import agent_maintainer or archguard.
 ```
 
 Target dependency graph:
 
 ```text
-docs_evidence
-  depends on: stdlib only, maybe agent_repair_facts later
+docsync
+  depends on: stdlib only and package-declared dependencies; it must remain extractable
 
 agent_repair_facts
   depends on: stdlib only, defusedxml if XML parsing requires it
@@ -1509,7 +1515,16 @@ tach check --exact
 
 ---
 
-# Phase 8: Add `docs_evidence` package scaffold
+# Phase 8: Stabilize DocSync boundary
+
+Current status: this phase supersedes the original `docs_evidence` scaffold.
+DocSync now exists under `src/docsync/` and owns docs/evidence traceability,
+claim freshness, review packets, and attestations. Do not execute the
+`docs_evidence` scaffold below unless a future ADR explicitly reopens that
+boundary. Future work in this slot should harden DocSync extraction, evidence
+models, diff mapping, tests, and docs.
+
+## Historical scaffold, not current execution plan
 
 This package can start as a scaffold even if the first version only indexes evidence. Keep it isolated so future citation decorators and docs markers do not get tangled into context packs.
 
@@ -2358,7 +2373,7 @@ The refactor is complete when all of these are true:
    - agent_context
    - agent_run_artifacts
    - agent_client_hooks
-   - docs_evidence
+   - docsync remains the extractable docs/evidence package
 
 2. Upward packages do not import agent_maintainer.
 

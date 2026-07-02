@@ -18,9 +18,14 @@ src/
   agent_context/        # bounded context, context packs, safe expansion
   agent_run_artifacts/  # verifier artifact schemas and renderers
   agent_client_hooks/   # hook config/templates/adapters
-  docs_evidence/        # code/docs evidence links and stale-doc review
+  docsync/              # existing docs evidence and claim freshness package
   archguard/            # architecture/config validation package
 ```
+
+Current-state note: DocSync now owns the docs/evidence responsibility that the
+original handoff called `docs_evidence`. Do not create a second `docs_evidence`
+package during this refactor unless a future ADR explicitly reopens that
+boundary.
 
 ## Hard Invariants
 
@@ -41,14 +46,14 @@ src/
 | Phase | Goal | Exit Criteria |
 | --- | --- | --- |
 | 0 | Establish baseline refactor guardrails | Current guidance, doctor, fast/precommit verification, pytest, and Tach baseline captured; representative artifacts saved for comparison. |
-| 1 | Define package ownership and dependency direction | ADR documents package responsibilities and allowed dependencies. |
+| 1 | Define package ownership and dependency direction | ADR documents package responsibilities and allowed dependencies; DocSync is the docs/evidence package. |
 | 2 | Update global config expectations | New package roots are represented in config paths, Semgrep paths, mutation settings, and generated guidance when introduced. |
 | 3 | Update Tach root ownership and domain contracts | Root/domain Tach files explicitly own every new package; `tach check --exact` passes. |
 | 4 | Extract `agent_repair_facts` | Repair-fact payloads/parsers/registry move behind new package with compatibility shims and direct tests. |
 | 5 | Extract `agent_context` | Context budget, reading, compression, and pack modules move behind new package while `python -m agent_maintainer context ...` stays stable. |
 | 6 | Extract `agent_run_artifacts` | Manifest, run history, `LAST_FAILURE.md`, PR summary, timing, and git-state helpers move behind artifact package. |
 | 7 | Extract `agent_client_hooks` | Hook config/template generation moves behind client-hook package; runtime verification stays in `agent_maintainer`. |
-| 8 | Scaffold `docs_evidence` | Evidence models, Python AST extraction, Markdown extraction, index, diff mapping, and tests land without forcing blocking docs policy. |
+| 8 | Stabilize DocSync boundary | Existing DocSync package remains extractable; future evidence work extends DocSync instead of creating `docs_evidence`. |
 | 9 | Refactor Agent Maintainer orchestrator | Product modules import the new primitives while preserving existing orchestration behavior. |
 | 10 | Update tests import paths | New packages have direct tests; old import paths remain covered by compatibility tests. |
 | 11 | Add architecture regression tests | Tests enforce that extracted packages do not import `agent_maintainer` and only use allowed package dependencies. |

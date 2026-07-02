@@ -610,6 +610,25 @@ Completed work:
 
 - [x] Phase 109: Internal Package Boundary Refactor Roadmap
 
+## Completed: Internal Package Baseline And Ownership
+
+Before moving runtime code into extracted internal packages, Agent Maintainer
+captured current behavior and accepted the package ownership dependency
+direction. DocSync now owns the docs/evidence boundary that earlier planning
+called `docs_evidence`.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-110-internal-package-baseline-and-ownership.md`](roadmap/phases/phase-110-internal-package-baseline-and-ownership.md)
+
+Architecture decision:
+
+[`docs/architecture/decisions/2026-07-02-internal-package-ownership.md`](architecture/decisions/2026-07-02-internal-package-ownership.md)
+
+Completed work:
+
+- [x] Phase 110: Internal Package Baseline And Ownership
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid
