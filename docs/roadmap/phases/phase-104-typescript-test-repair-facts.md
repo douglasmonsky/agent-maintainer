@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned.
+Complete.
 
 ## Goal
 
@@ -49,3 +49,10 @@ repair while keeping raw test transcripts in run-scoped artifacts.
 Prefer fixture-backed parsers over guessing framework behavior. If a parser
 requires users to configure a specific reporter, document the exact command
 shape instead of silently guessing.
+
+## Result
+
+- Added a Jest-compatible JSON parser for `typescript-test` output.
+- Wired `typescript-test` into compact failure summaries and exact repair facts.
+- Documented supported JSON test output and remaining limitations.
+- Kept TypeScript support advisory and non-blocking.

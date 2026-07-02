@@ -75,6 +75,49 @@ def test_typescript_lint_log_extracts_eslint_json_fact(tmp_path: Path) -> None:
     ]
 
 
+def test_typescript_test_log_extracts_jest_json_fact(tmp_path: Path) -> None:
+    """Jest-compatible JSON test logs produce exact repair facts."""
+    log_path = tmp_path / "typescript-test.log"
+    log_path.write_text(
+        json.dumps(
+            {
+                "testResults": [
+                    {
+                        "name": "tests/app.test.ts",
+                        "assertionResults": [
+                            {
+                                "status": "failed",
+                                "ancestorTitles": ["app"],
+                                "title": "renders title",
+                                "failureMessages": [
+                                    "Error: expected heading to be visible\n"
+                                    "    at tests/app.test.ts:9:3",
+                                ],
+                                "location": {"line": 9, "column": 3},
+                            },
+                        ],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record("typescript-test", log_path),))
+
+    assert facts == [
+        {
+            "check": "typescript-test",
+            "path": "tests/app.test.ts",
+            "line": 9,
+            "column": 3,
+            "symbol": "typescript-test",
+            "message": "app renders title: Error: expected heading to be visible",
+            "severity": "error",
+        },
+    ]
+
+
 def test_typescript_malformed_logs_fall_back_to_generic_fact(tmp_path: Path) -> None:
     """Malformed TypeScript output still yields generic failure facts."""
     log_path = tmp_path / "typescript-lint.log"

@@ -44,6 +44,15 @@ def parse_eslint_json(raw_output: str) -> list[TypeScriptDiagnostic]:
     return eslint_payload_diagnostics(payload)
 
 
+def parse_jest_json(raw_output: str) -> list[TypeScriptDiagnostic]:
+    """Parse Jest-compatible JSON test output."""
+    try:
+        payload = json.loads(raw_output)
+    except json.JSONDecodeError:
+        return []
+    return jest_payload_diagnostics(payload)
+
+
 def eslint_payload_diagnostics(payload: object) -> list[TypeScriptDiagnostic]:
     """Return diagnostics from ESLint list or object payloads."""
     if isinstance(payload, dict):
@@ -93,6 +102,105 @@ def eslint_message_diagnostic(
         message=str(message.get("message") or "").strip(),
         severity=eslint_severity(message.get("severity")),
     )
+
+
+def jest_payload_diagnostics(payload: object) -> list[TypeScriptDiagnostic]:
+    """Return diagnostics from Jest-compatible JSON payloads."""
+    if not isinstance(payload, dict):
+        return []
+    payload_object = cast(JsonObject, payload)
+    test_results = payload_object.get("testResults")
+    if not isinstance(test_results, list):
+        return []
+    diagnostics: list[TypeScriptDiagnostic] = []
+    for item in test_results:
+        if isinstance(item, dict):
+            diagnostics.extend(jest_suite_diagnostics(cast(JsonObject, item)))
+    return diagnostics
+
+
+def jest_suite_diagnostics(result: JsonObject) -> list[TypeScriptDiagnostic]:
+    """Return diagnostics from one Jest-compatible test suite."""
+    assertions = result.get("assertionResults")
+    if not isinstance(assertions, list):
+        return []
+    diagnostics: list[TypeScriptDiagnostic] = []
+    for item in assertions:
+        if not isinstance(item, dict):
+            continue
+        diagnostic = jest_assertion_diagnostic(result, cast(JsonObject, item))
+        if diagnostic is not None:
+            diagnostics.append(diagnostic)
+    return diagnostics
+
+
+def jest_assertion_diagnostic(
+    result: JsonObject,
+    assertion: JsonObject,
+) -> TypeScriptDiagnostic | None:
+    """Return one failed Jest-compatible assertion diagnostic."""
+    if optional_text(assertion.get("status")) != "failed":
+        return None
+    line, column = jest_location(assertion.get("location"))
+    return TypeScriptDiagnostic(
+        path=optional_text(result.get("name")) or optional_text(result.get("testFilePath")),
+        line=line,
+        column=column,
+        code="typescript-test",
+        message=jest_failure_message(result, assertion),
+        severity="error",
+    )
+
+
+def jest_location(value: object) -> tuple[int | None, int | None]:
+    """Return optional line and column from a Jest-compatible location."""
+    if not isinstance(value, dict):
+        return (None, None)
+    location = cast(JsonObject, value)
+    return (optional_int(location.get("line")), optional_int(location.get("column")))
+
+
+def jest_failure_message(result: JsonObject, assertion: JsonObject) -> str:
+    """Return concise failed-test message for agent repair context."""
+    test_name = jest_test_name(assertion)
+    failure = first_failure_line(assertion.get("failureMessages"))
+    if failure is None:
+        failure = optional_text(assertion.get("failureMessage"))
+    if failure is None:
+        failure = optional_text(result.get("message"))
+    if test_name and failure:
+        return f"{test_name}: {failure}"
+    return test_name or failure or "Test failed"
+
+
+def jest_test_name(assertion: JsonObject) -> str | None:
+    """Return best available Jest-compatible assertion name."""
+    full_name = optional_text(assertion.get("fullName"))
+    if full_name:
+        return full_name
+    title = optional_text(assertion.get("title"))
+    ancestors = assertion.get("ancestorTitles")
+    if isinstance(ancestors, list):
+        parts = [text for item in ancestors if (text := optional_text(item)) is not None]
+        if title:
+            parts.append(title)
+        return " ".join(parts) or None
+    return title
+
+
+def first_failure_line(value: object) -> str | None:
+    """Return first useful line from Jest-compatible failure messages."""
+    if not isinstance(value, list):
+        return None
+    for item in value:
+        text = optional_text(item)
+        if text is None:
+            continue
+        for line in text.splitlines():
+            stripped = line.strip()
+            if stripped:
+                return stripped
+    return None
 
 
 def tsc_diagnostic(match: re.Match[str]) -> TypeScriptDiagnostic:
