@@ -15,6 +15,7 @@ from agent_maintainer.assess.models import ReviewabilityCount, ReviewabilityRepo
 from agent_maintainer.checks.change_budget import FileChange
 from agent_maintainer.config.schema import MaintainerConfig
 
+BASE_REF = "origin/main"
 TOTAL_CHANGED_FILES = 5
 CLASSIFIED_FILES = 4
 UNCLASSIFIED_FILES = 1
@@ -32,7 +33,7 @@ def test_reviewability_groups_provider_changes(
     report = assessment_reviewability.build_reviewability_report(
         tmp_path,
         config,
-        base_ref="origin/main",
+        base_ref=BASE_REF,
         staged=False,
     )
 
@@ -76,7 +77,7 @@ def test_reviewability_text_lists_changes(
     report = assessment_reviewability.build_reviewability_report(
         tmp_path,
         config,
-        base_ref="origin/main",
+        base_ref=BASE_REF,
         staged=False,
     )
 
@@ -103,13 +104,41 @@ def test_reviewability_text_no_provider_files(
     report = assessment_reviewability.build_reviewability_report(
         tmp_path,
         MaintainerConfig(),
-        base_ref="origin/main",
+        base_ref=BASE_REF,
         staged=False,
     )
     output = reporting.render_reviewability_text(report)
 
     assert "- None" in output
     assert "Changed provider files:" not in output
+
+
+def test_skips_generated_suppressions(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Advisory suppressions ignore generated provider files."""
+    monkeypatch.setattr(
+        assessment_reviewability.change_budget,
+        "run_git_numstat",
+        _fake_generated_numstat,
+    )
+    monkeypatch.setattr(
+        assessment_reviewability,
+        "added_lines_by_path",
+        _fake_generated_added_lines,
+    )
+    config = replace(MaintainerConfig(), enable_typescript=True)
+
+    report = assessment_reviewability.build_reviewability_report(
+        tmp_path,
+        config,
+        base_ref=BASE_REF,
+        staged=False,
+    )
+
+    assert report.broad_suppressions == 0
+    assert report.suppressions == ()
 
 
 def _patch_changed_files(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -174,7 +203,7 @@ def _assert_text_output(output: str) -> None:
 
 def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
     """Return mixed changed files for advisory classification tests."""
-    assert base_ref in {"HEAD", "origin/main"}
+    assert base_ref in {"HEAD", BASE_REF}
     assert not staged
     return [
         FileChange("src/example/app.py", 3, 1),
@@ -187,7 +216,7 @@ def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
 
 def _fake_added_lines(base_ref: str, *, staged: bool) -> dict[str, tuple[str, ...]]:
     """Return added lines with advisory suppressions."""
-    assert base_ref in {"HEAD", "origin/main"}
+    assert base_ref in {"HEAD", BASE_REF}
     assert not staged
     return {
         "src/web/app.ts": ("// eslint-disable", "export const value = 1;"),
@@ -201,14 +230,32 @@ def _fake_no_added_lines(
     staged: bool,
 ) -> dict[str, tuple[str, ...]]:
     """Return no added lines for empty advisory suppression reports."""
-    assert base_ref == "origin/main"
+    assert base_ref == BASE_REF
     assert not staged
     return {}
 
 
+def _fake_generated_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
+    """Return generated TypeScript changed file."""
+    assert base_ref == BASE_REF
+    assert not staged
+    return [FileChange("src/web/generated/app.ts", 1, 0)]
+
+
+def _fake_generated_added_lines(
+    base_ref: str,
+    *,
+    staged: bool,
+) -> dict[str, tuple[str, ...]]:
+    """Return generated file suppression line."""
+    assert base_ref == BASE_REF
+    assert not staged
+    return {"src/web/generated/app.ts": ("// eslint-disable",)}
+
+
 def _fake_unclassified_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
     """Return one unclassified changed file."""
-    assert base_ref == "origin/main"
+    assert base_ref == BASE_REF
     assert not staged
     return [FileChange("notes/random.log", 1, 1)]
 

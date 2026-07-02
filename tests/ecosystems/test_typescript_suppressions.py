@@ -1,4 +1,4 @@
-"""Tests TypeScript and JavaScript suppression classification."""
+"""Tests TypeScript JavaScript suppression classification."""
 
 from __future__ import annotations
 
@@ -21,11 +21,13 @@ def test_ts_suppressions_classify_narrow_markers() -> None:
     """Rule-specific and coverage suppressions are tracked as narrow."""
     eslint = suppressions.classify_line("// eslint-disable-next-line no-console")
     expected = suppressions.classify_line("// @ts-expect-error legacy type")
-    coverage = suppressions.classify_line("/* istanbul ignore next */")
+    istanbul = suppressions.classify_line("/* istanbul ignore next */")
+    c8 = suppressions.classify_line("// c8 ignore next")
 
     assert eslint[0].broad is False
     assert expected[0].kind == "ts-expect-error"
-    assert coverage[0].kind == "istanbul-ignore"
+    assert istanbul[0].kind == "istanbul-ignore"
+    assert c8[0].kind == "c8-ignore"
 
 
 def test_ts_suppressions_ignore_normal_comments() -> None:
