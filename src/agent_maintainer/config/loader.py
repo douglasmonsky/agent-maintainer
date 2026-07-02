@@ -12,6 +12,11 @@ from typing import Any
 
 from agent_maintainer.config import coercion, modes, schema
 
+NEUTRAL_CONFIG_PATHS = (
+    Path(".agent-maintainer/config.toml"),
+    Path("agent-maintainer.toml"),
+)
+
 TUPLE_ENVS = (
     ("source_roots", "AGENT_MAINTAINER_SOURCE_ROOTS"),
     ("test_roots", "AGENT_MAINTAINER_TEST_ROOTS"),
@@ -152,14 +157,18 @@ STRING_ENVS = (
 )
 
 
-def read_pyproject(path: Path | None = None) -> dict[str, Any]:
-    """Read `[tool.agent_maintainer]` from pyproject.toml."""
-
-    path = path or Path("pyproject.toml")
+def _read_toml(path: Path) -> dict[str, Any]:
+    """Read a TOML file into a dictionary."""
     if not path.exists():
         return {}
     with path.open("rb") as handle:
-        payload = tomllib.load(handle)
+        return tomllib.load(handle)
+
+
+def read_pyproject(path: Path | None = None) -> dict[str, Any]:
+    """Read `[tool.agent_maintainer]` from pyproject.toml."""
+
+    payload = _read_toml(path or Path("pyproject.toml"))
     tool = payload.get("tool", {})
     if not isinstance(tool, dict):
         return {}
@@ -167,6 +176,25 @@ def read_pyproject(path: Path | None = None) -> dict[str, Any]:
     if not isinstance(config, dict):
         return {}
     return config
+
+
+def read_neutral_config(
+    paths: tuple[Path, ...] = NEUTRAL_CONFIG_PATHS,
+) -> dict[str, Any]:
+    """Read the first present neutral Agent Maintainer config file."""
+    for path in paths:
+        payload = _read_toml(path)
+        if payload:
+            return payload
+    return {}
+
+
+def read_config() -> dict[str, Any]:
+    """Read file-based config using explicit precedence."""
+    pyproject = read_pyproject()
+    if pyproject:
+        return pyproject
+    return read_neutral_config()
 
 
 def apply_pyproject(
@@ -258,5 +286,5 @@ def load_config() -> schema.MaintainerConfig:
     """Load Agent Maintainer configuration from pyproject and environment overrides."""
 
     config = schema.MaintainerConfig()
-    config = apply_pyproject(config, read_pyproject())
+    config = apply_pyproject(config, read_config())
     return apply_env(config)

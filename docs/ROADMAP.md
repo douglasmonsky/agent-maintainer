@@ -323,6 +323,7 @@ Planned work:
 - [x] Phase 79: Global And Ecosystem Check Ownership
 - [x] Phase 80: Generic File Classification, Python Only
 - [x] Phase 81: Policy Checks Through Python Classifier Adapters
+- [x] Phase 82: Neutral Config Path Exploration
 
 ## Future Work
 
