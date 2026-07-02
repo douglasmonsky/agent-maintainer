@@ -379,6 +379,20 @@ Planned work:
 
 - [x] Phase 95: Provider-Aware File Change Classification
 
+## Next: Advisory Reviewability Assessment
+
+Agent Maintainer should surface provider-aware changed-file facts without
+turning experimental TypeScript/JavaScript or Go support into blocking policy.
+This phase adds a low-noise advisory assessment that reports changed files by
+ecosystem and role, then points users to current Python-only blocking policy.
+Detailed scope:
+
+[`docs/roadmap/phases/phase-96-advisory-reviewability-assessment.md`](roadmap/phases/phase-96-advisory-reviewability-assessment.md)
+
+Planned work:
+
+- [ ] Phase 96: Advisory Reviewability Assessment
+
 ## Future Work
 
 No active Future Work items remain in the current roadmap completion gate.
