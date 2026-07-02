@@ -1,6 +1,6 @@
 # Phase 94: Multi-Ecosystem Reviewability Policy Design
 
-Status: planned.
+Status: complete in PR.
 
 ## Goal
 

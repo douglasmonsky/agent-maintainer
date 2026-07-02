@@ -21,9 +21,18 @@ If a provider abstraction makes an existing Python feature harder to express,
 the abstraction is wrong. Python remains the reference provider and may stay
 richer than experimental providers.
 
+## Reviewability Policy
+
+Current reviewability gates are globally scheduled but Python-backed.
+Experimental TypeScript/JavaScript and Go providers do not yet receive blocking
+change-budget, suppression-budget, file-length, structure-cohesion, or
+test-relevance policy gates. See
+[Multi-Ecosystem Reviewability Policy](multi-ecosystem-reviewability-policy.md).
+
 ## Related Reading
 
 - [Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
 - [Experimental Go Provider](go-provider.md)
+- [Multi-Ecosystem Reviewability Policy](multi-ecosystem-reviewability-policy.md)
 - [Provider Contribution Guide](provider-contribution-guide.md)
 - [Polyglot Ecosystem Provider Roadmap](roadmap/polyglot-ecosystem-providers.md)

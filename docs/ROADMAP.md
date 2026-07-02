@@ -363,7 +363,7 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 94: Multi-Ecosystem Reviewability Policy Design
+- [x] Phase 94: Multi-Ecosystem Reviewability Policy Design
 
 ## Future Work
 

@@ -197,6 +197,7 @@ Read more:
 [optional gates](docs/optional-gates.md),
 [supported scans and agent use](docs/supported-scans-and-agent-use.md),
 [ecosystem provider status](docs/provider-status.md),
+[multi-ecosystem reviewability policy](docs/multi-ecosystem-reviewability-policy.md),
 
 [mutation testing](docs/mutation-testing.md),
 [architecture policy](docs/architecture-policy.md),
