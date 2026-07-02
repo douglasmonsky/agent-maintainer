@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 
 from agent_maintainer import models
-from agent_maintainer.catalogs import python as python_checks
 from agent_maintainer.catalogs.docs import docs_config_checks
 from agent_maintainer.catalogs.security import (
     license_check_checks,
@@ -23,6 +21,8 @@ from agent_maintainer.config.schema import (
     MaintainerConfig,
 )
 from agent_maintainer.core.config import existing_paths
+from agent_maintainer.ecosystems.models import EcosystemCheckContext
+from agent_maintainer.ecosystems.python.provider import PythonProvider
 
 CHANGE_BUDGET_PROFILES = (
     models.FAST_PROFILE,
@@ -113,13 +113,6 @@ def tach_checks(
     ]
 
 
-def vulture_paths(config: MaintainerConfig, package_paths: tuple[str, ...]) -> tuple[str, ...]:
-    """Return existing vulture scan paths, falling back to package paths."""
-
-    paths = tuple(path for path in config.vulture_paths if Path(path).exists())
-    return paths or package_paths
-
-
 def workflow_checks() -> list[models.Check]:
     """Build GitHub Actions workflow quality and security checks."""
 
@@ -149,6 +142,18 @@ def make_checks(
 
     package_paths = existing_or_configured(config.package_paths)
     file_length_paths = existing_or_configured(config.file_length_paths)
+    python_provider_checks = {
+        check.name: check
+        for check in PythonProvider().checks(
+            EcosystemCheckContext(
+                config=config,
+                base_ref=base_ref,
+                compare_branch=compare_branch,
+                staged=staged,
+                package_paths=package_paths,
+            )
+        )
+    }
     return [
         models.Check(
             "file-length",
@@ -168,66 +173,22 @@ def make_checks(
             models.ALL_PROFILES,
             required_paths=(".git",),
         ),
-        models.Check(
-            "ruff-format",
-            ["ruff", "format", "--check", "."],
-            models.LOCAL_GATE_PROFILES,
-            required_executable="ruff",
-        ),
-        python_checks.ruff_check(config),
-        python_checks.pyright_check(config),
-        python_checks.pyright_strict_ratchet_check(config),
-        python_checks.pytest_check(config),
-        python_checks.mutmut_target_ratchet_check(config),
-        models.Check(
-            "radon-cc-report",
-            ["radon", "cc", *package_paths, "-a", "-s"],
-            models.FULL_PROFILES,
-            required_executable="radon",
-        ),
-        models.Check(
-            "radon-mi-report",
-            ["radon", "mi", *package_paths, "-s"],
-            models.FULL_PROFILES,
-            required_executable="radon",
-        ),
-        models.Check(
-            "xenon-complexity-gate",
-            [
-                "xenon",
-                "--max-absolute",
-                config.xenon_max_absolute,
-                "--max-modules",
-                config.xenon_max_modules,
-                "--max-average",
-                config.xenon_max_average,
-                *package_paths,
-            ],
-            models.LOCAL_GATE_PROFILES,
-            required_executable="xenon",
-        ),
-        models.Check(
-            "pylint",
-            ["pylint", *package_paths, "--score=n"],
-            models.FULL_PROFILES,
-            required_executable="pylint",
-        ),
+        python_provider_checks["ruff-format"],
+        python_provider_checks["ruff"],
+        python_provider_checks["pyright"],
+        python_provider_checks["pyright-strict-ratchet"],
+        python_provider_checks["pytest-coverage"],
+        python_provider_checks["mutmut-target-ratchet"],
+        python_provider_checks["radon-cc-report"],
+        python_provider_checks["radon-mi-report"],
+        python_provider_checks["xenon-complexity-gate"],
+        python_provider_checks["pylint"],
         *architecture_checks(config, base_ref, staged=staged),
-        models.Check(
-            "deptry",
-            ["deptry", "."],
-            models.FULL_PROFILES,
-            required_executable="deptry",
-        ),
-        models.Check(
-            "vulture",
-            ["vulture", *vulture_paths(config, package_paths)],
-            models.FULL_PROFILES,
-            required_executable="vulture",
-        ),
-        python_checks.bandit_check(config),
-        python_checks.pip_audit_check(config),
-        python_checks.mutmut_check(config),
+        python_provider_checks["deptry"],
+        python_provider_checks["vulture"],
+        python_provider_checks["bandit"],
+        python_provider_checks["pip-audit"],
+        python_provider_checks["mutmut"],
         *semgrep_checks(config),
         *osv_scanner_checks(config),
         *trivy_checks(config),
@@ -235,10 +196,10 @@ def make_checks(
         *license_check_checks(config),
         *secret_scan_checks(config, base_ref, staged=staged),
         *workflow_checks(),
-        python_checks.wemake_check(config, package_paths),
-        python_checks.interrogate_check(config, package_paths),
+        python_provider_checks["wemake"],
+        python_provider_checks["interrogate"],
         *docs_config_checks(config),
-        python_checks.diff_cover_check(config, compare_branch),
+        python_provider_checks["diff-cover"],
     ]
 
 

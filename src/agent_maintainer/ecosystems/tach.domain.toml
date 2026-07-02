@@ -1,0 +1,32 @@
+# Tach domain contract for agent_maintainer.ecosystems.
+# Keep provider boundaries private until the abstraction proves itself.
+
+[root]
+
+depends_on = []
+
+
+[[modules]]
+
+path = "models"
+depends_on = [
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.models",
+]
+
+
+[[modules]]
+
+path = "python"
+depends_on = []
+
+
+[[modules]]
+
+path = "python.provider"
+depends_on = [
+  "models",
+  "//agent_maintainer.catalogs.python",
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.models",
+]
