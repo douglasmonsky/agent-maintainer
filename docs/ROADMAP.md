@@ -56,7 +56,8 @@ Current external release state:
 
 Current pre-case-study decision:
 
-- [ ] Postpone Future Work until pre-case-study hardening is complete.
+- [x] Pre-case-study hardening complete; measured proof work promoted to
+      Phase 89.
 
 ## Next: Context-Safe Legacy Ratchets
 
@@ -330,13 +331,13 @@ Planned work:
 - [x] Phase 86: Provider Contribution Guide
 - [x] Phase 87: Experimental Go Provider
 - [x] Phase 88: Provider API Stability Decision
+- [x] Phase 89: Measured Repair Case Studies
 
 ## Future Work
 
 These items are intentionally postponed and are not part of the current
 roadmap completion gate.
 
-- External Case Studies and Measured Proof Harness
 - Monorepo / Multi-Package Support
 - Optional Compression Backends
 - Team Policy Templates

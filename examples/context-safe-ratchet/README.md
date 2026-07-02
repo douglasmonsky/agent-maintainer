@@ -11,11 +11,10 @@ From this directory, with Agent Maintainer installed:
 git init
 git add .
 git commit -m "example baseline"
-agent-maintainer ratchet baseline --base-ref HEAD --force
-agent-maintainer ratchet status
-agent-maintainer ratchet next
+agent-maintainer ratchet baseline create --base-ref HEAD --force
+agent-maintainer ratchet status --base-ref HEAD
+agent-maintainer ratchet next --base-ref HEAD
 agent-maintainer context file src/legacy/big.py --outline
-agent-maintainer context failures
 agent-maintainer verify --profile precommit --base-ref HEAD
 ```
 
