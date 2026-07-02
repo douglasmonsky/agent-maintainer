@@ -652,6 +652,28 @@ Completed work:
 
 - [x] Phase 111: Agent Repair Facts Internal Package Extraction
 
+## Completed: Agent Context Primitives And Reading Extraction
+
+Agent Maintainer should begin the `agent_context` package extraction by moving
+pure context primitives and reading utilities first, leaving product-coupled
+context-pack CLI, ratchet, and verifier-artifact adapter work for follow-up.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-112-agent-context-primitives.md`](roadmap/phases/phase-112-agent-context-primitives.md)
+
+Internal package roadmap:
+
+[`docs/roadmap/internal-package-boundaries.md`](roadmap/internal-package-boundaries.md)
+
+Implementation guide:
+
+[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
+
+Completed work:
+
+- [x] Phase 112: Agent Context Primitives And Reading Extraction
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid

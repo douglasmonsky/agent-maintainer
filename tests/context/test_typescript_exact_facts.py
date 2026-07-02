@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from agent_maintainer.context.failures import FailureRecord
+from agent_context.failures import FailureRecord
 from agent_maintainer.context.pack import exact_facts
 
 APP_PATH = "src/app.ts"

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from agent_maintainer.context.reading.python_outline import build_outline
+from agent_context.reading.python_outline import build_outline
 
 PYTHON_SAMPLE = '''@decorator
 class Example:

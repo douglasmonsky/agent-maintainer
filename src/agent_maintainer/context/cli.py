@@ -6,13 +6,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from agent_maintainer.context import estimate as context_estimate
-from agent_maintainer.context import failures as context_failures
+from agent_context import estimate as context_estimate
+from agent_context import failures as context_failures
+from agent_context.reading import diff as diff_reader
+from agent_context.reading import diff_git
+from agent_context.reading import files as file_reader
+from agent_context.reading import logs as log_reader
 from agent_maintainer.context.pack import cli as pack_cli
-from agent_maintainer.context.reading import diff as diff_reader
-from agent_maintainer.context.reading import diff_git
-from agent_maintainer.context.reading import files as file_reader
-from agent_maintainer.context.reading import logs as log_reader
 
 FORMAT_JSON = "json"
 FORMAT_TEXT = "text"

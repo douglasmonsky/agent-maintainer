@@ -7,20 +7,34 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context import estimate as estimate_module
-from agent_maintainer.context.estimate import (
+from agent_context import estimate as estimate_module
+from agent_context.estimate import (
     EstimateRequest,
     estimate_context,
     render_estimate_text,
 )
-from agent_maintainer.context.reading.logs import LogRequest
+from agent_context.failures import failure_records
+from agent_context.reading.files import FileRequest
+from agent_context.reading.logs import LogRequest, select_log
+from agent_maintainer.context import cli as context_cli
+from agent_maintainer.context import estimate as old_estimate
+from agent_maintainer.context import failures as old_failures
+from agent_maintainer.context.reading import files as old_files
+from agent_maintainer.context.reading import logs as old_logs
 
 FOUR_CHARS = 4
 ONE_TOKEN = 1
 TWO_LINES = 2
 FIVE_LINES = 5
 DIFF_TEXT = " README.md | 2 ++\n 1 file changed\n"
+
+
+def test_old_context_reading_imports_delegate_to_agent_context() -> None:
+    """Old context reader imports remain compatibility shims."""
+    assert old_estimate.EstimateRequest is EstimateRequest
+    assert old_failures.failure_records is failure_records
+    assert old_files.FileRequest is FileRequest
+    assert old_logs.select_log is select_log
 
 
 def test_file_estimate_counts_chars_and_tokens(tmp_path: Path) -> None:

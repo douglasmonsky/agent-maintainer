@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from agent_context.reading.diff import DiffRequest, render_diff
 from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context.reading.diff import DiffRequest, render_diff
 
 LIMIT_ONE_PATH = 1
 

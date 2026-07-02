@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from agent_maintainer.context.formatting import (
+from agent_context.formatting import (
     UNTRUSTED_EXCERPT_LABEL,
     format_untrusted_excerpt,
 )
-from agent_maintainer.context.models import SupportingContext
+from agent_context.models import SupportingContext
 
 
 def test_format_untrusted_excerpt_labels_tool_output_as_data() -> None:

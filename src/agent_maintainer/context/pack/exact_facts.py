@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import MappingProxyType
 
-from agent_maintainer.context.failures import FailureRecord
+from agent_context.failures import FailureRecord
 from agent_repair_facts import registry as fact_parsers
 from agent_repair_facts.payloads import fact_payload
 

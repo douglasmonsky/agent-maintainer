@@ -6,13 +6,13 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-from agent_maintainer.context import failures as context_failures
+from agent_context import failures as context_failures
+from agent_context.reading import files as file_reader
+from agent_context.reading import logs as log_reader
 from agent_maintainer.context.pack import compression as pack_compression
 from agent_maintainer.context.pack import exact_facts, sanitize
 from agent_maintainer.context.pack import ratchet as pack_ratchet
 from agent_maintainer.context.pack import rendering as pack_rendering
-from agent_maintainer.context.reading import files as file_reader
-from agent_maintainer.context.reading import logs as log_reader
 
 PACK_CONTEXT_DIR = "context"
 PACK_MARKDOWN_NAME = "PACK.md"
