@@ -23,9 +23,11 @@ Related reading:
 New language support should land as a built-in experimental provider through
 normal pull request review.
 
-Do not add external provider package discovery yet. The internal provider seam
-is still beta. External plugin loading should wait until Python plus at least
-two non-Python built-in providers prove that the abstraction is stable.
+Do not add external provider package discovery during beta. The current
+decision is recorded in
+[`2026-07-02-provider-api-stability.md`](architecture/decisions/2026-07-02-provider-api-stability.md).
+Built-in experimental providers remain the contribution path until the internal
+seam has survived real use outside this repository.
 
 Provider additions should be small and phased:
 
