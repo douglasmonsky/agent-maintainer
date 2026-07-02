@@ -97,6 +97,37 @@ DIAGNOSTIC_FIELD_PARSERS = (
 )
 
 
+WORKSPACE_FIELD_PARSERS = (
+    ("source_roots", as_tuple),
+    ("test_roots", as_tuple),
+    ("package_paths", as_tuple),
+    ("coverage_source", as_tuple),
+)
+
+
+def coerce_workspace(
+    name: str,
+    raw_value: object,
+) -> schema.WorkspaceConfig:
+    """Coerce one named workspace config table."""
+    if not name.strip():
+        raise TypeError("workspace name must not be empty")
+    if not isinstance(raw_value, dict):
+        raise TypeError(f"workspaces.{name} must be a table")
+    updates = {
+        field_name: parser(raw_value.get(field_name), f"workspaces.{name}.{field_name}")
+        for field_name, parser in WORKSPACE_FIELD_PARSERS
+    }
+    return schema.WorkspaceConfig(name=name, **updates)
+
+
+def coerce_workspaces(raw_value: object) -> tuple[schema.WorkspaceConfig, ...]:
+    """Coerce nested workspace config tables."""
+    if not isinstance(raw_value, dict):
+        raise TypeError("workspaces must be a table")
+    return tuple(coerce_workspace(name, payload) for name, payload in sorted(raw_value.items()))
+
+
 def coerce_diagnostics(raw_value: object) -> dict[str, object]:
     """Coerce the nested diagnostics config table."""
 
@@ -127,6 +158,9 @@ def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
             raw_value = raw.get(field_name)
             if raw_value is not None:
                 updates[field_name] = parser(raw_value, field_name)
+    workspaces = raw.get("workspaces")
+    if workspaces is not None:
+        updates["workspaces"] = coerce_workspaces(workspaces)
     architecture_tool = raw.get("architecture_tool")
     if architecture_tool is not None:
         updates["architecture_tool"] = as_choice(

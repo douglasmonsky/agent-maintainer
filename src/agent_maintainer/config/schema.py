@@ -4,37 +4,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from agent_maintainer.config.structure_defaults import (
+    DEFAULT_STRUCTURE_HINT_PATTERNS,
+    DEFAULT_STRUCTURE_IGNORE_PATHS,
+)
+from agent_maintainer.config.workspaces import WorkspaceConfig
+
 DEFAULT_SOURCE_ROOTS = ("src",)
 DEFAULT_TEST_ROOTS = ("tests",)
 DEFAULT_PACKAGE_PATHS = ("src",)
 DEFAULT_COVERAGE_SOURCE = ("src",)
 DEFAULT_FILE_LENGTH_PATHS = ("src", "tests", ".codex/hooks", ".claude/hooks")
 DEFAULT_VULTURE_PATHS = ("src", "tests", ".codex/hooks", ".claude/hooks")
-DEFAULT_STRUCTURE_IGNORE_PATHS = (
-    "tests/**",
-    "migrations/**",
-    "generated/**",
-    ".venv/**",
-    "venv/**",
-    "**/__pycache__/**",
-)
-DEFAULT_STRUCTURE_HINT_PATTERNS = (
-    r"^maintainer_",
-    r"^check_",
-    r"^user_",
-    r"^course_",
-    r"_model$",
-    r"_service$",
-    r"_repository$",
-    r"_client$",
-    r"_adapter$",
-    r"_parser$",
-    r"_loader$",
-    r"_schema$",
-    r"_executor$",
-    r"_reporting$",
-    r"^(cli|args|config|models|checks|doctor|executor|reporting)$",
-)
 DEFAULT_SECRET_SCAN_PROFILES = ("full", "ci")
 DEFAULT_SECRET_SCAN_HISTORY_PROFILES = ("security",)
 DEFAULT_SEMGREP_PROFILES = ("manual",)
@@ -251,6 +232,7 @@ class MaintainerConfig:
     """Resolved verifier settings after presets and overrides are applied."""
 
     mode: str = CUSTOM_MODE
+    workspaces: tuple[WorkspaceConfig, ...] = ()
     source_roots: tuple[str, ...] = DEFAULT_SOURCE_ROOTS
     test_roots: tuple[str, ...] = DEFAULT_TEST_ROOTS
     package_paths: tuple[str, ...] = DEFAULT_PACKAGE_PATHS
