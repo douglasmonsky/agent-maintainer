@@ -61,6 +61,9 @@ configured-command outputs:
 These parsers are advisory repair-loop helpers. They do not require new config
 fields, and malformed output falls back to the normal bounded raw-log summary.
 
+For current maturation evidence and promotion criteria, see
+[TypeScript Provider Maturation Notes](case-studies/typescript-provider-maturation.md).
+
 ## Classification
 
 The provider classifies common TypeScript and JavaScript paths:

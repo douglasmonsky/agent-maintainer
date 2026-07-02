@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned.
+Complete.
 
 ## Goal
 
@@ -67,3 +67,12 @@ If an abstraction makes Python less capable, stop and redesign it. If a
 TypeScript improvement pushes Node/package-manager assumptions into core, move
 that behavior back behind the TypeScript provider. If a Go change starts looking
 like a new depth track, defer it unless it protects shared provider boundaries.
+
+## Result
+
+Added TypeScript fixture-style reviewability tests covering source-plus-test
+changes, source-only heavy changes, generated/build outputs, dependency files,
+config files, and broad/narrow suppressions. Added TypeScript provider
+maturation notes under `docs/case-studies/` and kept Go canary-only: no Go
+starter files, repair facts, coverage, dependency/security adapters, workspace
+behavior, or blocking gates were added.

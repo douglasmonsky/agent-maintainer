@@ -41,6 +41,7 @@ See [Multi-Ecosystem Reviewability Policy](multi-ecosystem-reviewability-policy.
 ## Related Reading
 
 - [Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
+- [TypeScript Provider Maturation Notes](case-studies/typescript-provider-maturation.md)
 - [Experimental Go Provider](go-provider.md)
 - [Multi-Ecosystem Reviewability Policy](multi-ecosystem-reviewability-policy.md)
 - [Provider Contribution Guide](provider-contribution-guide.md)
