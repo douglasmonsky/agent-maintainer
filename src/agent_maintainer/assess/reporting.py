@@ -12,6 +12,8 @@ from agent_maintainer.assess.debt_score import (
 from agent_maintainer.assess.models import (
     DebtScoreReport,
     ReviewabilityCount,
+    ReviewabilityFinding,
+    ReviewabilityProviderSummary,
     ReviewabilityReport,
     SetupAdvisorReport,
 )
@@ -93,6 +95,12 @@ def render_reviewability_text(report: ReviewabilityReport) -> str:
         "By role:",
         *_count_lines(report.by_role),
         "",
+        "Provider summaries:",
+        *_provider_summary_lines(report.provider_summaries),
+        "",
+        "Advisory findings:",
+        *_finding_lines(report.advisory_findings),
+        "",
         "Next commands:",
         *[f"- `{command}`" for command in report.next_commands],
     ]
@@ -119,6 +127,32 @@ def _count_lines(counts: tuple[ReviewabilityCount, ...]) -> list[str]:
     if not counts:
         return ["- None"]
     return [f"- {item.key}: {item.count}" for item in counts]
+
+
+def _provider_summary_lines(
+    summaries: tuple[ReviewabilityProviderSummary, ...],
+) -> list[str]:
+    """Render advisory provider summary lines."""
+    if not summaries:
+        return ["- None"]
+    return [
+        (
+            f"- {item.ecosystem}: changed={item.changed_files}, "
+            f"source={item.source_files} files/{item.source_lines} lines, "
+            f"tests={item.test_files} files/{item.test_lines} lines, "
+            f"broad suppressions={item.broad_suppressions}"
+        )
+        for item in summaries
+    ]
+
+
+def _finding_lines(findings: tuple[ReviewabilityFinding, ...]) -> list[str]:
+    """Render advisory reviewability findings."""
+    if not findings:
+        return ["- None"]
+    return [
+        f"- {item.ecosystem}/{item.kind}: {item.message} {item.recommendation}" for item in findings
+    ]
 
 
 def render_json(report: object) -> str:

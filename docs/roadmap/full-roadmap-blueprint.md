@@ -104,6 +104,7 @@ a monolithic blueprint.
 | 97 | [Advisory Ecosystem Suppression Classification](phases/phase-97-advisory-ecosystem-suppression-classification.md) |
 | 98 | [TypeScript/Go Reviewability Fixture Evidence](phases/phase-98-typescript-go-reviewability-fixture-evidence.md) |
 | 99 | [Advisory Provider Reviewability Summaries](phases/phase-99-advisory-provider-reviewability-summaries.md) |
+| 100 | [TypeScript Maturation And Go Canary Freeze](phases/phase-100-typescript-maturation-go-canary.md) |
 
 ## Future Work
 

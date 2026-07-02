@@ -425,22 +425,38 @@ Planned work:
 ## Next: Advisory Provider Reviewability Summaries
 
 Agent Maintainer should turn fixture evidence into more useful advisory output
-before adding blocking policy. This phase adds provider source/test summaries
-and advisory findings for source-heavy changes, source-without-test changes, and
-broad suppressions while keeping TypeScript/JavaScript and Go non-blocking.
+before adding blocking policy. This phase adds provider source/test summaries,
+TypeScript/JavaScript source/test advisory findings, and broad suppression
+findings while keeping TypeScript/JavaScript and Go non-blocking and Go
+canary-only.
 Detailed scope:
 
 [`docs/roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md`](roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md)
 
 Planned work:
 
-- [ ] Phase 99: Advisory Provider Reviewability Summaries
+- [x] Phase 99: Advisory Provider Reviewability Summaries
+
+## Next: TypeScript Maturation And Go Canary Freeze
+
+Agent Maintainer should mature TypeScript/JavaScript as the first serious
+non-Python provider while keeping Go as a thin experimental canary. This
+phase validates TypeScript provider depth with fixture evidence and provider
+notes without adding Go depth, new ecosystems, or blocking TypeScript gates.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-100-typescript-maturation-go-canary.md`](roadmap/phases/phase-100-typescript-maturation-go-canary.md)
+
+Planned work:
+
+- [ ] Phase 100: TypeScript Maturation And Go Canary Freeze
 
 ## Future Work
 
-No active Future Work items remain in the current roadmap completion gate.
-Former future-work items were either promoted to numbered phases or already
-covered by completed compression/Headroom phases.
+No active Future Work items remain beyond the numbered roadmap phases. Avoid
+adding new ecosystems until TypeScript/JavaScript reaches a clearly defined
+supported-experimental or supported bar.
 
 ## Final Definition Of Done
 

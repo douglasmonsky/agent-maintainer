@@ -9,6 +9,14 @@ careful expansion. Do not read experimental providers as feature parity.
 | TypeScript/JavaScript | Experimental | Explicit configured commands for lint, typecheck, and tests; file classification; advisory suppression classification; `tsc --pretty false` and ESLint JSON repair facts; doctor setup rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters. |
 | Go | Experimental | Explicit configured commands for format, vet, and tests; file classification; advisory suppression classification; doctor setup rows. | Structured repair facts, starter files, coverage adapters, dependency/security adapters, workspace autodetection. |
 
+## Current Focus
+
+TypeScript/JavaScript is the first serious non-Python provider maturation
+track. Go remains an experimental canary: it should stay explicit-command
+only, covered by registry/classifier/advisory tests, and useful for keeping
+provider architecture from becoming Node-specific. Do not read Go support as
+a parallel depth track.
+
 ## Design Rule
 
 Core owns the verification loop: profiles, command execution, bounded logs,
