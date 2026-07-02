@@ -35,6 +35,7 @@ index into a monolithic blueprint.
 | 88 | [Provider API Stability Decision](phases/phase-88-provider-api-stability-decision.md) |
 | 89 | [Measured Repair Case Studies](phases/phase-89-measured-repair-case-studies.md) |
 | 90 | [Workspace Config Foundation](phases/phase-90-workspace-config-foundation.md) |
+| 91 | [Team Policy Templates](phases/phase-91-team-policy-templates.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
@@ -101,7 +102,7 @@ index into a monolithic blueprint.
 |---|---|
 | External Case Studies and Measured Proof Harness | Promoted to [Phase 89](phases/phase-89-measured-repair-case-studies.md) |
 | Monorepo / Multi-Package Support | Promoted to [Phase 90](phases/phase-90-workspace-config-foundation.md) |
-| Team Policy Templates | [Team Policy Templates](future-work/team-policy-templates.md) |
+| Team Policy Templates | Promoted to [Phase 91](phases/phase-91-team-policy-templates.md) |
 
 ## Completion
 

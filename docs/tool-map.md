@@ -11,7 +11,34 @@ for the first opt-in non-Python provider.
 
 ## Everyday gates
 
-`python3 -m agent_maintainer` is the canonical entrypoint. Editable installs also provide `agent-maintainer` for interactive use, but committed hooks and CI should prefer the module command. Use `python3 -m agent_maintainer init --track core` for minimum package-first adoption, `python3 -m agent_maintainer init --track agent` when Codex, Claude Code, or other agents actively edit the repo, and `python3 -m agent_maintainer init --track hardening` when optional docs/config hygiene files should also be generated. Add `--preset small-library`, `--preset existing-app`, `--preset ai-agent-heavy`, `--preset legacy-ratchet`, or `--preset strict-new-repo` to tune starter policy without changing which files the track writes. Use `python3 -m agent_maintainer assess setup` before first adoption to recommend a track, preset, optional gates, and AI follow-up prompts. Use `python3 -m agent_maintainer assess debt` to write an advisory lower-is-better Technical Debt Score under `.verify-logs`; the static HTML report includes that score when the artifact exists. Use `python3 -m agent_maintainer bootstrap` for one-command local setup, `python3 -m agent_maintainer doctor` for setup health, `python3 -m agent_maintainer guidance` for generated agent-facing guidance, `python3 -m agent_maintainer verify --profile precommit` for local completion checks, `python3 -m agent_maintainer verify --profile full` for deeper review, `python3 -m agent_maintainer verify --profile manual` for slow opt-in checks, and `python3 -m agent_maintainer install` to install local hooks without reinstalling dependencies. Use `python3 -m agent_maintainer hooks install all` to install managed agent-client hooks directly.
+`python3 -m agent_maintainer` is the canonical entrypoint. Editable installs
+also provide `agent-maintainer` for interactive use, but committed hooks and CI
+should prefer the module command.
+
+Use `python3 -m agent_maintainer init --track core` for minimum package-first
+adoption, `python3 -m agent_maintainer init --track agent` when Codex, Claude
+Code, or other agents actively edit the repo, and `python3 -m agent_maintainer
+init --track hardening` when optional docs/config hygiene files should also be
+generated. Add `--preset small-library`, `--preset existing-app`, `--preset
+ai-agent-heavy`, `--preset legacy-ratchet`, `--preset strict-new-repo`, or a
+team preset such as `--preset team-agent-heavy` to tune starter policy without
+changing which files the track writes.
+
+Use `python3 -m agent_maintainer assess setup` before first adoption to
+recommend a track, preset, optional gates, and AI follow-up prompts. Use
+`python3 -m agent_maintainer assess debt` to write an advisory lower-is-better
+Technical Debt Score under `.verify-logs`; the static HTML report includes that
+score when the artifact exists.
+
+Use `python3 -m agent_maintainer bootstrap` for one-command local setup,
+`python3 -m agent_maintainer doctor` for setup health, `python3 -m
+agent_maintainer guidance` for generated agent-facing guidance, `python3 -m
+agent_maintainer verify --profile precommit` for local completion checks,
+`python3 -m agent_maintainer verify --profile full` for deeper review,
+`python3 -m agent_maintainer verify --profile manual` for slow opt-in checks,
+and `python3 -m agent_maintainer install` to install local hooks without
+reinstalling dependencies. Use `python3 -m agent_maintainer hooks install all`
+to install managed agent-client hooks directly.
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state. In an Agent Maintainer source checkout, doctor verifies imports resolve local `src/agent_maintainer` and warns if the interactive `agent-maintainer` console script points at stale installed code; repair with `python -m pip install -e .`.
 

@@ -125,11 +125,16 @@ Presets tune policy:
 | `ai-agent-heavy` | Agents frequently change code and source-only changes should fail. |
 | `legacy-ratchet` | Existing debt should improve through ranked repair targets. |
 | `strict-new-repo` | A clean repo can start strict with wemake and tighter budgets. |
+| `team-small-python-lib` | Team-owned package wants small-library defaults. |
+| `team-legacy-service` | Team-owned service needs legacy ratchets first. |
+| `team-agent-heavy` | Team relies heavily on coding agents. |
+| `team-security-sensitive` | Clean security-sensitive repo wants strict starter defaults. |
 
 Read more:
 [quick start](docs/quick-start.md),
 [legacy ratchet](docs/legacy-ratchet.md),
-[fresh strict](docs/fresh-strict.md).
+[fresh strict](docs/fresh-strict.md),
+[team policy templates](docs/team-policy-templates.md).
 
 ## Run Profiles
 

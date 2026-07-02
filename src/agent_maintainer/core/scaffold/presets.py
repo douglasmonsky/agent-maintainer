@@ -10,6 +10,10 @@ EXISTING_APP_PRESET = "existing-app"
 AI_AGENT_HEAVY_PRESET = "ai-agent-heavy"
 LEGACY_RATCHET_PRESET = "legacy-ratchet"
 STRICT_NEW_REPO_PRESET = "strict-new-repo"
+TEAM_SMALL_PYTHON_LIB_PRESET = "team-small-python-lib"
+TEAM_LEGACY_SERVICE_PRESET = "team-legacy-service"
+TEAM_AGENT_HEAVY_PRESET = "team-agent-heavy"
+TEAM_SECURITY_SENSITIVE_PRESET = "team-security-sensitive"
 
 PRESETS = (
     SMALL_LIBRARY_PRESET,
@@ -17,6 +21,17 @@ PRESETS = (
     AI_AGENT_HEAVY_PRESET,
     LEGACY_RATCHET_PRESET,
     STRICT_NEW_REPO_PRESET,
+    TEAM_SMALL_PYTHON_LIB_PRESET,
+    TEAM_LEGACY_SERVICE_PRESET,
+    TEAM_AGENT_HEAVY_PRESET,
+    TEAM_SECURITY_SENSITIVE_PRESET,
+)
+
+TEAM_PRESET_ALIASES = (
+    (TEAM_SMALL_PYTHON_LIB_PRESET, SMALL_LIBRARY_PRESET),
+    (TEAM_LEGACY_SERVICE_PRESET, LEGACY_RATCHET_PRESET),
+    (TEAM_AGENT_HEAVY_PRESET, AI_AGENT_HEAVY_PRESET),
+    (TEAM_SECURITY_SENSITIVE_PRESET, STRICT_NEW_REPO_PRESET),
 )
 
 
@@ -199,11 +214,20 @@ def apply_preset(template: str, preset: str) -> str:
 
 def policy_for(preset: str) -> PresetPolicy:
     """Return policy for preset name."""
+    preset = aliased_preset(preset)
 
     for name, policy in POLICIES:
         if name == preset:
             return policy
     raise ValueError(f"unknown onboarding preset: {preset}")
+
+
+def aliased_preset(preset: str) -> str:
+    """Return canonical policy preset for team template alias."""
+    for alias, canonical in TEAM_PRESET_ALIASES:
+        if alias == preset:
+            return canonical
+    return preset
 
 
 def replace_assignment(text: str, key: str, value: str) -> str:
