@@ -112,8 +112,9 @@ def jest_payload_diagnostics(payload: object) -> list[TypeScriptDiagnostic]:
     test_results = payload_object.get("testResults")
     if not isinstance(test_results, list):
         return []
+    result_items = cast(list[object], test_results)
     diagnostics: list[TypeScriptDiagnostic] = []
-    for item in test_results:
+    for item in result_items:
         if isinstance(item, dict):
             diagnostics.extend(jest_suite_diagnostics(cast(JsonObject, item)))
     return diagnostics
@@ -124,8 +125,9 @@ def jest_suite_diagnostics(result: JsonObject) -> list[TypeScriptDiagnostic]:
     assertions = result.get("assertionResults")
     if not isinstance(assertions, list):
         return []
+    assertion_items = cast(list[object], assertions)
     diagnostics: list[TypeScriptDiagnostic] = []
-    for item in assertions:
+    for item in assertion_items:
         if not isinstance(item, dict):
             continue
         diagnostic = jest_assertion_diagnostic(result, cast(JsonObject, item))
@@ -181,7 +183,8 @@ def jest_test_name(assertion: JsonObject) -> str | None:
     title = optional_text(assertion.get("title"))
     ancestors = assertion.get("ancestorTitles")
     if isinstance(ancestors, list):
-        parts = [text for item in ancestors if (text := optional_text(item)) is not None]
+        ancestor_items = cast(list[object], ancestors)
+        parts = [text for item in ancestor_items if (text := optional_text(item)) is not None]
         if title:
             parts.append(title)
         return " ".join(parts) or None
@@ -192,7 +195,8 @@ def first_failure_line(value: object) -> str | None:
     """Return first useful line from Jest-compatible failure messages."""
     if not isinstance(value, list):
         return None
-    for item in value:
+    value_items = cast(list[object], value)
+    for item in value_items:
         text = optional_text(item)
         if text is None:
             continue

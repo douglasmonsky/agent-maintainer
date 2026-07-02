@@ -94,6 +94,7 @@ def test_typescript_test_parser_ignores_non_failure_payloads() -> None:
     )
 
     assert diagnostics.parse_jest_json("[]") == []
+    assert diagnostics.parse_jest_json(json.dumps({"testResults": [None]})) == []
     assert diagnostics.parse_jest_json(json.dumps({"testResults": "bad"})) == []
     assert diagnostics.parse_jest_json(raw_output) == []
 
