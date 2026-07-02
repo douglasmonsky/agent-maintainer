@@ -8,7 +8,7 @@ Accepted.
 
 Phase 94 documented that Agent Maintainer's reviewability checks are currently
 globally scheduled but Python-backed. Future cross-ecosystem reviewability needs
-provider-supplied changed-file facts before any TypeScript/JavaScript or Go
+provider-supplied changed-file facts before any TypeScript/JavaScript
 policy gate can be considered.
 
 ## Decision
@@ -19,7 +19,7 @@ data-only: it does not run policy, change budgets, suppression budgets, file
 length checks, structure checks, or test relevance checks.
 
 Python remains always available because it is the core/reference provider.
-Experimental TypeScript/JavaScript and Go classification is used only when the
+Experimental TypeScript/JavaScript classification is used only when the
 corresponding provider is enabled.
 
 ## Consequences

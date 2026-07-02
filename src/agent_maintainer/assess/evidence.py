@@ -86,7 +86,6 @@ def collect_evidence(
         ),
         has_package_json=(root / "package.json").exists(),
         package_scripts=_package_scripts(root),
-        has_go_mod=(root / "go.mod").exists(),
         has_container_or_iac=_has_container_or_iac(root, paths),
         python_files=len(python_files),
         source_files=len(source_files),

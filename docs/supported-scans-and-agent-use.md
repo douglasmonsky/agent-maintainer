@@ -17,7 +17,7 @@ that keeps raw logs out of chat.
 | Python security | Bandit, pip-audit | `full`, `ci` | Fix insecure patterns and vulnerable dependencies. |
 | Secrets | Gitleaks current-tree, range, and history modes | `full`, `ci`, `security` | Stop immediately and rotate secrets if real credentials appear. |
 | SAST | Semgrep | `manual` | Run on focused, stable configs; treat findings as review inputs. |
-| Multi-ecosystem CVEs | OSV Scanner | `manual` | Enable for repos with JS, Go, lock files, or mixed ecosystems. |
+| Multi-ecosystem CVEs | OSV Scanner | `manual` | Enable for repos with JS, lock files, or mixed ecosystems. |
 | Containers and IaC | Trivy | `manual` | Enable only when Docker, Kubernetes, Terraform, or images matter. |
 | SBOM and licenses | CycloneDX Python, pip-licenses | `ci`, `manual` | Produce audit artifacts; add policy only after license rules exist. |
 | GitHub Actions | actionlint, zizmor | `full`, `ci` | Keep workflow syntax and permissions safe. |

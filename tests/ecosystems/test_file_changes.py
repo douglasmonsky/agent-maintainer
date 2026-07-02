@@ -43,14 +43,14 @@ def test_experimental_changes_need_enabled() -> None:
     config = MaintainerConfig()
 
     assert classify_changed_path("src/app.ts", "modified", config) is None
-    assert classify_changed_path("cmd/server/main.go", "modified", config) is None
+    assert classify_changed_path("native/app/main.rs", "modified", config) is None
 
     enabled = replace(config, enable_typescript=True)
 
     typescript = classify_changed_path("src/app.ts", "modified", enabled)
 
     _assert_change(typescript, ecosystem="typescript", role=FileRole.SOURCE)
-    assert classify_changed_path("cmd/server/main.go", "modified", enabled) is None
+    assert classify_changed_path("native/app/main.rs", "modified", enabled) is None
 
 
 def test_batch_change_classification_order() -> None:
@@ -60,7 +60,7 @@ def test_batch_change_classification_order() -> None:
     classifications = classify_changed_paths(
         (
             ChangedPath("src/app.ts", ChangeKind.ADDED),
-            ChangedPath("internal/app/handler_test.go", ChangeKind.MODIFIED),
+            ChangedPath("native/app/main_test.rs", ChangeKind.MODIFIED),
             ChangedPath("notes/random.log", ChangeKind.DELETED),
         ),
         config,

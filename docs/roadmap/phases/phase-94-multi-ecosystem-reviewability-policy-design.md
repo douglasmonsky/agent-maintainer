@@ -19,7 +19,7 @@ providers have parity.
 - Define TypeScript/JavaScript suppression patterns separately from Python
   suppression patterns.
 - Decide whether file length and structure cohesion should apply to
-  TypeScript/JavaScript and Go now, or remain Python-only for the current beta.
+  TypeScript/JavaScript now, or remain Python-only for the current beta.
 - Add characterization tests that pin current Python-backed reviewability
   behavior before future policy generalization.
 
@@ -27,7 +27,7 @@ providers have parity.
 
 - No new language providers.
 - No behavior change to Python reviewability checks.
-- No TypeScript or Go reviewability gate enabled in this phase.
+- No TypeScript reviewability gate enabled in this phase.
 - No public plugin API.
 - No config migration.
 - No attempt to make experimental providers parity providers.
@@ -38,7 +38,7 @@ providers have parity.
 - An ADR records the beta decision for cross-ecosystem reviewability.
 - Tests prove current reviewability checks still call the Python-backed policy
   modules and keep existing names/profiles.
-- Docs clearly say TypeScript and Go configured commands do not yet imply
+- Docs clearly say TypeScript/JavaScript configured commands do not yet imply
   full reviewability policy support.
 - The next implementation phase can start from explicit policy decisions rather
   than inferring behavior from Python checks.

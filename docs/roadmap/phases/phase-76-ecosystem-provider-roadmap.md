@@ -21,7 +21,7 @@ Create the architecture roadmap for evolving Agent Maintainer from a Python-cent
 ## Non-Goals
 
 - No provider implementation.
-- No TypeScript, Go, Rust, Java, or other non-Python support.
+- No TypeScript, Rust, Java, or other non-Python support.
 - No config migration.
 - No public plugin API.
 - No verifier behavior changes.

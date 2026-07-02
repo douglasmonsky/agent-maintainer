@@ -10,9 +10,6 @@ core.
 - Python remains the core/reference provider.
 - TypeScript/JavaScript is the first non-Python provider to mature beyond thin
   command execution.
-- Go has been deferred from the active provider surface. It validated that the
-  provider seam should not become Node-specific, but TypeScript/JavaScript is
-  the only active non-Python maturation track.
 - No TypeScript/JavaScript reviewability signal is blocking yet.
 
 ## Fixture Evidence
@@ -21,13 +18,13 @@ Phase 100 added TypeScript reviewability fixtures for:
 
 - source-plus-test changes that should stay low-noise;
 - source-only heavy changes that should produce advisory findings;
-- generated and build output paths that should not inflate source/test signals;
+- generated build output paths that should not inflate source/test signals;
 - dependency files such as `package-lock.json` and `pnpm-lock.yaml`;
 - config files such as `vite.config.ts` and `next.config.js`;
 - broad and narrow suppressions.
 
-The fixtures intentionally exercise `assess reviewability` rather than a
-standalone classifier. That proves users and agents see useful advisory output
+The fixtures intentionally exercise `assess reviewability` rather than the
+standalone classifier. This proves users and agents see useful advisory output
 without changing blocking verifier behavior.
 
 ## Advisory Threshold Evidence
@@ -58,16 +55,15 @@ fields and must not be treated as active policy.
 
 ## Lessons To Capture
 
-Use this page as a running implementation notebook while TypeScript matures.
-
+Use this page as the running implementation notebook while TypeScript matures.
 Track:
 
-- which repository shapes are low-noise;
-- which package-manager assumptions stayed provider-specific;
-- which output formats are stable enough for exact repair facts;
-- which suppressions should remain advisory;
-- which signals might eventually become configurable advisory thresholds;
-- which signals are too framework-specific for defaults;
+- repository shapes that stayed low-noise;
+- package-manager assumptions that stayed provider-specific;
+- output formats stable enough for exact repair facts;
+- suppressions that should remain advisory;
+- signals that might eventually become configurable advisory thresholds;
+- signals too framework-specific for defaults;
 - whether any abstraction makes Python less capable.
 
 ## Promotion Bar

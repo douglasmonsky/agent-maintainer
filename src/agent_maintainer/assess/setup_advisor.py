@@ -132,7 +132,7 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
                 profiles=("full", "ci", "security"),
             ),
         )
-    if evidence.has_package_json or evidence.has_go_mod:
+    if evidence.has_package_json:
         gates.append(
             GateRecommendation(
                 name="osv-scanner",

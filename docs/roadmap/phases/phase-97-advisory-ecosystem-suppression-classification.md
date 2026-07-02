@@ -5,7 +5,7 @@ Status: complete in PR.
 ## Goal
 
 Add advisory ecosystem-specific suppression classification for
-TypeScript/JavaScript and Go so `assess reviewability` can show suppression
+TypeScript/JavaScript so `assess reviewability` can show suppression
 pressure without changing the current blocking Python `suppression-budget`
 gate.
 
@@ -14,14 +14,13 @@ gate.
 - Add internal suppression finding models for provider-owned classifiers.
 - Add TypeScript/JavaScript suppression patterns such as `eslint-disable`,
   `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`, Istanbul, and c8 ignores.
-- Add Go suppression patterns such as `//nolint` and `//nolint:<linter>`.
-- Surface advisory suppression counts in `assess reviewability` text and JSON.
+- Add - Surface advisory suppression counts in `assess reviewability` text and JSON.
 - Keep existing Python blocking suppression-budget behavior unchanged.
-- Add tests proving TypeScript/JavaScript and Go suppressions are advisory only.
+- Add tests proving TypeScript/JavaScript suppressions are advisory only.
 
 ## Non-Goals
 
-- No new blocking TypeScript/JavaScript or Go suppression gate.
+- No new blocking TypeScript/JavaScript suppression gate.
 - No change to `suppression-budget` behavior or thresholds.
 - No new provider.
 - No config migration.
@@ -29,7 +28,7 @@ gate.
 
 ## Acceptance Criteria
 
-- TypeScript/JavaScript and Go provider suppression classifiers return explicit
+- TypeScript/JavaScript provider suppression classifiers return explicit
   suppression kind and broad/narrow status.
 - `assess reviewability` reports advisory suppression counts when changed files
   contain recognized suppression lines.

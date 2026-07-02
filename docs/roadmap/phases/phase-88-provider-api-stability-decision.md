@@ -6,9 +6,9 @@ Complete in PR.
 
 ## Goal
 
-Make the public provider API decision after the Python, TypeScript/JavaScript,
-and Go provider milestones: keep provider interfaces internal during beta and
-continue accepting language support as built-in experimental providers.
+Make public provider API decision after Python and TypeScript/JavaScript
+provider milestones: keep provider interfaces internal during beta and continue
+accepting language support as built-in experimental providers.
 
 ## Scope
 

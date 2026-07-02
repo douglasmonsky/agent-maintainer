@@ -26,8 +26,7 @@ concrete TypeScript or Python helper modules directly.
 - Python and TypeScript behavior remains unchanged.
 - The registry takes explicit dependencies on built-in provider classifiers and
   advisory suppression classifiers.
-- This does not create an external plugin API or restore the deferred Go
-  provider.
+- This does not create an external plugin API or add another provider.
 
 ## Alternatives Considered
 

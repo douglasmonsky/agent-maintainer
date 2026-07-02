@@ -26,8 +26,7 @@ repair while keeping raw test transcripts in run-scoped artifacts.
 - No TypeScript coverage support.
 - No TypeScript mutation testing.
 - No blocking TypeScript reviewability gate.
-- No Go provider restoration.
-- No new ecosystem provider.
+- - No new ecosystem provider.
 
 ## Acceptance Criteria
 

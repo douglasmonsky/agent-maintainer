@@ -18,7 +18,6 @@ blocking gates.
 - Recommend explicit TypeScript provider configuration only when the evidence is
   present.
 - Keep the recommendation advisory and package-manager-neutral.
-- Keep Go canary-only and unchanged.
 - Update setup-advisor docs to explain the recommendation and its limits.
 
 ## Non-Goals
@@ -26,7 +25,6 @@ blocking gates.
 - No package-manager autodetection.
 - No generated TypeScript starter files.
 - No TypeScript blocking gates.
-- No Go depth expansion.
 - No new ecosystem provider.
 - No changes to Python setup recommendations.
 

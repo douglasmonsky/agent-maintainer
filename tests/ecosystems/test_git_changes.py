@@ -21,7 +21,7 @@ def test_numstat_keeps_dependency_lockfiles(
 
     assert [(change.path, change.added, change.deleted) for change in changes] == [
         ("package-lock.json", 5, 1),
-        ("go.sum", 2, 0),
+        ("Cargo.lock", 2, 0),
         ("assets/logo.png", 0, 0),
     ]
 
@@ -51,7 +51,7 @@ def _fake_numstat_run(
     return subprocess.CompletedProcess(
         command,
         0,
-        stdout="5\t1\tpackage-lock.json\n2\t0\tgo.sum\n-\t-\tassets/logo.png\n",
+        stdout="5\t1\tpackage-lock.json\n2\t0\tCargo.lock\n-\t-\tassets/logo.png\n",
     )
 
 

@@ -20,7 +20,7 @@ changing current blocking verifier behavior.
 
 ## Non-Goals
 
-- No new blocking TypeScript/JavaScript or Go gates.
+- No new blocking TypeScript/JavaScript gates.
 - No change to `verify` profile behavior.
 - No new provider.
 - No config migration.
@@ -32,7 +32,7 @@ changing current blocking verifier behavior.
   of changed files by ecosystem and role.
 - The command reports when no changed provider files are found.
 - JSON output exposes stable fields for future reports.
-- Tests prove TypeScript/JavaScript and Go findings remain advisory.
+- Tests prove TypeScript/JavaScript findings remain advisory.
 - Current reviewability gates and Python behavior remain unchanged.
 
 ## Verification

@@ -19,7 +19,7 @@ generation behind a Python provider without changing observable behavior.
 
 ## Non-Goals
 
-- No TypeScript, JavaScript, Go, Rust, Java, or other new language support.
+- No TypeScript, JavaScript, Rust, Java, or other new language support.
 - No external plugin API or entry point discovery.
 - No config migration.
 - No check renames.
