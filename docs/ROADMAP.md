@@ -334,14 +334,13 @@ Planned work:
 - [x] Phase 89: Measured Repair Case Studies
 - [x] Phase 90: Workspace Config Foundation
 - [x] Phase 91: Team Policy Templates
+- [x] Phase 92: Roadmap Future Work Cleanup
 
 ## Future Work
 
-These items are intentionally postponed and are not part of the current
-roadmap completion gate.
-
-- Optional Compression Backends
-- Headroom Integration
+No active Future Work items remain in the current roadmap completion gate.
+Former future-work items were either promoted to numbered phases or already
+covered by completed compression/Headroom phases.
 
 ## Final Definition Of Done
 
