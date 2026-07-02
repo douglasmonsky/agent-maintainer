@@ -21,6 +21,6 @@ but it must not call or alter blocking verifier checks.
 
 - Users can inspect changed files by ecosystem and role before policy adapters
   mature.
-- TypeScript/JavaScript and Go findings remain advisory.
+- TypeScript/JavaScript findings remain advisory.
 - The `assess.reviewability` Tach module explicitly depends on provider
   classification models and the existing change-budget diff parser.

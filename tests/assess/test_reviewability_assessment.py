@@ -237,7 +237,7 @@ def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
         FileChange("src/web/app.ts", 5, 2),
         FileChange("src/web/app.test.ts", 7, 0),
         FileChange("package-lock.json", 5, 1),
-        FileChange("go.sum", 2, 1),
+        FileChange("Cargo.lock", 2, 1),
         FileChange("pyproject.toml", 1, 0),
         FileChange("notes/random.log", 1, 1),
     ]

@@ -42,7 +42,6 @@ def evidence_strategy() -> st.SearchStrategy[RepoEvidence]:
         has_lock_file=st.booleans(),
         has_dependency_file=st.booleans(),
         has_package_json=st.booleans(),
-        has_go_mod=st.booleans(),
         has_container_or_iac=st.booleans(),
         python_files=counts,
         source_files=counts,

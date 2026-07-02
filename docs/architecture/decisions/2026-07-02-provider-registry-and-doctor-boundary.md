@@ -6,8 +6,8 @@ Accepted.
 
 ## Context
 
-Agent Maintainer now has a Python core provider plus experimental
-TypeScript/JavaScript and Go providers. The catalog still preserves central
+Agent Maintainer now has a Python core provider plus an experimental
+TypeScript/JavaScript provider. The catalog still preserves central
 ordering so Python check behavior remains stable, but direct provider imports
 in catalog construction make the next provider harder to add consistently.
 
@@ -34,7 +34,7 @@ internal during beta.
 - Python remains the core/reference provider and keeps its stable catalog order.
 - Experimental providers gain explicit maturity and command ownership metadata.
 - Doctor can report enabled providers with missing command configuration.
-- Missing Node and Go tools can receive ecosystem-appropriate install hints.
+- Missing Node tools can receive ecosystem-appropriate install hints.
 - The next provider can follow the built-in registry pattern without direct
   catalog imports.
 - Thin per-provider doctor wrapper modules are not required; doctor code should

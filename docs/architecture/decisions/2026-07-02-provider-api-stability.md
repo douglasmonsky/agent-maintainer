@@ -7,7 +7,7 @@ Accepted.
 ## Context
 
 Agent Maintainer now has Python as the core provider and two experimental
-non-Python providers: TypeScript/JavaScript and Go. That proves the internal
+non-Python provider: TypeScript/JavaScript. That proves the internal
 provider seam can support more than one ecosystem shape, but it has not yet
 survived enough external use to freeze as a public plugin API.
 

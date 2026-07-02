@@ -25,7 +25,7 @@ def test_provider_summaries_and_findings(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    """TypeScript gets source/test findings without Go canary noise."""
+    """TypeScript gets source/test findings without unsupported ecosystem noise."""
     report = _build_report(monkeypatch, tmp_path)
 
     assert _summary_map(report.provider_summaries) == {
@@ -92,14 +92,14 @@ def _summary_map(summaries: tuple[Any, ...]) -> dict[str, tuple[int, ...]]:
 
 
 def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
-    """Return TypeScript and deferred Go fixture changes."""
+    """Return TypeScript and unsupported ecosystem fixture changes."""
     assert base_ref == BASE_REF
     assert not staged
     return [
         FileChange("src/web/app.ts", 5, 2),
         FileChange("package-lock.json", 5, 1),
-        FileChange("internal/server/handler.go", 8, 1),
-        FileChange("go.sum", 2, 1),
+        FileChange("native/app/main.rs", 8, 1),
+        FileChange("Cargo.lock", 2, 1),
     ]
 
 
@@ -108,10 +108,10 @@ def _fake_added_lines(
     *,
     staged: bool,
 ) -> dict[str, tuple[str, ...]]:
-    """Return broad TypeScript and deferred Go suppression lines."""
+    """Return broad TypeScript and unsupported suppression lines."""
     assert base_ref == BASE_REF
     assert not staged
     return {
         "src/web/app.ts": ("// eslint-disable", "export const value = 1;"),
-        "internal/server/handler.go": ("//nolint", "func handler() {}"),
+        "native/app/main.rs": ("#[allow(dead_code)]", "fn main() {}"),
     }

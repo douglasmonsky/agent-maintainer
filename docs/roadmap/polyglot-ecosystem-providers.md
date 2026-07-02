@@ -4,7 +4,7 @@ Agent Maintainer should remain a coherent agent-maintenance framework rather tha
 
 ## Definition
 
-In this project, polyglot means supporting repositories that contain one or more programming-language ecosystems, such as Python, TypeScript/JavaScript, Go, Rust, Java, C#, Ruby, PHP, or mixed monorepos.
+In this project, polyglot means supporting repositories that contain one or more programming-language ecosystems, such as Python, TypeScript/JavaScript, Rust, Java, C#, Ruby, PHP, or mixed monorepos.
 
 Polyglot does not mean merely running arbitrary commands. It means applying Agent Maintainer's reviewability and repair-loop policies across ecosystems while preserving compact diagnostics, stable profiles, bounded artifacts, and agent-safe repair context.
 
@@ -50,7 +50,7 @@ Immediate design principle: core owns the loop; providers own ecosystem excellen
 
 Do not constrain Python excellence to fit a lowest-common-denominator provider model. Python is the core/reference provider and must preserve its current full design space. The provider architecture should make Python-specific behavior explicit, testable, and easier to evolve. It should not remove Python-specific capabilities, rename stable Python checks, weaken Python policy gates, or force Python tools into abstractions designed around other ecosystems.
 
-The provider seam should be capability-oriented. Providers may implement different capabilities at different maturity levels. Python can remain richer than experimental providers. A future TypeScript provider does not need mutation testing on day one because Python has Mutmut, and a Go provider does not need to mimic Pyright. The core framework should orchestrate checks and diagnostics, while ecosystem providers remain free to implement rich ecosystem-specific behavior.
+The provider seam should be capability-oriented. Providers may implement different capabilities at different maturity levels. Python can remain richer than experimental providers. A future TypeScript provider does not need mutation testing on day one because Python has Mutmut, and a future Rust provider does not need to mimic Pyright. The core framework should orchestrate checks and diagnostics, while ecosystem providers remain free to implement rich ecosystem-specific behavior.
 
 If a proposed abstraction makes an existing Python feature harder to express, stop and redesign the abstraction. Do not simplify Python behavior to satisfy the abstraction.
 
@@ -379,9 +379,8 @@ Acceptance criteria:
 
 Scope:
 
-- Add Go or Rust as a second experimental provider to validate the abstraction outside Node.
-- Go is deferred from the active provider surface by
-  [`phase-103-defer-go-provider.md`](phases/phase-103-defer-go-provider.md).
+- Add a second experimental non-Python provider to validate the abstraction
+  outside Node after TypeScript/JavaScript has stronger evidence.
 
 Acceptance criteria:
 

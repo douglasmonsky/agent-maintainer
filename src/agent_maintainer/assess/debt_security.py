@@ -70,7 +70,6 @@ def has_dependency_surface(evidence: RepoEvidence) -> bool:
         (
             evidence.has_dependency_file,
             evidence.has_package_json,
-            evidence.has_go_mod,
         ),
     )
 

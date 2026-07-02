@@ -87,7 +87,6 @@ phase. Do not re-expand this index into a monolithic blueprint.
 | 84 | [TypeScript Provider Doctor Hints And Fixture Smoke Tests](phases/phase-84-typescript-provider-doctor-hints-and-fixtures.md) |
 | 85 | [TypeScript Structured Output Repair Facts](phases/phase-85-typescript-structured-output-repair-facts.md) |
 | 86 | [Provider Contribution Guide](phases/phase-86-provider-contribution-guide.md) |
-| 87 | [Experimental Go Provider](phases/phase-87-experimental-go-provider.md) |
 | 88 | [Provider API Stability Decision](phases/phase-88-provider-api-stability-decision.md) |
 | 89 | [Measured Repair Case Studies](phases/phase-89-measured-repair-case-studies.md) |
 | 90 | [Workspace Config Foundation](phases/phase-90-workspace-config-foundation.md) |
@@ -98,14 +97,14 @@ phase. Do not re-expand this index into a monolithic blueprint.
 | 95 | [Provider-Aware File Change Classification](phases/phase-95-provider-aware-file-change-classification.md) |
 | 96 | [Advisory Reviewability Assessment](phases/phase-96-advisory-reviewability-assessment.md) |
 | 97 | [Advisory Ecosystem Suppression Classification](phases/phase-97-advisory-ecosystem-suppression-classification.md) |
-| 98 | [TypeScript/Go Reviewability Fixture Evidence](phases/phase-98-typescript-go-reviewability-fixture-evidence.md) |
+| 98 | [TypeScript Reviewability Fixture Evidence](phases/phase-98-typescript-reviewability-fixture-evidence.md) |
 | 99 | [Advisory Provider Reviewability Summaries](phases/phase-99-advisory-provider-reviewability-summaries.md) |
-| 100 | [TypeScript Maturation And Go Canary Freeze](phases/phase-100-typescript-maturation-go-canary.md) |
+| 100 | [TypeScript Provider Maturation](phases/phase-100-typescript-provider-maturation.md) |
 | 101 | [TypeScript Advisory Threshold Evidence](phases/phase-101-typescript-advisory-threshold-evidence.md) |
 | 102 | [TypeScript Setup Advisor Recommendations](phases/phase-102-typescript-setup-advisor.md) |
-| 103 | [Defer Go Provider From Active Surface](phases/phase-103-defer-go-provider.md) |
 | 104 | [TypeScript Test Repair Facts](phases/phase-104-typescript-test-repair-facts.md) |
 | 105 | [Provider Dispatch Registry](phases/phase-105-provider-dispatch-registry.md) |
+| 106 | [Archive Go Provider History Out Of Main](phases/phase-106-archive-go-provider-history.md) |
 
 ## Future Work
 

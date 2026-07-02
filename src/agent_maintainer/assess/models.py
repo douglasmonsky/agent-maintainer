@@ -27,7 +27,6 @@ class RepoEvidence:
     has_dependency_file: bool
     has_package_json: bool
     package_scripts: tuple[str, ...]
-    has_go_mod: bool
     has_container_or_iac: bool
     python_files: int
     source_files: int

@@ -63,5 +63,5 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src \
 ## Notes For Future Codex Tasks
 
 Start Phase 87 from the second-provider plan only after this guide is merged.
-Do not add Go, Rust, or another provider without using the guide as a review
+Do not add Rust or another provider without using the guide as a review
 checklist.

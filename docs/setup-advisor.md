@@ -33,7 +33,7 @@ The advisor checks the local repository shape only:
 - Local workflow files: GitHub Actions, pre-commit, and Git state.
 - Agent surfaces: `AGENTS.md`, Codex hooks, and Claude Code hooks.
 - Architecture files: `tach.toml` and `.importlinter`.
-- Scanner-relevant assets: `package.json`, `go.mod`, Docker, IaC, YAML, TOML,
+- Scanner-relevant assets: `package.json`, Docker, IaC, YAML, TOML,
   and JSON files.
 - Root `package.json` script names, used only to suggest explicit
   TypeScript/JavaScript provider command mapping.

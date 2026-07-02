@@ -24,7 +24,6 @@ current Python and TypeScript behavior.
 ## Non-Goals
 
 - No new language provider.
-- No Go provider restoration.
 - No TypeScript blocking gates.
 - No config schema changes.
 - No public provider plugin loading.
