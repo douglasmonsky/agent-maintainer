@@ -496,6 +496,21 @@ Planned work:
 
 - [x] Phase 103: Defer Go Provider From Active Surface
 
+## Next: TypeScript Test Repair Facts
+
+Agent Maintainer should extract concise repair facts from explicitly configured
+TypeScript/JavaScript test output when the output uses a supported JSON shape.
+This is structured repair support for the experimental TypeScript provider, not
+package-manager autodetection or blocking TypeScript policy.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-104-typescript-test-repair-facts.md`](roadmap/phases/phase-104-typescript-test-repair-facts.md)
+
+Planned work:
+
+- [ ] Phase 104: TypeScript Test Repair Facts
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid

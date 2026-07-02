@@ -1,11 +1,8 @@
 # Agent Maintainer Roadmap Blueprint
 
-This file is a compact roadmap index. Keep it small enough for agent context.
-Detailed implementation specs live in split files under `docs/roadmap`.
-
-Use `docs/ROADMAP.md` as the recovery checklist. Before implementing a
-phase, open the detailed spec linked below. Do not re-expand this index into
-a monolithic blueprint.
+This compact roadmap index points to split specs under `docs/roadmap`.
+Use `docs/ROADMAP.md` as recovery checklist. Open linked specs before each
+phase. Do not re-expand this index into a monolithic blueprint.
 
 ## Overview
 
@@ -107,6 +104,7 @@ a monolithic blueprint.
 | 101 | [TypeScript Advisory Threshold Evidence](phases/phase-101-typescript-advisory-threshold-evidence.md) |
 | 102 | [TypeScript Setup Advisor Recommendations](phases/phase-102-typescript-setup-advisor.md) |
 | 103 | [Defer Go Provider From Active Surface](phases/phase-103-defer-go-provider.md) |
+| 104 | [TypeScript Test Repair Facts](phases/phase-104-typescript-test-repair-facts.md) |
 
 ## Future Work
 
