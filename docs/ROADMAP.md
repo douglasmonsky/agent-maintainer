@@ -350,6 +350,21 @@ Planned work:
 
 - [x] Phase 93: Provider Stabilization And Doctor Alignment
 
+## Next: Multi-Ecosystem Reviewability Policy Design
+
+Agent Maintainer should not overclaim polyglot reviewability yet. Current
+reviewability checks are globally scheduled but Python-backed. This phase
+records the policy direction for change budgets, suppressions, file length,
+structure cohesion, and future file-change classification before those checks
+are generalized across TypeScript, Go, or later providers.
+Detailed scope:
+
+[`docs/roadmap/phases/phase-94-multi-ecosystem-reviewability-policy-design.md`](roadmap/phases/phase-94-multi-ecosystem-reviewability-policy-design.md)
+
+Planned work:
+
+- [ ] Phase 94: Multi-Ecosystem Reviewability Policy Design
+
 ## Future Work
 
 No active Future Work items remain in the current roadmap completion gate.
