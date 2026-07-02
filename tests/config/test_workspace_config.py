@@ -67,6 +67,28 @@ def test_workspace_config_loads_named_tables(tmp_path: Path) -> None:
     )
 
 
+def test_coerce_updates_reads_workspace_tables() -> None:
+    """Top-level config coercion preserves nested workspace tables."""
+    updates = coercion.coerce_updates(
+        {
+            "workspaces": {
+                "api": {
+                    "source_roots": ["services/api/src"],
+                    "test_roots": ["services/api/tests"],
+                },
+            },
+        }
+    )
+
+    assert updates["workspaces"] == (
+        schema.WorkspaceConfig(
+            name="api",
+            source_roots=("services/api/src",),
+            test_roots=("services/api/tests",),
+        ),
+    )
+
+
 def test_invalid_workspace_config_raises_clear_errors() -> None:
     """Invalid workspace tables fail with field-specific messages."""
     with pytest.raises(TypeError, match="workspaces must be a table"):

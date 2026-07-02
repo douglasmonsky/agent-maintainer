@@ -313,6 +313,7 @@ do_not_mutate = [
 pytest_add_cli_args_test_selection = [
   "tests/config/test_config_coercion.py",
   "tests/config/test_config_loading.py",
+  "tests/config/test_workspace_config.py::test_coerce_updates_reads_workspace_tables",
   "tests/core/test_runtime.py",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_ranks_branchy_tested_logic",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_renderers_are_advisory",
