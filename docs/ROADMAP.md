@@ -511,6 +511,21 @@ Planned work:
 
 - [x] Phase 104: TypeScript Test Repair Facts
 
+## Latest Completed: Provider Dispatch Registry
+
+Agent Maintainer should keep provider-specific classification and advisory
+suppression dispatch behind the internal registry instead of direct imports in
+assessment helpers. This is provider-seam stabilization, not new language
+support or public plugin API work.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-105-provider-dispatch-registry.md`](roadmap/phases/phase-105-provider-dispatch-registry.md)
+
+Planned work:
+
+- [x] Phase 105: Provider Dispatch Registry
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid

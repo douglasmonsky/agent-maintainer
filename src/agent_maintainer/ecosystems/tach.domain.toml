@@ -18,8 +18,7 @@ depends_on = [
 path = "file_changes"
 depends_on = [
  "models",
- "python.classification",
- "typescript.classification",
+ "registry",
  "//agent_maintainer.config.schema",
 ]
 
@@ -33,8 +32,12 @@ depends_on = []
 path = "registry"
 depends_on = [
  "models",
+ "python.classification",
  "python.provider",
+ "typescript.classification",
  "typescript.provider",
+ "typescript.suppressions",
+ "//agent_maintainer.config.schema",
 ]
 
 
