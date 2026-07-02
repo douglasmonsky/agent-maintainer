@@ -45,6 +45,10 @@ It records changed-file ecosystem, role, generated/ignored state, and change
 kind for enabled providers. This remains advisory input data only; it does not
 widen blocking reviewability gates.
 
+Use `python -m agent_maintainer assess reviewability` to inspect those
+classifications for a branch. The command summarizes changed files by ecosystem
+and role, but does not fail builds.
+
 Future policy adapters should consume a generic file-change model rather than
 hard-coding one language's file patterns into every policy check.
 

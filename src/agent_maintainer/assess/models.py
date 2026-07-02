@@ -92,6 +92,45 @@ class DebtScoreReport:
     evidence: RepoEvidence
 
 
+@dataclass(frozen=True)
+class ReviewabilityChange:
+    """One advisory changed-file classification."""
+
+    path: str
+    ecosystem: str
+    role: str
+    change_kind: str
+    added: int
+    deleted: int
+    generated: bool = False
+    ignored: bool = False
+
+
+@dataclass(frozen=True)
+class ReviewabilityCount:
+    """Count for one advisory reviewability grouping."""
+
+    key: str
+    count: int
+
+
+@dataclass(frozen=True)
+class ReviewabilityReport:
+    """Advisory provider-aware reviewability summary."""
+
+    target: str
+    base_ref: str
+    staged: bool
+    total_changed_files: int
+    classified_files: int
+    unclassified_files: int
+    by_ecosystem: tuple[ReviewabilityCount, ...]
+    by_role: tuple[ReviewabilityCount, ...]
+    changes: tuple[ReviewabilityChange, ...]
+    advisory_note: str
+    next_commands: tuple[str, ...]
+
+
 def to_dict(value: object) -> object:
     """Return a JSON-serializable dataclass value."""
     if hasattr(value, "__dataclass_fields__"):

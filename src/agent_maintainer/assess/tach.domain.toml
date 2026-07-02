@@ -7,11 +7,12 @@ depends_on = []
 [[modules]]
 path = "cli"
 depends_on = [
-  "//agent_maintainer.config.loader",
-  "debt_score",
-  "evidence",
-  "reporting",
-  "setup_advisor",
+"//agent_maintainer.config.loader",
+"debt_score",
+"evidence",
+"reporting",
+"reviewability",
+"setup_advisor",
 ]
 
 [[modules]]
@@ -58,6 +59,16 @@ depends_on = []
 [[modules]]
 path = "reporting"
 depends_on = ["debt_score", "models"]
+
+[[modules]]
+path = "reviewability"
+depends_on = [
+  "//agent_maintainer.checks.change_budget",
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.ecosystems.file_changes",
+  "//agent_maintainer.ecosystems.models",
+  "models",
+]
 
 [[modules]]
 path = "setup_advisor"
