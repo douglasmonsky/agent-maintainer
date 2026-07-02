@@ -1,58 +1,74 @@
 # Multi-Ecosystem Reviewability Policy
 
-Agent Maintainer is moving toward polyglot support, but reviewability policy is
-not fully multi-ecosystem yet. In the current beta, reviewability checks are
-globally scheduled and Python-backed.
+Agent Maintainer is moving toward polyglot support, but blocking
+reviewability policy is not fully multi-ecosystem yet. In the current beta,
+reviewability gates are globally scheduled and still Python-backed.
 
 That distinction matters:
 
 - Python remains the core/reference provider with full reviewability policy.
 - TypeScript/JavaScript and Go providers run explicitly configured commands.
+- TypeScript/JavaScript and Go now emit advisory changed-file and suppression
+  facts through `assess reviewability`.
 - TypeScript/JavaScript and Go do not yet receive blocking change-budget,
-  suppression-budget, file-length, structure-cohesion, or test-relevance policy
-  gates from their classifiers.
+  suppression-budget, file-length, structure-cohesion, or test-relevance gates.
 
-## Current Behavior
+For the public maturity table, see [Provider Status](provider-status.md).
 
-The following checks are currently Python-backed:
+## Current Blocking Gates
 
-| Check | Current implementation | Current scope |
+The following checks remain Python-backed:
+
+| Check | Current implementation | Current blocking scope |
 |---|---|---|
-| `change-budget` | `agent_maintainer.checks.change_budget` | Python source/test paths and configured roots. |
+| `change-budget` | `agent_maintainer.checks.change_budget` | Python source/test paths under configured roots. |
 | `file-length` | `agent_maintainer.checks.file_lengths` | Python files under configured file-length paths. |
-| `structure-cohesion` | `agent_maintainer.checks.structure` | Python files and folder-level Python cohesion hints. |
+| `structure-cohesion` | `agent_maintainer.checks.structure` | Folder-level Python cohesion hints. |
 | `suppression-budget` | `agent_maintainer.checks.suppression_budget` | Python suppression markers such as `noqa`, `type: ignore`, `pylint: disable`, `pyright`, and `pragma: no cover`. |
 | `source-without-test-change` | change-budget/test-intelligence helpers | Python source/test relevance. |
 
-Experimental TypeScript/JavaScript and Go providers may classify files and emit
-configured command checks, but those classifications are preparatory. They do
-not currently widen the blocking Python reviewability checks.
+Experimental TypeScript/JavaScript and Go providers may classify files and run
+configured command checks, but those facts do not widen current blocking Python
+reviewability gates.
 
-## Beta Decision
+## Advisory Assessment
 
-Keep blocking reviewability policy Python-backed until provider-aware policy
-adapters are characterized and tested.
+`python -m agent_maintainer assess reviewability` is the current bridge between
+the Python-backed policy and future cross-ecosystem policy adapters.
 
-Do not aggregate TypeScript/JavaScript or Go source changes into the current
-blocking change-budget yet. Cross-ecosystem aggregation should start as
-advisory output, then become configurable, then become a blocking policy only
-after fixture repos prove low-noise behavior.
+It reports:
+
+- changed files grouped by ecosystem;
+- changed files grouped by role, such as source, test, config, docs, generated,
+  dependency, and ignored;
+- unclassified changed files;
+- advisory TypeScript/JavaScript and Go suppression findings;
+- broad advisory suppression counts;
+- next commands for the existing blocking verification loop.
+
+The command is advisory-only. It exits successfully when it can produce the
+report, even when it finds TypeScript/JavaScript or Go suppressions.
 
 ## File-Change Classification
 
 Phase 95 added the internal `agent_maintainer.ecosystems.file_changes` seam.
-It records changed-file ecosystem, role, generated/ignored state, and change
-kind for enabled providers. This remains advisory input data only; it does not
-widen blocking reviewability gates.
+It lets enabled built-in providers classify changed paths without changing
+current verifier behavior.
 
-Use `python -m agent_maintainer assess reviewability` to inspect those
-classifications for a branch. The command summarizes changed files by ecosystem
-and role, but does not fail builds.
+Current role model:
 
-Future policy adapters should consume a generic file-change model rather than
-hard-coding one language's file patterns into every policy check.
+| Role | Meaning |
+|---|---|
+| `source` | Runtime source code for an ecosystem. |
+| `test` | Test files for an ecosystem. |
+| `generated` | Generated code or generated artifacts. |
+| `config` | Tooling, package, or project configuration. |
+| `dependency` | Dependency lock or manifest files. |
+| `docs` | Documentation files. |
+| `ignored` | Paths excluded from provider policy, such as build artifacts. |
+| `unknown` | Not classified by an enabled provider. |
 
-Proposed internal shape, non-binding:
+The internal model is intentionally small:
 
 ```python
 @dataclass(frozen=True)
@@ -66,24 +82,15 @@ class FileChangeClassification:
     reason: str = ""
 ```
 
-The policy engine should ask enabled providers to classify changed files, then
-apply policy by capability:
+The model is evidence for future policy adapters. It is not a promise that all
+roles are already blocking gates.
 
-- source spread and reviewability budgets;
-- source/test relationship;
-- suppression additions;
-- file-size and folder-cohesion hints;
-- generated and ignored-file exclusions.
+## Suppression Classification
 
-Python output, thresholds, and messages must remain stable unless a separate
-migration explicitly changes them.
+Suppression classifiers remain ecosystem-specific. Agent Maintainer should not
+force every language into Python suppression semantics.
 
-## Suppression Policy Direction
-
-Suppression classifiers must remain ecosystem-specific. Do not force every
-language into Python suppression semantics.
-
-Python suppression examples:
+Python blocking suppression examples:
 
 - `# noqa`
 - `# type: ignore`
@@ -91,7 +98,7 @@ Python suppression examples:
 - `# pyright: ignore`
 - `# pragma: no cover`
 
-TypeScript/JavaScript suppression examples to model later:
+TypeScript/JavaScript advisory suppression examples:
 
 - `// eslint-disable`
 - `// eslint-disable-next-line`
@@ -102,43 +109,52 @@ TypeScript/JavaScript suppression examples to model later:
 - `/* istanbul ignore */`
 - `// c8 ignore next`
 
-Go suppression examples to model later:
+Go advisory suppression examples:
 
 - `//nolint`
 - `//nolint:<linter>`
-- build tags or generated markers only when policy can distinguish suppression
-  from normal Go metadata.
 
-The future suppression budget should report the ecosystem and exact suppression
-kind, not just a generic count.
+Current advisory reports include the ecosystem, suppression kind, broad/narrow
+status, and reason. Broad advisory suppressions should become one input to
+future policy design, not an immediate blocking failure.
+
+## Beta Decision
+
+Keep blocking reviewability policy Python-backed until provider-aware policy
+adapters are characterized and tested. Do not aggregate TypeScript/JavaScript
+or Go source changes into current blocking change-budget yet.
+
+Cross-ecosystem aggregation should progress in this order:
+
+1. Advisory output with provider classifications and suppression facts.
+2. Fixture-backed policy design for each ecosystem.
+3. Configurable non-blocking thresholds.
+4. Blocking policy only after real repositories prove low-noise behavior.
 
 ## File Length And Structure Cohesion
 
 Keep file-length and structure-cohesion blocking behavior Python-only for now.
 
-Future TypeScript/JavaScript support should start advisory because file shape
-varies across framework components, generated code, configuration files, and
-test fixtures. Future Go support should account for package directories,
-generated protobuf files, and table-driven tests before applying blocking
-thresholds.
+Future TypeScript/JavaScript support should start advisory because file shapes
+vary across framework components, generated code, configuration files, and test
+fixtures.
 
-## Next Implementation Step
+Future Go support should account for package directories, generated protobuf
+files, and table-driven tests before applying blocking thresholds.
 
-The next code phase should introduce provider-aware file-change classification
-behind characterization tests. It should not enable new blocking TypeScript or
-Go policy gates by default.
+## Next Direction
+
+The next reviewability-policy work should design and test provider-aware policy
+adapters, not add another ecosystem provider.
 
 Recommended sequence:
 
-1. Add tests that pin current Python reviewability output.
-2. Introduce a generic internal file-change classification model.
-3. Have Python populate the model with current behavior unchanged.
-4. Add advisory TypeScript/JavaScript and Go classification reports.
-5. Only later consider configurable cross-ecosystem policy gates.
-
-## Related Reading
-
-- [Ecosystem Provider Status](provider-status.md)
-- [Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
-- [Experimental Go Provider](go-provider.md)
-- [Polyglot Ecosystem Provider Roadmap](roadmap/polyglot-ecosystem-providers.md)
+1. Add fixture repositories for TypeScript/JavaScript and Go reviewability
+   policy scenarios.
+2. Add advisory source-spread and source/test relationship summaries per
+   ecosystem.
+3. Add configurable per-provider thresholds that default to advisory.
+4. Compare advisory output against real repositories before enabling blocking
+   behavior.
+5. Preserve Python check names, messages, thresholds, and profile behavior
+   unless a separate migration explicitly changes them.
