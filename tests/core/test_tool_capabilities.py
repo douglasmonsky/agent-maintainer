@@ -45,7 +45,10 @@ def test_external_binary_tool_state_reports_missing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(capabilities.shutil, "which", lambda name: None)
+    def missing_tool(_name: str, path: str | None = None) -> None:
+        return None
+
+    monkeypatch.setattr(capabilities.shutil, "which", missing_tool)
     capability = capabilities.ToolCapability("git", capabilities.EXTERNAL_BINARY)
 
     state = capabilities.evaluate_tool(tmp_path, capability)

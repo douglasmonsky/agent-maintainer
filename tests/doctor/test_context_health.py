@@ -39,7 +39,10 @@ def test_headroom_missing_not_failure_when_not_configured(
 ) -> None:
     """Missing Headroom is not a failure unless Headroom is configured."""
 
-    monkeypatch.setattr(context_health.importlib_util, "find_spec", lambda name: None)
+    def missing_spec(_name: str, package: str | None = None) -> None:
+        return None
+
+    monkeypatch.setattr(context_health.importlib_util, "find_spec", missing_spec)
 
     result = context_health.check_headroom_backend(MaintainerConfig())
 
@@ -50,7 +53,10 @@ def test_headroom_missing_not_failure_when_not_configured(
 def test_headroom_missing_fails_when_required(monkeypatch: pytest.MonkeyPatch) -> None:
     """Required configured Headroom backend fails when not installed."""
 
-    monkeypatch.setattr(context_health.importlib_util, "find_spec", lambda name: None)
+    def missing_spec(_name: str, package: str | None = None) -> None:
+        return None
+
+    monkeypatch.setattr(context_health.importlib_util, "find_spec", missing_spec)
     config = MaintainerConfig(
         context_compression_backend="headroom",
         context_compression_enabled=True,
@@ -68,7 +74,14 @@ def test_headroom_available_passes(monkeypatch: pytest.MonkeyPatch) -> None:
     """Configured Headroom backend passes when import is available."""
 
     spec = importlib.machinery.ModuleSpec("headroom", loader=None)
-    monkeypatch.setattr(context_health.importlib_util, "find_spec", lambda name: spec)
+
+    def available_spec(
+        _name: str,
+        package: str | None = None,
+    ) -> importlib.machinery.ModuleSpec:
+        return spec
+
+    monkeypatch.setattr(context_health.importlib_util, "find_spec", available_spec)
     config = MaintainerConfig(
         context_compression_backend="headroom",
         context_compression_enabled=True,
