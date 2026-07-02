@@ -35,6 +35,8 @@ The advisor checks the local repository shape only:
 - Architecture files: `tach.toml` and `.importlinter`.
 - Scanner-relevant assets: `package.json`, `go.mod`, Docker, IaC, YAML, TOML,
   and JSON files.
+- Root `package.json` script names, used only to suggest explicit
+  TypeScript/JavaScript provider command mapping.
 
 ## Adoption Flow
 
@@ -61,6 +63,24 @@ The advisor emits prompts such as:
 
 Those prompts are work instructions for a coding agent. Use them before
 tightening thresholds on a mature repo.
+
+## TypeScript/JavaScript Advice
+
+When a repository has `package.json` scripts such as `lint`, `typecheck`, or
+`test`, the advisor may recommend enabling the experimental TypeScript provider.
+That recommendation does not guess the package manager or invent commands.
+Map existing scripts into explicit config, for example:
+
+```toml
+[tool.agent_maintainer]
+enable_typescript = true
+typescript_lint_command = ["npm", "run", "lint"]
+typescript_typecheck_command = ["npm", "run", "typecheck"]
+typescript_test_command = ["npm", "test"]
+```
+
+Keep TypeScript reviewability policy advisory until fixture or real-repo
+evidence proves low-noise thresholds.
 
 ## Relationship To Doctor
 

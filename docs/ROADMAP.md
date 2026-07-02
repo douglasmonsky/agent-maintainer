@@ -466,6 +466,21 @@ Planned work:
 
 - [x] Phase 101: TypeScript Advisory Threshold Evidence
 
+## Next: TypeScript Setup Advisor Recommendations
+
+Agent Maintainer should help adopters configure the experimental TypeScript
+provider when package scripts already expose lint, typecheck, or test
+commands, without guessing package managers or adding blocking TypeScript
+policy.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-102-typescript-setup-advisor.md`](roadmap/phases/phase-102-typescript-setup-advisor.md)
+
+Planned work:
+
+- [x] Phase 102: TypeScript Setup Advisor Recommendations
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid

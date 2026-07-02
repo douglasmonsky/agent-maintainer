@@ -13,12 +13,13 @@ from agent_maintainer.assess.setup_advisor import build_setup_report
 
 MANY_SOURCE_FILES = 45
 AGENT_HEAVY_FILES = 25
+TEXT_ENCODING = "utf-8"
 
 
-def test_setup_advisor_recommends_agent_track_for_agent_repo(tmp_path: Path) -> None:
+def test_setup_advisor_recommends_agent_track(tmp_path: Path) -> None:
     """Agent assets produce agent track recommendation and setup prompts."""
     write_repo(tmp_path)
-    (tmp_path / "AGENTS.md").write_text("Read local guidance.\n", encoding="utf-8")
+    (tmp_path / "AGENTS.md").write_text("Read local guidance.\n", encoding=TEXT_ENCODING)
     (tmp_path / ".codex" / "hooks").mkdir(parents=True)
     (tmp_path / ".git").mkdir()
     (tmp_path / ".github" / "workflows").mkdir(parents=True)
@@ -50,7 +51,7 @@ def test_setup_advisor_json_cli(
 
 def test_setup_advisor_inspects_non_python_repo(tmp_path: Path) -> None:
     """Non-Python targets stay low-confidence and dry-run first."""
-    (tmp_path / "package.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "package.json").write_text("{}", encoding=TEXT_ENCODING)
 
     report = build_setup_report(collect_evidence(tmp_path))
 
@@ -72,9 +73,9 @@ def test_setup_advisor_recommends_hardening_track(tmp_path: Path) -> None:
     (tmp_path / ".github" / "workflows").mkdir(parents=True)
     (tmp_path / ".github" / "workflows" / "verify.yml").write_text(
         "name: verify\n",
-        encoding="utf-8",
+        encoding=TEXT_ENCODING,
     )
-    (tmp_path / "config.yml").write_text("enabled: true\n", encoding="utf-8")
+    (tmp_path / "config.yml").write_text("enabled: true\n", encoding=TEXT_ENCODING)
 
     report = build_setup_report(collect_evidence(tmp_path))
 
@@ -82,17 +83,42 @@ def test_setup_advisor_recommends_hardening_track(tmp_path: Path) -> None:
     assert any(gate.name == "yamllint" for gate in report.optional_gates)
 
 
+def test_setup_advisor_recommends_ts_scripts(tmp_path: Path) -> None:
+    """Relevant package scripts produce explicit TypeScript provider advice."""
+    write_repo(tmp_path)
+    write_package_scripts(tmp_path, ("lint", "typecheck", "test"))
+
+    report = build_setup_report(collect_evidence(tmp_path))
+    gate_names = {gate.name for gate in report.optional_gates}
+
+    assert "osv-scanner" in gate_names
+    assert "typescript-provider" in gate_names
+    assert any("explicit TypeScript provider" in prompt for prompt in report.agent_prompts)
+
+
+def test_setup_advisor_ignores_irrelevant_scripts(tmp_path: Path) -> None:
+    """Package scripts alone do not imply TypeScript provider setup."""
+    write_repo(tmp_path)
+    write_package_scripts(tmp_path, ("build", "preview"))
+
+    report = build_setup_report(collect_evidence(tmp_path))
+    gate_names = {gate.name for gate in report.optional_gates}
+
+    assert "osv-scanner" in gate_names
+    assert "typescript-provider" not in gate_names
+
+
 def test_setup_advisor_recommends_legacy_ratchet(tmp_path: Path) -> None:
     """Large untested repos should start with legacy-ratchet adoption."""
 
     (tmp_path / "pyproject.toml").write_text(
         "[project]\nname = 'legacy'\n",
-        encoding="utf-8",
+        encoding=TEXT_ENCODING,
     )
     package = tmp_path / "src" / "legacy"
     package.mkdir(parents=True)
     for index in range(MANY_SOURCE_FILES):
-        (package / f"module_{index}.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (package / f"module_{index}.py").write_text("VALUE = 1\n", encoding=TEXT_ENCODING)
 
     report = build_setup_report(collect_evidence(tmp_path))
 
@@ -102,18 +128,18 @@ def test_setup_advisor_recommends_legacy_ratchet(tmp_path: Path) -> None:
     assert any("smallest behavior surface" in prompt for prompt in report.agent_prompts)
 
 
-def test_setup_advisor_recommends_agent_heavy_preset(tmp_path: Path) -> None:
+def test_setup_advisor_agent_heavy_preset(tmp_path: Path) -> None:
     """Mature agent repos can get the ai-agent-heavy preset."""
 
     write_repo(tmp_path)
-    (tmp_path / "AGENTS.md").write_text("Read local guidance.\n", encoding="utf-8")
+    (tmp_path / "AGENTS.md").write_text("Read local guidance.\n", encoding=TEXT_ENCODING)
     package = tmp_path / "src" / "example"
     tests = tmp_path / "tests"
     for index in range(AGENT_HEAVY_FILES):
-        (package / f"module_{index}.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (package / f"module_{index}.py").write_text("VALUE = 1\n", encoding=TEXT_ENCODING)
         (tests / f"test_module_{index}.py").write_text(
             "def test_value():\n    assert True\n",
-            encoding="utf-8",
+            encoding=TEXT_ENCODING,
         )
 
     report = build_setup_report(collect_evidence(tmp_path))
@@ -129,14 +155,23 @@ def write_repo(root: Path) -> None:
 [tool.agent_maintainer]
 mode = "custom"
 """.strip(),
-        encoding="utf-8",
+        encoding=TEXT_ENCODING,
     )
     package = root / "src" / "example"
     package.mkdir(parents=True)
-    (package / "__init__.py").write_text("", encoding="utf-8")
+    (package / "__init__.py").write_text("", encoding=TEXT_ENCODING)
     tests = root / "tests"
     tests.mkdir()
     (tests / "test_example.py").write_text(
         "def test_example():\n    assert True\n",
-        encoding="utf-8",
+        encoding=TEXT_ENCODING,
+    )
+
+
+def write_package_scripts(root: Path, script_names: tuple[str, ...]) -> None:
+    """Write a package.json with named scripts."""
+    scripts = {name: f"echo {name}" for name in script_names}
+    (root / "package.json").write_text(
+        json.dumps({"scripts": scripts}),
+        encoding=TEXT_ENCODING,
     )

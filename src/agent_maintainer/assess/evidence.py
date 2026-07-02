@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess  # nosec B404
 import tomllib
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 from agent_maintainer.assess.models import RepoEvidence
 
@@ -83,6 +85,7 @@ def collect_evidence(
             ),
         ),
         has_package_json=(root / "package.json").exists(),
+        package_scripts=_package_scripts(root),
         has_go_mod=(root / "go.mod").exists(),
         has_container_or_iac=_has_container_or_iac(root, paths),
         python_files=len(python_files),
@@ -169,6 +172,27 @@ def _has_agent_config(root: Path) -> bool:
         return False
     tool = data.get("tool", {})
     return isinstance(tool, dict) and isinstance(tool.get("agent_maintainer"), dict)
+
+
+def _package_scripts(root: Path) -> tuple[str, ...]:
+    """Return sorted root package.json script names when available."""
+    package_json = root / "package.json"
+    if not package_json.exists():
+        return ()
+
+    try:
+        data = json.loads(package_json.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ()
+
+    if not isinstance(data, dict):
+        return ()
+    package_data = cast(Mapping[str, object], data)
+    scripts = package_data.get("scripts")
+    if not isinstance(scripts, dict):
+        return ()
+    script_data = cast(Mapping[object, object], scripts)
+    return tuple(sorted(key for key in script_data if isinstance(key, str)))
 
 
 def _is_test_path(root: Path, path: Path) -> bool:
