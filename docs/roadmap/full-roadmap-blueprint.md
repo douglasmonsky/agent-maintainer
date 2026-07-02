@@ -41,6 +41,7 @@ index into a monolithic blueprint.
 | 94 | [Multi-Ecosystem Reviewability Policy Design](phases/phase-94-multi-ecosystem-reviewability-policy-design.md) |
 | 95 | [Provider-Aware File Change Classification](phases/phase-95-provider-aware-file-change-classification.md) |
 | 96 | [Advisory Reviewability Assessment](phases/phase-96-advisory-reviewability-assessment.md) |
+| 97 | [Advisory Ecosystem Suppression Classification](phases/phase-97-advisory-ecosystem-suppression-classification.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
