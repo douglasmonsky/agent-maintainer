@@ -1,10 +1,14 @@
 ## Summary
 
-- TODO
+- What changed:
+- Why it changed:
+- User/developer impact:
 
 ## Verification
 
-- TODO
+- [ ] Focused tests:
+- [ ] Agent Maintainer profile(s):
+- [ ] Not run:
 
 ## Cohesive-Change Override
 

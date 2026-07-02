@@ -52,6 +52,32 @@ Mechanical package movement.
 """
 
 
+def test_pull_request_template_override_labels_match_parser() -> None:
+    """Committed PR template uses labels accepted by override parser."""
+    template = Path(".github/pull_request_template.md").read_text(encoding="utf-8")
+    body = (
+        template.replace("- Override requested: no", "- Override requested: yes")
+        .replace(
+            "- Why this is one cohesive unit:",
+            "- Why this is one cohesive unit: package paths move together.",
+        )
+        .replace(
+            "- Why smaller PRs would make the repository less coherent:",
+            "- Why smaller PRs would make the repository less coherent: imports break temporarily.",
+        )
+        .replace(
+            "- Tests/verification proving behavior is unchanged:",
+            "- Tests/verification proving behavior is unchanged: full verifier passed.",
+        )
+        .replace("- Behavior change:", "- Behavior change: none, behavior unchanged.")
+    )
+
+    request = cohesive_override.parse_pr_body(body)
+
+    assert request.requested
+    assert request.failures == ()
+
+
 def set_github_pr_body(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: str) -> None:
     """Set GitHub pull request event environment for override parsing."""
 
