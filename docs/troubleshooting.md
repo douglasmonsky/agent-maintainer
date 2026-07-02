@@ -37,7 +37,7 @@ preserved inside those values.
 | Missing Python package command: cyclonedx-py or pip-licenses | Run `python3 -m agent_maintainer bootstrap` after refreshing `config/dev-lock.txt`. |
 | GitHub Actions-only tool is not applicable | Add workflows only if that gate is relevant for the repository. |
 | Manual optional tool is disabled | Enable the slow/manual gate only when that workflow is intentionally adopted. |
-| Missing source, test, package, or coverage roots | Set `[tool.agent_maintainer]` paths in `pyproject.toml`. |
+| Missing source, test, package, or coverage roots | Set `[tool.agent_maintainer]` paths in `pyproject.toml`, or use `.agent-maintainer/config.toml` / `agent-maintainer.toml` when the repo does not use pyproject config. |
 | Legacy file-length ratchet fails | Split the new or worsened oversized file, or refresh `file_length_baseline` only after reviewing the diff. |
 | Pre-commit hook is not installed | Run `python3 -m agent_maintainer install`. |
 | Architecture config is absent | Add `tach.toml` or `.importlinter`, or accept the optional skip. |

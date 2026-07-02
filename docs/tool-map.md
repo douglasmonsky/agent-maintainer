@@ -227,7 +227,11 @@ through the normal full/CI verifier profiles.
 
 ## Configuration model
 
-Shared path configuration is read from `[tool.agent_maintainer]` in `pyproject.toml`, then `AGENT_MAINTAINER_*` environment variables, then CLI flags. The important fields are:
+Shared path configuration is read from `[tool.agent_maintainer]` in
+`pyproject.toml` when present. If that table is absent, Agent Maintainer reads
+the first neutral config file found: `.agent-maintainer/config.toml`, then
+`agent-maintainer.toml`. `AGENT_MAINTAINER_*` environment variables and CLI
+flags override file config. The important fields are:
 
 ```toml
 [tool.agent_maintainer]
@@ -245,7 +249,10 @@ enabled = true
 log_dir = ".verify-logs"
 ```
 
-Mode can be `custom`, `legacy-ratchet`, or `fresh-strict`. Built-in defaults apply first, then mode defaults, then explicit pyproject fields, environment variables, and CLI flags. Config-field metadata guards this public surface against schema/env/CLI drift; see [Configuration Metadata](config-metadata.md).
+Mode can be `custom`, `legacy-ratchet`, or `fresh-strict`. Built-in defaults
+apply first, then mode defaults, file config, environment variables, and CLI
+flags. Config-field metadata guards this public surface against schema/env/CLI
+drift; see [Configuration Metadata](config-metadata.md).
 
 `doctor` reports unknown `[tool.agent_maintainer]` and
 `[tool.agent_maintainer.diagnostics]` keys as warnings so typoed policy does

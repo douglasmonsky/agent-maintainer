@@ -280,7 +280,10 @@ Read more:
 
 ## Configuration
 
-Configuration lives in `pyproject.toml`.
+Configuration can live in `pyproject.toml` or in a neutral Agent Maintainer
+config file. Python repos should usually keep using `[tool.agent_maintainer]`
+in `pyproject.toml`; mixed or future non-Python repos can use
+`.agent-maintainer/config.toml` or `agent-maintainer.toml`.
 
 ```toml
 [tool.agent_maintainer]
@@ -300,9 +303,11 @@ log_dir = ".verify-logs"
 run_history_limit = 10
 ```
 
-Precedence is built-in defaults, mode defaults, explicit `pyproject.toml`
-fields, environment variables, then CLI flags. Environment overrides use the
-`AGENT_MAINTAINER_*` prefix.
+Precedence is built-in defaults, mode defaults, file config, environment
+variables, then CLI flags. When multiple file configs exist,
+`pyproject.toml` `[tool.agent_maintainer]` wins; otherwise
+`.agent-maintainer/config.toml` wins over `agent-maintainer.toml`.
+Environment overrides use the `AGENT_MAINTAINER_*` prefix.
 
 ```bash
 AGENT_MAINTAINER_SOURCE_ROOTS=src,tests python3 -m agent_maintainer doctor
