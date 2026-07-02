@@ -99,6 +99,7 @@ def run_doctor(
         maintainer_doctor_hook_audit.check_hook_audit(repo_root, config),
         maintainer_doctor_policy.check_pip_audit_safety(config),
         maintainer_doctor_policy.check_secret_scanning_policy(config),
+        *maintainer_doctor_policy.check_typescript_provider(config),
         maintainer_doctor_policy.check_context_pack_upload_policy(repo_root, config),
         *maintainer_doctor_policy.check_context_health(repo_root, config),
         check_optional_gates(repo_root, config),

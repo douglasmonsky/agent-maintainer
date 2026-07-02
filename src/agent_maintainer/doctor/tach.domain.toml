@@ -109,7 +109,15 @@ depends_on = [
   "support.context_artifacts",
   "support.context_health",
   "support.models",
+  "support.typescript",
   "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "support.typescript"
+depends_on = [
+  "//agent_maintainer.config.schema",
+  "support.models",
 ]
 
 [[modules]]

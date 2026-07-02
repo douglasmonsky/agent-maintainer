@@ -44,6 +44,11 @@ If `enable_typescript = true` but a command is empty, the corresponding check
 is reported as an optional skip. Agent Maintainer will not guess a package
 manager or invent a command.
 
+`doctor` stays silent when the provider is disabled. When the provider is
+enabled, `doctor` reports whether any TypeScript commands are configured and
+whether configured command executables are available on PATH, including
+repo-local `node_modules/.bin`.
+
 ## Classification
 
 The provider classifies common TypeScript and JavaScript paths:
@@ -62,7 +67,6 @@ without changing existing Python policy behavior.
 
 - No package-manager autodetection.
 - No generated starter files yet.
-- No TypeScript-specific doctor rows yet.
 - No structured parser for ESLint, TypeScript, Vitest, Jest, or coverage output.
 - No TypeScript coverage, mutation, dependency, or security adapter.
 - No public plugin API.
