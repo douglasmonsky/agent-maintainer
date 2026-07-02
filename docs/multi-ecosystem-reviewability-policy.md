@@ -46,6 +46,12 @@ It reports:
 - broad advisory suppression counts;
 - next commands for the existing blocking verification loop.
 
+Advisory change collection uses a neutral git numstat reader, not Python
+`change-budget` filters. This keeps TypeScript/JavaScript lockfiles, Go
+dependency files, generated files, config files, and other non-Python
+provider-owned changes visible to advisory reports. Blocking `change-budget`
+keeps its Python-specific exclusions and behavior.
+
 The command is advisory-only. It exits successfully when it can produce the
 report, even when it finds TypeScript/JavaScript or Go suppressions.
 

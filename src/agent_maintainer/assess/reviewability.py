@@ -8,9 +8,9 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from agent_maintainer.assess import models as assess_models
-from agent_maintainer.checks import change_budget, suppression_budget
+from agent_maintainer.checks import suppression_budget
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.ecosystems import file_changes
+from agent_maintainer.ecosystems import file_changes, git_changes
 from agent_maintainer.ecosystems import models as ecosystem_models
 from agent_maintainer.ecosystems.go import suppressions as go_suppressions
 from agent_maintainer.ecosystems.typescript import suppressions as ts_suppressions
@@ -38,7 +38,7 @@ def build_reviewability_report(
     staged: bool,
 ) -> assess_models.ReviewabilityReport:
     """Build advisory changed-file reviewability report."""
-    raw_changes = tuple(change_budget.run_git_numstat(base_ref, staged=staged))
+    raw_changes = tuple(git_changes.run_git_numstat(base_ref, staged=staged))
     classifications = file_changes.classify_changed_paths(
         (file_changes.ChangedPath(change.path) for change in raw_changes),
         config,
@@ -116,7 +116,7 @@ def _parse_added_lines(
 
 def _to_reviewability_change(
     classification: ecosystem_models.FileChangeClassification,
-    changes_by_path: dict[str, change_budget.FileChange],
+    changes_by_path: dict[str, git_changes.FileChange],
 ) -> assess_models.ReviewabilityChange:
     """Combine provider classification and git numstat details."""
     change = changes_by_path[classification.path]

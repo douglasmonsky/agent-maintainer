@@ -17,12 +17,17 @@ depends_on = [
 
 path = "file_changes"
 depends_on = [
-  "go.classification",
-  "models",
-  "python.classification",
-  "typescript.classification",
-  "//agent_maintainer.config.schema",
+ "go.classification",
+ "models",
+ "python.classification",
+ "typescript.classification",
+ "//agent_maintainer.config.schema",
 ]
+
+[[modules]]
+
+path = "git_changes"
+depends_on = []
 
 [[modules]]
 

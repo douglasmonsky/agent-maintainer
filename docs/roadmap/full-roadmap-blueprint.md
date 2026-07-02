@@ -102,6 +102,7 @@ a monolithic blueprint.
 | 95 | [Provider-Aware File Change Classification](phases/phase-95-provider-aware-file-change-classification.md) |
 | 96 | [Advisory Reviewability Assessment](phases/phase-96-advisory-reviewability-assessment.md) |
 | 97 | [Advisory Ecosystem Suppression Classification](phases/phase-97-advisory-ecosystem-suppression-classification.md) |
+| 98 | [TypeScript/Go Reviewability Fixture Evidence](phases/phase-98-typescript-go-reviewability-fixture-evidence.md) |
 
 ## Future Work
 

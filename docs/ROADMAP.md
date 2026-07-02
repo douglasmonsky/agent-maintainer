@@ -407,6 +407,21 @@ Planned work:
 
 - [x] Phase 97: Advisory Ecosystem Suppression Classification
 
+## Next: TypeScript/Go Reviewability Fixture Evidence
+
+Agent Maintainer should validate TypeScript/JavaScript and Go reviewability
+signal before adding more ecosystems or blocking policy. This phase adds
+fixture-style evidence for changed-file roles, dependency changes, generated
+files, and advisory suppressions while splitting advisory change collection from
+the Python change-budget filter.
+Detailed scope:
+
+[`docs/roadmap/phases/phase-98-typescript-go-reviewability-fixture-evidence.md`](roadmap/phases/phase-98-typescript-go-reviewability-fixture-evidence.md)
+
+Planned work:
+
+- [x] Phase 98: TypeScript/Go Reviewability Fixture Evidence
+
 ## Future Work
 
 No active Future Work items remain in the current roadmap completion gate.

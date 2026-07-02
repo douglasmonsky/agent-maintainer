@@ -26,8 +26,9 @@ richer than experimental providers.
 Current reviewability gates are globally scheduled but Python-backed.
 Experimental TypeScript/JavaScript and Go providers do not yet receive blocking
 change-budget, suppression-budget, file-length, structure-cohesion, or
-test-relevance policy gates. See
-[Multi-Ecosystem Reviewability Policy](multi-ecosystem-reviewability-policy.md).
+test-relevance policy gates. Their changed files and advisory suppressions are
+visible through `assess reviewability` so policy can be proven before it blocks.
+See [Multi-Ecosystem Reviewability Policy](multi-ecosystem-reviewability-policy.md).
 
 ## Related Reading
 
