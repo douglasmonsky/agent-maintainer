@@ -320,6 +320,7 @@ Planned work:
 - [x] Phase 76: Ecosystem Provider Roadmap
 - [x] Phase 77: Ecosystem Provider Characterization Safety Net
 - [x] Phase 78: Minimal Internal Python Provider Seam
+- [x] Phase 79: Global And Ecosystem Check Ownership
 
 ## Future Work
 

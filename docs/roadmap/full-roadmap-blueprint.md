@@ -23,6 +23,7 @@ index into a monolithic blueprint.
 | 76 | [Ecosystem Provider Roadmap](phases/phase-76-ecosystem-provider-roadmap.md) |
 | 77 | [Ecosystem Provider Characterization Safety Net](phases/phase-77-ecosystem-provider-characterization-safety-net.md) |
 | 78 | [Minimal Internal Python Provider Seam](phases/phase-78-minimal-internal-python-provider-seam.md) |
+| 79 | [Global And Ecosystem Check Ownership](phases/phase-79-global-and-ecosystem-check-ownership.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
