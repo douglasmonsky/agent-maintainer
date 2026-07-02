@@ -365,6 +365,20 @@ Planned work:
 
 - [x] Phase 94: Multi-Ecosystem Reviewability Policy Design
 
+## Next: Provider-Aware File Change Classification
+
+Agent Maintainer should now implement the internal file-change
+classification seam designed in Phase 94. This phase keeps Python
+reviewability behavior unchanged while making changed-file role and ecosystem
+facts explicit for future advisory TypeScript/JavaScript and Go policy work.
+Detailed scope:
+
+[`docs/roadmap/phases/phase-95-provider-aware-file-change-classification.md`](roadmap/phases/phase-95-provider-aware-file-change-classification.md)
+
+Planned work:
+
+- [x] Phase 95: Provider-Aware File Change Classification
+
 ## Future Work
 
 No active Future Work items remain in the current roadmap completion gate.

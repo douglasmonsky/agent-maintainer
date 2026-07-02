@@ -38,7 +38,12 @@ blocking change-budget yet. Cross-ecosystem aggregation should start as
 advisory output, then become configurable, then become a blocking policy only
 after fixture repos prove low-noise behavior.
 
-## Future File-Change Classification
+## File-Change Classification
+
+Phase 95 added the internal `agent_maintainer.ecosystems.file_changes` seam.
+It records changed-file ecosystem, role, generated/ignored state, and change
+kind for enabled providers. This remains advisory input data only; it does not
+widen blocking reviewability gates.
 
 Future policy adapters should consume a generic file-change model rather than
 hard-coding one language's file patterns into every policy check.
