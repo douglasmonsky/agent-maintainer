@@ -9,6 +9,7 @@ from agent_maintainer.context.pack.fact_payloads import fact_payload
 from agent_maintainer.ecosystems.typescript.diagnostics import (
     TypeScriptDiagnostic,
     parse_eslint_json,
+    parse_jest_json,
     parse_tsc_output,
 )
 
@@ -21,6 +22,11 @@ def typescript_lint_facts(path: Path, check: str) -> list[dict[str, object]]:
 def typescript_typecheck_facts(path: Path, check: str) -> list[dict[str, object]]:
     """Return exact facts from TypeScript compiler log output."""
     return diagnostic_facts(read_diagnostics(path, parse_tsc_output), check)
+
+
+def typescript_test_facts(path: Path, check: str) -> list[dict[str, object]]:
+    """Return exact facts from Jest-compatible JSON test output."""
+    return diagnostic_facts(read_diagnostics(path, parse_jest_json), check)
 
 
 def read_diagnostics(

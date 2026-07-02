@@ -76,7 +76,9 @@ configured-command outputs:
 
 - `typescript-typecheck`: `tsc --pretty false` style diagnostics such as
   `src/app.ts(4,9): error TS2322: ...`;
-- `typescript-lint`: ESLint JSON formatter output.
+- `typescript-lint`: ESLint JSON formatter output;
+- `typescript-test`: Jest-compatible JSON output with `testResults` and
+  `assertionResults`, including Vitest/Jest JSON reporter shapes.
 
 These parsers are advisory repair-loop helpers. They do not require new config
 fields, and malformed output falls back to the normal bounded raw-log summary.
@@ -102,7 +104,7 @@ without changing existing Python policy behavior.
 
 - No package-manager autodetection.
 - No generated starter files yet.
-- No structured parser for Vitest, Jest, or coverage output.
+- No structured parser for coverage output or non-JSON test transcripts.
 - No TypeScript coverage, mutation, dependency, or security adapter.
 - No public plugin API.
 

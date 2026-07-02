@@ -14,8 +14,7 @@ from agent_maintainer.core.structured_artifacts import (
     structured_artifact_summary as expanded_artifact_summary,
 )
 from agent_maintainer.core.structured_typescript import (
-    summarize_typescript_lint,
-    summarize_typescript_typecheck,
+    summarize_typescript_check,
 )
 
 PYRIGHT_DIAGNOSTIC_LIMIT = 50
@@ -226,14 +225,9 @@ def summarize_check(check_name: str, raw_output: str, max_lines: int, max_chars:
         pyright_summary = summarize_pyright(raw_output)
         if pyright_summary:
             return compact_output(pyright_summary, max_lines, max_chars)
-    if check_name == "typescript-lint":
-        lint_summary = summarize_typescript_lint(raw_output)
-        if lint_summary:
-            return compact_output(lint_summary, max_lines, max_chars)
-    if check_name == "typescript-typecheck":
-        typecheck_summary = summarize_typescript_typecheck(raw_output)
-        if typecheck_summary:
-            return compact_output(typecheck_summary, max_lines, max_chars)
+    typescript_summary = summarize_typescript_check(check_name, raw_output)
+    if typescript_summary:
+        return compact_output(typescript_summary, max_lines, max_chars)
     return compact_output(raw_output, max_lines, max_chars)
 
 

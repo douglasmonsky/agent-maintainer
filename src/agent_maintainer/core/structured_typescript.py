@@ -6,6 +6,7 @@ from agent_maintainer.ecosystems.typescript.diagnostics import (
     TypeScriptDiagnostic,
     format_diagnostic,
     parse_eslint_json,
+    parse_jest_json,
     parse_tsc_output,
 )
 
@@ -20,6 +21,22 @@ def summarize_typescript_lint(raw_output: str) -> str | None:
 def summarize_typescript_typecheck(raw_output: str) -> str | None:
     """Return compact summary for TypeScript compiler output."""
     return summarize_diagnostics(parse_tsc_output(raw_output))
+
+
+def summarize_typescript_test(raw_output: str) -> str | None:
+    """Return compact summary for Jest-compatible JSON test output."""
+    return summarize_diagnostics(parse_jest_json(raw_output))
+
+
+def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:
+    """Return compact TypeScript provider summary when output is structured."""
+    if check_name == "typescript-lint":
+        return summarize_typescript_lint(raw_output)
+    if check_name == "typescript-typecheck":
+        return summarize_typescript_typecheck(raw_output)
+    if check_name == "typescript-test":
+        return summarize_typescript_test(raw_output)
+    return None
 
 
 def summarize_diagnostics(diagnostics: list[TypeScriptDiagnostic]) -> str | None:

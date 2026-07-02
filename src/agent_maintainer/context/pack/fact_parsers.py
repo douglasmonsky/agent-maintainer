@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 from agent_maintainer.context.pack import (
@@ -11,30 +12,42 @@ from agent_maintainer.context.pack import (
     typescript_fact_parsers,
 )
 
+FactParser = Callable[[Path, str], list[dict[str, object]]]
+FactParserEntry = tuple[str, FactParser]
+
+ARTIFACT_FACT_PARSERS: tuple[FactParserEntry, ...] = (
+    ("ruff", lint_fact_parsers.ruff_facts),
+    ("pyright", lint_fact_parsers.pyright_facts),
+    ("bandit", lint_fact_parsers.bandit_facts),
+    ("pytest-coverage", pytest_fact_parsers.pytest_artifact_facts),
+)
+
+LOG_FACT_PARSERS: tuple[FactParserEntry, ...] = (
+    ("file-length", log_fact_parsers.file_length_facts),
+    ("change-budget", log_fact_parsers.change_budget_facts),
+    ("typescript-lint", typescript_fact_parsers.typescript_lint_facts),
+    ("typescript-typecheck", typescript_fact_parsers.typescript_typecheck_facts),
+    ("typescript-test", typescript_fact_parsers.typescript_test_facts),
+)
+
 
 def artifact_facts(check: str, path: Path) -> list[dict[str, object]]:
     """Return exact facts extracted from one structured artifact."""
 
-    if check == "ruff":
-        return lint_fact_parsers.ruff_facts(path, check)
-    if check == "pyright":
-        return lint_fact_parsers.pyright_facts(path, check)
-    if check == "bandit":
-        return lint_fact_parsers.bandit_facts(path, check)
-    if check == "pytest-coverage":
-        return pytest_fact_parsers.pytest_artifact_facts(path, check)
-    return []
+    parser = find_parser(check, ARTIFACT_FACT_PARSERS)
+    return parser(path, check) if parser else []
 
 
 def log_facts(check: str, path: Path) -> list[dict[str, object]]:
     """Return exact facts extracted from one check log."""
 
-    if check == "file-length":
-        return log_fact_parsers.file_length_facts(path, check)
-    if check == "change-budget":
-        return log_fact_parsers.change_budget_facts(path, check)
-    if check == "typescript-lint":
-        return typescript_fact_parsers.typescript_lint_facts(path, check)
-    if check == "typescript-typecheck":
-        return typescript_fact_parsers.typescript_typecheck_facts(path, check)
-    return []
+    parser = find_parser(check, LOG_FACT_PARSERS)
+    return parser(path, check) if parser else []
+
+
+def find_parser(check: str, parsers: tuple[FactParserEntry, ...]) -> FactParser | None:
+    """Return parser matching check name."""
+    for name, parser in parsers:
+        if check == name:
+            return parser
+    return None
