@@ -332,13 +332,13 @@ Planned work:
 - [x] Phase 87: Experimental Go Provider
 - [x] Phase 88: Provider API Stability Decision
 - [x] Phase 89: Measured Repair Case Studies
+- [x] Phase 90: Workspace Config Foundation
 
 ## Future Work
 
 These items are intentionally postponed and are not part of the current
 roadmap completion gate.
 
-- Monorepo / Multi-Package Support
 - Optional Compression Backends
 - Team Policy Templates
 - Headroom Integration

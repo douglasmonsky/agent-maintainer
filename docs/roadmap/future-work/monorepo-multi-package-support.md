@@ -1,5 +1,12 @@
 # Future Work: Monorepo / Multi-Package Support
 
+Status: promoted to
+[`Phase 90: Workspace Config Foundation`](../phases/phase-90-workspace-config-foundation.md).
+
+Phase 90 covers the typed config foundation. Later phases should wire
+per-workspace coverage, ratchet targets, test intelligence, and shared root
+policies.
+
 ## PR Title
 
 ```text
