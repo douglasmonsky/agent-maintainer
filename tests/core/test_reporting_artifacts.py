@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.core import executor as maintainer_executor
+from agent_maintainer.core import repair_capsule
 from agent_maintainer.core import reporting as maintainer_reporting
 from agent_maintainer.models import Check, CheckResult
 
@@ -242,14 +243,29 @@ def test_print_success_and_failures(capsys: pytest.CaptureFixture[str]) -> None:
         run_details=("Run ID: 20260625T100000Z-full-test", "Duration: 1.0s"),
     )
     output = capsys.readouterr().out
-    assert "FAIL: 1 check(s) failed [full]" in output
+    assert "Result: FAIL" in output
+    assert "Profile: full" in output
     assert "Run ID: 20260625T100000Z-full-test" in output
-    assert "Duration: 1.0s" in output
-    assert "Failed checks: ruff" in output
-    assert "lint failed" in output
-    assert (
-        "Smallest rerun after fixes: `python3 -m agent_maintainer verify --profile full`"
-    ) in output
+    assert "Top repair facts:\n1. ruff: lint failed" in output
+    assert "Likely next action:\npython3 -m agent_maintainer verify --profile full" in output
+    assert "Expand only if needed:\npython -m agent_maintainer context failures" in output
+
+
+def test_repair_capsule_helpers_cover_fallbacks() -> None:
+    """Repair capsule helpers stay bounded for empty and oversized failures."""
+    failures = [
+        CheckResult(f"check-{index}", passed=False, output=f"\nfailed {index}\n")
+        for index in range(5)
+    ]
+
+    assert repair_capsule.detail_value(("Profile: full",), "Run ID:") is None
+    assert repair_capsule.top_repair_fact_lines([]) == ["1. (no failed checks)"]
+    assert repair_capsule.top_repair_fact_lines(failures, limit=3)[-1] == (
+        "... 2 more failed check(s)."
+    )
+    assert repair_capsule.expansion_command([], log_dir=None).startswith(
+        "python -m agent_maintainer"
+    )
 
 
 def test_print_success_exact_sections(capsys: pytest.CaptureFixture[str]) -> None:
@@ -291,15 +307,12 @@ def test_print_failures_includes_context_and_footer(capsys: pytest.CaptureFixtur
     )
 
     output = capsys.readouterr().out
-    assert "FAIL: 2 check(s) failed [full]" in output
-    assert "Failed checks: ruff, pyright" in output
-    assert "1. ruff\nlint failed\nNext context:" in output
-    assert "2. pyright\ntype failed\nNext context:" in output
+    assert output.startswith("Result: FAIL\nProfile: full\nRun ID: 20260625T100000Z-full-test")
+    assert "Top repair facts:\n1. ruff: lint failed\n2. pyright: type failed" in output
+    assert "Likely next action:\npython3 -m agent_maintainer verify --profile full" in output
     assert (
         "python -m agent_maintainer context --log-dir "
         ".verify-logs/runs/20260625T100000Z-full-test failures --check ruff --limit 20"
     ) in output
-    assert "Full logs are in .verify-logs/runs/20260625T100000Z-full-test." in output
-    assert (
-        "Smallest rerun after fixes: `python3 -m agent_maintainer verify --profile full`"
-    ) in output
+    assert "Next context:" not in output
+    assert "Smallest rerun after fixes" not in output

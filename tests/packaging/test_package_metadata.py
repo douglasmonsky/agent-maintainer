@@ -34,6 +34,7 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     assert metadata["project"]["scripts"] == {
         "agent-maintainer": "agent_maintainer.cli:console_main",
         "archguard": "archguard.cli:console_main",
+        "docsync": "docsync.cli:console_main",
     }
     assert metadata["build-system"]["requires"] == ["setuptools>=77", "wheel"]
     assert metadata["project"]["license"] == "MIT"

@@ -73,11 +73,28 @@ def render_pack_pointer(
     fact_limit: int = HOOK_FACT_LIMIT,
     command_limit: int = HOOK_COMMAND_LIMIT,
 ) -> str:
-    """Return compact hook-safe pointer to a context pack."""
+    """Return compact hook-safe repair capsule pointer."""
 
-    lines = [f"Read: {display_path}"]
-    lines.extend(fact_pointer_lines(payload.get("exact_repair_facts"), fact_limit))
+    lines = [
+        "Result: FAIL",
+        "Profile: agent-hook",
+        "Run ID: unavailable",
+        "",
+        "Top repair facts:",
+    ]
+    fact_lines = fact_pointer_lines(payload.get("exact_repair_facts"), fact_limit)
+    lines.extend(fact_lines or ["1. (no structured repair facts found)"])
+    lines.extend(
+        (
+            "",
+            "Likely next action:",
+            next_action_line(payload.get("expansion_commands")),
+            "",
+            "Expand only if needed:",
+        )
+    )
     lines.extend(command_pointer_lines(payload.get("expansion_commands"), command_limit))
+    lines.extend(("", f"Context pack artifact: {display_path}"))
     return "\n".join(lines)
 
 
@@ -87,7 +104,9 @@ def fact_pointer_lines(facts: object, limit: int) -> list[str]:
     if not isinstance(facts, list):
         return []
     return [
-        f"Top finding: {fact_summary(fact)}" for fact in facts[:limit] if isinstance(fact, dict)
+        f"{index}. {fact_summary(fact)}"
+        for index, fact in enumerate(facts[:limit], start=1)
+        if isinstance(fact, dict)
     ]
 
 
@@ -110,12 +129,22 @@ def fact_location(path: object, line: object) -> str:
     return f"{path} "
 
 
+def next_action_line(commands: object) -> str:
+    """Return one likely next action from expansion commands."""
+
+    if isinstance(commands, list) and commands:
+        return str(commands[0])
+    return "Inspect the first failed check summary."
+
+
 def command_pointer_lines(commands: object, limit: int) -> list[str]:
     """Return expansion command lines for hook output."""
 
     if not isinstance(commands, list):
         return []
-    return [f"Expand: {command}" for command in commands[:limit]]
+    if not commands:
+        return ["python -m agent_maintainer context failures --limit 20"]
+    return [str(command) for command in commands[:limit]]
 
 
 def enforce_pack_budget(

@@ -71,9 +71,10 @@ several checks fail, the verifier can fall back to the current profile.
 
 ## Failure Expansion
 
-Passing runs should stay quiet. Failed runs should provide just-in-time context
-commands for the failed checks instead of forcing agents to guess which log or
-manifest to open.
+Passing runs should stay quiet. Failed runs should provide a repair capsule:
+result, profile, run id, top repair facts, one likely next action, and one
+`Expand only if needed` command. Do not load full context packs or raw logs
+unless the capsule is insufficient.
 
 `LAST_FAILURE.md` is a latest-failure pointer and can change after another agent
 or hook run. Failed runs also write retained snapshots under:
@@ -85,9 +86,7 @@ or hook run. Failed runs also write retained snapshots under:
 Use run-scoped expansion commands when repairing a specific failure:
 
 ```bash
-python3 -m agent_maintainer context failures \
-  --log-dir .verify-logs/runs/<run-id> \
-  --limit 20
+python3 -m agent_maintainer context failures   --log-dir .verify-logs/runs/<run-id>   --limit 20
 ```
 
 Retention is controlled by:

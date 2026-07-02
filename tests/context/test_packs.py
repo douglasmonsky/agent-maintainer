@@ -26,6 +26,7 @@ from agent_maintainer.context.pack.rendering import (
     fact_summary,
     omitted_count_lines,
     ratchet_lines,
+    render_pack_pointer,
     supporting_context_lines,
     supporting_item_lines,
     top_target_lines,
@@ -129,13 +130,87 @@ def test_context_pack_cli_outputs_json_and_writes_artifacts(
     assert (log_dir / "context" / "PACK.json").exists()
 
 
+def test_context_pack_cli_outputs_pointer_by_default(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Context pack CLI writes full artifacts but prints compact pointer."""
+
+    log_dir = tmp_path / ".verify-logs"
+    write_manifest(log_dir, "ruff")
+    write_log(log_dir, "ruff", "ruff failed\n")
+    monkeypatch.setattr(
+        pack_cli,
+        "load_config",
+        lambda: SimpleNamespace(
+            context_pack_budget_chars=5_000,
+            ratchet_baseline_path=str(tmp_path / "missing.json"),
+            context_max_failure_items=5,
+            ratchet_target_limit=3,
+        ),
+    )
+
+    result = context_cli.main(["--log-dir", str(log_dir), "pack", "--check", "ruff"])
+
+    output = capsys.readouterr().out
+    assert result == 0
+    assert output.startswith("Result: FAIL\nProfile: agent-hook\nRun ID: unavailable")
+    assert "Top repair facts:" in output
+    assert "Likely next action:" in output
+    assert "Expand only if needed:" in output
+    assert "Context pack artifact:" in output
+    assert "# Agent Maintainer Context Pack" not in output
+    assert "Read:" not in output
+    assert (log_dir / "context" / "PACK.md").exists()
+
+
+def test_context_pack_cli_prints_full_markdown_when_requested(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Context pack CLI prints full Markdown only behind explicit flag."""
+
+    log_dir = tmp_path / ".verify-logs"
+    write_manifest(log_dir, "ruff")
+    write_log(log_dir, "ruff", "ruff failed\n")
+    monkeypatch.setattr(
+        pack_cli,
+        "load_config",
+        lambda: SimpleNamespace(
+            context_pack_budget_chars=5_000,
+            ratchet_baseline_path=str(tmp_path / "missing.json"),
+            context_max_failure_items=5,
+            ratchet_target_limit=3,
+        ),
+    )
+
+    result = context_cli.main(
+        ["--log-dir", str(log_dir), "pack", "--check", "ruff", "--print-full"]
+    )
+
+    output = capsys.readouterr().out
+    assert result == 0
+    assert output.startswith("# Agent Maintainer Context Pack")
+    assert "## Exact Repair Facts" in output
+
+
 def test_context_pack_helpers_handle_defensive_branches() -> None:
     """Pack helpers handle malformed optional payload slices."""
+    pointer = render_pack_pointer(
+        {"exact_repair_facts": [], "expansion_commands": []},
+        display_path=".verify-logs/context/PACK.md",
+    )
 
+    assert "Likely next action:\nInspect the first failed check summary." in pointer
     assert selected_log_names(ContextPackRequest(), ()) == ()
     assert target_commands({"top_targets": "invalid"}) == ()
     assert fact_pointer_lines("invalid", 1) == []
     assert command_pointer_lines("invalid", 1) == []
+    assert command_pointer_lines([], 1) == [
+        "python -m agent_maintainer context failures --limit 20"
+    ]
     assert fact_location("src/example.py", None) == "src/example.py "
     assert (
         fact_summary(

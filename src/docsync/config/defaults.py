@@ -1,0 +1,78 @@
+"""Default DocSync repository files."""
+
+from __future__ import annotations
+
+DEFAULT_CONFIG_TEXT = """version: 1
+paths:
+  include:
+    - README.md
+    - docs/**/*.md
+    - src/**
+    - tests/**
+    - schemas/**
+    - migrations/**
+    - .github/workflows/**
+  exclude:
+    - .git/**
+    - .venv/**
+    - node_modules/**
+    - dist/**
+    - build/**
+    - .docsync/out/**
+markdown:
+  require_hidden_object_ids: true
+  object_marker: "docsync:object"
+  heading_object_end: next_heading_same_or_higher_level
+source_evidence:
+  require_explicit_regions: true
+  allow_inferred_regions: false
+  allow_nested_regions: false
+  allow_overlapping_regions: false
+  require_end_id_match: true
+  start_directive: "docsync:evidence.start"
+  end_directive: "docsync:evidence.end"
+checks:
+  fail_on_orphan_evidence_anchor: true
+  fail_on_missing_evidence_anchor: true
+  fail_on_missing_doc_object: true
+  fail_on_doc_object_title_change: true
+  fail_on_unreviewed_changed_claim: true
+  fail_on_removed_stable_doc_id: true
+  fail_on_trace_schema_error: true
+attestations:
+  enabled: true
+  directory: ".docsync/attestations"
+  require_reason_from_trace: true
+  require_current_fingerprint: true
+outputs:
+  index_json: ".docsync/out/index.json"
+  report_json: ".docsync/out/report.json"
+  review_packet_json: ".docsync/out/review-packet.json"
+  review_prompt_md: ".docsync/out/review-prompt.md"
+"""
+
+DEFAULT_SCHEMA_TEXT = """{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DocSync trace schema",
+  "type": "object",
+  "required": ["version", "documents", "objects", "claims", "evidence"],
+  "properties": {
+    "version": {"const": 1},
+    "documents": {"type": "object"},
+    "objects": {"type": "object"},
+    "claims": {"type": "object"},
+    "evidence": {"type": "object"}
+  }
+}
+"""
+
+DOCSYNC_AGENTS_SECTION = """
+## DocSync policy
+
+DocSync traceability state lives under `.docsync/`. Treat `.docsync/trace.yml`
+as human-authored source truth and `.docsync/out/` as generated output.
+
+Use explicit evidence regions with `docsync:evidence.start` and
+`docsync:evidence.end`, and stable Markdown object markers with
+`<!-- docsync:object ... -->`.
+"""

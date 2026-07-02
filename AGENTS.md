@@ -72,6 +72,21 @@ This repository uses `tach.toml` for architecture contracts. Keep `root_module =
 
 If `tach.toml`, `tach.domain.toml`, or another architecture policy file changes, add or update an architecture decision note under `docs/architecture/decisions/`. The note must explain the boundary change, why it is necessary, why it is not architecture drift, alternatives considered, and what remains forbidden. Do not run `tach sync`, add dependencies, or relax strictness flags as a silent fix.
 
+## DocSync policy
+
+DocSync lives in `src/docsync/` as an extractable sibling package, not under
+`src/agent_maintainer/`. DocSync must not import `agent_maintainer` or
+`archguard`; use public `docsync.api` as the boundary for future integration.
+
+DocSync repository state lives under `.docsync/`. Treat `.docsync/trace.yml` as
+human-authored source truth. Treat `.docsync/out/` as generated output and do
+not commit generated files from that directory except `.gitignore`.
+
+When changing DocSync boundaries, update `src/docsync/tach.domain.toml`, the
+root `tach.toml` ownership entry if needed, and an architecture decision note.
+Do not relax DocSync extraction tests or add broad Tach ignores to make changes
+pass.
+
 ## When a hook fails
 
 Fix the root cause. Do not bypass hooks. If the hook is wrong, make the smallest possible correction to the hook or configuration and explain why in the PR notes.

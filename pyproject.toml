@@ -8,6 +8,7 @@ version = "0.1.0b4"
 description = "Repository maintenance checks and diagnostics for AI-assisted Python development."
 readme = "README.md"
 requires-python = ">=3.11"
+dependencies = ["PyYAML>=6.0.3"]
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Doug Monsky" }]
@@ -43,6 +44,7 @@ Documentation = "https://github.com/douglasmonsky/agent-maintainer#readme"
 [project.scripts]
 agent-maintainer = "agent_maintainer.cli:console_main"
 archguard = "archguard.cli:console_main"
+docsync = "docsync.cli:console_main"
 
 [project.optional-dependencies]
 core = [
@@ -153,6 +155,7 @@ ratchet_enabled = false
 source_roots = [
   "src/agent_maintainer",
   "src/archguard",
+  "src/docsync",
   ".codex/hooks",
   ".claude/hooks",
 ]
@@ -160,25 +163,30 @@ test_roots = ["tests"]
 package_paths = [
   "src/agent_maintainer",
   "src/archguard",
+  "src/docsync",
   ".codex/hooks",
   ".claude/hooks",
 ]
 coverage_source = [
   "src/agent_maintainer",
   "src/archguard",
+  "src/docsync",
   ".codex/hooks",
   ".claude/hooks",
 ]
 file_length_paths = [
   "src/agent_maintainer",
   "src/archguard",
+  "src/docsync",
   ".codex/hooks",
   ".claude/hooks",
   "tests",
+  "config/vulture-whitelist.py",
 ]
 structure_paths = [
   "src/agent_maintainer",
   "src/archguard",
+  "src/docsync",
   ".codex/hooks",
   ".claude/hooks",
 ]
@@ -196,6 +204,7 @@ structure_cluster_min = 4
 vulture_paths = [
   "src/agent_maintainer",
   "src/archguard",
+  "src/docsync",
   ".codex/hooks",
   ".claude/hooks",
   "tests",
@@ -209,6 +218,9 @@ cohesive_change_override_enabled = true
 cohesive_change_override_paths = [
   "src/agent_maintainer/**",
   "src/archguard/**",
+  "src/docsync/**",
+  "tests/docsync/**",
+  ".docsync/**",
   ".codex/hooks/**",
   ".claude/hooks/**",
 ]
@@ -241,6 +253,7 @@ semgrep_args = [
   "--metrics=off",
   "src/agent_maintainer",
   "src/archguard",
+  "src/docsync",
   ".codex/hooks",
   ".claude/hooks",
 ]
@@ -368,13 +381,14 @@ known_first_party = [
   "agent_maintainer",
   "archguard",
   "catalog",
+  "docsync",
   "fresh_strict_example",
   "hook_audit",
   "legacy_ratchet_example",
   "legacy",
   "scoring",
 ]
-package_module_name_map = { "headroom-ai" = "headroom" }
+package_module_name_map = { "headroom-ai" = "headroom", "PyYAML" = "yaml" }
 requirements_files = ["requirements.txt"]
 requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
 

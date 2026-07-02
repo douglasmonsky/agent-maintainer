@@ -1,0 +1,155 @@
+# Tach domain contract for docsync.
+# Keep DocSync extractable: no dependencies on agent_maintainer or archguard.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "__main__"
+depends_on = ["cli"]
+
+[[modules]]
+path = "api"
+depends_on = [
+  "attestations.create",
+  "checks.doctor",
+  "checks.repo",
+  "core.models",
+  "indexer",
+  "reports.review_packet",
+]
+
+[[modules]]
+path = "attestations.create"
+depends_on = [
+  "indexer",
+]
+
+[[modules]]
+path = "attestations.load"
+depends_on = [
+  "config.load",
+  "core.models",
+]
+
+[[modules]]
+path = "checks.claims"
+depends_on = [
+  "attestations.load",
+  "core.models",
+]
+
+[[modules]]
+path = "checks.doctor"
+depends_on = [
+  "config.load",
+  "core.models",
+  "indexer",
+  "trace.load",
+]
+
+[[modules]]
+path = "checks.repo"
+depends_on = [
+  "attestations.load",
+  "checks.claims",
+  "checks.doctor",
+  "core.models",
+  "git.diff",
+]
+
+[[modules]]
+path = "cli"
+depends_on = [
+  "commands.core",
+]
+
+[[modules]]
+path = "commands.core"
+depends_on = [
+  "api",
+  "config.defaults",
+  "reports.human",
+  "reports.json_report",
+  "reports.review_packet",
+  "reports.sarif",
+]
+
+[[modules]]
+path = "config.defaults"
+depends_on = []
+
+[[modules]]
+path = "config.load"
+depends_on = [
+  "core.models",
+]
+
+[[modules]]
+path = "comments.scanner"
+depends_on = [
+  "core.fingerprints",
+  "core.models",
+]
+
+[[modules]]
+path = "core.fingerprints"
+depends_on = []
+
+[[modules]]
+path = "core.models"
+depends_on = []
+
+[[modules]]
+path = "git.diff"
+depends_on = [
+  "core.models",
+]
+
+[[modules]]
+path = "indexer"
+depends_on = [
+  "comments.scanner",
+  "config.load",
+  "core.models",
+  "markdown.parser",
+  "trace.load",
+]
+
+[[modules]]
+path = "markdown.parser"
+depends_on = [
+  "core.fingerprints",
+  "core.models",
+]
+
+[[modules]]
+path = "reports.human"
+depends_on = [
+  "core.models",
+]
+
+[[modules]]
+path = "reports.json_report"
+depends_on = [
+  "core.models",
+]
+
+[[modules]]
+path = "reports.review_packet"
+depends_on = [
+  "core.models",
+]
+
+[[modules]]
+path = "reports.sarif"
+depends_on = [
+  "core.models",
+]
+
+[[modules]]
+path = "trace.load"
+depends_on = [
+  "config.load",
+  "core.models",
+]

@@ -92,11 +92,17 @@ depends_on = [
 [[modules]]
 path = "reporting"
 depends_on = [
-"//agent_maintainer.context.budget",
-"//agent_maintainer.context.models",
-"reporting_context",
-"structured_artifacts",
-"structured_typescript",
+    "//agent_maintainer.context.budget",
+    "//agent_maintainer.context.models",
+    "repair_capsule",
+    "structured_artifacts",
+    "structured_typescript",
+]
+
+[[modules]]
+path = "repair_capsule"
+depends_on = [
+    "reporting_context",
 ]
 
 [[modules]]

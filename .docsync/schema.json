@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DocSync trace schema",
+  "type": "object",
+  "required": ["version", "documents", "objects", "claims", "evidence"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "documents": {
+      "type": "object"
+    },
+    "objects": {
+      "type": "object"
+    },
+    "claims": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "object"
+    }
+  }
+}

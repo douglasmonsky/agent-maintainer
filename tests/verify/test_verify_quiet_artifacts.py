@@ -117,11 +117,13 @@ def test_failed_run_prints_snapshot_scoped_context_commands(
     assert verify_quiet.main(["--profile", "fast"]) == 1
 
     output = capsys.readouterr().out
-    assert "FAIL: 1 check(s) failed [fast]" in output
-    assert "Next context:" in output
+    assert output.startswith("Result: FAIL\nProfile: fast\nRun ID:")
+    assert "Top repair facts:\n1. custom: custom failed" in output
+    assert "Likely next action:\nfalse" in output
+    assert "Expand only if needed:" in output
     assert "python -m agent_maintainer context --log-dir .verify-logs/runs/" in output
     assert "failures --check custom --limit 20" in output
-    assert "log custom --tail 120" in output
+    assert "log custom --tail 120" not in output
 
 
 def test_main_skips_artifacts_when_diagnostics_are_disabled(
