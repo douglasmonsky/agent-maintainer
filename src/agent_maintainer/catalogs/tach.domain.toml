@@ -13,6 +13,7 @@ depends_on = [
   "//agent_maintainer.config.schema",
   "//agent_maintainer.ecosystems.models",
   "//agent_maintainer.ecosystems.python.provider",
+  "//agent_maintainer.ecosystems.typescript.provider",
   "//agent_maintainer.models",
 ]
 

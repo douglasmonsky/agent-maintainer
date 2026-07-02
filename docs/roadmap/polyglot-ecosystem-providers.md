@@ -330,14 +330,16 @@ Scope:
 
 - Add the first non-Python provider as experimental.
 - Start with configured commands rather than aggressive autodetection.
-- Implement file classification, suppression classification, and a small check set.
+- Implement file classification and a small check set.
 - Avoid package-manager assumptions where possible.
 
 Acceptance criteria:
 
 - Python behavior is unchanged.
 - TypeScript provider can be enabled explicitly.
-- Provider has docs, fixture tests, and doctor hints.
+- Provider has focused docs and tests.
+- Doctor hints and scaffold fixtures can land in a follow-up phase after the
+  internal seam proves stable.
 - No external plugin API is added.
 
 ### Phase 8: Structured Artifact Parser Expansion

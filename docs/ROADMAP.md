@@ -324,6 +324,7 @@ Planned work:
 - [x] Phase 80: Generic File Classification, Python Only
 - [x] Phase 81: Policy Checks Through Python Classifier Adapters
 - [x] Phase 82: Neutral Config Path Exploration
+- [x] Phase 83: Experimental TypeScript/JavaScript Provider
 
 ## Future Work
 
