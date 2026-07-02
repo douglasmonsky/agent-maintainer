@@ -407,19 +407,20 @@ Planned work:
 
 - [x] Phase 97: Advisory Ecosystem Suppression Classification
 
-## Next: Go Structured Repair Facts
+## Next: TypeScript/Go Reviewability Fixture Evidence
 
-Agent Maintainer should deepen the existing experimental Go provider before
-adding more ecosystems. This phase adds bounded structured repair facts for
-common configured Go command output while preserving the explicit-command model,
-experimental maturity label, and Python-backed blocking reviewability policy.
+Agent Maintainer should validate TypeScript/JavaScript and Go reviewability
+signal before adding more ecosystems or blocking policy. This phase adds
+fixture-style evidence for changed-file roles, dependency changes, generated
+files, and advisory suppressions while splitting advisory change collection from
+the Python change-budget filter.
 Detailed scope:
 
-[`docs/roadmap/phases/phase-98-go-structured-repair-facts.md`](roadmap/phases/phase-98-go-structured-repair-facts.md)
+[`docs/roadmap/phases/phase-98-typescript-go-reviewability-fixture-evidence.md`](roadmap/phases/phase-98-typescript-go-reviewability-fixture-evidence.md)
 
 Planned work:
 
-- [ ] Phase 98: Go Structured Repair Facts
+- [x] Phase 98: TypeScript/Go Reviewability Fixture Evidence
 
 ## Future Work
 

@@ -12,12 +12,12 @@ import pytest
 from agent_maintainer.assess import cli, reporting
 from agent_maintainer.assess import reviewability as assessment_reviewability
 from agent_maintainer.assess.models import ReviewabilityCount, ReviewabilityReport
-from agent_maintainer.checks.change_budget import FileChange
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.ecosystems.git_changes import FileChange
 
 BASE_REF = "origin/main"
-TOTAL_CHANGED_FILES = 5
-CLASSIFIED_FILES = 4
+TOTAL_CHANGED_FILES = 7
+CLASSIFIED_FILES = 6
 UNCLASSIFIED_FILES = 1
 SUPPRESSION_FINDINGS = 2
 
@@ -86,13 +86,39 @@ def test_reviewability_text_lists_changes(
     _assert_text_output(output)
 
 
+def test_reviewability_keeps_dependency_changes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Advisory classification keeps dependency files Python budgets exclude."""
+    _patch_changed_files(monkeypatch)
+    config = replace(MaintainerConfig(), enable_typescript=True, enable_go=True)
+
+    report = assessment_reviewability.build_reviewability_report(
+        tmp_path,
+        config,
+        base_ref=BASE_REF,
+        staged=False,
+    )
+
+    dependency_changes = {
+        (change.path, change.ecosystem, change.role)
+        for change in report.changes
+        if change.role == "dependency"
+    }
+    assert dependency_changes == {
+        ("package-lock.json", "typescript", "dependency"),
+        ("go.sum", "go", "dependency"),
+    }
+
+
 def test_reviewability_text_no_provider_files(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
     """Text renderer reports empty groups without special casing callers."""
     monkeypatch.setattr(
-        assessment_reviewability.change_budget,
+        assessment_reviewability.git_changes,
         "run_git_numstat",
         _fake_unclassified_numstat,
     )
@@ -119,7 +145,7 @@ def test_skips_generated_suppressions(
 ) -> None:
     """Advisory suppressions ignore generated provider files."""
     monkeypatch.setattr(
-        assessment_reviewability.change_budget,
+        assessment_reviewability.git_changes,
         "run_git_numstat",
         _fake_generated_numstat,
     )
@@ -138,13 +164,13 @@ def test_skips_generated_suppressions(
     )
 
     assert report.broad_suppressions == 0
-    assert report.suppressions == ()
+    assert not report.suppressions
 
 
 def _patch_changed_files(monkeypatch: pytest.MonkeyPatch) -> None:
     """Patch git-backed change discovery for deterministic tests."""
     monkeypatch.setattr(
-        assessment_reviewability.change_budget,
+        assessment_reviewability.git_changes,
         "run_git_numstat",
         _fake_git_numstat,
     )
@@ -162,9 +188,9 @@ def _assert_report_counts(report: ReviewabilityReport) -> None:
     assert report.unclassified_files == UNCLASSIFIED_FILES
     assert _count_map(report.by_ecosystem) == {
         "global": 1,
-        "go": 1,
+        "go": 2,
         "python": 1,
-        "typescript": 1,
+        "typescript": 2,
     }
 
 
@@ -188,7 +214,11 @@ def _assert_json_suppressions(payload: dict[str, Any]) -> None:
         "eslint-disable",
         "nolint",
     }
-    assert {item["key"] for item in payload["by_role"]} >= {"source", "test"}
+    assert {item["key"] for item in payload["by_role"]} >= {
+        "dependency",
+        "source",
+        "test",
+    }
     assert payload["changes"][0]["ecosystem"] == "python"
 
 
@@ -209,6 +239,8 @@ def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
         FileChange("src/example/app.py", 3, 1),
         FileChange("src/web/app.ts", 5, 2),
         FileChange("internal/server/handler_test.go", 7, 0),
+        FileChange("package-lock.json", 5, 1),
+        FileChange("go.sum", 2, 1),
         FileChange("pyproject.toml", 1, 0),
         FileChange("notes/random.log", 1, 1),
     ]
