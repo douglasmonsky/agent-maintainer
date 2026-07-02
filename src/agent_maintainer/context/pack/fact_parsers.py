@@ -8,6 +8,7 @@ from agent_maintainer.context.pack import (
     lint_fact_parsers,
     log_fact_parsers,
     pytest_fact_parsers,
+    typescript_fact_parsers,
 )
 
 
@@ -32,4 +33,8 @@ def log_facts(check: str, path: Path) -> list[dict[str, object]]:
         return log_fact_parsers.file_length_facts(path, check)
     if check == "change-budget":
         return log_fact_parsers.change_budget_facts(path, check)
+    if check == "typescript-lint":
+        return typescript_fact_parsers.typescript_lint_facts(path, check)
+    if check == "typescript-typecheck":
+        return typescript_fact_parsers.typescript_typecheck_facts(path, check)
     return []

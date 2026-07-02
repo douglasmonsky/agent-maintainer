@@ -51,6 +51,10 @@ depends_on = [
 ]
 
 [[modules]]
+path = "typescript.diagnostics"
+depends_on = []
+
+[[modules]]
 path = "typescript.provider"
 depends_on = [
   "models",

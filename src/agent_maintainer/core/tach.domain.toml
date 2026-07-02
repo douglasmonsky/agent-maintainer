@@ -96,6 +96,7 @@ depends_on = [
 "//agent_maintainer.context.models",
 "reporting_context",
 "structured_artifacts",
+"structured_typescript",
 ]
 
 [[modules]]
@@ -116,6 +117,12 @@ depends_on = []
 [[modules]]
 path = "structured_security"
 depends_on = []
+
+[[modules]]
+path = "structured_typescript"
+depends_on = [
+"//agent_maintainer.ecosystems.typescript.diagnostics",
+]
 
 [[modules]]
 path = "runtime"

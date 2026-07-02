@@ -117,6 +117,7 @@ depends_on = [
   "pack.lint_fact_parsers",
   "pack.log_fact_parsers",
   "pack.pytest_fact_parsers",
+  "pack.typescript_fact_parsers",
 ]
 
 [[modules]]
@@ -139,6 +140,13 @@ depends_on = [
 path = "pack.pytest_fact_parsers"
 depends_on = [
   "pack.fact_payloads",
+]
+
+[[modules]]
+path = "pack.typescript_fact_parsers"
+depends_on = [
+  "pack.fact_payloads",
+  "//agent_maintainer.ecosystems.typescript.diagnostics",
 ]
 
 [[modules]]

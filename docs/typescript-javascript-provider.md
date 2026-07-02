@@ -49,6 +49,18 @@ enabled, `doctor` reports whether any TypeScript commands are configured and
 whether configured command executables are available on PATH, including
 repo-local `node_modules/.bin`.
 
+## Structured Output
+
+Agent Maintainer can extract compact summaries and exact repair facts from these
+configured-command outputs:
+
+- `typescript-typecheck`: `tsc --pretty false` style diagnostics such as
+  `src/app.ts(4,9): error TS2322: ...`;
+- `typescript-lint`: ESLint JSON formatter output.
+
+These parsers are advisory repair-loop helpers. They do not require new config
+fields, and malformed output falls back to the normal bounded raw-log summary.
+
 ## Classification
 
 The provider classifies common TypeScript and JavaScript paths:
@@ -67,7 +79,7 @@ without changing existing Python policy behavior.
 
 - No package-manager autodetection.
 - No generated starter files yet.
-- No structured parser for ESLint, TypeScript, Vitest, Jest, or coverage output.
+- No structured parser for Vitest, Jest, or coverage output.
 - No TypeScript coverage, mutation, dependency, or security adapter.
 - No public plugin API.
 
