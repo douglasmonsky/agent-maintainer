@@ -14,6 +14,7 @@ import sys
 from dataclasses import dataclass
 
 from agent_maintainer.core.config import load_config
+from agent_maintainer.ecosystems.python.classification import is_python_path
 
 NAME_STATUS_COPY_FIELD_COUNT = 3
 
@@ -125,7 +126,7 @@ def added_python_lines(base_ref: str, *, staged: bool) -> list[tuple[str, str]]:
         if line.startswith("+++ b/"):
             current_path = line.removeprefix("+++ b/")
             continue
-        if not current_path.endswith(".py") or current_path in copied_destinations:
+        if not is_python_path(current_path) or current_path in copied_destinations:
             continue
         if line.startswith("+") and not line.startswith("+++"):
             added.append((current_path, line[1:]))

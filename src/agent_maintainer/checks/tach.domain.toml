@@ -12,6 +12,7 @@ depends_on = [
 "change_budget_plans",
 "test_relevance",
 "//agent_maintainer.core.config",
+"//agent_maintainer.ecosystems.python.classification",
 ]
 
 [[modules]]
@@ -46,6 +47,7 @@ depends_on = [
 path = "file_lengths"
 depends_on = [
   "//agent_maintainer.core.config",
+  "//agent_maintainer.ecosystems.python.classification",
 ]
 
 [[modules]]
@@ -62,12 +64,14 @@ path = "structure"
 depends_on = [
   "//agent_maintainer.config.schema",
   "//agent_maintainer.core.config",
+  "//agent_maintainer.ecosystems.python.classification",
 ]
 
 [[modules]]
 path = "suppression_budget"
 depends_on = [
   "//agent_maintainer.core.config",
+  "//agent_maintainer.ecosystems.python.classification",
 ]
 
 [[modules]]

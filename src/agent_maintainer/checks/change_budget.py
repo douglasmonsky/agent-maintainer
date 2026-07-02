@@ -23,7 +23,12 @@ from agent_maintainer.checks.change_budget_plans import (
     change_plan_messages,
     evaluate_change_plan,
 )
-from agent_maintainer.core.config import MaintainerConfig, load_config, path_matches_roots
+from agent_maintainer.core.config import MaintainerConfig, load_config
+from agent_maintainer.ecosystems.python.classification import (
+    is_python_ignored_path,
+    is_python_source_path,
+    is_python_test_path,
+)
 
 NUMSTAT_FIELD_COUNT = 3
 NAME_STATUS_COPY_FIELD_COUNT = 3
@@ -85,7 +90,9 @@ def should_exclude(path: str) -> bool:
     """Return whether a changed file is generated, locked, or binary-like."""
 
     name = path.rsplit("/", maxsplit=1)[-1]
-    return name in EXCLUDED_NAMES or path.endswith(EXCLUDED_SUFFIXES)
+    return (
+        name in EXCLUDED_NAMES or path.endswith(EXCLUDED_SUFFIXES) or is_python_ignored_path(path)
+    )
 
 
 def is_trivial_package_marker(change: FileChange) -> bool:
@@ -97,13 +104,15 @@ def is_trivial_package_marker(change: FileChange) -> bool:
 def is_python_source(path: str, source_roots: tuple[str, ...]) -> bool:
     """Return whether a path is Python code inside configured source roots."""
 
-    return path.endswith(".py") and path_matches_roots(path, source_roots)
+    config = MaintainerConfig(source_roots=source_roots, test_roots=())
+    return is_python_source_path(path, config)
 
 
 def is_python_test(path: str, test_roots: tuple[str, ...]) -> bool:
     """Return whether a path is Python code inside configured test roots."""
 
-    return path.endswith(".py") and path_matches_roots(path, test_roots)
+    config = MaintainerConfig(source_roots=(), test_roots=test_roots)
+    return is_python_test_path(path, config)
 
 
 def git_numstat_command(base_ref: str, *, staged: bool) -> list[str]:

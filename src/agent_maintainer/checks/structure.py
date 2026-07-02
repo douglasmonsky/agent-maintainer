@@ -12,6 +12,7 @@ from pathlib import Path
 
 from agent_maintainer.config.schema import FRESH_STRICT_MODE
 from agent_maintainer.core.config import MaintainerConfig, load_config
+from agent_maintainer.ecosystems.python.classification import is_python_path
 
 FAIL = "FAIL"
 WARN = "WARN"
@@ -114,7 +115,7 @@ def python_files(paths: tuple[str, ...], ignored_patterns: tuple[str, ...]) -> l
         files.extend(
             path
             for path in candidates
-            if path.is_file() and path.suffix == ".py" and not ignored(path, ignored_patterns)
+            if path.is_file() and is_python_path(path) and not ignored(path, ignored_patterns)
         )
     return sorted(set(files))
 

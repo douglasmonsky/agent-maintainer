@@ -73,6 +73,7 @@ depends_on = []
 path = "mapping"
 depends_on = [
   "//agent_maintainer.config.schema",
+  "//agent_maintainer.ecosystems.python.classification",
   "models",
 ]
 
