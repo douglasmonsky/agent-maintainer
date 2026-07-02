@@ -17,7 +17,7 @@ core.
 
 ## Fixture Evidence
 
-Phase 100 adds TypeScript reviewability fixtures for:
+Phase 100 added TypeScript reviewability fixtures for:
 
 - source-plus-test changes that should stay low-noise;
 - source-only heavy changes that should produce advisory findings;
@@ -29,6 +29,32 @@ Phase 100 adds TypeScript reviewability fixtures for:
 The fixtures intentionally exercise `assess reviewability` rather than a
 standalone classifier. That proves users and agents see useful advisory output
 without changing blocking verifier behavior.
+
+## Advisory Threshold Evidence
+
+Current fixture evidence supports considering advisory thresholds for:
+
+- source-only TypeScript changes;
+- source-heavy TypeScript changes by changed source files and changed source
+  lines;
+- broad TypeScript/JavaScript suppressions.
+
+Current fixture evidence does not yet support blocking thresholds. It also does
+not yet support package-manager autodetection, test-runner-specific defaults, or
+framework-specific generated-file policy beyond the existing classifier.
+
+Future advisory config names should stay TypeScript-owned and non-blocking until
+real-repo output proves low noise. Candidate names:
+
+```toml
+[tool.agent_maintainer]
+typescript_advisory_source_warn_files = 8
+typescript_advisory_source_warn_lines = 300
+typescript_advisory_broad_suppression_warn = 1
+```
+
+These names are documentation-only candidates. They are not implemented config
+fields and must not be treated as active policy.
 
 ## Lessons To Capture
 

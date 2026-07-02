@@ -452,6 +452,20 @@ Planned work:
 
 - [x] Phase 100: TypeScript Maturation And Go Canary Freeze
 
+## Next: TypeScript Advisory Threshold Evidence
+
+Agent Maintainer should use the TypeScript fixture evidence to decide which
+advisory signals are stable enough for future configurable thresholds while
+keeping TypeScript non-blocking and Go canary-only.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-101-typescript-advisory-threshold-evidence.md`](roadmap/phases/phase-101-typescript-advisory-threshold-evidence.md)
+
+Planned work:
+
+- [x] Phase 101: TypeScript Advisory Threshold Evidence
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid
