@@ -511,7 +511,7 @@ Planned work:
 
 - [x] Phase 104: TypeScript Test Repair Facts
 
-## Next: Provider Dispatch Registry
+## Latest Completed: Provider Dispatch Registry
 
 Agent Maintainer should keep provider-specific classification and advisory
 suppression dispatch behind the internal registry instead of direct imports in
@@ -524,7 +524,7 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 105: Provider Dispatch Registry
+- [x] Phase 105: Provider Dispatch Registry
 
 ## Future Work
 

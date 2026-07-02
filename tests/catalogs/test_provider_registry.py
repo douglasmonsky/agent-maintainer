@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.ecosystems.models import ProviderMaturity
 from agent_maintainer.ecosystems.registry import (
+    advisory_suppression_findings,
     builtin_provider_metadata,
+    classification_candidates,
     experimental_check_providers,
     python_provider,
 )
@@ -45,3 +50,39 @@ def test_registry_provider_order() -> None:
     assert [provider.name for provider in experimental_check_providers()] == [
         "typescript",
     ]
+
+
+def test_registry_owns_classification_dispatch() -> None:
+    """Registry exposes active provider classification candidates."""
+    config = MaintainerConfig(source_roots=("src",), test_roots=("tests",))
+
+    python_candidates = classification_candidates("src/pkg/app.py", config)
+    disabled_candidates = classification_candidates("src/app.ts", config)
+    enabled_candidates = classification_candidates(
+        "src/app.ts",
+        MaintainerConfig(enable_typescript=True),
+    )
+
+    assert [candidate.ecosystem for candidate in python_candidates] == ["python"]
+    assert disabled_candidates == ()
+    assert [candidate.ecosystem for candidate in enabled_candidates] == ["typescript"]
+
+
+def test_registry_owns_advisory_suppression_dispatch() -> None:
+    """Registry exposes advisory suppression classifiers by ecosystem."""
+    findings = advisory_suppression_findings("typescript", "// eslint-disable")
+
+    assert len(findings) == 1
+    assert findings[0].ecosystem == "typescript"
+    assert findings[0].broad is True
+    assert advisory_suppression_findings("unknown", "// eslint-disable") == ()
+
+
+def test_provider_dispatch_callers_use_registry() -> None:
+    """Assessment dispatch callers do not import concrete provider helpers."""
+    file_changes = Path("src/agent_maintainer/ecosystems/file_changes.py").read_text()
+    reviewability = Path("src/agent_maintainer/assess/reviewability.py").read_text()
+
+    assert "ecosystems.python import classification" not in file_changes
+    assert "ecosystems.typescript import" not in file_changes
+    assert "ecosystems.typescript import suppressions" not in reviewability

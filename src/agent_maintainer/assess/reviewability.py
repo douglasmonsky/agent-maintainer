@@ -10,9 +10,8 @@ from pathlib import Path
 from agent_maintainer.assess import models as assess_models
 from agent_maintainer.checks import suppression_budget
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.ecosystems import file_changes, git_changes
+from agent_maintainer.ecosystems import file_changes, git_changes, registry
 from agent_maintainer.ecosystems import models as ecosystem_models
-from agent_maintainer.ecosystems.typescript import suppressions as ts_suppressions
 
 ADVISORY_NOTE = (
     "Advisory only: current blocking reviewability gates remain Python-backed "
@@ -165,9 +164,7 @@ def _classify_suppression_line(
     line: str,
 ) -> tuple[ecosystem_models.SuppressionFinding, ...]:
     """Dispatch line-level suppression classification by ecosystem."""
-    if ecosystem == "typescript":
-        return ts_suppressions.classify_line(line)
-    return ()
+    return registry.advisory_suppression_findings(ecosystem, line)
 
 
 def _provider_summaries(

@@ -13,10 +13,7 @@ from agent_maintainer.ecosystems.models import (
     FileClassification,
     FileRole,
 )
-from agent_maintainer.ecosystems.python import classification as python_classification
-from agent_maintainer.ecosystems.typescript import (
-    classification as typescript_classification,
-)
+from agent_maintainer.ecosystems.registry import classification_candidates
 
 HIGH_CONFIDENCE_ROLES = frozenset(
     (
@@ -85,19 +82,7 @@ def _classify_path_candidates(
     repo_root: Path | None,
 ) -> tuple[FileClassification, ...]:
     """Return classifications from providers active for this repository."""
-    candidates: list[FileClassification] = []
-    python_result = python_classification.classify_path(
-        path,
-        config,
-        repo_root=repo_root,
-    )
-    if python_result is not None:
-        candidates.append(python_result)
-    if config.enable_typescript:
-        typescript_result = typescript_classification.classify_path(path)
-        if typescript_result is not None:
-            candidates.append(typescript_result)
-    return tuple(candidates)
+    return classification_candidates(path, config, repo_root=repo_root)
 
 
 def _select_classification(
