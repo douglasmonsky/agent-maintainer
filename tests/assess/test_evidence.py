@@ -12,13 +12,17 @@ from agent_maintainer.assess.evidence import collect_evidence
 SCAN_LIMIT = 2
 WRITTEN_FILES = 4
 TRACKED_PYTHON_FILES = 1
+TEXT_ENCODING = "utf-8"
 
 
 def test_collect_evidence_caps_filesystem_walk(tmp_path: Path) -> None:
     """Filesystem fallback reports truncation instead of unbounded walking."""
 
     for index in range(WRITTEN_FILES):
-        (tmp_path / f"module_{index}.py").write_text("value = 1\n", encoding="utf-8")
+        (tmp_path / f"module_{index}.py").write_text(
+            "value = 1\n",
+            encoding=TEXT_ENCODING,
+        )
 
     evidence = collect_evidence(tmp_path, max_files=SCAN_LIMIT)
 
@@ -33,8 +37,8 @@ def test_collect_evidence_prefers_git(tmp_path: Path) -> None:
 
     git = shutil.which("git") or "git"
     subprocess.run([git, "init"], cwd=tmp_path, check=True, capture_output=True)  # nosec B603
-    (tmp_path / "tracked.py").write_text("value = 1\n", encoding="utf-8")
-    (tmp_path / "ignored.py").write_text("value = 2\n", encoding="utf-8")
+    (tmp_path / "tracked.py").write_text("value = 1\n", encoding=TEXT_ENCODING)
+    (tmp_path / "ignored.py").write_text("value = 2\n", encoding=TEXT_ENCODING)
     subprocess.run(  # nosec B603
         [git, "add", "tracked.py"],
         cwd=tmp_path,
@@ -60,10 +64,24 @@ def test_collect_evidence_reads_package_scripts(tmp_path: Path) -> None:
                 },
             },
         ),
-        encoding="utf-8",
+        encoding=TEXT_ENCODING,
     )
 
     evidence = collect_evidence(tmp_path)
 
     assert evidence.has_package_json is True
     assert evidence.package_scripts == ("lint", "test", "typecheck")
+
+
+def test_evidence_ignores_bad_package_data(tmp_path: Path) -> None:
+    """Invalid package.json shapes are ignored by setup evidence."""
+    malformed = tmp_path / "malformed"
+    malformed.mkdir()
+    (malformed / "package.json").write_text("{", encoding=TEXT_ENCODING)
+
+    non_object = tmp_path / "non-object"
+    non_object.mkdir()
+    (non_object / "package.json").write_text("[]", encoding=TEXT_ENCODING)
+
+    assert collect_evidence(malformed).package_scripts == ()
+    assert collect_evidence(non_object).package_scripts == ()
