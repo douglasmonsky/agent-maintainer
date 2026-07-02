@@ -8,11 +8,20 @@ depends_on = []
 path = "catalog"
 depends_on = [
   "docs",
+  "global_checks",
   "security",
   "//agent_maintainer.config.schema",
-  "//agent_maintainer.core.config",
   "//agent_maintainer.ecosystems.models",
   "//agent_maintainer.ecosystems.python.provider",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
+
+path = "global_checks"
+depends_on = [
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.core.config",
   "//agent_maintainer.models",
 ]
 
