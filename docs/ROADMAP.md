@@ -348,7 +348,7 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 93: Provider Stabilization And Doctor Alignment
+- [x] Phase 93: Provider Stabilization And Doctor Alignment
 
 ## Future Work
 

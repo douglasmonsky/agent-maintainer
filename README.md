@@ -183,6 +183,7 @@ context.
 | Dependency hygiene | deptry, vulture. |
 | Python security | Bandit, pip-audit. |
 | Secrets | Gitleaks current-tree, staged/range, and history modes. |
+| Ecosystems | Python core/reference provider; experimental configured-command TypeScript/JavaScript and Go providers. |
 | SAST | Semgrep in manual profile when enabled. |
 | Multi-ecosystem CVEs | OSV Scanner when enabled. |
 | Containers/IaC | Trivy when relevant to the repo. |
@@ -195,6 +196,7 @@ context.
 Read more:
 [optional gates](docs/optional-gates.md),
 [supported scans and agent use](docs/supported-scans-and-agent-use.md),
+[ecosystem provider status](docs/provider-status.md),
 
 [mutation testing](docs/mutation-testing.md),
 [architecture policy](docs/architecture-policy.md),

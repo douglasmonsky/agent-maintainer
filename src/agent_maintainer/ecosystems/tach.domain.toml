@@ -10,7 +10,17 @@ depends_on = []
 
 path = "models"
 depends_on = [
-  "//agent_maintainer.config.schema",
+ "//agent_maintainer.config.schema",
+]
+
+[[modules]]
+
+path = "registry"
+depends_on = [
+ "go.provider",
+ "models",
+ "python.provider",
+ "typescript.provider",
 ]
 
 

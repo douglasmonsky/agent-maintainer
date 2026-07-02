@@ -7,15 +7,13 @@ depends_on = []
 [[modules]]
 path = "catalog"
 depends_on = [
-  "docs",
-  "global_checks",
-  "security",
-  "//agent_maintainer.config.schema",
-  "//agent_maintainer.ecosystems.go.provider",
-  "//agent_maintainer.ecosystems.models",
-  "//agent_maintainer.ecosystems.python.provider",
-  "//agent_maintainer.ecosystems.typescript.provider",
-  "//agent_maintainer.models",
+ "docs",
+ "global_checks",
+ "security",
+ "//agent_maintainer.config.schema",
+ "//agent_maintainer.ecosystems.models",
+ "//agent_maintainer.ecosystems.registry",
+ "//agent_maintainer.models",
 ]
 
 [[modules]]

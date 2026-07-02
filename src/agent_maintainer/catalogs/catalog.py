@@ -21,10 +21,11 @@ from agent_maintainer.catalogs.security import (
     trivy_checks,
 )
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.ecosystems.go.provider import GoProvider
 from agent_maintainer.ecosystems.models import EcosystemCheckContext
-from agent_maintainer.ecosystems.python.provider import PythonProvider
-from agent_maintainer.ecosystems.typescript.provider import TypeScriptProvider
+from agent_maintainer.ecosystems.registry import (
+    experimental_check_providers,
+    python_provider,
+)
 
 _CATALOG_PYTHON_EXECUTABLE = sys.executable
 
@@ -43,9 +44,12 @@ def make_checks(
         compare_branch=compare_branch,
         package_paths=package_paths,
     )
-    python_provider_checks = PythonProvider().checks_by_name(ecosystem_context)
-    typescript_provider_checks = TypeScriptProvider().checks(ecosystem_context)
-    go_provider_checks = GoProvider().checks(ecosystem_context)
+    python_provider_checks = python_provider().checks_by_name(ecosystem_context)
+    experimental_provider_checks = [
+        check
+        for provider in experimental_check_providers()
+        for check in provider.checks(ecosystem_context)
+    ]
     return [
         *reviewability_checks(config, base_ref, staged=staged),
         python_provider_checks["ruff-format"],
@@ -70,8 +74,7 @@ def make_checks(
         *sbom_checks(config),
         *license_check_checks(config),
         *secret_scan_checks(config, base_ref, staged=staged),
-        *typescript_provider_checks,
-        *go_provider_checks,
+        *experimental_provider_checks,
         *workflow_checks(),
         python_provider_checks["wemake"],
         python_provider_checks["interrogate"],
