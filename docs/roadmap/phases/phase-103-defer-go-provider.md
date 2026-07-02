@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned.
+Complete.
 
 ## Goal
 
@@ -68,3 +68,14 @@ provider docs clear that Go is deferred, not supported.
 If Go returns later, reintroduce it from the current provider patterns rather
 than reviving stale branch code. The minimum bar should include fixtures,
 doctor rows, explicit command setup, and advisory reviewability evidence.
+
+## Result
+
+- Removed Go from active provider metadata, provider instances, config schema,
+  env loading, doctor rows, changed-file classification, and suppression
+  dispatch.
+- Deleted active Go provider modules, Go provider docs, and Go-only tests.
+- Updated public docs to present Go as deferred and TypeScript/JavaScript as the
+  only active non-Python maturation track.
+- Added an ADR documenting why Go was removed from the active architecture
+  instead of kept on a long-lived branch.

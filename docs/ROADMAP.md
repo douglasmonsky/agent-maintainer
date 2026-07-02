@@ -494,7 +494,7 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 103: Defer Go Provider From Active Surface
+- [x] Phase 103: Defer Go Provider From Active Surface
 
 ## Future Work
 
