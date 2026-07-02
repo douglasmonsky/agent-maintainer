@@ -7,8 +7,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from agent_maintainer.context.budget import bound_text
-from agent_maintainer.context.models import ContextBudget
+from agent_context.budget import bound_text
+from agent_context.models import ContextBudget
 from agent_maintainer.core.repair_capsule import render_failure_capsule
 from agent_maintainer.core.structured_artifacts import (
     structured_artifact_summary as expanded_artifact_summary,

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from agent_context import models as context_models
+from agent_context.budget import bound_text
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.context import models as context_models
-from agent_maintainer.context.budget import bound_text
 from agent_maintainer.models import CheckResult
 
 

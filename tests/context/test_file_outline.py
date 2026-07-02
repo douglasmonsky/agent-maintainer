@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from agent_maintainer.context.reading.python_outline import build_outline
+import agent_context.reading.python_outline as python_outline_module
+import agent_maintainer.context.reading.python_outline as old_python_outline
+from agent_context.reading.python_outline import build_outline
 
 PYTHON_SAMPLE = '''@decorator
 class Example:
@@ -18,6 +20,17 @@ class Example:
 def top_level():
     return Example()
 '''
+
+
+def test_old_context_python_outline_imports_delegate_to_agent_context() -> None:
+    """Old Python outline import path delegates to extracted package."""
+
+    assert old_python_outline.PythonOutline is python_outline_module.PythonOutline
+    assert old_python_outline.SymbolOutline is python_outline_module.SymbolOutline
+    assert old_python_outline.build_outline is python_outline_module.build_outline
+    assert old_python_outline.ast_symbols is python_outline_module.ast_symbols
+    assert old_python_outline.fallback_outline is python_outline_module.fallback_outline
+    assert old_python_outline.decorator_names is python_outline_module.decorator_names
 
 
 def test_ast_outline_extracts_classes_methods_and_decorators() -> None:

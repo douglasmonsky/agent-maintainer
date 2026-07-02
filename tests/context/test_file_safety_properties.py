@@ -7,7 +7,7 @@ from pathlib import Path
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from agent_maintainer.context.reading import file_safety
+from agent_context.reading import file_safety
 
 COMPONENT_RE = r"[A-Za-z0-9_][A-Za-z0-9_-]{0,16}"
 MAX_PART_EXAMPLES = 80

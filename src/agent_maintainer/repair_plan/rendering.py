@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 
-from agent_maintainer.context.budget import bound_text
-from agent_maintainer.context.models import ContextBudget
+from agent_context.budget import bound_text
+from agent_context.models import ContextBudget
 from agent_maintainer.repair_plan.models import RepairPlan
 
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from agent_maintainer.context.models import ExactRepairFact
+from agent_context.models import ExactRepairFact
 
 
 def test_exact_repair_fact_preserves_symbol() -> None:

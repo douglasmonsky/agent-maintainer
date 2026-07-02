@@ -49,6 +49,20 @@ repair facts" and does not include context pack building, hook output, run
 artifact retention, vector search, GraphQL, wiki projection, or DocSync
 knowledge-graph work.
 
+## Phase 112 Boundary Update
+
+`agent_context` begins as the second extracted internal package. The first slice
+owns reusable context contract models, budget bounding helpers, failure-manifest
+reading, size estimates, and safe file/log/diff readers. Product-owned context
+pack construction, Agent Maintainer CLI wiring, ratchet context, compression
+adapters, and hook output remain under `agent_maintainer.context` until their
+product dependencies can be inverted cleanly.
+
+The boundary intentionally preserves old `agent_maintainer.context.*` imports as
+compatibility shims. The new package must not import `agent_maintainer`; if a
+future context module needs Agent Maintainer config or verifier internals, keep
+that adapter in `agent_maintainer` until a stable lower-level contract exists.
+
 ## Dependency Direction
 
 `agent_maintainer` may depend on all internal packages as the orchestrator.

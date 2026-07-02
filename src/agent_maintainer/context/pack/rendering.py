@@ -6,9 +6,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from agent_maintainer.context.budget import bound_text
-from agent_maintainer.context.formatting import UNTRUSTED_EXCERPT_LABEL
-from agent_maintainer.context.models import ContextBudget
+from agent_context.budget import bound_text
+from agent_context.formatting import UNTRUSTED_EXCERPT_LABEL
+from agent_context.models import ContextBudget
 
 HOOK_FACT_LIMIT = 3
 HOOK_COMMAND_LIMIT = 3

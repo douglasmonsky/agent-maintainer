@@ -9,8 +9,8 @@ path = "artifacts"
 depends_on = [
 "artifact_manifest",
 "//agent_maintainer.config.schema",
-"//agent_maintainer.context.budget",
-"//agent_maintainer.context.models",
+"//agent_context.budget",
+"//agent_context.models",
 "//agent_maintainer.models",
     "git_state",
     "history",
@@ -22,8 +22,8 @@ depends_on = [
 path = "artifact_manifest"
 depends_on = [
 "//agent_maintainer.config.schema",
-"//agent_maintainer.context.budget",
-"//agent_maintainer.context.models",
+"//agent_context.budget",
+"//agent_context.models",
 "//agent_maintainer.models",
 ]
 
@@ -55,8 +55,8 @@ depends_on = []
 [[modules]]
 path = "pr_summary_support"
 depends_on = [
-  "//agent_maintainer.context.budget",
-  "//agent_maintainer.context.models",
+  "//agent_context.budget",
+  "//agent_context.models",
   "//agent_maintainer.models",
 ]
 

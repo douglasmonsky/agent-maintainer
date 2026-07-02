@@ -1,0 +1,74 @@
+# Tach domain contract for agent_context.
+# Keep this package reusable: it must not import agent_maintainer.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "budget"
+depends_on = ["models"]
+
+[[modules]]
+path = "estimate"
+depends_on = [
+  "failures",
+  "reading.logs",
+]
+
+[[modules]]
+path = "failures"
+depends_on = [
+  "budget",
+  "models",
+]
+
+[[modules]]
+path = "formatting"
+depends_on = ["models"]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "reading"
+depends_on = []
+
+[[modules]]
+path = "reading.diff"
+depends_on = [
+  "budget",
+  "models",
+  "reading.diff_classify",
+  "reading.diff_git",
+]
+
+[[modules]]
+path = "reading.diff_classify"
+depends_on = []
+
+[[modules]]
+path = "reading.diff_git"
+depends_on = []
+
+[[modules]]
+path = "reading.file_safety"
+depends_on = []
+
+[[modules]]
+path = "reading.files"
+depends_on = [
+  "budget",
+  "failures",
+  "models",
+  "reading.file_safety",
+  "reading.python_outline",
+]
+
+[[modules]]
+path = "reading.logs"
+depends_on = ["failures"]
+
+[[modules]]
+path = "reading.python_outline"
+depends_on = []

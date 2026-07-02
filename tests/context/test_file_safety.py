@@ -4,9 +4,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from agent_maintainer.context.reading.file_safety import inspect_file
+import agent_context.reading.file_safety as file_safety_module
+import agent_maintainer.context.reading.file_safety as old_file_safety
+from agent_context.reading.file_safety import inspect_file
 
 MINIFIED_JSON_CHARS = 2_100
+
+
+def test_old_context_file_safety_imports_delegate_to_agent_context() -> None:
+    """Old file-safety import path delegates to extracted package."""
+
+    assert old_file_safety.FileSafety is file_safety_module.FileSafety
+    assert old_file_safety.inspect_file is file_safety_module.inspect_file
+    assert old_file_safety.inspect_path is file_safety_module.inspect_path
+    assert old_file_safety.inspect_text is file_safety_module.inspect_text
+    assert old_file_safety.refused_path is file_safety_module.refused_path
+    assert old_file_safety.looks_generated is file_safety_module.looks_generated
 
 
 def test_binary_file_is_refused(tmp_path: Path) -> None:

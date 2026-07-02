@@ -4,13 +4,21 @@ from __future__ import annotations
 
 import pytest
 
-from agent_maintainer.context.budget import bound_single_item_text, bound_text
-from agent_maintainer.context.models import ContextBudget
+from agent_context.budget import bound_single_item_text, bound_text
+from agent_context.models import ContextBudget
+from agent_maintainer.context import budget as old_budget
+from agent_maintainer.context import models as old_models
 
 TRUNCATION_ORIGINAL_LINES = 3
 LINE_LIMIT_ORIGINAL_LINES = 4
 LINE_LIMIT_OMITTED_LINES = 2
 SINGLE_ITEM_CHAR_LIMIT = 3
+
+
+def test_old_context_budget_imports_delegate_to_agent_context() -> None:
+    """Old context budget imports remain compatibility shims."""
+    assert old_budget.bound_text is bound_text
+    assert old_models.ContextBudget is ContextBudget
 
 
 def test_bound_text_tracks_char_and_line_omissions() -> None:

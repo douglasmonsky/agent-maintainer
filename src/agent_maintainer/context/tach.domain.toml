@@ -1,25 +1,24 @@
 # Tach domain contract for agent_maintainer.context.
-# Keep this file close to the code it governs.
+# This package now owns the product CLI and context-pack adapters; reusable
+# primitives and readers live in agent_context.
 
 [root]
 depends_on = []
 
 [[modules]]
 path = "budget"
-depends_on = [
-  "models",
-]
+depends_on = ["//agent_context.budget"]
 
 [[modules]]
 path = "cli"
 depends_on = [
-  "estimate",
-  "failures",
   "pack.cli",
-  "reading.diff",
-  "reading.diff_git",
-  "reading.files",
-  "reading.logs",
+  "//agent_context.estimate",
+  "//agent_context.failures",
+  "//agent_context.reading.diff",
+  "//agent_context.reading.diff_git",
+  "//agent_context.reading.files",
+  "//agent_context.reading.logs",
 ]
 
 [[modules]]
@@ -45,28 +44,19 @@ depends_on = []
 
 [[modules]]
 path = "estimate"
-depends_on = [
-  "failures",
-  "reading.logs",
-]
+depends_on = ["//agent_context.estimate"]
 
 [[modules]]
 path = "failures"
-depends_on = [
-  "budget",
-  "models",
-  "//agent_maintainer.verify.artifacts",
-]
+depends_on = ["//agent_context.failures"]
 
 [[modules]]
 path = "formatting"
-depends_on = [
-  "models",
-]
+depends_on = ["//agent_context.formatting"]
 
 [[modules]]
 path = "models"
-depends_on = []
+depends_on = ["//agent_context.models"]
 
 [[modules]]
 path = "pack"
@@ -75,14 +65,14 @@ depends_on = []
 [[modules]]
 path = "pack.builder"
 depends_on = [
-  "failures",
   "pack.compression",
   "pack.exact_facts",
   "pack.ratchet",
   "pack.rendering",
   "pack.sanitize",
-  "reading.files",
-  "reading.logs",
+  "//agent_context.failures",
+  "//agent_context.reading.files",
+  "//agent_context.reading.logs",
 ]
 
 [[modules]]
@@ -106,46 +96,34 @@ depends_on = [
 [[modules]]
 path = "pack.exact_facts"
 depends_on = [
-  "failures",
+  "//agent_context.failures",
   "//agent_repair_facts.payloads",
   "//agent_repair_facts.registry",
 ]
 
 [[modules]]
 path = "pack.fact_parsers"
-depends_on = [
-  "//agent_repair_facts.registry",
-]
+depends_on = ["//agent_repair_facts.registry"]
 
 [[modules]]
 path = "pack.fact_payloads"
-depends_on = [
-  "//agent_repair_facts.payloads",
-]
+depends_on = ["//agent_repair_facts.payloads"]
 
 [[modules]]
 path = "pack.lint_fact_parsers"
-depends_on = [
-  "//agent_repair_facts.parsers.lint",
-]
+depends_on = ["//agent_repair_facts.parsers.lint"]
 
 [[modules]]
 path = "pack.log_fact_parsers"
-depends_on = [
-  "//agent_repair_facts.parsers.logs",
-]
+depends_on = ["//agent_repair_facts.parsers.logs"]
 
 [[modules]]
 path = "pack.pytest_fact_parsers"
-depends_on = [
-  "//agent_repair_facts.parsers.pytest",
-]
+depends_on = ["//agent_repair_facts.parsers.pytest"]
 
 [[modules]]
 path = "pack.typescript_fact_parsers"
-depends_on = [
-  "//agent_repair_facts.parsers.typescript",
-]
+depends_on = ["//agent_repair_facts.parsers.typescript"]
 
 [[modules]]
 path = "pack.ratchet"
@@ -158,9 +136,9 @@ depends_on = [
 [[modules]]
 path = "pack.rendering"
 depends_on = [
-  "budget",
-  "formatting",
-  "models",
+  "//agent_context.budget",
+  "//agent_context.formatting",
+  "//agent_context.models",
 ]
 
 [[modules]]
@@ -173,41 +151,28 @@ depends_on = []
 
 [[modules]]
 path = "reading.diff"
-depends_on = [
-  "budget",
-  "models",
-  "reading.diff_classify",
-  "reading.diff_git",
-]
+depends_on = ["//agent_context.reading.diff"]
 
 [[modules]]
 path = "reading.diff_classify"
-depends_on = []
+depends_on = ["//agent_context.reading.diff_classify"]
 
 [[modules]]
 path = "reading.diff_git"
-depends_on = []
+depends_on = ["//agent_context.reading.diff_git"]
 
 [[modules]]
 path = "reading.file_safety"
-depends_on = []
+depends_on = ["//agent_context.reading.file_safety"]
 
 [[modules]]
 path = "reading.files"
-depends_on = [
-  "budget",
-  "failures",
-  "models",
-  "reading.file_safety",
-  "reading.python_outline",
-]
+depends_on = ["//agent_context.reading.files"]
 
 [[modules]]
 path = "reading.logs"
-depends_on = [
-  "failures",
-]
+depends_on = ["//agent_context.reading.logs"]
 
 [[modules]]
 path = "reading.python_outline"
-depends_on = []
+depends_on = ["//agent_context.reading.python_outline"]

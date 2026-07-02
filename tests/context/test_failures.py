@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from agent_context.failures import failure_records, render_failures_text
 from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context.failures import failure_records, render_failures_text
 
 BOUNDED_OUTPUT_MAX_CHARS = 180
 

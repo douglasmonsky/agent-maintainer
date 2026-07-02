@@ -27,6 +27,12 @@ original handoff called `docs_evidence`. Do not create a second `docs_evidence`
 package during this refactor unless a future ADR explicitly reopens that
 boundary.
 
+Current-state note: `agent_context` extraction is split. Phase 112 moved context
+models, budget/formatting helpers, failure-manifest readers, estimates, and safe
+file/log/diff readers. Context-pack builder/rendering/compression, ratchet
+context, and Agent Maintainer context CLI remain product-owned until their Agent
+Maintainer dependencies are isolated.
+
 ## Hard Invariants
 
 - Keep `agent-maintainer` as the only public distribution in this pass.

@@ -7,13 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context.reading.files import (
+from agent_context.reading.files import (
     FileRequest,
     render_file_json,
     render_file_text,
     select_file_context,
 )
+from agent_maintainer.context import cli as context_cli
 
 ONE_CONTEXT_LINE = 1
 AROUND_LINE = 3
