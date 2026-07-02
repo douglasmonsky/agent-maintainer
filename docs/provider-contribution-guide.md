@@ -14,6 +14,7 @@ Related reading:
 
 - [Polyglot Ecosystem Provider Roadmap](roadmap/polyglot-ecosystem-providers.md)
 - [Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
+- [Experimental Go Provider](go-provider.md)
 - [Diagnostics and Repair Loop](diagnostics-repair-loop.md)
 - [Supported Scans and Agent Use](supported-scans-and-agent-use.md)
 
