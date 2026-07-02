@@ -37,6 +37,7 @@ index into a monolithic blueprint.
 | 90 | [Workspace Config Foundation](phases/phase-90-workspace-config-foundation.md) |
 | 91 | [Team Policy Templates](phases/phase-91-team-policy-templates.md) |
 | 92 | [Roadmap Future Work Cleanup](phases/phase-92-roadmap-future-work-cleanup.md) |
+| 93 | [Provider Stabilization And Doctor Alignment](phases/phase-93-provider-stabilization-and-doctor-alignment.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |

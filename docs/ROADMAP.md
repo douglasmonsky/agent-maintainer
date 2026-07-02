@@ -336,6 +336,20 @@ Planned work:
 - [x] Phase 91: Team Policy Templates
 - [x] Phase 92: Roadmap Future Work Cleanup
 
+## Next: Provider Stabilization And Doctor Alignment
+
+The provider refactor has landed, but Agent Maintainer should harden the seam
+before adding more languages or claiming mature polyglot support. This phase
+keeps Python the core/reference provider, keeps TypeScript and Go experimental,
+and aligns provider metadata, doctor output, and tool capability hints.
+Detailed scope:
+
+[`docs/roadmap/phases/phase-93-provider-stabilization-and-doctor-alignment.md`](roadmap/phases/phase-93-provider-stabilization-and-doctor-alignment.md)
+
+Planned work:
+
+- [ ] Phase 93: Provider Stabilization And Doctor Alignment
+
 ## Future Work
 
 No active Future Work items remain in the current roadmap completion gate.
