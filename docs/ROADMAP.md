@@ -481,6 +481,21 @@ Planned work:
 
 - [x] Phase 102: TypeScript Setup Advisor Recommendations
 
+## Next: Defer Go Provider From Active Surface
+
+Agent Maintainer should remove Go from the active provider surface while there
+are no public Go adopters and focus non-Python maturity work on
+TypeScript/JavaScript. Go remains a future ecosystem, not an active canary in
+`main`.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-103-defer-go-provider.md`](roadmap/phases/phase-103-defer-go-provider.md)
+
+Planned work:
+
+- [ ] Phase 103: Defer Go Provider From Active Surface
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid
