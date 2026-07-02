@@ -50,6 +50,16 @@ class FileRole(StrEnum):
     UNKNOWN = "unknown"
 
 
+class ChangeKind(StrEnum):
+    """Git-style change kinds used by advisory file-change classification."""
+
+    ADDED = "added"
+    MODIFIED = "modified"
+    DELETED = "deleted"
+    RENAMED = "renamed"
+    UNKNOWN = "unknown"
+
+
 @dataclass(frozen=True)
 class FileClassification:
     """One ecosystem's classification for a repository path."""
@@ -60,6 +70,37 @@ class FileClassification:
     generated: bool = False
     ignored: bool = False
     reason: str = ""
+
+
+@dataclass(frozen=True)
+class FileChangeClassification:
+    """One ecosystem's classification of a changed repository path."""
+
+    path: str
+    ecosystem: str
+    role: FileRole
+    change_kind: ChangeKind
+    generated: bool = False
+    ignored: bool = False
+    reason: str = ""
+
+    @classmethod
+    def from_file_classification(
+        cls,
+        classification: FileClassification,
+        *,
+        change_kind: ChangeKind,
+    ) -> FileChangeClassification:
+        """Attach change metadata to a file classification."""
+        return cls(
+            path=classification.path,
+            ecosystem=classification.ecosystem,
+            role=classification.role,
+            change_kind=change_kind,
+            generated=classification.generated,
+            ignored=classification.ignored,
+            reason=classification.reason,
+        )
 
 
 @dataclass(frozen=True)
