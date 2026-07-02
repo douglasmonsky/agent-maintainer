@@ -20,7 +20,7 @@ allowed_paths = [
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 12
-max_changed_lines = 500
+max_changed_lines = 600
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
