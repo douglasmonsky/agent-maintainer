@@ -39,3 +39,20 @@ depends_on = [
   "//agent_maintainer.config.schema",
   "//agent_maintainer.models",
 ]
+
+[[modules]]
+path = "typescript"
+depends_on = []
+
+[[modules]]
+path = "typescript.classification"
+depends_on = [
+  "models",
+]
+
+[[modules]]
+path = "typescript.provider"
+depends_on = [
+  "models",
+  "//agent_maintainer.models",
+]

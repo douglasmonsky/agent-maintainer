@@ -53,6 +53,9 @@ DEFAULT_TRIVY_ARGS = (
     ".",
 )
 DEFAULT_TRIVY_PROFILES = ("manual",)
+DEFAULT_TYPESCRIPT_LINT_PROFILES = ("precommit", "full", "ci")
+DEFAULT_TYPESCRIPT_TYPECHECK_PROFILES = ("full", "ci")
+DEFAULT_TYPESCRIPT_TEST_PROFILES = ("full", "ci")
 DEFAULT_SBOM_ARGS = (
     "requirements",
     "config/dev-lock.txt",
@@ -115,6 +118,12 @@ TUPLE_FIELDS = frozenset(
         "osv_scanner_profiles",
         "trivy_args",
         "trivy_profiles",
+        "typescript_lint_command",
+        "typescript_lint_profiles",
+        "typescript_typecheck_command",
+        "typescript_typecheck_profiles",
+        "typescript_test_command",
+        "typescript_test_profiles",
         "sbom_args",
         "sbom_profiles",
         "license_check_args",
@@ -140,6 +149,7 @@ BOOL_FIELDS = frozenset(
         "enable_semgrep",
         "enable_osv_scanner",
         "enable_trivy",
+        "enable_typescript",
         "enable_sbom",
         "enable_license_check",
         "enable_secret_scanning",
@@ -322,6 +332,13 @@ class MaintainerConfig:
     enable_trivy: bool = False
     trivy_args: tuple[str, ...] = DEFAULT_TRIVY_ARGS
     trivy_profiles: tuple[str, ...] = DEFAULT_TRIVY_PROFILES
+    enable_typescript: bool = False
+    typescript_lint_command: tuple[str, ...] = ()
+    typescript_lint_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_LINT_PROFILES
+    typescript_typecheck_command: tuple[str, ...] = ()
+    typescript_typecheck_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_TYPECHECK_PROFILES
+    typescript_test_command: tuple[str, ...] = ()
+    typescript_test_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_TEST_PROFILES
     enable_sbom: bool = False
     sbom_args: tuple[str, ...] = DEFAULT_SBOM_ARGS
     sbom_profiles: tuple[str, ...] = DEFAULT_SBOM_PROFILES

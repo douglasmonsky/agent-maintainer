@@ -23,6 +23,7 @@ from agent_maintainer.catalogs.security import (
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.ecosystems.models import EcosystemCheckContext
 from agent_maintainer.ecosystems.python.provider import PythonProvider
+from agent_maintainer.ecosystems.typescript.provider import TypeScriptProvider
 
 _CATALOG_PYTHON_EXECUTABLE = sys.executable
 
@@ -36,13 +37,13 @@ def make_checks(
 ) -> list[models.Check]:
     """Build complete catalog for verifier profiles."""
     package_paths = existing_or_configured(config.package_paths)
-    python_provider_checks = PythonProvider().checks_by_name(
-        EcosystemCheckContext(
-            config=config,
-            compare_branch=compare_branch,
-            package_paths=package_paths,
-        )
+    ecosystem_context = EcosystemCheckContext(
+        config=config,
+        compare_branch=compare_branch,
+        package_paths=package_paths,
     )
+    python_provider_checks = PythonProvider().checks_by_name(ecosystem_context)
+    typescript_provider_checks = TypeScriptProvider().checks(ecosystem_context)
     return [
         *reviewability_checks(config, base_ref, staged=staged),
         python_provider_checks["ruff-format"],
@@ -67,6 +68,7 @@ def make_checks(
         *sbom_checks(config),
         *license_check_checks(config),
         *secret_scan_checks(config, base_ref, staged=staged),
+        *typescript_provider_checks,
         *workflow_checks(),
         python_provider_checks["wemake"],
         python_provider_checks["interrogate"],

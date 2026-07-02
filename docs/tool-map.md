@@ -1,5 +1,10 @@
 # Tool map
 
+Experimental ecosystem providers are documented separately when they are not
+part of the default Python workflow. See
+[Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
+for the first opt-in non-Python provider.
+
 <p align="center">
   <img src="assets/graphics/standard-runs-at-a-glance.png" alt="Agent Maintainer standard runs comparison showing typical fast full verification checks plus optional hardening profiles." width="900">
 </p>

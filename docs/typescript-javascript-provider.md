@@ -1,0 +1,72 @@
+# Experimental TypeScript/JavaScript Provider
+
+Agent Maintainer includes an experimental TypeScript/JavaScript ecosystem
+provider. It is disabled by default and runs only commands configured by the
+repository.
+
+This provider exists to validate the ecosystem-provider architecture without
+weakening Python behavior or pretending every JavaScript repository uses the
+same package manager, linter, test runner, or build layout.
+
+## Configuration
+
+Enable the provider and supply explicit commands:
+
+```toml
+[tool.agent_maintainer]
+enable_typescript = true
+typescript_lint_command = ["npm", "run", "lint"]
+typescript_typecheck_command = ["npm", "run", "typecheck"]
+typescript_test_command = ["npm", "test", "--", "--runInBand"]
+```
+
+The command arrays are passed directly to subprocess execution. They are not
+shell strings.
+
+Profile membership is configurable:
+
+```toml
+[tool.agent_maintainer]
+typescript_lint_profiles = ["precommit", "full", "ci"]
+typescript_typecheck_profiles = ["full", "ci"]
+typescript_test_profiles = ["full", "ci"]
+```
+
+Default profiles are:
+
+| Check | Default profiles |
+|---|---|
+| `typescript-lint` | `precommit`, `full`, `ci` |
+| `typescript-typecheck` | `full`, `ci` |
+| `typescript-test` | `full`, `ci` |
+
+If `enable_typescript = true` but a command is empty, the corresponding check
+is reported as an optional skip. Agent Maintainer will not guess a package
+manager or invent a command.
+
+## Classification
+
+The provider classifies common TypeScript and JavaScript paths:
+
+- source files: `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`;
+- tests: `.test.*`, `.spec.*`, `__tests__`, `tests`, `specs`;
+- ignored/generated paths: `node_modules`, build outputs, coverage outputs,
+  `__generated__`, generated folders;
+- dependency and config files such as `package.json`, lockfiles, `tsconfig.json`,
+  ESLint, Biome, Vite, Vitest, Jest, and Next config files.
+
+Classification is internal in this phase. It prepares later policy adapters
+without changing existing Python policy behavior.
+
+## Limitations
+
+- No package-manager autodetection.
+- No generated starter files yet.
+- No TypeScript-specific doctor rows yet.
+- No structured parser for ESLint, TypeScript, Vitest, Jest, or coverage output.
+- No TypeScript coverage, mutation, dependency, or security adapter.
+- No public plugin API.
+
+Python remains the core/reference provider. TypeScript support starts smaller on
+purpose so the provider seam can prove itself before deeper ecosystem features
+are added.
