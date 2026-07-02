@@ -12,6 +12,11 @@ SMALL_REPO_FILE_LIMIT = 12
 LARGE_SOURCE_FILE_COUNT = 40
 HIGH_CONFIDENCE_SIGNALS = 5
 MEDIUM_CONFIDENCE_SIGNALS = 3
+TYPESCRIPT_LINT_SCRIPT_NAMES = frozenset(("eslint", "lint", "lint:js", "lint:ts"))
+TYPESCRIPT_TYPECHECK_SCRIPT_NAMES = frozenset(
+    ("check:types", "tsc", "type-check", "typecheck"),
+)
+TYPESCRIPT_TEST_SCRIPT_NAMES = frozenset(("jest", "test", "test:unit", "vitest"))
 
 
 def build_setup_report(evidence: RepoEvidence) -> SetupAdvisorReport:
@@ -137,6 +142,19 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
                 profiles=("manual",),
             ),
         )
+    if _typescript_script_signals(evidence):
+        gates.append(
+            GateRecommendation(
+                name="typescript-provider",
+                recommendation="consider",
+                reason=(
+                    "package.json exposes lint/typecheck/test scripts that can be "
+                    "mapped to explicit TypeScript provider commands."
+                ),
+                config_key="enable_typescript",
+                profiles=("precommit", "full", "ci"),
+            ),
+        )
     if evidence.has_container_or_iac:
         gates.append(
             GateRecommendation(
@@ -189,6 +207,11 @@ def _agent_prompts(evidence: RepoEvidence) -> tuple[str, ...]:
         prompts.append(
             "Group large folders by responsibility before tightening file-count gates.",
         )
+    if _typescript_script_signals(evidence):
+        prompts.append(
+            "Map existing package.json scripts to explicit TypeScript provider "
+            "commands; do not guess package manager.",
+        )
     return tuple(prompts)
 
 
@@ -211,3 +234,22 @@ def _next_commands(track: str, preset: str) -> tuple[str, ...]:
 def _has_python_surface(evidence: RepoEvidence) -> bool:
     """Return whether evidence looks like a Python repository."""
     return evidence.has_pyproject or evidence.source_files > 0 or evidence.test_files > 0
+
+
+def _typescript_script_signals(evidence: RepoEvidence) -> tuple[str, ...]:
+    """Return package scripts that suggest explicit TypeScript provider commands."""
+    return tuple(
+        script_name
+        for script_name in evidence.package_scripts
+        if _is_typescript_script_signal(script_name)
+    )
+
+
+def _is_typescript_script_signal(script_name: str) -> bool:
+    """Return whether script name maps to a TypeScript provider command kind."""
+    normalized = script_name.lower()
+    return (
+        normalized in TYPESCRIPT_LINT_SCRIPT_NAMES
+        or normalized in TYPESCRIPT_TYPECHECK_SCRIPT_NAMES
+        or normalized in TYPESCRIPT_TEST_SCRIPT_NAMES
+    )

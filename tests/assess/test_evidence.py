@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess  # nosec B404
 from pathlib import Path
@@ -45,3 +46,24 @@ def test_collect_evidence_prefers_git(tmp_path: Path) -> None:
 
     assert evidence.scan_source == "git-ls-files"
     assert evidence.python_files == TRACKED_PYTHON_FILES
+
+
+def test_collect_evidence_reads_package_scripts(tmp_path: Path) -> None:
+    """Root package.json script names are setup-advisor evidence."""
+    (tmp_path / "package.json").write_text(
+        json.dumps(
+            {
+                "scripts": {
+                    "typecheck": "tsc --noEmit",
+                    "test": "vitest run",
+                    "lint": "eslint .",
+                },
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    evidence = collect_evidence(tmp_path)
+
+    assert evidence.has_package_json is True
+    assert evidence.package_scripts == ("lint", "test", "typecheck")

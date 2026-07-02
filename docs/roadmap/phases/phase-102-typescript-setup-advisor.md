@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned.
+Complete.
 
 ## Goal
 
@@ -53,3 +53,13 @@ blocking gates.
 Do not guess npm, pnpm, yarn, or bun commands from file names. The advisor may
 point at existing scripts, but the repository owner should keep command arrays
 explicit in `[tool.agent_maintainer]`.
+
+## Result
+
+- `assess setup` now records root `package.json` script names as evidence.
+- Repositories with relevant `lint`, `typecheck`, or `test` scripts receive an
+  advisory `typescript-provider` recommendation.
+- The recommendation tells agents to map existing scripts into explicit
+  TypeScript provider command fields and not guess package managers.
+- Repositories with unrelated package scripts keep OSV advice but do not receive
+  TypeScript provider advice.
