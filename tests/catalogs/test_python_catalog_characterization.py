@@ -234,8 +234,10 @@ def test_enabled_secret_scan_uses_runner_and_redacted_artifacts() -> None:
     secret_checks = [check for check in checks if check.name == "secret-scan"]
 
     assert len(secret_checks) == ENABLED_SECRET_SCAN_CHECK_COUNT
-    ci_check = next(check for check in secret_checks if check.profiles == {"ci"})
-    full_check = next(check for check in secret_checks if check.profiles == {"full"})
+    ci_check = next(check for check in secret_checks if check.profiles == frozenset((CI_PROFILE,)))
+    full_check = next(
+        check for check in secret_checks if check.profiles == frozenset((FULL_PROFILE,))
+    )
 
     assert _module_command(ci_check) == [
         sys.executable,
