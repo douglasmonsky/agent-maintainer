@@ -28,6 +28,7 @@ index into a monolithic blueprint.
 | 81 | [Policy Checks Through Python Classifier Adapters](phases/phase-81-policy-checks-through-python-classifier-adapters.md) |
 | 82 | [Neutral Config Path Exploration](phases/phase-82-neutral-config-path-exploration.md) |
 | 83 | [Experimental TypeScript/JavaScript Provider](phases/phase-83-experimental-typescript-javascript-provider.md) |
+| 84 | [TypeScript Provider Doctor Hints And Fixture Smoke Tests](phases/phase-84-typescript-provider-doctor-hints-and-fixtures.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
