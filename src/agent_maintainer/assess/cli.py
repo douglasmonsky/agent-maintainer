@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -84,7 +84,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 @contextmanager
-def _working_directory(path: Path) -> Iterator[None]:
+def _working_directory(path: Path) -> Generator[None, None, None]:
     """Temporarily load config relative to a target repository."""
     previous = Path.cwd()
     os.chdir(path)

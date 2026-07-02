@@ -10,6 +10,7 @@ import pytest
 
 from agent_maintainer.assess import cli, reporting
 from agent_maintainer.assess import reviewability as assessment_reviewability
+from agent_maintainer.assess.models import ReviewabilityCount
 from agent_maintainer.checks.change_budget import FileChange
 from agent_maintainer.config.schema import MaintainerConfig
 
@@ -114,7 +115,7 @@ def test_reviewability_text_no_provider_files(
     monkeypatch.setattr(
         assessment_reviewability,
         "run_git_numstat",
-        lambda _base_ref, *, staged: [FileChange("notes/random.log", 1, 1)],
+        _fake_unclassified_numstat,
     )
 
     report = assessment_reviewability.build_reviewability_report(
@@ -142,6 +143,13 @@ def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
     ]
 
 
+def _fake_unclassified_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
+    """Return one unclassified changed file."""
+    assert base_ref == "origin/main"
+    assert not staged
+    return [FileChange("notes/random.log", 1, 1)]
+
+
 def _write_config(root: Path) -> None:
     """Write config enabling experimental providers."""
     root.joinpath("pyproject.toml").write_text(
@@ -154,6 +162,6 @@ enable_go = true
     )
 
 
-def _count_map(counts) -> dict[str, int]:
+def _count_map(counts: tuple[ReviewabilityCount, ...]) -> dict[str, int]:
     """Return count mapping for assertions."""
     return {item.key: item.count for item in counts}
