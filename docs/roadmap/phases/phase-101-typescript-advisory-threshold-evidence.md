@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned.
+Complete.
 
 ## Goal
 
@@ -57,3 +57,11 @@ Do not implement thresholds just because names are drafted. Add real behavior
 only after fixture output and at least one real-repo comparison show low-noise
 signals. If a TypeScript threshold would require Node-specific logic in core,
 move the logic behind the TypeScript provider or defer it.
+
+## Result
+
+Added npm, pnpm, and Vite/Vitest explicit-command examples to the TypeScript
+provider documentation. Updated TypeScript provider maturation notes with
+advisory-threshold evidence and documentation-only candidate threshold names. No
+runtime config fields, blocking gates, package-manager autodetection, Go depth,
+or Python behavior changes were added.

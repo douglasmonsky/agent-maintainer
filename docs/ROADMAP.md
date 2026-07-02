@@ -464,7 +464,7 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 101: TypeScript Advisory Threshold Evidence
+- [x] Phase 101: TypeScript Advisory Threshold Evidence
 
 ## Future Work
 
