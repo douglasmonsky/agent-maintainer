@@ -674,6 +674,29 @@ Completed work:
 
 - [x] Phase 112: Agent Context Primitives And Reading Extraction
 
+## Planned: Agent Run Artifacts Internal Package Extraction
+
+Agent Maintainer should next extract verifier artifact schemas and rendering
+helpers into `agent_run_artifacts`, preserving `.verify-logs` behavior, old
+`agent_maintainer.verify.*` import paths, PR summary output, and run-scoped
+diagnostic layout.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-113-agent-run-artifacts-package.md`](roadmap/phases/phase-113-agent-run-artifacts-package.md)
+
+Internal package roadmap:
+
+[`docs/roadmap/internal-package-boundaries.md`](roadmap/internal-package-boundaries.md)
+
+Implementation guide:
+
+[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
+
+Pending work:
+
+- [ ] Phase 113: Agent Run Artifacts Internal Package Extraction
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid
