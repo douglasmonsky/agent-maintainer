@@ -329,6 +329,7 @@ Planned work:
 - [x] Phase 85: TypeScript Structured Output Repair Facts
 - [x] Phase 86: Provider Contribution Guide
 - [x] Phase 87: Experimental Go Provider
+- [x] Phase 88: Provider API Stability Decision
 
 ## Future Work
 

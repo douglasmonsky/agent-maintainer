@@ -63,10 +63,14 @@ If a proposed abstraction makes an existing Python feature harder to express, st
 
 ## API Stability Policy
 
-- Do not publish an external plugin API until at least two non-Python built-in providers have been implemented and the abstraction has survived real use.
+- Do not publish an external provider plugin API during beta.
 - Internal provider interfaces may change between beta releases.
-- Community language support should first land as built-in experimental providers through normal PR review.
-- External package discovery and loading are deferred until the internal architecture has stabilized.
+- Community language support should first land as built-in experimental
+  providers through normal PR review.
+- External package discovery/loading remains deferred until the internal
+  architecture has survived real use outside this repository.
+- Current decision record:
+  [`2026-07-02-provider-api-stability.md`](../architecture/decisions/2026-07-02-provider-api-stability.md).
 
 ## Capability Model
 
