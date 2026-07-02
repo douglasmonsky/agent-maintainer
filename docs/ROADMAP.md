@@ -327,6 +327,7 @@ Planned work:
 - [x] Phase 83: Experimental TypeScript/JavaScript Provider
 - [x] Phase 84: TypeScript Provider Doctor Hints And Fixture Smoke Tests
 - [x] Phase 85: TypeScript Structured Output Repair Facts
+- [x] Phase 86: Provider Contribution Guide
 
 ## Future Work
 

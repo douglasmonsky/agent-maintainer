@@ -361,6 +361,8 @@ Scope:
 
 - Document how community contributors can add built-in experimental providers.
 - Include required files, tests, docs, scaffold expectations, and maturity checklist.
+- Publish contributor-facing guide at
+  [`docs/provider-contribution-guide.md`](../provider-contribution-guide.md).
 
 Acceptance criteria:
 
@@ -396,6 +398,9 @@ Acceptance criteria:
 - Migration path is documented if external plugins are introduced.
 
 ## Community Provider Contribution Checklist
+
+See [`docs/provider-contribution-guide.md`](../provider-contribution-guide.md)
+for the contributor-facing version of this checklist.
 
 A new provider should include:
 

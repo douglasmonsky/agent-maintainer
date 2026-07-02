@@ -86,3 +86,6 @@ without changing existing Python policy behavior.
 Python remains the core/reference provider. TypeScript support starts smaller on
 purpose so the provider seam can prove itself before deeper ecosystem features
 are added.
+
+See [Provider Contribution Guide](provider-contribution-guide.md) before adding
+or promoting provider capabilities.

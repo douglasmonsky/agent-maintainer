@@ -30,6 +30,7 @@ index into a monolithic blueprint.
 | 83 | [Experimental TypeScript/JavaScript Provider](phases/phase-83-experimental-typescript-javascript-provider.md) |
 | 84 | [TypeScript Provider Doctor Hints And Fixture Smoke Tests](phases/phase-84-typescript-provider-doctor-hints-and-fixtures.md) |
 | 85 | [TypeScript Structured Output Repair Facts](phases/phase-85-typescript-structured-output-repair-facts.md) |
+| 86 | [Provider Contribution Guide](phases/phase-86-provider-contribution-guide.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
