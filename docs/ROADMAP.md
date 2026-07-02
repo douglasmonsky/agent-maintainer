@@ -326,6 +326,7 @@ Planned work:
 - [x] Phase 82: Neutral Config Path Exploration
 - [x] Phase 83: Experimental TypeScript/JavaScript Provider
 - [x] Phase 84: TypeScript Provider Doctor Hints And Fixture Smoke Tests
+- [x] Phase 85: TypeScript Structured Output Repair Facts
 
 ## Future Work
 
