@@ -7,6 +7,8 @@ from dataclasses import replace
 
 from agent_maintainer.catalogs import catalog as maintainer_catalog
 from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.ecosystems.models import EcosystemCheckContext
+from agent_maintainer.ecosystems.python.provider import PythonProvider
 from agent_maintainer.models import (
     CI_PROFILE,
     FAST_PROFILE,
@@ -38,6 +40,49 @@ def _profile_names(checks: list[Check], profile: str) -> list[str]:
 
 def _module_command(check: Check) -> list[str]:
     return check.command[:3]
+
+
+def test_python_provider_exposes_current_python_owned_checks() -> None:
+    """Pin the private Python provider seam introduced before refactoring."""
+    provider = PythonProvider()
+    checks = provider.checks(
+        EcosystemCheckContext(
+            config=MaintainerConfig(),
+            compare_branch="origin/main",
+            package_paths=("src",),
+        )
+    )
+
+    assert [check.name for check in checks] == [
+        "ruff-format",
+        "ruff",
+        "pyright",
+        "pyright-strict-ratchet",
+        "pytest-coverage",
+        "mutmut-target-ratchet",
+        "radon-cc-report",
+        "radon-mi-report",
+        "xenon-complexity-gate",
+        "pylint",
+        "deptry",
+        "vulture",
+        "bandit",
+        "pip-audit",
+        "mutmut",
+        "wemake",
+        "interrogate",
+        "diff-cover",
+    ]
+    assert (
+        provider.checks_by_name(
+            EcosystemCheckContext(
+                config=MaintainerConfig(),
+                compare_branch="origin/main",
+                package_paths=("src",),
+            )
+        )["pyright"].name
+        == "pyright"
+    )
 
 
 def test_default_catalog_profile_membership_is_characterized() -> None:
