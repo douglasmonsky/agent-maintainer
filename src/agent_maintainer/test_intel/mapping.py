@@ -6,6 +6,7 @@ import ast
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.ecosystems.python.classification import is_python_test_path
 from agent_maintainer.test_intel.models import TestMatch
 
 HIGH_CONFIDENCE = "high"
@@ -58,6 +59,7 @@ def likely_tests_for_source(
 def discover_test_files(repo_root: Path, test_roots: tuple[str, ...]) -> tuple[str, ...]:
     """Return configured pytest-style test files."""
 
+    config = MaintainerConfig(source_roots=(), test_roots=test_roots)
     files: list[str] = []
     for root in test_roots:
         root_path = repo_root / root
@@ -65,7 +67,8 @@ def discover_test_files(repo_root: Path, test_roots: tuple[str, ...]) -> tuple[s
             files.extend(
                 path.relative_to(repo_root).as_posix()
                 for path in root_path.rglob("*.py")
-                if is_pytest_file(path)
+                if is_python_test_path(path.relative_to(repo_root).as_posix(), config)
+                and is_pytest_file(path)
             )
     return tuple(sorted(files))
 

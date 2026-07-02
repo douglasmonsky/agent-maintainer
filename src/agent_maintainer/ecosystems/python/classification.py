@@ -58,6 +58,14 @@ DEPENDENCY_NAMES = frozenset(
         "pdm.lock",
     ),
 )
+PYTHON_FILE_ROLES = frozenset(
+    (
+        FileRole.SOURCE,
+        FileRole.TEST,
+        FileRole.GENERATED,
+        FileRole.UNKNOWN,
+    ),
+)
 
 
 def classify_path(
@@ -82,6 +90,49 @@ def classify_path(
         config,
         repo_root=repo_root,
     )
+
+
+def is_python_path(
+    path: str | Path,
+    config: MaintainerConfig | None = None,
+    *,
+    repo_root: Path | None = None,
+) -> bool:
+    """Return whether path is a Python ecosystem file."""
+    classification = classify_path(
+        path,
+        config or MaintainerConfig(),
+        repo_root=repo_root,
+    )
+    return classification is not None and classification.role in PYTHON_FILE_ROLES
+
+
+def is_python_source_path(path: str | Path, config: MaintainerConfig) -> bool:
+    """Return whether path is Python source under configured source roots."""
+    classification = classify_path(path, config)
+    return classification is not None and classification.role is FileRole.SOURCE
+
+
+def is_python_test_path(path: str | Path, config: MaintainerConfig) -> bool:
+    """Return whether path is Python test code under configured test roots."""
+    classification = classify_path(path, config)
+    return classification is not None and classification.role is FileRole.TEST
+
+
+def is_python_ignored_path(path: str | Path) -> bool:
+    """Return whether path belongs to an ignored Python tool/cache area."""
+    classification = classify_path(path, MaintainerConfig())
+    return classification is not None and classification.role is FileRole.IGNORED
+
+
+def is_python_generated_path(
+    path: str | Path,
+    *,
+    repo_root: Path | None = None,
+) -> bool:
+    """Return whether path is a generated Python file."""
+    classification = classify_path(path, MaintainerConfig(), repo_root=repo_root)
+    return classification is not None and classification.role is FileRole.GENERATED
 
 
 def _classify_repo_file(
