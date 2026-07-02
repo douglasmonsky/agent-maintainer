@@ -102,22 +102,24 @@ depends_on = [
 [[modules]]
 path = "support.policy"
 depends_on = [
-  "//agent_maintainer.config.loader",
-  "//agent_maintainer.config.schema",
-  "//agent_maintainer.config.validation",
-  "//agent_maintainer.core.config",
-  "support.context_artifacts",
-  "support.context_health",
-  "support.models",
-  "support.typescript",
-  "//agent_maintainer.models",
+ "//agent_maintainer.config.loader",
+ "//agent_maintainer.config.schema",
+ "//agent_maintainer.config.validation",
+ "//agent_maintainer.core.config",
+ "support.context_artifacts",
+ "support.context_health",
+ "support.models",
+ "support.providers",
+ "//agent_maintainer.models",
 ]
 
 [[modules]]
-path = "support.typescript"
+path = "support.providers"
 depends_on = [
-  "//agent_maintainer.config.schema",
-  "support.models",
+ "//agent_maintainer.config.schema",
+ "//agent_maintainer.ecosystems.models",
+ "//agent_maintainer.ecosystems.registry",
+ "support.models",
 ]
 
 [[modules]]

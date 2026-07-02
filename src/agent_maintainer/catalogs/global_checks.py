@@ -1,4 +1,4 @@
-"""Language-neutral check catalog helpers."""
+"""Globally scheduled check catalog helpers."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def reviewability_checks(
     *,
     staged: bool,
 ) -> list[models.Check]:
-    """Build language-neutral reviewability policy checks."""
+    """Build currently Python-backed reviewability policy checks."""
     file_length_paths = existing_or_configured(config.file_length_paths)
     return [
         models.Check(

@@ -8,20 +8,20 @@ from pathlib import Path
 
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.doctor import cli as maintainer_doctor
-from agent_maintainer.doctor.support import typescript as doctor_typescript
+from agent_maintainer.doctor.support import providers as doctor_providers
 from agent_maintainer.doctor.support.models import MISSING, OK, UNSAFE_CONFIG, WARNING
 
 
 def test_typescript_doctor_is_silent_when_provider_disabled() -> None:
     """Disabled TypeScript provider does not add doctor noise."""
-    assert doctor_typescript.check_typescript_provider(MaintainerConfig()) == ()
+    assert doctor_providers.check_typescript_provider(MaintainerConfig()) == ()
 
 
 def test_typescript_doctor_warns_when_enabled_without_commands() -> None:
     """Enabled provider with no commands gets a concrete setup hint."""
     config = replace(MaintainerConfig(), enable_typescript=True)
 
-    (result,) = doctor_typescript.check_typescript_provider(config)
+    (result,) = doctor_providers.check_typescript_provider(config)
 
     assert result.status == WARNING
     assert result.state == UNSAFE_CONFIG
@@ -37,7 +37,7 @@ def test_typescript_doctor_warns_when_command_executable_missing() -> None:
         typescript_lint_command=("definitely-missing-agent-maintainer-ts", "lint"),
     )
 
-    (result,) = doctor_typescript.check_typescript_provider(config)
+    (result,) = doctor_providers.check_typescript_provider(config)
 
     assert result.status == WARNING
     assert result.state == MISSING
@@ -53,7 +53,7 @@ def test_typescript_doctor_passes_when_command_executable_exists() -> None:
         typescript_lint_command=(sys.executable, "--version"),
     )
 
-    (result,) = doctor_typescript.check_typescript_provider(config)
+    (result,) = doctor_providers.check_typescript_provider(config)
 
     assert result.status == OK
     assert "typescript-lint" in result.message

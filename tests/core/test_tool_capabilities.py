@@ -45,7 +45,10 @@ def test_external_binary_tool_state_reports_missing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(capabilities.shutil, "which", lambda name: None)
+    def missing_tool(_name: str, path: str | None = None) -> None:
+        return None
+
+    monkeypatch.setattr(capabilities.shutil, "which", missing_tool)
     capability = capabilities.ToolCapability("git", capabilities.EXTERNAL_BINARY)
 
     state = capabilities.evaluate_tool(tmp_path, capability)
@@ -190,3 +193,20 @@ def test_summarize_states_fails_on_missing_tools(tmp_path: Path) -> None:
 
     assert status == capabilities.MISSING
     assert "missing-tool" in message
+
+
+def test_common_node_and_go_tools_have_ecosystem_hints() -> None:
+    """Experimental provider tools should not default to Python install hints."""
+    for tool in ("npm", "pnpm", "yarn", "bun", "eslint", "tsc", "go", "gofmt"):
+        capability = capabilities.capability_for_tool(tool)
+
+        assert capability.kind == capabilities.EXTERNAL_BINARY
+        assert "Python package" not in capability.hint
+
+
+def test_unknown_tools_keep_python_package_fallback() -> None:
+    """Unknown tool fallback remains conservative for existing Python checks."""
+    capability = capabilities.capability_for_tool("unknown-python-ish-tool")
+
+    assert capability.kind == capabilities.PYTHON_PACKAGE
+    assert "Python package" in capability.hint

@@ -54,6 +54,126 @@ KNOWN_CAPABILITIES = (
         ),
     ),
     (
+        "node",
+        ToolCapability(
+            "node",
+            EXTERNAL_BINARY,
+            hint="Install Node.js with your platform package manager or version manager.",
+        ),
+    ),
+    (
+        "npm",
+        ToolCapability(
+            "npm",
+            EXTERNAL_BINARY,
+            hint="Install Node.js/npm, then install project packages with npm install or npm ci.",
+        ),
+    ),
+    (
+        "npx",
+        ToolCapability(
+            "npx",
+            EXTERNAL_BINARY,
+            hint="Install Node.js/npm, then install project packages with npm install or npm ci.",
+        ),
+    ),
+    (
+        "pnpm",
+        ToolCapability(
+            "pnpm",
+            EXTERNAL_BINARY,
+            hint="Install pnpm and project packages before running TypeScript checks.",
+        ),
+    ),
+    (
+        "yarn",
+        ToolCapability(
+            "yarn",
+            EXTERNAL_BINARY,
+            hint="Install Yarn and project packages before running TypeScript checks.",
+        ),
+    ),
+    (
+        "bun",
+        ToolCapability(
+            "bun",
+            EXTERNAL_BINARY,
+            hint="Install Bun and project packages before running TypeScript checks.",
+        ),
+    ),
+    (
+        "eslint",
+        ToolCapability(
+            "eslint",
+            EXTERNAL_BINARY,
+            hint="Install project Node dependencies so eslint is available.",
+        ),
+    ),
+    (
+        "tsc",
+        ToolCapability(
+            "tsc",
+            EXTERNAL_BINARY,
+            hint="Install TypeScript in project Node dependencies so tsc is available.",
+        ),
+    ),
+    (
+        "vitest",
+        ToolCapability(
+            "vitest",
+            EXTERNAL_BINARY,
+            hint="Install project Node dependencies so vitest is available.",
+        ),
+    ),
+    (
+        "jest",
+        ToolCapability(
+            "jest",
+            EXTERNAL_BINARY,
+            hint="Install project Node dependencies so jest is available.",
+        ),
+    ),
+    (
+        "biome",
+        ToolCapability(
+            "biome",
+            EXTERNAL_BINARY,
+            hint="Install project Node dependencies so Biome is available.",
+        ),
+    ),
+    (
+        "prettier",
+        ToolCapability(
+            "prettier",
+            EXTERNAL_BINARY,
+            hint="Install project Node dependencies so Prettier is available.",
+        ),
+    ),
+    (
+        "go",
+        ToolCapability(
+            "go",
+            EXTERNAL_BINARY,
+            hint="Install the Go toolchain with your platform package manager.",
+        ),
+    ),
+    (
+        "gofmt",
+        ToolCapability(
+            "gofmt",
+            EXTERNAL_BINARY,
+            hint="Install the Go toolchain; gofmt ships with Go.",
+        ),
+    ),
+    (
+        "golangci-lint",
+        ToolCapability(
+            "golangci-lint",
+            EXTERNAL_BINARY,
+            hint="Install golangci-lint with your Go or platform package manager.",
+        ),
+    ),
+    (
         "taplo",
         ToolCapability(
             "taplo",

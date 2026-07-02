@@ -2,10 +2,39 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 
 from agent_maintainer.config.schema import MaintainerConfig
+
+
+class ProviderMaturity(StrEnum):
+    """Current support level for an ecosystem provider."""
+
+    CORE = "core"
+    EXPERIMENTAL = "experimental"
+
+
+@dataclass(frozen=True)
+class ProviderCommandSpec:
+    """Configured-command field owned by one ecosystem provider."""
+
+    check_name: str
+    config_field: str
+
+
+@dataclass(frozen=True)
+class ProviderMetadata:
+    """Internal metadata for a built-in ecosystem provider."""
+
+    name: str
+    display_name: str
+    maturity: ProviderMaturity
+    docs_path: str
+    capabilities: tuple[str, ...]
+    enabled_by_default: bool = False
+    enabled_field: str | None = None
+    command_specs: tuple[ProviderCommandSpec, ...] = field(default_factory=tuple)
 
 
 class FileRole(StrEnum):
