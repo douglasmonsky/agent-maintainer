@@ -1,8 +1,7 @@
 # Agent Maintainer Roadmap Blueprint
 
-This file is the compact roadmap index. Keep it small enough to read in
-agent context. Detailed implementation specs live in split files under
-`docs/roadmap/`.
+This file is a compact roadmap index. Keep it small enough for agent context.
+Detailed implementation specs live in split files under `docs/roadmap`.
 
 Use `docs/ROADMAP.md` as the recovery checklist. Before implementing a
 phase, open the detailed spec linked below. Do not re-expand this index into
@@ -106,6 +105,7 @@ a monolithic blueprint.
 | 99 | [Advisory Provider Reviewability Summaries](phases/phase-99-advisory-provider-reviewability-summaries.md) |
 | 100 | [TypeScript Maturation And Go Canary Freeze](phases/phase-100-typescript-maturation-go-canary.md) |
 | 101 | [TypeScript Advisory Threshold Evidence](phases/phase-101-typescript-advisory-threshold-evidence.md) |
+| 102 | [TypeScript Setup Advisor Recommendations](phases/phase-102-typescript-setup-advisor.md) |
 
 ## Future Work
 
