@@ -83,6 +83,16 @@ def test_unknown_change_kind_is_explicit() -> None:
     assert source.change_kind == ChangeKind.UNKNOWN
 
 
+def test_renamed_change_kind_is_supported() -> None:
+    """Rename changes remain explicit for future policy reports."""
+    config = MaintainerConfig(source_roots=("src",), test_roots=("tests",))
+
+    source = classify_changed_path("src/pkg/app.py", ChangeKind.RENAMED, config)
+
+    assert source is not None
+    assert source.change_kind == ChangeKind.RENAMED
+
+
 def _assert_change(
     actual: FileChangeClassification | None,
     *,
