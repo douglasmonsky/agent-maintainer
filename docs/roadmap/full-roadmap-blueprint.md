@@ -33,6 +33,7 @@ index into a monolithic blueprint.
 | 86 | [Provider Contribution Guide](phases/phase-86-provider-contribution-guide.md) |
 | 87 | [Experimental Go Provider](phases/phase-87-experimental-go-provider.md) |
 | 88 | [Provider API Stability Decision](phases/phase-88-provider-api-stability-decision.md) |
+| 89 | [Measured Repair Case Studies](phases/phase-89-measured-repair-case-studies.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
@@ -97,7 +98,7 @@ index into a monolithic blueprint.
 
 | Item | Detailed Spec |
 |---|---|
-| External Case Studies and Measured Proof Harness | [External Case Studies and Measured Proof Harness](future-work/external-case-studies-and-measured-proof-harness.md) |
+| External Case Studies and Measured Proof Harness | Promoted to [Phase 89](phases/phase-89-measured-repair-case-studies.md) |
 | Monorepo / Multi-Package Support | [Monorepo / Multi-Package Support](future-work/monorepo-multi-package-support.md) |
 | Team Policy Templates | [Team Policy Templates](future-work/team-policy-templates.md) |
 

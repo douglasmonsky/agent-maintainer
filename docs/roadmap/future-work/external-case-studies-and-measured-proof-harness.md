@@ -1,6 +1,10 @@
 # Future Work: External Case Studies and Measured Proof Harness
 
-The following items are postponed and are not part of the active roadmap completion gate.
+Status: promoted to
+[`Phase 89: Measured Repair Case Studies`](../phases/phase-89-measured-repair-case-studies.md).
+
+This original future-work checklist is retained as provenance. New
+implementation work should use the Phase 89 file.
 
 ## PR Title
 

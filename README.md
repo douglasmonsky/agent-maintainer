@@ -405,3 +405,8 @@ Example starter projects:
 - [Context-safe ratchet proof example](examples/context-safe-ratchet)
 - [Cohesive change-plan proof example](examples/cohesive-change-plan)
 - [Test-intelligence proof example](examples/test-intelligence)
+
+Measured fixture case studies:
+
+- [Split large legacy file](docs/case-studies/split-large-legacy-file.md)
+- [Context-safe ratchet repair](docs/case-studies/context-safe-ratchet-repair.md)

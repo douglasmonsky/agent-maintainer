@@ -34,7 +34,7 @@ def test_roadmap_index_stays_small_and_links_split_specs() -> None:
     assert "Do not re-expand this index into a monolithic blueprint." in normalized_text
     assert "(overview.md)" in text
     assert "(phases/phase-64-documentation-and-generated-guidance-slimming.md)" in text
-    assert "(future-work/external-case-studies-and-measured-proof-harness.md)" in text
+    assert "(phases/phase-89-measured-repair-case-studies.md)" in text
 
     for target in markdown_links(text):
         assert (ROADMAP_ROOT / target).exists(), target
