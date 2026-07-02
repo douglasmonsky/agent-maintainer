@@ -1,16 +1,16 @@
 # Agent Maintainer Roadmap Blueprint
 
-This file is the canonical roadmap index. Keep it small enough to read in
+This file is the compact roadmap index. Keep it small enough to read in
 agent context. Detailed implementation specs live in split files under
 `docs/roadmap/`.
 
 Use `docs/ROADMAP.md` as the recovery checklist. Before implementing a
-phase, open the matching detailed spec linked below. Do not re-expand this
-index into a monolithic blueprint.
+phase, open the detailed spec linked below. Do not re-expand this index into
+a monolithic blueprint.
 
 ## Overview
 
-- [Mission, baseline, architecture target, and execution rules](overview.md)
+- [Mission, baseline, architecture target, execution rules](overview.md)
 
 ## Experimental Architecture Tracks
 
@@ -20,28 +20,6 @@ index into a monolithic blueprint.
 
 | Phase | Detailed Spec |
 |---:|---|
-| 76 | [Ecosystem Provider Roadmap](phases/phase-76-ecosystem-provider-roadmap.md) |
-| 77 | [Ecosystem Provider Characterization Safety Net](phases/phase-77-ecosystem-provider-characterization-safety-net.md) |
-| 78 | [Minimal Internal Python Provider Seam](phases/phase-78-minimal-internal-python-provider-seam.md) |
-| 79 | [Global And Ecosystem Check Ownership](phases/phase-79-global-and-ecosystem-check-ownership.md) |
-| 80 | [Generic File Classification, Python Only](phases/phase-80-generic-file-classification-python-only.md) |
-| 81 | [Policy Checks Through Python Classifier Adapters](phases/phase-81-policy-checks-through-python-classifier-adapters.md) |
-| 82 | [Neutral Config Path Exploration](phases/phase-82-neutral-config-path-exploration.md) |
-| 83 | [Experimental TypeScript/JavaScript Provider](phases/phase-83-experimental-typescript-javascript-provider.md) |
-| 84 | [TypeScript Provider Doctor Hints And Fixture Smoke Tests](phases/phase-84-typescript-provider-doctor-hints-and-fixtures.md) |
-| 85 | [TypeScript Structured Output Repair Facts](phases/phase-85-typescript-structured-output-repair-facts.md) |
-| 86 | [Provider Contribution Guide](phases/phase-86-provider-contribution-guide.md) |
-| 87 | [Experimental Go Provider](phases/phase-87-experimental-go-provider.md) |
-| 88 | [Provider API Stability Decision](phases/phase-88-provider-api-stability-decision.md) |
-| 89 | [Measured Repair Case Studies](phases/phase-89-measured-repair-case-studies.md) |
-| 90 | [Workspace Config Foundation](phases/phase-90-workspace-config-foundation.md) |
-| 91 | [Team Policy Templates](phases/phase-91-team-policy-templates.md) |
-| 92 | [Roadmap Future Work Cleanup](phases/phase-92-roadmap-future-work-cleanup.md) |
-| 93 | [Provider Stabilization And Doctor Alignment](phases/phase-93-provider-stabilization-and-doctor-alignment.md) |
-| 94 | [Multi-Ecosystem Reviewability Policy Design](phases/phase-94-multi-ecosystem-reviewability-policy-design.md) |
-| 95 | [Provider-Aware File Change Classification](phases/phase-95-provider-aware-file-change-classification.md) |
-| 96 | [Advisory Reviewability Assessment](phases/phase-96-advisory-reviewability-assessment.md) |
-| 97 | [Advisory Ecosystem Suppression Classification](phases/phase-97-advisory-ecosystem-suppression-classification.md) |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
@@ -98,17 +76,37 @@ index into a monolithic blueprint.
 | 64 | [Documentation and Generated Guidance Slimming](phases/phase-64-documentation-and-generated-guidance-slimming.md) |
 | 65 | [Mutation Sweep Executor and Survivor Triage](phases/phase-65-mutation-sweep-executor-and-survivor-triage.md) |
 | 66 | [Advisory Sweep Survivor Triage](phases/phase-66-advisory-sweep-survivor-triage.md) |
+| 67 | [Public Docs, Setup Advisor, and Technical Debt Score](phases/phase-67-public-docs-onboarding-and-debt-score.md) |
 | 73 | [Release Polish, Debt Score Clarity, Mutation UX, and Cohesion](phases/phase-73-release-polish-debt-mutation-and-cohesion.md) |
-| 74 | [Review-Driven Stabilization](phases/phase-74-review-driven-stabilization.md) |
+| 74 | [Review-Driven Stabilization Metadata, Schedules, and Output Contracts](phases/phase-74-review-driven-stabilization.md) |
 | 75 | [Below-10 Debt And Strict Typing Ratchets](phases/phase-75-below-10-debt-and-strict-typing-ratchets.md) |
+| 76 | [Ecosystem Provider Roadmap](phases/phase-76-ecosystem-provider-roadmap.md) |
+| 77 | [Ecosystem Provider Characterization Safety Net](phases/phase-77-ecosystem-provider-characterization-safety-net.md) |
+| 78 | [Minimal Internal Python Provider Seam](phases/phase-78-minimal-internal-python-provider-seam.md) |
+| 79 | [Global And Ecosystem Check Ownership](phases/phase-79-global-and-ecosystem-check-ownership.md) |
+| 80 | [Generic File Classification, Python Only](phases/phase-80-generic-file-classification-python-only.md) |
+| 81 | [Policy Checks Through Python Classifier Adapters](phases/phase-81-policy-checks-through-python-classifier-adapters.md) |
+| 82 | [Neutral Config Path Exploration](phases/phase-82-neutral-config-path-exploration.md) |
+| 83 | [Experimental TypeScript/JavaScript Provider](phases/phase-83-experimental-typescript-javascript-provider.md) |
+| 84 | [TypeScript Provider Doctor Hints And Fixture Smoke Tests](phases/phase-84-typescript-provider-doctor-hints-and-fixtures.md) |
+| 85 | [TypeScript Structured Output Repair Facts](phases/phase-85-typescript-structured-output-repair-facts.md) |
+| 86 | [Provider Contribution Guide](phases/phase-86-provider-contribution-guide.md) |
+| 87 | [Experimental Go Provider](phases/phase-87-experimental-go-provider.md) |
+| 88 | [Provider API Stability Decision](phases/phase-88-provider-api-stability-decision.md) |
+| 89 | [Measured Repair Case Studies](phases/phase-89-measured-repair-case-studies.md) |
+| 90 | [Workspace Config Foundation](phases/phase-90-workspace-config-foundation.md) |
+| 91 | [Team Policy Templates](phases/phase-91-team-policy-templates.md) |
+| 92 | [Roadmap Future Work Cleanup](phases/phase-92-roadmap-future-work-cleanup.md) |
+| 93 | [Provider Stabilization And Doctor Alignment](phases/phase-93-provider-stabilization-and-doctor-alignment.md) |
+| 94 | [Multi-Ecosystem Reviewability Policy Design](phases/phase-94-multi-ecosystem-reviewability-policy-design.md) |
+| 95 | [Provider-Aware File Change Classification](phases/phase-95-provider-aware-file-change-classification.md) |
+| 96 | [Advisory Reviewability Assessment](phases/phase-96-advisory-reviewability-assessment.md) |
+| 97 | [Advisory Ecosystem Suppression Classification](phases/phase-97-advisory-ecosystem-suppression-classification.md) |
 
 ## Future Work
 
-| Item | Detailed Spec |
-|---|---|
-| External Case Studies and Measured Proof Harness | Promoted to [Phase 89](phases/phase-89-measured-repair-case-studies.md) |
-| Monorepo / Multi-Package Support | Promoted to [Phase 90](phases/phase-90-workspace-config-foundation.md) |
-| Team Policy Templates | Promoted to [Phase 91](phases/phase-91-team-policy-templates.md) |
+No active future-work items remain in this compact index. Promote new work to
+a numbered phase file before implementation.
 
 ## Completion
 
