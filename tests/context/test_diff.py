@@ -7,10 +7,49 @@ from pathlib import Path
 
 import pytest
 
+import agent_context.reading.diff as diff_module
+import agent_context.reading.diff_classify as diff_classify_module
+import agent_context.reading.diff_git as diff_git_module
+import agent_maintainer.context.reading.diff as old_diff
+import agent_maintainer.context.reading.diff_classify as old_diff_classify
+import agent_maintainer.context.reading.diff_git as old_diff_git
 from agent_context.reading.diff import DiffRequest, render_diff
 from agent_maintainer.context import cli as context_cli
 
 LIMIT_ONE_PATH = 1
+
+
+def test_old_context_diff_imports_delegate_to_agent_context() -> None:
+    """Old diff reader import path delegates to extracted package."""
+
+    assert old_diff.DEFAULT_DIFF_HUNKS == diff_module.DEFAULT_DIFF_HUNKS
+    assert old_diff.DiffResult is diff_module.DiffResult
+    assert old_diff.render_diff is diff_module.render_diff
+    assert old_diff.render_patch is diff_module.render_patch
+    assert old_diff.render_name_only is diff_module.render_name_only
+    assert old_diff.render_diff_summary is diff_module.render_diff_summary
+
+
+def test_old_context_diff_classify_imports_delegate_to_agent_context() -> None:
+    """Old diff classification import path delegates to extracted package."""
+
+    assert old_diff_classify.DOC_SUFFIXES == diff_classify_module.DOC_SUFFIXES
+    assert old_diff_classify.GENERATED_PARTS == diff_classify_module.GENERATED_PARTS
+    assert old_diff_classify.LOCK_FILE_NAMES == diff_classify_module.LOCK_FILE_NAMES
+    assert old_diff_classify.is_python_path is diff_classify_module.is_python_path
+    assert old_diff_classify.is_test_path is diff_classify_module.is_test_path
+    assert old_diff_classify.is_docs_path is diff_classify_module.is_docs_path
+
+
+def test_old_context_diff_git_imports_delegate_to_agent_context() -> None:
+    """Old Git diff import path delegates to extracted package."""
+
+    assert old_diff_git.DEFAULT_DIFF_CONTEXT_LINES == (diff_git_module.DEFAULT_DIFF_CONTEXT_LINES)
+    assert old_diff_git.DEFAULT_DIFF_PATH_LIMIT == diff_git_module.DEFAULT_DIFF_PATH_LIMIT
+    assert old_diff_git.DiffRequest is diff_git_module.DiffRequest
+    assert old_diff_git.git_diff is diff_git_module.git_diff
+    assert old_diff_git.changed_paths is diff_git_module.changed_paths
+    assert old_diff_git.run_git is diff_git_module.run_git
 
 
 def test_diff_summary_includes_categories(tmp_path: Path) -> None:

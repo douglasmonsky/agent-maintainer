@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
+import agent_context.formatting as formatting_module
+import agent_maintainer.context.formatting as old_formatting
 from agent_context.formatting import (
     UNTRUSTED_EXCERPT_LABEL,
     format_untrusted_excerpt,
 )
 from agent_context.models import SupportingContext
+
+
+def test_old_context_formatting_imports_delegate_to_agent_context() -> None:
+    """Old formatting import path delegates to extracted package."""
+
+    assert old_formatting.UNTRUSTED_EXCERPT_LABEL == (formatting_module.UNTRUSTED_EXCERPT_LABEL)
+    assert old_formatting.format_untrusted_excerpt is (formatting_module.format_untrusted_excerpt)
 
 
 def test_format_untrusted_excerpt_labels_tool_output_as_data() -> None:
