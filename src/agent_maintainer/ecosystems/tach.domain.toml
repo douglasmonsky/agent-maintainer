@@ -41,6 +41,23 @@ depends_on = [
 ]
 
 [[modules]]
+path = "go"
+depends_on = []
+
+[[modules]]
+path = "go.classification"
+depends_on = [
+  "models",
+]
+
+[[modules]]
+path = "go.provider"
+depends_on = [
+  "models",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
 path = "typescript"
 depends_on = []
 

@@ -328,6 +328,7 @@ Planned work:
 - [x] Phase 84: TypeScript Provider Doctor Hints And Fixture Smoke Tests
 - [x] Phase 85: TypeScript Structured Output Repair Facts
 - [x] Phase 86: Provider Contribution Guide
+- [x] Phase 87: Experimental Go Provider
 
 ## Future Work
 

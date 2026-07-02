@@ -376,6 +376,8 @@ Acceptance criteria:
 Scope:
 
 - Add Go or Rust as a second experimental provider to validate the abstraction outside Node.
+- First implementation path is the experimental Go provider documented at
+  [`docs/go-provider.md`](../go-provider.md).
 
 Acceptance criteria:
 
