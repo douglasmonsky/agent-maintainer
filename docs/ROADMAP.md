@@ -321,6 +321,7 @@ Planned work:
 - [x] Phase 77: Ecosystem Provider Characterization Safety Net
 - [x] Phase 78: Minimal Internal Python Provider Seam
 - [x] Phase 79: Global And Ecosystem Check Ownership
+- [x] Phase 80: Generic File Classification, Python Only
 
 ## Future Work
 
