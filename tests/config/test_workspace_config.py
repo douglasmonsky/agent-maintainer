@@ -87,6 +87,8 @@ def test_coerce_updates_reads_workspace_tables() -> None:
             test_roots=("services/api/tests",),
         ),
     )
+    with pytest.raises(TypeError, match=r"workspaces\.api\.source_roots"):
+        coercion.coerce_updates({"workspaces": {"api": {"source_roots": 12}}})
 
 
 def test_invalid_workspace_config_raises_clear_errors() -> None:
