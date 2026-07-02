@@ -526,6 +526,20 @@ Planned work:
 
 - [x] Phase 105: Provider Dispatch Registry
 
+## Next: Archive Go Provider History Out Of Main
+
+Agent Maintainer should remove the Go-provider experiment from active `main`
+now that the experiment is preserved on `archive/go-provider-experiment` and
+TypeScript/JavaScript is the only active non-Python maturation track.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-106-archive-go-provider-history.md`](roadmap/phases/phase-106-archive-go-provider-history.md)
+
+Planned work:
+
+- [ ] Phase 106: Archive Go Provider History Out Of Main
+
 ## Future Work
 
 No active Future Work items remain beyond the numbered roadmap phases. Avoid
