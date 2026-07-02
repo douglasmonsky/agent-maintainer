@@ -407,6 +407,20 @@ Planned work:
 
 - [x] Phase 97: Advisory Ecosystem Suppression Classification
 
+## Next: Go Structured Repair Facts
+
+Agent Maintainer should deepen the existing experimental Go provider before
+adding more ecosystems. This phase adds bounded structured repair facts for
+common configured Go command output while preserving the explicit-command model,
+experimental maturity label, and Python-backed blocking reviewability policy.
+Detailed scope:
+
+[`docs/roadmap/phases/phase-98-go-structured-repair-facts.md`](roadmap/phases/phase-98-go-structured-repair-facts.md)
+
+Planned work:
+
+- [ ] Phase 98: Go Structured Repair Facts
+
 ## Future Work
 
 No active Future Work items remain in the current roadmap completion gate.
