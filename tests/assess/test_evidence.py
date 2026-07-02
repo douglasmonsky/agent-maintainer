@@ -83,5 +83,13 @@ def test_evidence_ignores_bad_package_data(tmp_path: Path) -> None:
     non_object.mkdir()
     (non_object / "package.json").write_text("[]", encoding=TEXT_ENCODING)
 
+    non_mapping_scripts = tmp_path / "non-mapping-scripts"
+    non_mapping_scripts.mkdir()
+    (non_mapping_scripts / "package.json").write_text(
+        json.dumps({"scripts": []}),
+        encoding=TEXT_ENCODING,
+    )
+
     assert collect_evidence(malformed).package_scripts == ()
     assert collect_evidence(non_object).package_scripts == ()
+    assert collect_evidence(non_mapping_scripts).package_scripts == ()

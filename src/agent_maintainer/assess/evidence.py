@@ -7,9 +7,10 @@ import os
 import shutil
 import subprocess  # nosec B404
 import tomllib
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 from agent_maintainer.assess.models import RepoEvidence
 
@@ -186,10 +187,12 @@ def _package_scripts(root: Path) -> tuple[str, ...]:
 
     if not isinstance(data, dict):
         return ()
-    scripts = data.get("scripts")
+    package_data = cast(Mapping[str, object], data)
+    scripts = package_data.get("scripts")
     if not isinstance(scripts, dict):
         return ()
-    return tuple(sorted(key for key in scripts if isinstance(key, str)))
+    script_data = cast(Mapping[object, object], scripts)
+    return tuple(sorted(key for key in script_data if isinstance(key, str)))
 
 
 def _is_test_path(root: Path, path: Path) -> bool:
