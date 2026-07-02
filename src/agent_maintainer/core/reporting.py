@@ -9,7 +9,7 @@ from typing import Any
 
 from agent_maintainer.context.budget import bound_text
 from agent_maintainer.context.models import ContextBudget
-from agent_maintainer.core.reporting_context import context_commands
+from agent_maintainer.core.repair_capsule import render_failure_capsule
 from agent_maintainer.core.structured_artifacts import (
     structured_artifact_summary as expanded_artifact_summary,
 )
@@ -270,32 +270,19 @@ def print_success(
 def print_failures(
     profile: str,
     failures: list[Any],
-    skipped: list[Any],
+    _skipped: list[Any],
     *,
     run_details: tuple[str, ...] = (),
     footer: tuple[str | None, str | None] = (None, None),
 ) -> None:
-    """Print a compact failure report for the selected verifier profile."""
+    """Print strict repair capsule for failed verifier output."""
 
     context_log_dir, rerun_command = footer
-    print(f"FAIL: {len(failures)} check(s) failed [{profile}]\n")
-    for detail in run_details:
-        print(detail)
-    if run_details:
-        print()
-    failed_names = ", ".join(result.name for result in failures)
-    print(f"Failed checks: {failed_names}\n")
-    for index, result in enumerate(failures, start=1):
-        print(f"{index}. {result.name}")
-        print(result.output or "(no output)")
-        print("Next context:")
-        for command in context_commands(result.name, log_dir=context_log_dir):
-            print(f"  {command}")
-        print()
-    if skipped:
-        print_skipped(skipped, "Skipped optional checks:")
-        print()
-    logs_dir = context_log_dir or ".verify-logs/"
-    rerun_command = rerun_command or f"python3 -m agent_maintainer verify --profile {profile}"
-    print(f"Full logs are in {logs_dir}.")
-    print(f"Smallest rerun after fixes: `{rerun_command}`")
+    for line in render_failure_capsule(
+        profile=profile,
+        failures=failures,
+        run_details=run_details,
+        context_log_dir=context_log_dir,
+        rerun_command=rerun_command,
+    ):
+        print(line)

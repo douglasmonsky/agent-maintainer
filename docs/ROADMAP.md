@@ -59,12 +59,47 @@ Current pre-case-study decision:
 - [x] Pre-case-study hardening complete; measured proof work promoted to
       Phase 89.
 
-## Next: Context-Safe Legacy Ratchets
+## DocSync: Documentation Traceability And Claim Freshness Foundation
+
+Build DocSync as an extractable sibling package under `src/docsync/`. DocSync
+connects stable Markdown documentation objects to explicit code, test, schema,
+configuration, and generated-artifact evidence regions through a validated
+trace graph. When evidence changes, DocSync identifies impacted documentation
+claims and produces exact review packets for agents. The knowledge graph, local
+vector index, GraphQL query layer, and repo wiki projection prototype is
+preserved on `experiment/docsync-knowledge-graph` and intentionally out of
+scope for this foundation PR.
+
+### Planned Execution Order
+
+1. Add `src/docsync/` sibling package, not child of `agent_maintainer/`.
+2. Add `.docsync/config.yml`, `.docsync/trace.yml`, `.docsync/schema.json`,
+   `.docsync/attestations/`, `.docsync/out/`.
+3. Add DocSync rules to `AGENTS.md`.
+4. Implement explicit evidence-region scanning with `docsync:evidence.start`
+   and `docsync:evidence.end` comments.
+5. Implement hidden Markdown object IDs with `<!-- docsync:object ... -->`.
+6. Implement trace graph loading validation.
+7. Implement deterministic index generation with exact file/line spans and
+   content fingerprints.
+8. Implement Git diff mapping from changed lines to evidence and doc objects.
+9. Implement claim invalidation checks.
+10. Implement structured attestations for reviewed-but-unchanged claims.
+11. Implement review packet generation for agents.
+12. Add CLI commands: `docsync index`, `docsync check`, `docsync prompt`,
+    `docsync attest`, `docsync doctor`.
+13. Add test fixtures enforcing extraction boundaries with `archguard`.
+14. Keep DocSync extractable as its own package by preserving strict import
+    boundaries.
+15. Preserve graph/vector/GraphQL/wiki retrieval as an experimental follow-up
+    on `experiment/docsync-knowledge-graph`.
+
+## Completed: Context-Safe Legacy Ratchets
 
 Agent Maintainer's next focus is helping agents improve existing repositories
 without drowning in failures, giant files, huge diffs.
 
-Planned work:
+Completed work:
 
 - Bounded failure summaries with explicit expansion commands.
 - Test intelligence for changed source and relevant tests.
@@ -129,10 +164,10 @@ Planned work:
 - [x] Phase 45: Release-Check Ergonomics
 - [x] Phase 46: Release-State Drift Check
 
-## Next: Quiet Control Plane And Dogfood Drift
+## Completed: Quiet Control Plane And Dogfood Drift
 
 Before external case studies resume, Agent Maintainer should reduce agent
-context noise while preserving strict verification. Planned work:
+context noise while preserving strict verification. Completed work:
 
 - Commit current context-boundary and verifier-artifact refactor as an early
   milestone after cleanup.
@@ -160,13 +195,13 @@ context noise while preserving strict verification. Planned work:
 - [x] Phase 51: Duplicate Artifact Detection And Cleanup Guard
 - [x] Phase 52: Configured-Repo Hook No-Op Tests
 
-## Next: Overnight Hardening
+## Completed: Overnight Hardening
 
 Before external case studies resume, Agent Maintainer should stay strict
 without flooding agent context. This hardening pass is the active recovery
 checklist and must be implemented in small PRs.
 
-Planned work:
+Completed work:
 
 - Ship the current Mutmut target-ratchet branch as the first behavior
   milestone.
@@ -214,7 +249,7 @@ Acceptance criteria for this sequence:
 - Each behavior phase has focused tests, relevant docs, local verification, PR
   CI, merge, and post-merge `main` CI confirmation.
 
-## Next: Advisory Sweep Survivor Triage
+## Completed: Advisory Sweep Survivor Triage
 
 - [x] Phase 65: Mutation Sweep Executor Survivor Triage
 - [x] Phase 66: Advisory Sweep Survivor Triage
@@ -226,7 +261,7 @@ Current advisory sweep findings remain non-blocking backlog:
 - `src/agent_maintainer/doctor/cli.py`: reduced from 270 to 11 survivors, not
   promotion-ready.
 
-Planned work:
+Completed work:
 
 - Reduce `core/reporting.py` survivors first and document before/after counts.
 - Refactor `doctor/cli.py` before survivor-chasing if survivor clusters show CLI
@@ -234,7 +269,7 @@ Planned work:
 - Keep current blocking Mutmut targets unchanged until advisory candidates are
   promotion-ready.
 
-## Next: Public Docs, Setup Advisor, and Technical Debt Score
+## Completed: Public Docs, Setup Advisor, and Technical Debt Score
 
 Agent Maintainer public onboarding now presents the product as a package-first
 maintenance layer for AI-assisted Python repositories. README links deeper docs
@@ -266,18 +301,18 @@ Completed work:
 - [x] Phase 71: Technical Debt Score v0 Scorecard Report Integration
 - [x] Phase 72: Static Product Graphics Strategy Cleanup
 
-## Next: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion
+## Completed: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion
 
 Continue release polish without adding new scanners or public profile
 semantics. Detailed scope:
 
 [`docs/roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md`](roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 73: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion
 
-## Next: Review-Driven Stabilization
+## Completed: Review-Driven Stabilization
 
 Static review identified the next release-risk area as drift across Agent
 Maintainer's broad public surface: config fields, env vars, CLI overrides,
@@ -288,11 +323,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-74-review-driven-stabilization.md`](roadmap/phases/phase-74-review-driven-stabilization.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 74: Review-Driven Stabilization Metadata, Schedules, and Output Contracts
 
-## Next: Below-10 Debt And Strict Typing Ratchets
+## Completed: Below-10 Debt And Strict Typing Ratchets
 
 Agent Maintainer should be a beacon-level dogfood repo before external case
 studies resume. This phase lowers the advisory Technical Debt Score below 10,
@@ -303,11 +338,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-75-below-10-debt-and-strict-typing-ratchets.md`](roadmap/phases/phase-75-below-10-debt-and-strict-typing-ratchets.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 75: Below-10 Debt, Strict Pyright Ratchets, and Beacon-Level Dogfooding
 
-## Next: Ecosystem Provider Roadmap
+## Completed: Ecosystem Provider Roadmap
 
 Agent Maintainer should plan the provider architecture before moving Python
 catalog and policy behavior. This phase creates the polyglot provider roadmap
@@ -316,7 +351,7 @@ or config migration. Detailed scope:
 
 [`docs/roadmap/phases/phase-76-ecosystem-provider-roadmap.md`](roadmap/phases/phase-76-ecosystem-provider-roadmap.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 76: Ecosystem Provider Roadmap
 - [x] Phase 77: Ecosystem Provider Characterization Safety Net
@@ -335,7 +370,7 @@ Planned work:
 - [x] Phase 91: Team Policy Templates
 - [x] Phase 92: Roadmap Future Work Cleanup
 
-## Next: Provider Stabilization And Doctor Alignment
+## Completed: Provider Stabilization And Doctor Alignment
 
 The provider refactor has landed, but Agent Maintainer should harden the seam
 before adding more languages or claiming mature polyglot support. This phase
@@ -345,11 +380,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-93-provider-stabilization-and-doctor-alignment.md`](roadmap/phases/phase-93-provider-stabilization-and-doctor-alignment.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 93: Provider Stabilization And Doctor Alignment
 
-## Next: Multi-Ecosystem Reviewability Policy Design
+## Completed: Multi-Ecosystem Reviewability Policy Design
 
 Agent Maintainer should not overclaim polyglot reviewability yet. Current
 reviewability checks are globally scheduled but Python-backed. This phase
@@ -360,11 +395,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-94-multi-ecosystem-reviewability-policy-design.md`](roadmap/phases/phase-94-multi-ecosystem-reviewability-policy-design.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 94: Multi-Ecosystem Reviewability Policy Design
 
-## Next: Provider-Aware File Change Classification
+## Completed: Provider-Aware File Change Classification
 
 Agent Maintainer should now implement the internal file-change
 classification seam designed in Phase 94. This phase keeps Python
@@ -374,11 +409,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-95-provider-aware-file-change-classification.md`](roadmap/phases/phase-95-provider-aware-file-change-classification.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 95: Provider-Aware File Change Classification
 
-## Next: Advisory Reviewability Assessment
+## Completed: Advisory Reviewability Assessment
 
 Agent Maintainer should surface provider-aware changed-file facts without
 turning experimental TypeScript/JavaScript support into blocking policy.
@@ -388,11 +423,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-96-advisory-reviewability-assessment.md`](roadmap/phases/phase-96-advisory-reviewability-assessment.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 96: Advisory Reviewability Assessment
 
-## Next: Advisory Ecosystem Suppression Classification
+## Completed: Advisory Ecosystem Suppression Classification
 
 Agent Maintainer should make ecosystem-specific suppression additions visible
 without widening the current blocking Python suppression budget. This phase adds
@@ -402,11 +437,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-97-advisory-ecosystem-suppression-classification.md`](roadmap/phases/phase-97-advisory-ecosystem-suppression-classification.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 97: Advisory Ecosystem Suppression Classification
 
-## Next: TypeScript Reviewability Fixture Evidence
+## Completed: TypeScript Reviewability Fixture Evidence
 
 Agent Maintainer should validate TypeScript/JavaScript reviewability
 signal before adding more ecosystems or blocking policy. This phase adds
@@ -417,11 +452,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-98-typescript-reviewability-fixture-evidence.md`](roadmap/phases/phase-98-typescript-reviewability-fixture-evidence.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 98: TypeScript Reviewability Fixture Evidence
 
-## Next: Advisory Provider Reviewability Summaries
+## Completed: Advisory Provider Reviewability Summaries
 
 Agent Maintainer should turn fixture evidence into more useful advisory output
 before adding blocking policy. This phase adds provider source/test summaries,
@@ -431,11 +466,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md`](roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 99: Advisory Provider Reviewability Summaries
 
-## Next: TypeScript Provider Maturation
+## Completed: TypeScript Provider Maturation
 
 Agent Maintainer should mature TypeScript/JavaScript as the first serious
 non-Python provider while focusing on TypeScript/JavaScript maturation. This
@@ -446,11 +481,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-100-typescript-provider-maturation.md`](roadmap/phases/phase-100-typescript-provider-maturation.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 100: TypeScript Provider Maturation
 
-## Next: TypeScript Advisory Threshold Evidence
+## Completed: TypeScript Advisory Threshold Evidence
 
 Agent Maintainer should use the TypeScript fixture evidence to decide which
 advisory signals are stable enough for future configurable thresholds while
@@ -460,11 +495,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-101-typescript-advisory-threshold-evidence.md`](roadmap/phases/phase-101-typescript-advisory-threshold-evidence.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 101: TypeScript Advisory Threshold Evidence
 
-## Next: TypeScript Setup Advisor Recommendations
+## Completed: TypeScript Setup Advisor Recommendations
 
 Agent Maintainer should help adopters configure the experimental TypeScript
 provider when package scripts already expose lint, typecheck, or test
@@ -475,11 +510,11 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-102-typescript-setup-advisor.md`](roadmap/phases/phase-102-typescript-setup-advisor.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 102: TypeScript Setup Advisor Recommendations
 
-## Next: TypeScript Test Repair Facts
+## Completed: TypeScript Test Repair Facts
 
 Agent Maintainer should extract concise repair facts from explicitly configured
 TypeScript/JavaScript test output when the output uses a supported JSON shape.
@@ -490,7 +525,7 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-104-typescript-test-repair-facts.md`](roadmap/phases/phase-104-typescript-test-repair-facts.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 104: TypeScript Test Repair Facts
 
@@ -505,7 +540,7 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-105-provider-dispatch-registry.md`](roadmap/phases/phase-105-provider-dispatch-registry.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 105: Provider Dispatch Registry
 
@@ -519,9 +554,61 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-106-archive-go-provider-history.md`](roadmap/phases/phase-106-archive-go-provider-history.md)
 
-Planned work:
+Completed work:
 
 - [x] Phase 106: Archive Go Provider History Out Of Main
+
+## Completed: Roadmap Status Label Cleanup
+
+The roadmap tracker should not label already-completed sections as `Next`.
+Normalize completed-section labels so future agents can recover the actual
+current state without mistaking old phase summaries for active work.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-107-roadmap-status-label-cleanup.md`](roadmap/phases/phase-107-roadmap-status-label-cleanup.md)
+
+Completed work:
+
+- [x] Phase 107: Roadmap Status Label Cleanup
+
+## Completed: Repair Capsule Output Contract And Pointer-First Context
+
+Agent Maintainer should give agents a strict, compact repair capsule instead of
+nudging them to load full verifier transcripts or full context packs. Context
+pack generation remains available, but agent-facing hook and verifier output
+should point to run-scoped artifacts and one expansion command by default.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-108-repair-capsule-output-contract.md`](roadmap/phases/phase-108-repair-capsule-output-contract.md)
+
+Completed work:
+
+- [x] Phase 108: Repair Capsule Output Contract And Pointer-First Context
+
+## Completed: Internal Package Boundary Refactor Roadmap
+
+Agent Maintainer should split reusable primitives into internal packages only
+after baseline characterization and package-boundary instructions are durable.
+This phase adds the separate roadmap and preserves the exact implementation
+handoff without moving runtime code.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-109-internal-package-boundary-roadmap.md`](roadmap/phases/phase-109-internal-package-boundary-roadmap.md)
+
+Detailed roadmap:
+
+[`docs/roadmap/internal-package-boundaries.md`](roadmap/internal-package-boundaries.md)
+
+Exact instructions:
+
+[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
+
+Completed work:
+
+- [x] Phase 109: Internal Package Boundary Refactor Roadmap
 
 ## Future Work
 

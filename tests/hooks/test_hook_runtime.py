@@ -264,9 +264,12 @@ def test_failed_post_tool_use_blocks_with_context(
     context = payload["hookSpecificOutput"]["additionalContext"]
     assert payload["decision"] == "block"
     assert payload["hookSpecificOutput"]["hookEventName"] == runtime.POST_TOOL_USE_EVENT
-    assert "Read: .verify-logs/context/PACK.md" in context
-    assert "Top finding: pyright:" in context
-    assert "Expand: python -m agent_maintainer context failures" in context
+    assert context.startswith("Result: FAIL\nProfile: agent-hook\nRun ID: unavailable")
+    assert "Top repair facts:\n1. pyright:" in context
+    assert "Likely next action:\npython -m agent_maintainer context failures" in context
+    assert "Expand only if needed:\npython -m agent_maintainer context failures" in context
+    assert "Context pack artifact: .verify-logs/context/PACK.md" in context
+    assert "Read:" not in context
     assert "post failed" not in context
     assert (tmp_path / ".verify-logs" / "context" / "PACK.md").exists()
 
@@ -301,8 +304,10 @@ def test_failed_stop_events_block_with_context_pack(
     payload = json.loads(capsys.readouterr().out)
     assert payload["decision"] == "block"
     assert "Final verification failed" in payload["reason"]
-    assert "Read: .verify-logs/context/PACK.md" in payload["reason"]
-    assert "Top finding: ruff:" in payload["reason"]
+    assert "Result: FAIL" in payload["reason"]
+    assert "Top repair facts:\n1. ruff:" in payload["reason"]
+    assert "Context pack artifact: .verify-logs/context/PACK.md" in payload["reason"]
+    assert "Read:" not in payload["reason"]
     assert "stop failed" not in payload["reason"]
 
 

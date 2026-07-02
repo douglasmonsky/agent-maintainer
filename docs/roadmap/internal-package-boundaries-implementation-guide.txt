@@ -1,0 +1,2416 @@
+Below is an end-to-end implementation plan for refactoring Agent Maintainer into cleaner internal packages while preserving the single PyPI distribution initially. The current packaging setup already supports this shape because setuptools auto-discovers packages under `src`.
+
+The intended end state is:
+
+```text
+src/
+  agent_maintainer/        # Orchestrator: CLI, policies, verify profiles, hooks integration
+  agent_repair_facts/      # Normalized repair facts from heterogeneous tool output
+  agent_context/           # Budgets, context packs, safe expansion, compression
+  agent_run_artifacts/     # Versioned verifier artifact schemas and rendering
+  agent_client_hooks/      # Client-specific hook config/templates/adapters
+  docs_evidence/           # Code/docs evidence links and stale-doc review triggers
+  archguard/               # Existing architecture/config validation package
+```
+
+Keep the public distribution as `agent-maintainer` for now. The internal package split gives you clean seams without creating release/version friction.
+
+---
+
+# Phase 0: Establish baseline and refactor guardrails
+
+Before moving files, capture the current behavior.
+
+Run these from a clean working tree:
+
+```bash
+python3 -m agent_maintainer guidance --check
+python3 -m agent_maintainer doctor
+python3 -m agent_maintainer verify --profile fast
+python3 -m agent_maintainer verify --profile precommit
+python3 -m pytest
+tach check --exact
+```
+
+Then generate representative artifacts that must remain behaviorally stable:
+
+```bash
+python3 -m agent_maintainer verify --profile precommit || true
+python3 -m agent_maintainer context failures --limit 20 > /tmp/am-before-failures.txt
+python3 -m agent_maintainer context pack --format json > /tmp/am-before-pack.json
+python3 -m agent_maintainer context pack > /tmp/am-before-pack.md
+python3 -m agent_maintainer context diff --summary > /tmp/am-before-diff-summary.txt
+python3 -m agent_maintainer guidance > /tmp/am-before-guidance.txt
+```
+
+Also capture import behavior:
+
+```bash
+python3 - <<'PY'
+import agent_maintainer.context.pack.fact_parsers
+import agent_maintainer.context.pack.exact_facts
+import agent_maintainer.context.pack.rendering
+import agent_maintainer.verify.artifacts
+import agent_maintainer.hooks.templates
+print("imports ok")
+PY
+```
+
+Create a refactor checklist file, for example:
+
+```text
+docs/roadmap/phases/phase-internal-package-boundaries.md
+```
+
+Include the package boundaries, move map, expected Tach updates, and acceptance criteria. This gives agents a durable plan and prevents “random file moving.”
+
+---
+
+# Phase 1: Define package ownership and dependency direction
+
+The key rule:
+
+```text
+agent_maintainer may import all internal packages.
+
+agent_repair_facts must not import agent_maintainer.
+agent_context must not import agent_maintainer.
+agent_run_artifacts must not import agent_maintainer.
+agent_client_hooks should not import agent_maintainer except through explicit adapter shims.
+docs_evidence must not import agent_maintainer.
+```
+
+Target dependency graph:
+
+```text
+docs_evidence
+  depends on: stdlib only, maybe agent_repair_facts later
+
+agent_repair_facts
+  depends on: stdlib only, defusedxml if XML parsing requires it
+
+agent_context
+  depends on: agent_repair_facts
+
+agent_run_artifacts
+  depends on: agent_context, agent_repair_facts
+
+agent_client_hooks
+  depends on: stdlib only for templates/config generation
+
+agent_maintainer
+  depends on: all of the above
+```
+
+This lets Agent Maintainer stay the product orchestrator while the smaller packages become reusable primitives.
+
+Add a short architecture note before large moves:
+
+```text
+docs/architecture/decisions/YYYY-MM-DD-internal-package-boundaries.md
+```
+
+Include:
+
+```text
+Decision:
+Split reusable primitives into internal packages under src while keeping one distribution.
+
+Boundaries:
+- agent_repair_facts owns diagnostic normalization.
+- agent_context owns bounded context construction.
+- agent_run_artifacts owns manifest/artifact schemas.
+- agent_client_hooks owns client-specific hook config generation.
+- docs_evidence owns code/docs evidence indexing.
+- agent_maintainer owns policy, CLI orchestration, profiles, and product workflow.
+
+Tach:
+Each new top-level package gets an explicit root module entry or a tach.domain.toml contract.
+```
+
+This matters because your repo’s architecture policy explicitly says Tach policy changes need an ADR under `docs/architecture/decisions/`.
+
+---
+
+# Phase 2: Update global config expectations before moving code
+
+Your current Agent Maintainer config scopes source roots, package paths, coverage source, file length paths, structure paths, and vulture paths mostly to `src/agent_maintainer`, `src/archguard`, and hook directories.  It also scans specific paths for Vulture.
+
+Add the new packages everywhere they are meant to be treated as first-class source.
+
+In `pyproject.toml`, update:
+
+```toml
+[tool.agent_maintainer]
+source_roots = [
+  "src/agent_maintainer",
+  "src/agent_repair_facts",
+  "src/agent_context",
+  "src/agent_run_artifacts",
+  "src/agent_client_hooks",
+  "src/docs_evidence",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
+
+package_paths = [
+  "src/agent_maintainer",
+  "src/agent_repair_facts",
+  "src/agent_context",
+  "src/agent_run_artifacts",
+  "src/agent_client_hooks",
+  "src/docs_evidence",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
+
+coverage_source = [
+  "src/agent_maintainer",
+  "src/agent_repair_facts",
+  "src/agent_context",
+  "src/agent_run_artifacts",
+  "src/agent_client_hooks",
+  "src/docs_evidence",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
+
+file_length_paths = [
+  "src/agent_maintainer",
+  "src/agent_repair_facts",
+  "src/agent_context",
+  "src/agent_run_artifacts",
+  "src/agent_client_hooks",
+  "src/docs_evidence",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+  "tests",
+]
+
+structure_paths = [
+  "src/agent_maintainer",
+  "src/agent_repair_facts",
+  "src/agent_context",
+  "src/agent_run_artifacts",
+  "src/agent_client_hooks",
+  "src/docs_evidence",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
+
+vulture_paths = [
+  "src/agent_maintainer",
+  "src/agent_repair_facts",
+  "src/agent_context",
+  "src/agent_run_artifacts",
+  "src/agent_client_hooks",
+  "src/docs_evidence",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+  "tests",
+]
+```
+
+Update `cohesive_change_override_paths` so the large refactor can pass the change-budget logic:
+
+```toml
+cohesive_change_override_paths = [
+  "src/agent_maintainer/**",
+  "src/agent_repair_facts/**",
+  "src/agent_context/**",
+  "src/agent_run_artifacts/**",
+  "src/agent_client_hooks/**",
+  "src/docs_evidence/**",
+  "src/archguard/**",
+  ".codex/hooks/**",
+  ".claude/hooks/**",
+]
+```
+
+Update Semgrep args too. The current config lists `src/agent_maintainer`, `src/archguard`, and hook directories.  Add the new package roots.
+
+```toml
+semgrep_args = [
+  "scan",
+  "--config",
+  "semgrep.yml",
+  "--error",
+  "--metrics=off",
+  "src/agent_maintainer",
+  "src/agent_repair_facts",
+  "src/agent_context",
+  "src/agent_run_artifacts",
+  "src/agent_client_hooks",
+  "src/docs_evidence",
+  "src/archguard",
+  ".codex/hooks",
+  ".claude/hooks",
+]
+```
+
+Update Mutmut settings if any moved code should be mutation-tested. Current Mutmut source is only `src/agent_maintainer/` with `src/archguard` copied alongside.  Add new packages either as source paths or `also_copy` depending on what should be mutated.
+
+Recommended first pass:
+
+```toml
+[tool.mutmut]
+source_paths = [
+  "src/agent_maintainer/",
+  "src/agent_repair_facts/",
+  "src/agent_context/",
+]
+also_copy = [
+  "src/agent_run_artifacts",
+  "src/agent_client_hooks",
+  "src/docs_evidence",
+  "src/archguard",
+]
+```
+
+Then narrow `only_mutate` after the move, once the new modules are stable.
+
+Regenerate guidance after config changes:
+
+```bash
+python3 -m agent_maintainer guidance
+```
+
+The generated sidecar is produced from `[tool.agent_maintainer]` and should be regenerated rather than edited by hand.
+
+---
+
+# Phase 3: Update Tach root ownership and domain contracts
+
+The root `tach.toml` uses strict settings:
+
+```toml
+source_roots = ["src", ".codex/hooks", ".claude/hooks"]
+root_module = "forbid"
+exact = true
+```
+
+Those settings mean new modules need explicit ownership.  Your architecture decision already says package-level Tach contracts should live in `tach.domain.toml` files beside the code, root `tach.toml` should stay for top-level modules, and every root/domain module must declare `depends_on`.
+
+Update `tach.toml` with top-level package entries:
+
+```toml
+[[modules]]
+path = "agent_repair_facts"
+depends_on = []
+
+[[modules]]
+path = "agent_context"
+depends_on = ["agent_repair_facts"]
+
+[[modules]]
+path = "agent_run_artifacts"
+depends_on = [
+  "agent_context",
+  "agent_repair_facts",
+]
+
+[[modules]]
+path = "agent_client_hooks"
+depends_on = []
+
+[[modules]]
+path = "docs_evidence"
+depends_on = []
+```
+
+Then update the existing `agent_maintainer` root entry so it can depend on the extracted packages:
+
+```toml
+[[modules]]
+path = "agent_maintainer"
+depends_on = [
+  "agent_repair_facts",
+  "agent_context",
+  "agent_run_artifacts",
+  "agent_client_hooks",
+  "docs_evidence",
+  "archguard",
+]
+```
+
+If `tach check --exact` says that dependency list is too broad, move dependencies down to specific `agent_maintainer.*` modules instead. The goal is honest exactness, not convenience.
+
+Create a domain file in each new package. Start simple, then refine.
+
+Example:
+
+```toml
+# src/agent_repair_facts/tach.domain.toml
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "payloads"
+depends_on = ["agent_repair_facts.models"]
+
+[[modules]]
+path = "registry"
+depends_on = [
+  "agent_repair_facts.models",
+  "agent_repair_facts.payloads",
+  "agent_repair_facts.parsers",
+]
+
+[[modules]]
+path = "parsers"
+depends_on = [
+  "agent_repair_facts.models",
+  "agent_repair_facts.payloads",
+]
+```
+
+Example for `agent_context`:
+
+```toml
+# src/agent_context/tach.domain.toml
+
+[root]
+depends_on = ["agent_repair_facts"]
+
+[[modules]]
+path = "budget"
+depends_on = ["agent_context.models"]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "formatting"
+depends_on = []
+
+[[modules]]
+path = "reading"
+depends_on = [
+  "agent_context.budget",
+  "agent_context.models",
+]
+
+[[modules]]
+path = "pack"
+depends_on = [
+  "agent_context.budget",
+  "agent_context.models",
+  "agent_context.reading",
+  "agent_repair_facts",
+]
+```
+
+Example for `agent_run_artifacts`:
+
+```toml
+# src/agent_run_artifacts/tach.domain.toml
+
+[root]
+depends_on = [
+  "agent_context",
+  "agent_repair_facts",
+]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "manifest"
+depends_on = [
+  "agent_run_artifacts.models",
+  "agent_context",
+]
+
+[[modules]]
+path = "history"
+depends_on = [
+  "agent_run_artifacts.models",
+]
+
+[[modules]]
+path = "summary"
+depends_on = [
+  "agent_run_artifacts.models",
+  "agent_context",
+]
+```
+
+Example for `agent_client_hooks`:
+
+```toml
+# src/agent_client_hooks/tach.domain.toml
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "codex"
+depends_on = ["agent_client_hooks.models"]
+
+[[modules]]
+path = "claude_code"
+depends_on = ["agent_client_hooks.models"]
+
+[[modules]]
+path = "templates"
+depends_on = [
+  "agent_client_hooks.codex",
+  "agent_client_hooks.claude_code",
+  "agent_client_hooks.models",
+]
+```
+
+Example for `docs_evidence`:
+
+```toml
+# src/docs_evidence/tach.domain.toml
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "python_ast"
+depends_on = ["docs_evidence.models"]
+
+[[modules]]
+path = "markdown"
+depends_on = ["docs_evidence.models"]
+
+[[modules]]
+path = "index"
+depends_on = [
+  "docs_evidence.models",
+  "docs_evidence.python_ast",
+  "docs_evidence.markdown",
+]
+
+[[modules]]
+path = "diff"
+depends_on = [
+  "docs_evidence.models",
+  "docs_evidence.index",
+]
+```
+
+Run these after each domain file is added:
+
+```bash
+python3 -m archguard.tach_config
+tach check --exact
+```
+
+Your Archguard tests enforce that each Tach module declares `depends_on`.  They also reject large path buckets that hide ownership.  Domain files are validated for root and module shape as well.
+
+---
+
+# Phase 4: Extract `agent_repair_facts`
+
+This is the first real code move. It has the cleanest standalone value and the lowest policy coupling.
+
+Current exact-fact dispatch lives under `agent_maintainer.context.pack.fact_parsers`, and it already dispatches Ruff, Pyright, Bandit, pytest coverage, file-length, and change-budget facts.  When no structured facts exist, the system falls back to generic facts.
+
+## 4.1 Create package skeleton
+
+Create:
+
+```text
+src/agent_repair_facts/
+  __init__.py
+  models.py
+  payloads.py
+  registry.py
+  parsers/
+    __init__.py
+    lint.py
+    logs.py
+    pytest.py
+```
+
+Initial `__init__.py`:
+
+```python
+"""Normalize verifier output into agent-actionable repair facts."""
+
+from agent_repair_facts.models import RepairFact
+from agent_repair_facts.registry import artifact_facts, log_facts
+
+__all__ = ("RepairFact", "artifact_facts", "log_facts")
+```
+
+## 4.2 Define the stable model
+
+Create `models.py`:
+
+```python
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+
+@dataclass(frozen=True)
+class RepairFact:
+    """One normalized, agent-actionable repair fact."""
+
+    check: str
+    message: str
+    severity: str = "error"
+    path: str | None = None
+    line: int | None = None
+    column: int | None = None
+    end_line: int | None = None
+    end_column: int | None = None
+    symbol: str | None = None
+    rule: str | None = None
+    category: str | None = None
+    source: str | None = None
+    raw_excerpt: str | None = None
+    confidence: str = "high"
+
+    def to_payload(self) -> dict[str, object]:
+        """Return backward-compatible context-pack payload."""
+        return {
+            "check": self.check,
+            "path": self.path,
+            "line": self.line,
+            "column": self.column,
+            "end_line": self.end_line,
+            "end_column": self.end_column,
+            "symbol": self.symbol,
+            "rule": self.rule,
+            "category": self.category,
+            "message": self.message,
+            "severity": self.severity,
+            "source": self.source,
+            "raw_excerpt": self.raw_excerpt,
+            "confidence": self.confidence,
+        }
+
+
+@dataclass(frozen=True)
+class ParserInput:
+    """Inputs available to one repair-fact parser."""
+
+    check: str
+    path: Path
+    source: str = ""
+```
+
+Keep the payload keys aligned with existing context pack facts. The point of this phase is to move ownership, not change output shape.
+
+## 4.3 Move existing fact payload normalization
+
+Move:
+
+```text
+src/agent_maintainer/context/pack/fact_payloads.py
+```
+
+to:
+
+```text
+src/agent_repair_facts/payloads.py
+```
+
+If the old helper returns dictionaries, keep it. Add a bridge:
+
+```python
+from __future__ import annotations
+
+from agent_repair_facts.models import RepairFact
+
+
+def fact_payload(payload: dict[str, object]) -> dict[str, object]:
+    """Return stable repair-fact payload with all expected keys."""
+    return RepairFact(
+        check=str(payload.get("check", "unknown")),
+        message=str(payload.get("message", "")),
+        severity=str(payload.get("severity", "error")),
+        path=optional_str(payload.get("path")),
+        line=optional_int(payload.get("line")),
+        column=optional_int(payload.get("column")),
+        end_line=optional_int(payload.get("end_line")),
+        end_column=optional_int(payload.get("end_column")),
+        symbol=optional_str(payload.get("symbol")),
+        rule=optional_str(payload.get("rule")),
+        category=optional_str(payload.get("category")),
+        source=optional_str(payload.get("source")),
+        raw_excerpt=optional_str(payload.get("raw_excerpt")),
+        confidence=str(payload.get("confidence", "high")),
+    ).to_payload()
+
+
+def optional_str(value: object) -> str | None:
+    return value if isinstance(value, str) and value else None
+
+
+def optional_int(value: object) -> int | None:
+    return value if isinstance(value, int) else None
+```
+
+## 4.4 Move parser modules
+
+Move:
+
+```text
+src/agent_maintainer/context/pack/lint_fact_parsers.py
+src/agent_maintainer/context/pack/log_fact_parsers.py
+src/agent_maintainer/context/pack/pytest_fact_parsers.py
+```
+
+to:
+
+```text
+src/agent_repair_facts/parsers/lint.py
+src/agent_repair_facts/parsers/logs.py
+src/agent_repair_facts/parsers/pytest.py
+```
+
+Rewrite imports from:
+
+```python
+from agent_maintainer.context.pack.fact_payloads import fact_payload
+```
+
+to:
+
+```python
+from agent_repair_facts.payloads import fact_payload
+```
+
+## 4.5 Move dispatcher
+
+Move:
+
+```text
+src/agent_maintainer/context/pack/fact_parsers.py
+```
+
+to:
+
+```text
+src/agent_repair_facts/registry.py
+```
+
+Update imports:
+
+```python
+from pathlib import Path
+
+from agent_repair_facts.parsers import lint, logs, pytest
+```
+
+Keep the public functions identical:
+
+```python
+def artifact_facts(check: str, path: Path) -> list[dict[str, object]]:
+    ...
+
+def log_facts(check: str, path: Path) -> list[dict[str, object]]:
+    ...
+```
+
+## 4.6 Update Agent Maintainer integration
+
+In:
+
+```text
+src/agent_maintainer/context/pack/exact_facts.py
+```
+
+change:
+
+```python
+from agent_maintainer.context.pack import fact_parsers
+from agent_maintainer.context.pack.fact_payloads import fact_payload
+```
+
+to:
+
+```python
+from agent_repair_facts import registry as fact_parsers
+from agent_repair_facts.payloads import fact_payload
+```
+
+Existing `repair_facts(...)` can remain in Agent Maintainer at first, because it still depends on `FailureRecord`. Later it can move to `agent_context`.
+
+## 4.7 Add compatibility shims
+
+Keep old import paths working:
+
+```python
+# src/agent_maintainer/context/pack/fact_parsers.py
+"""Compatibility shim for repair-fact parser dispatch."""
+
+from agent_repair_facts.registry import artifact_facts, log_facts
+
+__all__ = ("artifact_facts", "log_facts")
+```
+
+```python
+# src/agent_maintainer/context/pack/fact_payloads.py
+"""Compatibility shim for repair-fact payload normalization."""
+
+from agent_repair_facts.payloads import fact_payload
+
+__all__ = ("fact_payload",)
+```
+
+Do the same for old parser module names if tests or users import them.
+
+## 4.8 Add tests
+
+Create:
+
+```text
+tests/repair_facts/test_registry.py
+tests/repair_facts/test_payloads.py
+tests/repair_facts/test_compat_imports.py
+```
+
+Test requirements:
+
+```python
+def test_old_fact_parser_import_still_works() -> None:
+    from agent_maintainer.context.pack import fact_parsers
+
+    assert callable(fact_parsers.artifact_facts)
+
+
+def test_new_fact_parser_import_works() -> None:
+    from agent_repair_facts import artifact_facts
+
+    assert callable(artifact_facts)
+```
+
+Add parser fixture tests for each supported tool. The expected output should include at least:
+
+```text
+check
+path
+line
+column
+severity
+message
+rule when available
+```
+
+## 4.9 Run gates
+
+```bash
+ruff format .
+ruff check .
+pyright
+python3 -m pytest tests/repair_facts tests/context
+python3 -m agent_maintainer context pack --format json > /tmp/am-after-repair-facts-pack.json
+python3 -m agent_maintainer verify --profile fast
+tach check --exact
+```
+
+Compare `/tmp/am-before-pack.json` and `/tmp/am-after-repair-facts-pack.json` semantically. Ignore timestamps, paths that include temp dirs, run IDs, and ordering only if ordering was already nondeterministic.
+
+---
+
+# Phase 5: Extract `agent_context`
+
+Current context-pack logic writes `PACK.md` and `PACK.json`, builds payloads from failure records, selected logs, file outlines, ratchet state, omitted counts, and expansion commands.  The payload already separates exact facts, supporting context, compression metadata, selected files/logs, omitted counts, and expansion commands.  This is a strong package boundary.
+
+## 5.1 Create package skeleton
+
+Create:
+
+```text
+src/agent_context/
+  __init__.py
+  budget.py
+  formatting.py
+  models.py
+  failures.py
+  reading/
+    __init__.py
+    diff.py
+    diff_classify.py
+    diff_git.py
+    file_safety.py
+    files.py
+    logs.py
+    python_outline.py
+  compression/
+    __init__.py
+    backends.py
+    headroom.py
+  pack/
+    __init__.py
+    builder.py
+    cli.py
+    compression.py
+    exact_facts.py
+    ratchet.py
+    rendering.py
+    sanitize.py
+```
+
+Initial `__init__.py`:
+
+```python
+"""Bounded, provenance-preserving context utilities for agent repair loops."""
+```
+
+## 5.2 Move context primitives
+
+Move:
+
+```text
+src/agent_maintainer/context/budget.py
+src/agent_maintainer/context/formatting.py
+src/agent_maintainer/context/models.py
+src/agent_maintainer/context/failures.py
+```
+
+to:
+
+```text
+src/agent_context/budget.py
+src/agent_context/formatting.py
+src/agent_context/models.py
+src/agent_context/failures.py
+```
+
+Rewrite imports:
+
+```python
+from agent_maintainer.context.budget import ...
+```
+
+to:
+
+```python
+from agent_context.budget import ...
+```
+
+## 5.3 Move safe reading modules
+
+Move the full directory:
+
+```text
+src/agent_maintainer/context/reading/
+```
+
+to:
+
+```text
+src/agent_context/reading/
+```
+
+Update imports accordingly.
+
+For example, in moved files:
+
+```python
+from agent_maintainer.context.failures import DEFAULT_CONTEXT_BUDGET
+```
+
+becomes:
+
+```python
+from agent_context.failures import DEFAULT_CONTEXT_BUDGET
+```
+
+The log reader currently defaults to tailing 120 lines, estimates token cost using `chars / 4`, and refuses large selections unless explicitly confirmed.   Preserve those behaviors exactly.
+
+## 5.4 Move context pack modules
+
+Move:
+
+```text
+src/agent_maintainer/context/pack/builder.py
+src/agent_maintainer/context/pack/rendering.py
+src/agent_maintainer/context/pack/sanitize.py
+src/agent_maintainer/context/pack/compression.py
+src/agent_maintainer/context/pack/cli.py
+src/agent_maintainer/context/pack/ratchet.py
+```
+
+to:
+
+```text
+src/agent_context/pack/builder.py
+src/agent_context/pack/rendering.py
+src/agent_context/pack/sanitize.py
+src/agent_context/pack/compression.py
+src/agent_context/pack/cli.py
+src/agent_context/pack/ratchet.py
+```
+
+Then move:
+
+```text
+src/agent_maintainer/context/compression/
+```
+
+to:
+
+```text
+src/agent_context/compression/
+```
+
+Update imports.
+
+## 5.5 Move exact fact selection into context
+
+Move:
+
+```text
+src/agent_maintainer/context/pack/exact_facts.py
+```
+
+to:
+
+```text
+src/agent_context/pack/exact_facts.py
+```
+
+Update it to use:
+
+```python
+from agent_context.failures import FailureRecord
+from agent_repair_facts import registry as fact_parsers
+from agent_repair_facts.payloads import fact_payload
+```
+
+Now `agent_context` depends on `agent_repair_facts`, but not on `agent_maintainer`.
+
+## 5.6 Keep Agent Maintainer CLI wrapper
+
+Keep:
+
+```text
+src/agent_maintainer/context/cli.py
+```
+
+as the stable product CLI entrypoint.
+
+Option A: keep all CLI logic there and import `agent_context`.
+
+Option B: move the CLI implementation to `agent_context.cli` and make `agent_maintainer.context.cli` a wrapper.
+
+Recommended wrapper:
+
+```python
+"""Agent Maintainer wrapper for generic context CLI."""
+
+from agent_context.cli import main, run_context_command
+
+__all__ = ("main", "run_context_command")
+```
+
+Only use Option B if you want `python -m agent_context ...` later. Otherwise, keep CLI under Agent Maintainer.
+
+## 5.7 Add compatibility shims
+
+Every moved old module should either:
+
+1. re-export from the new package, or
+2. be updated everywhere and covered by tests.
+
+For the first pass, use shims.
+
+Example:
+
+```python
+# src/agent_maintainer/context/budget.py
+"""Compatibility shim for agent_context.budget."""
+
+from agent_context.budget import *  # noqa: F403
+```
+
+Do this for:
+
+```text
+agent_maintainer.context.budget
+agent_maintainer.context.models
+agent_maintainer.context.formatting
+agent_maintainer.context.failures
+agent_maintainer.context.reading.*
+agent_maintainer.context.pack.*
+agent_maintainer.context.compression.*
+```
+
+## 5.8 Update hook failure context
+
+`src/agent_maintainer/hooks/context.py` currently imports context pack builder/rendering from `agent_maintainer.context.pack`. It writes a hook context pack and renders a compact pointer.  Update imports:
+
+```python
+from agent_context.pack import builder as context_packs
+from agent_context.pack import rendering as pack_rendering
+```
+
+Keep `hook_config(...)` in Agent Maintainer because it reads Agent Maintainer config.
+
+## 5.9 Update verifier/reporting imports
+
+Update imports in:
+
+```text
+src/agent_maintainer/core/reporting.py
+src/agent_maintainer/verify/artifacts.py
+src/agent_maintainer/verify/pr_summary_support.py
+src/agent_maintainer/context/cli.py
+```
+
+For example:
+
+```python
+from agent_context.budget import bound_text
+from agent_context.models import ContextBudget
+```
+
+The reporting layer currently uses bounded summaries and truncation messages to keep verifier output compact.  Preserve all text and default budgets unless intentionally changing token behavior in a separate phase.
+
+## 5.10 Tests
+
+Add:
+
+```text
+tests/agent_context/test_budget.py
+tests/agent_context/test_log_selection.py
+tests/agent_context/test_file_selection.py
+tests/agent_context/test_diff_rendering.py
+tests/agent_context/test_pack_builder.py
+tests/agent_context/test_compat_imports.py
+```
+
+The old tests can stay where they are initially, but new tests should import new package paths.
+
+Test key behaviors:
+
+```text
+- Large log selection refuses without confirm_large.
+- Log selection with --confirm-large is bounded and includes omitted chars.
+- File outline refuses binary/generated/symlink paths.
+- Python outline remains stable.
+- Context pack JSON has exact_repair_facts before supporting context.
+- Hook pointer includes top findings and expansion commands.
+- Old imports still work.
+```
+
+## 5.11 Gates
+
+```bash
+ruff format .
+ruff check .
+pyright
+python3 -m pytest tests/agent_context tests/context tests/hooks
+python3 -m agent_maintainer context failures --limit 20
+python3 -m agent_maintainer context pack --format json
+python3 -m agent_maintainer verify --profile fast
+tach check --exact
+```
+
+---
+
+# Phase 6: Extract `agent_run_artifacts`
+
+This should be done after `agent_context`, because run artifacts depend on budgets, context commands, and repair facts.
+
+Current artifact writing handles manifests, run-scoped snapshots, `LAST_FAILURE.md`, pruning, and PR summaries.  The manifest payload includes run ID, profile, refs, git state, timing, thresholds, and check payloads.
+
+## 6.1 Create package skeleton
+
+```text
+src/agent_run_artifacts/
+  __init__.py
+  models.py
+  manifest.py
+  history.py
+  last_failure.py
+  pr_summary.py
+  pr_summary_support.py
+  timing.py
+  git_state.py
+```
+
+## 6.2 Introduce generic artifact models
+
+Create `models.py`:
+
+```python
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass(frozen=True)
+class ArtifactBudget:
+    """Budget settings used while rendering run artifacts."""
+
+    last_failure_chars: int
+    max_failure_items: int
+    pr_summary_chars: int = 12_000
+
+
+@dataclass(frozen=True)
+class ThresholdSnapshot:
+    """Verifier thresholds worth recording in artifacts."""
+
+    coverage_fail_under: int
+    diff_cover_fail_under: int
+    file_length_max_physical: int
+    file_length_max_source: int
+    change_warn_lines: int
+    change_block_lines: int
+    change_warn_files: int
+    change_block_files: int
+    suppression_max_new: int
+    ruff_max_complexity: int
+    pyright_type_checking_mode: str
+    interrogate_fail_under: int
+
+
+@dataclass(frozen=True)
+class ArtifactRunContext:
+    """Generic run metadata for diagnostic artifact rendering."""
+
+    repo_root: Path
+    profile: str
+    base_ref: str
+    compare_branch: str
+    staged: bool
+    run_id: str
+    diagnostic_run_history_limit: int
+    budget: ArtifactBudget
+    thresholds: ThresholdSnapshot
+    ratchet_enabled: bool = False
+    ratchet_baseline_path: str = ""
+    context_pack_budget_chars: int = 24_000
+```
+
+Add an adapter in Agent Maintainer:
+
+```text
+src/agent_maintainer/verify/artifact_config.py
+```
+
+```python
+from agent_run_artifacts.models import ArtifactBudget, ArtifactRunContext, ThresholdSnapshot
+
+
+def artifact_context_from_maintainer_config(...):
+    ...
+```
+
+This keeps `agent_run_artifacts` independent from `MaintainerConfig`.
+
+## 6.3 Move artifact helpers
+
+Move:
+
+```text
+src/agent_maintainer/verify/artifact_manifest.py
+src/agent_maintainer/verify/history.py
+src/agent_maintainer/verify/pr_summary.py
+src/agent_maintainer/verify/pr_summary_support.py
+src/agent_maintainer/verify/timing.py
+src/agent_maintainer/verify/git_state.py
+```
+
+to:
+
+```text
+src/agent_run_artifacts/manifest.py
+src/agent_run_artifacts/history.py
+src/agent_run_artifacts/pr_summary.py
+src/agent_run_artifacts/pr_summary_support.py
+src/agent_run_artifacts/timing.py
+src/agent_run_artifacts/git_state.py
+```
+
+Then split `src/agent_maintainer/verify/artifacts.py`.
+
+Keep orchestration in Agent Maintainer initially:
+
+```text
+src/agent_maintainer/verify/artifacts.py
+```
+
+should call generic writers from:
+
+```python
+from agent_run_artifacts import manifest, history, pr_summary
+```
+
+Then gradually move generic write logic to:
+
+```text
+src/agent_run_artifacts/writer.py
+```
+
+## 6.4 Preserve public artifact names
+
+Keep these names exactly:
+
+```text
+.verify-logs/manifest.json
+.verify-logs/LAST_FAILURE.md
+.verify-logs/pr-summary.md
+.verify-logs/runs/<run-id>/manifest.json
+.verify-logs/runs/<run-id>/LAST_FAILURE.md
+```
+
+`LAST_FAILURE.md` is intentionally a latest pointer, while run-scoped paths are stable for specific repairs.  Preserve that behavior.
+
+## 6.5 Compatibility shims
+
+For moved modules:
+
+```python
+# src/agent_maintainer/verify/artifact_manifest.py
+"""Compatibility shim for agent_run_artifacts.manifest."""
+
+from agent_run_artifacts.manifest import *  # noqa: F403
+```
+
+Repeat for:
+
+```text
+history.py
+pr_summary.py
+pr_summary_support.py
+timing.py
+git_state.py
+```
+
+## 6.6 Tests
+
+Create:
+
+```text
+tests/agent_run_artifacts/test_manifest.py
+tests/agent_run_artifacts/test_last_failure.py
+tests/agent_run_artifacts/test_pr_summary.py
+tests/agent_run_artifacts/test_history.py
+tests/agent_run_artifacts/test_compat_imports.py
+```
+
+Add behavioral tests:
+
+```text
+- manifest schema version remains 1.
+- failed checks produce expansion commands.
+- passed checks do not produce expansion commands.
+- LAST_FAILURE.md preserves expansion commands after truncation.
+- PR summary remains under configured budget.
+- run-scoped snapshot paths are stable.
+```
+
+## 6.7 Gates
+
+```bash
+ruff format .
+ruff check .
+pyright
+python3 -m pytest tests/agent_run_artifacts tests/verify
+python3 -m agent_maintainer verify --profile fast
+python3 -m agent_maintainer verify --profile precommit || true
+python3 -m agent_maintainer context failures --limit 20
+tach check --exact
+```
+
+Compare generated `manifest.json`, `LAST_FAILURE.md`, and `pr-summary.md` against normalized pre-refactor outputs.
+
+---
+
+# Phase 7: Extract `agent_client_hooks`
+
+Hook templates are reusable and should not be mixed with runtime verification policy.
+
+Current hook templates generate Codex and Claude configurations and wrapper scripts.   The runtime should remain in Agent Maintainer because it runs verification profiles and reads Agent Maintainer config.
+
+## 7.1 Create package skeleton
+
+```text
+src/agent_client_hooks/
+  __init__.py
+  models.py
+  codex.py
+  claude_code.py
+  templates.py
+```
+
+## 7.2 Define models
+
+```python
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class HookCommandSpec:
+    """One command hook registration."""
+
+    event: str
+    command: str
+    matcher: str = ""
+    timeout: int = 60
+    status_message: str = ""
+    async_mode: bool = False
+    async_rewake: bool = False
+
+
+@dataclass(frozen=True)
+class HookWrapperSpec:
+    """Python wrapper source inputs."""
+
+    platform: str
+    event: str
+    profile: str
+    repo_local_wrapper_path: str
+```
+
+## 7.3 Move templates
+
+Move:
+
+```text
+src/agent_maintainer/hooks/templates.py
+```
+
+to:
+
+```text
+src/agent_client_hooks/templates.py
+```
+
+Split client-specific generation into:
+
+```text
+src/agent_client_hooks/codex.py
+src/agent_client_hooks/claude_code.py
+```
+
+Keep constants in one place:
+
+```python
+CODEX_PLATFORM = "codex"
+CLAUDE_CODE_PLATFORM = "claude-code"
+POST_TOOL_USE_EVENT = "PostToolUse"
+STOP_EVENT = "Stop"
+SUBAGENT_STOP_EVENT = "SubagentStop"
+```
+
+Or import them from Agent Maintainer only in a compatibility adapter. Cleaner is to duplicate stable string constants in `agent_client_hooks.models`.
+
+## 7.4 Keep runtime in Agent Maintainer
+
+Keep:
+
+```text
+src/agent_maintainer/hooks/runtime.py
+src/agent_maintainer/hooks/context.py
+src/agent_maintainer/hooks/audit.py
+src/agent_maintainer/hooks/subprocess_runner.py
+```
+
+These are product-specific: they run `agent_maintainer verify`, write `.verify-logs`, and produce block decisions.
+
+## 7.5 Compatibility shim
+
+```python
+# src/agent_maintainer/hooks/templates.py
+"""Compatibility shim for agent-client hook templates."""
+
+from agent_client_hooks.templates import *  # noqa: F403
+```
+
+## 7.6 Add Claude async-rewake fields to the template model
+
+For the refactor, add optional support even if disabled by default.
+
+In `agent_client_hooks/claude_code.py`, support:
+
+```python
+def claude_settings(
+    *,
+    user_scope: bool = False,
+    async_rewake_stop: bool = False,
+) -> str:
+    ...
+```
+
+When `async_rewake_stop=True`, generated Stop/SubagentStop hooks include:
+
+```json
+{
+  "type": "command",
+  "command": "...",
+  "timeout": 600,
+  "async": true,
+  "asyncRewake": true
+}
+```
+
+Keep the repo’s current default behavior unchanged unless config explicitly requests async rewake. The currently installed Claude settings are synchronous `command` hooks with 60s for `PostToolUse` and 600s for `Stop`/`SubagentStop`.
+
+## 7.7 Tests
+
+Create:
+
+```text
+tests/agent_client_hooks/test_codex_templates.py
+tests/agent_client_hooks/test_claude_templates.py
+tests/agent_client_hooks/test_wrapper_templates.py
+tests/agent_client_hooks/test_compat_imports.py
+```
+
+Test:
+
+```text
+- Existing Codex config output remains byte-for-byte identical with default args.
+- Existing Claude settings output remains byte-for-byte identical with default args.
+- Async rewake option changes only Stop/SubagentStop hooks.
+- Wrapper source still imports agent_maintainer.hooks.runtime at runtime.
+```
+
+## 7.8 Gates
+
+```bash
+ruff format .
+ruff check .
+pyright
+python3 -m pytest tests/agent_client_hooks tests/hooks
+python3 -m agent_maintainer hooks install all --dry-run
+python3 -m agent_maintainer hooks status all
+tach check --exact
+```
+
+---
+
+# Phase 8: Add `docs_evidence` package scaffold
+
+This package can start as a scaffold even if the first version only indexes evidence. Keep it isolated so future citation decorators and docs markers do not get tangled into context packs.
+
+## 8.1 Create package skeleton
+
+```text
+src/docs_evidence/
+  __init__.py
+  models.py
+  python_ast.py
+  markdown.py
+  index.py
+  diff.py
+  cli.py
+```
+
+## 8.2 Define core models
+
+```python
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class EvidenceRef:
+    """One code-side evidence declaration."""
+
+    evidence_id: str
+    source_path: str
+    symbol: str | None
+    start_line: int | None
+    end_line: int | None
+    docs: tuple[str, ...]
+    contract: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class DocSection:
+    """One documentation section that can cite evidence."""
+
+    section_id: str
+    path: str
+    heading: str
+    start_line: int
+    end_line: int | None
+    evidence_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class EvidenceIndex:
+    """Bidirectional code/docs evidence index."""
+
+    code_refs: tuple[EvidenceRef, ...]
+    doc_sections: tuple[DocSection, ...]
+```
+
+## 8.3 Python AST extraction
+
+Support both decorators and comments eventually. Start with decorators:
+
+```python
+@docs.evidence(
+    id="usage.turn-details",
+    docs=["README.md#turn-details"],
+    contract=["Records per-turn token usage"],
+)
+class TurnDetailsBuilder:
+    ...
+```
+
+Parser rules:
+
+```text
+- Use ast.parse only.
+- Never import project modules.
+- Recognize @docs.evidence(...).
+- Recognize @evidence(...) if imported directly.
+- Extract id, docs, contract literal values only.
+- Ignore dynamic expressions and report them as invalid evidence declarations.
+```
+
+## 8.4 Markdown extraction
+
+Support:
+
+```markdown
+<!-- docs:section id=turn-details -->
+## Turn Details
+
+<!-- docs:evidence src=usage.turn-details -->
+```
+
+Parser rules:
+
+```text
+- Section marker applies to following heading.
+- Section ends at next same-or-higher heading.
+- Evidence markers inside the section attach to that DocSection.
+```
+
+## 8.5 Diff mapping
+
+Start with changed files and line ranges:
+
+```python
+def changed_evidence_refs(index: EvidenceIndex, changed_ranges: dict[str, list[tuple[int, int]]]) -> tuple[EvidenceRef, ...]:
+    ...
+```
+
+Then Agent Maintainer can decide:
+
+```text
+If changed evidence id exists and linked docs did not change:
+  fail docs-evidence check or require docs-reviewed waiver.
+```
+
+## 8.6 Agent Maintainer integration
+
+Add a check later under:
+
+```text
+src/agent_maintainer/checks/docs_evidence.py
+```
+
+or a catalog entry:
+
+```text
+src/agent_maintainer/catalogs/docs.py
+```
+
+The check should return repair facts through `agent_repair_facts`, not raw prose.
+
+Example fact:
+
+```json
+{
+  "check": "docs-evidence",
+  "path": "README.md",
+  "line": 42,
+  "severity": "warning",
+  "message": "Evidence usage.turn-details changed but linked docs section README.md#turn-details was not updated.",
+  "rule": "docs-evidence-stale"
+}
+```
+
+## 8.7 Tests
+
+Create:
+
+```text
+tests/docs_evidence/test_python_ast.py
+tests/docs_evidence/test_markdown.py
+tests/docs_evidence/test_index.py
+tests/docs_evidence/test_diff.py
+```
+
+Test:
+
+```text
+- class decorator extraction
+- function decorator extraction
+- ast.Attribute decorator extraction: docs.evidence
+- malformed dynamic decorator values
+- markdown section marker extraction
+- bidirectional link completeness
+- changed line range intersects evidence symbol range
+```
+
+---
+
+# Phase 9: Refactor Agent Maintainer as orchestrator
+
+Once the primitives exist, update Agent Maintainer modules to import from them.
+
+## 9.1 `agent_maintainer.context`
+
+Keep the user-facing CLI module. Internally route to `agent_context`.
+
+Expected imports:
+
+```python
+from agent_context import failures as context_failures
+from agent_context.reading import logs as log_reader
+from agent_context.reading import files as file_reader
+from agent_context.reading import diff as diff_reader
+from agent_context.pack import cli as pack_cli
+```
+
+## 9.2 `agent_maintainer.verify`
+
+Use `agent_run_artifacts` for artifact writing and rendering.
+
+Expected imports:
+
+```python
+from agent_run_artifacts import manifest as artifact_manifest
+from agent_run_artifacts import pr_summary
+from agent_run_artifacts import timing as verify_timing
+```
+
+Keep `agent_maintainer.verify.quiet` as the orchestration entrypoint because it loads config, builds checks, acquires locks, collects results, writes artifacts, and returns exit codes.
+
+## 9.3 `agent_maintainer.hooks`
+
+Use `agent_context` for hook failure packs and `agent_client_hooks` for generated templates.
+
+Expected imports:
+
+```python
+from agent_context.pack import builder as context_packs
+from agent_context.pack import rendering as pack_rendering
+from agent_client_hooks import templates as hook_templates
+```
+
+Keep runtime blocking logic in `agent_maintainer.hooks.runtime`.
+
+The runtime currently reads hook payload, runs verification, records audit, and emits success/block JSON.  Preserve that behavior.
+
+## 9.4 `agent_maintainer.core.guidance`
+
+Update generated guidance to include the new package roots automatically because config changed.
+
+The guidance renderer already lists source roots and active gates from config.  After updating `pyproject.toml`, regenerate:
+
+```bash
+python3 -m agent_maintainer guidance
+python3 -m agent_maintainer guidance --check
+```
+
+## 9.5 `agent_maintainer.catalogs`
+
+Keep policy catalogs under Agent Maintainer. They should produce checks, but parsers and context generation live elsewhere.
+
+---
+
+# Phase 10: Update tests and import paths
+
+Use a two-layer test strategy.
+
+## 10.1 Compatibility tests
+
+For each old path that remains as a shim:
+
+```python
+def test_old_context_budget_import() -> None:
+    import agent_maintainer.context.budget as old
+    import agent_context.budget as new
+
+    assert old.ContextBudget is new.ContextBudget
+```
+
+Examples:
+
+```text
+agent_maintainer.context.budget -> agent_context.budget
+agent_maintainer.context.failures -> agent_context.failures
+agent_maintainer.context.reading.logs -> agent_context.reading.logs
+agent_maintainer.context.pack.builder -> agent_context.pack.builder
+agent_maintainer.context.pack.rendering -> agent_context.pack.rendering
+agent_maintainer.context.pack.fact_parsers -> agent_repair_facts.registry
+agent_maintainer.verify.artifact_manifest -> agent_run_artifacts.manifest
+agent_maintainer.verify.pr_summary -> agent_run_artifacts.pr_summary
+agent_maintainer.hooks.templates -> agent_client_hooks.templates
+```
+
+## 10.2 New-package direct tests
+
+Move or duplicate tests so new packages are tested directly.
+
+Recommended layout:
+
+```text
+tests/agent_repair_facts/
+tests/agent_context/
+tests/agent_run_artifacts/
+tests/agent_client_hooks/
+tests/docs_evidence/
+tests/integration/
+```
+
+Keep existing `tests/context`, `tests/verify`, and `tests/hooks` until the transition is complete.
+
+## 10.3 Golden/semantic regression tests
+
+Add normalized-output tests for:
+
+```text
+context pack JSON
+context pack Markdown pointer
+LAST_FAILURE.md
+manifest.json
+pr-summary.md
+generated AGENTS.agent-maintainer.md
+hook config templates
+```
+
+Use semantic normalization:
+
+```python
+def normalize_dynamic_fields(payload: dict[str, object]) -> dict[str, object]:
+    payload = dict(payload)
+    payload["run_id"] = "<run-id>"
+    payload["generated_at"] = "<generated-at>"
+    payload["timing"] = "<timing>"
+    return payload
+```
+
+Compare stable keys exactly.
+
+## 10.4 CLI smoke tests
+
+Add subprocess tests for:
+
+```bash
+python -m agent_maintainer context failures --limit 5
+python -m agent_maintainer context pack --format json
+python -m agent_maintainer guidance --check
+python -m agent_maintainer hooks install all --dry-run
+python -m agent_maintainer verify --profile fast
+```
+
+---
+
+# Phase 11: Prevent major regressions with architectural tests
+
+Add explicit tests that enforce the new package boundaries.
+
+Create:
+
+```text
+tests/architecture/test_internal_package_boundaries.py
+```
+
+Test no upward package imports `agent_maintainer`:
+
+```python
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+UPWARD_PACKAGES = (
+    "src/agent_repair_facts",
+    "src/agent_context",
+    "src/agent_run_artifacts",
+    "src/agent_client_hooks",
+    "src/docs_evidence",
+)
+
+
+def imported_roots(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    roots: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                roots.add(alias.name.split(".", maxsplit=1)[0])
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            roots.add(node.module.split(".", maxsplit=1)[0])
+    return roots
+
+
+def test_upward_packages_do_not_import_agent_maintainer() -> None:
+    offenders = []
+    for root in UPWARD_PACKAGES:
+        for path in Path(root).rglob("*.py"):
+            if path.name == "__init__.py":
+                continue
+            if "agent_maintainer" in imported_roots(path):
+                offenders.append(path.as_posix())
+    assert offenders == []
+```
+
+Add allowed dependency tests:
+
+```python
+ALLOWED_IMPORTS = {
+    "agent_repair_facts": {"agent_repair_facts"},
+    "agent_context": {"agent_context", "agent_repair_facts"},
+    "agent_run_artifacts": {
+        "agent_run_artifacts",
+        "agent_context",
+        "agent_repair_facts",
+    },
+    "agent_client_hooks": {"agent_client_hooks"},
+    "docs_evidence": {"docs_evidence", "agent_repair_facts"},
+}
+```
+
+This catches accidental coupling faster than Tach alone.
+
+---
+
+# Phase 12: Update docs
+
+Update docs that mention package layout, context packs, hooks, diagnostics, and guidance.
+
+At minimum:
+
+```text
+README.md
+docs/agent-maintainer-guidance.md
+docs/context-safety.md
+docs/context-compression.md
+docs/diagnostics-repair-loop.md
+docs/agent-client-hooks.md
+docs/tool-map.md
+docs/architecture-policy.md
+docs/architecture/decisions/YYYY-MM-DD-internal-package-boundaries.md
+AGENTS.md
+AGENTS.agent-maintainer.md
+```
+
+Specific doc updates:
+
+## `docs/tool-map.md`
+
+Add a section:
+
+```text
+Internal reusable packages:
+- agent_repair_facts: diagnostic normalization.
+- agent_context: bounded context and context packs.
+- agent_run_artifacts: manifest and summary schemas.
+- agent_client_hooks: client hook config generation.
+- docs_evidence: code/docs traceability.
+```
+
+## `docs/context-safety.md`
+
+Update module ownership references. Context packs are still invoked via:
+
+```bash
+python -m agent_maintainer context pack
+```
+
+but implemented by `agent_context`.
+
+## `docs/agent-client-hooks.md`
+
+Clarify:
+
+```text
+agent_client_hooks renders supported client configs and wrapper files.
+agent_maintainer.hooks.runtime executes Agent Maintainer verification.
+```
+
+## `docs/agent-maintainer-guidance.md`
+
+Mention that generated guidance should include new package roots once config changes.
+
+Regenerate:
+
+```bash
+python3 -m agent_maintainer guidance
+```
+
+---
+
+# Phase 13: Improve token-bleed behavior during the refactor
+
+Fold in the token-bleed fixes while touching context pack code.
+
+## 13.1 Add context pack output modes
+
+Current context pack CLI writes the pack and then prints the whole Markdown or JSON output.  Add:
+
+```bash
+python -m agent_maintainer context pack --write-only
+python -m agent_maintainer context pack --pointer
+python -m agent_maintainer context pack --print
+```
+
+Behavior:
+
+```text
+--write-only
+  Write PACK.md/PACK.json.
+  Print only paths and top omitted counts.
+
+--pointer
+  Write PACK.md/PACK.json.
+  Print compact hook-style pointer.
+
+--print
+  Current behavior: print full pack.
+```
+
+Make agent-facing expansion commands prefer `--pointer`.
+
+## 13.2 Change hook pointer wording
+
+Current pointer begins with `Read: <display_path>`.  Change to:
+
+```text
+Context pack written: .verify-logs/runs/<run-id>/context/PACK.md
+Use top findings first; read full pack only if needed.
+```
+
+Keep top facts and expansion commands.
+
+## 13.3 Make hook context packs run-scoped
+
+Current hook context pack writer passes `.verify-logs` as the log dir, so pack paths are latest-style rather than run-scoped.  Adjust hook context to prefer the run-scoped log dir from the latest manifest when available.
+
+Desired output:
+
+```text
+.verify-logs/runs/<run-id>/context/PACK.md
+.verify-logs/runs/<run-id>/context/PACK.json
+```
+
+Fallback:
+
+```text
+.verify-logs/context/PACK.md
+.verify-logs/context/PACK.json
+```
+
+only when the run ID cannot be resolved.
+
+## 13.4 Reorder expansion commands
+
+Current context pack expansion commands start broad, including `context failures --limit` and `context pack --budget`.  In hook pointers, list the most surgical commands first:
+
+```text
+1. context failures --check <top-check> --limit 3 --log-dir <run-dir>
+2. context log <top-check> --tail 80 --log-dir <run-dir>
+3. context pack --pointer --log-dir <run-dir>
+```
+
+Keep broad commands inside the full pack, not the hook output.
+
+---
+
+# Phase 14: Update packaging and scripts
+
+Because setuptools finds packages under `src`, new packages should be included automatically.  Still verify the wheel contents.
+
+Run:
+
+```bash
+python3 -m build
+python3 -m pip install --force-reinstall dist/agent_maintainer-*.whl
+python3 - <<'PY'
+import agent_maintainer
+import agent_repair_facts
+import agent_context
+import agent_run_artifacts
+import agent_client_hooks
+import docs_evidence
+print("wheel imports ok")
+PY
+```
+
+If you add a standalone CLI for repair facts later, update `[project.scripts]`:
+
+```toml
+[project.scripts]
+agent-maintainer = "agent_maintainer.cli:console_main"
+archguard = "archguard.cli:console_main"
+agent-repair-facts = "agent_repair_facts.cli:console_main"
+```
+
+But the initial refactor does not require a new script.
+
+---
+
+# Phase 15: Final shim cleanup strategy
+
+Keep shims during the first full refactor. After all tests and docs use new imports, decide whether to retain shims permanently for internal compatibility or remove them before beta stabilization.
+
+If keeping shims:
+
+```text
+- Mark them as compatibility shims in docstrings.
+- Keep tests proving old imports still work.
+- Avoid adding new logic to shim files.
+```
+
+If removing shims:
+
+```text
+- Remove old modules.
+- Update all imports.
+- Update tests.
+- Add changelog note.
+- Run full verification.
+```
+
+For a beta package, keeping shims is safer. It prevents accidental import regressions for users who started relying on internals.
+
+---
+
+# Phase 16: Full regression matrix
+
+Run the following after each major package extraction and again before merge.
+
+## Fast local gates
+
+```bash
+ruff format .
+ruff check .
+pyright
+python3 -m pytest
+tach check --exact
+python3 -m archguard.tach_config
+python3 -m agent_maintainer guidance --check
+python3 -m agent_maintainer doctor
+python3 -m agent_maintainer verify --profile precommit
+```
+
+## Full local gates
+
+```bash
+python3 -m agent_maintainer verify --profile full
+python3 -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
+python3 -m agent_maintainer verify --profile security
+python3 -m agent_maintainer verify --profile manual
+```
+
+## Artifact behavior checks
+
+```bash
+rm -rf .verify-logs
+python3 -m agent_maintainer verify --profile precommit || true
+
+test -f .verify-logs/manifest.json
+test -f .verify-logs/LAST_FAILURE.md || true
+test -d .verify-logs/runs
+
+python3 -m agent_maintainer context failures --limit 20
+python3 -m agent_maintainer context log ruff --tail 120 || true
+python3 -m agent_maintainer context pack --pointer || true
+python3 -m agent_maintainer context pack --format json || true
+```
+
+## Hook behavior checks
+
+```bash
+python3 -m agent_maintainer hooks install all --dry-run
+python3 -m agent_maintainer hooks status all
+
+python3 .claude/hooks/post_tool_use.py < /tmp/empty-hook-payload.json || true
+python3 .claude/hooks/stop.py < /tmp/empty-hook-payload.json || true
+python3 .codex/hooks/post_edit_fast_gate.py < /tmp/empty-hook-payload.json || true
+python3 .codex/hooks/stop_full_verify.py < /tmp/empty-hook-payload.json || true
+```
+
+Use this payload:
+
+```json
+{}
+```
+
+And for recursive stop behavior:
+
+```json
+{"stop_hook_active": true}
+```
+
+The runtime has explicit logic to continue when a stop hook is already active.
+
+## Wheel installation check
+
+```bash
+rm -rf dist build *.egg-info
+python3 -m build
+python3 -m venv /tmp/am-refactor-wheel
+/tmp/am-refactor-wheel/bin/python -m pip install dist/*.whl
+/tmp/am-refactor-wheel/bin/python - <<'PY'
+import agent_maintainer
+import agent_repair_facts
+import agent_context
+import agent_run_artifacts
+import agent_client_hooks
+import docs_evidence
+print("ok")
+PY
+```
+
+---
+
+# Phase 17: Specific regression risks and how to catch them
+
+## Risk: new packages are not scanned by Agent Maintainer
+
+Cause: `source_roots`, `package_paths`, `coverage_source`, `file_length_paths`, `structure_paths`, or `vulture_paths` still omit new packages.
+
+Detection:
+
+```bash
+python3 -m agent_maintainer guidance
+grep -n "Source roots" AGENTS.agent-maintainer.md
+python3 -m agent_maintainer verify --profile precommit
+```
+
+The generated guidance should list all new source roots because it renders them from config.
+
+## Risk: coverage drops unexpectedly
+
+Cause: new packages are included in `coverage_source`, but tests do not cover moved logic.
+
+Detection:
+
+```bash
+pytest --cov=src/agent_repair_facts --cov=src/agent_context --cov=src/agent_run_artifacts
+python3 -m agent_maintainer verify --profile precommit
+```
+
+Fix by moving existing tests to import new package paths and adding direct tests for new APIs.
+
+## Risk: Tach fails due unowned modules
+
+Cause: new package files exist but are not declared in root or domain Tach config.
+
+Detection:
+
+```bash
+python3 -m archguard.tach_config
+tach check --exact
+```
+
+Archguard has tests requiring explicit source module ownership and dependency contracts.
+
+## Risk: Tach passes by using broad path buckets
+
+Cause: someone adds `paths = [...]` with too many unrelated modules.
+
+Detection:
+
+```bash
+python3 -m archguard.tach_config
+```
+
+Archguard rejects broad groups larger than the configured maximum in both root and domain Tach files.
+
+## Risk: context packs change shape
+
+Cause: moved code changes payload keys or nesting.
+
+Detection:
+
+```bash
+python3 -m agent_maintainer context pack --format json > /tmp/pack.json
+python3 - <<'PY'
+import json
+payload = json.load(open("/tmp/pack.json"))
+required = {
+    "exact_repair_facts",
+    "supporting_context",
+    "compression",
+    "untrusted_content_labels",
+    "ratchet_state",
+    "top_targets",
+    "selected_file_outlines",
+    "selected_logs",
+    "omitted_counts",
+    "expansion_commands",
+    "outputs",
+}
+missing = required - set(payload)
+assert not missing, missing
+PY
+```
+
+The current payload includes those keys.
+
+## Risk: hook output becomes noisy
+
+Cause: hook failure context prints full verifier output or full context pack.
+
+Detection:
+
+```bash
+python3 .claude/hooks/post_tool_use.py < /tmp/empty-hook-payload.json > /tmp/hook.out || true
+wc -c /tmp/hook.out
+cat /tmp/hook.out
+```
+
+Expected:
+
+```text
+- bounded JSON response
+- compact reason
+- context pack pointer
+- top findings
+- expansion commands
+```
+
+Hook docs say hook output should include the pack path, up to three exact repair facts, and safe expansion commands within `context_hook_budget_chars`.
+
+## Risk: old imports break
+
+Cause: moved files without shims.
+
+Detection:
+
+```bash
+python3 - <<'PY'
+import agent_maintainer.context.budget
+import agent_maintainer.context.failures
+import agent_maintainer.context.reading.logs
+import agent_maintainer.context.pack.builder
+import agent_maintainer.context.pack.fact_parsers
+import agent_maintainer.verify.artifact_manifest
+import agent_maintainer.verify.pr_summary
+import agent_maintainer.hooks.templates
+print("compat ok")
+PY
+```
+
+## Risk: wheel misses packages
+
+Cause: package discovery or package data issue.
+
+Detection:
+
+```bash
+python3 -m build
+python3 -m pip install --force-reinstall dist/*.whl
+python3 - <<'PY'
+import pkgutil
+for name in [
+    "agent_repair_facts",
+    "agent_context",
+    "agent_run_artifacts",
+    "agent_client_hooks",
+    "docs_evidence",
+]:
+    assert pkgutil.find_loader(name), name
+print("packages found")
+PY
+```
+
+---
+
+# Phase 18: Final acceptance criteria
+
+The refactor is complete when all of these are true:
+
+```text
+1. New internal packages exist:
+   - agent_repair_facts
+   - agent_context
+   - agent_run_artifacts
+   - agent_client_hooks
+   - docs_evidence
+
+2. Upward packages do not import agent_maintainer.
+
+3. Agent Maintainer uses the new packages as an orchestrator.
+
+4. Old imports either still work through shims or have been intentionally removed with tests/docs updated.
+
+5. Tach root and domain contracts explicitly own all new modules.
+
+6. pyproject Agent Maintainer config includes new packages in:
+   - source_roots
+   - package_paths
+   - coverage_source
+   - file_length_paths
+   - structure_paths
+   - vulture_paths
+   - semgrep_args
+   - cohesive_change_override_paths
+
+7. Generated guidance is current.
+
+8. Context pack JSON shape is stable.
+
+9. Hook output remains bounded.
+
+10. Run artifacts remain stable:
+    - manifest.json
+    - LAST_FAILURE.md
+    - pr-summary.md
+    - run-scoped snapshots
+
+11. Full verification passes:
+    - pytest
+    - pyright
+    - ruff
+    - tach check --exact
+    - agent_maintainer doctor
+    - precommit profile
+    - full profile
+    - ci profile
+    - security profile
+    - manual profile
+```
+
+The core implementation principle is:
+
+```text
+Move ownership first.
+Preserve behavior through shims.
+Add direct tests for the new package.
+Update Tach/config/guidance immediately after each move.
+Only then remove duplication.
+```
+
+This keeps the refactor reviewable while avoiding the two big failure modes: architecture drift that only appears at the end, and subtle behavior changes hidden inside file moves.

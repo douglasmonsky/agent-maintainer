@@ -1,8 +1,7 @@
 # Agent Maintainer Roadmap Blueprint
 
 This compact roadmap index points to split specs under `docs/roadmap`.
-Use `docs/ROADMAP.md` as recovery checklist. Open linked specs before each
-phase. Do not re-expand this index into a monolithic blueprint.
+Use `docs/ROADMAP.md` as recovery checklist. Do not re-expand this index into a monolithic blueprint.
 
 ## Overview
 
@@ -105,6 +104,9 @@ phase. Do not re-expand this index into a monolithic blueprint.
 | 104 | [TypeScript Test Repair Facts](phases/phase-104-typescript-test-repair-facts.md) |
 | 105 | [Provider Dispatch Registry](phases/phase-105-provider-dispatch-registry.md) |
 | 106 | [Archive Go Provider History Out Of Main](phases/phase-106-archive-go-provider-history.md) |
+| 107 | [Roadmap Status Label Cleanup](phases/phase-107-roadmap-status-label-cleanup.md) |
+| 108 | [Repair Capsule Output Contract And Pointer-First Context](phases/phase-108-repair-capsule-output-contract.md) |
+| 109 | [Internal Package Boundary Refactor Roadmap](phases/phase-109-internal-package-boundary-roadmap.md) |
 
 ## Future Work
 

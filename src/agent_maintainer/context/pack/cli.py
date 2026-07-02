@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from typing import Any
 
 from agent_maintainer.context.compression import (
     backends as compression_backends,
@@ -22,7 +23,7 @@ STORE_TRUE = "store_true"
 
 
 def add_pack_parser(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    subparsers: Any,
 ) -> None:
     """Register context pack subcommand."""
 
@@ -42,6 +43,11 @@ def add_pack_parser(
     )
     parser.add_argument("--require-compression", action=STORE_TRUE)
     parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
+    parser.add_argument(
+        "--print-full",
+        action=STORE_TRUE,
+        help="Print full Markdown pack instead of compact pointer.",
+    )
 
 
 def run_pack(args: argparse.Namespace) -> int:
@@ -75,11 +81,15 @@ def run_pack(args: argparse.Namespace) -> int:
         print(str(exc), file=sys.stderr)
         return 1
 
-    output = (
-        pack_rendering.render_pack_json(pack.payload)
-        if args.format == FORMAT_JSON
-        else pack.markdown
-    )
+    if args.format == FORMAT_JSON:
+        output = pack_rendering.render_pack_json(pack.payload)
+    elif args.print_full:
+        output = pack.markdown
+    else:
+        output = pack_rendering.render_pack_pointer(
+            pack.payload,
+            display_path=str(pack.markdown_path),
+        )
     print(output.rstrip())
     for warning in pack.warnings:
         print(f"WARN: {warning}", file=sys.stderr)
