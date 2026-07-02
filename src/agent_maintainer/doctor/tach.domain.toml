@@ -100,14 +100,6 @@ depends_on = [
 ]
 
 [[modules]]
-path = "support.go"
-depends_on = [
- "//agent_maintainer.config.schema",
- "support.models",
- "support.providers",
-]
-
-[[modules]]
 path = "support.policy"
 depends_on = [
  "//agent_maintainer.config.loader",
@@ -128,14 +120,6 @@ depends_on = [
  "//agent_maintainer.ecosystems.models",
  "//agent_maintainer.ecosystems.registry",
  "support.models",
-]
-
-[[modules]]
-path = "support.typescript"
-depends_on = [
- "//agent_maintainer.config.schema",
- "support.models",
- "support.providers",
 ]
 
 [[modules]]

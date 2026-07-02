@@ -37,6 +37,9 @@ internal during beta.
 - Missing Node and Go tools can receive ecosystem-appropriate install hints.
 - The next provider can follow the built-in registry pattern without direct
   catalog imports.
+- Thin per-provider doctor wrapper modules are not required; doctor code should
+  use the shared provider support module unless a provider needs distinct setup
+  behavior.
 
 ## Alternatives Considered
 

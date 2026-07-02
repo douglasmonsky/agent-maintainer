@@ -96,7 +96,8 @@ def check_configured_command_provider(
 def provider_status(metadata: ProviderMetadata, config: MaintainerConfig) -> str:
     """Return one compact provider status fragment."""
     state = "active" if provider_enabled(metadata, config) else "disabled"
-    return " ".join((metadata.display_name, metadata.maturity.value, state))
+    status = " ".join((metadata.display_name, metadata.maturity.value, state))
+    return f"{status} ({metadata.docs_path})"
 
 
 def provider_enabled(metadata: ProviderMetadata, config: MaintainerConfig) -> bool:

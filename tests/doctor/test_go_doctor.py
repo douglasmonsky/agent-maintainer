@@ -6,21 +6,20 @@ import sys
 from dataclasses import replace
 
 from agent_maintainer.core.config import MaintainerConfig
-from agent_maintainer.doctor.support import go as doctor_go
 from agent_maintainer.doctor.support import providers as doctor_providers
 from agent_maintainer.doctor.support.models import ACTIVE, MISSING, OK, UNSAFE_CONFIG, WARNING
 
 
 def test_go_doctor_silent_when_disabled() -> None:
     """Disabled Go provider does not add command-setup noise."""
-    assert doctor_go.check_go_provider(MaintainerConfig()) == ()
+    assert doctor_providers.check_go_provider(MaintainerConfig()) == ()
 
 
 def test_go_doctor_warns_without_commands() -> None:
     """Enabled Go provider without commands gets concrete setup hint."""
     config = replace(MaintainerConfig(), enable_go=True)
 
-    result = doctor_go.check_go_provider(config)[0]
+    result = doctor_providers.check_go_provider(config)[0]
 
     assert result.status == WARNING
     assert result.state == UNSAFE_CONFIG
@@ -36,7 +35,7 @@ def test_go_doctor_warns_missing_executable() -> None:
         go_test_command=("definitely-missing-agent-maintainer-go", "test", "./..."),
     )
 
-    result = doctor_go.check_go_provider(config)[0]
+    result = doctor_providers.check_go_provider(config)[0]
 
     assert result.status == WARNING
     assert result.state == MISSING
@@ -52,7 +51,7 @@ def test_go_doctor_passes_existing_executable() -> None:
         go_test_command=(sys.executable, "--version"),
     )
 
-    result = doctor_go.check_go_provider(config)[0]
+    result = doctor_providers.check_go_provider(config)[0]
 
     assert result.status == OK
     assert result.state == ACTIVE
