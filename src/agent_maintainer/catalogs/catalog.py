@@ -142,18 +142,13 @@ def make_checks(
 
     package_paths = existing_or_configured(config.package_paths)
     file_length_paths = existing_or_configured(config.file_length_paths)
-    python_provider_checks = {
-        check.name: check
-        for check in PythonProvider().checks(
-            EcosystemCheckContext(
-                config=config,
-                base_ref=base_ref,
-                compare_branch=compare_branch,
-                staged=staged,
-                package_paths=package_paths,
-            )
+    python_provider_checks = PythonProvider().checks_by_name(
+        EcosystemCheckContext(
+            config=config,
+            compare_branch=compare_branch,
+            package_paths=package_paths,
         )
-    }
+    )
     return [
         models.Check(
             "file-length",

@@ -26,6 +26,11 @@ The Python provider is allowed to keep Python-specific capabilities such as
 Pyright, pytest coverage, Mutmut, Bandit, pip-audit, Deptry, Vulture, wemake,
 Interrogate, and diff-cover.
 
+The ecosystem package has its own Tach domain file so every provider module is
+explicitly assigned. `agent_maintainer.catalogs.catalog` may depend on the
+provider package, but provider modules should not depend on verifier execution,
+hook adapters, reports, or doctor orchestration.
+
 ## Alternatives Considered
 
 - Keep Python construction directly in the catalog. This would preserve current

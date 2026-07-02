@@ -44,12 +44,11 @@ def _module_command(check: Check) -> list[str]:
 
 def test_python_provider_exposes_current_python_owned_checks() -> None:
     """Pin the private Python provider seam introduced before refactoring."""
-    checks = PythonProvider().checks(
+    provider = PythonProvider()
+    checks = provider.checks(
         EcosystemCheckContext(
             config=MaintainerConfig(),
-            base_ref="HEAD",
             compare_branch="origin/main",
-            staged=False,
             package_paths=("src",),
         )
     )
@@ -74,6 +73,16 @@ def test_python_provider_exposes_current_python_owned_checks() -> None:
         "interrogate",
         "diff-cover",
     ]
+    assert (
+        provider.checks_by_name(
+            EcosystemCheckContext(
+                config=MaintainerConfig(),
+                compare_branch="origin/main",
+                package_paths=("src",),
+            )
+        )["pyright"].name
+        == "pyright"
+    )
 
 
 def test_default_catalog_profile_membership_is_characterized() -> None:

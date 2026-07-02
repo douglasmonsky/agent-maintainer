@@ -11,7 +11,6 @@ depends_on = []
 path = "models"
 depends_on = [
   "//agent_maintainer.config.schema",
-  "//agent_maintainer.models",
 ]
 
 
