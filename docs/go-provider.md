@@ -13,6 +13,14 @@ Related reading:
 - [Polyglot Ecosystem Provider Roadmap](roadmap/polyglot-ecosystem-providers.md)
 - [Diagnostics and Repair Loop](diagnostics-repair-loop.md)
 
+## Current Posture
+
+Go is intentionally kept as a thin experimental canary. It exists to prove
+the provider architecture can handle a non-Node ecosystem shape without
+turning Go into a parallel maturation track. New Go work should be limited to
+maintenance fixes for registry, classifier, doctor, and advisory-report
+compatibility unless a later roadmap phase explicitly changes this posture.
+
 ## Configuration
 
 Enable the provider and supply explicit commands:

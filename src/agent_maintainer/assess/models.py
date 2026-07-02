@@ -126,6 +126,29 @@ class ReviewabilityCount:
 
 
 @dataclass(frozen=True)
+class ReviewabilityProviderSummary:
+    """Advisory source/test summary for one ecosystem provider."""
+
+    ecosystem: str
+    changed_files: int
+    source_files: int
+    test_files: int
+    source_lines: int
+    test_lines: int
+    broad_suppressions: int
+
+
+@dataclass(frozen=True)
+class ReviewabilityFinding:
+    """One advisory provider reviewability finding."""
+
+    ecosystem: str
+    kind: str
+    message: str
+    recommendation: str
+
+
+@dataclass(frozen=True)
 class ReviewabilityReport:
     """Advisory provider-aware reviewability summary."""
 
@@ -137,6 +160,8 @@ class ReviewabilityReport:
     unclassified_files: int
     by_ecosystem: tuple[ReviewabilityCount, ...]
     by_role: tuple[ReviewabilityCount, ...]
+    provider_summaries: tuple[ReviewabilityProviderSummary, ...]
+    advisory_findings: tuple[ReviewabilityFinding, ...]
     changes: tuple[ReviewabilityChange, ...]
     suppressions: tuple[ReviewabilitySuppression, ...]
     broad_suppressions: int
