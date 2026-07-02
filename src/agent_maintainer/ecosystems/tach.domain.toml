@@ -22,6 +22,16 @@ depends_on = []
 
 [[modules]]
 
+path = "python.classification"
+depends_on = [
+  "models",
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.core.config",
+]
+
+
+[[modules]]
+
 path = "python.provider"
 depends_on = [
   "models",
