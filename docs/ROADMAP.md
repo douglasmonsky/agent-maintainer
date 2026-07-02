@@ -426,8 +426,7 @@ Planned work:
 Agent Maintainer should turn fixture evidence into more useful advisory output
 before adding blocking policy. This phase adds provider source/test summaries,
 TypeScript/JavaScript source/test advisory findings, and broad suppression
-findings while keeping TypeScript/JavaScript non-blocking
-canary-only.
+findings while keeping TypeScript/JavaScript non-blocking.
 Detailed scope:
 
 [`docs/roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md`](roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md)
@@ -510,7 +509,7 @@ Planned work:
 
 - [x] Phase 105: Provider Dispatch Registry
 
-## Next: Archive Go Provider History Out Of Main
+## Latest Completed: Archive Go Provider History Out Of Main
 
 Agent Maintainer should remove the Go-provider experiment from active `main`
 now that the experiment is preserved on `archive/go-provider-experiment` and
