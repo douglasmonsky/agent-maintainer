@@ -195,9 +195,9 @@ def test_summarize_states_fails_on_missing_tools(tmp_path: Path) -> None:
     assert "missing-tool" in message
 
 
-def test_common_node_and_go_tools_have_ecosystem_hints() -> None:
+def test_common_node_tools_have_ecosystem_hints() -> None:
     """Experimental provider tools should not default to Python install hints."""
-    for tool in ("npm", "pnpm", "yarn", "bun", "eslint", "tsc", "go", "gofmt"):
+    for tool in ("npm", "pnpm", "yarn", "bun", "eslint", "tsc"):
         capability = capabilities.capability_for_tool(tool)
 
         assert capability.kind == capabilities.EXTERNAL_BINARY

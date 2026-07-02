@@ -101,7 +101,6 @@ def run_doctor(
         maintainer_doctor_policy.check_secret_scanning_policy(config),
         maintainer_doctor_policy.check_provider_status(config),
         *maintainer_doctor_policy.check_typescript_provider(config),
-        *maintainer_doctor_policy.check_go_provider(config),
         maintainer_doctor_policy.check_context_pack_upload_policy(repo_root, config),
         *maintainer_doctor_policy.check_context_health(repo_root, config),
         check_optional_gates(repo_root, config),

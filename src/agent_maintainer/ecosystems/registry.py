@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from agent_maintainer.ecosystems.go.provider import GoProvider
 from agent_maintainer.ecosystems.models import (
     ProviderCommandSpec,
     ProviderMaturity,
@@ -45,24 +44,9 @@ TYPESCRIPT_PROVIDER = ProviderMetadata(
     ),
 )
 
-GO_PROVIDER = ProviderMetadata(
-    name="go",
-    display_name="Go",
-    maturity=ProviderMaturity.EXPERIMENTAL,
-    docs_path="docs/go-provider.md",
-    capabilities=("format", "vet", "test", "classification"),
-    enabled_field="enable_go",
-    command_specs=(
-        ProviderCommandSpec("go-format", "go_format_command"),
-        ProviderCommandSpec("go-vet", "go_vet_command"),
-        ProviderCommandSpec("go-test", "go_test_command"),
-    ),
-)
-
 BUILTIN_PROVIDER_METADATA = (
     PYTHON_PROVIDER,
     TYPESCRIPT_PROVIDER,
-    GO_PROVIDER,
 )
 
 
@@ -76,6 +60,6 @@ def python_provider() -> PythonProvider:
     return PythonProvider()
 
 
-def experimental_check_providers() -> tuple[TypeScriptProvider, GoProvider]:
+def experimental_check_providers() -> tuple[TypeScriptProvider]:
     """Return experimental providers appended after stable Python checks."""
-    return (TypeScriptProvider(), GoProvider())
+    return (TypeScriptProvider(),)

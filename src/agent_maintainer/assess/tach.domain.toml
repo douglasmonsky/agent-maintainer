@@ -67,7 +67,6 @@ depends_on = [
 "//agent_maintainer.config.schema",
 "//agent_maintainer.ecosystems.file_changes",
 "//agent_maintainer.ecosystems.git_changes",
-"//agent_maintainer.ecosystems.go.suppressions",
 "//agent_maintainer.ecosystems.models",
 "//agent_maintainer.ecosystems.typescript.suppressions",
 "models",

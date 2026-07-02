@@ -10,9 +10,9 @@ core.
 - Python remains the core/reference provider.
 - TypeScript/JavaScript is the first non-Python provider to mature beyond thin
   command execution.
-- Go remains a thin experimental canary. It should keep registry, classifier,
-  doctor, and advisory-report compatibility honest without adding Go depth in
-  parallel.
+- Go has been deferred from the active provider surface. It validated that the
+  provider seam should not become Node-specific, but TypeScript/JavaScript is
+  the only active non-Python maturation track.
 - No TypeScript/JavaScript reviewability signal is blocking yet.
 
 ## Fixture Evidence

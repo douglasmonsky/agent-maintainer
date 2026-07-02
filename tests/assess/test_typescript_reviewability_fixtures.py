@@ -193,7 +193,7 @@ def _build_report(
     )
     return assessment_reviewability.build_reviewability_report(
         tmp_path,
-        replace(MaintainerConfig(), enable_typescript=True, enable_go=True),
+        replace(MaintainerConfig(), enable_typescript=True),
         base_ref=BASE_REF,
         staged=False,
     )

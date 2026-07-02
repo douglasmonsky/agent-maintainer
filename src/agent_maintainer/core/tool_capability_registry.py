@@ -150,30 +150,6 @@ KNOWN_CAPABILITIES = (
         ),
     ),
     (
-        "go",
-        ToolCapability(
-            "go",
-            EXTERNAL_BINARY,
-            hint="Install the Go toolchain with your platform package manager.",
-        ),
-    ),
-    (
-        "gofmt",
-        ToolCapability(
-            "gofmt",
-            EXTERNAL_BINARY,
-            hint="Install the Go toolchain; gofmt ships with Go.",
-        ),
-    ),
-    (
-        "golangci-lint",
-        ToolCapability(
-            "golangci-lint",
-            EXTERNAL_BINARY,
-            hint="Install golangci-lint with your Go or platform package manager.",
-        ),
-    ),
-    (
         "taplo",
         ToolCapability(
             "taplo",

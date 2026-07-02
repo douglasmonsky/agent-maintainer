@@ -45,18 +45,17 @@ def test_experimental_changes_need_enabled() -> None:
     assert classify_changed_path("src/app.ts", "modified", config) is None
     assert classify_changed_path("cmd/server/main.go", "modified", config) is None
 
-    enabled = replace(config, enable_typescript=True, enable_go=True)
+    enabled = replace(config, enable_typescript=True)
 
     typescript = classify_changed_path("src/app.ts", "modified", enabled)
-    go = classify_changed_path("cmd/server/main.go", "modified", enabled)
 
     _assert_change(typescript, ecosystem="typescript", role=FileRole.SOURCE)
-    _assert_change(go, ecosystem="go", role=FileRole.SOURCE)
+    assert classify_changed_path("cmd/server/main.go", "modified", enabled) is None
 
 
 def test_batch_change_classification_order() -> None:
     """Batch helper preserves changed-path order and change metadata."""
-    config = replace(MaintainerConfig(), enable_typescript=True, enable_go=True)
+    config = replace(MaintainerConfig(), enable_typescript=True)
 
     classifications = classify_changed_paths(
         (
@@ -69,7 +68,6 @@ def test_batch_change_classification_order() -> None:
 
     assert [(item.ecosystem, item.role, item.change_kind) for item in classifications] == [
         ("typescript", FileRole.SOURCE, ChangeKind.ADDED),
-        ("go", FileRole.TEST, ChangeKind.MODIFIED),
     ]
 
 

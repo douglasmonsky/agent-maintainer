@@ -17,7 +17,6 @@ from agent_maintainer.doctor.support.models import (
 )
 from agent_maintainer.ecosystems.models import ProviderMetadata
 from agent_maintainer.ecosystems.registry import (
-    GO_PROVIDER,
     TYPESCRIPT_PROVIDER,
     builtin_provider_metadata,
 )
@@ -42,11 +41,6 @@ def check_provider_status(config: MaintainerConfig) -> DoctorResult:
 def check_typescript_provider(config: MaintainerConfig) -> tuple[DoctorResult, ...]:
     """Return TypeScript provider setup health rows."""
     return check_configured_command_provider(config, TYPESCRIPT_PROVIDER)
-
-
-def check_go_provider(config: MaintainerConfig) -> tuple[DoctorResult, ...]:
-    """Return Go provider setup health rows."""
-    return check_configured_command_provider(config, GO_PROVIDER)
 
 
 def check_configured_command_provider(
