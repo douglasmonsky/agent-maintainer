@@ -105,6 +105,7 @@ phase. Do not re-expand this index into a monolithic blueprint.
 | 102 | [TypeScript Setup Advisor Recommendations](phases/phase-102-typescript-setup-advisor.md) |
 | 103 | [Defer Go Provider From Active Surface](phases/phase-103-defer-go-provider.md) |
 | 104 | [TypeScript Test Repair Facts](phases/phase-104-typescript-test-repair-facts.md) |
+| 105 | [Provider Dispatch Registry](phases/phase-105-provider-dispatch-registry.md) |
 
 ## Future Work
 
