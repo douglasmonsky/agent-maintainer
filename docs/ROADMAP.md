@@ -333,6 +333,7 @@ Planned work:
 - [x] Phase 88: Provider API Stability Decision
 - [x] Phase 89: Measured Repair Case Studies
 - [x] Phase 90: Workspace Config Foundation
+- [x] Phase 91: Team Policy Templates
 
 ## Future Work
 
@@ -340,7 +341,6 @@ These items are intentionally postponed and are not part of the current
 roadmap completion gate.
 
 - Optional Compression Backends
-- Team Policy Templates
 - Headroom Integration
 
 ## Final Definition Of Done
