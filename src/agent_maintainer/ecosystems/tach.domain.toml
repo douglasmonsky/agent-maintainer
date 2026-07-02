@@ -17,7 +17,6 @@ depends_on = [
 
 path = "file_changes"
 depends_on = [
- "go.classification",
  "models",
  "python.classification",
  "typescript.classification",
@@ -33,7 +32,6 @@ depends_on = []
 
 path = "registry"
 depends_on = [
- "go.provider",
  "models",
  "python.provider",
  "typescript.provider",
@@ -64,29 +62,6 @@ depends_on = [
   "//agent_maintainer.catalogs.python",
   "//agent_maintainer.config.schema",
   "//agent_maintainer.models",
-]
-
-[[modules]]
-path = "go"
-depends_on = []
-
-[[modules]]
-path = "go.classification"
-depends_on = [
-  "models",
-]
-
-[[modules]]
-path = "go.provider"
-depends_on = [
-"models",
-"//agent_maintainer.models",
-]
-
-[[modules]]
-path = "go.suppressions"
-depends_on = [
-"models",
 ]
 
 [[modules]]

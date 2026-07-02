@@ -15,11 +15,9 @@ from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.ecosystems.git_changes import FileChange
 
 BASE_REF = "origin/main"
-GO = "go"
 TYPESCRIPT = "typescript"
 SOURCE_WITHOUT_TEST = "source-without-test"
 BROAD_SUPPRESSION = "broad-suppression"
-GO_SOURCE_LINES = 9
 TYPESCRIPT_SOURCE_LINES = 7
 
 
@@ -27,15 +25,13 @@ def test_provider_summaries_and_findings(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    """TypeScript gets source/test findings while Go stays canary-only."""
+    """TypeScript gets source/test findings without Go canary noise."""
     report = _build_report(monkeypatch, tmp_path)
 
     assert _summary_map(report.provider_summaries) == {
-        GO: (2, 1, 0, GO_SOURCE_LINES, 0, 1),
         TYPESCRIPT: (2, 1, 0, TYPESCRIPT_SOURCE_LINES, 0, 1),
     }
     assert {(item.ecosystem, item.kind) for item in report.advisory_findings} == {
-        (GO, BROAD_SUPPRESSION),
         (TYPESCRIPT, BROAD_SUPPRESSION),
         (TYPESCRIPT, SOURCE_WITHOUT_TEST),
     }
@@ -50,7 +46,7 @@ def test_json_and_text_render_advisories(
     payload = json.loads(reporting.render_json(report))
     text = reporting.render_reviewability_text(report)
 
-    assert payload["provider_summaries"][0]["ecosystem"] == GO
+    assert payload["provider_summaries"][0]["ecosystem"] == TYPESCRIPT
     assert payload["advisory_findings"][0]["kind"] == BROAD_SUPPRESSION
     assert "Provider summaries:" in text
     assert "Advisory findings:" in text
@@ -71,7 +67,7 @@ def _build_report(
         "added_lines_by_path",
         _fake_added_lines,
     )
-    config = replace(MaintainerConfig(), enable_typescript=True, enable_go=True)
+    config = replace(MaintainerConfig(), enable_typescript=True)
     return assessment_reviewability.build_reviewability_report(
         tmp_path,
         config,
@@ -96,7 +92,7 @@ def _summary_map(summaries: tuple[Any, ...]) -> dict[str, tuple[int, ...]]:
 
 
 def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
-    """Return TypeScript and Go source-only fixture changes."""
+    """Return TypeScript and deferred Go fixture changes."""
     assert base_ref == BASE_REF
     assert not staged
     return [
@@ -112,7 +108,7 @@ def _fake_added_lines(
     *,
     staged: bool,
 ) -> dict[str, tuple[str, ...]]:
-    """Return broad TypeScript and Go suppression lines."""
+    """Return broad TypeScript and deferred Go suppression lines."""
     assert base_ref == BASE_REF
     assert not staged
     return {

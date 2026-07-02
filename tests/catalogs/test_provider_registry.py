@@ -14,10 +14,9 @@ def test_provider_metadata_names_and_maturity() -> None:
     """Built-in providers expose maturity without publishing plugin API."""
     providers = {metadata.name: metadata for metadata in builtin_provider_metadata()}
 
-    assert tuple(providers) == ("python", "typescript", "go")
+    assert tuple(providers) == ("python", "typescript")
     assert providers["python"].maturity == ProviderMaturity.CORE
     assert providers["typescript"].maturity == ProviderMaturity.EXPERIMENTAL
-    assert providers["go"].maturity == ProviderMaturity.EXPERIMENTAL
 
 
 def test_provider_metadata_enabled_fields() -> None:
@@ -27,7 +26,6 @@ def test_provider_metadata_enabled_fields() -> None:
     assert providers["python"].enabled_by_default is True
     assert providers["python"].enabled_field is None
     assert providers["typescript"].enabled_field == "enable_typescript"
-    assert providers["go"].enabled_field == "enable_go"
 
 
 def test_configured_provider_command_fields() -> None:
@@ -39,11 +37,6 @@ def test_configured_provider_command_fields() -> None:
         "typescript_typecheck_command",
         "typescript_test_command",
     ]
-    assert [spec.config_field for spec in providers["go"].command_specs] == [
-        "go_format_command",
-        "go_vet_command",
-        "go_test_command",
-    ]
 
 
 def test_registry_provider_order() -> None:
@@ -51,5 +44,4 @@ def test_registry_provider_order() -> None:
     assert python_provider().name == "python"
     assert [provider.name for provider in experimental_check_providers()] == [
         "typescript",
-        "go",
     ]

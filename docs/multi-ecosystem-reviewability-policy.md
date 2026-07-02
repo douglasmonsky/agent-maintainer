@@ -8,19 +8,19 @@ That distinction matters:
 
 - Python remains the core/reference provider with full reviewability policy.
 - TypeScript/JavaScript is the first serious non-Python maturation target.
-- Go remains an experimental design canary so provider architecture does not
-  become accidentally Node-shaped.
-- TypeScript/JavaScript and Go providers run explicitly configured commands.
-- TypeScript/JavaScript and Go emit advisory changed-file and suppression facts
+- Go is deferred from the active provider surface until TypeScript evidence
+  matures.
+- TypeScript/JavaScript providers run explicitly configured commands.
+- TypeScript/JavaScript emits advisory changed-file and suppression facts
   through `assess reviewability`.
-- TypeScript/JavaScript and Go do not yet receive blocking change-budget,
+- TypeScript/JavaScript does not yet receive blocking change-budget,
   suppression-budget, file-length, structure-cohesion, or test-relevance gates.
 
 For the public maturity table, see [Provider Status](provider-status.md).
 
 Near-term provider work should put implementation depth into
-TypeScript/JavaScript. Go should receive only compatibility and maintenance
-changes needed to keep the registry, classifier, and advisory reporting honest.
+TypeScript/JavaScript. Go should return only through a future phase with
+fixtures, doctor rows, explicit commands, and advisory evidence.
 
 ## Current Blocking Gates
 
@@ -34,7 +34,7 @@ The following checks remain Python-backed:
 | `suppression-budget` | `agent_maintainer.checks.suppression_budget` | Python suppression markers such as `noqa`, `type: ignore`, `pylint: disable`, `pyright`, and `pragma: no cover`. |
 | `source-without-test-change` | change-budget/test-intelligence helpers | Python source/test relevance. |
 
-Experimental TypeScript/JavaScript and Go providers may classify files and run
+Experimental TypeScript/JavaScript providers may classify files and run
 configured command checks, but those facts do not widen current blocking Python
 reviewability gates.
 
@@ -49,13 +49,12 @@ It reports:
 - changed files grouped by role, such as source, test, config, docs, generated,
   dependency, and ignored;
 - unclassified changed files;
-- advisory TypeScript/JavaScript and Go suppression findings;
+- advisory TypeScript/JavaScript suppression findings;
 - broad advisory suppression counts;
 - next commands for the existing blocking verification loop.
 
 Advisory change collection uses a neutral git numstat reader, not Python
-`change-budget` filters. This keeps TypeScript/JavaScript lockfiles, Go
-dependency files, generated files, config files, and other non-Python
+`change-budget` filters. This keeps TypeScript/JavaScript lockfiles, generated files, config files, and other non-Python
 provider-owned changes visible to advisory reports. Blocking `change-budget`
 keeps its Python-specific exclusions and behavior.
 
@@ -64,15 +63,13 @@ The report also includes provider summaries and advisory findings for:
 - per-provider source/test line counts for enabled providers;
 - TypeScript/JavaScript source-heavy changes;
 - TypeScript/JavaScript source files changed without provider test files;
-- broad TypeScript/JavaScript and Go ecosystem suppressions.
+- broad TypeScript/JavaScript ecosystem suppressions.
 
 These summaries are evidence-gathering heuristics. They do not change exit
-status, do not widen verifier gates, and do not create TypeScript/JavaScript or
-Go blocking policy. TypeScript receives the first richer source/test advisory
-heuristics; Go remains a summary and broad-suppression canary.
+status, do not widen verifier gates, and do not create TypeScript/JavaScript . TypeScript receives the first richer source/test advisory heuristics.
 
 The command is advisory-only. It exits successfully when it can produce the
-report, even when it finds TypeScript/JavaScript or Go suppressions.
+report, even when it finds TypeScript/JavaScript suppressions.
 
 ## File-Change Classification
 
@@ -134,11 +131,6 @@ TypeScript/JavaScript advisory suppression examples:
 - `/* istanbul ignore */`
 - `// c8 ignore next`
 
-Go advisory suppression examples:
-
-- `//nolint`
-- `//nolint:<linter>`
-
 Current advisory reports include the ecosystem, suppression kind, broad/narrow
 status, and reason. Broad advisory suppressions should become one input to
 future policy design, not an immediate blocking failure.
@@ -147,7 +139,7 @@ future policy design, not an immediate blocking failure.
 
 Keep blocking reviewability policy Python-backed until provider-aware policy
 adapters are characterized and tested. Do not aggregate TypeScript/JavaScript
-or Go source changes into current blocking change-budget yet.
+source changes into current blocking change-budget yet.
 
 Cross-ecosystem aggregation should progress in this order:
 
@@ -165,22 +157,18 @@ vary across framework components, generated code, configuration files, and test
 fixtures.
 
 Future Go support should account for package directories, generated protobuf
-files, and table-driven tests before applying blocking thresholds.
+files, and table-driven tests before re-entering active provider work.
 
 ## Next Direction
 
-The next provider work should mature TypeScript/JavaScript first, not add
-another ecosystem and not deepen Go in parallel. Go should remain a thin
-experimental design canary so the provider seam stays honest outside Node
-without splitting implementation attention.
+The next provider work should mature TypeScript/JavaScript first, not add another ecosystem. Go is deferred from active work so the project can validate one non-Python provider deeply before taking on another.
 
 Recommended sequence:
 
 1. Keep Python as the core/reference provider and preserve its behavior.
 2. Treat TypeScript/JavaScript as the first serious non-Python promotion
    candidate.
-3. Keep Go enabled only by explicit config and limit Go work to maintenance
-   fixes needed by the registry, classifier, and advisory reports.
+3. Keep Go deferred until TypeScript reaches a stronger maturity bar.
 4. Add TypeScript fixture evidence for package managers, test runners,
    generated files, suppressions, dependency changes, and source/test shape.
 5. Add TypeScript advisory thresholds only after fixture and real-repo output

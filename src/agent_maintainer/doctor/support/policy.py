@@ -24,7 +24,6 @@ from agent_maintainer.models import SECURITY_PROFILE, VALID_PROFILES
 
 check_context_pack_upload_policy = context_artifacts.check_context_pack_upload_policy
 check_context_health = context_health.check_context_health
-check_go_provider = provider_support.check_go_provider
 check_provider_status = provider_support.check_provider_status
 check_typescript_provider = provider_support.check_typescript_provider
 

@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.ecosystems.go import classification as go_classification
 from agent_maintainer.ecosystems.models import (
     ChangeKind,
     FileChangeClassification,
@@ -98,10 +97,6 @@ def _classify_path_candidates(
         typescript_result = typescript_classification.classify_path(path)
         if typescript_result is not None:
             candidates.append(typescript_result)
-    if config.enable_go:
-        go_result = go_classification.classify_path(path)
-        if go_result is not None:
-            candidates.append(go_result)
     return tuple(candidates)
 
 

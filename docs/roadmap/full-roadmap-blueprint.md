@@ -106,11 +106,11 @@ a monolithic blueprint.
 | 100 | [TypeScript Maturation And Go Canary Freeze](phases/phase-100-typescript-maturation-go-canary.md) |
 | 101 | [TypeScript Advisory Threshold Evidence](phases/phase-101-typescript-advisory-threshold-evidence.md) |
 | 102 | [TypeScript Setup Advisor Recommendations](phases/phase-102-typescript-setup-advisor.md) |
+| 103 | [Defer Go Provider From Active Surface](phases/phase-103-defer-go-provider.md) |
 
 ## Future Work
 
-No active future-work items remain in this compact index. Promote new work to
-a numbered phase file before implementation.
+No active future-work items remain here. Promote new work to a numbered phase file.
 
 ## Completion
 

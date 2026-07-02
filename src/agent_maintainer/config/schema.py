@@ -37,8 +37,6 @@ DEFAULT_TRIVY_PROFILES = ("manual",)
 DEFAULT_TYPESCRIPT_LINT_PROFILES = ("precommit", "full", "ci")
 DEFAULT_TYPESCRIPT_TYPECHECK_PROFILES = ("full", "ci")
 DEFAULT_TYPESCRIPT_TEST_PROFILES = ("full", "ci")
-DEFAULT_GO_FORMAT_PROFILES = ("precommit", "full", "ci")
-DEFAULT_GO_VET_PROFILES = ("full", "ci")
 DEFAULT_SBOM_ARGS = (
     "requirements",
     "config/dev-lock.txt",
@@ -107,12 +105,6 @@ TUPLE_FIELDS = frozenset(
         "typescript_typecheck_profiles",
         "typescript_test_command",
         "typescript_test_profiles",
-        "go_format_command",
-        "go_format_profiles",
-        "go_vet_command",
-        "go_vet_profiles",
-        "go_test_command",
-        "go_test_profiles",
         "sbom_args",
         "sbom_profiles",
         "license_check_args",
@@ -139,7 +131,6 @@ BOOL_FIELDS = frozenset(
         "enable_osv_scanner",
         "enable_trivy",
         "enable_typescript",
-        "enable_go",
         "enable_sbom",
         "enable_license_check",
         "enable_secret_scanning",
@@ -330,13 +321,6 @@ class MaintainerConfig:
     typescript_typecheck_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_TYPECHECK_PROFILES
     typescript_test_command: tuple[str, ...] = ()
     typescript_test_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_TEST_PROFILES
-    enable_go: bool = False
-    go_format_command: tuple[str, ...] = ()
-    go_format_profiles: tuple[str, ...] = DEFAULT_GO_FORMAT_PROFILES
-    go_vet_command: tuple[str, ...] = ()
-    go_vet_profiles: tuple[str, ...] = DEFAULT_GO_VET_PROFILES
-    go_test_command: tuple[str, ...] = ()
-    go_test_profiles: tuple[str, ...] = DEFAULT_GO_VET_PROFILES
     enable_sbom: bool = False
     sbom_args: tuple[str, ...] = DEFAULT_SBOM_ARGS
     sbom_profiles: tuple[str, ...] = DEFAULT_SBOM_PROFILES

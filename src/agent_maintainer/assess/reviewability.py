@@ -12,7 +12,6 @@ from agent_maintainer.checks import suppression_budget
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.ecosystems import file_changes, git_changes
 from agent_maintainer.ecosystems import models as ecosystem_models
-from agent_maintainer.ecosystems.go import suppressions as go_suppressions
 from agent_maintainer.ecosystems.typescript import suppressions as ts_suppressions
 
 ADVISORY_NOTE = (
@@ -168,8 +167,6 @@ def _classify_suppression_line(
     """Dispatch line-level suppression classification by ecosystem."""
     if ecosystem == "typescript":
         return ts_suppressions.classify_line(line)
-    if ecosystem == "go":
-        return go_suppressions.classify_line(line)
     return ()
 
 

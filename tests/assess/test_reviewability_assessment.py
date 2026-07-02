@@ -17,9 +17,9 @@ from agent_maintainer.ecosystems.git_changes import FileChange
 
 BASE_REF = "origin/main"
 TOTAL_CHANGED_FILES = 7
-CLASSIFIED_FILES = 6
-UNCLASSIFIED_FILES = 1
-SUPPRESSION_FINDINGS = 2
+CLASSIFIED_FILES = 5
+UNCLASSIFIED_FILES = 2
+SUPPRESSION_FINDINGS = 1
 
 
 def test_reviewability_groups_provider_changes(
@@ -28,7 +28,7 @@ def test_reviewability_groups_provider_changes(
 ) -> None:
     """Provider-aware assessment groups changed files without enforcing gates."""
     _patch_changed_files(monkeypatch)
-    config = replace(MaintainerConfig(), enable_typescript=True, enable_go=True)
+    config = replace(MaintainerConfig(), enable_typescript=True)
 
     report = assessment_reviewability.build_reviewability_report(
         tmp_path,
@@ -73,7 +73,7 @@ def test_reviewability_text_lists_changes(
 ) -> None:
     """Text renderer includes grouped counts and changed provider files."""
     _patch_changed_files(monkeypatch)
-    config = replace(MaintainerConfig(), enable_typescript=True, enable_go=True)
+    config = replace(MaintainerConfig(), enable_typescript=True)
     report = assessment_reviewability.build_reviewability_report(
         tmp_path,
         config,
@@ -92,7 +92,7 @@ def test_reviewability_keeps_dependency_changes(
 ) -> None:
     """Advisory classification keeps dependency files Python budgets exclude."""
     _patch_changed_files(monkeypatch)
-    config = replace(MaintainerConfig(), enable_typescript=True, enable_go=True)
+    config = replace(MaintainerConfig(), enable_typescript=True)
 
     report = assessment_reviewability.build_reviewability_report(
         tmp_path,
@@ -108,7 +108,6 @@ def test_reviewability_keeps_dependency_changes(
     }
     assert dependency_changes == {
         ("package-lock.json", "typescript", "dependency"),
-        ("go.sum", "go", "dependency"),
     }
 
 
@@ -188,9 +187,8 @@ def _assert_report_counts(report: ReviewabilityReport) -> None:
     assert report.unclassified_files == UNCLASSIFIED_FILES
     assert _count_map(report.by_ecosystem) == {
         "global": 1,
-        "go": 2,
         "python": 1,
-        "typescript": 2,
+        "typescript": 3,
     }
 
 
@@ -212,7 +210,6 @@ def _assert_json_suppressions(payload: dict[str, Any]) -> None:
     """Assert stable JSON suppression and role payload."""
     assert {item["kind"] for item in payload["suppressions"]} == {
         "eslint-disable",
-        "nolint",
     }
     assert {item["key"] for item in payload["by_role"]} >= {
         "dependency",
@@ -226,7 +223,7 @@ def _assert_text_output(output: str) -> None:
     """Assert stable text report lines."""
     assert "Reviewability Assessment" in output
     assert "- python: 1" in output
-    assert "- Advisory suppressions: 2" in output
+    assert "- Advisory suppressions: 1" in output
     assert "Advisory suppressions:" in output
     assert "src/example/app.py: python/source" in output
 
@@ -238,7 +235,7 @@ def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
     return [
         FileChange("src/example/app.py", 3, 1),
         FileChange("src/web/app.ts", 5, 2),
-        FileChange("internal/server/handler_test.go", 7, 0),
+        FileChange("src/web/app.test.ts", 7, 0),
         FileChange("package-lock.json", 5, 1),
         FileChange("go.sum", 2, 1),
         FileChange("pyproject.toml", 1, 0),
@@ -252,7 +249,6 @@ def _fake_added_lines(base_ref: str, *, staged: bool) -> dict[str, tuple[str, ..
     assert not staged
     return {
         "src/web/app.ts": ("// eslint-disable", "export const value = 1;"),
-        "internal/server/handler_test.go": ("//nolint", "func TestThing() {}"),
     }
 
 
@@ -298,7 +294,6 @@ def _write_config(root: Path) -> None:
         """
 [tool.agent_maintainer]
 enable_typescript = true
-enable_go = true
 """.strip(),
         encoding="utf-8",
     )

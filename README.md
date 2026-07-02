@@ -183,7 +183,7 @@ context.
 | Dependency hygiene | deptry, vulture. |
 | Python security | Bandit, pip-audit. |
 | Secrets | Gitleaks current-tree, staged/range, and history modes. |
-| Ecosystems | Python core/reference provider; experimental configured-command TypeScript/JavaScript and Go providers. |
+| Ecosystems | Python core/reference provider; experimental configured-command TypeScript/JavaScript provider. |
 | SAST | Semgrep in manual profile when enabled. |
 | Multi-ecosystem CVEs | OSV Scanner when enabled. |
 | Containers/IaC | Trivy when relevant to the repo. |
@@ -353,7 +353,7 @@ python3 -m agent_maintainer assess reviewability --json
 ```
 
 This is advisory. In the current beta, blocking reviewability gates remain
-Python-backed while TypeScript/JavaScript and Go policy adapters mature.
+Python-backed while TypeScript/JavaScript policy adapters mature.
 
 Read more:
 

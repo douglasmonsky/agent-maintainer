@@ -2,7 +2,8 @@
 
 ## Status
 
-Complete in PR.
+Complete in PR. Superseded by
+[`phase-103-defer-go-provider.md`](phase-103-defer-go-provider.md).
 
 ## Goal
 
@@ -65,8 +66,7 @@ Run architecture and docs checks:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/tach check --exact
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src \
   node_modules/.bin/markdownlint-cli2 \
-  docs/go-provider.md \
-  docs/roadmap/phases/phase-87-experimental-go-provider.md \
+    docs/roadmap/phases/phase-87-experimental-go-provider.md \
   docs/roadmap/polyglot-ecosystem-providers.md \
   docs/roadmap/full-roadmap-blueprint.md \
   docs/ROADMAP.md
