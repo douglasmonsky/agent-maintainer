@@ -1,6 +1,6 @@
 # Phase 97: Advisory Ecosystem Suppression Classification
 
-Status: planned.
+Status: complete in PR.
 
 ## Goal
 

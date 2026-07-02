@@ -74,8 +74,14 @@ depends_on = [
 [[modules]]
 path = "go.provider"
 depends_on = [
-  "models",
-  "//agent_maintainer.models",
+"models",
+"//agent_maintainer.models",
+]
+
+[[modules]]
+path = "go.suppressions"
+depends_on = [
+"models",
 ]
 
 [[modules]]
@@ -95,6 +101,12 @@ depends_on = []
 [[modules]]
 path = "typescript.provider"
 depends_on = [
-  "models",
-  "//agent_maintainer.models",
+"models",
+"//agent_maintainer.models",
+]
+
+[[modules]]
+path = "typescript.suppressions"
+depends_on = [
+"models",
 ]

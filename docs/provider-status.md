@@ -6,8 +6,8 @@ careful expansion. Do not read experimental providers as feature parity.
 | Ecosystem | Maturity | Current Support | Not Yet |
 |---|---|---|---|
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security/dependency checks, doctor support, repair facts, starter templates. | External plugin API. |
-| TypeScript/JavaScript | Experimental | Explicit configured commands for lint, typecheck, and tests; file classification; `tsc --pretty false` and ESLint JSON repair facts; doctor setup rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters. |
-| Go | Experimental | Explicit configured commands for format, vet, and tests; file classification; doctor setup rows. | Structured repair facts, starter files, coverage adapters, dependency/security adapters, workspace autodetection. |
+| TypeScript/JavaScript | Experimental | Explicit configured commands for lint, typecheck, and tests; file classification; advisory suppression classification; `tsc --pretty false` and ESLint JSON repair facts; doctor setup rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters. |
+| Go | Experimental | Explicit configured commands for format, vet, and tests; file classification; advisory suppression classification; doctor setup rows. | Structured repair facts, starter files, coverage adapters, dependency/security adapters, workspace autodetection. |
 
 ## Design Rule
 

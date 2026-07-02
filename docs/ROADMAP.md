@@ -405,7 +405,7 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 97: Advisory Ecosystem Suppression Classification
+- [x] Phase 97: Advisory Ecosystem Suppression Classification
 
 ## Future Work
 
