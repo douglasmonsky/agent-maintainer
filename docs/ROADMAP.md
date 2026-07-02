@@ -422,6 +422,20 @@ Planned work:
 
 - [x] Phase 98: TypeScript/Go Reviewability Fixture Evidence
 
+## Next: Advisory Provider Reviewability Summaries
+
+Agent Maintainer should turn fixture evidence into more useful advisory output
+before adding blocking policy. This phase adds provider source/test summaries
+and advisory findings for source-heavy changes, source-without-test changes, and
+broad suppressions while keeping TypeScript/JavaScript and Go non-blocking.
+Detailed scope:
+
+[`docs/roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md`](roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md)
+
+Planned work:
+
+- [ ] Phase 99: Advisory Provider Reviewability Summaries
+
 ## Future Work
 
 No active Future Work items remain in the current roadmap completion gate.
