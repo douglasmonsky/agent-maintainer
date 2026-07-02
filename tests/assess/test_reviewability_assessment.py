@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.assess import cli
+from agent_maintainer.assess import cli, reporting
 from agent_maintainer.assess import reviewability as assessment_reviewability
 from agent_maintainer.checks.change_budget import FileChange
 from agent_maintainer.config.schema import MaintainerConfig
@@ -78,6 +78,55 @@ def test_reviewability_cli_json(
     assert payload["classified_files"] == CLASSIFIED_FILES
     assert {item["key"] for item in payload["by_role"]} >= {"source", "test"}
     assert payload["changes"][0]["ecosystem"] == "python"
+
+
+def test_reviewability_text_lists_changes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Text renderer includes grouped counts and changed provider files."""
+    monkeypatch.setattr(
+        assessment_reviewability,
+        "run_git_numstat",
+        _fake_git_numstat,
+    )
+    config = replace(MaintainerConfig(), enable_typescript=True, enable_go=True)
+    report = assessment_reviewability.build_reviewability_report(
+        tmp_path,
+        config,
+        base_ref="origin/main",
+        staged=False,
+    )
+
+    output = reporting.render_reviewability_text(report)
+
+    assert "Reviewability Assessment" in output
+    assert "- python: 1" in output
+    assert "Changed provider files:" in output
+    assert "src/example/app.py: python/source" in output
+
+
+def test_reviewability_text_no_provider_files(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Text renderer reports empty groups without special casing callers."""
+    monkeypatch.setattr(
+        assessment_reviewability,
+        "run_git_numstat",
+        lambda _base_ref, *, staged: [FileChange("notes/random.log", 1, 1)],
+    )
+
+    report = assessment_reviewability.build_reviewability_report(
+        tmp_path,
+        MaintainerConfig(),
+        base_ref="origin/main",
+        staged=False,
+    )
+    output = reporting.render_reviewability_text(report)
+
+    assert "- None" in output
+    assert "Changed provider files:" not in output
 
 
 def _fake_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
