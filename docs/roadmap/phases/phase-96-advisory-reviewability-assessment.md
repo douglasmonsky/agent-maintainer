@@ -1,6 +1,6 @@
 # Phase 96: Advisory Reviewability Assessment
 
-Status: planned.
+Status: complete in PR.
 
 ## Goal
 

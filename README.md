@@ -342,6 +342,23 @@ agent should answer before tightening config.
 Read more:
 [setup advisor](docs/setup-advisor.md).
 
+## Reviewability Assessment
+
+Inspect changed files by provider ecosystem and role without changing blocking
+policy:
+
+```bash
+python3 -m agent_maintainer assess reviewability
+python3 -m agent_maintainer assess reviewability --json
+```
+
+This is advisory. In the current beta, blocking reviewability gates remain
+Python-backed while TypeScript/JavaScript and Go policy adapters mature.
+
+Read more:
+
+[multi-ecosystem reviewability policy](docs/multi-ecosystem-reviewability-policy.md).
+
 ## Technical Debt Score
 
 Generate an advisory maintenance-risk scorecard:

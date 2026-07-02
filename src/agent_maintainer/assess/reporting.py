@@ -11,6 +11,8 @@ from agent_maintainer.assess.debt_score import (
 )
 from agent_maintainer.assess.models import (
     DebtScoreReport,
+    ReviewabilityCount,
+    ReviewabilityReport,
     SetupAdvisorReport,
 )
 from agent_maintainer.assess.models import (
@@ -67,6 +69,48 @@ def render_debt_text(report: DebtScoreReport) -> str:
     lines.extend(("", "Artifacts:"))
     lines.extend(f"- {path}" for path in report.artifact_paths)
     return "\n".join(lines)
+
+
+def render_reviewability_text(report: ReviewabilityReport) -> str:
+    """Render advisory provider-aware reviewability summary."""
+    lines = [
+        "Reviewability Assessment",
+        f"Target: {report.target}",
+        f"Base ref: {report.base_ref}",
+        f"Staged: {report.staged}",
+        report.advisory_note,
+        "",
+        "Summary:",
+        f"- Changed files: {report.total_changed_files}",
+        f"- Classified provider files: {report.classified_files}",
+        f"- Unclassified files: {report.unclassified_files}",
+        "",
+        "By ecosystem:",
+        *_count_lines(report.by_ecosystem),
+        "",
+        "By role:",
+        *_count_lines(report.by_role),
+        "",
+        "Next commands:",
+        *[f"- `{command}`" for command in report.next_commands],
+    ]
+    if report.changes:
+        lines.extend(("", "Changed provider files:"))
+        lines.extend(
+            (
+                f"- {change.path}: {change.ecosystem}/{change.role} "
+                f"(+{change.added}/-{change.deleted})"
+            )
+            for change in report.changes
+        )
+    return "\n".join(lines)
+
+
+def _count_lines(counts: tuple[ReviewabilityCount, ...]) -> list[str]:
+    """Render deterministic grouping counts."""
+    if not counts:
+        return ["- None"]
+    return [f"- {item.key}: {item.count}" for item in counts]
 
 
 def render_json(report: object) -> str:

@@ -13,8 +13,10 @@ from agent_maintainer.assess.evidence import DEFAULT_MAX_EVIDENCE_FILES, collect
 from agent_maintainer.assess.reporting import (
     render_debt_text,
     render_json,
+    render_reviewability_text,
     render_setup_text,
 )
+from agent_maintainer.assess.reviewability import build_reviewability_report
 from agent_maintainer.assess.setup_advisor import build_setup_report
 from agent_maintainer.config.loader import load_config
 
@@ -31,11 +33,22 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "debt":
         with _working_directory(target):
             config = load_config()
-        log_dir = args.log_dir if args.log_dir.is_absolute() else target / args.log_dir
-        report = build_debt_report(evidence, config, log_dir=log_dir)
+            log_dir = args.log_dir if args.log_dir.is_absolute() else target / args.log_dir
+            report = build_debt_report(evidence, config, log_dir=log_dir)
         if not args.no_write:
             write_debt_artifacts(report, log_dir)
         print(render_json(report) if args.json else render_debt_text(report))
+        return 0
+    if args.command == "reviewability":
+        with _working_directory(target):
+            config = load_config()
+            report = build_reviewability_report(
+                target,
+                config,
+                base_ref=args.base_ref,
+                staged=args.staged,
+            )
+        print(render_json(report) if args.json else render_reviewability_text(report))
         return 0
     return 1
 
@@ -54,6 +67,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     debt.add_argument("--json", action="store_true")
     debt.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     debt.add_argument("--no-write", action="store_true")
+    reviewability = subparsers.add_parser(
+        "reviewability",
+        help="Render advisory changed-file reviewability summary.",
+    )
+    reviewability.add_argument("--target", type=Path, default=Path("."))
+    reviewability.add_argument(
+        "--max-files",
+        type=int,
+        default=DEFAULT_MAX_EVIDENCE_FILES,
+    )
+    reviewability.add_argument("--json", action="store_true")
+    reviewability.add_argument("--base-ref", default="origin/main")
+    reviewability.add_argument("--staged", action="store_true")
     return parser.parse_args(argv)
 
 

@@ -391,7 +391,7 @@ Detailed scope:
 
 Planned work:
 
-- [ ] Phase 96: Advisory Reviewability Assessment
+- [x] Phase 96: Advisory Reviewability Assessment
 
 ## Future Work
 
