@@ -107,6 +107,17 @@ class ReviewabilityChange:
 
 
 @dataclass(frozen=True)
+class ReviewabilitySuppression:
+    """One advisory suppression finding from an ecosystem provider."""
+
+    path: str
+    ecosystem: str
+    kind: str
+    broad: bool
+    reason: str
+
+
+@dataclass(frozen=True)
 class ReviewabilityCount:
     """Count for one advisory reviewability grouping."""
 
@@ -127,6 +138,8 @@ class ReviewabilityReport:
     by_ecosystem: tuple[ReviewabilityCount, ...]
     by_role: tuple[ReviewabilityCount, ...]
     changes: tuple[ReviewabilityChange, ...]
+    suppressions: tuple[ReviewabilitySuppression, ...]
+    broad_suppressions: int
     advisory_note: str
     next_commands: tuple[str, ...]
 

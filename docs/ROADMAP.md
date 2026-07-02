@@ -393,6 +393,20 @@ Planned work:
 
 - [x] Phase 96: Advisory Reviewability Assessment
 
+## Next: Advisory Ecosystem Suppression Classification
+
+Agent Maintainer should make ecosystem-specific suppression additions visible
+without widening the current blocking Python suppression budget. This phase adds
+provider-owned advisory suppression classifiers for TypeScript/JavaScript and Go
+and surfaces counts through `assess reviewability`.
+Detailed scope:
+
+[`docs/roadmap/phases/phase-97-advisory-ecosystem-suppression-classification.md`](roadmap/phases/phase-97-advisory-ecosystem-suppression-classification.md)
+
+Planned work:
+
+- [x] Phase 97: Advisory Ecosystem Suppression Classification
+
 ## Future Work
 
 No active Future Work items remain in the current roadmap completion gate.

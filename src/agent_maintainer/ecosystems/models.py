@@ -104,6 +104,17 @@ class FileChangeClassification:
 
 
 @dataclass(frozen=True)
+class SuppressionFinding:
+    """One provider-owned suppression marker found in source text."""
+
+    ecosystem: str
+    kind: str
+    line: str
+    broad: bool
+    reason: str
+
+
+@dataclass(frozen=True)
 class EcosystemCheckContext:
     """Inputs needed by internal ecosystem providers to build checks."""
 

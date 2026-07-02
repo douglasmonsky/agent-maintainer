@@ -63,11 +63,14 @@ depends_on = ["debt_score", "models"]
 [[modules]]
 path = "reviewability"
 depends_on = [
-  "//agent_maintainer.checks.change_budget",
-  "//agent_maintainer.config.schema",
-  "//agent_maintainer.ecosystems.file_changes",
-  "//agent_maintainer.ecosystems.models",
-  "models",
+"//agent_maintainer.checks.change_budget",
+"//agent_maintainer.checks.suppression_budget",
+"//agent_maintainer.config.schema",
+"//agent_maintainer.ecosystems.file_changes",
+"//agent_maintainer.ecosystems.go.suppressions",
+"//agent_maintainer.ecosystems.models",
+"//agent_maintainer.ecosystems.typescript.suppressions",
+"models",
 ]
 
 [[modules]]

@@ -84,6 +84,8 @@ def render_reviewability_text(report: ReviewabilityReport) -> str:
         f"- Changed files: {report.total_changed_files}",
         f"- Classified provider files: {report.classified_files}",
         f"- Unclassified files: {report.unclassified_files}",
+        f"- Advisory suppressions: {len(report.suppressions)}",
+        f"- Broad advisory suppressions: {report.broad_suppressions}",
         "",
         "By ecosystem:",
         *_count_lines(report.by_ecosystem),
@@ -102,6 +104,12 @@ def render_reviewability_text(report: ReviewabilityReport) -> str:
                 f"(+{change.added}/-{change.deleted})"
             )
             for change in report.changes
+        )
+    if report.suppressions:
+        lines.extend(("", "Advisory suppressions:"))
+        lines.extend(
+            (f"- {finding.path}: {finding.ecosystem}/{finding.kind} broad={finding.broad}")
+            for finding in report.suppressions
         )
     return "\n".join(lines)
 
