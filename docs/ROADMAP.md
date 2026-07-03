@@ -842,6 +842,19 @@ Completed work:
 
 - [x] Phase 124: DocSync Foundation Roadmap Closure
 
+## Completed: Roadmap Blueprint Index Repair
+
+Refresh compact roadmap blueprint index so it links every split phase spec and
+add a test guard that fails when future phase files are omitted from the index.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-125-roadmap-blueprint-index-repair.md`](roadmap/phases/phase-125-roadmap-blueprint-index-repair.md)
+
+Completed work:
+
+- [x] Phase 125: Roadmap Blueprint Index Repair
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
