@@ -148,6 +148,36 @@ def test_posix_process_group_kills_after_timeout(
     assert recorder.signals == [command_run.signal.SIGTERM, command_run.signal.SIGKILL]
 
 
+def test_interrupted_command_cleans_process_tree(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Interrupted command waits clean up live child process trees."""
+
+    fake_process = InterruptingProcess()
+    cleaned: list[InterruptingProcess] = []
+
+    def fake_popen(*_args: object, **_kwargs: object) -> InterruptingProcess:
+        return fake_process
+
+    def fake_cleanup(process: InterruptingProcess) -> None:
+        cleaned.append(process)
+
+    monkeypatch.setattr(command_run.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(command_run, "terminate_process_tree", fake_cleanup)
+
+    with pytest.raises(KeyboardInterrupt):
+        command_run.run_command_to_files(
+            ["slow-check"],
+            tmp_path / "stdout.log",
+            tmp_path / "stderr.log",
+            os.environ.copy(),
+            timeout=SHORT_TIMEOUT_SECONDS,
+        )
+
+    assert cleaned == [fake_process]
+
+
 @pytest.mark.skipif(os.name != "posix", reason="process-group cleanup is POSIX-specific")
 def test_timeout_kills_process_group(tmp_path: Path) -> None:
     """Timeout cleanup terminates children spawned by the checked command."""
@@ -204,6 +234,30 @@ class FakeProcess:
         self.wait_count += 1
         if self.timeout_once and self.wait_count == 1:
             raise subprocess.TimeoutExpired(["fake"], timeout)
+
+
+class InterruptingProcess:
+    """Process double that raises an external interruption while waiting."""
+
+    returncode = None
+
+    def __enter__(self) -> InterruptingProcess:
+        """Return context-managed process double."""
+
+        return self
+
+    def __exit__(self, *_args: object) -> None:
+        """Exit process context without suppressing exceptions."""
+
+    def wait(self, timeout: int) -> None:
+        """Raise a simulated user interruption."""
+
+        raise KeyboardInterrupt
+
+    def poll(self) -> None:
+        """Report that process is still running."""
+
+        return None
 
 
 class SignalRecorder:
