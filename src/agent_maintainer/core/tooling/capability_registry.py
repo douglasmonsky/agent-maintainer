@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from agent_maintainer.core.tool_capability_types import (
+from agent_maintainer.core.tooling.capability_types import (
     EXTERNAL_BINARY,
     PYTHON_PACKAGE,
     ToolCapability,

@@ -8,7 +8,7 @@ from pathlib import Path
 from agent_maintainer import models
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core import config as maintainer_config
-from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilities
+from agent_maintainer.core.tooling import capabilities as maintainer_tool_capabilities
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
 from agent_maintainer.tach import tach_config_issues
 

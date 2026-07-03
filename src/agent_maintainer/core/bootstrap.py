@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from agent_maintainer.core.runtime import hardened_subprocess_env
-from agent_maintainer.core.tool_capabilities import bootstrap_scope_note
+from agent_maintainer.core.tooling.capabilities import bootstrap_scope_note
 from agent_maintainer.hooks.manager import (
     ALL_CLIENTS,
     REPO_SCOPE,

@@ -16,7 +16,7 @@ depends_on = [
 path = "bootstrap"
 depends_on = [
   "runtime",
-  "tool_capabilities",
+  "tooling.capabilities",
   "//agent_maintainer.hooks.manager",
 ]
 
@@ -48,7 +48,7 @@ depends_on = [
   "command_run",
   "reporting",
   "runtime",
-  "tool_capabilities",
+  "tooling.capabilities",
   "//agent_maintainer.models",
 ]
 
@@ -135,19 +135,19 @@ path = "runtime"
 depends_on = []
 
 [[modules]]
-path = "tool_capabilities"
+path = "tooling.capabilities"
 depends_on = [
-  "tool_capability_registry",
-  "tool_capability_types",
+  "tooling.capability_registry",
+  "tooling.capability_types",
   "//agent_maintainer.models",
 ]
 
 [[modules]]
-path = "tool_capability_registry"
+path = "tooling.capability_registry"
 depends_on = [
-  "tool_capability_types",
+  "tooling.capability_types",
 ]
 
 [[modules]]
-path = "tool_capability_types"
+path = "tooling.capability_types"
 depends_on = []

@@ -7,12 +7,12 @@ import shutil
 import sys
 from pathlib import Path
 
-from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilities
 from agent_maintainer.core.artifact_environment import artifact_environment
 from agent_maintainer.core.check_run import CheckRun, utc_timestamp
 from agent_maintainer.core.command_run import run_command_bounded
 from agent_maintainer.core.reporting import summarize_check, summarize_check_from_artifacts
 from agent_maintainer.core.runtime import hardened_subprocess_env
+from agent_maintainer.core.tooling import capabilities as maintainer_tool_capabilities
 from agent_maintainer.models import (
     SKIP_STATUS_DISABLED,
     SKIP_STATUS_MISSING_OPTIONAL,

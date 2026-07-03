@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilities
 from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.core.tooling import capabilities as maintainer_tool_capabilities
 from agent_maintainer.doctor import cli as maintainer_doctor
 from agent_maintainer.doctor import setup as maintainer_doctor_setup
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
