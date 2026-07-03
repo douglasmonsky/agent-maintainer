@@ -1,8 +1,15 @@
-2026-07-02 current-state addendum: DocSync now exists as `src/docsync/` and
-owns the docs/evidence and claim-freshness responsibility that this original
-handoff called `docs_evidence`. Future implementation phases must extend or
-stabilize DocSync for that boundary; do not create a second `docs_evidence`
-package unless a later ADR explicitly reopens the decision.
+2026-07-03 status: this file is an archived exact implementation handoff for
+the internal-package extraction, not the current recovery checklist. The active
+current-state closure lives in `docs/roadmap/internal-package-boundaries.md`.
+Most extraction phases have landed. Use current source roots, Tach contracts,
+phase files, and ADRs as authoritative before following any example below.
+
+DocSync now exists as `src/docsync/` and owns docs/evidence claim freshness.
+The original handoff called that responsibility `docs_evidence`; do not create
+a second `docs_evidence` package unless a later ADR explicitly reopens that
+decision. Any examples below that mention `src/docs_evidence` are historical
+and should be interpreted as `src/docsync` only after confirming the current
+state.
 
 Below is an end-to-end implementation plan for refactoring Agent Maintainer into cleaner internal packages while preserving the single PyPI distribution initially. The current packaging setup already supports this shape because setuptools auto-discovers packages under `src`.
 
