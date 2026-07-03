@@ -855,6 +855,21 @@ Completed work:
 
 - [x] Phase 125: Roadmap Blueprint Index Repair
 
+## Completed: Roadmap Overview Current State
+
+Refresh the roadmap overview so it describes the current beta product state,
+provider posture, internal packages, DocSync, repair capsule behavior, and
+verification rules instead of the older context-safe-ratchet implementation
+prompt.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-126-roadmap-overview-current-state.md`](roadmap/phases/phase-126-roadmap-overview-current-state.md)
+
+Completed work:
+
+- [x] Phase 126: Roadmap Overview Current State
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
