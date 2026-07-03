@@ -113,20 +113,24 @@ def duplicate_artifact_paths(repo_root: Path) -> list[str]:
 
 
 def duplicate_artifacts_in_root(repo_root: Path, root: Path) -> list[str]:
-    """Return suspicious duplicate artifacts below one generated root."""
+    """Return suspicious duplicate or bytecode artifacts below one root."""
     if not root.exists():
         return []
     return [
         path.relative_to(repo_root).as_posix()
         for path in root.rglob("*")
-        if path.is_file() and is_duplicate_artifact(path)
+        if is_duplicate_or_bytecode_artifact(path)
     ]
 
 
-def is_duplicate_artifact(path: Path) -> bool:
-    """Return whether path looks like an accidental duplicate artifact."""
+def is_duplicate_or_bytecode_artifact(path: Path) -> bool:
+    """Return whether path looks like accidental generated artifact debris."""
     name = path.name.lower()
-    return any(pattern in name for pattern in (" 2", " copy", " - copy"))
+    return (
+        any(pattern in name for pattern in (" 2", " copy", " - copy"))
+        or path.name == "__pycache__"
+        or path.suffix == ".pyc"
+    )
 
 
 def check_layout(config: maintainer_config.MaintainerConfig) -> DoctorResult:

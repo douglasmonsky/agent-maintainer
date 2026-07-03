@@ -214,6 +214,32 @@ def test_dupe_artifacts_warn_for_copy_names(tmp_path: Path) -> None:
     assert ".verify-logs/manifest copy 2.json" in result.message
 
 
+def test_dupe_artifacts_warn_for_python_bytecode_cache(tmp_path: Path) -> None:
+    """Doctor warns generated Python bytecode caches under scanned roots."""
+    cache_dir = tmp_path / "src" / "agent_maintainer" / "__pycache__"
+    cache_dir.mkdir(parents=True)
+    bytecode = cache_dir / "runtime.cpython-313.pyc"
+    bytecode.write_bytes(b"bytecode")
+
+    result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
+
+    assert result.status == maintainer_doctor.WARNING
+    assert result.state == maintainer_doctor_models.UNSAFE_CONFIG
+    assert "src/agent_maintainer/__pycache__" in result.message
+
+
+def test_dupe_artifacts_warn_for_python_bytecode_file(tmp_path: Path) -> None:
+    """Doctor warns generated Python bytecode files even without cache dir hit."""
+    bytecode = tmp_path / "tests" / "example.cpython-313.pyc"
+    bytecode.parent.mkdir(parents=True)
+    bytecode.write_bytes(b"bytecode")
+
+    result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
+
+    assert result.status == maintainer_doctor.WARNING
+    assert "tests/example.cpython-313.pyc" in result.message
+
+
 def test_dupe_artifacts_include_change_plans(tmp_path: Path) -> None:
     """Doctor warns for duplicate change-plan copies from local tools."""
     duplicate = tmp_path / ".agent-maintainer" / "change-plans" / "plan 2.md"
