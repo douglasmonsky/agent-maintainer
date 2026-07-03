@@ -1,3 +1,5 @@
+<!-- docsync:object docs.architecture_policy.overview -->
+
 # Architecture Policy
 
 Agent Maintainer treats architecture checks as policy, not just import linting.

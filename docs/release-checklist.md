@@ -1,3 +1,5 @@
+<!-- docsync:object docs.release_checklist.overview -->
+
 # Release Checklist
 
 Use this checklist before tagging or publishing Agent Maintainer. It is release

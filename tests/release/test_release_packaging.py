@@ -63,6 +63,7 @@ def artifact_contains_license(path: Path) -> bool:
         return any(name.endswith("/LICENSE") for name in archive.getnames())
 
 
+# docsync:evidence.start evidence.release.packaging_tests
 @pytest.mark.release
 @release_only
 @pytest.mark.parametrize("extra", EXTRAS)
@@ -158,4 +159,7 @@ def test_release_builds_artifacts_and_installs_console_script(
             ]
         )
         assert result.returncode == 0, result.stdout + result.stderr
-        assert "tach-config" in result.stdout
+    assert "tach-config" in result.stdout
+
+
+# docsync:evidence.end evidence.release.packaging_tests

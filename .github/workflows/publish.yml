@@ -60,6 +60,7 @@ jobs:
           path: dist/
           if-no-files-found: error
 
+  # docsync:evidence.start evidence.release.publish_workflow
   attach-github-release-artifacts:
     name: attach GitHub release artifacts
     needs: build
@@ -128,3 +129,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
         with:
           packages-dir: dist/
+  # docsync:evidence.end evidence.release.publish_workflow

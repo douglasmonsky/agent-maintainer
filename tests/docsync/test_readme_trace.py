@@ -34,6 +34,8 @@ PUBLIC_DOC_OBJECTS = {
     "docs.provider_status.overview",
     "docs.agent_client_hooks.overview",
     "docs.context_compression.overview",
+    "docs.release_checklist.overview",
+    "docs.architecture_policy.overview",
 }
 
 PUBLIC_DOC_CLAIMS = {
@@ -45,6 +47,8 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.provider_status_python_core",
     "claim.docs.agent_hooks_install_surface",
     "claim.docs.context_compression_safety",
+    "claim.docs.release_checklist_packaging",
+    "claim.docs.architecture_policy_tach",
 }
 
 

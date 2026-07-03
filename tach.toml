@@ -1,3 +1,4 @@
+# docsync:evidence.start evidence.architecture.strict_tach_config
 source_roots = ["src", ".codex/hooks", ".claude/hooks"]
 root_module = "forbid"
 exact = true
@@ -16,6 +17,7 @@ exclude = [
 
 # Package-level contracts live beside code in tach.domain.toml files.
 # Do not add broad root path buckets just to make root_module pass.
+# docsync:evidence.end evidence.architecture.strict_tach_config
 
 [[modules]]
 path = "agent_maintainer.__main__"
