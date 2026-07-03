@@ -15,6 +15,7 @@ FALLBACK_WARNING = "backend dropped preserve terms; used extractive fallback"
 Backend = Callable[[CompressionRequest], CompressionResult]
 
 
+# docsync:evidence.start evidence.context_compression.deterministic_backends
 def compress(request: CompressionRequest, *, backend: str) -> CompressionResult:
     """Compress context with a named backend."""
 
@@ -202,3 +203,6 @@ def append_warning(result: CompressionResult, warning: str) -> CompressionResult
         exact_facts_preserved=result.exact_facts_preserved,
         warnings=(*result.warnings, warning),
     )
+
+
+# docsync:evidence.end evidence.context_compression.deterministic_backends

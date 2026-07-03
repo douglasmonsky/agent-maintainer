@@ -1,3 +1,5 @@
+<!-- docsync:object docs.context_compression.overview -->
+
 # Context Compression
 
 Context compression is an optional layer for shrinking supporting evidence in

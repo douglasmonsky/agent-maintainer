@@ -22,6 +22,7 @@ CLAUDE_STOP_HOOK = ".claude/hooks/stop.py"
 CLAUDE_SUBAGENT_STOP_HOOK = ".claude/hooks/subagent_stop.py"
 
 
+# docsync:evidence.start evidence.agent_hooks.generated_templates
 def codex_config_block(*, user_scope: bool = False) -> str:
     """Return the managed Codex hook configuration block."""
 
@@ -244,6 +245,7 @@ def hook_audit_shim() -> str:
     ).lstrip()
 
 
+# docsync:evidence.end evidence.agent_hooks.generated_templates
 def managed_toml_block(marker: str, body: str) -> str:
     """Return a fenced managed TOML block."""
 

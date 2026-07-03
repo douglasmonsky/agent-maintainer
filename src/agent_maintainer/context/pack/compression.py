@@ -37,6 +37,7 @@ class PackCompressionResult:
     warnings: tuple[str, ...] = ()
 
 
+# docsync:evidence.start evidence.context_compression.pack_fallback
 def compress_supporting_context(
     *,
     logs: list[dict[str, object]],
@@ -137,6 +138,9 @@ def fallback_or_raise(
         raise exception
     warnings.append(message)
     return extractive_compress(compression_request)
+
+
+# docsync:evidence.end evidence.context_compression.pack_fallback
 
 
 def headroom_fallback_message(backend: str) -> str:
