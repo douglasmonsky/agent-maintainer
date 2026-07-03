@@ -1066,8 +1066,8 @@ evidence:
   evidence.typescript.real_repo_reviewability_tests:
     type: test
     description: TypeScript real-repo reviewability tests run the public CLI
-      against temporary Git repositories and verify low-noise and source-heavy
-      advisory output.
+      against temporary Git repositories and verify low-noise source/test,
+      source-heavy, suppression, npm/Vite/Vitest, and pnpm config/lock shapes.
     anchors:
       - path: tests/assess/test_typescript_real_repo_reviewability.py
         mode: explicit_region
