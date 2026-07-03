@@ -82,6 +82,10 @@ def run_command_to_files(
         except subprocess.TimeoutExpired:
             terminate_process_tree(process)
             raise
+        except BaseException:
+            if process.poll() is None:
+                terminate_process_tree(process)
+            raise
         return subprocess.CompletedProcess(command, process.returncode)
 
 
