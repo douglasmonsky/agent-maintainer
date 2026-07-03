@@ -10,6 +10,7 @@ from pathlib import Path
 from archguard.git_diff import changed_paths
 from archguard.models import ArchitecturePolicyChange
 
+# docsync:evidence.start evidence.architecture.decision_notes
 DEFAULT_DECISION_ROOTS = ("docs/architecture/decisions", ".archguard/decisions")
 DEFAULT_POLICY_PATTERNS = ("tach.toml", "tach.domain.toml", "**/tach.domain.toml")
 SLUG_RE = re.compile(r"[^a-z0-9._-]+")
@@ -40,6 +41,9 @@ def decision_check_failures(
         f"architecture policy changed without decision note: {change.format_paths()}",
         "Add or update a decision note under docs/architecture/decisions/.",
     ]
+
+
+# docsync:evidence.end evidence.architecture.decision_notes
 
 
 def is_policy_path(path: str, policy_patterns: tuple[str, ...]) -> bool:

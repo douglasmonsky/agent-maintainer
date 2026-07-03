@@ -40,6 +40,14 @@ documents:
     path: docs/context-compression.md
     title: Context Compression
     audience: public
+  docs.release_checklist:
+    path: docs/release-checklist.md
+    title: Release Checklist
+    audience: maintainers
+  docs.architecture_policy:
+    path: docs/architecture-policy.md
+    title: Architecture Policy
+    audience: maintainers
 objects:
   docs.docsync_extraction.overview:
     document: docs.docsync_extraction
@@ -169,6 +177,22 @@ objects:
     heading:
       level: 1
       text: Context Compression
+  docs.release_checklist.overview:
+    document: docs.release_checklist
+    kind: heading_section
+    path: docs/release-checklist.md
+    marker: docs.release_checklist.overview
+    heading:
+      level: 1
+      text: Release Checklist
+  docs.architecture_policy.overview:
+    document: docs.architecture_policy
+    kind: heading_section
+    path: docs/architecture-policy.md
+    marker: docs.architecture_policy.overview
+    heading:
+      level: 1
+      text: Architecture Policy
 claims:
   claim.docsync.extractable_boundary:
     object: docs.docsync_extraction.overview
@@ -313,6 +337,20 @@ claims:
       - evidence.context_compression.deterministic_backends
       - evidence.context_compression.headroom_boundary
       - evidence.context_compression.pack_fallback
+  claim.docs.release_checklist_packaging:
+    object: docs.release_checklist.overview
+    text: Release checklist documents release-only packaging checks, built artifact validation, clean extra installs, and trusted publish workflow requirements.
+    severity: high
+    evidence:
+      - evidence.release.packaging_tests
+      - evidence.release.publish_workflow
+  claim.docs.architecture_policy_tach:
+    object: docs.architecture_policy.overview
+    text: Architecture policy docs require strict Tach root-module coverage and architecture decision notes for Tach policy changes.
+    severity: high
+    evidence:
+      - evidence.architecture.strict_tach_config
+      - evidence.architecture.decision_notes
 evidence:
   evidence.docsync.domain_contract:
     type: code
@@ -427,4 +465,28 @@ evidence:
     description: Context pack compression falls back unless compression is required.
     anchors:
       - path: src/agent_maintainer/context/pack/compression.py
+        mode: explicit_region
+  evidence.release.publish_workflow:
+    type: config
+    description: Publish workflow builds distributions, uploads GitHub release artifacts, and uses TestPyPI/PyPI Trusted Publisher environments.
+    anchors:
+      - path: .github/workflows/publish.yml
+        mode: explicit_region
+  evidence.release.packaging_tests:
+    type: test
+    description: Release tests install extras in clean virtual environments, build wheel and sdist artifacts, run twine check, and smoke console scripts.
+    anchors:
+      - path: tests/release/test_release_packaging.py
+        mode: explicit_region
+  evidence.architecture.strict_tach_config:
+    type: config
+    description: Tach config uses explicit source roots and forbids unassigned root modules.
+    anchors:
+      - path: tach.toml
+        mode: explicit_region
+  evidence.architecture.decision_notes:
+    type: code
+    description: Archguard decision-note gate requires architecture decision notes for Tach policy changes.
+    anchors:
+      - path: src/archguard/decision_notes.py
         mode: explicit_region
