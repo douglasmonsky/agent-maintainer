@@ -15,6 +15,7 @@ from tests.support.paths import REPO_ROOT
 STARTER_CONFIG = Path("config") / "pyproject.agent-maintainer.toml"
 
 
+# docsync:evidence.start evidence.readme.initializer_tests
 def test_core_init_writes_minimum_adoption_files(tmp_path: Path) -> None:
     """Core track writes the package-first minimum starter files."""
 
@@ -105,6 +106,9 @@ def test_hardening_init_includes_package_metadata(tmp_path: Path) -> None:
     assert "npm ci" in workflow
     assert (tmp_path / ".codex" / "hooks" / "stop_full_verify.py").exists()
     assert (tmp_path / ".claude" / "hooks" / "stop.py").exists()
+
+
+# docsync:evidence.end evidence.readme.initializer_tests
 
 
 def test_initializer_refuses_overwrite_without_force(tmp_path: Path) -> None:

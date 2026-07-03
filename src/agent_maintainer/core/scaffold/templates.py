@@ -9,6 +9,7 @@ from agent_client_hooks import templates as hook_templates
 from agent_maintainer.core.scaffold.presets import apply_preset
 from agent_maintainer.core.scaffold.template_config import STARTER_PYPROJECT
 
+# docsync:evidence.start evidence.readme.adoption_track_templates
 CORE_TRACK = "core"
 AGENT_TRACK = "agent"
 HARDENING_TRACK = "hardening"
@@ -185,3 +186,6 @@ def starter_files_for_preset(preset: str) -> tuple[StarterFile, ...]:
         TRACKS,
     )
     return (config_file, *STATIC_STARTER_FILES)
+
+
+# docsync:evidence.end evidence.readme.adoption_track_templates

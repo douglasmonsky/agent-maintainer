@@ -105,7 +105,10 @@ Deeper reads:
 <!-- docsync:object docs.readme.adoption_tracks -->
 ## Adoption Tracks
 
-`init` separates files written from policy strictness.
+`init` separates files written from policy strictness. Each track is generated
+from initializer templates so downstream repos receive the config, workflow,
+hook, and metadata files for that adoption level without vendoring Agent
+Maintainer source.
 
 | Track | Best For | Writes |
 |---|---|---|
