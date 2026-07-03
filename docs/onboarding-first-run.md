@@ -61,3 +61,4 @@ identifies, then rerun the same command.
 
 The goal is not to silence Agent Maintainer. The goal is to make the next code
 change small, tested, diagnosable, and easier to review.
+<!-- docsync:object.end docs.onboarding_first_run.overview -->

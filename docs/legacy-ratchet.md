@@ -70,3 +70,4 @@ python3 -m agent_maintainer verify --profile full \
 ```
 
 Keep suppressions narrow. The suppression budget is meant to prevent new broad ignores even when old code still needs cleanup.
+<!-- docsync:object.end docs.legacy_ratchet.overview -->

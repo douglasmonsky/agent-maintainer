@@ -75,3 +75,4 @@ verification profile.
 
 The example is intentionally tiny. It validates the context-safe repair
 loop and command shape, not an end-to-end production legacy migration.
+<!-- docsync:object.end docs.case_studies_context_safe_ratchet_repair.overview -->

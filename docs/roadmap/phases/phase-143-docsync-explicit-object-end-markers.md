@@ -1,6 +1,6 @@
 # Phase 143: DocSync Explicit Object End Markers
 
-Status: planned
+Status: complete
 
 ## Goal
 
@@ -50,6 +50,17 @@ objects more directly.
   regions.
 - DocSync guidance explains that evidence and object scopes both use explicit
   close markers.
+
+## Completed Work
+
+- Added `<!-- docsync:object.end <object-id> -->` parser support.
+- Preserved legacy implicit object parsing unless strict mode is enabled.
+- Added strict-mode diagnostics for missing, mismatched, unexpected, and
+  overlapping object end markers.
+- Added `docsync repair-object-end-markers` with dry-run and `--write` modes.
+- Enabled `require_object_end_markers` for this repository and migrated active
+  traced docs with the repair command.
+- Updated DocSync extraction guidance and tests.
 
 ## Verification
 

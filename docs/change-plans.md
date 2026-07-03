@@ -63,3 +63,4 @@ line/file limits and source-without-test heuristics for the scoped migration.
 Out-of-plan paths, expired plans, and missing required sections still fail.
 Coverage, type checks, Ruff, architecture checks, suppression budgets, security
 checks, generated guidance freshness, and doctor checks still run normally.
+<!-- docsync:object.end docs.change_plans.overview -->

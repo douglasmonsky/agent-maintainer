@@ -56,3 +56,4 @@ Optional providers receive only sanitized supporting context from selected logs
 and file outlines, passed as a single Headroom-compatible user message. They do
 not receive exact repair facts, structured manifests, ratchet fingerprints,
 change-plan scopes, or raw unredacted logs.
+<!-- docsync:object.end docs.context_compression.overview -->

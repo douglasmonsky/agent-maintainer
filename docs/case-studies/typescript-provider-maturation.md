@@ -123,3 +123,4 @@ TypeScript/JavaScript should not move toward supported status until it has:
 
 Blocking reviewability policy is a later opt-in step. It is not part of this
 maturation note.
+<!-- docsync:object.end docs.typescript_maturation.overview -->
