@@ -27,7 +27,7 @@ durable onboarding and supported-check claims to live source evidence.
 - README DocSync object markers.
 - Expanded `.docsync/trace.yml`.
 - Source evidence regions for README claims.
-- `tests/docsync/test_readme_trace.py`.
+- `tests/docsync/test_public_doc_trace.py`.
 
 ## Acceptance Criteria
 
@@ -39,7 +39,7 @@ durable onboarding and supported-check claims to live source evidence.
 ## Verification
 
 - `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m docsync check --base origin/main`
-- `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m pytest tests/docsync/test_readme_trace.py tests/docsync -q`
+- `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m pytest tests/docsync/test_public_doc_trace.py tests/docsync -q`
 - `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile precommit`
 - `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile full`
 - `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main`

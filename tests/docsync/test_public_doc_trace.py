@@ -1,4 +1,4 @@
-"""Tests README DocSync trace coverage."""
+"""Tests public DocSync trace coverage."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ README_OBJECTS = {
 README_CLAIMS = {
     "claim.readme.package_identity",
     "claim.readme.quick_start_flow",
+    "claim.readme.adoption_tracks",
     "claim.readme.run_profiles",
     "claim.readme.supported_checks",
     "claim.readme.agent_repair_loop",
@@ -88,3 +89,19 @@ def test_public_docs_claims_are_traced() -> None:
         assert claim["evidence"]
         for evidence_id in claim["evidence"]:
             assert evidence_id in evidence
+
+
+def test_public_doc_objects_have_claim_coverage() -> None:
+    """Every public traced doc object has at least one claim."""
+    trace = yaml.safe_load(Path(".docsync/trace.yml").read_text(encoding="utf-8"))
+    documents = trace["documents"]
+    objects = trace["objects"]
+    claims = trace["claims"]
+    public_objects = {
+        object_id
+        for object_id, obj in objects.items()
+        if documents[obj["document"]]["audience"] == "public"
+    }
+    claimed_objects = {claim["object"] for claim in claims.values()}
+
+    assert public_objects - claimed_objects == set()

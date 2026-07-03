@@ -241,6 +241,14 @@ claims:
     evidence:
     - evidence.readme.package_metadata
     - evidence.readme.command_registry
+  claim.readme.adoption_tracks:
+    object: docs.readme.adoption_tracks
+    text: README Adoption Tracks describe the core, agent, and hardening starter
+      tracks backed by initializer templates and package-first generated files.
+    severity: high
+    evidence:
+      - evidence.readme.adoption_track_templates
+      - evidence.readme.initializer_tests
   claim.readme.run_profiles:
     object: docs.readme.run_profiles
     text: README lists the stable verifier profile command surface for precommit,
@@ -396,6 +404,20 @@ evidence:
     anchors:
     - path: src/agent_maintainer/cli.py
       mode: explicit_region
+  evidence.readme.adoption_track_templates:
+    type: code
+    description: Initializer templates define core, agent, hardening tracks and
+      generated files per track.
+    anchors:
+      - path: src/agent_maintainer/core/scaffold/templates.py
+        mode: explicit_region
+  evidence.readme.initializer_tests:
+    type: test
+    description: Initializer tests verify core, agent, hardening generated files
+      and package-first onboarding behavior.
+    anchors:
+      - path: tests/packaging/test_initializer.py
+        mode: explicit_region
   evidence.readme.catalog_composition:
     type: code
     description: Main check catalog composes reviewability, provider, security, docs/config,

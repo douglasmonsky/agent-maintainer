@@ -13,7 +13,7 @@ architecture policy.
 
 - Confirm `.docsync/trace.yml` includes claims for agent hooks, context
   compression, release checklist, and architecture policy docs.
-- Confirm `tests/docsync/test_readme_trace.py` ratchets those objects and claims.
+- Confirm `tests/docsync/test_public_doc_trace.py` ratchets those objects and claims.
 - Update the roadmap so completed operational-doc tracing is not still listed as
   future work.
 - Keep this phase documentation-only; no DocSync runtime behavior changes.
@@ -39,6 +39,6 @@ Run:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m docsync check
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m pytest tests/docsync/test_readme_trace.py -q
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m pytest tests/docsync/test_public_doc_trace.py -q
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile precommit
 ```
