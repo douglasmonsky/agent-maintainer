@@ -32,6 +32,14 @@ documents:
     path: docs/provider-status.md
     title: Ecosystem Provider Status
     audience: public
+  docs.typescript_provider:
+    path: docs/typescript-javascript-provider.md
+    title: Experimental TypeScript/JavaScript Provider
+    audience: public
+  docs.typescript_maturation:
+    path: docs/case-studies/typescript-provider-maturation.md
+    title: TypeScript Provider Maturation Notes
+    audience: public
   docs.agent_client_hooks:
     path: docs/agent-client-hooks.md
     title: Agent Client Hooks
@@ -161,6 +169,22 @@ objects:
     heading:
       level: 1
       text: Ecosystem Provider Status
+  docs.typescript_provider.overview:
+    document: docs.typescript_provider
+    kind: heading_section
+    path: docs/typescript-javascript-provider.md
+    marker: docs.typescript_provider.overview
+    heading:
+      level: 1
+      text: Experimental TypeScript/JavaScript Provider
+  docs.typescript_maturation.overview:
+    document: docs.typescript_maturation
+    kind: heading_section
+    path: docs/case-studies/typescript-provider-maturation.md
+    marker: docs.typescript_maturation.overview
+    heading:
+      level: 1
+      text: TypeScript Provider Maturation Notes
   docs.agent_client_hooks.overview:
     document: docs.agent_client_hooks
     kind: heading_section
@@ -330,6 +354,32 @@ claims:
     evidence:
     - evidence.readme.catalog_composition
     - evidence.readme.python_provider_checks
+  claim.docs.typescript_provider_explicit_commands:
+    object: docs.typescript_provider.overview
+    text: TypeScript provider docs describe disabled-by-default explicit
+      configured command checks and profile configuration without package-manager
+      autodetection.
+    severity: high
+    evidence:
+      - evidence.typescript.provider_commands
+      - evidence.typescript.provider_command_tests
+  claim.docs.typescript_provider_repair_facts:
+    object: docs.typescript_provider.overview
+    text: TypeScript provider docs describe structured summaries and exact repair
+      facts for tsc, ESLint JSON, and Jest-compatible JSON outputs with malformed
+      output fallback.
+    severity: medium
+    evidence:
+      - evidence.typescript.structured_output_tests
+      - evidence.typescript.repair_fact_tests
+  claim.docs.typescript_maturation_fixture_evidence:
+    object: docs.typescript_maturation.overview
+    text: TypeScript maturation notes summarize fixture evidence for source/test,
+      source-heavy, generated, dependency/config, and suppression scenarios while
+      keeping TypeScript reviewability advisory-only.
+    severity: high
+    evidence:
+      - evidence.typescript.reviewability_fixture_tests
   claim.docs.agent_hooks_install_surface:
     object: docs.agent_client_hooks.overview
     text: Agent hook docs describe Codex and Claude Code hook installation, repo/user scope behavior, and configured-repo-only hook execution.
@@ -457,6 +507,41 @@ evidence:
     description: Verifier writes run-scoped artifacts and LAST_FAILURE.md latest pointer.
     anchors:
       - path: src/agent_maintainer/verify/artifacts.py
+        mode: explicit_region
+  evidence.typescript.provider_commands:
+    type: code
+    description: TypeScript provider builds only explicitly configured commands
+      and optional skips when commands are empty.
+    anchors:
+      - path: src/agent_maintainer/ecosystems/typescript/provider.py
+        mode: explicit_region
+  evidence.typescript.provider_command_tests:
+    type: test
+    description: TypeScript provider tests cover disabled default behavior,
+      explicit command checks, optional skips, and profile configuration.
+    anchors:
+      - path: tests/ecosystems/test_typescript_provider.py
+        mode: explicit_region
+  evidence.typescript.structured_output_tests:
+    type: test
+    description: TypeScript structured-output tests cover tsc, ESLint JSON,
+      Jest-compatible JSON, and malformed output fallback summaries.
+    anchors:
+      - path: tests/core/test_typescript_structured_output.py
+        mode: explicit_region
+  evidence.typescript.repair_fact_tests:
+    type: test
+    description: TypeScript exact repair-fact tests cover tsc, ESLint JSON,
+      Jest-compatible JSON, and malformed output fallback facts.
+    anchors:
+      - path: tests/context/test_typescript_exact_facts.py
+        mode: explicit_region
+  evidence.typescript.reviewability_fixture_tests:
+    type: test
+    description: TypeScript reviewability fixtures cover source/test,
+      source-heavy, generated, dependency/config, and suppression scenarios.
+    anchors:
+      - path: tests/assess/test_typescript_reviewability_fixtures.py
         mode: explicit_region
   evidence.agent_hooks.generated_templates:
     type: code

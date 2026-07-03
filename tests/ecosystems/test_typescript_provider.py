@@ -10,6 +10,7 @@ from agent_maintainer.ecosystems.typescript.provider import TypeScriptProvider
 from agent_maintainer.models import CI_PROFILE, FULL_PROFILE, PRECOMMIT_PROFILE
 
 
+# docsync:evidence.start evidence.typescript.provider_command_tests
 def test_typescript_provider_is_disabled_by_default() -> None:
     """Default Python behavior does not grow TypeScript checks."""
     assert TypeScriptProvider().checks(_context(MaintainerConfig())) == []
@@ -75,3 +76,6 @@ def _context(config: MaintainerConfig) -> EcosystemCheckContext:
         compare_branch="origin/main",
         package_paths=("src",),
     )
+
+
+# docsync:evidence.end evidence.typescript.provider_command_tests

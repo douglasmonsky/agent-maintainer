@@ -61,6 +61,7 @@ COVERAGE_ADDED = 20
 NO_LINES = 0
 
 
+# docsync:evidence.start evidence.typescript.reviewability_fixture_tests
 def test_ts_source_tests_low_noise(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -197,6 +198,9 @@ def _build_report(
         base_ref=BASE_REF,
         staged=False,
     )
+
+
+# docsync:evidence.end evidence.typescript.reviewability_fixture_tests
 
 
 @dataclass(frozen=True)
