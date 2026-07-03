@@ -1,17 +1,17 @@
 # Agent Maintainer Roadmap Blueprint
 
-This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as recovery checklist. Do not re-expand this index into a monolithic blueprint.
+This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as the recovery checklist. Do not re-expand index into monolithic blueprint.
 
 ## Overview
 
 - [Mission, baseline, architecture target, execution rules](overview.md)
 - [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md)
-- [Final Definition of Done](final-definition-of-done.md)
+- [Final Definition Done](final-definition-of-done.md)
 
 ## Phases
 
 | Phase | Detailed Spec |
-|---:|---|
+| ---: | --- |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
 | 2 | [ADR for Test Intelligence Ladder](phases/phase-02-adr-for-test-intelligence-ladder.md) |
 | 3 | [Public Roadmap and Docs Stubs](phases/phase-03-public-roadmap-and-docs-stubs.md) |
@@ -115,3 +115,14 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 118 | [Agent Context Pack Rendering Extraction](phases/phase-118-agent-context-pack-rendering.md) |
 | 119 | [Agent Context Compression Extraction](phases/phase-119-agent-context-compression.md) |
 | 120 | [Public Docs DocSync Ratchet](phases/phase-120-docsync-public-docs-ratchet.md) |
+| 121 | [Operational DocSync Trace Closure](phases/phase-121-operational-docsync-trace-closure.md) |
+| 122 | [Provider-Specific DocSync Evidence](phases/phase-122-provider-specific-docsync-evidence.md) |
+| 123 | [Internal Package Refactor Docs Closure](phases/phase-123-internal-package-refactor-docs-closure.md) |
+| 124 | [DocSync Foundation Roadmap Closure](phases/phase-124-docsync-foundation-roadmap-closure.md) |
+| 125 | [Roadmap Blueprint Index Repair](phases/phase-125-roadmap-blueprint-index-repair.md) |
+
+## Future Work
+
+- [Future Work: External Case Studies and Measured Proof Harness](future-work/external-case-studies-and-measured-proof-harness.md)
+- [Future Work: Monorepo / Multi-Package Support](future-work/monorepo-multi-package-support.md)
+- [Future Work: Team Policy Templates](future-work/team-policy-templates.md)

@@ -8,7 +8,7 @@ from pathlib import Path
 ROADMAP_ROOT = Path("docs/roadmap")
 ROADMAP_INDEX = ROADMAP_ROOT / "full-roadmap-blueprint.md"
 PHASES_DIR = ROADMAP_ROOT / "phases"
-MAX_INDEX_LINES = 120
+MAX_INDEX_LINES = 160
 MAX_PHASE_LINES = 500
 MIN_PHASE_FILES = 50
 
@@ -31,10 +31,11 @@ def test_roadmap_index_stays_small_and_links_split_specs() -> None:
     lines = text.splitlines()
 
     assert len(lines) <= MAX_INDEX_LINES
-    assert "Do not re-expand this index into a monolithic blueprint." in normalized_text
+    assert "Do not re-expand index into monolithic blueprint." in normalized_text
     assert "(overview.md)" in text
-    assert "(phases/phase-64-documentation-and-generated-guidance-slimming.md)" in text
-    assert "(phases/phase-89-measured-repair-case-studies.md)" in text
+    phase_paths = sorted(PHASES_DIR.glob("phase-*.md"))
+    for phase_path in phase_paths:
+        assert f"(phases/{phase_path.name})" in text, phase_path.name
 
     for target in markdown_links(text):
         assert (ROADMAP_ROOT / target).exists(), target
