@@ -51,6 +51,15 @@ without source-heavy or source-without-test findings. At least one external
 real-repo comparison is still needed before any promotion beyond advisory
 output.
 
+Phase 139 added one external public-repository comparison against
+`vitest-dev/eslint-plugin-vitest` commit
+`7c697f8a53d7d7551b00ef11217d58cd45a0cf7d`, compared with its parent
+`8fff9690c0c4008f93a636a62425dbe520ec7ce7`. The public reviewability command
+classified one TypeScript source file and one TypeScript test file, reported
+zero unclassified files, and produced zero advisory findings. This is useful
+signal, not a promotion by itself: broader repository samples are still needed
+before TypeScript reviewability becomes blocking or supported.
+
 ## Advisory Threshold Evidence
 
 Current fixture evidence supports considering advisory thresholds for:
@@ -96,7 +105,8 @@ TypeScript/JavaScript should not move toward supported status until it has:
 
 - fixture and temporary-Git evidence for common npm, pnpm, Vite, and Vitest
   project shapes;
-- at least one real-repo comparison pass with acceptable noise;
+- at least one external real-repo comparison pass with acceptable noise;
+- broader external comparisons across more repository shapes;
 - stable explicit-command behavior;
 - clear doctor messages for missing commands and executables;
 - structured repair facts only for stable outputs;

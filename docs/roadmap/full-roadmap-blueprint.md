@@ -133,6 +133,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 136 | [TypeScript Advisory Threshold Config](phases/phase-136-typescript-advisory-threshold-config.md) |
 | 137 | [TypeScript Unsupported Surface Docs](phases/phase-137-typescript-unsupported-surface-docs.md) |
 | 138 | [TypeScript Package Shape Evidence](phases/phase-138-typescript-package-shape-evidence.md) |
+| 139 | [TypeScript External Real-Repo Comparison](phases/phase-139-typescript-external-real-repo-comparison.md) |
 
 ## Future Work
 

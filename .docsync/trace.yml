@@ -705,12 +705,13 @@ claims:
       - evidence.typescript.advisory_threshold_config_tests
   claim.docs.typescript_maturation_real_repo_evidence:
     object: docs.typescript_maturation.overview
-    text: TypeScript maturation notes describe real Git repository reviewability
+    text: TypeScript maturation notes describe temporary and external real Git repository reviewability
       evidence for low-noise source-plus-test and source-heavy source-only
       advisory scenarios.
     severity: high
     evidence:
       - evidence.typescript.real_repo_reviewability_tests
+      - evidence.typescript.external_reviewability_comparison
   claim.docs.agent_hooks_install_surface:
     object: docs.agent_client_hooks.overview
     text: Agent hook docs describe Codex and Claude Code hook installation, repo/user scope behavior, and configured-repo-only hook execution.
@@ -1070,6 +1071,13 @@ evidence:
       source-heavy, suppression, npm/Vite/Vitest, and pnpm config/lock shapes.
     anchors:
       - path: tests/assess/test_typescript_real_repo_reviewability.py
+        mode: explicit_region
+  evidence.typescript.external_reviewability_comparison:
+    type: test
+    description: External TypeScript reviewability comparison fixture records a
+      public eslint-plugin-vitest source/test diff with zero advisory findings.
+    anchors:
+      - path: tests/assess/test_typescript_external_reviewability_fixture.py
         mode: explicit_region
   evidence.provider_registry.active_providers:
     type: test

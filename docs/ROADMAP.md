@@ -1036,6 +1036,20 @@ Completed work:
 
 - [x] Phase 138: TypeScript Package Shape Evidence
 
+## Completed: TypeScript External Real-Repo Comparison
+
+Record one external public TypeScript/JavaScript repository comparison for
+`assess reviewability` so TypeScript provider maturation is not based only on
+synthetic fixture repositories.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-139-typescript-external-real-repo-comparison.md`](roadmap/phases/phase-139-typescript-external-real-repo-comparison.md)
+
+Completed work:
+
+- [x] Phase 139: TypeScript External Real-Repo Comparison
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
