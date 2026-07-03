@@ -1008,6 +1008,20 @@ Completed work:
 
 - [x] Phase 136: TypeScript Advisory Threshold Config
 
+## Completed: TypeScript Unsupported Surface Docs
+
+Make the experimental TypeScript/JavaScript provider's unsupported package
+manager, runner, framework, coverage, dependency, and security surfaces
+explicit so users do not mistake experimental support for feature parity.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-137-typescript-unsupported-surface-docs.md`](roadmap/phases/phase-137-typescript-unsupported-surface-docs.md)
+
+Completed work:
+
+- [x] Phase 137: TypeScript Unsupported Surface Docs
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
