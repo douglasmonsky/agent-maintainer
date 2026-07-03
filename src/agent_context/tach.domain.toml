@@ -9,6 +9,25 @@ path = "budget"
 depends_on = ["models"]
 
 [[modules]]
+path = "compression"
+depends_on = []
+
+[[modules]]
+path = "compression.backends"
+depends_on = [
+  "compression.headroom",
+  "compression.models",
+]
+
+[[modules]]
+path = "compression.headroom"
+depends_on = ["compression.models"]
+
+[[modules]]
+path = "compression.models"
+depends_on = []
+
+[[modules]]
 path = "estimate"
 depends_on = [
   "failures",

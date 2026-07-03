@@ -8,12 +8,8 @@ from pathlib import Path
 from typing import Any
 
 from agent_context import pack_rendering
-from agent_maintainer.context.compression import (
-    backends as compression_backends,
-)
-from agent_maintainer.context.compression import (
-    headroom as headroom_backend,
-)
+from agent_context.compression import backends as compression_backends
+from agent_context.compression import headroom as headroom_backend
 from agent_maintainer.context.pack import builder as packs
 from agent_maintainer.core.config import load_config
 
