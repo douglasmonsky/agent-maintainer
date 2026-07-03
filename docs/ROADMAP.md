@@ -725,6 +725,20 @@ Completed work:
 
 - [x] Phase 115: Agent Client Hooks Internal Package Extraction
 
+## Completed: Internal Package Boundary Regression Tests
+
+Extracted internal packages should have executable dependency-direction checks
+in addition to Tach domain contracts. This keeps future extraction work from
+quietly importing product orchestration back into reusable packages.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-116-internal-package-boundary-tests.md`](roadmap/phases/phase-116-internal-package-boundary-tests.md)
+
+Completed work:
+
+- [x] Phase 116: Internal Package Boundary Regression Tests
+
 ## Future Work
 
 - Full DocSync dogfood ratchet: after the extraction sequence settles, review
