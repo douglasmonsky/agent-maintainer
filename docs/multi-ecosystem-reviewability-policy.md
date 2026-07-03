@@ -66,6 +66,12 @@ behavior.
 This model records evidence for future policy adapters. It does not promise
 that all roles already affect blocking gates.
 
+`python -m agent_maintainer assess file-baselines` reports provider-neutral
+file group facts from explicit include/exclude globs. It covers simple facts
+such as matched files, changed files, changed lines, physical lines, and
+nonblank lines across docs, config, tests, TSX, YAML, TOML, or other configured
+groups. It does not perform import graph or language architecture analysis.
+
 ## Suppression Classification
 
 Suppression classifiers remain ecosystem-specific. Agent Maintainer does not
@@ -110,9 +116,9 @@ change-budget yet. Cross-ecosystem aggregation should progress in this order:
 ## File Length And Structure Cohesion
 
 Keep file-length and structure-cohesion blocking behavior Python-only for now.
-Future TypeScript/JavaScript support should start advisory because file shapes
-vary across framework components, generated code, configuration files, and test
-fixtures.
+Future TypeScript/JavaScript or another ecosystem should move through
+provider-neutral file-baseline evidence first, then provider-specific policy
+adapters when language semantics matter.
 
 ## Next Direction
 

@@ -349,6 +349,40 @@ check_jsonschema_args = [
   ".github/workflows/publish.yml",
 ]
 
+[tool.agent_maintainer.file_baselines]
+enabled = true
+mode = "advisory"
+
+[tool.agent_maintainer.file_baselines.groups.docs]
+include = ["docs/**/*.md", "*.md"]
+role = "docs"
+max_physical_lines = 1200
+max_nonblank_lines = 900
+changed_file_warn = 20
+changed_line_warn = 1200
+
+[tool.agent_maintainer.file_baselines.groups.config]
+include = [
+  "*.toml",
+  "config/**/*.txt",
+  ".github/**/*.yml",
+  ".github/**/*.yaml",
+  ".docsync/**/*.yml",
+]
+role = "config"
+max_physical_lines = 1500
+max_nonblank_lines = 1500
+changed_file_warn = 12
+changed_line_warn = 1200
+
+[tool.agent_maintainer.file_baselines.groups.tests]
+include = ["tests/**/*.py"]
+role = "test"
+max_physical_lines = 500
+max_nonblank_lines = 400
+changed_file_warn = 20
+changed_line_warn = 1200
+
 [tool.agent_maintainer.diagnostics]
 enabled = true
 log_dir = ".verify-logs"
