@@ -21,6 +21,7 @@ BROAD_SUPPRESSION = "broad-suppression"
 TYPESCRIPT_SOURCE_LINES = 7
 
 
+# docsync:evidence.start evidence.multi_ecosystem_reviewability.advisory_suppression_tests
 def test_provider_summaries_and_findings(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -50,6 +51,9 @@ def test_json_and_text_render_advisories(
     assert payload["advisory_findings"][0]["kind"] == BROAD_SUPPRESSION
     assert "Provider summaries:" in text
     assert "Advisory findings:" in text
+
+
+# docsync:evidence.end evidence.multi_ecosystem_reviewability.advisory_suppression_tests
 
 
 def _build_report(

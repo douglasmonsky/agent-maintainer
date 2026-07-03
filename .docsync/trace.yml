@@ -724,6 +724,44 @@ claims:
     evidence:
       - evidence.architecture.strict_tach_config
       - evidence.architecture.decision_notes
+  claim.docs.agent_guidance_compact_sidecar:
+    object: docs.agent_maintainer_guidance.overview
+    text: Agent guidance docs describe compact generated sidecar behavior, active gates only, quiet agent workflow, verification cadence, and failure expansion.
+    severity: high
+    evidence:
+      - evidence.agent_guidance.compact_sidecar_tests
+  claim.docs.setup_advisor_recommendations:
+    object: docs.setup_advisor.overview
+    text: Setup advisor docs describe advisory local recommendations, TypeScript command mapping from existing scripts, and dry-run first adoption flow.
+    severity: medium
+    evidence:
+      - evidence.setup_advisor.recommendation_tests
+  claim.docs.technical_debt_score_advisory:
+    object: docs.technical_debt_score.overview
+    text: Technical Debt Score docs describe advisory score artifacts, category evidence, below-ten excellent dogfooding semantics, and mutation-ratchet evidence.
+    severity: high
+    evidence:
+      - evidence.technical_debt.score_tests
+  claim.docs.mutation_testing_targeted_workflow:
+    object: docs.mutation_testing.overview
+    text: Mutation testing docs describe targeted manual Mutmut gating, retained mutation result lookup, and advisory deep-sweep execution artifacts.
+    severity: high
+    evidence:
+      - evidence.mutation_testing.results_cli_tests
+      - evidence.mutation_testing.sweep_executor_tests
+  claim.docs.context_safety_pointer_first_packs:
+    object: docs.context_safety.overview
+    text: Context safety docs describe pointer-first context packs by default and full Markdown output only behind explicit expansion.
+    severity: high
+    evidence:
+      - evidence.context_safety.pointer_first_pack_tests
+  claim.docs.multi_ecosystem_reviewability_advisory:
+    object: docs.multi_ecosystem_reviewability_policy.overview
+    text: Multi-ecosystem reviewability policy docs describe advisory provider classification, dependency-file retention, and advisory suppression findings.
+    severity: high
+    evidence:
+      - evidence.multi_ecosystem_reviewability.assessment_tests
+      - evidence.multi_ecosystem_reviewability.advisory_suppression_tests
 evidence:
   evidence.docsync.domain_contract:
     type: code
@@ -879,6 +917,54 @@ evidence:
       absent from active config.
     anchors:
       - path: tests/catalogs/test_provider_registry.py
+        mode: explicit_region
+  evidence.agent_guidance.compact_sidecar_tests:
+    type: test
+    description: Generated guidance tests assert compact active-gate output, quiet workflow reminders, deterministic rendering, and freshness checking.
+    anchors:
+      - path: tests/core/test_guidance.py
+        mode: explicit_region
+  evidence.setup_advisor.recommendation_tests:
+    type: test
+    description: Setup advisor tests assert advisory TypeScript script recommendations and avoid false-positive TypeScript provider advice.
+    anchors:
+      - path: tests/assess/test_setup_advisor.py
+        mode: explicit_region
+  evidence.technical_debt.score_tests:
+    type: test
+    description: Technical debt tests assert advisory score artifacts, mutation-ratchet confidence, and excellent below-ten scoring.
+    anchors:
+      - path: tests/assess/test_debt_score.py
+        mode: explicit_region
+  evidence.mutation_testing.results_cli_tests:
+    type: test
+    description: Mutation result tests assert retained run-scoped and sweep artifacts remain readable after live mutants cleanup.
+    anchors:
+      - path: tests/test_intel/test_mutation_results_cli.py
+        mode: explicit_region
+  evidence.mutation_testing.sweep_executor_tests:
+    type: test
+    description: Mutation sweep executor tests assert temp-worktree config patching, raw log capture, artifacts, and promotion-readiness stats.
+    anchors:
+      - path: tests/test_intel/test_mutation_sweep_executor.py
+        mode: explicit_region
+  evidence.context_safety.pointer_first_pack_tests:
+    type: test
+    description: Context pack tests assert pointer-first default output and full Markdown only behind explicit expansion.
+    anchors:
+      - path: tests/context/test_packs.py
+        mode: explicit_region
+  evidence.multi_ecosystem_reviewability.assessment_tests:
+    type: test
+    description: Reviewability assessment tests assert provider-aware advisory grouping, JSON output, and dependency-file retention.
+    anchors:
+      - path: tests/assess/test_reviewability_assessment.py
+        mode: explicit_region
+  evidence.multi_ecosystem_reviewability.advisory_suppression_tests:
+    type: test
+    description: Reviewability advisory tests assert TypeScript provider summaries and broad-suppression advisory findings.
+    anchors:
+      - path: tests/assess/test_reviewability_advisories.py
         mode: explicit_region
   evidence.agent_hooks.generated_templates:
     type: code

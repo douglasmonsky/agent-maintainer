@@ -965,6 +965,21 @@ Completed work:
 
 - [x] Phase 133: Provider DocSync Evidence Ratchet
 
+## Completed: Critical Active Docs DocSync Coverage
+
+Extend DocSync dogfooding beyond first-touch and provider pages by adding
+evidence-backed claims for high-risk active docs that guide agent behavior,
+setup recommendations, debt scoring, mutation workflows, context safety, and
+multi-ecosystem reviewability.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-134-critical-active-docsync-coverage.md`](roadmap/phases/phase-134-critical-active-docsync-coverage.md)
+
+Completed work:
+
+- [x] Phase 134: Critical Active Docs DocSync Coverage
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
