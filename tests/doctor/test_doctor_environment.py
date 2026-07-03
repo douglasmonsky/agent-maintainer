@@ -214,6 +214,18 @@ def test_dupe_artifacts_warn_for_copy_names(tmp_path: Path) -> None:
     assert ".verify-logs/manifest copy 2.json" in result.message
 
 
+def test_dupe_artifacts_warn_for_git_metadata_copies(tmp_path: Path) -> None:
+    """Doctor warns local Git metadata copy artifacts without scanning internals."""
+    duplicate = tmp_path / ".git" / "index 2"
+    duplicate.parent.mkdir(parents=True)
+    duplicate.write_text("duplicate index", encoding=ENCODING)
+
+    result = maintainer_doctor_setup.check_duplicate_generated_artifacts(tmp_path)
+
+    assert result.status == maintainer_doctor.WARNING
+    assert ".git/index 2" in result.message
+
+
 def test_dupe_artifacts_warn_for_python_bytecode_cache(tmp_path: Path) -> None:
     """Doctor warns generated Python bytecode caches under scanned roots."""
     cache_dir = tmp_path / "src" / "agent_maintainer" / "__pycache__"
