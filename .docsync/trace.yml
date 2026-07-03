@@ -679,6 +679,14 @@ claims:
     evidence:
       - evidence.typescript.structured_output_tests
       - evidence.typescript.repair_fact_tests
+  claim.docs.typescript_provider_unsupported_surface:
+    object: docs.typescript_provider.overview
+    text: TypeScript provider docs document unsupported package managers,
+      test runners, frameworks, coverage, dependency, security, mutation,
+      and blocking reviewability surfaces.
+    severity: medium
+    evidence:
+      - evidence.typescript.provider_docs_maturity_tests
   claim.docs.typescript_maturation_fixture_evidence:
     object: docs.typescript_maturation.overview
     text: TypeScript maturation notes summarize fixture evidence for source/test,
@@ -1019,6 +1027,13 @@ evidence:
       explicit command checks, optional skips, and profile configuration.
     anchors:
       - path: tests/ecosystems/test_typescript_provider.py
+        mode: explicit_region
+  evidence.typescript.provider_docs_maturity_tests:
+    type: test
+    description: First-touch docs tests pin TypeScript provider maturity,
+      unsupported surface, and advisory-only language.
+    anchors:
+      - path: tests/docs/test_first_touch_docs.py
         mode: explicit_region
   evidence.typescript.structured_output_tests:
     type: test

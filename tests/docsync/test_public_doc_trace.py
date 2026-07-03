@@ -57,6 +57,7 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.provider_status_no_active_go",
     "claim.docs.typescript_provider_explicit_commands",
     "claim.docs.typescript_provider_repair_facts",
+    "claim.docs.typescript_provider_unsupported_surface",
     "claim.docs.typescript_maturation_fixture_evidence",
     "claim.docs.typescript_maturation_real_repo_evidence",
     "claim.docs.agent_hooks_install_surface",
