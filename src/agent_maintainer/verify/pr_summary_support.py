@@ -1,138 +1,19 @@
-"""Support helpers for GitHub PR verification summaries."""
+"""Compatibility shim for PR summary support helpers."""
 
-from __future__ import annotations
+from agent_run_artifacts import pr_summary_support
 
-from typing import TYPE_CHECKING
-
-from agent_context.budget import bound_text
-from agent_context.models import ContextBudget
-from agent_maintainer.models import CheckResult
-
-if TYPE_CHECKING:
-    from agent_maintainer.verify.artifacts import RunContext
-
-MAX_PR_SUMMARY_CHARS = 12_000
-MAX_FAILURES = 5
-MAX_OUTPUT_LINES = 4
-MAX_SUMMARY_LINES = 180
-
-
-def summary_expansion_commands(check_name: str) -> list[str]:
-    """Return stable context expansion commands for one failed check."""
-
-    return [
-        f"python -m agent_maintainer context failures --check {check_name} --limit 20",
-        f"python -m agent_maintainer context log {check_name} --tail 120",
-    ]
-
-
-def summary_rerun_command(context: RunContext) -> str:
-    """Return canonical command to rerun verifier profile."""
-
-    command = [
-        "python3",
-        "-m",
-        "agent_maintainer",
-        "verify",
-        "--profile",
-        context.profile,
-        "--base-ref",
-        context.base_ref,
-        "--compare-branch",
-        context.compare_branch,
-    ]
-    if context.staged:
-        command.append("--staged")
-    return " ".join(command)
-
-
-def failed_results(results: list[CheckResult]) -> list[CheckResult]:
-    """Return failed check results."""
-
-    return [result for result in results if not result.passed]
-
-
-def matching_results(
-    results: list[CheckResult],
-    names: tuple[str, ...],
-) -> list[CheckResult]:
-    """Return results matching any supplied name fragment."""
-
-    return [result for result in results if any(name in result.name for name in names)]
-
-
-def first_result(results: list[CheckResult], name: str) -> CheckResult | None:
-    """Return first result by exact name."""
-
-    return next((result for result in results if result.name == name), None)
-
-
-def result_status_lines(results: list[CheckResult]) -> list[str]:
-    """Return compact result status bullets."""
-
-    return [f"- `{result.name}`: `{result_state(result)}`" for result in results]
-
-
-def result_state(result: CheckResult) -> str:
-    """Return compact result state for summary."""
-
-    if result.skipped:
-        return result.skip_status or "skipped"
-    if not result.passed:
-        return "failed"
-    if result.warning:
-        return "warning"
-    return "passed"
-
-
-def compact_output_bullets(output: str) -> list[str]:
-    """Return compact output as markdown bullet lines."""
-
-    return [f"- {line}" for line in compact_output_lines(output)]
-
-
-def compact_output_lines(output: str) -> list[str]:
-    """Return compact non-empty output lines."""
-
-    lines = [line.strip() for line in output.splitlines() if line.strip()]
-    if not lines:
-        return []
-    return lines[:MAX_OUTPUT_LINES]
-
-
-def bounded_summary(text: str, context: RunContext) -> str:
-    """Return bounded summary markdown."""
-
-    max_chars = min(MAX_PR_SUMMARY_CHARS, context.config.context_last_failure_budget_chars)
-    bounded = bound_text(
-        text,
-        ContextBudget(
-            max_chars=max_chars,
-            max_items=context.config.context_max_failure_items,
-            max_lines=MAX_SUMMARY_LINES,
-        ),
-    )
-    if not bounded.truncated:
-        return f"{bounded.text}\n"
-    note = (
-        "\n\n... PR summary omitted "
-        f"{bounded.omitted_chars} chars and {bounded.omitted_lines} lines. "
-        "See `.verify-logs/manifest.json` and `.verify-logs/LAST_FAILURE.md`."
-    )
-    summary_text = bounded.text.rstrip()
-    preserved = preserved_expansion_footer(text, summary_text)
-    return f"{summary_text}{note}{preserved}\n"
-
-
-def preserved_expansion_footer(original_text: str, bounded_text: str) -> str:
-    """Return command footer when truncation hides repair commands."""
-    commands = [
-        line.strip()
-        for line in original_text.splitlines()
-        if "python -m agent_maintainer context" in line and line.strip()
-    ]
-    hidden_commands = [command for command in commands if command not in bounded_text]
-    if not hidden_commands:
-        return ""
-    command_lines = "\n".join(hidden_commands)
-    return f"\n\n## Preserved Expansion Commands\n{command_lines}"
+MAX_PR_SUMMARY_CHARS = pr_summary_support.MAX_PR_SUMMARY_CHARS
+MAX_FAILURES = pr_summary_support.MAX_FAILURES
+MAX_OUTPUT_LINES = pr_summary_support.MAX_OUTPUT_LINES
+MAX_SUMMARY_LINES = pr_summary_support.MAX_SUMMARY_LINES
+summary_expansion_commands = pr_summary_support.summary_expansion_commands
+summary_rerun_command = pr_summary_support.summary_rerun_command
+failed_results = pr_summary_support.failed_results
+matching_results = pr_summary_support.matching_results
+first_result = pr_summary_support.first_result
+result_status_lines = pr_summary_support.result_status_lines
+result_state = pr_summary_support.result_state
+compact_output_bullets = pr_summary_support.compact_output_bullets
+compact_output_lines = pr_summary_support.compact_output_lines
+bounded_summary = pr_summary_support.bounded_summary
+preserved_expansion_footer = pr_summary_support.preserved_expansion_footer

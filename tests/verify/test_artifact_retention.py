@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from agent_maintainer.verify import history as verify_history
+from agent_run_artifacts import history as verify_history
 
 ENCODING = "utf-8"
 RUN_TIMESTAMP_LENGTH = len("20260630T090733123456Z")

@@ -1,6 +1,6 @@
 # Phase 113: Agent Run Artifacts Internal Package Extraction
 
-Status: planned
+Status: complete
 
 ## Goal
 
@@ -106,6 +106,16 @@ run-artifact ownership next without forcing `agent_run_artifacts` to import
 - `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main`
 - `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile security`
 - `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile manual`
+
+## Focused Evidence
+
+- `agent_run_artifacts` owns artifact manifest payloads, run history helpers,
+  Git-state helpers, PR summary helpers, and timing helpers without importing
+  `agent_maintainer`.
+- Compatibility shims remain under `agent_maintainer.verify.*`.
+- Focused artifact/report tests pass, including old-path compatibility tests.
+- Ruff, focused source Pyright, Tach exact, generated guidance, and change-plan
+  checks pass locally before final verifier profiles.
 
 ## Notes For Future Codex Tasks
 

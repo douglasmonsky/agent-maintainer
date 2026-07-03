@@ -7,8 +7,9 @@ from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.models import SKIP_STATUS_MISSING_OPTIONAL, CheckResult
-from agent_maintainer.verify import artifact_manifest, artifacts
-from agent_maintainer.verify.history import RUNS_DIR_NAME
+from agent_maintainer.verify import artifact_adapters, artifacts
+from agent_run_artifacts import artifact_manifest
+from agent_run_artifacts.history import RUNS_DIR_NAME
 
 DEFAULT_COVERAGE_FLOOR = 80
 
@@ -18,10 +19,10 @@ def run_context(
     *,
     config: MaintainerConfig | None = None,
     run_id: str = "20260625T100000Z-full-test",
-) -> artifacts.RunContext:
+) -> artifact_adapters.RunContext:
     """Return a stable verifier run context for artifact tests."""
 
-    return artifacts.RunContext(
+    return artifact_adapters.RunContext(
         repo_root=repo_root,
         profile="full",
         base_ref="HEAD",
@@ -54,9 +55,9 @@ def test_artifact_manifest_payload_and_status_helpers(tmp_path: Path) -> None:
     )
 
     payload = artifact_manifest.check_payload(
-        failed,
+        artifact_adapters.artifact_check_result(failed),
         tmp_path,
-        MaintainerConfig(),
+        artifact_adapters.artifact_config(MaintainerConfig()),
         context_log_dir=".verify-logs/runs/run-id",
     )
 
@@ -71,8 +72,14 @@ def test_artifact_manifest_payload_and_status_helpers(tmp_path: Path) -> None:
             ".verify-logs/runs/run-id log ruff --tail 120"
         ),
     ]
-    assert artifact_manifest.result_status(warning) == "warning"
-    assert artifact_manifest.result_status(skipped) == SKIP_STATUS_MISSING_OPTIONAL
+    assert (
+        artifact_manifest.result_status(artifact_adapters.artifact_check_result(warning))
+        == "warning"
+    )
+    assert (
+        artifact_manifest.result_status(artifact_adapters.artifact_check_result(skipped))
+        == SKIP_STATUS_MISSING_OPTIONAL
+    )
 
 
 def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -> None:

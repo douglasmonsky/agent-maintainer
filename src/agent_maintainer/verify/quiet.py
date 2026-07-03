@@ -22,7 +22,6 @@ from pathlib import Path
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core.args import apply_cli_overrides, parse_args
 from agent_maintainer.core.config import load_config
-from agent_maintainer.verify.history import build_run_id, run_snapshot_dir
 from agent_maintainer.verify.locking import VerificationLock, build_fingerprint
 from agent_maintainer.verify.result_summary import (
     apply_optional_skip_policy,
@@ -34,6 +33,7 @@ from agent_maintainer.verify.run_steps import (
     log_dir_for,
     write_artifacts_if_enabled,
 )
+from agent_run_artifacts.history import build_run_id, run_snapshot_dir
 
 
 def main(argv: list[str]) -> int:

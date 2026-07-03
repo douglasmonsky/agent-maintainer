@@ -5,31 +5,38 @@
 depends_on = []
 
 [[modules]]
+path = "artifact_adapters"
+depends_on = [
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.models",
+  "//agent_run_artifacts.models",
+]
+
+[[modules]]
 path = "artifacts"
 depends_on = [
-"artifact_manifest",
-"//agent_maintainer.config.schema",
-"//agent_context.budget",
-"//agent_context.models",
-"//agent_maintainer.models",
-    "git_state",
-    "history",
-    "pr_summary",
-    "timing",
+  "//agent_context.budget",
+  "//agent_context.models",
+  "//agent_maintainer.models",
+  "artifact_adapters",
+  "//agent_run_artifacts.artifact_manifest",
+  "//agent_run_artifacts.git_state",
+  "//agent_run_artifacts.history",
+  "//agent_run_artifacts.pr_summary",
+  "//agent_run_artifacts.timing",
 ]
 
 [[modules]]
 path = "artifact_manifest"
 depends_on = [
-"//agent_maintainer.config.schema",
-"//agent_context.budget",
-"//agent_context.models",
-"//agent_maintainer.models",
+"//agent_run_artifacts.artifact_manifest",
 ]
 
 [[modules]]
 path = "git_state"
-depends_on = []
+depends_on = [
+"//agent_run_artifacts.git_state",
+]
 
 [[modules]]
 path = "git_refs"
@@ -38,14 +45,13 @@ depends_on = []
 [[modules]]
 path = "history"
 depends_on = [
-  "//agent_maintainer.models",
+"//agent_run_artifacts.history",
 ]
 
 [[modules]]
 path = "pr_summary"
 depends_on = [
-  "//agent_maintainer.models",
-  "pr_summary_support",
+"//agent_run_artifacts.pr_summary",
 ]
 
 [[modules]]
@@ -55,30 +61,29 @@ depends_on = []
 [[modules]]
 path = "pr_summary_support"
 depends_on = [
-  "//agent_context.budget",
-  "//agent_context.models",
-  "//agent_maintainer.models",
+"//agent_run_artifacts.pr_summary_support",
 ]
 
 [[modules]]
 path = "result_summary"
 depends_on = [
-    "//agent_maintainer.core.config",
-    "//agent_maintainer.core.reporting",
-    "//agent_maintainer.models",
-    "timing",
+  "//agent_maintainer.core.config",
+  "//agent_maintainer.core.reporting",
+  "//agent_maintainer.models",
+  "//agent_run_artifacts.models",
+  "//agent_run_artifacts.timing",
 ]
 
 [[modules]]
 path = "quiet"
 depends_on = [
-  "//agent_maintainer.catalogs.catalog",
-  "//agent_maintainer.core.args",
-  "//agent_maintainer.core.config",
-  "history",
-  "locking",
-  "result_summary",
-  "run_steps",
+"//agent_maintainer.catalogs.catalog",
+"//agent_maintainer.core.args",
+"//agent_maintainer.core.config",
+"//agent_run_artifacts.history",
+"locking",
+"result_summary",
+"run_steps",
 ]
 
 [[modules]]
@@ -96,5 +101,5 @@ depends_on = [
 [[modules]]
 path = "timing"
 depends_on = [
-    "//agent_maintainer.models",
+"//agent_run_artifacts.timing",
 ]

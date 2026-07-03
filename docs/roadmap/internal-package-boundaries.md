@@ -33,6 +33,12 @@ file/log/diff readers. Context-pack builder/rendering/compression, ratchet
 context, and Agent Maintainer context CLI remain product-owned until their Agent
 Maintainer dependencies are isolated.
 
+Current-state note: `agent_run_artifacts` extraction is split. Phase 113 moved
+manifest payload helpers, run history helpers, Git-state helpers, PR summary
+rendering helpers, and timing metadata helpers. Product-owned artifact write
+orchestration remains under `agent_maintainer.verify.artifacts` until config and
+check-result adapters are fully isolated.
+
 ## Hard Invariants
 
 - Keep `agent-maintainer` as the only public distribution in this pass.

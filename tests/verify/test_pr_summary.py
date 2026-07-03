@@ -7,9 +7,10 @@ from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.models import CheckResult
-from agent_maintainer.verify.artifacts import RunContext
-from agent_maintainer.verify.pr_summary import render_pr_summary
-from agent_maintainer.verify.pr_summary_support import MAX_PR_SUMMARY_CHARS
+from agent_maintainer.verify import artifact_adapters
+from agent_run_artifacts.models import ArtifactCheckResult, ArtifactRunContext
+from agent_run_artifacts.pr_summary import render_pr_summary
+from agent_run_artifacts.pr_summary_support import MAX_PR_SUMMARY_CHARS
 
 
 def test_pr_summary_reports_change_budget_and_context_pack(tmp_path: Path) -> None:
@@ -30,7 +31,7 @@ def test_pr_summary_reports_change_budget_and_context_pack(tmp_path: Path) -> No
     summary = render_pr_summary(
         log_dir=log_dir,
         context=run_context(tmp_path, ratchet_enabled=True),
-        results=[result],
+        results=artifact_results(result),
     )
 
     assert "Result: **PASS**" in summary
@@ -142,7 +143,7 @@ def test_pr_summary_is_bounded(tmp_path: Path) -> None:
             tmp_path,
             config=MaintainerConfig(context_last_failure_budget_chars=800),
         ),
-        results=[result],
+        results=artifact_results(result),
     )
 
     assert len(summary) < MAX_PR_SUMMARY_CHARS
@@ -154,11 +155,11 @@ def run_context(
     *,
     config: MaintainerConfig | None = None,
     ratchet_enabled: bool = False,
-) -> RunContext:
+) -> ArtifactRunContext:
     """Return stable run context for PR summary tests."""
 
     active_config = config or MaintainerConfig(ratchet_enabled=ratchet_enabled)
-    return RunContext(
+    context = artifact_adapters.RunContext(
         repo_root=repo_root,
         profile="ci",
         base_ref="origin/main",
@@ -167,3 +168,12 @@ def run_context(
         config=active_config,
         run_id="20260625T100000Z-ci-test",
     )
+    return artifact_adapters.artifact_run_context(context)
+
+
+def artifact_results(
+    *results: CheckResult,
+) -> tuple[ArtifactCheckResult, ...]:
+    """Return artifact result DTOs for PR summary tests."""
+
+    return tuple(artifact_adapters.artifact_check_result(result) for result in results)

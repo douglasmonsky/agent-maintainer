@@ -16,8 +16,8 @@ depends_on = [
   "sections",
   "styles",
   "types",
-  "//agent_maintainer.verify.artifacts",
-  "//agent_maintainer.verify.pr_summary",
+"//agent_maintainer.verify.artifacts",
+"//agent_run_artifacts.pr_summary",
 ]
 
 [[modules]]
