@@ -29,9 +29,10 @@ boundary.
 
 Current-state note: `agent_context` extraction is split. Phase 112 moved context
 models, budget/formatting helpers, failure-manifest readers, estimates, and safe
-file/log/diff readers. Context-pack builder/rendering/compression, ratchet
-context, and Agent Maintainer context CLI remain product-owned until their Agent
-Maintainer dependencies are isolated.
+file/log/diff readers. Phase 118 moved pure context-pack rendering and sanitizing
+helpers. Context-pack builder/compression, ratchet context, and Agent Maintainer
+context CLI remain product-owned until their Agent Maintainer dependencies are
+isolated.
 
 Current-state note: `agent_run_artifacts` extraction is split. Phase 113 moved
 manifest payload helpers, run history helpers, Git-state helpers, PR summary

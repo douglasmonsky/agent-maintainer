@@ -2,7 +2,16 @@
 
 from __future__ import annotations
 
-from agent_maintainer.context.pack.sanitize import sanitize_text
+from agent_context.sanitize import sanitize_text
+from agent_maintainer.context.pack.sanitize import (
+    sanitize_text as compatibility_sanitize_text,
+)
+
+
+def test_context_sanitize_compatibility_shim() -> None:
+    """Old product import path forwards to reusable sanitize helper."""
+
+    assert compatibility_sanitize_text is sanitize_text
 
 
 def test_sanitize_text_redacts_common_secret_shapes() -> None:

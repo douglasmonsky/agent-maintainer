@@ -29,8 +29,8 @@ path = "context"
 depends_on = [
   "//agent_maintainer.config.loader",
   "//agent_context.budget",
+  "//agent_context.pack_rendering",
   "//agent_maintainer.context.pack.builder",
-  "//agent_maintainer.context.pack.rendering",
 ]
 
 [[modules]]

@@ -6,10 +6,10 @@ import subprocess  # nosec B404
 from contextlib import suppress
 from pathlib import Path
 
+from agent_context import pack_rendering
 from agent_context.budget import bound_single_item_text
 from agent_maintainer.config import loader
 from agent_maintainer.context.pack import builder as context_packs
-from agent_maintainer.context.pack import rendering as pack_rendering
 
 
 def hook_config(repo_root: Path) -> loader.schema.MaintainerConfig:

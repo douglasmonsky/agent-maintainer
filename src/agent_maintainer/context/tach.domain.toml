@@ -68,11 +68,11 @@ depends_on = [
   "pack.compression",
   "pack.exact_facts",
   "pack.ratchet",
-  "pack.rendering",
-  "pack.sanitize",
   "//agent_context.failures",
+  "//agent_context.pack_rendering",
   "//agent_context.reading.files",
   "//agent_context.reading.logs",
+  "//agent_context.sanitize",
 ]
 
 [[modules]]
@@ -81,7 +81,7 @@ depends_on = [
   "compression.backends",
   "compression.headroom",
   "pack.builder",
-  "pack.rendering",
+  "//agent_context.pack_rendering",
   "//agent_maintainer.core.config",
 ]
 
@@ -135,15 +135,11 @@ depends_on = [
 
 [[modules]]
 path = "pack.rendering"
-depends_on = [
-  "//agent_context.budget",
-  "//agent_context.formatting",
-  "//agent_context.models",
-]
+depends_on = ["//agent_context.pack_rendering"]
 
 [[modules]]
 path = "pack.sanitize"
-depends_on = []
+depends_on = ["//agent_context.sanitize"]
 
 [[modules]]
 path = "reading"

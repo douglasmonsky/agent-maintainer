@@ -753,6 +753,20 @@ Completed work:
 
 - [x] Phase 117: README DocSync Evidence Ratchet
 
+## Completed: Agent Context Pack Rendering Extraction
+
+Continue internal package boundary refactor by moving pure context-pack
+rendering and sanitizing helpers into `agent_context`, while keeping context
+builder, compression, ratchet, and CLI orchestration product-owned.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-118-agent-context-pack-rendering.md`](roadmap/phases/phase-118-agent-context-pack-rendering.md)
+
+Completed work:
+
+- [x] Phase 118: Agent Context Pack Rendering Extraction
+
 ## Future Work
 
 - Full DocSync dogfood ratchet: after the extraction sequence settles, review
