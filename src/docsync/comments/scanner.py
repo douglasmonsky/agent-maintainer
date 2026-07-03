@@ -44,6 +44,7 @@ class ScanState:
     open_region: OpenRegion | None = None
 
 
+# docsync:evidence.start evidence.docsync.explicit_evidence_scanner
 def scan_evidence_file(
     repo_root: Path,
     path: Path,
@@ -206,6 +207,7 @@ def _directive_id(line: str, directive: str) -> str | None:
     return suffix.split()[0] if suffix else None
 
 
+# docsync:evidence.end evidence.docsync.explicit_evidence_scanner
 def _finding(code: str, message: str, path: Path, line: int) -> Finding:
     """Return one evidence scanner finding."""
 

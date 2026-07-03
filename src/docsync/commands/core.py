@@ -11,6 +11,7 @@ from docsync.config import defaults
 from docsync.reports import human, json_report, review_packet, sarif
 
 
+# docsync:evidence.start evidence.docsync.generated_outputs_commands
 def init_main_from_args(args: argparse.Namespace) -> int:
     """Create default DocSync repository files."""
     repo_root = args.repo_root.resolve()
@@ -121,6 +122,7 @@ def attest_main_from_args(args: argparse.Namespace) -> int:
     return 0
 
 
+# docsync:evidence.end evidence.docsync.generated_outputs_commands
 def _ensure_agents_section(path: Path) -> None:
     existing = path.read_text(encoding="utf-8") if path.exists() else "# Repository Instructions\n"
     if "## DocSync policy" in existing:

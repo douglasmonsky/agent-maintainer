@@ -1,7 +1,13 @@
+<!-- docsync:object docs.docsync_extraction.overview -->
 # DocSync Extraction Notes
 
 DocSync is implemented as an extractable sibling package under `src/docsync/`.
-It must not import `agent_maintainer` or `archguard`.
+It must not import `agent_maintainer` or `archguard`; the boundary is enforced
+by Tach and extraction tests.
+
+DocSync source truth lives under `.docsync/`. The trace file is
+human-authored, and generated files under `.docsync/out/` are rebuildable
+artifacts that should not be committed.
 
 To extract DocSync into a standalone package:
 
@@ -20,5 +26,5 @@ with `docsync index`, `docsync check`, `docsync prompt`, `docsync attest`, and
 `docsync doctor`.
 
 The experimental knowledge graph, vector retrieval, GraphQL, and wiki prototype
-is preserved on `experiment/docsync-knowledge-graph`. It is not part of the
+is preserved on `experiment/docsync-knowledge-graph`; it is not part of the
 foundation extraction surface.
