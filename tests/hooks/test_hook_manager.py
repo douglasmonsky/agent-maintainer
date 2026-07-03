@@ -8,7 +8,8 @@ from typing import Any, cast
 
 import pytest
 
-from agent_maintainer.hooks import adapters, manager, merge, templates
+from agent_client_hooks import adapters, merge, templates
+from agent_maintainer.hooks import manager
 
 
 def test_repo_install_writes_codex_and_claude_files(tmp_path: Path) -> None:

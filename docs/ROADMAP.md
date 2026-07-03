@@ -711,6 +711,20 @@ Completed work:
 
 - [x] Phase 114: DocSync Dogfood Seed And Ratchet
 
+## Completed: Agent Client Hooks Internal Package Extraction
+
+Agent Maintainer should extract agent-client hook templates, merge helpers, and
+install planning into `agent_client_hooks`, while keeping hook runtime
+verification product-owned under `agent_maintainer.hooks`.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-115-agent-client-hooks-package.md`](roadmap/phases/phase-115-agent-client-hooks-package.md)
+
+Completed work:
+
+- [x] Phase 115: Agent Client Hooks Internal Package Extraction
+
 ## Future Work
 
 - Full DocSync dogfood ratchet: after the extraction sequence settles, review
