@@ -8,6 +8,7 @@ from pathlib import Path
 
 from docsync.core.fingerprints import sha256_text
 from docsync.core.models import DocObject, Finding, LineSpan
+from docsync.markdown.object_regions import collect_markers, explicit_object_regions
 
 HEADING_RE = re.compile(r"^(?P<marks>#{1,6})\s+(?P<title>.+?)\s*#*\s*$")
 
@@ -43,6 +44,7 @@ class ResolveContext:
     marker_line: int
     object_id: str
     block_line: int
+    explicit_end_line: int | None = None
 
 
 def parse_markdown_file(
@@ -50,34 +52,55 @@ def parse_markdown_file(
     path: Path,
     *,
     object_marker: str,
+    object_end_marker: str | None = None,
+    require_object_end_markers: bool = False,
 ) -> MarkdownParseResult:
     """Parse one Markdown file for hidden DocSync object markers."""
-
     full_path = repo_root / path
     if not full_path.exists():
         return MarkdownParseResult(objects={}, findings=())
+
     lines = full_path.read_text(encoding="utf-8").splitlines()
+    end_marker = object_end_marker or f"{object_marker}.end"
+    opening_markers = collect_markers(lines, object_marker)
+    end_markers = collect_markers(lines, end_marker)
+    explicit_ends, findings = explicit_object_regions(
+        path,
+        opening_markers,
+        end_markers,
+        require_object_end_markers=require_object_end_markers,
+    )
+
     objects: dict[str, DocObject] = {}
-    findings: list[Finding] = []
-    for line_number, line in enumerate(lines, start=1):
-        object_id = _marker_id(line, object_marker)
-        if object_id is None:
+    for marker in opening_markers:
+        if marker.object_id in objects:
+            findings.append(
+                _finding(
+                    "DS104",
+                    f"Duplicate marker {marker.object_id}.",
+                    path,
+                    marker.line_number,
+                ),
+            )
             continue
-        if object_id in objects:
-            findings.append(_finding("DS104", f"Duplicate marker {object_id}.", path, line_number))
-            continue
-        resolved = _resolve_object(path, lines, line_number, object_id)
+        resolved = _resolve_object(
+            path,
+            lines,
+            marker.line_number,
+            marker.object_id,
+            explicit_end_line=explicit_ends.get(marker.line_number),
+        )
         if resolved is None:
             findings.append(
                 _finding(
                     "DS103",
-                    f"Marker {object_id} not attached to supported Markdown block.",
+                    f"Marker {marker.object_id} is not followed by a supported Markdown block.",
                     path,
-                    line_number,
-                )
+                    marker.line_number,
+                ),
             )
             continue
-        objects[object_id] = resolved
+        objects[marker.object_id] = resolved
     return MarkdownParseResult(objects=objects, findings=tuple(findings))
 
 
@@ -86,9 +109,10 @@ def _resolve_object(
     lines: list[str],
     marker_line: int,
     object_id: str,
+    *,
+    explicit_end_line: int | None,
 ) -> DocObject | None:
-    """Resolve one marker to the Markdown block that follows it."""
-
+    """Resolve one marker into the Markdown block that follows it."""
     block_line = _next_nonblank(lines, marker_line + 1)
     if block_line is None:
         return None
@@ -98,6 +122,7 @@ def _resolve_object(
         marker_line=marker_line,
         object_id=object_id,
         block_line=block_line,
+        explicit_end_line=explicit_end_line,
     )
     line = lines[block_line - 1]
     heading = HEADING_RE.match(line)
@@ -111,13 +136,15 @@ def _resolve_object(
 
 def _heading_object(context: ResolveContext, heading: re.Match[str]) -> DocObject:
     """Return a heading-section documentation object."""
-
     level = len(heading.group("marks"))
     block = ObjectBlock(
         object_id=context.object_id,
         kind="heading_section",
         marker_line=context.marker_line,
-        end_line=_heading_section_end(context.lines, context.block_line, level),
+        end_line=_object_end_line(
+            _heading_section_end(context.lines, context.block_line, level),
+            context.explicit_end_line,
+        ),
         title=heading.group("title").strip(),
         heading_line=context.block_line,
         heading_level=level,
@@ -126,8 +153,7 @@ def _heading_object(context: ResolveContext, heading: re.Match[str]) -> DocObjec
 
 
 def _fence_object(context: ResolveContext, fence: str) -> DocObject | None:
-    """Return a code-fence documentation object."""
-
+    """Return fenced-code documentation object."""
     end_line = _fence_end(context.lines, context.block_line, fence)
     if end_line is None:
         return None
@@ -137,7 +163,7 @@ def _fence_object(context: ResolveContext, fence: str) -> DocObject | None:
         object_id=context.object_id,
         kind="code_fence",
         marker_line=context.marker_line,
-        end_line=end_line,
+        end_line=_object_end_line(end_line, context.explicit_end_line),
         title=None,
         language=language,
     )
@@ -146,7 +172,6 @@ def _fence_object(context: ResolveContext, fence: str) -> DocObject | None:
 
 def _plain_object(context: ResolveContext, line: str) -> DocObject | None:
     """Return a plain Markdown block documentation object."""
-
     kind = _plain_block_kind(line)
     if kind is None:
         return None
@@ -154,15 +179,22 @@ def _plain_object(context: ResolveContext, line: str) -> DocObject | None:
         object_id=context.object_id,
         kind=kind,
         marker_line=context.marker_line,
-        end_line=_plain_block_end(context.lines, context.block_line),
+        end_line=_object_end_line(
+            _plain_block_end(context.lines, context.block_line),
+            context.explicit_end_line,
+        ),
         title=None,
     )
     return _doc_object(context.path, context.lines, block)
 
 
+def _object_end_line(inferred_end_line: int, explicit_end_line: int | None) -> int:
+    """Return explicit end line when present, otherwise inferred block end line."""
+    return explicit_end_line or inferred_end_line
+
+
 def _doc_object(path: Path, lines: list[str], block: ObjectBlock) -> DocObject:
     """Return one documentation object."""
-
     marker_index = block.marker_line - 1
     block_end_index = block.end_line
     content = "\n".join(lines[marker_index:block_end_index])
@@ -180,21 +212,8 @@ def _doc_object(path: Path, lines: list[str], block: ObjectBlock) -> DocObject:
     )
 
 
-def _marker_id(line: str, object_marker: str) -> str | None:
-    """Return object ID from a hidden Markdown marker."""
-
-    stripped = line.strip()
-    prefix = f"<!-- {object_marker}"
-    if not stripped.startswith(prefix) or not stripped.endswith("-->"):
-        return None
-    prefix_length = len(prefix)
-    marker_end = -3
-    return stripped[prefix_length:marker_end].strip()
-
-
 def _next_nonblank(lines: list[str], start_line: int) -> int | None:
-    """Return next nonblank line number."""
-
+    """Return next nonblank 1-indexed line number."""
     for line_number in range(start_line, len(lines) + 1):
         if lines[line_number - 1].strip():
             return line_number
@@ -202,19 +221,33 @@ def _next_nonblank(lines: list[str], start_line: int) -> int | None:
 
 
 def _heading_section_end(lines: list[str], heading_line: int, level: int) -> int:
-    """Return the inclusive line where a heading section ends."""
-
+    """Return inclusive heading-section end line."""
+    fence: str | None = None
     for line_number in range(heading_line + 1, len(lines) + 1):
-        heading = HEADING_RE.match(lines[line_number - 1])
+        line = lines[line_number - 1]
+        fence = _updated_fence(line, fence)
+        if fence is not None:
+            continue
+        heading = HEADING_RE.match(line)
         if heading is not None and len(heading.group("marks")) <= level:
             return line_number - 1
     return len(lines)
 
 
-def _fence_marker(line: str) -> str | None:
-    """Return Markdown fence marker from a line."""
+def _updated_fence(line: str, fence: str | None) -> str | None:
+    stripped = line.strip()
+    if fence is not None:
+        return None if stripped.startswith(fence) else fence
+    if stripped.startswith("```"):
+        return "```"
+    if stripped.startswith("~~~"):
+        return "~~~"
+    return None
 
-    stripped = line.lstrip()
+
+def _fence_marker(line: str) -> str | None:
+    """Return Markdown fence marker if line opens a fenced block."""
+    stripped = line.strip()
     if stripped.startswith("```"):
         return "```"
     if stripped.startswith("~~~"):
@@ -223,8 +256,7 @@ def _fence_marker(line: str) -> str | None:
 
 
 def _fence_end(lines: list[str], start_line: int, fence: str) -> int | None:
-    """Return ending line for a fenced block."""
-
+    """Return inclusive end line for a fenced block."""
     for line_number in range(start_line + 1, len(lines) + 1):
         if lines[line_number - 1].lstrip().startswith(fence):
             return line_number
@@ -232,8 +264,7 @@ def _fence_end(lines: list[str], start_line: int, fence: str) -> int | None:
 
 
 def _plain_block_kind(line: str) -> str | None:
-    """Return supported plain Markdown block kind."""
-
+    """Return plain Markdown block kind."""
     stripped = line.lstrip()
     if stripped.startswith(">"):
         return "blockquote"
@@ -245,8 +276,7 @@ def _plain_block_kind(line: str) -> str | None:
 
 
 def _plain_block_end(lines: list[str], start_line: int) -> int:
-    """Return inclusive ending line for a plain Markdown block."""
-
+    """Return inclusive end line for a plain Markdown block."""
     for line_number in range(start_line + 1, len(lines) + 1):
         if not lines[line_number - 1].strip():
             return line_number - 1
@@ -255,7 +285,6 @@ def _plain_block_end(lines: list[str], start_line: int) -> int:
 
 def _finding(code: str, message: str, path: Path, line: int) -> Finding:
     """Return one Markdown parser finding."""
-
     return Finding(
         code=code,
         severity="error",

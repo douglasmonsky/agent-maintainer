@@ -74,3 +74,4 @@ The score is a prioritization aid:
 
 Do not tune the score by disabling relevant gates. Improve the underlying
 signals, or document why a gate is intentionally not relevant.
+<!-- docsync:object.end docs.technical_debt_score.overview -->

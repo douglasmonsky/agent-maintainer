@@ -31,6 +31,9 @@ ENV_MUTMUT_TARGET_MIN = 4
 CONFIG_MUTMUT_MAX_SURVIVORS = 84
 ENV_MUTMUT_MAX_SURVIVORS = 83
 CONFIG_MUTMUT_MIN_SCORE = 71
+CONFIG_TYPESCRIPT_SOURCE_WARN_FILES = 6
+CONFIG_TYPESCRIPT_SOURCE_WARN_LINES = 250
+CONFIG_TYPESCRIPT_BROAD_SUPPRESSION_WARN = 2
 
 
 def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
@@ -89,6 +92,9 @@ cohesive_change_override_max_files = 23
 coverage_fail_under = 91
 file_length_baseline = ".agent-maintainer/baseline.json"
 architecture_tool = "tach"
+typescript_advisory_source_warn_files = 6
+typescript_advisory_source_warn_lines = 250
+typescript_advisory_broad_suppression_warn = 2
 
 [tool.agent_maintainer.diagnostics]
 enabled = false
@@ -147,6 +153,11 @@ run_history_limit = 7
     assert loaded.cohesive_change_override_max_lines == CONFIG_OVERRIDE_MAX_LINES
     assert loaded.cohesive_change_override_max_files == CONFIG_OVERRIDE_MAX_FILES
     assert loaded.coverage_fail_under == CONFIG_COVERAGE_THRESHOLD
+    assert loaded.typescript_advisory_source_warn_files == (CONFIG_TYPESCRIPT_SOURCE_WARN_FILES)
+    assert loaded.typescript_advisory_source_warn_lines == (CONFIG_TYPESCRIPT_SOURCE_WARN_LINES)
+    assert loaded.typescript_advisory_broad_suppression_warn == (
+        CONFIG_TYPESCRIPT_BROAD_SUPPRESSION_WARN
+    )
     assert loaded.file_length_baseline == ".agent-maintainer/baseline.json"
     assert loaded.architecture_tool == "tach"
     assert loaded.diagnostic_artifacts_enabled is False
@@ -204,6 +215,7 @@ def test_invalid_config_values_raise_clear_type_errors() -> None:
         )
 
 
+# docsync:evidence.start evidence.config_modes.fresh_legacy_tests
 def test_fresh_strict_mode_applies_before_explicit_config() -> None:
     loaded = maintainer_config_loader.apply_pyproject(
         MaintainerConfig(),
@@ -225,6 +237,9 @@ def test_config_facade_preserves_public_entrypoints() -> None:
     assert maintainer_config.load_config is maintainer_config_loader.load_config
     assert maintainer_config.apply_mode is maintainer_config_modes.apply_mode
     assert maintainer_config.MaintainerConfig is maintainer_config_schema.MaintainerConfig
+
+
+# docsync:evidence.end evidence.config_modes.fresh_legacy_tests
 
 
 def test_environment_mode_applies_before_explicit_environment(

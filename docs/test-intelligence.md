@@ -163,3 +163,4 @@ Planned capabilities include smarter source-without-test guidance, branch
 coverage signals, and richer repair planning for larger changes. These signals
 should guide better tests without encouraging coverage theater or turning slow
 research tools into normal precommit gates.
+<!-- docsync:object.end docs.test_intelligence.overview -->

@@ -70,6 +70,8 @@ class DocSyncConfig:
     review_packet_json: Path
     review_prompt_md: Path
     object_marker: str
+    object_end_marker: str
+    require_object_end_markers: bool
     evidence_start_directive: str
     evidence_end_directive: str
 

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from docsync.commands import core as core_commands
+from docsync.commands import object_markers
 
 CommandHandler = Callable[[argparse.Namespace], int]
 
@@ -35,7 +36,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--repo-root",
         type=Path,
         default=Path.cwd(),
-        help="Repository root. Defaults to the current directory.",
+        help="Repository root. Defaults to current directory.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     _add_core_commands(subparsers)
@@ -64,16 +65,25 @@ def _add_core_commands(subparsers: Any) -> None:
     doctor_parser.add_argument("--trace", type=Path, default=None)
     doctor_parser.set_defaults(handler=core_commands.doctor_main_from_args)
 
-    prompt_parser = subparsers.add_parser("prompt", help="Write review prompt files.")
+    prompt_parser = subparsers.add_parser("prompt", help="Write review prompt.")
     prompt_parser.add_argument("--base", default="origin/main")
     prompt_parser.add_argument("--config", type=Path, default=None)
     prompt_parser.add_argument("--trace", type=Path, default=None)
     prompt_parser.set_defaults(handler=core_commands.prompt_main_from_args)
 
-    attest_parser = subparsers.add_parser("attest", help="Create an attestation.")
+    repair_parser = subparsers.add_parser(
+        "repair-object-end-markers",
+        help="Insert explicit Markdown object end markers.",
+    )
+    repair_parser.add_argument("--config", type=Path, default=None)
+    repair_parser.add_argument("--trace", type=Path, default=None)
+    repair_parser.add_argument("--write", action="store_true")
+    repair_parser.set_defaults(handler=object_markers.repair_object_end_markers_main_from_args)
+
+    attest_parser = subparsers.add_parser("attest", help="Create changed-claim attestation.")
     attest_parser.add_argument("claim_id")
-    attest_parser.add_argument("--reason", required=True)
     attest_parser.add_argument("--evidence", action="append", required=True)
+    attest_parser.add_argument("--reason", required=True)
     attest_parser.set_defaults(handler=core_commands.attest_main_from_args)
 
 

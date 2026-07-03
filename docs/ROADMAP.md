@@ -980,6 +980,140 @@ Completed work:
 
 - [x] Phase 134: Critical Active Docs DocSync Coverage
 
+## Completed: Remaining Active Docs DocSync Coverage
+
+Finish the active-doc DocSync dogfooding pass by giving every active doc
+overview path at least one evidence-backed claim and ratcheting tests so new
+active docs cannot ship with only object markers.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-135-remaining-active-docsync-coverage.md`](roadmap/phases/phase-135-remaining-active-docsync-coverage.md)
+
+Completed work:
+
+- [x] Phase 135: Remaining Active Docs DocSync Coverage
+
+## Completed: TypeScript Advisory Threshold Config
+
+Move TypeScript/JavaScript reviewability advisory thresholds from hard-coded
+constants into beta config fields while keeping current behavior advisory-only
+and non-blocking.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-136-typescript-advisory-threshold-config.md`](roadmap/phases/phase-136-typescript-advisory-threshold-config.md)
+
+Completed work:
+
+- [x] Phase 136: TypeScript Advisory Threshold Config
+
+## Completed: TypeScript Unsupported Surface Docs
+
+Make the experimental TypeScript/JavaScript provider's unsupported package
+manager, runner, framework, coverage, dependency, and security surfaces
+explicit so users do not mistake experimental support for feature parity.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-137-typescript-unsupported-surface-docs.md`](roadmap/phases/phase-137-typescript-unsupported-surface-docs.md)
+
+Completed work:
+
+- [x] Phase 137: TypeScript Unsupported Surface Docs
+
+## Completed: TypeScript Package Shape Evidence
+
+Add real Git repository reviewability evidence for common npm, pnpm, Vite, and
+Vitest TypeScript/JavaScript project shapes without changing provider behavior
+or making TypeScript reviewability blocking.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-138-typescript-package-shape-evidence.md`](roadmap/phases/phase-138-typescript-package-shape-evidence.md)
+
+Completed work:
+
+- [x] Phase 138: TypeScript Package Shape Evidence
+
+## Completed: TypeScript External Real-Repo Comparison
+
+Record one external public TypeScript/JavaScript repository comparison for
+`assess reviewability` so TypeScript provider maturation is not based only on
+synthetic fixture repositories.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-139-typescript-external-real-repo-comparison.md`](roadmap/phases/phase-139-typescript-external-real-repo-comparison.md)
+
+Completed work:
+
+- [x] Phase 139: TypeScript External Real-Repo Comparison
+
+## Completed: TypeScript Node Boilerplate External Comparison
+
+Broaden TypeScript reviewability evidence with a second public repository
+comparison that includes a Node TypeScript boilerplate migration from Jest to
+Vitest.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-140-typescript-node-boilerplate-external-comparison.md`](roadmap/phases/phase-140-typescript-node-boilerplate-external-comparison.md)
+
+Completed work:
+
+- [x] Phase 140: TypeScript Node Boilerplate External Comparison
+
+## Completed: Provider-Neutral File Baseline Controls
+
+Design provider-neutral controls for simple file facts such as length, nonblank
+lines, changed-file counts, changed-line counts, ignored/generated paths, and
+ratcheted baselines across explicit file groups. Keep Python's existing
+blocking checks unchanged, keep non-Python groups advisory by default, and do
+not use Tach as the language-neutral architecture answer.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-141-provider-neutral-file-baseline-controls.md`](roadmap/phases/phase-141-provider-neutral-file-baseline-controls.md)
+
+Detailed spec:
+
+[`docs/roadmap/provider-neutral-file-baselines.md`](roadmap/provider-neutral-file-baselines.md)
+
+Completed work:
+
+- [x] Phase 141: Provider-Neutral File Baseline Controls
+
+## Planned: Runtime Telemetry And Dogfood Logging
+
+Design a standards-aligned logging and telemetry path so Agent Maintainer can
+debug dogfooding quality without making normal agent output noisier.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-142-runtime-telemetry-dogfood-logging.md`](roadmap/phases/phase-142-runtime-telemetry-dogfood-logging.md)
+
+Detailed spec:
+
+[`docs/roadmap/runtime-telemetry-dogfood-logging.md`](roadmap/runtime-telemetry-dogfood-logging.md)
+
+Planned work:
+
+- [ ] Phase 142: Runtime Telemetry And Dogfood Logging
+
+## Completed: DocSync Explicit Object End Markers
+
+Make DocSync documentation object scope explicit by adding object end markers
+that mirror the existing evidence start/end marker discipline.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-143-docsync-explicit-object-end-markers.md`](roadmap/phases/phase-143-docsync-explicit-object-end-markers.md)
+
+Completed work:
+
+- [x] Phase 143: DocSync Explicit Object End Markers
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,

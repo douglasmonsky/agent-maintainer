@@ -10,7 +10,7 @@ that keeps raw logs out of chat.
 | Area | Tools / Checks | Typical Profile | Agent Use |
 |---|---|---|---|
 | Change control | Change budget, cohesive change plans, source-without-test policy | `fast`, `precommit`, `ci` | Keep edits small and explain intentionally large changes. |
-| Size and structure | File length, folder cohesion, suppression budget | `fast`, `precommit`, `full` | Refactor high-branch functions before expanding features. |
+| Size and structure | File length, folder cohesion, suppression budget, advisory file baselines | `fast`, `precommit`, `full`, advisory | Refactor high-branch functions before expanding features. |
 | Python quality | Ruff, Pyright, Pylint, wemake, Xenon/Radon | `precommit`, `full`, `ci` | Fix design pressure before adding suppressions. |
 | Tests and coverage | pytest, coverage, diff-cover, release packaging checks | `precommit`, `full`, `ci`, release | Add focused tests before broader gates. |
 | Architecture | Tach, Import Linter, Archguard decision notes | `full`, `ci` | Respect module boundaries; add ADRs for boundary changes. |
@@ -43,7 +43,10 @@ python3 -m agent_maintainer assess setup
 python3 -m agent_maintainer assess setup --json
 python3 -m agent_maintainer assess debt
 python3 -m agent_maintainer assess debt --json
+python3 -m agent_maintainer assess file-baselines
+python3 -m agent_maintainer assess file-baselines --json
 ```
 
 These commands are advisory. They should guide configuration and repair plans,
 not replace tests or reviewer judgment.
+<!-- docsync:object.end docs.supported_scans.overview -->

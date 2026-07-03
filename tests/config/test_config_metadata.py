@@ -11,6 +11,7 @@ from agent_maintainer.config import loader, metadata, schema
 ARGS_MODULE = Path("src/agent_maintainer/core/args.py")
 
 
+# docsync:evidence.start evidence.config_metadata.drift_tests
 def test_every_config_field_has_metadata() -> None:
     """Metadata covers every maintained config field."""
     field_names = {field.name for field in fields(schema.MaintainerConfig)}
@@ -61,6 +62,9 @@ def assert_metadata_complete(
     assert field_metadata.docs_label
     assert field_metadata.cli_override in metadata.VALID_CLI_OVERRIDE_STATUSES
     assert field_metadata.stability in metadata.VALID_STABILITY_LEVELS
+
+
+# docsync:evidence.end evidence.config_metadata.drift_tests
 
 
 def loader_env_vars_by_field() -> dict[str, str]:

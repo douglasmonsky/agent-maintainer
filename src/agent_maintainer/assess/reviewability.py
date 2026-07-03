@@ -25,8 +25,6 @@ GLOBAL_ROLES = frozenset(
     (ecosystem_models.FileRole.CONFIG, ecosystem_models.FileRole.DOCS),
 )
 SOURCE_TEST_ADVISORY_ECOSYSTEMS = frozenset(("typescript",))
-SOURCE_HEAVY_FILE_LIMIT = 4
-SOURCE_HEAVY_LINE_LIMIT = 200
 
 
 def build_reviewability_report(
@@ -65,7 +63,7 @@ def build_reviewability_report(
         by_ecosystem=_counts(change.ecosystem for change in reviewability_changes),
         by_role=_counts(change.role for change in reviewability_changes),
         provider_summaries=summaries,
-        advisory_findings=_advisory_findings(summaries),
+        advisory_findings=_advisory_findings(summaries, config),
         changes=reviewability_changes,
         suppressions=suppression_findings,
         broad_suppressions=sum(1 for finding in suppression_findings if finding.broad),
@@ -206,22 +204,27 @@ def _provider_summary(
 
 def _advisory_findings(
     summaries: tuple[assess_models.ReviewabilityProviderSummary, ...],
+    config: MaintainerConfig,
 ) -> tuple[assess_models.ReviewabilityFinding, ...]:
     """Return non-blocking provider reviewability findings."""
     findings: list[assess_models.ReviewabilityFinding] = []
     for summary in summaries:
-        findings.extend(_broad_suppression_findings(summary))
+        findings.extend(_broad_suppression_findings(summary, config))
         if summary.ecosystem in SOURCE_TEST_ADVISORY_ECOSYSTEMS:
             findings.extend(_source_without_test_findings(summary))
-            findings.extend(_source_heavy_findings(summary))
+            findings.extend(_source_heavy_findings(summary, config))
     return tuple(findings)
 
 
 def _broad_suppression_findings(
     summary: assess_models.ReviewabilityProviderSummary,
+    config: MaintainerConfig,
 ) -> tuple[assess_models.ReviewabilityFinding, ...]:
     """Return broad suppression finding for one provider summary."""
-    if summary.broad_suppressions == 0:
+    threshold = config.typescript_advisory_broad_suppression_warn
+    if summary.ecosystem != "typescript" or threshold == 0:
+        return ()
+    if summary.broad_suppressions < threshold:
         return ()
     return (
         assess_models.ReviewabilityFinding(
@@ -251,12 +254,14 @@ def _source_without_test_findings(
 
 def _source_heavy_findings(
     summary: assess_models.ReviewabilityProviderSummary,
+    config: MaintainerConfig,
 ) -> tuple[assess_models.ReviewabilityFinding, ...]:
     """Return source-heavy finding for one provider summary."""
-    if (
-        summary.source_files < SOURCE_HEAVY_FILE_LIMIT
-        and summary.source_lines < SOURCE_HEAVY_LINE_LIMIT
-    ):
+    warn_files = config.typescript_advisory_source_warn_files
+    warn_lines = config.typescript_advisory_source_warn_lines
+    file_threshold_hit = 0 < warn_files <= summary.source_files
+    line_threshold_hit = 0 < warn_lines <= summary.source_lines
+    if not file_threshold_hit and not line_threshold_hit:
         return ()
     return (
         assess_models.ReviewabilityFinding(

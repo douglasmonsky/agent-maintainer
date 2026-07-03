@@ -88,3 +88,4 @@ evidence proves low-noise thresholds.
 `doctor` answers: is the configured setup healthy?
 
 `assess setup` answers: what setup should this repository probably adopt next?
+<!-- docsync:object.end docs.setup_advisor.overview -->

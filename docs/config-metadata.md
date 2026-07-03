@@ -25,3 +25,4 @@ Configuration still resolves in the same order:
 Use `python3 -m agent_maintainer doctor --strict` after changing config policy,
 and use `python3 -m agent_maintainer guidance --check` when generated guidance
 may need to change.
+<!-- docsync:object.end docs.config_metadata.overview -->

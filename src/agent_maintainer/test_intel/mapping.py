@@ -148,9 +148,9 @@ def module_name_for_source(source_path: str, source_roots: tuple[str, ...]) -> s
 def relative_to_first_root(path: str, roots: tuple[str, ...]) -> str:
     """Return path relative to first matching configured root."""
 
-    clean_path = path.replace("\\", "/").lstrip("./")
+    clean_path = _normalize_repo_path(path)
     for root in roots:
-        clean_root = root.replace("\\", "/").strip("/")
+        clean_root = _normalize_repo_path(root)
         prefix = f"{clean_root}/"
         if clean_path.startswith(prefix):
             return clean_path.removeprefix(prefix)
@@ -165,6 +165,15 @@ def domain_parts(path: str, roots: tuple[str, ...]) -> tuple[str, ...]:
     if len(directories) <= 1:
         return tuple(directories)
     return tuple(directories[1:])
+
+
+def _normalize_repo_path(path: str) -> str:
+    """Return repository-relative path text without stripping dot directories."""
+
+    normalized = path.replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    return normalized.strip("/")
 
 
 def same_domain(source_domains: tuple[str, ...], test_path: str) -> bool:

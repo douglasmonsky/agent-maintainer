@@ -39,3 +39,4 @@ folder_file_block = 40
 structure_cluster_min = 4
 structure_hint_patterns = ["^maintainer_", "^check_", "_service$"]
 ```
+<!-- docsync:object.end docs.structure_cohesion.overview -->

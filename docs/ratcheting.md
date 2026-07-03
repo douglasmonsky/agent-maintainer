@@ -95,3 +95,4 @@ Planned capabilities include changed-code discipline, generated agent guidance i
 `AGENTS.ratchet.md`, context packs, and repair plans. The intended outcome is
 stricter maintenance over time without turning every old violation into
 immediate noise for the current change.
+<!-- docsync:object.end docs.ratcheting.overview -->

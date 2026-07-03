@@ -10,6 +10,7 @@ from agent_maintainer.core.config import MaintainerConfig
 from tests.change_plan.test_parser import valid_plan_text
 
 
+# docsync:evidence.start evidence.change_plans.budget_integration_tests
 def test_change_budget_active_plan_bends_size_and_test_budget(tmp_path: Path) -> None:
     """Valid plan can bend normal change-budget thresholds."""
 
@@ -178,6 +179,9 @@ def test_change_budget_invalid_active_plan_does_not_bend_budget(tmp_path: Path) 
 
     assert any("expired" in failure for failure in failures)
     assert any("Python source diff is too large" in failure for failure in failures)
+
+
+# docsync:evidence.end evidence.change_plans.budget_integration_tests
 
 
 def write_change_plan(

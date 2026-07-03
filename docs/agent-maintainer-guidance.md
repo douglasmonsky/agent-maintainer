@@ -142,3 +142,4 @@ in `AGENTS.agent-maintainer.md`.
 - [Architecture decisions](architecture/decisions/)
 - [Troubleshooting](troubleshooting.md)
 - [Roadmap](ROADMAP.md)
+<!-- docsync:object.end docs.agent_maintainer_guidance.overview -->

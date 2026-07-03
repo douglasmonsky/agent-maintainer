@@ -34,6 +34,18 @@ advisory facts for enabled ecosystems. The command currently reports:
 These summaries are evidence-gathering heuristics. They do not change exit
 status, widen verifier gates, or create TypeScript/JavaScript blocking policy.
 
+TypeScript/JavaScript advisory thresholds are configurable through:
+
+```toml
+[tool.agent_maintainer]
+typescript_advisory_source_warn_files = 4
+typescript_advisory_source_warn_lines = 200
+typescript_advisory_broad_suppression_warn = 1
+```
+
+These values only affect `assess reviewability` findings. They are not
+precommit, CI, or merge gates.
+
 ## File-Change Classification
 
 The internal `agent_maintainer.ecosystems.file_changes` seam lets enabled
@@ -53,6 +65,12 @@ behavior.
 
 This model records evidence for future policy adapters. It does not promise
 that all roles already affect blocking gates.
+
+`python -m agent_maintainer assess file-baselines` reports provider-neutral
+file group facts from explicit include/exclude globs. It covers simple facts
+such as matched files, changed files, changed lines, physical lines, and
+nonblank lines across docs, config, tests, TSX, YAML, TOML, or other configured
+groups. It does not perform import graph or language architecture analysis.
 
 ## Suppression Classification
 
@@ -98,9 +116,9 @@ change-budget yet. Cross-ecosystem aggregation should progress in this order:
 ## File Length And Structure Cohesion
 
 Keep file-length and structure-cohesion blocking behavior Python-only for now.
-Future TypeScript/JavaScript support should start advisory because file shapes
-vary across framework components, generated code, configuration files, and test
-fixtures.
+Future TypeScript/JavaScript or another ecosystem should move through
+provider-neutral file-baseline evidence first, then provider-specific policy
+adapters when language semantics matter.
 
 ## Next Direction
 
@@ -113,3 +131,4 @@ Recommended sequence:
 2. Treat TypeScript/JavaScript as the first serious non-Python provider.
 3. Use advisory evidence before introducing opt-in thresholds.
 4. Add blocking policy only after real-repo output stays low-noise.
+<!-- docsync:object.end docs.multi_ecosystem_reviewability_policy.overview -->
