@@ -135,6 +135,9 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 138 | [TypeScript Package Shape Evidence](phases/phase-138-typescript-package-shape-evidence.md) |
 | 139 | [TypeScript External Real-Repo Comparison](phases/phase-139-typescript-external-real-repo-comparison.md) |
 | 140 | [TypeScript Node Boilerplate External Comparison](phases/phase-140-typescript-node-boilerplate-external-comparison.md) |
+| 141 | [Provider-Neutral File Baseline Controls](phases/phase-141-provider-neutral-file-baseline-controls.md) |
+| 142 | [Runtime Telemetry And Dogfood Logging](phases/phase-142-runtime-telemetry-dogfood-logging.md) |
+| 143 | [DocSync Explicit Object End Markers](phases/phase-143-docsync-explicit-object-end-markers.md) |
 
 ## Future Work
 

@@ -371,6 +371,26 @@ Read more:
 
 [multi-ecosystem reviewability policy](docs/multi-ecosystem-reviewability-policy.md).
 
+## File Baseline Assessment
+
+Inspect simple file facts across configured file groups without changing
+blocking verifier policy:
+
+```bash
+python3 -m agent_maintainer assess file-baselines
+python3 -m agent_maintainer assess file-baselines --json
+```
+
+This is advisory. It works from explicit include/exclude globs and reports
+matched files, changed files, changed lines, line-count findings, and compact
+next commands. It is the broad filetype/path layer for docs, config, tests,
+TSX, YAML, TOML, or other file groups; language-specific architecture still
+belongs to provider adapters such as Tach for Python.
+
+Read more:
+
+[provider-neutral file baselines](docs/roadmap/provider-neutral-file-baselines.md).
+
 <!-- docsync:object docs.readme.technical_debt -->
 ## Technical Debt Score
 

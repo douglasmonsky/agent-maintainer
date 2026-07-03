@@ -11,6 +11,8 @@ from agent_maintainer.assess.debt_score import (
 )
 from agent_maintainer.assess.models import (
     DebtScoreReport,
+    FileBaselineFinding,
+    FileBaselineReport,
     ReviewabilityCount,
     ReviewabilityFinding,
     ReviewabilityProviderSummary,
@@ -120,6 +122,44 @@ def render_reviewability_text(report: ReviewabilityReport) -> str:
             for finding in report.suppressions
         )
     return "\n".join(lines)
+
+
+def render_file_baselines_text(report: FileBaselineReport) -> str:
+    """Render advisory provider-neutral file baseline summary."""
+    lines = [
+        "File Baseline Assessment",
+        f"Target: {report.target}",
+        f"Mode: {report.mode}",
+        f"Enabled: {report.enabled}",
+        "",
+        "Groups:",
+    ]
+    if report.groups:
+        lines.extend(
+            f"- {group.name} ({group.role}): matched={group.matched_files}, "
+            f"changed={group.changed_files} files/{group.changed_lines} lines, "
+            f"findings={group.findings}"
+            for group in report.groups
+        )
+    else:
+        lines.append("- None")
+    lines.extend(("", "Findings:"))
+    if report.findings:
+        lines.extend(_file_baseline_finding_line(finding) for finding in report.findings)
+    else:
+        lines.append("- None")
+    lines.extend(("", "Next commands:"))
+    lines.extend(f"- `{command}`" for command in report.next_commands)
+    return "\n".join(lines)
+
+
+def _file_baseline_finding_line(finding: FileBaselineFinding) -> str:
+    """Render one file-baseline finding without complex f-strings."""
+    path_prefix = f"{finding.path}: " if finding.path else ""
+    return (
+        f"- {finding.group}/{finding.kind}: "
+        f"{path_prefix}{finding.message}. {finding.recommendation}"
+    )
 
 
 def _count_lines(counts: tuple[ReviewabilityCount, ...]) -> list[str]:

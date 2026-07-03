@@ -40,6 +40,7 @@ DEFAULT_TYPESCRIPT_TEST_PROFILES = ("full", "ci")
 DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES = 4
 DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES = 200
 DEFAULT_TS_ADVISORY_BROAD_SUPPRESSION_WARN = 1
+DEFAULT_FILE_BASELINE_MODE = "advisory"
 DEFAULT_SBOM_ARGS = (
     "requirements",
     "config/dev-lock.txt",
@@ -134,6 +135,7 @@ BOOL_FIELDS = frozenset(
         "enable_osv_scanner",
         "enable_trivy",
         "enable_typescript",
+        "file_baselines_enabled",
         "enable_sbom",
         "enable_license_check",
         "enable_secret_scanning",
@@ -223,6 +225,22 @@ STR_FIELDS = frozenset(
     )
 )
 
+VALID_FILE_BASELINE_MODES = frozenset(("advisory", "blocking"))
+
+
+@dataclass(frozen=True)
+class FileBaselineGroupConfig:
+    """One provider-neutral watched file baseline group."""
+
+    name: str
+    include: tuple[str, ...]
+    exclude: tuple[str, ...] = ()
+    role: str = "unknown"
+    max_physical_lines: int = 0
+    max_nonblank_lines: int = 0
+    changed_file_warn: int = 0
+    changed_line_warn: int = 0
+
 
 @dataclass(frozen=True)
 class MaintainerConfig:
@@ -236,6 +254,9 @@ class MaintainerConfig:
     coverage_source: tuple[str, ...] = DEFAULT_COVERAGE_SOURCE
     file_length_paths: tuple[str, ...] = DEFAULT_FILE_LENGTH_PATHS
     vulture_paths: tuple[str, ...] = DEFAULT_VULTURE_PATHS
+    file_baselines_enabled: bool = False
+    file_baselines_mode: str = DEFAULT_FILE_BASELINE_MODE
+    file_baselines: tuple[FileBaselineGroupConfig, ...] = ()
     require_tests: bool = True
     coverage_fail_under: int = 80
     diff_cover_fail_under: int = 90

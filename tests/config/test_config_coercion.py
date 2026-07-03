@@ -94,3 +94,123 @@ def test_coerce_updates_preserves_context_compression_backend_error_context() ->
 
     with pytest.raises(TypeError, match=r"^context_compression_backend must be one of"):
         coercion.coerce_updates({"context_compression_backend": "external"})
+
+
+def test_file_baseline_tables() -> None:
+    """Top-level config coercion preserves nested file baseline tables."""
+    updates = coercion.coerce_updates(
+        {
+            "file_baselines": {
+                "enabled": True,
+                "mode": "blocking",
+                "groups": {
+                    "docs": {
+                        "include": ["docs/**/*.md"],
+                        "role": "docs",
+                    },
+                },
+            },
+        },
+    )
+
+    assert (
+        updates["file_baselines_enabled"],
+        updates["file_baselines_mode"],
+        updates["file_baselines"],
+    ) == (
+        True,
+        "blocking",
+        (
+            schema.FileBaselineGroupConfig(
+                name="docs",
+                include=("docs/**/*.md",),
+                role="docs",
+            ),
+        ),
+    )
+
+
+def test_file_baseline_group_fields() -> None:
+    """File baseline group coercion preserves every public field."""
+    group = coercion.coerce_file_baseline_group(
+        "docs",
+        {
+            "include": ["docs/**/*.md"],
+            "exclude": ["docs/generated/**"],
+            "role": "docs",
+            "max_physical_lines": 700,
+            "max_nonblank_lines": 600,
+            "changed_file_warn": 10,
+            "changed_line_warn": 500,
+        },
+    )
+
+    assert group == schema.FileBaselineGroupConfig(
+        name="docs",
+        include=("docs/**/*.md",),
+        exclude=("docs/generated/**",),
+        role="docs",
+        max_physical_lines=700,
+        max_nonblank_lines=600,
+        changed_file_warn=10,
+        changed_line_warn=500,
+    )
+
+
+def test_file_baseline_group_defaults_to_unknown_role() -> None:
+    """File baseline groups use a stable default role when none configured."""
+    group = coercion.coerce_file_baseline_group(
+        "docs",
+        {"include": ["docs/**/*.md"]},
+    )
+
+    assert group.role == "unknown"
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    (
+        (
+            {"enabled": object()},
+            r"^file_baselines\.enabled must be a boolean",
+        ),
+        (
+            {"mode": "external"},
+            r"^file_baselines\.mode must be one of",
+        ),
+    ),
+)
+def test_file_baseline_table_errors(payload: object, message: str) -> None:
+    """File baseline table coercion errors preserve public field names."""
+    with pytest.raises(TypeError, match=message):
+        coercion.coerce_file_baselines(payload)
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    (
+        ({"include": 12}, r"file_baselines\.groups\.docs\.include"),
+        ({"include": ["docs/**/*.md"], "exclude": 12}, r"file_baselines\.groups\.docs\.exclude"),
+        ({"include": ["docs/**/*.md"], "role": object()}, r"file_baselines\.groups\.docs\.role"),
+        (
+            {"include": ["docs/**/*.md"], "max_physical_lines": object()},
+            r"file_baselines\.groups\.docs\.max_physical_lines",
+        ),
+        (
+            {"include": ["docs/**/*.md"], "max_nonblank_lines": object()},
+            r"file_baselines\.groups\.docs\.max_nonblank_lines",
+        ),
+        (
+            {"include": ["docs/**/*.md"], "changed_file_warn": object()},
+            r"file_baselines\.groups\.docs\.changed_file_warn",
+        ),
+        (
+            {"include": ["docs/**/*.md"], "changed_line_warn": object()},
+            r"file_baselines\.groups\.docs\.changed_line_warn",
+        ),
+    ),
+)
+def test_file_baseline_group_errors(payload: object, message: str) -> None:
+    """File baseline group coercion errors keep nested field names."""
+    with pytest.raises(TypeError, match=message):
+        coercion.coerce_file_baseline_group("docs", payload)

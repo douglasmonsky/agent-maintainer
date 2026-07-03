@@ -1064,6 +1064,56 @@ Completed work:
 
 - [x] Phase 140: TypeScript Node Boilerplate External Comparison
 
+## Completed: Provider-Neutral File Baseline Controls
+
+Design provider-neutral controls for simple file facts such as length, nonblank
+lines, changed-file counts, changed-line counts, ignored/generated paths, and
+ratcheted baselines across explicit file groups. Keep Python's existing
+blocking checks unchanged, keep non-Python groups advisory by default, and do
+not use Tach as the language-neutral architecture answer.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-141-provider-neutral-file-baseline-controls.md`](roadmap/phases/phase-141-provider-neutral-file-baseline-controls.md)
+
+Detailed spec:
+
+[`docs/roadmap/provider-neutral-file-baselines.md`](roadmap/provider-neutral-file-baselines.md)
+
+Completed work:
+
+- [x] Phase 141: Provider-Neutral File Baseline Controls
+
+## Planned: Runtime Telemetry And Dogfood Logging
+
+Design a standards-aligned logging and telemetry path so Agent Maintainer can
+debug dogfooding quality without making normal agent output noisier.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-142-runtime-telemetry-dogfood-logging.md`](roadmap/phases/phase-142-runtime-telemetry-dogfood-logging.md)
+
+Detailed spec:
+
+[`docs/roadmap/runtime-telemetry-dogfood-logging.md`](roadmap/runtime-telemetry-dogfood-logging.md)
+
+Planned work:
+
+- [ ] Phase 142: Runtime Telemetry And Dogfood Logging
+
+## Planned: DocSync Explicit Object End Markers
+
+Make DocSync documentation object scope explicit by adding object end markers
+that mirror the existing evidence start/end marker discipline.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-143-docsync-explicit-object-end-markers.md`](roadmap/phases/phase-143-docsync-explicit-object-end-markers.md)
+
+Planned work:
+
+- [ ] Phase 143: DocSync Explicit Object End Markers
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
