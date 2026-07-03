@@ -65,3 +65,4 @@ the relevant function span.
 This fixture proves the workflow, not a production-scale split. A larger
 case study should measure the same commands on a file that actually exceeds
 the configured file-length warning threshold.
+<!-- docsync:object.end docs.case_studies_split_large_legacy_file.overview -->

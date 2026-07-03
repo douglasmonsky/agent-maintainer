@@ -1101,7 +1101,7 @@ Planned work:
 
 - [ ] Phase 142: Runtime Telemetry And Dogfood Logging
 
-## Planned: DocSync Explicit Object End Markers
+## Completed: DocSync Explicit Object End Markers
 
 Make DocSync documentation object scope explicit by adding object end markers
 that mirror the existing evidence start/end marker discipline.
@@ -1110,9 +1110,9 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-143-docsync-explicit-object-end-markers.md`](roadmap/phases/phase-143-docsync-explicit-object-end-markers.md)
 
-Planned work:
+Completed work:
 
-- [ ] Phase 143: DocSync Explicit Object End Markers
+- [x] Phase 143: DocSync Explicit Object End Markers
 
 ## Future Work
 

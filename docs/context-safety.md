@@ -178,3 +178,4 @@ artifact path while remaining bounded by `context_hook_budget_chars`.
 
 If pack generation fails, hooks fall back to bounded verifier output and include
 the pack-generation error so the failure remains diagnosable.
+<!-- docsync:object.end docs.context_safety.overview -->

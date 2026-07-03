@@ -63,7 +63,8 @@ depends_on = [
 [[modules]]
 path = "cli"
 depends_on = [
-  "commands.core",
+    "commands.core",
+    "commands.object_markers",
 ]
 
 [[modules]]
@@ -74,7 +75,16 @@ depends_on = [
   "reports.human",
   "reports.json_report",
   "reports.review_packet",
-  "reports.sarif",
+    "reports.sarif",
+]
+
+[[modules]]
+path = "commands.object_markers"
+depends_on = [
+    "config.load",
+    "markdown.object_regions",
+    "markdown.parser",
+    "trace.load",
 ]
 
 [[modules]]
@@ -121,8 +131,15 @@ depends_on = [
 [[modules]]
 path = "markdown.parser"
 depends_on = [
-  "core.fingerprints",
-  "core.models",
+    "core.fingerprints",
+    "core.models",
+    "markdown.object_regions",
+]
+
+[[modules]]
+path = "markdown.object_regions"
+depends_on = [
+    "core.models",
 ]
 
 [[modules]]

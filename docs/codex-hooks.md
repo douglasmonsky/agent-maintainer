@@ -60,3 +60,4 @@ prompt text, tool payloads, or verifier stdout/stderr.
 
 `python3 -m agent_maintainer doctor` reports the latest audited hook status when
 repo-local hooks are enabled.
+<!-- docsync:object.end docs.codex_hooks.overview -->

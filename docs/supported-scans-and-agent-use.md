@@ -49,3 +49,4 @@ python3 -m agent_maintainer assess file-baselines --json
 
 These commands are advisory. They should guide configuration and repair plans,
 not replace tests or reviewer judgment.
+<!-- docsync:object.end docs.supported_scans.overview -->

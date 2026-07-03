@@ -17,3 +17,4 @@ Start here:
 
 - [Split large legacy file](split-large-legacy-file.md)
 - [Context-safe ratchet repair](context-safe-ratchet-repair.md)
+<!-- docsync:object.end docs.case_studies.overview -->

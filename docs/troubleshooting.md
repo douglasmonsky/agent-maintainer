@@ -87,3 +87,4 @@ Agent Maintainer and hook subprocesses set `PYTHONDONTWRITEBYTECODE=1` by defaul
 `__pycache__` and `*.pyc` files are not produced during normal verification.
 Set `AGENT_MAINTAINER_WRITE_BYTECODE=true` only when explicitly debugging Python
 bytecode-cache behavior.
+<!-- docsync:object.end docs.troubleshooting.overview -->

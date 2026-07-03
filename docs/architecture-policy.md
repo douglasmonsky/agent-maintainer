@@ -62,3 +62,4 @@ See also:
 - [Structure cohesion](structure-cohesion.md)
 - [Tool map](tool-map.md)
 - [Architecture decisions](architecture/decisions/)
+<!-- docsync:object.end docs.architecture_policy.overview -->

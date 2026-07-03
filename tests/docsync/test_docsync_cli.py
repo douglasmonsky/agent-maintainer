@@ -9,6 +9,7 @@ import pytest
 
 from docsync import cli as docsync_cli
 from docsync.config.defaults import DEFAULT_CONFIG_TEXT
+from docsync.config.load import load_config
 
 
 def test_module_help_exits_success(capsys: pytest.CaptureFixture[str]) -> None:
@@ -51,6 +52,9 @@ def test_init_writes_docsync_files_and_agents_section(tmp_path: Path) -> None:
     assert (tmp_path / ".docsync" / "config.yml").exists()
     assert (tmp_path / ".docsync" / "trace.yml").exists()
     assert "## DocSync policy" in (tmp_path / "AGENTS.md").read_text(encoding="utf-8")
+    config = load_config(tmp_path)
+    assert config.object_end_marker == "docsync:object.end"
+    assert not config.require_object_end_markers
 
 
 def test_init_refuses_existing_files_without_force(
@@ -96,6 +100,29 @@ def test_core_commands_write_artifacts_from_fixture_repo(tmp_path: Path) -> None
     assert (tmp_path / ".docsync" / "out" / "review-packet.json").exists()
     assert (tmp_path / ".docsync" / "out" / "review-prompt.md").exists()
     assert tuple((tmp_path / ".docsync" / "attestations").glob("*.yml"))
+
+
+def test_repair_object_end_markers_dry_run_and_write(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Repair command inserts explicit object end markers only with --write."""
+    _write_repo(tmp_path)
+
+    dry_run = docsync_cli.main(["--repo-root", str(tmp_path), "repair-object-end-markers"])
+
+    assert dry_run == 0
+    assert "Would insert 1 DocSync object end marker" in capsys.readouterr().out
+    assert "docsync:object.end" not in (tmp_path / "README.md").read_text(encoding="utf-8")
+
+    write_run = docsync_cli.main(
+        ["--repo-root", str(tmp_path), "repair-object-end-markers", "--write"],
+    )
+
+    assert write_run == 0
+    content = (tmp_path / "README.md").read_text(encoding="utf-8")
+    assert "<!-- docsync:object.end docs.readme.demo -->" in content
+    assert docsync_cli.main(["--repo-root", str(tmp_path), "doctor"]) == 0
 
 
 def _write_repo(tmp_path: Path) -> None:

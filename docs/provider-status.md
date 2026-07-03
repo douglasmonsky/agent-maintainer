@@ -53,3 +53,4 @@ In the current beta:
   through `assess reviewability`.
 - TypeScript/JavaScript does not yet receive blocking change-budget,
   suppression-budget, file-length, structure-cohesion, or test-relevance gates.
+<!-- docsync:object.end docs.provider_status.overview -->

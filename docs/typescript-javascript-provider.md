@@ -140,3 +140,4 @@ are added.
 
 Read the [Provider Contribution Guide](provider-contribution-guide.md) before
 adding or promoting provider capabilities.
+<!-- docsync:object.end docs.typescript_provider.overview -->

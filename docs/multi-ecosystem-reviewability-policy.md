@@ -131,3 +131,4 @@ Recommended sequence:
 2. Treat TypeScript/JavaScript as the first serious non-Python provider.
 3. Use advisory evidence before introducing opt-in thresholds.
 4. Add blocking policy only after real-repo output stays low-noise.
+<!-- docsync:object.end docs.multi_ecosystem_reviewability_policy.overview -->
