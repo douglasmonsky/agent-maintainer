@@ -8,6 +8,8 @@ from pathlib import Path
 from agent_maintainer import models
 from agent_maintainer.config.schema import FRESH_STRICT_MODE, MaintainerConfig
 
+PIP_AUDIT_TIMEOUT_SECONDS = 300
+
 
 def pytest_command(config: MaintainerConfig) -> list[str]:
     """Build the coverage-enforcing pytest command."""
@@ -122,6 +124,7 @@ def pip_audit_check(config: MaintainerConfig) -> models.Check:
         models.FULL_PROFILES,
         required_executable="pip-audit",
         artifact_paths=(report_path_text,),
+        timeout_seconds=PIP_AUDIT_TIMEOUT_SECONDS,
     )
 
 

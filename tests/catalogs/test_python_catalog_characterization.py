@@ -6,6 +6,7 @@ import sys
 from dataclasses import replace
 
 from agent_maintainer.catalogs import catalog as maintainer_catalog
+from agent_maintainer.catalogs import python as python_catalog
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.ecosystems.models import EcosystemCheckContext
 from agent_maintainer.ecosystems.python.provider import PythonProvider
@@ -261,6 +262,19 @@ def test_optional_scanner_skip_contract_is_characterized() -> None:
     assert checks["trivy"].artifact_paths == (".verify-logs/trivy.json",)
     assert checks["sbom"].artifact_paths == (".verify-logs/sbom.cdx.json",)
     assert checks["license-check"].artifact_paths == (".verify-logs/licenses.json",)
+
+
+def test_enabled_pip_audit_has_bounded_runtime() -> None:
+    """Enabled pip-audit does not inherit the broad generic timeout."""
+
+    config = replace(
+        MaintainerConfig(),
+        enable_pip_audit=True,
+        pip_audit_args=("-r", "requirements.txt"),
+    )
+    checks = _checks_by_name(maintainer_catalog.make_checks(config, "HEAD", "origin/main"))
+
+    assert checks["pip-audit"].timeout_seconds == python_catalog.PIP_AUDIT_TIMEOUT_SECONDS
 
 
 def test_enabled_secret_scan_uses_runner_and_redacted_artifacts() -> None:
