@@ -100,7 +100,10 @@ python -m agent_maintainer test-intel mutation-results --path mutants/mutmut-cic
 ```
 
 The command reads Mutmut's exported CI/CD stats and summarizes killed,
-survived, suspicious, and timed-out mutants. It does not run Mutmut.
+survived, suspicious, and timed-out mutants. It prefers live
+`mutants/mutmut-cicd-stats.json`, then falls back to retained run or mutation
+sweep artifacts under `.verify-logs/` after successful cleanup. It does not run
+Mutmut.
 
 Repositories can enable
 `[tool.agent_maintainer].mutmut_result_ratchet_enabled` to make the manual

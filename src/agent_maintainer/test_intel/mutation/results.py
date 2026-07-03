@@ -15,7 +15,9 @@ from agent_maintainer.runners.mutmut_stats import (
 from agent_maintainer.runners.mutmut_stats import read_stats as read_mutmut_stats
 
 LOG_DIR = Path(".verify-logs") / "runs"
+SWEEP_LOG_DIR = Path(".verify-logs") / "mutation-sweeps"
 MUTMUT_LOG_NAME = "mutmut.log"
+MUTMUT_STATS_NAME = "mutmut-cicd-stats.json"
 LIVE_SOURCE = "live"
 RUN_ARTIFACT_SOURCE = "run-artifact"
 RATCHET_SUMMARY_RE = re.compile(
@@ -66,9 +68,24 @@ def read_result_source(path: Path = DEFAULT_STATS_PATH) -> MutationResultSource:
 
 
 def latest_artifact_source() -> MutationResultSource | None:
-    """Return newest parseable Mutmut run artifact stats when available."""
-    logs = sorted(LOG_DIR.glob(f"*/{MUTMUT_LOG_NAME}"), reverse=True)
-    for log_path in logs:
+    """Return newest parseable Mutmut run artifact stats available."""
+    for stats_path in sorted(
+        artifact_stats_paths(),
+        key=artifact_sort_key,
+        reverse=True,
+    ):
+        stats = stats_from_artifact(stats_path)
+        if stats is not None:
+            return MutationResultSource(
+                stats=stats,
+                kind=RUN_ARTIFACT_SOURCE,
+                path=stats_path,
+            )
+    for log_path in sorted(
+        LOG_DIR.glob(f"*/{MUTMUT_LOG_NAME}"),
+        key=artifact_sort_key,
+        reverse=True,
+    ):
         stats = stats_from_log(log_path)
         if stats is not None:
             return MutationResultSource(
@@ -77,6 +94,31 @@ def latest_artifact_source() -> MutationResultSource | None:
                 path=log_path,
             )
     return None
+
+
+def artifact_stats_paths() -> tuple[Path, ...]:
+    """Return retained Mutmut stats artifacts outside live mutants/."""
+    paths = tuple(LOG_DIR.glob(f"*/{MUTMUT_STATS_NAME}"))
+    if SWEEP_LOG_DIR.exists():
+        paths += tuple(SWEEP_LOG_DIR.glob(f"**/{MUTMUT_STATS_NAME}"))
+    return paths
+
+
+def stats_from_artifact(path: Path) -> MutmutStats | None:
+    """Return parsed Mutmut stats artifact when readable."""
+    try:
+        return read_mutmut_stats(path)
+    except (OSError, ValueError):
+        return None
+
+
+def artifact_sort_key(path: Path) -> tuple[int, str]:
+    """Return deterministic newest-first artifact sort key."""
+    try:
+        mtime = path.stat().st_mtime_ns
+    except OSError:
+        mtime = 0
+    return (mtime, path.as_posix())
 
 
 def stats_from_log(path: Path) -> MutmutStats | None:

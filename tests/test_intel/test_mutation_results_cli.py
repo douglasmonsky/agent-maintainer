@@ -78,6 +78,46 @@ def test_mutation_results_cli_reads_latest_run_artifact(
     )
 
 
+def test_mutation_results_cli_reads_latest_sweep_stats_artifact(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Cleaned Mutmut runs remain readable from retained sweep stats."""
+    monkeypatch.chdir(tmp_path)
+    old_stats = (
+        tmp_path / ".verify-logs" / "mutation-sweeps" / "20200101T000000Z-old" / "candidate-01"
+    )
+    new_stats = (
+        tmp_path / ".verify-logs" / "mutation-sweeps" / "20200102T000000Z-new" / "candidate-01"
+    )
+    invalid_stats = (
+        tmp_path
+        / ".verify-logs"
+        / "mutation-sweeps"
+        / "20200103T000000Z-invalid"
+        / "candidate-01"
+        / "mutants"
+        / "mutmut-cicd-stats.json"
+    )
+    old_stats.mkdir(parents=True)
+    new_stats.mkdir(parents=True)
+    write_mutmut_stats(old_stats)
+    write_mutmut_stats(new_stats)
+    invalid_stats.parent.mkdir(parents=True)
+    invalid_stats.write_text("[]", encoding="utf-8")
+
+    assert cli.main(["mutation-results", "--format", "json"]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["survived"] == SURVIVED_MUTANTS
+    assert payload["source"]["kind"] == "run-artifact"
+    assert payload["source"]["path"].endswith(
+        ".verify-logs/mutation-sweeps/20200102T000000Z-new/"
+        "candidate-01/mutants/mutmut-cicd-stats.json",
+    )
+
+
 def test_mutation_results_cli_fails_when_stats_missing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

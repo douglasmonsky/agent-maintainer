@@ -897,6 +897,19 @@ Completed work:
 
 - [x] Phase 128: Active DocSync Coverage Ratchet
 
+## Completed: Mutation Results Artifact Fallback
+
+Keep `test-intel mutation-results` useful after live `mutants/` artifacts are
+cleaned by falling back to retained run and mutation-sweep diagnostics.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-129-mutation-results-artifact-fallback.md`](roadmap/phases/phase-129-mutation-results-artifact-fallback.md)
+
+Completed work:
+
+- [x] Phase 129: Mutation Results Artifact Fallback
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
