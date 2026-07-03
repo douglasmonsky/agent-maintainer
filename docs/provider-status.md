@@ -7,12 +7,14 @@ careful expansion. Do not read experimental providers as feature parity.
 | Ecosystem | Maturity | Current Support | Not Yet |
 |---|---|---|---|
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security/dependency checks, doctor support, repair facts, starter templates. | External plugin API. |
-| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, and Jest-compatible JSON repair facts; doctor setup rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters. |
+| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest-compatible JSON repair facts; doctor setup rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters. |
 
 ## Current Focus
 
-TypeScript/JavaScript is the first serious non-Python provider maturation track.
-Do not read it as currently supported at Python parity.
+TypeScript/JavaScript is the first serious non-Python provider maturation
+track. It should not move beyond experimental status until it satisfies the
+promotion bar in
+[TypeScript Provider Maturation Notes](case-studies/typescript-provider-maturation.md).
 
 ## Design Rule
 
@@ -22,9 +24,9 @@ Providers own ecosystem-specific excellence: commands, file classification,
 suppression rules, coverage artifacts, doctor rows, repair facts, scaffold
 snippets, and maturity-specific guidance.
 
-If provider abstraction makes an existing Python feature harder to express, the
-abstraction is wrong. Python remains the reference provider and may stay richer
-than experimental providers.
+If a provider abstraction makes an existing Python feature harder to express,
+the abstraction is wrong. Python remains the reference provider and can stay
+richer than experimental providers.
 
 ## Reviewability Policy
 

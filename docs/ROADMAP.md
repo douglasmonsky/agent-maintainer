@@ -812,8 +812,9 @@ Completed work:
 
 - Continue adding section-level DocSync claims as public docs materially change,
   especially where a claim can point to durable implementation or test evidence.
-- Avoid adding new ecosystems until TypeScript/JavaScript reaches clearly
-  defined supported-experimental or supported bar.
+- Avoid adding new ecosystems until TypeScript/JavaScript satisfies the
+  promotion bar in
+  [`docs/case-studies/typescript-provider-maturation.md`](case-studies/typescript-provider-maturation.md).
 
 ## Final Definition Of Done
 
