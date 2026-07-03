@@ -1,3 +1,4 @@
+<!-- docsync:object docs.case_studies.overview -->
 # Measured Case Studies
 
 These case studies are small, reproducible fixtures that show how Agent

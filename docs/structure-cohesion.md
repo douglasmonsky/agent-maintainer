@@ -1,3 +1,4 @@
+<!-- docsync:object docs.structure_cohesion.overview -->
 # Structure Cohesion
 
 Folder file count is a smell, not proof of bad design. The structure check warns when

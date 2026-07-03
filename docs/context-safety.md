@@ -1,3 +1,4 @@
+<!-- docsync:object docs.context_safety.overview -->
 # Context Safety
 
 Context safety keeps verification feedback useful when a repository has large

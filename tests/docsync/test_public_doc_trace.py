@@ -57,6 +57,48 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.architecture_policy_tach",
 }
 
+ACTIVE_DOC_PATHS = {
+    "README.md",
+    "docs/agent-client-hooks.md",
+    "docs/agent-maintainer-guidance.md",
+    "docs/architecture-policy.md",
+    "docs/change-plans.md",
+    "docs/codex-hooks.md",
+    "docs/cohesive-change-overrides.md",
+    "docs/cohesive-change-plans.md",
+    "docs/config-metadata.md",
+    "docs/context-compression.md",
+    "docs/context-safety.md",
+    "docs/diagnostics-repair-loop.md",
+    "docs/docsync-extraction.md",
+    "docs/fresh-strict.md",
+    "docs/legacy-ratchet.md",
+    "docs/multi-ecosystem-reviewability-policy.md",
+    "docs/mutation-testing.md",
+    "docs/onboarding-first-run.md",
+    "docs/optional-gates.md",
+    "docs/provider-contribution-guide.md",
+    "docs/provider-status.md",
+    "docs/quick-start.md",
+    "docs/ratcheting.md",
+    "docs/release-checklist.md",
+    "docs/setup-advisor.md",
+    "docs/structure-cohesion.md",
+    "docs/supported-scans-and-agent-use.md",
+    "docs/team-policy-templates.md",
+    "docs/technical-debt-score.md",
+    "docs/test-intelligence.md",
+    "docs/tool-map.md",
+    "docs/troubleshooting.md",
+    "docs/typescript-javascript-provider.md",
+    "docs/case-studies/README.md",
+    "docs/case-studies/context-safe-ratchet-repair.md",
+    "docs/case-studies/split-large-legacy-file.md",
+    "docs/case-studies/typescript-provider-maturation.md",
+    "docs/releases/0.1.0b4.md",
+    "docs/releases/0.1.0b5.md",
+}
+
 
 def test_readme_public_claims_are_traced() -> None:
     """README onboarding claims stay connected to trace evidence."""
@@ -96,17 +138,27 @@ def test_public_docs_claims_are_traced() -> None:
             assert evidence_id in evidence
 
 
-def test_public_doc_objects_have_claim_coverage() -> None:
-    """Every public traced doc object has at least one claim."""
+def test_active_docs_have_trace_overview_coverage() -> None:
+    """Active docs are listed in DocSync and have live overview objects."""
     trace = yaml.safe_load(Path(".docsync/trace.yml").read_text(encoding="utf-8"))
     documents = trace["documents"]
     objects = trace["objects"]
-    claims = trace["claims"]
-    public_objects = {
-        object_id
-        for object_id, obj in objects.items()
-        if documents[obj["document"]]["audience"] == "public"
+
+    traced_paths = {document["path"] for document in documents.values()}
+    assert traced_paths >= ACTIVE_DOC_PATHS
+
+    overview_paths = {
+        obj["path"] for object_id, obj in objects.items() if object_id.endswith(".overview")
     }
+    assert overview_paths >= ACTIVE_DOC_PATHS
+
+
+def test_public_doc_objects_have_claim_coverage() -> None:
+    """High-value public doc objects have at least one evidence-backed claim."""
+    trace = yaml.safe_load(Path(".docsync/trace.yml").read_text(encoding="utf-8"))
+    objects = trace["objects"]
+    claims = trace["claims"]
     claimed_objects = {claim["object"] for claim in claims.values()}
 
-    assert public_objects - claimed_objects == set()
+    assert set(objects) >= PUBLIC_DOC_OBJECTS
+    assert PUBLIC_DOC_OBJECTS - claimed_objects == set()

@@ -1,3 +1,4 @@
+<!-- docsync:object docs.team_policy_templates.overview -->
 # Team Policy Templates
 
 Team policy templates are named initializer presets for common adoption

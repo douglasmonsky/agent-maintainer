@@ -884,6 +884,19 @@ Completed work:
 
 - [x] Phase 127: Git Metadata Duplicate Artifact Warning
 
+## Completed: Active DocSync Coverage Ratchet
+
+Make DocSync dogfood the active documentation set at the overview level by
+requiring active docs to have trace document entries and live overview markers.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-128-active-docsync-coverage-ratchet.md`](roadmap/phases/phase-128-active-docsync-coverage-ratchet.md)
+
+Completed work:
+
+- [x] Phase 128: Active DocSync Coverage Ratchet
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,

@@ -56,6 +56,106 @@ documents:
     path: docs/architecture-policy.md
     title: Architecture Policy
     audience: maintainers
+  docs.agent_maintainer_guidance:
+    path: docs/agent-maintainer-guidance.md
+    title: Agent Maintainer Guidance
+    audience: maintainers
+  docs.change_plans:
+    path: docs/change-plans.md
+    title: Cohesive Change Plans
+    audience: public
+  docs.codex_hooks:
+    path: docs/codex-hooks.md
+    title: Codex Hooks
+    audience: public
+  docs.cohesive_change_overrides:
+    path: docs/cohesive-change-overrides.md
+    title: Cohesive-Change Overrides
+    audience: public
+  docs.cohesive_change_plans:
+    path: docs/cohesive-change-plans.md
+    title: Cohesive Change Plans
+    audience: public
+  docs.config_metadata:
+    path: docs/config-metadata.md
+    title: Configuration Metadata
+    audience: maintainers
+  docs.context_safety:
+    path: docs/context-safety.md
+    title: Context Safety
+    audience: public
+  docs.fresh_strict:
+    path: docs/fresh-strict.md
+    title: Fresh Strict Mode
+    audience: public
+  docs.legacy_ratchet:
+    path: docs/legacy-ratchet.md
+    title: Legacy Ratchet Mode
+    audience: public
+  docs.multi_ecosystem_reviewability_policy:
+    path: docs/multi-ecosystem-reviewability-policy.md
+    title: Multi-Ecosystem Reviewability Policy
+    audience: public
+  docs.mutation_testing:
+    path: docs/mutation-testing.md
+    title: Mutation Testing
+    audience: public
+  docs.optional_gates:
+    path: docs/optional-gates.md
+    title: Optional Gates
+    audience: public
+  docs.provider_contribution_guide:
+    path: docs/provider-contribution-guide.md
+    title: Provider Contribution Guide
+    audience: public
+  docs.setup_advisor:
+    path: docs/setup-advisor.md
+    title: Setup Advisor
+    audience: public
+  docs.structure_cohesion:
+    path: docs/structure-cohesion.md
+    title: Structure Cohesion
+    audience: public
+  docs.team_policy_templates:
+    path: docs/team-policy-templates.md
+    title: Team Policy Templates
+    audience: public
+  docs.technical_debt_score:
+    path: docs/technical-debt-score.md
+    title: Technical Debt Score
+    audience: public
+  docs.test_intelligence:
+    path: docs/test-intelligence.md
+    title: Test Intelligence
+    audience: public
+  docs.tool_map:
+    path: docs/tool-map.md
+    title: Tool map
+    audience: public
+  docs.troubleshooting:
+    path: docs/troubleshooting.md
+    title: Troubleshooting
+    audience: public
+  docs.case_studies:
+    path: docs/case-studies/README.md
+    title: Measured Case Studies
+    audience: public
+  docs.case_studies_context_safe_ratchet_repair:
+    path: docs/case-studies/context-safe-ratchet-repair.md
+    title: Context-Safe Ratchet Repair
+    audience: public
+  docs.case_studies_split_large_legacy_file:
+    path: docs/case-studies/split-large-legacy-file.md
+    title: Split Large Legacy File
+    audience: public
+  docs.release_0_1_0b4:
+    path: docs/releases/0.1.0b4.md
+    title: Agent Maintainer 0.1.0b4 Release Evidence
+    audience: maintainers
+  docs.release_0_1_0b5:
+    path: docs/releases/0.1.0b5.md
+    title: Agent Maintainer 0.1.0b5 Release Evidence
+    audience: maintainers
 objects:
   docs.docsync_extraction.overview:
     document: docs.docsync_extraction
@@ -217,6 +317,206 @@ objects:
     heading:
       level: 1
       text: Architecture Policy
+  docs.agent_maintainer_guidance.overview:
+    document: docs.agent_maintainer_guidance
+    kind: heading_section
+    path: docs/agent-maintainer-guidance.md
+    marker: docs.agent_maintainer_guidance.overview
+    heading:
+      level: 1
+      text: Agent Maintainer Guidance
+  docs.change_plans.overview:
+    document: docs.change_plans
+    kind: heading_section
+    path: docs/change-plans.md
+    marker: docs.change_plans.overview
+    heading:
+      level: 1
+      text: Cohesive Change Plans
+  docs.codex_hooks.overview:
+    document: docs.codex_hooks
+    kind: heading_section
+    path: docs/codex-hooks.md
+    marker: docs.codex_hooks.overview
+    heading:
+      level: 1
+      text: Codex Hooks
+  docs.cohesive_change_overrides.overview:
+    document: docs.cohesive_change_overrides
+    kind: heading_section
+    path: docs/cohesive-change-overrides.md
+    marker: docs.cohesive_change_overrides.overview
+    heading:
+      level: 1
+      text: Cohesive-Change Overrides
+  docs.cohesive_change_plans.overview:
+    document: docs.cohesive_change_plans
+    kind: heading_section
+    path: docs/cohesive-change-plans.md
+    marker: docs.cohesive_change_plans.overview
+    heading:
+      level: 1
+      text: Cohesive Change Plans
+  docs.config_metadata.overview:
+    document: docs.config_metadata
+    kind: heading_section
+    path: docs/config-metadata.md
+    marker: docs.config_metadata.overview
+    heading:
+      level: 1
+      text: Configuration Metadata
+  docs.context_safety.overview:
+    document: docs.context_safety
+    kind: heading_section
+    path: docs/context-safety.md
+    marker: docs.context_safety.overview
+    heading:
+      level: 1
+      text: Context Safety
+  docs.fresh_strict.overview:
+    document: docs.fresh_strict
+    kind: heading_section
+    path: docs/fresh-strict.md
+    marker: docs.fresh_strict.overview
+    heading:
+      level: 1
+      text: Fresh Strict Mode
+  docs.legacy_ratchet.overview:
+    document: docs.legacy_ratchet
+    kind: heading_section
+    path: docs/legacy-ratchet.md
+    marker: docs.legacy_ratchet.overview
+    heading:
+      level: 1
+      text: Legacy Ratchet Mode
+  docs.multi_ecosystem_reviewability_policy.overview:
+    document: docs.multi_ecosystem_reviewability_policy
+    kind: heading_section
+    path: docs/multi-ecosystem-reviewability-policy.md
+    marker: docs.multi_ecosystem_reviewability_policy.overview
+    heading:
+      level: 1
+      text: Multi-Ecosystem Reviewability Policy
+  docs.mutation_testing.overview:
+    document: docs.mutation_testing
+    kind: heading_section
+    path: docs/mutation-testing.md
+    marker: docs.mutation_testing.overview
+    heading:
+      level: 1
+      text: Mutation Testing
+  docs.optional_gates.overview:
+    document: docs.optional_gates
+    kind: heading_section
+    path: docs/optional-gates.md
+    marker: docs.optional_gates.overview
+    heading:
+      level: 1
+      text: Optional Gates
+  docs.provider_contribution_guide.overview:
+    document: docs.provider_contribution_guide
+    kind: heading_section
+    path: docs/provider-contribution-guide.md
+    marker: docs.provider_contribution_guide.overview
+    heading:
+      level: 1
+      text: Provider Contribution Guide
+  docs.setup_advisor.overview:
+    document: docs.setup_advisor
+    kind: heading_section
+    path: docs/setup-advisor.md
+    marker: docs.setup_advisor.overview
+    heading:
+      level: 1
+      text: Setup Advisor
+  docs.structure_cohesion.overview:
+    document: docs.structure_cohesion
+    kind: heading_section
+    path: docs/structure-cohesion.md
+    marker: docs.structure_cohesion.overview
+    heading:
+      level: 1
+      text: Structure Cohesion
+  docs.team_policy_templates.overview:
+    document: docs.team_policy_templates
+    kind: heading_section
+    path: docs/team-policy-templates.md
+    marker: docs.team_policy_templates.overview
+    heading:
+      level: 1
+      text: Team Policy Templates
+  docs.technical_debt_score.overview:
+    document: docs.technical_debt_score
+    kind: heading_section
+    path: docs/technical-debt-score.md
+    marker: docs.technical_debt_score.overview
+    heading:
+      level: 1
+      text: Technical Debt Score
+  docs.test_intelligence.overview:
+    document: docs.test_intelligence
+    kind: heading_section
+    path: docs/test-intelligence.md
+    marker: docs.test_intelligence.overview
+    heading:
+      level: 1
+      text: Test Intelligence
+  docs.tool_map.overview:
+    document: docs.tool_map
+    kind: heading_section
+    path: docs/tool-map.md
+    marker: docs.tool_map.overview
+    heading:
+      level: 1
+      text: Tool map
+  docs.troubleshooting.overview:
+    document: docs.troubleshooting
+    kind: heading_section
+    path: docs/troubleshooting.md
+    marker: docs.troubleshooting.overview
+    heading:
+      level: 1
+      text: Troubleshooting
+  docs.case_studies.overview:
+    document: docs.case_studies
+    kind: heading_section
+    path: docs/case-studies/README.md
+    marker: docs.case_studies.overview
+    heading:
+      level: 1
+      text: Measured Case Studies
+  docs.case_studies_context_safe_ratchet_repair.overview:
+    document: docs.case_studies_context_safe_ratchet_repair
+    kind: heading_section
+    path: docs/case-studies/context-safe-ratchet-repair.md
+    marker: docs.case_studies_context_safe_ratchet_repair.overview
+    heading:
+      level: 1
+      text: Context-Safe Ratchet Repair
+  docs.case_studies_split_large_legacy_file.overview:
+    document: docs.case_studies_split_large_legacy_file
+    kind: heading_section
+    path: docs/case-studies/split-large-legacy-file.md
+    marker: docs.case_studies_split_large_legacy_file.overview
+    heading:
+      level: 1
+      text: Split Large Legacy File
+  docs.release_0_1_0b4.overview:
+    document: docs.release_0_1_0b4
+    kind: heading_section
+    path: docs/releases/0.1.0b4.md
+    marker: docs.release_0_1_0b4.overview
+    heading:
+      level: 1
+      text: Agent Maintainer 0.1.0b4 Release Evidence
+  docs.release_0_1_0b5.overview:
+    document: docs.release_0_1_0b5
+    kind: heading_section
+    path: docs/releases/0.1.0b5.md
+    marker: docs.release_0_1_0b5.overview
+    heading:
+      level: 1
+      text: Agent Maintainer 0.1.0b5 Release Evidence
 claims:
   claim.docsync.extractable_boundary:
     object: docs.docsync_extraction.overview

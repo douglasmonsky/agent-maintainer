@@ -1,3 +1,4 @@
+<!-- docsync:object docs.case_studies_context_safe_ratchet_repair.overview -->
 # Context-Safe Ratchet Repair
 
 This case study uses the

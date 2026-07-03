@@ -1,3 +1,4 @@
+<!-- docsync:object docs.config_metadata.overview -->
 # Configuration Metadata
 
 Agent Maintainer treats `[tool.agent_maintainer]` as a public surface. Each

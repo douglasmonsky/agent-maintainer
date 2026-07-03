@@ -1,3 +1,4 @@
+<!-- docsync:object docs.tool_map.overview -->
 # Tool map
 
 Experimental ecosystem providers are documented separately when they are not

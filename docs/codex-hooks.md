@@ -1,3 +1,4 @@
+<!-- docsync:object docs.codex_hooks.overview -->
 # Codex Hooks
 
 For the full managed hook installer covering Codex and Claude Code, see

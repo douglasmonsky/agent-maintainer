@@ -1,3 +1,4 @@
+<!-- docsync:object docs.optional_gates.overview -->
 # Optional Gates
 
 Agent Maintainer distinguishes starter adoption from optional hardening. A repo

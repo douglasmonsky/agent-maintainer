@@ -1,3 +1,4 @@
+<!-- docsync:object docs.troubleshooting.overview -->
 # Troubleshooting
 
 Start with:

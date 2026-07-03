@@ -1,3 +1,4 @@
+<!-- docsync:object docs.setup_advisor.overview -->
 # Setup Advisor
 
 The setup advisor inspects a repository and recommends a practical Agent
