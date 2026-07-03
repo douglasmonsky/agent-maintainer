@@ -49,10 +49,10 @@ example repos, and the first cohesive-change budget exception.
 
 Current external release state:
 
-- [x] `agent-maintainer==0.1.0b4` is published to TestPyPI and PyPI,
-      attached to GitHub prerelease `v0.1.0b4`, and smoke-tested from both
+- [x] `agent-maintainer==0.1.0b5` is published to TestPyPI and PyPI,
+      attached to GitHub prerelease `v0.1.0b5`, and smoke-tested from both
       package indexes. Release evidence is recorded in
-      [`docs/releases/0.1.0b4.md`](releases/0.1.0b4.md).
+      [`docs/releases/0.1.0b5.md`](releases/0.1.0b5.md).
 
 Current pre-case-study decision:
 

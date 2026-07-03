@@ -35,6 +35,7 @@ def test_readme_uses_public_beta_framing() -> None:
     assert "python3 -m agent_maintainer assess setup" in text
     assert "python3 -m agent_maintainer assess debt" in text
     assert "[Release checklist](docs/release-checklist.md)" in text
+    assert "[0.1.0b5 release notes](docs/releases/0.1.0b5.md)" in text
     assert "[MIT License](LICENSE)" in text
     assert "[Changelog](CHANGELOG.md)" in text
     assert "docs/assets/graphics/agent-maintainer-social-preview.png" in text
@@ -57,6 +58,8 @@ def test_license_and_changelog_are_public_beta_ready() -> None:
 
     assert license_text.startswith("MIT License\n")
     assert "Copyright (c) 2026 Doug Monsky" in license_text
+    assert "## 0.1.0b5 - 2026-07-03" in changelog
+    assert "Fifth beta release of Agent Maintainer." in changelog
     assert "## 0.1.0b4 - 2026-06-29" in changelog
     assert "Fourth beta release of Agent Maintainer." in changelog
     assert "quiet on success and bounded on failure" in changelog
