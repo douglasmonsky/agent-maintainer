@@ -45,6 +45,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
 
+# docsync:evidence.start evidence.agent_hooks.configured_repo_noop
 def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int:
     """Run Agent Maintainer verification for one hook event."""
 
@@ -164,6 +165,9 @@ def maintainer_configured(repo_root: Path) -> bool:
         return "[tool.agent_maintainer]" in pyproject.read_text(encoding="utf-8")
     except OSError:
         return False
+
+
+# docsync:evidence.end evidence.agent_hooks.configured_repo_noop
 
 
 def verifier_command(repo_root: Path, profile: str) -> list[str]:

@@ -1,3 +1,5 @@
+<!-- docsync:object docs.agent_client_hooks.overview -->
+
 # Agent Client Hooks
 
 Agent Maintainer can install managed hooks for supported coding-agent clients.

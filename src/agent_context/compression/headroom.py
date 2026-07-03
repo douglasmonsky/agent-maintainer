@@ -9,6 +9,7 @@ from typing import Any
 from agent_context.compression.models import CompressionRequest
 
 BACKEND_HEADROOM = "headroom"
+# docsync:evidence.start evidence.context_compression.headroom_boundary
 HEADROOM_INSTALL_MESSAGE = (
     "Headroom compression requested but not installed. Install: python -m pip "
     'install "agent-maintainer[compression]"'
@@ -62,6 +63,9 @@ def headroom_messages(request: CompressionRequest) -> list[dict[str, str]]:
             "content": request.content,
         },
     ]
+
+
+# docsync:evidence.end evidence.context_compression.headroom_boundary
 
 
 def normalized_headroom_content(result: object) -> str:

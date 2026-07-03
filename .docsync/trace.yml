@@ -32,6 +32,14 @@ documents:
     path: docs/provider-status.md
     title: Ecosystem Provider Status
     audience: public
+  docs.agent_client_hooks:
+    path: docs/agent-client-hooks.md
+    title: Agent Client Hooks
+    audience: public
+  docs.context_compression:
+    path: docs/context-compression.md
+    title: Context Compression
+    audience: public
 objects:
   docs.docsync_extraction.overview:
     document: docs.docsync_extraction
@@ -145,6 +153,22 @@ objects:
     heading:
       level: 1
       text: Ecosystem Provider Status
+  docs.agent_client_hooks.overview:
+    document: docs.agent_client_hooks
+    kind: heading_section
+    path: docs/agent-client-hooks.md
+    marker: docs.agent_client_hooks.overview
+    heading:
+      level: 1
+      text: Agent Client Hooks
+  docs.context_compression.overview:
+    document: docs.context_compression
+    kind: heading_section
+    path: docs/context-compression.md
+    marker: docs.context_compression.overview
+    heading:
+      level: 1
+      text: Context Compression
 claims:
   claim.docsync.extractable_boundary:
     object: docs.docsync_extraction.overview
@@ -274,6 +298,21 @@ claims:
     evidence:
     - evidence.readme.catalog_composition
     - evidence.readme.python_provider_checks
+  claim.docs.agent_hooks_install_surface:
+    object: docs.agent_client_hooks.overview
+    text: Agent hook docs describe Codex and Claude Code hook installation, repo/user scope behavior, and configured-repo-only hook execution.
+    severity: high
+    evidence:
+      - evidence.agent_hooks.generated_templates
+      - evidence.agent_hooks.configured_repo_noop
+  claim.docs.context_compression_safety:
+    object: docs.context_compression.overview
+    text: Context compression docs describe deterministic defaults, optional Headroom support, fallback behavior, and sanitized supporting-context boundary.
+    severity: medium
+    evidence:
+      - evidence.context_compression.deterministic_backends
+      - evidence.context_compression.headroom_boundary
+      - evidence.context_compression.pack_fallback
 evidence:
   evidence.docsync.domain_contract:
     type: code
@@ -357,5 +396,35 @@ evidence:
     type: code
     description: Verifier writes run-scoped artifacts and LAST_FAILURE.md latest pointer.
     anchors:
-    - path: src/agent_maintainer/verify/artifacts.py
-      mode: explicit_region
+      - path: src/agent_maintainer/verify/artifacts.py
+        mode: explicit_region
+  evidence.agent_hooks.generated_templates:
+    type: code
+    description: Hook templates generate Codex and Claude Code repo-local and user-scope commands.
+    anchors:
+      - path: src/agent_client_hooks/templates.py
+        mode: explicit_region
+  evidence.agent_hooks.configured_repo_noop:
+    type: code
+    description: Hook runtime no-ops outside configured repositories and runs only opted-in Agent Maintainer repos.
+    anchors:
+      - path: src/agent_maintainer/hooks/runtime.py
+        mode: explicit_region
+  evidence.context_compression.deterministic_backends:
+    type: code
+    description: Deterministic compression backends preserve required terms or fall back to extractive compression.
+    anchors:
+      - path: src/agent_context/compression/backends.py
+        mode: explicit_region
+  evidence.context_compression.headroom_boundary:
+    type: code
+    description: Optional Headroom adapter imports the dependency lazily and sends one sanitized supporting-context message.
+    anchors:
+      - path: src/agent_context/compression/headroom.py
+        mode: explicit_region
+  evidence.context_compression.pack_fallback:
+    type: code
+    description: Context pack compression falls back unless compression is required.
+    anchors:
+      - path: src/agent_maintainer/context/pack/compression.py
+        mode: explicit_region

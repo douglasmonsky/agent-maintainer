@@ -32,6 +32,8 @@ PUBLIC_DOC_OBJECTS = {
     "docs.supported_scans.overview",
     "docs.ratcheting.overview",
     "docs.provider_status.overview",
+    "docs.agent_client_hooks.overview",
+    "docs.context_compression.overview",
 }
 
 PUBLIC_DOC_CLAIMS = {
@@ -41,6 +43,8 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.supported_scans_catalog",
     "claim.docs.ratcheting_command_surface",
     "claim.docs.provider_status_python_core",
+    "claim.docs.agent_hooks_install_surface",
+    "claim.docs.context_compression_safety",
 }
 
 
