@@ -817,6 +817,7 @@ and test evidence while avoiding new ecosystem scope. Detailed scope:
 [`docs/roadmap/phases/phase-122-provider-specific-docsync-evidence.md`](roadmap/phases/phase-122-provider-specific-docsync-evidence.md)
 
 Completed work:
+
 - [x] Phase 122: Provider-Specific DocSync Evidence
 
 ## Future Work
