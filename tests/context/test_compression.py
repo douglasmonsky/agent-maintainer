@@ -7,8 +7,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from agent_maintainer.context.compression import headroom as headroom_backend
-from agent_maintainer.context.compression.backends import (
+from agent_context.compression import headroom as headroom_backend
+from agent_context.compression.backends import (
     BACKEND_EXTRACTIVE,
     BACKEND_NONE,
     BACKEND_TRUNCATE,
@@ -17,12 +17,25 @@ from agent_maintainer.context.compression.backends import (
     none_compress,
     truncate_compress,
 )
-from agent_maintainer.context.compression.headroom import (
+from agent_context.compression.headroom import (
     BACKEND_HEADROOM,
     CompressionBackendError,
     CompressionBackendUnavailable,
 )
-from agent_maintainer.context.compression.models import CompressionRequest
+from agent_context.compression.models import CompressionRequest
+from agent_maintainer.context.compression import backends as compatibility_backends
+from agent_maintainer.context.compression import headroom as compatibility_headroom
+from agent_maintainer.context.compression.models import (
+    CompressionRequest as CompatibilityCompressionRequest,
+)
+
+
+def test_context_compression_compatibility_shims() -> None:
+    """Old product paths forward to reusable compression helpers."""
+
+    assert compatibility_backends.compress is compress
+    assert compatibility_headroom.BACKEND_HEADROOM == BACKEND_HEADROOM
+    assert CompatibilityCompressionRequest is CompressionRequest
 
 
 def test_none_backend_returns_original_content() -> None:

@@ -6,6 +6,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 
 - [Mission, baseline, architecture target, execution rules](overview.md)
 - [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md)
+- [Final Definition of Done](final-definition-of-done.md)
 
 ## Phases
 
@@ -112,9 +113,4 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 116 | [Internal Package Boundary Regression Tests](phases/phase-116-internal-package-boundary-tests.md) |
 | 117 | [README DocSync Evidence Ratchet](phases/phase-117-readme-docsync-evidence.md) |
 | 118 | [Agent Context Pack Rendering Extraction](phases/phase-118-agent-context-pack-rendering.md) |
-
-## Completion
-
-| Item | Detailed Spec |
-|---|---|
-| Final Definition of Done | [Final Definition of Done](final-definition-of-done.md) |
+| 119 | [Agent Context Compression Extraction](phases/phase-119-agent-context-compression.md) |

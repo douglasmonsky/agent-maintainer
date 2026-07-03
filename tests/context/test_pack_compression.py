@@ -9,8 +9,8 @@ from typing import cast
 
 import pytest
 
+from agent_context.compression import headroom as headroom_backend
 from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context.compression import headroom as headroom_backend
 from agent_maintainer.context.pack import cli as pack_cli
 from agent_maintainer.context.pack.builder import ContextPackRequest, build_context_pack
 from agent_maintainer.context.pack.compression import (

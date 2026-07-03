@@ -4,16 +4,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from agent_maintainer.context.compression.backends import (
+from agent_context.compression.backends import (
     compress,
     extractive_compress,
 )
-from agent_maintainer.context.compression.headroom import (
+from agent_context.compression.headroom import (
     BACKEND_HEADROOM,
     CompressionBackendError,
     CompressionBackendUnavailable,
 )
-from agent_maintainer.context.compression.models import CompressionRequest, CompressionResult
+from agent_context.compression.models import CompressionRequest, CompressionResult
 
 HEADROOM_FALLBACK_WARNING = "Headroom compression failed; using deterministic extractive context."
 

@@ -767,6 +767,20 @@ Completed work:
 
 - [x] Phase 118: Agent Context Pack Rendering Extraction
 
+## Completed: Agent Context Compression Extraction
+
+Move reusable context compression primitives into `agent_context`, while keeping
+context-pack compression orchestration, CLI/config behavior, and artifact
+generation product-owned.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-119-agent-context-compression.md`](roadmap/phases/phase-119-agent-context-compression.md)
+
+Completed work:
+
+- [x] Phase 119: Agent Context Compression Extraction
+
 ## Future Work
 
 - Full DocSync dogfood ratchet: after the extraction sequence settles, review
