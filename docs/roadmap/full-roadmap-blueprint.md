@@ -124,6 +124,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 127 | [Git Metadata Duplicate Artifact Warning](phases/phase-127-git-metadata-duplicate-artifact-warning.md) |
 | 128 | [Active DocSync Coverage Ratchet](phases/phase-128-active-docsync-coverage-ratchet.md) |
 | 129 | [Mutation Results Artifact Fallback](phases/phase-129-mutation-results-artifact-fallback.md) |
+| 130 | [Public First-Touch Docs Prose Polish](phases/phase-130-public-first-touch-docs-prose-polish.md) |
 
 ## Future Work
 

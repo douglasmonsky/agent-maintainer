@@ -1,8 +1,8 @@
 <!-- docsync:object docs.diagnostics_repair_loop.overview -->
 # Diagnostics And Repair Loop
 
-Agent Maintainer is designed to keep ordinary pass output quiet and put detailed
-failure evidence in artifacts.
+Agent Maintainer keeps ordinary passing output quiet and writes detailed failure
+evidence to artifacts.
 
 ## Summary-First Output
 
@@ -13,7 +13,7 @@ Verifier output should prioritize:
 - run id;
 - duration;
 - failed checks;
-- the smallest useful next command.
+- smallest useful next command.
 
 Raw stdout, stderr, stack traces, and long check details belong in run-scoped
 files under `.verify-logs/runs/<run-id>/`.
@@ -22,7 +22,7 @@ files under `.verify-logs/runs/<run-id>/`.
 
 `LAST_FAILURE.md` is a convenience pointer to the latest failed run. It is not
 the authoritative history. When multiple agents work in one repository, another
-run can update the pointer.
+run may update that pointer.
 
 Use run-scoped paths when repairing a specific failure:
 
@@ -48,11 +48,12 @@ Use `0` only when run history must be disabled.
 ## Repair Discipline
 
 Read the failure note before changing code or configuration. Fix the root cause
-instead of lowering thresholds, adding broad suppressions, or bypassing hooks. If
-a check is wrong, make the smallest correction to the check, config, or docs and
-include that reasoning in the PR.
+instead of lowering thresholds, adding broad suppressions, or bypassing hooks.
 
-See also:
+If a check is wrong, make the smallest correction to the check, config, or docs,
+and include the reasoning in the PR.
+
+Read more:
 
 - [Context safety](context-safety.md)
 - [Agent Maintainer guidance](agent-maintainer-guidance.md)

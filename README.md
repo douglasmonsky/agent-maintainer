@@ -10,7 +10,8 @@
 ![Python 3.11-3.14](https://img.shields.io/badge/python-3.11--3.14-blue)
 [![License: MIT](https://img.shields.io/pypi/l/agent-maintainer.svg)](LICENSE)
 
-Maintainability checks and repair-loop diagnostics for AI-assisted Python repositories.
+Maintainability checks and repair-loop diagnostics for AI-assisted Python
+repositories.
 
 > Agent Maintainer is in beta. The core workflow is usable today, but starter
 > files and defaults may change as it is tested across more Python repository
@@ -18,15 +19,16 @@ Maintainability checks and repair-loop diagnostics for AI-assisted Python reposi
 
 Agent Maintainer helps coding agents make smaller, safer, more reviewable code
 changes. It wraps your existing quality tools in low-noise profiles, adds
-change-budget and ratchet discipline, writes bounded diagnostics to
+change-budget and ratchet discipline, writes bounded diagnostics under
 `.verify-logs`, and gives agents exact repair commands instead of dumping huge
-logs into the chat.
+logs into chat.
 
 Read more where it matters:
-[quick start](docs/quick-start.md),
-[first run walkthrough](docs/onboarding-first-run.md),
-[diagnostics loop](docs/diagnostics-repair-loop.md),
-[tool map](docs/tool-map.md).
+
+- [Quick start](docs/quick-start.md)
+- [First run walkthrough](docs/onboarding-first-run.md)
+- [Diagnostics loop](docs/diagnostics-repair-loop.md)
+- [Tool map](docs/tool-map.md)
 
 ## What It Is
 
@@ -35,8 +37,8 @@ software development. It checks whether changes are small enough to review,
 test-backed, type-checked, covered, diagnosable, and aligned with repository
 structure.
 
-It is strongest when an AI agent is actively editing your repo: the agent gets a
-compact pass/fail summary, a run id, failed checks, and exact next commands while
+It is strongest when an AI agent actively edits the repo: the agent gets a
+compact pass/fail summary, run id, failed checks, and exact next commands while
 raw evidence stays in run-scoped artifacts.
 
 <!-- docsync:object docs.readme.quick_start -->
@@ -74,7 +76,7 @@ If it fails, read the bounded repair note first:
 cat .verify-logs/LAST_FAILURE.md
 ```
 
-That note links to run-scoped logs and gives exact expansion/rerun commands.
+The note links to run-scoped logs and gives exact expansion/rerun commands.
 
 ## Best First Experience: Try A Fresh Strict Repo
 
@@ -98,21 +100,22 @@ small functions, covered behavior, low complexity, no broad suppressions,
 architecture ownership, and test-backed source changes.
 
 Deeper reads:
-[fresh-strict](docs/fresh-strict.md),
-[agent hooks](docs/agent-client-hooks.md),
-[generated guidance](docs/agent-maintainer-guidance.md).
+
+- [Fresh strict](docs/fresh-strict.md)
+- [Agent hooks](docs/agent-client-hooks.md)
+- [Generated guidance](docs/agent-maintainer-guidance.md)
 
 <!-- docsync:object docs.readme.adoption_tracks -->
 ## Adoption Tracks
 
-`init` separates files written from policy strictness. Each track is generated
-from initializer templates so downstream repos receive the config, workflow,
-hook, and metadata files for that adoption level without vendoring Agent
-Maintainer source.
+`init` separates files written from policy strictness. Each track uses generated
+initializer templates so downstream repos receive the config, workflow, hook,
+and metadata files for their adoption level without vendoring Agent Maintainer
+source.
 
 | Track | Best For | Writes |
 |---|---|---|
-| `core` | A minimum useful local and CI maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |
+| `core` | A minimum useful local CI maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |
 | `agent` | Repos where Codex, Claude Code, or other agents actively edit code. | Core plus `AGENTS.md`, generated guidance target, Codex hooks, Claude Code hooks. |
 | `hardening` | Repos that want docs/config hygiene and security-adjacent surfaces too. | Agent plus Node-backed tooling metadata. |
 
@@ -126,22 +129,22 @@ Presets tune policy:
 
 | Preset | Use When |
 |---|---|
-| `small-library` | A compact package can start with tighter budgets. |
+| `small-library` | A compact package should start with tighter budgets. |
 | `existing-app` | An existing repo needs useful defaults without immediate strict-mode friction. |
 | `ai-agent-heavy` | Agents frequently change code and source-only changes should fail. |
 | `legacy-ratchet` | Existing debt should improve through ranked repair targets. |
-| `strict-new-repo` | A clean repo can start strict with wemake and tighter budgets. |
-| `team-small-python-lib` | Team-owned package wants small-library defaults. |
-| `team-legacy-service` | Team-owned service needs legacy ratchets first. |
-| `team-agent-heavy` | Team relies heavily on coding agents. |
-| `team-security-sensitive` | Clean security-sensitive repo wants strict starter defaults. |
+| `strict-new-repo` | A clean repo can start with strict wemake and tighter budgets. |
+| `team-small-python-lib` | A team-owned package wants small-library defaults. |
+| `team-legacy-service` | A team-owned service needs legacy ratchets first. |
+| `team-agent-heavy` | A team relies heavily on coding agents. |
+| `team-security-sensitive` | A clean security-sensitive repo wants strict starter defaults. |
 
 Read more:
-[quick start](docs/quick-start.md),
-[legacy ratchet](docs/legacy-ratchet.md),
-[fresh strict](docs/fresh-strict.md),
-[team policy templates](docs/team-policy-templates.md).
 
+- [Quick start](docs/quick-start.md)
+- [Legacy ratchet](docs/legacy-ratchet.md)
+- [Fresh strict](docs/fresh-strict.md)
+- [Team policy templates](docs/team-policy-templates.md)
 <!-- docsync:object docs.readme.run_profiles -->
 ## Run Profiles
 

@@ -910,6 +910,20 @@ Completed work:
 
 - [x] Phase 129: Mutation Results Artifact Fallback
 
+## Completed: Public First-Touch Docs Prose Polish
+
+Polish the first-touch public docs so install, verification, diagnostics, and
+context-pack behavior are readable without compressed prose or collapsed command
+examples.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-130-public-first-touch-docs-prose-polish.md`](roadmap/phases/phase-130-public-first-touch-docs-prose-polish.md)
+
+Completed work:
+
+- [x] Phase 130: Public First-Touch Docs Prose Polish
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
