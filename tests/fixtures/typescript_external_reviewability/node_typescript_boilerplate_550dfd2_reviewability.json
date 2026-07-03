@@ -1,0 +1,206 @@
+{
+  "reviewability": {
+    "advisory_findings": [],
+    "advisory_note": "Advisory only: current blocking reviewability gates remain Python-backed until cross-ecosystem policy adapters are proven low-noise.",
+    "base_ref": "HEAD~1",
+    "broad_suppressions": 0,
+    "by_ecosystem": [
+      {
+        "count": 7,
+        "key": "global"
+      },
+      {
+        "count": 4,
+        "key": "typescript"
+      }
+    ],
+    "by_role": [
+      {
+        "count": 6,
+        "key": "config"
+      },
+      {
+        "count": 1,
+        "key": "dependency"
+      },
+      {
+        "count": 1,
+        "key": "docs"
+      },
+      {
+        "count": 1,
+        "key": "source"
+      },
+      {
+        "count": 2,
+        "key": "test"
+      }
+    ],
+    "changes": [
+      {
+        "added": 2,
+        "change_kind": "unknown",
+        "deleted": 2,
+        "ecosystem": "global",
+        "generated": false,
+        "ignored": false,
+        "path": ".eslintrc.json",
+        "role": "config"
+      },
+      {
+        "added": 3,
+        "change_kind": "unknown",
+        "deleted": 4,
+        "ecosystem": "global",
+        "generated": false,
+        "ignored": false,
+        "path": ".github/workflows/nodejs.yml",
+        "role": "config"
+      },
+      {
+        "added": 14,
+        "change_kind": "unknown",
+        "deleted": 6,
+        "ecosystem": "global",
+        "generated": false,
+        "ignored": false,
+        "path": "README.md",
+        "role": "docs"
+      },
+      {
+        "added": 0,
+        "change_kind": "unknown",
+        "deleted": 42,
+        "ecosystem": "typescript",
+        "generated": false,
+        "ignored": false,
+        "path": "__tests__/main.test.ts",
+        "role": "test"
+      },
+      {
+        "added": 40,
+        "change_kind": "unknown",
+        "deleted": 0,
+        "ecosystem": "typescript",
+        "generated": false,
+        "ignored": false,
+        "path": "__tests__/unit/main.test.ts",
+        "role": "test"
+      },
+      {
+        "added": 0,
+        "change_kind": "unknown",
+        "deleted": 18,
+        "ecosystem": "global",
+        "generated": false,
+        "ignored": false,
+        "path": "jest.config.js",
+        "role": "config"
+      },
+      {
+        "added": 2013,
+        "change_kind": "unknown",
+        "deleted": 3509,
+        "ecosystem": "typescript",
+        "generated": false,
+        "ignored": false,
+        "path": "package-lock.json",
+        "role": "dependency"
+      },
+      {
+        "added": 10,
+        "change_kind": "unknown",
+        "deleted": 9,
+        "ecosystem": "global",
+        "generated": false,
+        "ignored": false,
+        "path": "package.json",
+        "role": "config"
+      },
+      {
+        "added": 2,
+        "change_kind": "unknown",
+        "deleted": 2,
+        "ecosystem": "typescript",
+        "generated": false,
+        "ignored": false,
+        "path": "src/main.ts",
+        "role": "source"
+      },
+      {
+        "added": 3,
+        "change_kind": "unknown",
+        "deleted": 3,
+        "ecosystem": "global",
+        "generated": false,
+        "ignored": false,
+        "path": "tsconfig.json",
+        "role": "config"
+      },
+      {
+        "added": 2,
+        "change_kind": "unknown",
+        "deleted": 1,
+        "ecosystem": "global",
+        "generated": false,
+        "ignored": false,
+        "path": "tsconfig.release.json",
+        "role": "config"
+      }
+    ],
+    "classified_files": 11,
+    "next_commands": [
+      "python -m agent_maintainer verify --profile precommit",
+      "python -m agent_maintainer assess reviewability --json"
+    ],
+    "provider_summaries": [
+      {
+        "broad_suppressions": 0,
+        "changed_files": 4,
+        "ecosystem": "typescript",
+        "source_files": 1,
+        "source_lines": 4,
+        "test_files": 2,
+        "test_lines": 82
+      }
+    ],
+    "staged": false,
+    "suppressions": [
+      {
+        "broad": false,
+        "ecosystem": "typescript",
+        "kind": "eslint-disable",
+        "path": "src/main.ts",
+        "reason": "ESLint disable names a specific rule."
+      }
+    ],
+    "target": "jsynowiec/node-typescript-boilerplate",
+    "total_changed_files": 13,
+    "unclassified_files": 2
+  },
+  "source": {
+    "base_commit": "e2e8c78f0c5ff7e0228f53e6d0cc772241e933e2",
+    "collected_date": "2026-07-03",
+    "command": "python -m agent_maintainer assess reviewability --target <clone> --base-ref HEAD~1 --json",
+    "head_commit": "550dfd2a976d69254ed71eb6f5a6c5ee20060807",
+    "head_subject": "Switch from Jest to Vitest (#56)",
+    "repository": "https://github.com/jsynowiec/node-typescript-boilerplate",
+    "temporary_config": {
+      "enable_typescript": true,
+      "typescript_lint_command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "typescript_test_command": [
+        "npm",
+        "test"
+      ],
+      "typescript_typecheck_command": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    }
+  }
+}

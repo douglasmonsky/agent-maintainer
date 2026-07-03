@@ -118,6 +118,8 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "npm, pnpm, Vite, and Vitest.",
             "Phase 139 added one external public-repository comparison against "
             "`vitest-dev/eslint-plugin-vitest`",
+            "Phase 140 added a second external comparison from "
+            "`jsynowiec/node-typescript-boilerplate`",
             "broader repository samples are still needed before TypeScript "
             "reviewability becomes blocking or supported.",
         ),

@@ -60,6 +60,14 @@ zero unclassified files, and produced zero advisory findings. This is useful
 signal, not a promotion by itself: broader repository samples are still needed
 before TypeScript reviewability becomes blocking or supported.
 
+Phase 140 added a second external comparison from
+`jsynowiec/node-typescript-boilerplate` commit
+`550dfd2a976d69254ed71eb6f5a6c5ee20060807`, a Jest-to-Vitest migration. The
+reviewability output stayed advisory-clean while classifying TypeScript source,
+test, and dependency changes plus global config and docs changes. This broadens
+evidence beyond one lint-plugin repository, but TypeScript remains experimental
+until more framework and workspace shapes are sampled.
+
 ## Advisory Threshold Evidence
 
 Current fixture evidence supports considering advisory thresholds for:
@@ -106,7 +114,7 @@ TypeScript/JavaScript should not move toward supported status until it has:
 - fixture and temporary-Git evidence for common npm, pnpm, Vite, and Vitest
   project shapes;
 - at least one external real-repo comparison pass with acceptable noise;
-- broader external comparisons across more repository shapes;
+- broader external comparisons across more framework and workspace shapes;
 - stable explicit-command behavior;
 - clear doctor messages for missing commands and executables;
 - structured repair facts only for stable outputs;

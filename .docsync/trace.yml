@@ -1074,8 +1074,9 @@ evidence:
         mode: explicit_region
   evidence.typescript.external_reviewability_comparison:
     type: test
-    description: External TypeScript reviewability comparison fixture records a
-      public eslint-plugin-vitest source/test diff with zero advisory findings.
+    description: External TypeScript reviewability comparison fixtures record
+      public eslint-plugin-vitest and node-typescript-boilerplate diffs with
+      zero advisory findings.
     anchors:
       - path: tests/assess/test_typescript_external_reviewability_fixture.py
         mode: explicit_region

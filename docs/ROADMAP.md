@@ -1050,6 +1050,20 @@ Completed work:
 
 - [x] Phase 139: TypeScript External Real-Repo Comparison
 
+## Completed: TypeScript Node Boilerplate External Comparison
+
+Broaden TypeScript reviewability evidence with a second public repository
+comparison that includes a Node TypeScript boilerplate migration from Jest to
+Vitest.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-140-typescript-node-boilerplate-external-comparison.md`](roadmap/phases/phase-140-typescript-node-boilerplate-external-comparison.md)
+
+Completed work:
+
+- [x] Phase 140: TypeScript Node Boilerplate External Comparison
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,

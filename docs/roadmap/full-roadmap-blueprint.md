@@ -134,6 +134,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 137 | [TypeScript Unsupported Surface Docs](phases/phase-137-typescript-unsupported-surface-docs.md) |
 | 138 | [TypeScript Package Shape Evidence](phases/phase-138-typescript-package-shape-evidence.md) |
 | 139 | [TypeScript External Real-Repo Comparison](phases/phase-139-typescript-external-real-repo-comparison.md) |
+| 140 | [TypeScript Node Boilerplate External Comparison](phases/phase-140-typescript-node-boilerplate-external-comparison.md) |
 
 ## Future Work
 
