@@ -1,8 +1,8 @@
 <!-- docsync:object docs.quick_start.overview -->
 # Quick Start
 
-This page is the shortest package-first path for trying Agent Maintainer in a
-Python repository.
+This is the shortest package-first path for trying Agent Maintainer in a Python
+repository.
 
 ## Install
 
@@ -12,8 +12,8 @@ Install the core dependency set:
 python -m pip install "agent-maintainer[core]"
 ```
 
-For source-checkout development of Agent Maintainer itself, use an editable install
-instead:
+For source-checkout development of Agent Maintainer itself, use an editable
+install instead:
 
 ```bash
 python -m pip install -e ".[core]"
@@ -27,13 +27,13 @@ Run the initializer from the target repository:
 agent-maintainer init --track core --preset existing-app
 ```
 
-Use `--dry-run` to preview the files first:
+Preview the files first with `--dry-run`:
 
 ```bash
 agent-maintainer init --track core --preset existing-app --dry-run
 ```
 
-The initializer writes starter files such as:
+The initializer writes starter files:
 
 - `config/pyproject.agent-maintainer.toml`
 - `config/dev-dependencies.txt`
@@ -52,29 +52,33 @@ agent-maintainer doctor
 agent-maintainer verify --profile precommit
 ```
 
-Healthy verification should be quiet and end with:
+A healthy verification run is intentionally quiet:
 
 ```text
 PASS
 ```
 
-If it fails, inspect:
+If verification fails, inspect the bounded repair note first:
 
 ```bash
 cat .verify-logs/LAST_FAILURE.md
 ```
 
-Failure notes point to a run-scoped directory under `.verify-logs/runs/` so a
-later hook run does not overwrite the details you need to repair the failure.
+Failure notes point to a run-scoped directory under `.verify-logs/runs/`, so a
+later hook run does not overwrite the details needed to repair the failure.
 
 ## Choose A Track
 
-Use `core` for ordinary Python repositories. Use `agent` when Codex, Claude
-Code, or another coding agent actively edits the repo. Use `hardening` when the
-repo wants docs/config hygiene and security-adjacent starter files.
+Use `core` for ordinary Python repositories.
 
-See also:
+Use `agent` when Codex, Claude Code, or another coding agent actively edits the
+repo.
+
+Use `hardening` when the repo should also start with docs/config hygiene and
+security-adjacent starter files.
+
+Read more:
 
 - [Agent hooks](agent-client-hooks.md)
 - [Optional gates](optional-gates.md)
-- [Diagnostics and repair loop](diagnostics-repair-loop.md)
+- [Diagnostics repair loop](diagnostics-repair-loop.md)

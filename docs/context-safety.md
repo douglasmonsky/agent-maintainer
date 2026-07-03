@@ -6,7 +6,7 @@ files, long logs, broad diffs, or many existing violations. The goal is to give
 agents enough evidence to repair the next issue without flooding the working
 context.
 
-Default behavior stays conservative:
+Default behavior is conservative:
 
 - summarize first;
 - keep full generated artifacts on disk;
@@ -42,8 +42,8 @@ python -m agent_maintainer context log pyright --budget 20000
 python -m agent_maintainer context log pyright --confirm-large
 ```
 
-Large log selections are refused by default with safer expansion options. Use
-`--confirm-large` only when the larger output is intentionally needed.
+Large log selections are refused by default when safer expansion options exist.
+Use `--confirm-large` only when larger output is intentionally needed.
 
 ## Context Estimates
 
@@ -56,9 +56,9 @@ python -m agent_maintainer context estimate --log pyright --tail 500
 python -m agent_maintainer context estimate --diff --summary
 ```
 
-Estimates report approximate character and token cost using `tokens ~= chars / 4`.
-Large log refusals include a matching estimate command so agents can inspect
-cost before raising `--budget` or using `--confirm-large`.
+Estimates report approximate character and token cost using
+`tokens ~= chars / 4`. Large log refusals include a matching estimate command so
+agents can inspect cost before raising `--budget` or using `--confirm-large`.
 
 ## Safe File Context
 
@@ -97,9 +97,9 @@ shown/omitted path counts, and expansion commands.
 
 ## Context Packs
 
-Use `context pack` to generate a bounded repair packet without dumping full
-logs, files, or diffs into agent context. By default, the command writes the
-pack files and prints a compact repair capsule pointer:
+Use `context pack` to generate a bounded repair packet without dumping full logs,
+files, or diffs into agent context. By default, the command writes pack files and
+prints a compact repair-capsule pointer:
 
 ```bash
 python -m agent_maintainer context pack
@@ -123,20 +123,20 @@ python -m agent_maintainer context pack --print-full
 ```
 
 The Markdown pack separates exact repair facts from supporting context, labels
-repository tool excerpts untrusted, includes ratchet state top targets when a
-baseline exists, records omitted counts, and ends with safe expansion commands.
-Use the JSON pack for automation and the Markdown pack for deliberate human or
-agent handoff.
+repository tool excerpts as untrusted, includes ratchet state when a baseline
+exists, records omitted counts, and ends with safe expansion commands. Use the
+JSON pack for automation and the Markdown pack for deliberate human or agent
+handoff.
 
 Exact repair facts are structured and bounded. When verifier artifacts provide
 machine-readable locations, such as Ruff, Pyright, or Bandit JSON, context packs
 surface check, file, line, symbol, severity, and message before any log
-expansion. Logs remain supporting evidence, not primary source repair facts.
+expansion. Logs remain supporting evidence, not the primary repair source.
 
-## Retention and Upload Policy
+## Retention Upload Policy
 
 Context packs are local-only by default because they may include source excerpts
-and selected verification output:
+or selected verification output:
 
 ```text
 .verify-logs/context/PACK.md
@@ -144,7 +144,7 @@ and selected verification output:
 ```
 
 Keep normal verification artifacts upload-safe by uploading explicit top-level
-paths such as:
+paths:
 
 ```text
 .verify-logs/manifest.json
@@ -155,7 +155,7 @@ paths such as:
 ```
 
 Do not upload the whole `.verify-logs/` directory unless context packs are
-explicitly disabled or marked upload-safe with:
+explicitly disabled or marked upload-safe:
 
 ```toml
 [tool.agent_maintainer]
@@ -165,16 +165,16 @@ context_packs_local_only = false
 context_pack_contains_source = false
 ```
 
-`agent-maintainer doctor` warns when GitHub Actions artifact upload settings can
+`agent-maintainer doctor` warns when GitHub Actions artifact upload settings
 include local-only source-bearing context packs.
 
 ## Hook Failure Pointers
 
 Agent Maintainer hooks generate a context pack when verification fails, then
 emit a compact repair capsule instead of dumping raw verifier output into the
-agent conversation. Hook output includes the result, profile, run id when
-available, top repair facts, one likely next action, one expansion command, and
-the pack artifact path while remaining bounded by `context_hook_budget_chars`.
+agent conversation. Hook output includes result, profile, run id when available,
+top repair facts, one likely next action, one expansion command, and the pack
+artifact path while remaining bounded by `context_hook_budget_chars`.
 
-If pack generation fails, hooks fall back to bounded verifier output that
-includes the pack-generation error so the failure remains diagnosable.
+If pack generation fails, hooks fall back to bounded verifier output and include
+the pack-generation error so the failure remains diagnosable.
