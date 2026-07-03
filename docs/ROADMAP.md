@@ -938,6 +938,20 @@ Completed work:
 
 - [x] Phase 131: TypeScript Real-Repo Reviewability Evidence
 
+## Completed: Provider Maturation Docs Prose Polish
+
+Polish provider-status, TypeScript provider, multi-ecosystem policy, and
+TypeScript maturation docs so the current polyglot posture is clear without
+compressed prose or overclaiming provider maturity.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-132-provider-maturation-docs-prose-polish.md`](roadmap/phases/phase-132-provider-maturation-docs-prose-polish.md)
+
+Completed work:
+
+- [x] Phase 132: Provider Maturation Docs Prose Polish
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
