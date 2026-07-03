@@ -125,6 +125,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 128 | [Active DocSync Coverage Ratchet](phases/phase-128-active-docsync-coverage-ratchet.md) |
 | 129 | [Mutation Results Artifact Fallback](phases/phase-129-mutation-results-artifact-fallback.md) |
 | 130 | [Public First-Touch Docs Prose Polish](phases/phase-130-public-first-touch-docs-prose-polish.md) |
+| 131 | [TypeScript Real-Repo Reviewability Evidence](phases/phase-131-typescript-real-repo-reviewability-evidence.md) |
 
 ## Future Work
 

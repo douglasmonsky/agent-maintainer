@@ -924,6 +924,20 @@ Completed work:
 
 - [x] Phase 130: Public First-Touch Docs Prose Polish
 
+## Completed: TypeScript Real-Repo Reviewability Evidence
+
+Strengthen the TypeScript/JavaScript maturation track with end-to-end
+reviewability evidence from temporary Git repositories instead of only patched
+reader fixtures.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-131-typescript-real-repo-reviewability-evidence.md`](roadmap/phases/phase-131-typescript-real-repo-reviewability-evidence.md)
+
+Completed work:
+
+- [x] Phase 131: TypeScript Real-Repo Reviewability Evidence
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
