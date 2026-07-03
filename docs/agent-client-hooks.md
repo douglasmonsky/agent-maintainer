@@ -117,3 +117,4 @@ Run setup diagnostics when hooks are installed but not behaving as expected:
 ```bash
 python3 -m agent_maintainer doctor
 ```
+<!-- docsync:object.end docs.agent_client_hooks.overview -->

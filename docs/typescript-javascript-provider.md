@@ -101,6 +101,29 @@ The provider classifies common TypeScript and JavaScript paths:
 Classification prepares later policy adapters without changing existing
 Python-backed reviewability behavior.
 
+## Unsupported Surface
+
+The provider is intentionally explicit-command first. `npm`, `pnpm`, `yarn`, and
+`bun` are supported only when the repository supplies exact command arrays.
+Agent Maintainer does not infer package manager behavior from lockfiles,
+`packageManager`, Corepack settings, workspace manifests, or local scripts.
+
+Test runners are not auto-detected. `Jest`, `Vitest`, `Playwright`, `Cypress`,
+`Mocha`, and other runners must be wired through `typescript_test_command`.
+Structured repair facts currently expect stable JSON or TypeScript
+compiler-style output; arbitrary human-oriented transcripts stay bounded raw
+logs.
+
+Frameworks are classified conservatively. `Next.js`, `Vite`, `Astro`,
+`SvelteKit`, and monorepo workspace layouts are not inferred into framework
+specific default checks, generated-file rules, coverage adapters, or dependency
+policies. Configure the repository's own scripts first, then use
+`assess reviewability` to inspect advisory changed-file evidence.
+
+Coverage, dependency/security, mutation, and blocking reviewability adapters are
+not implemented for TypeScript/JavaScript yet. The provider should remain
+experimental until these surfaces have fixture and real-repo evidence.
+
 ## Limitations
 
 - No package-manager autodetection.
@@ -117,3 +140,4 @@ are added.
 
 Read the [Provider Contribution Guide](provider-contribution-guide.md) before
 adding or promoting provider capabilities.
+<!-- docsync:object.end docs.typescript_provider.overview -->

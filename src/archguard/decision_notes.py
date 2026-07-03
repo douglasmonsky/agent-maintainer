@@ -48,13 +48,22 @@ def decision_check_failures(
 
 def is_policy_path(path: str, policy_patterns: tuple[str, ...]) -> bool:
     """Return whether a changed path is architecture policy."""
-    normalized = path.replace("\\", "/").lstrip("./")
+    normalized = normalize_repo_path(path)
     return any(matches_pattern(normalized, pattern) for pattern in policy_patterns)
+
+
+def normalize_repo_path(path: str) -> str:
+    """Return repository-relative path text without stripping dot directories."""
+
+    normalized = path.replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    return normalized.strip("/")
 
 
 def matches_pattern(path: str, pattern: str) -> bool:
     """Return whether a normalized path matches an architecture policy pattern."""
-    normalized = pattern.replace("\\", "/").lstrip("./")
+    normalized = normalize_repo_path(pattern)
     return (
         path == normalized
         or fnmatch.fnmatch(path, normalized)
@@ -64,7 +73,7 @@ def matches_pattern(path: str, pattern: str) -> bool:
 
 def is_decision_note_path(path: str, decision_roots: tuple[str, ...]) -> bool:
     """Return whether a changed path is a Markdown decision note."""
-    normalized = path.replace("\\", "/").lstrip("./")
+    normalized = normalize_repo_path(path)
     if not normalized.endswith(".md"):
         return False
     return any(
@@ -95,7 +104,7 @@ def normalize_slug(value: str) -> str:
 
 def normalized_decision_root(value: str) -> str:
     """Normalize a decision note root for path comparisons."""
-    return value.replace("\\", "/").strip("/").lstrip("./")
+    return normalize_repo_path(value)
 
 
 def decision_template(slug: str) -> str:

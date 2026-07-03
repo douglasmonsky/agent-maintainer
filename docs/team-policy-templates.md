@@ -37,3 +37,4 @@ defaults, including zero new suppressions, strict Pyright mode, and wemake.
 These templates are deterministic. Agent Maintainer does not infer a team
 template automatically during `init`; use `agent-maintainer assess setup` when
 you want recommendations before choosing a track and preset.
+<!-- docsync:object.end docs.team_policy_templates.overview -->

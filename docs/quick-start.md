@@ -82,3 +82,4 @@ Read more:
 - [Agent hooks](agent-client-hooks.md)
 - [Optional gates](optional-gates.md)
 - [Diagnostics repair loop](diagnostics-repair-loop.md)
+<!-- docsync:object.end docs.quick_start.overview -->

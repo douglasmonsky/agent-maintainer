@@ -163,3 +163,12 @@ def test_slug_normalization_handles_spaces_and_symbols() -> None:
     """Normalize noisy decision-note titles into stable slugs."""
     assert decision_notes.normalize_slug(" Allow billing/users API! ") == "allow-billing-users-api"
     assert decision_notes.normalize_slug("!!!") == "architecture-decision"
+
+
+def test_decision_note_paths_preserve_dot_directories() -> None:
+    """Decision-note roots may live under dot-prefixed directories."""
+
+    assert decision_notes.is_decision_note_path(
+        "./.archguard/decisions/2026-07-03-boundary.md",
+        (".archguard/decisions",),
+    )

@@ -15,3 +15,4 @@ checks.
 
 The goal is not to make large changes easy to hide. The goal is to make
 legitimate migrations explicit, reviewable, and mechanically constrained.
+<!-- docsync:object.end docs.cohesive_change_plans.overview -->

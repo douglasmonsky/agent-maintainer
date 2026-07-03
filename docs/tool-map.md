@@ -311,3 +311,4 @@ manifest does not reference disabled or removed checks. It also warns about
 generated duplicate names such as `* 2*` and `* copy*`; inspect those files
 before deleting them. It also checks the agent hook audit trail when repo-local
 hooks are enabled.
+<!-- docsync:object.end docs.tool_map.overview -->

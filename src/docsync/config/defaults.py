@@ -22,6 +22,8 @@ paths:
 markdown:
   require_hidden_object_ids: true
   object_marker: "docsync:object"
+  object_end_marker: "docsync:object.end"
+  require_object_end_markers: false
   heading_object_end: next_heading_same_or_higher_level
 source_evidence:
   require_explicit_regions: true
@@ -73,6 +75,7 @@ DocSync traceability state lives under `.docsync/`. Treat `.docsync/trace.yml`
 as human-authored source truth and `.docsync/out/` as generated output.
 
 Use explicit evidence regions with `docsync:evidence.start` and
-`docsync:evidence.end`, and stable Markdown object markers with
-`<!-- docsync:object ... -->`.
+`docsync:evidence.end`, stable Markdown object start markers with
+`<!-- docsync:object ... -->`, and object end markers with
+`<!-- docsync:object.end ... -->` when strict object regions are enabled.
 """

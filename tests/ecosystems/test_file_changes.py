@@ -91,6 +91,34 @@ def test_renamed_change_kind_is_supported() -> None:
     assert source.change_kind == ChangeKind.RENAMED
 
 
+def test_dot_directory_config_classification_preserves_path() -> None:
+    """Dot-prefixed repo paths keep their exact Git path for report joins."""
+
+    classification = classify_changed_path(
+        ".docsync/trace.yml",
+        ChangeKind.MODIFIED,
+        MaintainerConfig(),
+    )
+
+    _assert_change(classification, ecosystem="python", role=FileRole.CONFIG)
+    assert classification is not None
+    assert classification.path == ".docsync/trace.yml"
+
+
+def test_typescript_dot_directory_classification_preserves_path() -> None:
+    """Enabled TypeScript classification does not strip dot-directory prefixes."""
+
+    classification = classify_changed_path(
+        ".storybook/main.ts",
+        ChangeKind.MODIFIED,
+        replace(MaintainerConfig(), enable_typescript=True),
+    )
+
+    _assert_change(classification, ecosystem="typescript", role=FileRole.SOURCE)
+    assert classification is not None
+    assert classification.path == ".storybook/main.ts"
+
+
 def _assert_change(
     actual: FileChangeClassification | None,
     *,

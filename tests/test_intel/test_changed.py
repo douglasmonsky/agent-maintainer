@@ -13,6 +13,7 @@ from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.test_intel.changed import changed_source_paths
 
 
+# docsync:evidence.start evidence.test_intelligence.changed_tests
 def test_changed_source_paths_use_configured_source_roots(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -53,6 +54,9 @@ def test_changed_command_outputs_json(
     assert payload["changed_source"] == ["src/example_pkg/widget.py"]
     assert payload["likely_tests"][0]["test_path"] == "tests/test_widget.py"
     assert payload["likely_tests"][0]["confidence"] == "high"
+
+
+# docsync:evidence.end evidence.test_intelligence.changed_tests
 
 
 def create_git_repo(path: Path) -> None:

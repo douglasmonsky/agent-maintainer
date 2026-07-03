@@ -105,6 +105,71 @@ WORKSPACE_FIELD_PARSERS = (
 )
 
 
+def coerce_file_baseline_group(
+    name: str,
+    raw_value: object,
+) -> schema.FileBaselineGroupConfig:
+    """Coerce one named provider-neutral file baseline group."""
+    if not name.strip():
+        raise TypeError("file_baselines.groups name must not be empty")
+    if not isinstance(raw_value, dict):
+        raise TypeError(f"file_baselines.groups.{name} must be a table")
+    raw_group: dict[str, object] = raw_value
+    include = as_tuple(raw_group.get("include"), f"file_baselines.groups.{name}.include")
+    if not include:
+        raise TypeError(f"file_baselines.groups.{name}.include must not be empty")
+    role_value = raw_group.get("role", "unknown")
+    return schema.FileBaselineGroupConfig(
+        name=name,
+        include=include,
+        exclude=as_tuple(raw_group.get("exclude"), f"file_baselines.groups.{name}.exclude"),
+        role=as_str(role_value, f"file_baselines.groups.{name}.role"),
+        max_physical_lines=as_non_negative_int(
+            raw_group.get("max_physical_lines", 0),
+            f"file_baselines.groups.{name}.max_physical_lines",
+        ),
+        max_nonblank_lines=as_non_negative_int(
+            raw_group.get("max_nonblank_lines", 0),
+            f"file_baselines.groups.{name}.max_nonblank_lines",
+        ),
+        changed_file_warn=as_non_negative_int(
+            raw_group.get("changed_file_warn", 0),
+            f"file_baselines.groups.{name}.changed_file_warn",
+        ),
+        changed_line_warn=as_non_negative_int(
+            raw_group.get("changed_line_warn", 0),
+            f"file_baselines.groups.{name}.changed_line_warn",
+        ),
+    )
+
+
+def coerce_file_baselines(raw_value: object) -> dict[str, object]:
+    """Coerce nested provider-neutral file baseline config."""
+    if not isinstance(raw_value, dict):
+        raise TypeError("file_baselines must be a table")
+    raw_table: dict[str, object] = raw_value
+    updates: dict[str, object] = {}
+    enabled = raw_table.get("enabled")
+    if enabled is not None:
+        updates["file_baselines_enabled"] = as_bool(enabled, "file_baselines.enabled")
+    mode = raw_table.get("mode")
+    if mode is not None:
+        updates["file_baselines_mode"] = as_choice(
+            mode,
+            "file_baselines.mode",
+            schema.VALID_FILE_BASELINE_MODES,
+        )
+    groups = raw_table.get("groups")
+    if groups is not None:
+        if not isinstance(groups, dict):
+            raise TypeError("file_baselines.groups must be a table")
+        group_table: dict[str, object] = groups
+        updates["file_baselines"] = tuple(
+            coerce_file_baseline_group(name, group) for name, group in sorted(group_table.items())
+        )
+    return updates
+
+
 def coerce_workspace(
     name: str,
     raw_value: object,
@@ -141,7 +206,7 @@ def coerce_diagnostics(raw_value: object) -> dict[str, object]:
     return updates
 
 
-def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
+def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:  # noqa: C901
     """Coerce raw pyproject config values into dataclass update values."""
 
     updates: dict[str, object] = {}
@@ -176,4 +241,7 @@ def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:
     diagnostics = raw.get("diagnostics")
     if diagnostics is not None:
         updates.update(coerce_diagnostics(diagnostics))
+    file_baselines = raw.get("file_baselines")
+    if file_baselines is not None:
+        updates.update(coerce_file_baselines(file_baselines))
     return updates

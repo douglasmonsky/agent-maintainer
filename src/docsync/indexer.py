@@ -59,6 +59,8 @@ def _resolve_doc_objects(
             config.repo_root,
             document.path,
             object_marker=config.object_marker,
+            object_end_marker=config.object_end_marker,
+            require_object_end_markers=config.require_object_end_markers,
         )
         parsed.update(result.objects)
         findings.extend(result.findings)

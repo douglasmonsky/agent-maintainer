@@ -1,3 +1,4 @@
+<!-- docsync:evidence.start evidence.mode_examples.legacy_ratchet_fixture -->
 # Legacy Ratchet Example
 
 This example shows a safer starting point for an existing repository that wants
@@ -17,3 +18,4 @@ Run from this directory after installing Agent Maintainer:
 python -m agent_maintainer doctor
 python -m agent_maintainer verify --profile precommit --base-ref HEAD
 ```
+<!-- docsync:evidence.end evidence.mode_examples.legacy_ratchet_fixture -->

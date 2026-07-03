@@ -41,6 +41,7 @@ It is strongest when an AI agent actively edits the repo: the agent gets a
 compact pass/fail summary, run id, failed checks, and exact next commands while
 raw evidence stays in run-scoped artifacts.
 
+<!-- docsync:object.end docs.readme.overview -->
 <!-- docsync:object docs.readme.quick_start -->
 ## Quick Start
 
@@ -78,6 +79,7 @@ cat .verify-logs/LAST_FAILURE.md
 
 The note links to run-scoped logs and gives exact expansion/rerun commands.
 
+<!-- docsync:object.end docs.readme.quick_start -->
 ## Best First Experience: Try A Fresh Strict Repo
 
 The clearest way to feel the value is to let an agent build something new under
@@ -145,6 +147,7 @@ Read more:
 - [Legacy ratchet](docs/legacy-ratchet.md)
 - [Fresh strict](docs/fresh-strict.md)
 - [Team policy templates](docs/team-policy-templates.md)
+<!-- docsync:object.end docs.readme.adoption_tracks -->
 <!-- docsync:object docs.readme.run_profiles -->
 ## Run Profiles
 
@@ -176,6 +179,7 @@ Read more:
 [diagnostics repair loop](docs/diagnostics-repair-loop.md),
 [verification cadence](docs/agent-maintainer-guidance.md).
 
+<!-- docsync:object.end docs.readme.run_profiles -->
 <!-- docsync:object docs.readme.supported_checks -->
 ## Supported Checks And Scans
 
@@ -214,6 +218,7 @@ Read more:
 [architecture policy](docs/architecture-policy.md),
 [test intelligence](docs/test-intelligence.md).
 
+<!-- docsync:object.end docs.readme.supported_checks -->
 ## Ratcheting: Improve Existing Repos Without Freezing Them
 
 Legacy repos usually cannot become strict overnight. Agent Maintainer separates
@@ -276,6 +281,7 @@ Read more:
 [context safety](docs/context-safety.md),
 [diagnostics repair loop](docs/diagnostics-repair-loop.md).
 
+<!-- docsync:object.end docs.readme.agent_loop -->
 ## Trust Model
 
 Agent Maintainer is designed to be safe to try:
@@ -371,6 +377,26 @@ Read more:
 
 [multi-ecosystem reviewability policy](docs/multi-ecosystem-reviewability-policy.md).
 
+## File Baseline Assessment
+
+Inspect simple file facts across configured file groups without changing
+blocking verifier policy:
+
+```bash
+python3 -m agent_maintainer assess file-baselines
+python3 -m agent_maintainer assess file-baselines --json
+```
+
+This is advisory. It works from explicit include/exclude globs and reports
+matched files, changed files, changed lines, line-count findings, and compact
+next commands. It is the broad filetype/path layer for docs, config, tests,
+TSX, YAML, TOML, or other file groups; language-specific architecture still
+belongs to provider adapters such as Tach for Python.
+
+Read more:
+
+[provider-neutral file baselines](docs/roadmap/provider-neutral-file-baselines.md).
+
 <!-- docsync:object docs.readme.technical_debt -->
 ## Technical Debt Score
 
@@ -391,6 +417,7 @@ report when present.
 Read more:
 [Technical Debt Score](docs/technical-debt-score.md).
 
+<!-- docsync:object.end docs.readme.technical_debt -->
 ## Install From Source
 
 For local development on Agent Maintainer itself:

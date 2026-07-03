@@ -7,6 +7,10 @@ import pytest
 from agent_maintainer.config import loader
 from agent_maintainer.core.config import MaintainerConfig
 
+ENV_TYPESCRIPT_SOURCE_WARN_FILES = 7
+ENV_TYPESCRIPT_SOURCE_WARN_LINES = 275
+ENV_TYPESCRIPT_BROAD_SUPPRESSION_WARN = 3
+
 
 def test_pyproject_loads_typescript_provider_config() -> None:
     """Pyproject config can opt into explicit TypeScript commands."""
@@ -65,3 +69,34 @@ def test_env_overrides_typescript_provider_config(
     assert loaded.typescript_typecheck_profiles == ("full", "ci")
     assert loaded.typescript_test_command == ("pnpm", "test")
     assert loaded.typescript_test_profiles == ("manual",)
+
+
+# docsync:evidence.start evidence.typescript.advisory_threshold_config_tests
+def test_env_overrides_typescript_advisory_thresholds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """TypeScript advisory thresholds load from environment variables."""
+
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES",
+        str(ENV_TYPESCRIPT_SOURCE_WARN_FILES),
+    )
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES",
+        str(ENV_TYPESCRIPT_SOURCE_WARN_LINES),
+    )
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_BROAD_SUPPRESSION_WARN",
+        str(ENV_TYPESCRIPT_BROAD_SUPPRESSION_WARN),
+    )
+
+    loaded = loader.apply_env(MaintainerConfig())
+
+    assert loaded.typescript_advisory_source_warn_files == (ENV_TYPESCRIPT_SOURCE_WARN_FILES)
+    assert loaded.typescript_advisory_source_warn_lines == ENV_TYPESCRIPT_SOURCE_WARN_LINES
+    assert loaded.typescript_advisory_broad_suppression_warn == (
+        ENV_TYPESCRIPT_BROAD_SUPPRESSION_WARN
+    )
+
+
+# docsync:evidence.end evidence.typescript.advisory_threshold_config_tests

@@ -219,5 +219,14 @@ def eligibility_failures(
 def path_allowed(path: str, patterns: tuple[str, ...]) -> bool:
     """Return whether path matches a configured override allowlist pattern."""
 
-    normalized = path.replace("\\", "/").lstrip("./")
+    normalized = _normalize_repo_path(path)
     return any(fnmatch.fnmatchcase(normalized, pattern) for pattern in patterns)
+
+
+def _normalize_repo_path(path: str) -> str:
+    """Return repository-relative path text without stripping dot directories."""
+
+    normalized = path.replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    return normalized.strip("/")

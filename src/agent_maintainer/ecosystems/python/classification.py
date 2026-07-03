@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.core.config import path_matches_roots
+from agent_maintainer.core.config import normalize_repo_path, path_matches_roots
 from agent_maintainer.ecosystems.models import FileClassification, FileRole
 
 ECOSYSTEM_NAME = "python"
@@ -212,7 +212,7 @@ def _classify_python_file(
 
 def _normalize_path(path: Path) -> str:
     """Return a repository-style path string."""
-    return path.as_posix().lstrip("./")
+    return normalize_repo_path(path.as_posix())
 
 
 def _is_ignored(path: Path) -> bool:

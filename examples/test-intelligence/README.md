@@ -1,3 +1,4 @@
+<!-- docsync:evidence.start evidence.test_intelligence.example_fixture -->
 # Test Intelligence Example
 
 This example shows how changed-source mapping and advisory test-intelligence
@@ -24,3 +25,4 @@ should identify `tests/test_rubric.py` as the focused test target, fix the
 clamping behavior, and then rerun the verifier.
 
 See [expected-output.md](expected-output.md) and [repair-path.md](repair-path.md).
+<!-- docsync:evidence.end evidence.test_intelligence.example_fixture -->

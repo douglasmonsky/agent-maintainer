@@ -201,6 +201,8 @@ def _fallback_config(repo_root: Path, config_path: Path | None) -> DocSyncConfig
         review_packet_json=docsync_out / "review-packet.json",
         review_prompt_md=docsync_out / "review-prompt.md",
         object_marker="docsync:object",
+        object_end_marker="docsync:object.end",
+        require_object_end_markers=False,
         evidence_start_directive="docsync:evidence.start",
         evidence_end_directive="docsync:evidence.end",
     )

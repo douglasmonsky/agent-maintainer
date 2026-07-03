@@ -74,3 +74,4 @@ For this repository, `fresh-strict` is active and the optional hardening gates a
 python3 -m agent_maintainer doctor
 python3 -m agent_maintainer verify --profile full
 ```
+<!-- docsync:object.end docs.fresh_strict.overview -->

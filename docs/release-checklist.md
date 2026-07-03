@@ -116,3 +116,4 @@ when present.
 
 Package publication cannot be rewritten on PyPI. If a bad beta is published,
 release a patched version rather than deleting or replacing the artifact.
+<!-- docsync:object.end docs.release_checklist.overview -->

@@ -129,6 +129,15 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 132 | [Provider Maturation Docs Prose Polish](phases/phase-132-provider-maturation-docs-prose-polish.md) |
 | 133 | [Provider DocSync Evidence Ratchet](phases/phase-133-provider-docsync-evidence-ratchet.md) |
 | 134 | [Critical Active Docs DocSync Coverage](phases/phase-134-critical-active-docsync-coverage.md) |
+| 135 | [Remaining Active Docs DocSync Coverage](phases/phase-135-remaining-active-docsync-coverage.md) |
+| 136 | [TypeScript Advisory Threshold Config](phases/phase-136-typescript-advisory-threshold-config.md) |
+| 137 | [TypeScript Unsupported Surface Docs](phases/phase-137-typescript-unsupported-surface-docs.md) |
+| 138 | [TypeScript Package Shape Evidence](phases/phase-138-typescript-package-shape-evidence.md) |
+| 139 | [TypeScript External Real-Repo Comparison](phases/phase-139-typescript-external-real-repo-comparison.md) |
+| 140 | [TypeScript Node Boilerplate External Comparison](phases/phase-140-typescript-node-boilerplate-external-comparison.md) |
+| 141 | [Provider-Neutral File Baseline Controls](phases/phase-141-provider-neutral-file-baseline-controls.md) |
+| 142 | [Runtime Telemetry And Dogfood Logging](phases/phase-142-runtime-telemetry-dogfood-logging.md) |
+| 143 | [DocSync Explicit Object End Markers](phases/phase-143-docsync-explicit-object-end-markers.md) |
 
 ## Future Work
 
