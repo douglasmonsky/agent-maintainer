@@ -10,6 +10,7 @@ from agent_maintainer.change_plan import parser, templates, validation
 from tests.change_plan.test_parser import valid_plan_text
 
 
+# docsync:evidence.start evidence.change_plans.validation_tests
 def test_valid_plan_passes_validation(tmp_path: Path) -> None:
     """Complete active plan passes validation."""
 
@@ -69,6 +70,9 @@ def test_template_contains_integration_branch_series_fields() -> None:
     assert 'merge_strategy = "squash-after-series"' in rendered
     assert '"move config modules"' in rendered
     assert '"update tests"' in rendered
+
+
+# docsync:evidence.end evidence.change_plans.validation_tests
 
 
 def test_integration_branch_series_metadata_passes_validation(tmp_path: Path) -> None:

@@ -980,6 +980,20 @@ Completed work:
 
 - [x] Phase 134: Critical Active Docs DocSync Coverage
 
+## Completed: Remaining Active Docs DocSync Coverage
+
+Finish the active-doc DocSync dogfooding pass by giving every active doc
+overview path at least one evidence-backed claim and ratcheting tests so new
+active docs cannot ship with only object markers.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-135-remaining-active-docsync-coverage.md`](roadmap/phases/phase-135-remaining-active-docsync-coverage.md)
+
+Completed work:
+
+- [x] Phase 135: Remaining Active Docs DocSync Coverage
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
