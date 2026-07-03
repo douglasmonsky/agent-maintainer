@@ -47,8 +47,21 @@ python3 -m agent_maintainer verify --profile full --mode fresh-strict
 [tool.agent_maintainer]
 mode = "fresh-strict"
 enable_pip_audit = true
-pip_audit_args = ["-r", "config/dev-lock.txt"]
+pip_audit_args = [
+  "-r",
+  "config/dev-lock.txt",
+  "--no-deps",
+  "--disable-pip",
+  "--progress-spinner",
+  "off",
+  "--timeout",
+  "5",
+]
 ```
+
+Use `--no-deps --disable-pip` only when the file is complete, pinned,
+transitive lock. For partial requirements files, let `pip-audit` resolve
+dependencies instead.
 
 Docs/config hygiene gates are also explicit opt-ins. This repository enables
 Markdownlint-cli2, yamllint, Taplo, and GitHub Actions schema validation because

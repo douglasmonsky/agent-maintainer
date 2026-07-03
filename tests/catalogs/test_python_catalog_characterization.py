@@ -277,6 +277,31 @@ def test_enabled_pip_audit_has_bounded_runtime() -> None:
     assert checks["pip-audit"].timeout_seconds == python_catalog.PIP_AUDIT_TIMEOUT_SECONDS
 
 
+def test_enabled_pip_audit_preserves_pinned_lock_fast_args() -> None:
+    """Pinned-lock pip-audit args are preserved before report arguments."""
+
+    args = (
+        "-r",
+        "config/dev-lock.txt",
+        "--no-deps",
+        "--disable-pip",
+        "--progress-spinner",
+        "off",
+        "--timeout",
+        "5",
+    )
+    config = replace(MaintainerConfig(), enable_pip_audit=True, pip_audit_args=args)
+    checks = _checks_by_name(maintainer_catalog.make_checks(config, "HEAD", "origin/main"))
+
+    assert checks["pip-audit"].command[: 1 + len(args)] == ["pip-audit", *args]
+    assert checks["pip-audit"].command[-4:] == [
+        "--format",
+        "json",
+        "--output",
+        ".verify-logs/pip-audit.json",
+    ]
+
+
 def test_enabled_secret_scan_uses_runner_and_redacted_artifacts() -> None:
     """Characterize enabled secret scanning without requiring Gitleaks."""
     config = replace(
