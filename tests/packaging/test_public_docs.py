@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+import tomllib
 from pathlib import Path
 
 README = Path("README.md")
@@ -21,6 +23,36 @@ REQUIRED_README_LINKS = (
 )
 
 
+def _project_version() -> str:
+    """Return the declared package version."""
+
+    metadata = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    return str(metadata["project"]["version"])
+
+
+def _version_key(version: str) -> tuple[object, ...]:
+    """Sort release evidence versions in human version order."""
+
+    return tuple(int(part) if part.isdigit() else part for part in re.split(r"(\d+)", version))
+
+
+def _latest_recorded_release_version() -> str:
+    """Return the newest recorded release evidence version."""
+
+    release_docs = tuple(Path("docs/releases").glob("*.md"))
+    assert release_docs
+    return max(release_docs, key=lambda path: _version_key(path.stem)).stem
+
+
+def _current_release_evidence_version() -> str:
+    """Return current package version when recorded, otherwise latest evidence."""
+
+    version = _project_version()
+    if Path("docs/releases", f"{version}.md").exists():
+        return version
+    return _latest_recorded_release_version()
+
+
 def test_readme_uses_public_beta_framing() -> None:
     """README starts with package-first beta usage."""
     text = README.read_text(encoding="utf-8")
@@ -35,7 +67,8 @@ def test_readme_uses_public_beta_framing() -> None:
     assert "python3 -m agent_maintainer assess setup" in text
     assert "python3 -m agent_maintainer assess debt" in text
     assert "[Release checklist](docs/release-checklist.md)" in text
-    assert "[0.1.0b5 release notes](docs/releases/0.1.0b5.md)" in text
+    release_version = _current_release_evidence_version()
+    assert f"[{release_version} release notes](docs/releases/{release_version}.md)" in text
     assert "[MIT License](LICENSE)" in text
     assert "[Changelog](CHANGELOG.md)" in text
     assert "docs/assets/graphics/agent-maintainer-social-preview.png" in text
@@ -58,8 +91,7 @@ def test_license_and_changelog_are_public_beta_ready() -> None:
 
     assert license_text.startswith("MIT License\n")
     assert "Copyright (c) 2026 Doug Monsky" in license_text
-    assert "## 0.1.0b5 - 2026-07-03" in changelog
-    assert "Fifth beta release of Agent Maintainer." in changelog
+    assert f"## {_project_version()}" in changelog
     assert "## 0.1.0b4 - 2026-06-29" in changelog
     assert "Fourth beta release of Agent Maintainer." in changelog
     assert "quiet on success and bounded on failure" in changelog
@@ -68,6 +100,21 @@ def test_license_and_changelog_are_public_beta_ready() -> None:
     assert "Semgrep is excluded from `manual` and `all` extras" in changelog
     assert "## 0.1.0b1 - 2026-06-27" in changelog
     assert "Initial beta release of Agent Maintainer." in changelog
+
+
+def test_current_release_docs_match_recorded_evidence() -> None:
+    """Current release links should track recorded release evidence."""
+
+    version = _current_release_evidence_version()
+    release_path = Path("docs/releases", f"{version}.md")
+    readme = README.read_text(encoding="utf-8")
+    roadmap = Path("docs/ROADMAP.md").read_text(encoding="utf-8")
+
+    assert release_path.exists()
+    assert f"docs/releases/{version}.md" in readme
+    assert f"agent-maintainer=={version}" in roadmap
+    assert f"`v{version}`" in roadmap
+    assert f"docs/releases/{version}.md" in roadmap
 
 
 def test_readme_omits_private_history_terms() -> None:
