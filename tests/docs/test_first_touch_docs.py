@@ -11,7 +11,7 @@ def normalized_text(path: str) -> str:
 
 
 def test_agent_guidance_contains_full_operational_phrases() -> None:
-    """Agent-facing docs should not regress into compressed note fragments."""
+    """Agent-facing docs must not regress into compressed note fragments."""
     phrases = {
         "AGENTS.md": (
             "the goal is maintainable code, not just passing code.",
@@ -41,14 +41,11 @@ def test_agent_guidance_contains_full_operational_phrases() -> None:
             "Do not load full context packs or raw logs unless the capsule is insufficient.",
         ),
     }
-    for path, expected_phrases in phrases.items():
-        text = normalized_text(path)
-        missing = [phrase for phrase in expected_phrases if phrase not in text]
-        assert not missing, f"{path} missing phrases: {missing!r}"
+    _assert_phrases_present(phrases)
 
 
 def test_public_docs_contain_clear_onboarding_phrases() -> None:
-    """README and quick start should preserve package-first beta wording."""
+    """README and quick start preserve package-first beta wording."""
     phrases = {
         "README.md": (
             "Maintainability checks and repair-loop diagnostics for AI-assisted "
@@ -61,28 +58,54 @@ def test_public_docs_contain_clear_onboarding_phrases() -> None:
         "docs/quick-start.md": (
             "This is the shortest package-first path for trying Agent Maintainer "
             "in a Python repository.",
-            "For source-checkout development of Agent Maintainer itself, use an "
+            "For source-checkout development on Agent Maintainer itself, use an "
             "editable install instead:",
             "Run the initializer from the target repository:",
             "A healthy verification run is intentionally quiet:",
             "If verification fails, inspect the bounded repair note first:",
-            "a later hook run does not overwrite the details needed to repair the failure.",
+            "a later hook run does not overwrite details needed to repair the failure.",
         ),
+    }
+    _assert_phrases_present(phrases)
+
+
+def test_provider_docs_contain_clear_maturity_phrases() -> None:
+    """Provider docs must be clear about current maturity and limits."""
+    phrases = {
         "docs/provider-status.md": (
             "Agent Maintainer is Python-core today, with an internal provider seam "
             "for careful expansion.",
-            "Do not read experimental providers as feature parity.",
+            "Experimental providers are not feature parity.",
+            "There is no active Go provider on `main`.",
             "If a provider abstraction makes an existing Python feature harder "
             "to express, the abstraction is wrong.",
             "Current reviewability gates are globally scheduled but Python-backed.",
             "TypeScript/JavaScript changed files are advisory, but blocking "
             "reviewability policy is not fully multi-ecosystem yet.",
         ),
+        "docs/typescript-javascript-provider.md": (
+            "It is disabled by default and only runs commands that the repository "
+            "configures explicitly.",
+            "Agent Maintainer will not guess the package manager or invent a command.",
+            "No TypeScript reviewability gate is blocking by default.",
+        ),
+        "docs/multi-ecosystem-reviewability-policy.md": (
+            "Blocking reviewability gates remain Python-backed until "
+            "provider-aware policy adapters have fixture and real-repo evidence "
+            "that they are low noise.",
+            "These summaries are evidence-gathering heuristics.",
+            "Do not aggregate TypeScript/JavaScript source changes into the "
+            "current blocking change-budget yet.",
+        ),
+        "docs/case-studies/typescript-provider-maturation.md": (
+            "The goal is to learn what should become shared provider "
+            "infrastructure without forcing Node-specific assumptions into core.",
+            "This closes one maturation gap between patched fixture readers and "
+            "real Git diff behavior.",
+            "at least one real-repo comparison pass with acceptable noise",
+        ),
     }
-    for path, expected_phrases in phrases.items():
-        text = normalized_text(path)
-        missing = [phrase for phrase in expected_phrases if phrase not in text]
-        assert not missing, f"{path} missing phrases: {missing!r}"
+    _assert_phrases_present(phrases)
 
 
 def test_known_compressed_prose_fragments_do_not_reappear() -> None:
@@ -98,6 +121,9 @@ def test_known_compressed_prose_fragments_do_not_reappear() -> None:
         "Maintainability checks repair-loop diagnostics AI-assisted",
         "Read more where matters:",
         "If fails, read bounded repair note first:",
+        "provider exists validate ecosystem-provider architecture",
+        "Current reviewability gates globally scheduled but Python-backed.",
+        "TypeScript/JavaScript changed files advisory, but blocking",
     )
     text = "\n".join(
         Path(path).read_text(encoding="utf-8")
@@ -107,6 +133,9 @@ def test_known_compressed_prose_fragments_do_not_reappear() -> None:
             "README.md",
             "docs/quick-start.md",
             "docs/provider-status.md",
+            "docs/typescript-javascript-provider.md",
+            "docs/multi-ecosystem-reviewability-policy.md",
+            "docs/case-studies/typescript-provider-maturation.md",
             "docs/agent-maintainer-guidance.md",
             "docs/context-safety.md",
             "docs/diagnostics-repair-loop.md",
@@ -114,3 +143,11 @@ def test_known_compressed_prose_fragments_do_not_reappear() -> None:
     )
     for fragment in forbidden_fragments:
         assert fragment not in text
+
+
+def _assert_phrases_present(phrases: dict[str, tuple[str, ...]]) -> None:
+    """Assert each path contains its required prose phrases."""
+    for path, expected_phrases in phrases.items():
+        text = normalized_text(path)
+        missing = [phrase for phrase in expected_phrases if phrase not in text]
+        assert not missing, f"{path} missing phrases: {missing!r}"

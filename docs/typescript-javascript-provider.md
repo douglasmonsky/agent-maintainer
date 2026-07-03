@@ -2,10 +2,10 @@
 # Experimental TypeScript/JavaScript Provider
 
 Agent Maintainer includes an experimental TypeScript/JavaScript ecosystem
-provider. It is disabled by default and runs only commands configured by the
-repository.
+provider. It is disabled by default and only runs commands that the repository
+configures explicitly.
 
-The provider exists to validate ecosystem-provider architecture without
+The provider exists to validate the ecosystem-provider architecture without
 weakening Python behavior or pretending every JavaScript repository uses the
 same package manager, linter, test runner, or build layout.
 
@@ -55,25 +55,25 @@ typescript_test_profiles = ["full", "ci"]
 
 Default profiles are:
 
-| Check | Default profiles |
+| Check | Default Profiles |
 |---|---|
 | `typescript-lint` | `precommit`, `full`, `ci` |
 | `typescript-typecheck` | `full`, `ci` |
 | `typescript-test` | `full`, `ci` |
 
 If `enable_typescript = true` but a command is empty, the corresponding check is
-reported as an optional skip. Agent Maintainer will not guess a package manager
-or invent a command.
+reported as an optional skip. Agent Maintainer will not guess the package
+manager or invent a command.
 
 `doctor` stays silent when the provider is disabled. When the provider is
-enabled, `doctor` reports whether any TypeScript commands are configured and
-whether configured command executables are available on `PATH`, including
-repo-local `node_modules/.bin`.
+enabled, `doctor` reports whether TypeScript commands are configured and whether
+configured command executables are available on `PATH`, including repo-local
+`node_modules/.bin`.
 
 ## Structured Output
 
 Agent Maintainer can extract compact summaries and exact repair facts from
-configured-command outputs:
+configured-command output:
 
 - `typescript-typecheck`: `tsc --pretty false` style diagnostics such as
   `src/app.ts(4,9): error TS2322: ...`;
@@ -81,8 +81,8 @@ configured-command outputs:
 - `typescript-test`: Jest-compatible JSON output with `testResults` and
   `assertionResults`, including Vitest/Jest JSON reporter shapes.
 
-These parsers are advisory repair-loop helpers. They do not require new config
-fields, and malformed output falls back to the normal bounded raw-log summary.
+These parsers are repair-loop helpers. They do not require new config fields,
+and malformed output falls back to the normal bounded raw-log summary.
 
 For current maturation evidence and promotion criteria, see
 [TypeScript Provider Maturation Notes](case-studies/typescript-provider-maturation.md).
@@ -92,24 +92,28 @@ For current maturation evidence and promotion criteria, see
 The provider classifies common TypeScript and JavaScript paths:
 
 - source files: `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`;
-- tests: `.test.*`, `.spec.*`, `__tests__`, `tests`, `specs`;
-- ignored/generated paths: `node_modules`, build outputs, coverage outputs,
-  `__generated__`, generated folders;
+- test files: `.test.*`, `.spec.*`, `__tests__`, `tests`, and `specs`;
+- ignored or generated paths: `node_modules`, build outputs, coverage outputs,
+  `__generated__`, and generated folders;
 - dependency and config files: `package.json`, lockfiles, `tsconfig.json`,
   ESLint, Biome, Vite, Vitest, Jest, and Next config files.
 
-Classification is internal in this phase. It prepares later policy adapters
-without changing existing Python policy behavior.
+Classification prepares later policy adapters without changing existing
+Python-backed reviewability behavior.
 
 ## Limitations
 
 - No package-manager autodetection.
 - No generated starter files yet.
-- No structured parser for coverage output or non-JSON test transcripts.
+- No structured parser for coverage output or arbitrary non-JSON test
+  transcripts.
 - No TypeScript coverage, mutation, dependency, or security adapter.
 - No public plugin API.
+- No TypeScript reviewability gate is blocking by default.
 
 Python remains the core/reference provider. TypeScript support starts smaller on
 purpose so the provider seam can prove itself before deeper ecosystem features
-are added. See [Provider Contribution Guide](provider-contribution-guide.md)
-before adding or promoting provider capabilities.
+are added.
+
+Read the [Provider Contribution Guide](provider-contribution-guide.md) before
+adding or promoting provider capabilities.

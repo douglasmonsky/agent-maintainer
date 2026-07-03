@@ -12,7 +12,7 @@ Install the core dependency set:
 python -m pip install "agent-maintainer[core]"
 ```
 
-For source-checkout development of Agent Maintainer itself, use an editable
+For source-checkout development on Agent Maintainer itself, use an editable
 install instead:
 
 ```bash
@@ -64,10 +64,10 @@ If verification fails, inspect the bounded repair note first:
 cat .verify-logs/LAST_FAILURE.md
 ```
 
-Failure notes point to a run-scoped directory under `.verify-logs/runs/`, so a
-later hook run does not overwrite the details needed to repair the failure.
+Failure notes point at a run-scoped directory under `.verify-logs/runs/`, so a
+later hook run does not overwrite details needed to repair the failure.
 
-## Choose A Track
+## Choose Track
 
 Use `core` for ordinary Python repositories.
 

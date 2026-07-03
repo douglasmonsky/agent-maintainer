@@ -4,32 +4,31 @@
 Agent Maintainer is still Python-core. TypeScript/JavaScript is the active
 experimental non-Python maturation track. Blocking reviewability gates remain
 Python-backed until provider-aware policy adapters have fixture and real-repo
-evidence.
+evidence that they are low noise.
 
 ## Current Blocking Gates
 
-The following checks remain Python-backed:
+These checks remain Python-backed:
 
-| Check | Current implementation | Current blocking scope |
+| Check | Current Implementation | Current Blocking Scope |
 |---|---|---|
 | `change-budget` | `agent_maintainer.checks.change_budget` | Python source/test paths under configured roots. |
 | `file-length` | `agent_maintainer.checks.file_lengths` | Python files under configured file-length paths. |
-| `structure-cohesion` | `agent_maintainer.checks.structure` | Folder-level Python cohesion hints. |
-| `suppression-budget` | `agent_maintainer.checks.suppression_budget` | Python suppression markers such as `noqa`, `type: ignore`, `pylint: disable`, `pyright`, and `pragma: no cover`. |
-| `source-without-test-change` | change-budget/test-intelligence helpers | Python source/test relevance. |
+| `structure-cohesion` | `agent_maintainer.checks.structure` | Python files under configured structure paths. |
+| `suppression-budget` | `agent_maintainer.checks.suppression_budget` | Python suppression patterns. |
+| `source-without-test-change` / test relevance | Python source/test roots. | Python source/test paths. |
 
-Experimental TypeScript/JavaScript providers may classify files and run
-configured command checks, but those facts do not widen current blocking Python
-reviewability gates.
+These checks are scheduled globally by the verifier, but their policy
+implementation is still Python-focused.
 
-## Advisory Assessment
+## Advisory Provider Signals
 
-`python -m agent_maintainer assess reviewability` is the current bridge between
-Python-backed policy and future cross-ecosystem policy adapters. It reports:
+`python -m agent_maintainer assess reviewability` reports provider-aware
+advisory facts for enabled ecosystems. The command currently reports:
 
-- changed files classified by enabled providers;
-- TypeScript/JavaScript source-heavy changes;
-- TypeScript/JavaScript source files changed without provider test files;
+- changed-file counts by ecosystem and role;
+- TypeScript/JavaScript source and test file counts;
+- TypeScript/JavaScript source-heavy and source-without-test advisory findings;
 - broad TypeScript/JavaScript suppression additions.
 
 These summaries are evidence-gathering heuristics. They do not change exit
@@ -37,14 +36,14 @@ status, widen verifier gates, or create TypeScript/JavaScript blocking policy.
 
 ## File-Change Classification
 
-Phase 95 added the internal `agent_maintainer.ecosystems.file_changes` seam. It
-lets enabled built-in providers classify changed paths without changing current
-verifier behavior.
+The internal `agent_maintainer.ecosystems.file_changes` seam lets enabled
+built-in providers classify changed paths without changing current verifier
+behavior.
 
 | Role | Meaning |
 |---|---|
-| `source` | Runtime source code for an ecosystem. |
-| `test` | Test files for an ecosystem. |
+| `source` | Runtime source code for the ecosystem. |
+| `test` | Test files for the ecosystem. |
 | `generated` | Generated code or generated artifacts. |
 | `config` | Tooling, package, or project configuration. |
 | `dependency` | Dependency lock or manifest files. |
@@ -52,26 +51,12 @@ verifier behavior.
 | `ignored` | Paths excluded from provider policy, such as build artifacts. |
 | `unknown` | Not classified by an enabled provider. |
 
-The internal model intentionally stays small:
-
-```python
-@dataclass(frozen=True)
-class FileChangeClassification:
-    path: str
-    ecosystem: str
-    role: FileRole
-    change_kind: ChangeKind
-    generated: bool = False
-    ignored: bool = False
-    reason: str = ""
-```
-
-This model records evidence for future policy adapters. It is not a promise that
-all roles already affect blocking gates.
+This model records evidence for future policy adapters. It does not promise
+that all roles already affect blocking gates.
 
 ## Suppression Classification
 
-Suppression classifiers remain ecosystem-specific. Agent Maintainer should not
+Suppression classifiers remain ecosystem-specific. Agent Maintainer does not
 force every language into Python suppression semantics.
 
 Python blocking suppression examples:
@@ -94,16 +79,16 @@ TypeScript/JavaScript advisory suppression examples:
 - `// c8 ignore next`
 
 Current advisory reports include ecosystem, suppression kind, broad/narrow
-status, and reason. Broad advisory suppressions are one input to future policy
+status, and reason. Broad advisory suppressions are one input for future policy
 design, not immediate blocking failures.
 
 ## Beta Decision
 
 Keep blocking reviewability policy Python-backed until provider-aware policy
-adapters are characterized and tested. Do not aggregate TypeScript/JavaScript
-source changes into the current blocking change-budget yet.
+adapters are characterized and tested.
 
-Cross-ecosystem aggregation should progress in order:
+Do not aggregate TypeScript/JavaScript source changes into the current blocking
+change-budget yet. Cross-ecosystem aggregation should progress in this order:
 
 1. Advisory output with provider classifications and suppression facts.
 2. Fixture-backed policy design for each ecosystem.

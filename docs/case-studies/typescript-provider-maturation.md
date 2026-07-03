@@ -25,12 +25,12 @@ Phase 100 added TypeScript reviewability fixtures for:
 - broad and narrow suppressions.
 
 The fixtures intentionally exercise `assess reviewability` rather than the
-standalone classifier. This proves users and agents see useful advisory output
+standalone classifier. That proves users and agents see useful advisory output
 without changing blocking verifier behavior.
 
 ## Real-Repo Diff Evidence
 
-Phase 131 adds temporary Git repository tests that run public
+Phase 131 added temporary Git repository tests that run public
 `assess reviewability --json` against actual TypeScript diffs. This evidence
 covers:
 
@@ -42,8 +42,8 @@ covers:
 
 This closes one maturation gap between patched fixture readers and real Git
 diff behavior. It still does not justify blocking TypeScript reviewability
-gates: more repository shapes and at least one external real-repo comparison
-are still needed before any promotion beyond advisory output.
+gates: more repository shapes and at least one external real-repo comparison are
+still needed before any promotion beyond advisory output.
 
 ## Advisory Threshold Evidence
 
@@ -73,15 +73,14 @@ fields and must not be treated as active policy.
 
 ## Lessons To Capture
 
-Use this page as the running implementation notebook while TypeScript matures.
-Track:
+Use this page as an implementation notebook while TypeScript matures. Track:
 
-- repository shapes that stayed low-noise;
-- package-manager assumptions that stayed provider-specific;
-- output formats stable enough for exact repair facts;
-- suppressions that should remain advisory;
-- signals that might eventually become configurable advisory thresholds;
-- signals too framework-specific for defaults;
+- which repository shapes stay low-noise;
+- where package-manager assumptions stay provider-specific;
+- which output formats are stable enough for exact repair facts;
+- whether suppressions should remain advisory;
+- which signals might eventually become configurable advisory thresholds;
+- which signals are too framework-specific for defaults;
 - whether any abstraction makes Python less capable.
 
 ## Promotion Bar
@@ -96,5 +95,5 @@ TypeScript/JavaScript should not move toward supported status until it has:
 - documented unsupported package managers, runners, and frameworks;
 - no blocking gates enabled by default.
 
-Blocking reviewability policy is a later opt-in step, not part of this
+Blocking reviewability policy is a later opt-in step. It is not part of this
 maturation note.
