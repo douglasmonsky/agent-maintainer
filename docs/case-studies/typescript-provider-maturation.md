@@ -28,6 +28,23 @@ The fixtures intentionally exercise `assess reviewability` rather than the
 standalone classifier. This proves users and agents see useful advisory output
 without changing blocking verifier behavior.
 
+## Real-Repo Diff Evidence
+
+Phase 131 adds temporary Git repository tests that run public
+`assess reviewability --json` against actual TypeScript diffs. This evidence
+covers:
+
+- source-plus-test changes producing TypeScript provider summaries without
+  advisory source-without-test findings;
+- source-heavy source-only changes producing TypeScript `source-heavy` and
+  `source-without-test` advisory findings;
+- broad TypeScript suppression counting through the public JSON payload.
+
+This closes one maturation gap between patched fixture readers and real Git
+diff behavior. It still does not justify blocking TypeScript reviewability
+gates: more repository shapes and at least one external real-repo comparison
+are still needed before any promotion beyond advisory output.
+
 ## Advisory Threshold Evidence
 
 Current fixture evidence supports considering advisory thresholds for:
