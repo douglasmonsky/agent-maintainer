@@ -10,7 +10,7 @@ from agent_maintainer.report.sections import header_html, render_sections
 from agent_maintainer.report.styles import head_html
 from agent_maintainer.report.types import ReportPaths
 from agent_maintainer.verify.artifacts import LAST_FAILURE_NAME, MANIFEST_NAME
-from agent_maintainer.verify.pr_summary import PR_SUMMARY_NAME
+from agent_run_artifacts.pr_summary import PR_SUMMARY_NAME
 
 REPORT_DIR = "report"
 REPORT_NAME = "index.html"

@@ -63,6 +63,18 @@ compatibility shims. The new package must not import `agent_maintainer`; if a
 future context module needs Agent Maintainer config or verifier internals, keep
 that adapter in `agent_maintainer` until a stable lower-level contract exists.
 
+## Phase 113 Boundary Update
+
+`agent_run_artifacts` begins as the third extracted internal package. The first
+slice owns manifest payload helpers, run history helpers, Git-state helpers, PR
+summary rendering helpers, and timing metadata helpers.
+
+The boundary intentionally preserves old `agent_maintainer.verify.*` imports as
+compatibility shims. `agent_maintainer.verify.artifacts` remains the
+product-owned adapter that wires `MaintainerConfig`, `CheckResult`, latest
+pointers, and run-scoped write orchestration into the lower-level artifact
+helpers. The new package must not import `agent_maintainer`.
+
 ## Dependency Direction
 
 `agent_maintainer` may depend on all internal packages as the orchestrator.

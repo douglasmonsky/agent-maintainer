@@ -9,7 +9,28 @@ from pathlib import Path
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.core.reporting import print_failures, print_success
 from agent_maintainer.models import CheckResult
-from agent_maintainer.verify import timing as verify_timing
+from agent_run_artifacts import models as artifact_models
+from agent_run_artifacts import timing as verify_timing
+
+
+def artifact_check_result(result: CheckResult) -> artifact_models.ArtifactCheckResult:
+    """Return run-artifact check DTO from verifier result."""
+
+    return artifact_models.ArtifactCheckResult(
+        name=result.name,
+        passed=result.passed,
+        output=result.output,
+        command=tuple(result.command),
+        exit_code=result.exit_code,
+        log_path=result.log_path,
+        warning=result.warning,
+        skipped=result.skipped,
+        skip_status=result.skip_status,
+        started_at=result.started_at,
+        ended_at=result.ended_at,
+        artifact_paths=tuple(result.artifact_paths),
+        artifact_sensitivity=result.artifact_sensitivity,
+    )
 
 
 def apply_optional_skip_policy(
@@ -77,7 +98,8 @@ def run_details(
 ) -> tuple[str, ...]:
     """Return compact run metadata lines for terminal output."""
 
-    timing = verify_timing.run_timing(results)
+    artifact_results = tuple(artifact_check_result(result) for result in results)
+    timing = verify_timing.run_timing(artifact_results)
     duration = timing.get("duration_seconds")
     duration_text = verify_timing.format_duration(
         duration if isinstance(duration, int | float) else None

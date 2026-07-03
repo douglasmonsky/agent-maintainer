@@ -3,35 +3,27 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from pathlib import Path
 
 from agent_context import models as context_models
 from agent_context.budget import bound_text
-from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.models import CheckResult
-from agent_maintainer.verify import artifact_manifest, pr_summary
-from agent_maintainer.verify import history as verify_history
-from agent_maintainer.verify import timing as verify_timing
-from agent_maintainer.verify.git_state import git_state
+from agent_maintainer.verify.artifact_adapters import (
+    ArtifactConfig,
+    RunContext,
+    artifact_check_results,
+    artifact_config,
+    artifact_run_context,
+)
+from agent_run_artifacts import artifact_manifest, pr_summary
+from agent_run_artifacts import history as verify_history
+from agent_run_artifacts import timing as verify_timing
+from agent_run_artifacts.git_state import git_state
 
 MANIFEST_NAME = "manifest.json"
 LAST_FAILURE_NAME = "LAST_FAILURE.md"
 PR_SUMMARY_NAME = pr_summary.PR_SUMMARY_NAME
 TRUNCATION_NOTE_ALLOWANCE = 320
-
-
-@dataclass(frozen=True)
-class RunContext:
-    """Context shared by all checks in one verifier run."""
-
-    repo_root: Path
-    profile: str
-    base_ref: str
-    compare_branch: str
-    staged: bool
-    config: MaintainerConfig
-    run_id: str
 
 
 def write_run_artifacts(
@@ -43,13 +35,15 @@ def write_run_artifacts(
 
     log_dir.mkdir(parents=True, exist_ok=True)
     failures = [result for result in results if not result.passed]
+    artifact_context = artifact_run_context(context)
+    artifact_results = artifact_check_results(results)
     snapshot_dir = verify_history.run_snapshot_dir(log_dir, context.run_id)
     snapshot_artifacts = verify_history.SnapshotArtifacts(
         failure_snapshot=snapshot_dir / LAST_FAILURE_NAME if failures else None,
         log_path_overrides=verify_history.copy_run_logs(
             snapshot_dir,
             context.repo_root,
-            results,
+            artifact_results,
         ),
         context_log_dir=verify_history.path_text(snapshot_dir, context.repo_root),
     )
@@ -75,7 +69,11 @@ def write_run_artifacts(
     verify_history.prune_run_history(log_dir, context.config.diagnostic_run_history_limit)
     verify_history.atomic_write_text(
         log_dir / pr_summary.PR_SUMMARY_NAME,
-        pr_summary.render_pr_summary(log_dir=log_dir, context=context, results=results),
+        pr_summary.render_pr_summary(
+            log_dir=log_dir,
+            context=artifact_context,
+            results=artifact_results,
+        ),
     )
 
 
@@ -122,6 +120,8 @@ def manifest_payload(
 ) -> dict[str, object]:
     """Return machine-readable metadata for one verifier run."""
 
+    artifact_results = artifact_check_results(results)
+    artifact_config_dto = artifact_config(context.config)
     return {
         "version": 1,
         "run_id": context.run_id,
@@ -132,18 +132,18 @@ def manifest_payload(
         "staged": context.staged,
         "failure_snapshot": verify_history.path_text(failure_snapshot, context.repo_root),
         "git": git_state(context.repo_root),
-        "timing": verify_timing.run_timing(results),
+        "timing": verify_timing.run_timing(artifact_results),
         "expected_duration_hint": verify_timing.profile_duration_hint(context.profile),
-        "thresholds": artifact_manifest.threshold_snapshot(context.config),
+        "thresholds": artifact_manifest.threshold_snapshot(artifact_config_dto),
         "checks": [
             artifact_manifest.check_payload(
                 result,
                 context.repo_root,
-                context.config,
+                artifact_config_dto,
                 log_path_override=(log_path_overrides or {}).get(result.name),
                 context_log_dir=context_log_dir,
             )
-            for result in results
+            for result in artifact_results
         ],
     }
 
@@ -181,7 +181,10 @@ def write_last_failure(
     ]
     for failure in failures:
         lines.extend(failure_section(failure, context_log_dir=context_log_dir))
-    text = bounded_last_failure_text("\n".join(lines).rstrip(), context.config)
+    text = bounded_last_failure_text(
+        "\n".join(lines).rstrip(),
+        artifact_config(context.config),
+    )
     snapshot_path.parent.mkdir(parents=True, exist_ok=True)
     verify_history.atomic_write_text(snapshot_path, text)
     verify_history.atomic_write_text(path, text)
@@ -219,7 +222,7 @@ def failure_section(
     return lines
 
 
-def bounded_last_failure_text(text: str, config: MaintainerConfig) -> str:
+def bounded_last_failure_text(text: str, config: ArtifactConfig) -> str:
     """Return LAST_FAILURE text capped by configured context budget."""
 
     bounded = bound_text(

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from agent_maintainer.models import CheckResult
-from agent_maintainer.verify import timing
+from agent_run_artifacts import timing
+from agent_run_artifacts.models import ArtifactCheckResult
 
 
 def test_run_timing_uses_outer_check_bounds() -> None:
@@ -11,13 +11,13 @@ def test_run_timing_uses_outer_check_bounds() -> None:
 
     result = timing.run_timing(
         [
-            CheckResult(
+            ArtifactCheckResult(
                 "ruff",
                 passed=True,
                 started_at="2026-06-25T10:00:02Z",
                 ended_at="2026-06-25T10:00:04Z",
             ),
-            CheckResult(
+            ArtifactCheckResult(
                 "pytest",
                 passed=True,
                 started_at="2026-06-25T10:00:00Z",

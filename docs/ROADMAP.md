@@ -674,7 +674,7 @@ Completed work:
 
 - [x] Phase 112: Agent Context Primitives And Reading Extraction
 
-## Planned: Agent Run Artifacts Internal Package Extraction
+## Completed: Agent Run Artifacts Internal Package Extraction
 
 Agent Maintainer should next extract verifier artifact schemas and rendering
 helpers into `agent_run_artifacts`, preserving `.verify-logs` behavior, old
@@ -693,9 +693,9 @@ Implementation guide:
 
 [`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
 
-Pending work:
+Completed work:
 
-- [ ] Phase 113: Agent Run Artifacts Internal Package Extraction
+- [x] Phase 113: Agent Run Artifacts Internal Package Extraction
 
 ## Future Work
 

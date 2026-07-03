@@ -1,0 +1,48 @@
+# Tach domain contract agent_run_artifacts.
+# Keep verifier artifact primitives independent from agent_maintainer.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "artifact_manifest"
+depends_on = [
+  "models",
+  "//agent_context.budget",
+  "//agent_context.models",
+]
+
+[[modules]]
+path = "git_state"
+depends_on = []
+
+[[modules]]
+path = "history"
+depends_on = [
+  "models",
+]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "pr_summary"
+depends_on = [
+  "models",
+  "pr_summary_support",
+]
+
+[[modules]]
+path = "pr_summary_support"
+depends_on = [
+  "models",
+  "//agent_context.budget",
+  "//agent_context.models",
+]
+
+[[modules]]
+path = "timing"
+depends_on = [
+  "models",
+]
