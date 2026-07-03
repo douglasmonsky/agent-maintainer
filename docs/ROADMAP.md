@@ -59,40 +59,34 @@ Current pre-case-study decision:
 - [x] Pre-case-study hardening complete; measured proof work promoted to
       Phase 89.
 
-## DocSync: Documentation Traceability And Claim Freshness Foundation
+## Completed: DocSync Foundation
 
-Build DocSync as an extractable sibling package under `src/docsync/`. DocSync
-connects stable Markdown documentation objects to explicit code, test, schema,
-configuration, and generated-artifact evidence regions through a validated
-trace graph. When evidence changes, DocSync identifies impacted documentation
-claims and produces exact review packets for agents. The knowledge graph, local
-vector index, GraphQL query layer, and repo wiki projection prototype is
-preserved on `experiment/docsync-knowledge-graph` and intentionally out of
-scope for this foundation PR.
+DocSync now exists as an extractable sibling package under `src/docsync/`.
+It connects stable Markdown documentation objects to explicit source, test,
+schema, configuration, and generated-artifact evidence regions through the
+human-authored `.docsync/trace.yml` graph.
 
-### Planned Execution Order
+Completed foundation capabilities:
 
-1. Add `src/docsync/` sibling package, not child of `agent_maintainer/`.
-2. Add `.docsync/config.yml`, `.docsync/trace.yml`, `.docsync/schema.json`,
-   `.docsync/attestations/`, `.docsync/out/`.
-3. Add DocSync rules to `AGENTS.md`.
-4. Implement explicit evidence-region scanning with `docsync:evidence.start`
-   and `docsync:evidence.end` comments.
-5. Implement hidden Markdown object IDs with `<!-- docsync:object ... -->`.
-6. Implement trace graph loading validation.
-7. Implement deterministic index generation with exact file/line spans and
-   content fingerprints.
-8. Implement Git diff mapping from changed lines to evidence and doc objects.
-9. Implement claim invalidation checks.
-10. Implement structured attestations for reviewed-but-unchanged claims.
-11. Implement review packet generation for agents.
-12. Add CLI commands: `docsync index`, `docsync check`, `docsync prompt`,
-    `docsync attest`, `docsync doctor`.
-13. Add test fixtures enforcing extraction boundaries with `archguard`.
-14. Keep DocSync extractable as its own package by preserving strict import
-    boundaries.
-15. Preserve graph/vector/GraphQL/wiki retrieval as an experimental follow-up
-    on `experiment/docsync-knowledge-graph`.
+- `src/docsync/` is a sibling package, not a child of `agent_maintainer/`.
+- `.docsync/config.yml`, `.docsync/trace.yml`, `.docsync/schema.json`,
+  `.docsync/attestations/`, and `.docsync/out/` exist with generated output
+  kept out of source truth.
+- `AGENTS.md` records DocSync package-boundary rules.
+- Evidence regions use `docsync:evidence.start` and `docsync:evidence.end`.
+- Markdown objects use hidden `<!-- docsync:object ... -->` identifiers.
+- DocSync validates the trace graph, indexes evidence, maps changed evidence
+  to documentation claims, supports attestations, and generates review packets.
+- CLI commands include `docsync index`, `docsync check`, `docsync prompt`,
+  `docsync attest`, and `docsync doctor`.
+- Boundary tests keep DocSync extractable and independent from
+  `agent_maintainer` and `archguard`.
+
+Current evidence lives in `docs/docsync-extraction.md`, `.docsync/trace.yml`,
+`tests/docsync/`, and the DocSync dogfood phases 114, 117, and 120 through 122.
+The knowledge graph, local vector index, GraphQL query layer, and repo wiki
+projection prototype remain intentionally out of scope on
+`experiment/docsync-knowledge-graph`.
 
 ## Completed: Context-Safe Legacy Ratchets
 
@@ -833,6 +827,20 @@ Detailed scope:
 Completed work:
 
 - [x] Phase 123: Internal Package Refactor Docs Closure
+
+## Completed: DocSync Foundation Roadmap Closure
+
+Close stale DocSync foundation roadmap text now implementation and dogfooding
+have landed. The main roadmap should describe current capabilities and evidence
+instead of an old planned execution list.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-124-docsync-foundation-roadmap-closure.md`](roadmap/phases/phase-124-docsync-foundation-roadmap-closure.md)
+
+Completed work:
+
+- [x] Phase 124: DocSync Foundation Roadmap Closure
 
 ## Future Work
 
