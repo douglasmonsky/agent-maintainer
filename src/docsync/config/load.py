@@ -29,6 +29,7 @@ def load_config(repo_root: Path, config_path: Path | None = None) -> DocSyncConf
     attestations = _mapping_value(payload, "attestations")
     markdown = _mapping_value(payload, "markdown")
     source_evidence = _mapping_value(payload, "source_evidence")
+    object_marker = str(markdown.get("object_marker", "docsync:object"))
     return DocSyncConfig(
         repo_root=resolved_root,
         config_path=resolved_config,
@@ -53,7 +54,13 @@ def load_config(repo_root: Path, config_path: Path | None = None) -> DocSyncConf
             resolved_root,
             Path(str(outputs.get("review_prompt_md", ".docsync/out/review-prompt.md"))),
         ),
-        object_marker=str(markdown.get("object_marker", "docsync:object")),
+        object_marker=object_marker,
+        object_end_marker=str(markdown.get("object_end_marker", f"{object_marker}.end")),
+        require_object_end_markers=_bool_value(
+            markdown,
+            "require_object_end_markers",
+            default=False,
+        ),
         evidence_start_directive=str(
             source_evidence.get("start_directive", "docsync:evidence.start")
         ),
@@ -77,6 +84,13 @@ def _mapping_value(payload: dict[str, Any], key: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ConfigError(f"DocSync config '{key}' must be a mapping")
     return cast(dict[str, Any], value)
+
+
+def _bool_value(payload: dict[str, Any], key: str, *, default: bool) -> bool:
+    value = payload.get(key, default)
+    if not isinstance(value, bool):
+        raise ConfigError(f"DocSync config '{key}' must be boolean")
+    return value
 
 
 def _resolve_path(repo_root: Path, path: Path) -> Path:

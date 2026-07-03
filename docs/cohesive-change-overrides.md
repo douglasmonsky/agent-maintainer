@@ -56,3 +56,4 @@ AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_REQUESTED=1 \
 
 When accepted locally, the verifier emits a warning because GitHub CI must still
 verify the required PR explanation before merge.
+<!-- docsync:object.end docs.cohesive_change_overrides.overview -->

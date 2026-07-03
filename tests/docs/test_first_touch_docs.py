@@ -69,6 +69,7 @@ def test_public_docs_contain_clear_onboarding_phrases() -> None:
     _assert_phrases_present(phrases)
 
 
+# docsync:evidence.start evidence.typescript.provider_docs_maturity_tests
 def test_provider_docs_contain_clear_maturity_phrases() -> None:
     """Provider docs must be clear about current maturity and limits."""
     phrases = {
@@ -87,6 +88,17 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "It is disabled by default and only runs commands that the repository "
             "configures explicitly.",
             "Agent Maintainer will not guess the package manager or invent a command.",
+            "`npm`, `pnpm`, `yarn`, and `bun` are supported only when "
+            "the repository supplies exact command arrays.",
+            "`Jest`, `Vitest`, `Playwright`, `Cypress`, `Mocha`, and "
+            "other runners must be wired through `typescript_test_command`.",
+            "`Next.js`, `Vite`, `Astro`, `SvelteKit`, and monorepo "
+            "workspace layouts are not inferred into framework specific "
+            "default checks, generated-file rules, coverage adapters, "
+            "or dependency policies.",
+            "Coverage, dependency/security, mutation, and blocking "
+            "reviewability adapters are not implemented for "
+            "TypeScript/JavaScript yet.",
             "No TypeScript reviewability gate is blocking by default.",
         ),
         "docs/multi-ecosystem-reviewability-policy.md": (
@@ -102,10 +114,20 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "infrastructure without forcing Node-specific assumptions into core.",
             "This closes one maturation gap between patched fixture readers and "
             "real Git diff behavior.",
-            "at least one real-repo comparison pass with acceptable noise",
+            "Phase 138 added additional temporary Git repository shapes for "
+            "npm, pnpm, Vite, and Vitest.",
+            "Phase 139 added one external public-repository comparison against "
+            "`vitest-dev/eslint-plugin-vitest`",
+            "Phase 140 added a second external comparison from "
+            "`jsynowiec/node-typescript-boilerplate`",
+            "broader repository samples are still needed before TypeScript "
+            "reviewability becomes blocking or supported.",
         ),
     }
     _assert_phrases_present(phrases)
+
+
+# docsync:evidence.end evidence.typescript.provider_docs_maturity_tests
 
 
 def test_known_compressed_prose_fragments_do_not_reappear() -> None:

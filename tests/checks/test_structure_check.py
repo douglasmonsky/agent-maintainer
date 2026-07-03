@@ -22,6 +22,7 @@ def write_modules(folder: Path, names: list[str]) -> list[Path]:
     return paths
 
 
+# docsync:evidence.start evidence.structure_cohesion.tests
 def test_structure_findings_warn_with_regex_and_layer_hints(tmp_path: Path) -> None:
     files = write_modules(
         tmp_path / "scripts",
@@ -103,6 +104,9 @@ def test_main_returns_success_for_warning_and_failure_for_block(
     assert warning_status == 0
     assert failure_status == 1
     assert "Consider splitting by responsibility" in output
+
+
+# docsync:evidence.end evidence.structure_cohesion.tests
 
 
 def test_main_respects_explicit_empty_argv(

@@ -1,3 +1,4 @@
+<!-- docsync:evidence.start evidence.case_studies.context_safe_fixture -->
 # Context-Safe Ratchet Example
 
 This example shows an existing Python repo using bounded context and ratchet
@@ -29,3 +30,4 @@ negative quantities. The tests show the expected behavior. The repair flow is:
 4. Fix the edge case and rerun focused tests before the verifier profile.
 
 See [expected-output.md](expected-output.md) and [repair-path.md](repair-path.md).
+<!-- docsync:evidence.end evidence.case_studies.context_safe_fixture -->

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# docsync:evidence.start evidence.team_policy_templates.presets
 DEFAULT_PRESET = "existing-app"
 SMALL_LIBRARY_PRESET = "small-library"
 EXISTING_APP_PRESET = "existing-app"
@@ -228,6 +229,9 @@ def aliased_preset(preset: str) -> str:
         if alias == preset:
             return canonical
     return preset
+
+
+# docsync:evidence.end evidence.team_policy_templates.presets
 
 
 def replace_assignment(text: str, key: str, value: str) -> str:

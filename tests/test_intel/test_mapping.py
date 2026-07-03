@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.test_intel.mapping import likely_tests_for_changes
+from agent_maintainer.test_intel.mapping import likely_tests_for_changes, relative_to_first_root
 
 
 def test_likely_tests_rank_by_name_and_imports(tmp_path: Path) -> None:
@@ -47,6 +47,18 @@ def test_likely_tests_rank_by_name_and_imports(tmp_path: Path) -> None:
     )
     assert matches[1].confidence == "medium"
     assert matches[2].confidence == "low"
+
+
+def test_relative_to_first_root_preserves_dot_directory_roots() -> None:
+    """Mapping helpers strip relative prefixes without dropping dot dirs."""
+
+    assert (
+        relative_to_first_root(
+            "./.codex/hooks/post_edit_fast_gate.py",
+            (".codex/hooks",),
+        )
+        == "post_edit_fast_gate.py"
+    )
 
 
 def write_file(path: Path, text: str) -> None:

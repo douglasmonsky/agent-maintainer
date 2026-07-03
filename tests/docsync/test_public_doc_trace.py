@@ -57,6 +57,7 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.provider_status_no_active_go",
     "claim.docs.typescript_provider_explicit_commands",
     "claim.docs.typescript_provider_repair_facts",
+    "claim.docs.typescript_provider_unsupported_surface",
     "claim.docs.typescript_maturation_fixture_evidence",
     "claim.docs.typescript_maturation_real_repo_evidence",
     "claim.docs.agent_hooks_install_surface",
@@ -176,3 +177,20 @@ def test_public_doc_objects_have_claim_coverage() -> None:
 
     assert set(objects) >= PUBLIC_DOC_OBJECTS
     assert PUBLIC_DOC_OBJECTS - claimed_objects == set()
+
+
+def test_active_doc_overviews_have_claim_coverage() -> None:
+    """Every active doc overview path has evidence-backed claim coverage."""
+    trace = yaml.safe_load(Path(".docsync/trace.yml").read_text(encoding="utf-8"))
+    objects = trace["objects"]
+    claims = trace["claims"]
+
+    claimed_paths = {
+        objects[claim["object"]]["path"]
+        for claim in claims.values()
+        if claim["object"] in objects
+        and claim["object"].endswith(".overview")
+        and claim.get("evidence")
+    }
+
+    assert ACTIVE_DOC_PATHS - claimed_paths == set()

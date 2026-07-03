@@ -169,6 +169,41 @@ class ReviewabilityReport:
     next_commands: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class FileBaselineFinding:
+    """One provider-neutral file baseline finding."""
+
+    group: str
+    path: str
+    kind: str
+    message: str
+    recommendation: str
+
+
+@dataclass(frozen=True)
+class FileBaselineGroupSummary:
+    """Summary for one watched file baseline group."""
+
+    name: str
+    role: str
+    matched_files: int
+    changed_files: int
+    changed_lines: int
+    findings: int
+
+
+@dataclass(frozen=True)
+class FileBaselineReport:
+    """Advisory provider-neutral file baseline report."""
+
+    target: str
+    enabled: bool
+    mode: str
+    groups: tuple[FileBaselineGroupSummary, ...]
+    findings: tuple[FileBaselineFinding, ...]
+    next_commands: tuple[str, ...]
+
+
 def to_dict(value: object) -> object:
     """Return a JSON-serializable dataclass value."""
     if hasattr(value, "__dataclass_fields__"):

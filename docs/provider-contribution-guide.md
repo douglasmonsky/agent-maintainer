@@ -214,3 +214,4 @@ Review provider PRs with these questions:
 - Are raw logs kept in artifacts instead of agent context?
 - Can a future provider copy this pattern without inheriting accidental
   assumptions from one ecosystem?
+<!-- docsync:object.end docs.provider_contribution_guide.overview -->

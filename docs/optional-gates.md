@@ -78,3 +78,4 @@ See also:
 - [Agent Maintainer guidance](agent-maintainer-guidance.md)
 - [Mutation testing](mutation-testing.md)
 - [Release checklist](release-checklist.md)
+<!-- docsync:object.end docs.optional_gates.overview -->

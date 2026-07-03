@@ -68,7 +68,7 @@ DOC_EXTENSIONS = frozenset((".md", ".mdx", ".rst", ".txt"))
 def classify_path(path: str | Path) -> FileClassification | None:
     """Classify a path for the experimental TypeScript ecosystem."""
     original = Path(path)
-    normalized = original.as_posix().lstrip("./")
+    normalized = _normalize_repo_path(original.as_posix())
     repo_classification = _classify_repo_path(original, normalized)
     if repo_classification is not None:
         return repo_classification
@@ -109,6 +109,15 @@ def _classify_repo_path(path: Path, normalized: str) -> FileClassification | Non
             reason="documentation file",
         )
     return None
+
+
+def _normalize_repo_path(path: str) -> str:
+    """Return repository-relative path text without stripping dot directories."""
+
+    normalized = path.replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    return normalized.strip("/")
 
 
 def _classify_source_path(path: Path, normalized: str) -> FileClassification:

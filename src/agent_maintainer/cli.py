@@ -46,6 +46,7 @@ Examples:
   python -m agent_maintainer doctor --strict
   python -m agent_maintainer assess setup
   python -m agent_maintainer assess debt
+  python -m agent_maintainer assess file-baselines
   python -m agent_maintainer verify --profile precommit
   python -m agent_maintainer verify --profile full
   python -m agent_maintainer context failures

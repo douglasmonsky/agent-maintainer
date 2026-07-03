@@ -58,3 +58,4 @@ Read more:
 - [Context safety](context-safety.md)
 - [Agent Maintainer guidance](agent-maintainer-guidance.md)
 - [Troubleshooting](troubleshooting.md)
+<!-- docsync:object.end docs.diagnostics_repair_loop.overview -->
