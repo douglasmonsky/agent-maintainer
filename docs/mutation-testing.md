@@ -1,7 +1,7 @@
 # Mutation Testing
 
-Agent Maintainer supports mutation testing through Mutmut, but the default
-product stance is targeted and ratcheted rather than broad mutation everywhere.
+Agent Maintainer supports mutation testing through Mutmut, but its default
+product stance is targeted and ratcheted, not broad mutation everywhere.
 
 ## Normal Gate
 
@@ -11,8 +11,8 @@ Mutation testing belongs in the `manual` profile:
 python3 -m agent_maintainer verify --profile manual
 ```
 
-This keeps pre-commit and normal CI responsive while still allowing mature repos
-to block on stable mutation targets.
+This keeps pre-commit and normal CI responsive while still allowing mature
+repositories to block on stable mutation targets.
 
 ## Targeted Configuration
 
@@ -25,8 +25,8 @@ only_mutate = ["src/my_package/core.py"]
 max_stack_depth = 8
 ```
 
-Prefer targets after module behavior, coverage, and runtime are stable. Avoid
-broad `only_mutate` expansion just to advertise a large mutation surface.
+Prefer targets with stable behavior, coverage, and runtime. Avoid broad
+`only_mutate` expansion just to advertise a larger mutation surface.
 
 ## Result Ratchets
 
@@ -42,22 +42,22 @@ mutmut_max_timeouts = 0
 mutmut_min_score = 90
 ```
 
-Downstream repos keep this off by default. This repo dogfoods only targets that
-have proven stable enough to block.
+Downstream repositories keep this off by default. This repository dogfoods it
+only for targets that have proven stable enough to block.
 
 ## Advisory Sweeps
 
-Use the advisory test-intelligence command to look for future targets:
+Use the advisory test-intelligence command to find future targets:
 
 ```bash
 python3 -m agent_maintainer test-intel mutation-sweep
 ```
 
-The sweep ranks candidates by changed files, coverage, complexity, churn, and
-existing ratchet hotspots. Planner mode does not run Mutmut. It suggests future
-target promotions, not silent blocking-gate expansion.
+Planner mode does not run Mutmut. It ranks candidates by changed files,
+coverage, complexity, churn, and existing ratchet hotspots, then suggests
+future target promotions instead of silently expanding the blocking gate.
 
-Use non-default execution mode when you want measured Mutmut data for the ranked
+Use non-default execution mode when you want measured Mutmut data for ranked
 candidates without editing `pyproject.toml` by hand:
 
 ```bash
@@ -66,22 +66,23 @@ python3 -m agent_maintainer test-intel mutation-sweep \
 ```
 
 Execution copies the repository to temporary worktrees, patches
-`[tool.mutmut].only_mutate` and likely focused tests only in those copies, runs
-Mutmut there, and writes raw logs plus stats snapshots under
+`[tool.mutmut].only_mutate` and likely focused tests only inside those copies,
+runs Mutmut there, and writes raw logs plus stats snapshots under
 `.verify-logs/mutation-sweeps/<run-id>/`. Terminal output stays summary-first:
 candidate, score, killed/total, survivors, suspicious/timeouts, promotion
 readiness, and artifact path.
 
-Promotion readiness is advisory. A candidate is ready to consider for the
-blocking manual gate only when survivor count is at or below the configured
-threshold, suspicious and timeout counts are zero, and the runner completed
-successfully.
+Promotion readiness is advisory. Consider a candidate for the blocking manual
+gate only when survivor count is below the configured threshold,
+suspicious/timeout counts are zero, and the runner completes successfully.
 
-Current dogfood findings:
+## Current Dogfood Findings
 
-- Blocking manual target set: reduced from `16` survivors at `94.86%` to `2`
-  survivors at `99.37%`, with `0` suspicious and `0` timeout outcomes. The
-  remaining survivors are encoding-equivalent mutations in `targets_for_source`.
+- Blocking manual target set: `343/345` killed, `2` survivors, `99.42%`
+  mutation score, `0` suspicious, and `0` timeout outcomes from run
+  `20260703T093525586771Z-manual-e0f7c77bcdc3`.
+- Remaining blocking-target survivors are encoding-equivalent mutations in
+  `targets_for_source`.
 - `src/agent_maintainer/core/reporting.py`: reduced from 124 to 39 survivors,
   still not promotion-ready.
 - `src/agent_maintainer/doctor/cli.py`: reduced from 270 to 11 survivors after
