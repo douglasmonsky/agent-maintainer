@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 import tomllib
 from pathlib import Path
 
@@ -53,6 +54,37 @@ def _current_release_evidence_version() -> str:
     return _latest_recorded_release_version()
 
 
+def _commits_since_latest_tag() -> int:
+    """Return number of commits after latest release tag, or zero outside Git."""
+
+    latest_tag = subprocess.run(  # nosec B603
+        ("git", "describe", "--tags", "--abbrev=0"),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if latest_tag.returncode != 0:
+        return 0
+
+    commit_count = subprocess.run(  # nosec B603
+        ("git", "rev-list", "--count", f"{latest_tag.stdout.strip()}..HEAD"),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if commit_count.returncode != 0:
+        return 0
+    return int(commit_count.stdout.strip())
+
+
+def _unreleased_section(changelog: str) -> str:
+    """Return the current Unreleased section body."""
+
+    start = changelog.index("## Unreleased")
+    next_section = changelog.index("\n## ", start + len("## Unreleased"))
+    return changelog[start:next_section]
+
+
 def test_readme_uses_public_beta_framing() -> None:
     """README starts with package-first beta usage."""
     text = README.read_text(encoding="utf-8")
@@ -100,6 +132,16 @@ def test_license_and_changelog_are_public_beta_ready() -> None:
     assert "Semgrep is excluded from `manual` and `all` extras" in changelog
     assert "## 0.1.0b1 - 2026-06-27" in changelog
     assert "Initial beta release of Agent Maintainer." in changelog
+
+
+def test_changelog_unreleased_section_tracks_post_release_commits() -> None:
+    """Unreleased changelog must not stay empty after post-tag commits."""
+
+    changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+    if _commits_since_latest_tag() == 0:
+        return
+
+    assert "No changes yet." not in _unreleased_section(changelog)
 
 
 def test_current_release_docs_match_recorded_evidence() -> None:

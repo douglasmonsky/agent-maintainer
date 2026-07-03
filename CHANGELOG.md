@@ -2,7 +2,16 @@
 
 ## Unreleased
 
-No changes yet.
+### Added Since 0.1.0b5
+
+- Release evidence for `0.1.0b5`, including TestPyPI/PyPI workflow links,
+  artifact hashes, and clean-install smoke commands.
+- Public documentation drift tests that keep README and roadmap current-release
+  references aligned with recorded release evidence.
+
+### Changed Since 0.1.0b5
+
+- README and roadmap current-release links now point at `0.1.0b5`.
 
 ## 0.1.0b5 - 2026-07-03
 
