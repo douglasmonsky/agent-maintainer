@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROADMAP_ROOT = Path("docs/roadmap")
 ROADMAP_INDEX = ROADMAP_ROOT / "full-roadmap-blueprint.md"
+ROADMAP_OVERVIEW = ROADMAP_ROOT / "overview.md"
 PHASES_DIR = ROADMAP_ROOT / "phases"
 MAX_INDEX_LINES = 160
 MAX_PHASE_LINES = 500
@@ -39,6 +40,19 @@ def test_roadmap_index_stays_small_and_links_split_specs() -> None:
 
     for target in markdown_links(text):
         assert (ROADMAP_ROOT / target).exists(), target
+
+
+def test_roadmap_overview_describes_current_state() -> None:
+    """Roadmap overview stays oriented to current product state."""
+
+    text = ROADMAP_OVERVIEW.read_text(encoding="utf-8")
+    normalized_text = " ".join(text.split())
+
+    assert "current-state roadmap overview" in text
+    assert "Python is the core/reference provider." in text
+    assert "TypeScript/JavaScript is experimental" in text
+    assert "next major product layer" not in normalized_text
+    assert "Master implementation blueprint" not in normalized_text
 
 
 def test_phase_specs_are_split_and_bounded() -> None:

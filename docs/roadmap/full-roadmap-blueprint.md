@@ -120,6 +120,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 123 | [Internal Package Refactor Docs Closure](phases/phase-123-internal-package-refactor-docs-closure.md) |
 | 124 | [DocSync Foundation Roadmap Closure](phases/phase-124-docsync-foundation-roadmap-closure.md) |
 | 125 | [Roadmap Blueprint Index Repair](phases/phase-125-roadmap-blueprint-index-repair.md) |
+| 126 | [Roadmap Overview Current State](phases/phase-126-roadmap-overview-current-state.md) |
 
 ## Future Work
 
