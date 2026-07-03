@@ -1,3 +1,4 @@
+<!-- docsync:object docs.fresh_strict.overview -->
 # Fresh Strict Mode
 
 Use `fresh-strict` when a repository is new or already clean enough that strict checks can block immediately.

@@ -1,3 +1,4 @@
+<!-- docsync:object docs.case_studies_split_large_legacy_file.overview -->
 # Split Large Legacy File
 
 This case study uses the

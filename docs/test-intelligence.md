@@ -1,3 +1,4 @@
+<!-- docsync:object docs.test_intelligence.overview -->
 # Test Intelligence
 
 Test intelligence helps agents choose meaningful tests when source changes. It

@@ -1,3 +1,4 @@
+<!-- docsync:object docs.provider_contribution_guide.overview -->
 # Provider Contribution Guide
 
 Agent Maintainer can grow beyond Python only if new ecosystem support stays

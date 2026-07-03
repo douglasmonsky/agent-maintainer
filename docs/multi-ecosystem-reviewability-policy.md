@@ -1,3 +1,4 @@
+<!-- docsync:object docs.multi_ecosystem_reviewability_policy.overview -->
 # Multi-Ecosystem Reviewability Policy
 
 Agent Maintainer is still Python-core. TypeScript/JavaScript is the active

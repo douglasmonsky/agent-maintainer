@@ -1,3 +1,4 @@
+<!-- docsync:object docs.cohesive_change_plans.overview -->
 # Cohesive Change Plans
 
 This document tracks planned beta work. implementation will land in small

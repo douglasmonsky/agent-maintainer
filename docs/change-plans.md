@@ -1,3 +1,4 @@
+<!-- docsync:object docs.change_plans.overview -->
 # Cohesive Change Plans
 
 Cohesive change plans document intentionally large changes before they bend

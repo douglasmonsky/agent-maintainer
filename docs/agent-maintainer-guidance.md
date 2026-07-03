@@ -1,3 +1,4 @@
+<!-- docsync:object docs.agent_maintainer_guidance.overview -->
 # Agent Maintainer Guidance
 
 `AGENTS.agent-maintainer.md` is intentionally compact because agents load it

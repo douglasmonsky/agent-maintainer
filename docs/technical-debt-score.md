@@ -1,3 +1,4 @@
+<!-- docsync:object docs.technical_debt_score.overview -->
 # Technical Debt Score
 
 The Technical Debt Score is an advisory scorecard for repository maintenance

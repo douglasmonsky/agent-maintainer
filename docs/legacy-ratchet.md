@@ -1,3 +1,4 @@
+<!-- docsync:object docs.legacy_ratchet.overview -->
 # Legacy Ratchet Mode
 
 Use `legacy-ratchet` when installing the kit into an existing repository that should improve without first paying down every historical issue.

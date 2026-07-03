@@ -122,6 +122,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 125 | [Roadmap Blueprint Index Repair](phases/phase-125-roadmap-blueprint-index-repair.md) |
 | 126 | [Roadmap Overview Current State](phases/phase-126-roadmap-overview-current-state.md) |
 | 127 | [Git Metadata Duplicate Artifact Warning](phases/phase-127-git-metadata-duplicate-artifact-warning.md) |
+| 128 | [Active DocSync Coverage Ratchet](phases/phase-128-active-docsync-coverage-ratchet.md) |
 
 ## Future Work
 
