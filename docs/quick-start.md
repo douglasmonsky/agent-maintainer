@@ -1,3 +1,4 @@
+<!-- docsync:object docs.quick_start.overview -->
 # Quick Start
 
 This page is the shortest package-first path for trying Agent Maintainer in a

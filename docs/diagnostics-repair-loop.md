@@ -1,3 +1,4 @@
+<!-- docsync:object docs.diagnostics_repair_loop.overview -->
 # Diagnostics And Repair Loop
 
 Agent Maintainer is designed to keep ordinary pass output quiet and put detailed

@@ -1,3 +1,4 @@
+<!-- docsync:object docs.onboarding_first_run.overview -->
 # First Run Walkthrough
 
 This walkthrough shows the intended repair loop after initializing Agent

@@ -1,3 +1,4 @@
+<!-- docsync:object docs.provider_status.overview -->
 # Ecosystem Provider Status
 
 Agent Maintainer is Python-core today, with an internal provider seam for
