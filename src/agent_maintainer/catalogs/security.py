@@ -42,6 +42,7 @@ LICENSE_CHECK_SKIP_REASON = (
 )
 
 
+# docsync:evidence.start evidence.readme.security_catalog_checks
 def osv_scanner_checks(config: MaintainerConfig) -> list[models.Check]:
     """Build optional OSV Scanner checks for mixed-ecosystem repositories."""
 
@@ -199,6 +200,10 @@ def semgrep_checks(config: MaintainerConfig) -> list[models.Check]:
     ]
 
 
+# docsync:evidence.end evidence.readme.security_catalog_checks
+
+
+# docsync:evidence.start evidence.readme.secret_scan_checks
 def secret_scan_checks(
     config: MaintainerConfig, base_ref: str, *, staged: bool
 ) -> list[models.Check]:
@@ -258,6 +263,9 @@ def secret_scan_mode(profile: str, *, staged: bool) -> str:
     if staged:
         return STAGED_MODE
     return CURRENT_TREE_MODE
+
+
+# docsync:evidence.end evidence.readme.secret_scan_checks
 
 
 def secret_scan_check(

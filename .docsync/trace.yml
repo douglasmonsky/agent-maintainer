@@ -4,6 +4,10 @@ documents:
     path: docs/docsync-extraction.md
     title: DocSync Extraction Notes
     audience: maintainers
+  docs.readme:
+    path: README.md
+    title: Agent Maintainer
+    audience: public
 objects:
   docs.docsync_extraction.overview:
     document: docs.docsync_extraction
@@ -13,6 +17,62 @@ objects:
     heading:
       level: 1
       text: DocSync Extraction Notes
+  docs.readme.overview:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.overview
+    heading:
+      level: 1
+      text: Agent Maintainer
+  docs.readme.quick_start:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.quick_start
+    heading:
+      level: 2
+      text: Quick Start
+  docs.readme.adoption_tracks:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.adoption_tracks
+    heading:
+      level: 2
+      text: Adoption Tracks
+  docs.readme.run_profiles:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.run_profiles
+    heading:
+      level: 2
+      text: Run Profiles
+  docs.readme.supported_checks:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.supported_checks
+    heading:
+      level: 2
+      text: Supported Checks And Scans
+  docs.readme.agent_loop:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.agent_loop
+    heading:
+      level: 2
+      text: How Agents Should Use It
+  docs.readme.technical_debt:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.technical_debt
+    heading:
+      level: 2
+      text: Technical Debt Score
 claims:
   claim.docsync.extractable_boundary:
     object: docs.docsync_extraction.overview
@@ -43,34 +103,126 @@ claims:
     review:
       acceptable_attestation_reasons:
         - command_surface_reviewed
+  claim.readme.package_identity:
+    object: docs.readme.overview
+    text: README presents Agent Maintainer as the agent-maintainer package with the agent-maintainer console script and python -m agent_maintainer module command.
+    severity: high
+    evidence:
+      - evidence.readme.package_metadata
+      - evidence.readme.command_registry
+  claim.readme.quick_start_flow:
+    object: docs.readme.quick_start
+    text: README Quick Start uses package installation followed by init, doctor, and verify commands.
+    severity: high
+    evidence:
+      - evidence.readme.package_metadata
+      - evidence.readme.command_registry
+  claim.readme.run_profiles:
+    object: docs.readme.run_profiles
+    text: README lists the stable verifier profile command surface for precommit, full, ci, security, and manual runs.
+    severity: high
+    evidence:
+      - evidence.readme.command_registry
+      - evidence.readme.catalog_composition
+  claim.readme.supported_checks:
+    object: docs.readme.supported_checks
+    text: README supported-checks overview is backed by the live check catalog, Python provider checks, docs/config checks, and security scanner checks.
+    severity: high
+    evidence:
+      - evidence.readme.catalog_composition
+      - evidence.readme.python_provider_checks
+      - evidence.readme.docs_config_checks
+      - evidence.readme.security_catalog_checks
+      - evidence.readme.secret_scan_checks
+  claim.readme.agent_repair_loop:
+    object: docs.readme.agent_loop
+    text: README tells agents to use compact verifier/context commands and run-scoped .verify-logs artifacts instead of dumping raw logs.
+    severity: high
+    evidence:
+      - evidence.readme.command_registry
+      - evidence.readme.diagnostic_artifacts
+  claim.readme.technical_debt_surface:
+    object: docs.readme.technical_debt
+    text: README documents the technical debt assessment command surface.
+    severity: medium
+    evidence:
+      - evidence.readme.command_registry
 evidence:
   evidence.docsync.domain_contract:
     type: code
-    description: Tach domain contract keeps DocSync independent from Agent Maintainer and Archguard.
+    description: Tach domain contract keeps DocSync independent of Agent Maintainer and Archguard.
     anchors:
       - path: src/docsync/tach.domain.toml
         mode: explicit_region
   evidence.docsync.boundary_test:
     type: test
-    description: Boundary test forbids DocSync imports from project-internal packages.
+    description: Boundary test forbids DocSync imports of project-internal packages.
     anchors:
       - path: tests/docsync/test_boundaries.py
         mode: explicit_region
   evidence.docsync.explicit_evidence_scanner:
     type: code
-    description: DocSync scans explicit evidence regions by configured directive names.
+    description: DocSync scans explicit evidence regions by configured directives.
     anchors:
       - path: src/docsync/comments/scanner.py
         mode: explicit_region
   evidence.docsync.generated_outputs_commands:
     type: code
-    description: DocSync commands write generated outputs and initialize ignored output artifacts.
+    description: DocSync commands write rebuildable generated outputs.
     anchors:
       - path: src/docsync/commands/core.py
         mode: explicit_region
   evidence.docsync.cli_commands:
     type: code
-    description: DocSync CLI registers the supported command surface.
+    description: DocSync CLI registers command surface.
     anchors:
       - path: src/docsync/cli.py
+        mode: explicit_region
+  evidence.readme.package_metadata:
+    type: config
+    description: Package metadata defines distribution identity, Python support, and console scripts.
+    anchors:
+      - path: pyproject.toml
+        mode: explicit_region
+  evidence.readme.command_registry:
+    type: code
+    description: Agent Maintainer CLI registry exposes documented top-level commands.
+    anchors:
+      - path: src/agent_maintainer/cli.py
+        mode: explicit_region
+  evidence.readme.catalog_composition:
+    type: code
+    description: Main check catalog composes reviewability, provider, security, docs/config, workflow, and coverage checks.
+    anchors:
+      - path: src/agent_maintainer/catalogs/catalog.py
+        mode: explicit_region
+  evidence.readme.python_provider_checks:
+    type: code
+    description: Python provider owns Python formatter, lint, type, test, coverage, complexity, dependency, security, mutation, and docstring checks.
+    anchors:
+      - path: src/agent_maintainer/ecosystems/python/provider.py
+        mode: explicit_region
+  evidence.readme.docs_config_checks:
+    type: code
+    description: Docs/config catalog builds markdownlint, yamllint, taplo, and check-jsonschema checks.
+    anchors:
+      - path: src/agent_maintainer/catalogs/docs.py
+        mode: explicit_region
+  evidence.readme.security_catalog_checks:
+    type: code
+    description: Security catalog builds OSV, Trivy, SBOM, license, and Semgrep checks.
+    anchors:
+      - path: src/agent_maintainer/catalogs/security.py
+        mode: explicit_region
+  evidence.readme.secret_scan_checks:
+    type: code
+    description: Security catalog builds current-tree, staged/range, and history secret-scan checks.
+    anchors:
+      - path: src/agent_maintainer/catalogs/security.py
+        mode: explicit_region
+  evidence.readme.diagnostic_artifacts:
+    type: code
+    description: Verifier writes run-scoped artifacts and LAST_FAILURE.md latest pointer.
+    anchors:
+      - path: src/agent_maintainer/verify/artifacts.py
         mode: explicit_region

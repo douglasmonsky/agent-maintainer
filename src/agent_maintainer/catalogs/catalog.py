@@ -30,6 +30,7 @@ from agent_maintainer.ecosystems.registry import (
 _CATALOG_PYTHON_EXECUTABLE = sys.executable
 
 
+# docsync:evidence.start evidence.readme.catalog_composition
 def make_checks(
     config: MaintainerConfig,
     base_ref: str,
@@ -81,3 +82,6 @@ def make_checks(
         *docs_config_checks(config),
         python_provider_checks["diff-cover"],
     ]
+
+
+# docsync:evidence.end evidence.readme.catalog_composition

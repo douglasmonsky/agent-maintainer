@@ -42,6 +42,7 @@ CHECK_JSONSCHEMA_SKIP_REASON = (
 )
 
 
+# docsync:evidence.start evidence.readme.docs_config_checks
 def docs_config_checks(config: MaintainerConfig) -> list[models.Check]:
     """Build documentation and config hygiene checks."""
     return [
@@ -118,6 +119,9 @@ def check_jsonschema_check(config: MaintainerConfig) -> models.Check:
         models.FULL_PROFILES,
         required_executable="check-jsonschema",
     )
+
+
+# docsync:evidence.end evidence.readme.docs_config_checks
 
 
 def disabled_check(name: str, command: str, reason: str) -> models.Check:
