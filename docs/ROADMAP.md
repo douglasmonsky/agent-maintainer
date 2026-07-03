@@ -820,6 +820,20 @@ Completed work:
 
 - [x] Phase 122: Provider-Specific DocSync Evidence
 
+## Completed: Internal Package Refactor Docs Closure
+
+Close stale recovery gap in internal-package refactor docs after extraction
+phases landed. Future agents should see current package shape and remaining
+invariants instead of instructions implying Phase 0 still needs to start.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-123-internal-package-refactor-docs-closure.md`](roadmap/phases/phase-123-internal-package-refactor-docs-closure.md)
+
+Completed work:
+
+- [x] Phase 123: Internal Package Refactor Docs Closure
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
