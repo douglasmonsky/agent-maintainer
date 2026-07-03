@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.core import tool_capabilities as maintainer_tool_capabilities
 from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.core.tooling import capabilities as maintainer_tool_capabilities
 from agent_maintainer.doctor import cli as maintainer_doctor
 from agent_maintainer.doctor import setup as maintainer_doctor_setup
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
@@ -135,17 +135,32 @@ def test_layout_check_passes_when_roots_exist(
 def test_tool_capabilities_fail_when_dependency_is_missing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    def make_custom_check(
+        _config: MaintainerConfig,
+        _base_ref: str,
+        _compare_branch: str,
+    ) -> list[Check]:
+        return [
+            Check(
+                "custom",
+                ["missing-tool"],
+                FULL_PROFILES,
+                required_executable="missing-tool",
+            )
+        ]
+
+    def executable_missing(_repo_root: Path, _name: str) -> bool:
+        return False
+
     monkeypatch.setattr(
         maintainer_doctor_setup,
         "make_checks",
-        lambda config, base_ref, compare_branch: [
-            Check("custom", ["missing-tool"], FULL_PROFILES, required_executable="missing-tool")
-        ],
+        make_custom_check,
     )
     monkeypatch.setattr(
         maintainer_tool_capabilities,
         "executable_exists",
-        lambda repo_root, name: False,
+        executable_missing,
     )
 
     result = maintainer_doctor.check_tool_capabilities(tmp_path, MaintainerConfig())
@@ -157,15 +172,27 @@ def test_tool_capabilities_fail_when_dependency_is_missing(
 def test_tool_capabilities_pass_when_local_tool_exists(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    def make_custom_check(
+        _config: MaintainerConfig,
+        _base_ref: str,
+        _compare_branch: str,
+    ) -> list[Check]:
+        return [
+            Check(
+                "custom",
+                ["local-tool"],
+                FULL_PROFILES,
+                required_executable="local-tool",
+            )
+        ]
+
     tool_path = tmp_path / ".venv" / "bin" / "local-tool"
     tool_path.parent.mkdir(parents=True)
     tool_path.write_text("", encoding="utf-8")
     monkeypatch.setattr(
         maintainer_doctor_setup,
         "make_checks",
-        lambda config, base_ref, compare_branch: [
-            Check("custom", ["local-tool"], FULL_PROFILES, required_executable="local-tool")
-        ],
+        make_custom_check,
     )
 
     result = maintainer_doctor.check_tool_capabilities(tmp_path, MaintainerConfig())
@@ -178,10 +205,12 @@ def test_tool_capabilities_report_disabled_optional_check(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(
-        maintainer_doctor_setup,
-        "make_checks",
-        lambda config, base_ref, compare_branch: [
+    def make_optional_check(
+        _config: MaintainerConfig,
+        _base_ref: str,
+        _compare_branch: str,
+    ) -> list[Check]:
+        return [
             Check(
                 "import-linter",
                 ["lint-imports"],
@@ -189,7 +218,12 @@ def test_tool_capabilities_report_disabled_optional_check(
                 required_executable="lint-imports",
                 optional_skip_reason=".importlinter is absent",
             )
-        ],
+        ]
+
+    monkeypatch.setattr(
+        maintainer_doctor_setup,
+        "make_checks",
+        make_optional_check,
     )
 
     result = maintainer_doctor.check_tool_capabilities(tmp_path, MaintainerConfig())

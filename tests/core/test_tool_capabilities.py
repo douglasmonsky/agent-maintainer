@@ -6,16 +6,15 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.core import tool_capabilities as capabilities
-from agent_maintainer.core import tool_capability_types
+from agent_maintainer.core.tooling import capabilities, capability_types
 from agent_maintainer.models import FULL_PROFILES, Check
 
 
 def test_tool_capability_module_reexports_public_constants() -> None:
     assert capabilities.EXTERNAL_BINARY == "external_binary"
     assert capabilities.PYTHON_PACKAGE == "python_package"
-    assert capabilities.ToolCapability is tool_capability_types.ToolCapability
-    assert capabilities.ToolState is tool_capability_types.ToolState
+    assert capabilities.ToolCapability is capability_types.ToolCapability
+    assert capabilities.ToolState is capability_types.ToolState
 
 
 def test_python_package_tool_state_passes_when_local_executable_exists(tmp_path: Path) -> None:

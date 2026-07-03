@@ -128,7 +128,7 @@ depends_on = [
   "//agent_maintainer.models",
   "//agent_maintainer.catalogs.catalog",
   "//agent_maintainer.core.config",
-  "//agent_maintainer.core.tool_capabilities",
+  "//agent_maintainer.core.tooling.capabilities",
   "support.models",
   "//agent_maintainer.tach",
 ]
