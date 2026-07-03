@@ -206,7 +206,7 @@ extra installs Semgrep only on Python versions where its dependency graph is
 currently resolver-friendly; Python 3.13 and newer users can still install
 Semgrep separately when their platform supports it.
 
-pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`. In `fresh-strict`, enabling pip-audit without pinned args is a failure.
+pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`. When the input is a complete, pinned, transitive lockfile, add `--no-deps --disable-pip --progress-spinner off --timeout 5` to avoid slow resolver work. Do not use that fast path for partial requirements files that still need dependency resolution. In `fresh-strict`, enabling pip-audit without pinned args is a failure.
 
 CycloneDX Python SBOM generation uses `cyclonedx-py` from `cyclonedx-bom`. It is disabled by default for drop-in repos, but this repository enables it in the `ci` profile so `.verify-logs/sbom.cdx.json` is uploaded with normal verification logs. For Python-only repositories, prefer this CycloneDX Python path over broader filesystem scanners.
 

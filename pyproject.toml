@@ -265,7 +265,16 @@ pyright_strict_baseline = "config/pyright-strict-baseline.json"
 pyright_strict_max_errors = 0
 pyright_strict_profiles = ["manual"]
 enable_pip_audit = true
-pip_audit_args = ["-r", "config/dev-lock.txt"]
+pip_audit_args = [
+  "-r",
+  "config/dev-lock.txt",
+  "--no-deps",
+  "--disable-pip",
+  "--progress-spinner",
+  "off",
+  "--timeout",
+  "5",
+]
 enable_mutmut = true
 mutmut_args = ["run"]
 mutmut_target_min = 3
