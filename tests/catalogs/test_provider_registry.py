@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import fields
 from pathlib import Path
 
 from agent_maintainer.core.config import MaintainerConfig
@@ -42,6 +43,23 @@ def test_configured_provider_command_fields() -> None:
         "typescript_typecheck_command",
         "typescript_test_command",
     ]
+
+
+def test_archived_go_provider_has_no_active_config_surface() -> None:
+    """Go experiment remains archived outside active provider configuration."""
+    config_fields = {field.name for field in fields(MaintainerConfig)}
+    assert (
+        not {
+            "enable_go",
+            "go_format_command",
+            "go_vet_command",
+            "go_test_command",
+            "go_format_profiles",
+            "go_vet_profiles",
+            "go_test_profiles",
+        }
+        & config_fields
+    )
 
 
 def test_registry_provider_order() -> None:
