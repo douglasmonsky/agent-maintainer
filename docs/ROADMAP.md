@@ -994,6 +994,20 @@ Completed work:
 
 - [x] Phase 135: Remaining Active Docs DocSync Coverage
 
+## Completed: TypeScript Advisory Threshold Config
+
+Move TypeScript/JavaScript reviewability advisory thresholds from hard-coded
+constants into beta config fields while keeping current behavior advisory-only
+and non-blocking.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-136-typescript-advisory-threshold-config.md`](roadmap/phases/phase-136-typescript-advisory-threshold-config.md)
+
+Completed work:
+
+- [x] Phase 136: TypeScript Advisory Threshold Config
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,

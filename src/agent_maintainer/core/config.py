@@ -42,12 +42,21 @@ def format_paths(paths: tuple[str, ...]) -> str:
     return ", ".join(paths) if paths else "<none>"
 
 
+def normalize_repo_path(path: str) -> str:
+    """Return repository-relative path text without stripping dot directories."""
+
+    normalized = path.replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    return normalized.strip("/")
+
+
 def path_matches_roots(path: str, roots: tuple[str, ...]) -> bool:
     """Return whether a normalized file path belongs to any configured root."""
 
-    normalized = path.replace("\\", "/").lstrip("./")
+    normalized = normalize_repo_path(path)
     for root in roots:
-        clean_root = root.replace("\\", "/").strip("/")
+        clean_root = normalize_repo_path(root)
         if clean_root in {"", "."}:
             return True
         if normalized == clean_root or normalized.startswith(f"{clean_root}/"):

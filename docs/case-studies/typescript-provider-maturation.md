@@ -58,18 +58,19 @@ Current fixture evidence does not yet support blocking thresholds. It also does
 not yet support package-manager autodetection, test-runner-specific defaults, or
 framework-specific generated-file policy beyond the existing classifier.
 
-Future advisory config names should stay TypeScript-owned and non-blocking until
-real-repo output proves low noise. Candidate names:
+Phase 136 made advisory threshold names active config fields for
+`assess reviewability`. They stay TypeScript-owned and non-blocking until
+real-repo output proves low noise:
 
 ```toml
 [tool.agent_maintainer]
-typescript_advisory_source_warn_files = 8
-typescript_advisory_source_warn_lines = 300
+typescript_advisory_source_warn_files = 4
+typescript_advisory_source_warn_lines = 200
 typescript_advisory_broad_suppression_warn = 1
 ```
 
-These names are documentation-only candidates. They are not implemented config
-fields and must not be treated as active policy.
+These fields tune advisory findings only. They do not change verifier exit
+status, Python reviewability gates, or TypeScript provider maturity.
 
 ## Lessons To Capture
 
@@ -79,7 +80,7 @@ Use this page as an implementation notebook while TypeScript matures. Track:
 - where package-manager assumptions stay provider-specific;
 - which output formats are stable enough for exact repair facts;
 - whether suppressions should remain advisory;
-- which signals might eventually become configurable advisory thresholds;
+- which advisory threshold values stay low-noise across real repositories;
 - which signals are too framework-specific for defaults;
 - whether any abstraction makes Python less capable.
 

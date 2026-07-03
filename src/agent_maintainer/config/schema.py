@@ -37,6 +37,9 @@ DEFAULT_TRIVY_PROFILES = ("manual",)
 DEFAULT_TYPESCRIPT_LINT_PROFILES = ("precommit", "full", "ci")
 DEFAULT_TYPESCRIPT_TYPECHECK_PROFILES = ("full", "ci")
 DEFAULT_TYPESCRIPT_TEST_PROFILES = ("full", "ci")
+DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES = 4
+DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES = 200
+DEFAULT_TS_ADVISORY_BROAD_SUPPRESSION_WARN = 1
 DEFAULT_SBOM_ARGS = (
     "requirements",
     "config/dev-lock.txt",
@@ -175,6 +178,9 @@ NON_NEGATIVE_INT_FIELDS = frozenset(
         "mutmut_max_timeouts",
         "mutmut_min_score",
         "pyright_strict_max_errors",
+        "typescript_advisory_source_warn_files",
+        "typescript_advisory_source_warn_lines",
+        "typescript_advisory_broad_suppression_warn",
         "ratchet_target_limit",
         "large_change_max_active_plans",
     )
@@ -321,6 +327,9 @@ class MaintainerConfig:
     typescript_typecheck_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_TYPECHECK_PROFILES
     typescript_test_command: tuple[str, ...] = ()
     typescript_test_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_TEST_PROFILES
+    typescript_advisory_source_warn_files: int = DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES
+    typescript_advisory_source_warn_lines: int = DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES
+    typescript_advisory_broad_suppression_warn: int = DEFAULT_TS_ADVISORY_BROAD_SUPPRESSION_WARN
     enable_sbom: bool = False
     sbom_args: tuple[str, ...] = DEFAULT_SBOM_ARGS
     sbom_profiles: tuple[str, ...] = DEFAULT_SBOM_PROFILES

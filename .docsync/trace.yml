@@ -687,6 +687,14 @@ claims:
     severity: high
     evidence:
       - evidence.typescript.reviewability_fixture_tests
+  claim.docs.typescript_maturation_advisory_thresholds:
+    object: docs.typescript_maturation.overview
+    text: TypeScript maturation notes document active advisory-only threshold
+      config for assess reviewability findings.
+    severity: medium
+    evidence:
+      - evidence.typescript.reviewability_fixture_tests
+      - evidence.typescript.advisory_threshold_config_tests
   claim.docs.typescript_maturation_real_repo_evidence:
     object: docs.typescript_maturation.overview
     text: TypeScript maturation notes describe real Git repository reviewability
@@ -762,6 +770,7 @@ claims:
     evidence:
       - evidence.multi_ecosystem_reviewability.assessment_tests
       - evidence.multi_ecosystem_reviewability.advisory_suppression_tests
+      - evidence.typescript.advisory_threshold_config_tests
   claim.docs.change_plans_validation:
     object: docs.change_plans.overview
     text: Change-plan docs describe required plan structure and validation before intentional large changes can bend review-size budgets.
@@ -1031,6 +1040,13 @@ evidence:
       source-heavy, generated, dependency/config, and suppression scenarios.
     anchors:
       - path: tests/assess/test_typescript_reviewability_fixtures.py
+        mode: explicit_region
+  evidence.typescript.advisory_threshold_config_tests:
+    type: test
+    description: Config loading tests assert TypeScript advisory thresholds
+      load from environment variables.
+    anchors:
+      - path: tests/config/test_typescript_config.py
         mode: explicit_region
   evidence.typescript.real_repo_reviewability_tests:
     type: test

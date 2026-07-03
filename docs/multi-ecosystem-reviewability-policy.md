@@ -34,6 +34,18 @@ advisory facts for enabled ecosystems. The command currently reports:
 These summaries are evidence-gathering heuristics. They do not change exit
 status, widen verifier gates, or create TypeScript/JavaScript blocking policy.
 
+TypeScript/JavaScript advisory thresholds are configurable through:
+
+```toml
+[tool.agent_maintainer]
+typescript_advisory_source_warn_files = 4
+typescript_advisory_source_warn_lines = 200
+typescript_advisory_broad_suppression_warn = 1
+```
+
+These values only affect `assess reviewability` findings. They are not
+precommit, CI, or merge gates.
+
 ## File-Change Classification
 
 The internal `agent_maintainer.ecosystems.file_changes` seam lets enabled

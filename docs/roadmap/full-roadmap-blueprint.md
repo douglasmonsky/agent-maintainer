@@ -130,6 +130,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 133 | [Provider DocSync Evidence Ratchet](phases/phase-133-provider-docsync-evidence-ratchet.md) |
 | 134 | [Critical Active Docs DocSync Coverage](phases/phase-134-critical-active-docsync-coverage.md) |
 | 135 | [Remaining Active Docs DocSync Coverage](phases/phase-135-remaining-active-docsync-coverage.md) |
+| 136 | [TypeScript Advisory Threshold Config](phases/phase-136-typescript-advisory-threshold-config.md) |
 
 ## Future Work
 
