@@ -762,6 +762,142 @@ claims:
     evidence:
       - evidence.multi_ecosystem_reviewability.assessment_tests
       - evidence.multi_ecosystem_reviewability.advisory_suppression_tests
+  claim.docs.change_plans_validation:
+    object: docs.change_plans.overview
+    text: Change-plan docs describe required plan structure and validation before intentional large changes can bend review-size budgets.
+    severity: high
+    evidence:
+      - evidence.change_plans.validation_tests
+      - evidence.change_plans.budget_integration_tests
+  claim.docs.codex_hooks_configured_repo_execution:
+    object: docs.codex_hooks.overview
+    text: Codex hooks docs describe managed Codex hook installation and configured-repository-only execution.
+    severity: high
+    evidence:
+      - evidence.agent_hooks.generated_templates
+      - evidence.agent_hooks.configured_repo_noop
+  claim.docs.cohesive_change_overrides_strict:
+    object: docs.cohesive_change_overrides.overview
+    text: Cohesive-change override docs describe explicit enablement, scoped paths, PR explanation requirements, and hard maximum limits.
+    severity: high
+    evidence:
+      - evidence.cohesive_change_overrides.tests
+  claim.docs.cohesive_change_plans_checked:
+    object: docs.cohesive_change_plans.overview
+    text: Cohesive change plan docs describe checked, mechanically constrained large-change plans rather than casual budget bypasses.
+    severity: high
+    evidence:
+      - evidence.change_plans.validation_tests
+      - evidence.change_plans.budget_integration_tests
+  claim.docs.config_metadata_drift_guard:
+    object: docs.config_metadata.overview
+    text: Configuration metadata docs describe drift guards for schema fields, environment variables, CLI override status, and diagnostics keys.
+    severity: high
+    evidence:
+      - evidence.config_metadata.drift_tests
+  claim.docs.fresh_strict_mode_defaults:
+    object: docs.fresh_strict.overview
+    text: Fresh-strict docs describe stricter setup defaults for clean repositories and fixture-backed starter behavior.
+    severity: medium
+    evidence:
+      - evidence.config_modes.fresh_legacy_tests
+      - evidence.mode_examples.fresh_strict_fixture
+  claim.docs.legacy_ratchet_mode_defaults:
+    object: docs.legacy_ratchet.overview
+    text: Legacy-ratchet docs describe lower-friction adoption defaults for existing repositories and fixture-backed starter behavior.
+    severity: medium
+    evidence:
+      - evidence.config_modes.fresh_legacy_tests
+      - evidence.mode_examples.legacy_ratchet_fixture
+  claim.docs.optional_gates_catalog:
+    object: docs.optional_gates.overview
+    text: Optional gates docs describe non-default hardening tools that are wired through the verification catalog when enabled.
+    severity: medium
+    evidence:
+      - evidence.readme.catalog_composition
+      - evidence.readme.docs_config_checks
+      - evidence.readme.security_catalog_checks
+      - evidence.mutation_testing.sweep_executor_tests
+  claim.docs.provider_contribution_reference:
+    object: docs.provider_contribution_guide.overview
+    text: Provider contribution docs describe Python as the core reference provider and TypeScript as an experimental built-in provider with tests.
+    severity: medium
+    evidence:
+      - evidence.provider_registry.active_providers
+      - evidence.typescript.provider_command_tests
+  claim.docs.structure_cohesion_checker:
+    object: docs.structure_cohesion.overview
+    text: Structure cohesion docs describe warning/block thresholds and responsibility hints backed by structure checker tests.
+    severity: medium
+    evidence:
+      - evidence.structure_cohesion.tests
+  claim.docs.team_policy_templates_presets:
+    object: docs.team_policy_templates.overview
+    text: Team policy template docs describe preset aliases that tune starter configuration without changing initializer track file sets.
+    severity: medium
+    evidence:
+      - evidence.team_policy_templates.presets
+      - evidence.readme.initializer_tests
+  claim.docs.test_intelligence_changed_sources:
+    object: docs.test_intelligence.overview
+    text: Test intelligence docs describe changed-source commands and focused-test guidance for repair loops.
+    severity: medium
+    evidence:
+      - evidence.test_intelligence.changed_tests
+      - evidence.test_intelligence.example_fixture
+  claim.docs.tool_map_catalog_summary:
+    object: docs.tool_map.overview
+    text: Tool map docs summarize the active verification catalog, optional hardening checks, and agent-facing workflow surfaces.
+    severity: high
+    evidence:
+      - evidence.readme.catalog_composition
+      - evidence.readme.python_provider_checks
+      - evidence.readme.docs_config_checks
+      - evidence.readme.security_catalog_checks
+      - evidence.readme.secret_scan_checks
+  claim.docs.troubleshooting_repair_surfaces:
+    object: docs.troubleshooting.overview
+    text: Troubleshooting docs describe repair surfaces grounded in run-scoped diagnostics, hook behavior, and setup-advisor recommendations.
+    severity: medium
+    evidence:
+      - evidence.readme.diagnostic_artifacts
+      - evidence.agent_hooks.configured_repo_noop
+      - evidence.setup_advisor.recommendation_tests
+  claim.docs.case_studies_measured_fixtures:
+    object: docs.case_studies.overview
+    text: Case-study index docs describe reproducible fixture studies rather than production-scale benchmark claims.
+    severity: medium
+    evidence:
+      - evidence.case_studies.context_safe_fixture
+      - evidence.case_studies.cohesive_change_plan_fixture
+  claim.docs.case_studies_context_safe_ratchet:
+    object: docs.case_studies_context_safe_ratchet_repair.overview
+    text: Context-safe ratchet case study docs are backed by the context-safe ratchet fixture and pointer-first context-pack behavior.
+    severity: medium
+    evidence:
+      - evidence.case_studies.context_safe_fixture
+      - evidence.context_safety.pointer_first_pack_tests
+  claim.docs.case_studies_split_large_legacy_file:
+    object: docs.case_studies_split_large_legacy_file.overview
+    text: Split-large-legacy-file case study docs are backed by the legacy fixture file and safe context expansion behavior.
+    severity: medium
+    evidence:
+      - evidence.case_studies.context_safe_fixture
+      - evidence.context_safety.pointer_first_pack_tests
+  claim.docs.release_0_1_0b4_evidence:
+    object: docs.release_0_1_0b4.overview
+    text: 0.1.0b4 release evidence docs describe release-gate packaging checks and trusted publishing workflow evidence.
+    severity: medium
+    evidence:
+      - evidence.release.packaging_tests
+      - evidence.release.publish_workflow
+  claim.docs.release_0_1_0b5_evidence:
+    object: docs.release_0_1_0b5.overview
+    text: 0.1.0b5 release evidence docs describe release-gate packaging checks and trusted publishing workflow evidence.
+    severity: medium
+    evidence:
+      - evidence.release.packaging_tests
+      - evidence.release.publish_workflow
 evidence:
   evidence.docsync.domain_contract:
     type: code
@@ -1019,4 +1155,82 @@ evidence:
     description: Archguard decision-note gate requires architecture decision notes for Tach policy changes.
     anchors:
       - path: src/archguard/decision_notes.py
+        mode: explicit_region
+  evidence.change_plans.validation_tests:
+    type: test
+    description: Change-plan validation tests assert complete plans, required sections, expiry, and metadata policy failures.
+    anchors:
+      - path: tests/change_plan/test_validation.py
+        mode: explicit_region
+  evidence.change_plans.budget_integration_tests:
+    type: test
+    description: Change-budget integration tests assert active change plans can bend configured budgets only within declared scope.
+    anchors:
+      - path: tests/checks/test_change_budget_plans.py
+        mode: explicit_region
+  evidence.cohesive_change_overrides.tests:
+    type: test
+    description: Cohesive-change override tests assert PR explanation requirements, path scope, and hard budget limits.
+    anchors:
+      - path: tests/checks/test_cohesive_override.py
+        mode: explicit_region
+  evidence.config_metadata.drift_tests:
+    type: test
+    description: Config metadata tests assert schema fields, environment overrides, CLI override metadata, and diagnostics TOML paths stay aligned.
+    anchors:
+      - path: tests/config/test_config_metadata.py
+        mode: explicit_region
+  evidence.config_modes.fresh_legacy_tests:
+    type: test
+    description: Config loading tests assert built-in mode presets apply before explicit configuration and preserve explicit overrides.
+    anchors:
+      - path: tests/config/test_config_loading.py
+        mode: explicit_region
+  evidence.mode_examples.fresh_strict_fixture:
+    type: fixture
+    description: Fresh-strict example fixture documents strict starter repository shape and verification commands.
+    anchors:
+      - path: examples/fresh-strict/README.md
+        mode: explicit_region
+  evidence.mode_examples.legacy_ratchet_fixture:
+    type: fixture
+    description: Legacy-ratchet example fixture documents lower-friction existing-repository adoption shape and verification commands.
+    anchors:
+      - path: examples/legacy-ratchet/README.md
+        mode: explicit_region
+  evidence.structure_cohesion.tests:
+    type: test
+    description: Structure cohesion tests assert warning and blocking thresholds, regex layer hints, ignored paths, and CLI status behavior.
+    anchors:
+      - path: tests/checks/test_structure_check.py
+        mode: explicit_region
+  evidence.team_policy_templates.presets:
+    type: code
+    description: Team policy template presets alias team-facing names to starter configuration policies.
+    anchors:
+      - path: src/agent_maintainer/core/scaffold/presets.py
+        mode: explicit_region
+  evidence.test_intelligence.changed_tests:
+    type: test
+    description: Test intelligence tests assert changed-source discovery uses configured source roots and emits JSON command output.
+    anchors:
+      - path: tests/test_intel/test_changed.py
+        mode: explicit_region
+  evidence.test_intelligence.example_fixture:
+    type: fixture
+    description: Test-intelligence example fixture documents changed, Hypothesis, and CrossHair command flow for focused repair loops.
+    anchors:
+      - path: examples/test-intelligence/README.md
+        mode: explicit_region
+  evidence.case_studies.context_safe_fixture:
+    type: fixture
+    description: Context-safe ratchet fixture documents bounded diagnostics, safe file outline, ratchet target, and precommit repair loop.
+    anchors:
+      - path: examples/context-safe-ratchet/README.md
+        mode: explicit_region
+  evidence.case_studies.cohesive_change_plan_fixture:
+    type: fixture
+    description: Cohesive change-plan fixture documents scoped large-change validation and verification commands.
+    anchors:
+      - path: examples/cohesive-change-plan/README.md
         mode: explicit_region

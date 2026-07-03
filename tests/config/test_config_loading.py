@@ -204,6 +204,7 @@ def test_invalid_config_values_raise_clear_type_errors() -> None:
         )
 
 
+# docsync:evidence.start evidence.config_modes.fresh_legacy_tests
 def test_fresh_strict_mode_applies_before_explicit_config() -> None:
     loaded = maintainer_config_loader.apply_pyproject(
         MaintainerConfig(),
@@ -225,6 +226,9 @@ def test_config_facade_preserves_public_entrypoints() -> None:
     assert maintainer_config.load_config is maintainer_config_loader.load_config
     assert maintainer_config.apply_mode is maintainer_config_modes.apply_mode
     assert maintainer_config.MaintainerConfig is maintainer_config_schema.MaintainerConfig
+
+
+# docsync:evidence.end evidence.config_modes.fresh_legacy_tests
 
 
 def test_environment_mode_applies_before_explicit_environment(

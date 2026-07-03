@@ -88,6 +88,7 @@ def set_github_pr_body(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: st
     monkeypatch.delenv("AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_REQUESTED", raising=False)
 
 
+# docsync:evidence.start evidence.cohesive_change_overrides.tests
 def test_valid_github_override_is_allowed(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -124,6 +125,9 @@ def test_missing_required_pr_explanation_blocks_override(
     assert decision.requested
     assert not decision.allowed
     assert any("missing required field" in failure for failure in decision.failures)
+
+
+# docsync:evidence.end evidence.cohesive_change_overrides.tests
 
 
 def test_overbroad_path_scope_blocks_override(

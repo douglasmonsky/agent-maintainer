@@ -129,6 +129,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 132 | [Provider Maturation Docs Prose Polish](phases/phase-132-provider-maturation-docs-prose-polish.md) |
 | 133 | [Provider DocSync Evidence Ratchet](phases/phase-133-provider-docsync-evidence-ratchet.md) |
 | 134 | [Critical Active Docs DocSync Coverage](phases/phase-134-critical-active-docsync-coverage.md) |
+| 135 | [Remaining Active Docs DocSync Coverage](phases/phase-135-remaining-active-docsync-coverage.md) |
 
 ## Future Work
 

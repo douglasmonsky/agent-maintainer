@@ -176,3 +176,20 @@ def test_public_doc_objects_have_claim_coverage() -> None:
 
     assert set(objects) >= PUBLIC_DOC_OBJECTS
     assert PUBLIC_DOC_OBJECTS - claimed_objects == set()
+
+
+def test_active_doc_overviews_have_claim_coverage() -> None:
+    """Every active doc overview path has evidence-backed claim coverage."""
+    trace = yaml.safe_load(Path(".docsync/trace.yml").read_text(encoding="utf-8"))
+    objects = trace["objects"]
+    claims = trace["claims"]
+
+    claimed_paths = {
+        objects[claim["object"]]["path"]
+        for claim in claims.values()
+        if claim["object"] in objects
+        and claim["object"].endswith(".overview")
+        and claim.get("evidence")
+    }
+
+    assert ACTIVE_DOC_PATHS - claimed_paths == set()
