@@ -1991,34 +1991,37 @@ Fold in the token-bleed fixes while touching context pack code.
 
 ## 13.1 Add context pack output modes
 
-Current context pack CLI writes the pack and then prints the whole Markdown or JSON output.  Add:
+Context pack CLI should write pack artifacts while printing compact
+agent-facing pointers by default. Keep full pack output explicit:
 
 ```bash
-python -m agent_maintainer context pack --write-only
-python -m agent_maintainer context pack --pointer
-python -m agent_maintainer context pack --print
+python -m agent_maintainer context pack
+python -m agent_maintainer context pack --format json
+python -m agent_maintainer context pack --print-full
 ```
 
 Behavior:
 
 ```text
---write-only
-  Write PACK.md/PACK.json.
-  Print only paths and top omitted counts.
-
---pointer
+default
   Write PACK.md/PACK.json.
   Print compact hook-style pointer.
 
---print
-  Current behavior: print full pack.
+--format json
+  Write PACK.md/PACK.json.
+  Print JSON pack for automation.
+
+--print-full
+  Write PACK.md/PACK.json.
+  Print full Markdown pack only when explicitly requested.
 ```
 
-Make agent-facing expansion commands prefer `--pointer`.
+Make agent-facing expansion commands preserve the compact default.
 
 ## 13.2 Change hook pointer wording
 
-Current pointer begins with `Read: <display_path>`.  Change to:
+Pointer output must not begin with `Read: <display_path>` because that nudges
+agents to load the entire pack. Use:
 
 ```text
 Context pack written: .verify-logs/runs/<run-id>/context/PACK.md
@@ -2052,9 +2055,9 @@ only when the run ID cannot be resolved.
 Current context pack expansion commands start broad, including `context failures --limit` and `context pack --budget`.  In hook pointers, list the most surgical commands first:
 
 ```text
-1. context failures --check <top-check> --limit 3 --log-dir <run-dir>
-2. context log <top-check> --tail 80 --log-dir <run-dir>
-3. context pack --pointer --log-dir <run-dir>
+1. context --log-dir <run-dir> failures --check <top-check> --limit 3
+2. context --log-dir <run-dir> log <top-check> --tail 80
+3. context --log-dir <run-dir> pack
 ```
 
 Keep broad commands inside the full pack, not the hook output.
@@ -2159,7 +2162,7 @@ test -d .verify-logs/runs
 
 python3 -m agent_maintainer context failures --limit 20
 python3 -m agent_maintainer context log ruff --tail 120 || true
-python3 -m agent_maintainer context pack --pointer || true
+python3 -m agent_maintainer context pack || true
 python3 -m agent_maintainer context pack --format json || true
 ```
 
