@@ -1,3 +1,4 @@
+<!-- docsync:object docs.ratcheting.overview -->
 # Ratcheting
 
 Ratcheting is the adoption model for repositories that already have existing

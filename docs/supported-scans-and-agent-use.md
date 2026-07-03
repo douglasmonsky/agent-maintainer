@@ -1,3 +1,4 @@
+<!-- docsync:object docs.supported_scans.overview -->
 # Supported Scans And Agent Use
 
 Agent Maintainer coordinates existing tools. It does not replace them. Its value

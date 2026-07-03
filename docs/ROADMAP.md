@@ -781,11 +781,24 @@ Completed work:
 
 - [x] Phase 119: Agent Context Compression Extraction
 
+## Completed: Public Docs DocSync Ratchet
+
+Expand DocSync from README-only dogfooding into the core public docs users
+and agents follow during adoption, verification, diagnostics, ratcheting,
+scan selection, and provider-status review.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-120-docsync-public-docs-ratchet.md`](roadmap/phases/phase-120-docsync-public-docs-ratchet.md)
+
+Completed work:
+
+- [x] Phase 120: Public Docs DocSync Ratchet
+
 ## Future Work
 
-- Full DocSync dogfood ratchet: after the extraction sequence settles, review
-  public docs section by section and add trace evidence for durable
-  user-facing promises.
+- Full DocSync dogfood ratchet: continue section-by-section coverage for hooks,
+  compression, release, and architecture docs after this public-docs slice.
 - Avoid adding new ecosystems until TypeScript/JavaScript reaches clearly
   defined supported-experimental or supported bar.
 

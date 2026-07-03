@@ -114,3 +114,4 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 117 | [README DocSync Evidence Ratchet](phases/phase-117-readme-docsync-evidence.md) |
 | 118 | [Agent Context Pack Rendering Extraction](phases/phase-118-agent-context-pack-rendering.md) |
 | 119 | [Agent Context Compression Extraction](phases/phase-119-agent-context-compression.md) |
+| 120 | [Public Docs DocSync Ratchet](phases/phase-120-docsync-public-docs-ratchet.md) |
