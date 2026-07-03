@@ -74,14 +74,13 @@ def latest_artifact_source() -> MutationResultSource | None:
         key=artifact_sort_key,
         reverse=True,
     ):
-        try:
+        stats = stats_from_artifact(stats_path)
+        if stats is not None:
             return MutationResultSource(
-                stats=read_mutmut_stats(stats_path),
+                stats=stats,
                 kind=RUN_ARTIFACT_SOURCE,
                 path=stats_path,
             )
-        except (OSError, ValueError):
-            continue
     for log_path in sorted(
         LOG_DIR.glob(f"*/{MUTMUT_LOG_NAME}"),
         key=artifact_sort_key,
@@ -103,6 +102,14 @@ def artifact_stats_paths() -> tuple[Path, ...]:
     if SWEEP_LOG_DIR.exists():
         paths += tuple(SWEEP_LOG_DIR.glob(f"**/{MUTMUT_STATS_NAME}"))
     return paths
+
+
+def stats_from_artifact(path: Path) -> MutmutStats | None:
+    """Return parsed Mutmut stats artifact when readable."""
+    try:
+        return read_mutmut_stats(path)
+    except (OSError, ValueError):
+        return None
 
 
 def artifact_sort_key(path: Path) -> tuple[int, str]:

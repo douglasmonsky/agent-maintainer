@@ -91,10 +91,21 @@ def test_mutation_results_cli_reads_latest_sweep_stats_artifact(
     new_stats = (
         tmp_path / ".verify-logs" / "mutation-sweeps" / "20200102T000000Z-new" / "candidate-01"
     )
+    invalid_stats = (
+        tmp_path
+        / ".verify-logs"
+        / "mutation-sweeps"
+        / "20200103T000000Z-invalid"
+        / "candidate-01"
+        / "mutants"
+        / "mutmut-cicd-stats.json"
+    )
     old_stats.mkdir(parents=True)
     new_stats.mkdir(parents=True)
     write_mutmut_stats(old_stats)
     write_mutmut_stats(new_stats)
+    invalid_stats.parent.mkdir(parents=True)
+    invalid_stats.write_text("[]", encoding="utf-8")
 
     assert cli.main(["mutation-results", "--format", "json"]) == 0
 
