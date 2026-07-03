@@ -15,6 +15,7 @@ class PythonProvider:
 
     name = "python"
 
+    # docsync:evidence.start evidence.readme.python_provider_checks
     def checks_by_name(self, context: EcosystemCheckContext) -> dict[str, Check]:
         """Return Python checks keyed by stable check name."""
         return {check.name: check for check in self.checks(context)}
@@ -87,6 +88,8 @@ class PythonProvider:
             python_checks.interrogate_check(config, package_paths),
             python_checks.diff_cover_check(config, context.compare_branch),
         ]
+
+    # docsync:evidence.end evidence.readme.python_provider_checks
 
 
 def vulture_paths(

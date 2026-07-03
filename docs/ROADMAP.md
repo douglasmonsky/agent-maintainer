@@ -739,6 +739,20 @@ Completed work:
 
 - [x] Phase 116: Internal Package Boundary Regression Tests
 
+## Completed: README DocSync Evidence Ratchet
+
+DocSync should now dogfood public documentation, not only its extraction note.
+Start with README claims that users rely on during first adoption and repair
+loops.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-117-readme-docsync-evidence.md`](roadmap/phases/phase-117-readme-docsync-evidence.md)
+
+Completed work:
+
+- [x] Phase 117: README DocSync Evidence Ratchet
+
 ## Future Work
 
 - Full DocSync dogfood ratchet: after the extraction sequence settles, review

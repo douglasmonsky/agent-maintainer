@@ -18,6 +18,7 @@ disable_bytecode_writes()
 
 CommandRunner = Callable[[list[str]], int]
 
+# docsync:evidence.start evidence.readme.command_registry
 USAGE = """Usage:
   python -m agent_maintainer <command> [options]
 
@@ -102,6 +103,9 @@ def command_handlers() -> dict[str, CommandRunner]:
         "test-intel": test_intel_command,
         "verify": verify_main,
     }
+
+
+# docsync:evidence.end evidence.readme.command_registry
 
 
 def assess_command(command_args: list[str]) -> int:

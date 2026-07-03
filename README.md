@@ -1,3 +1,4 @@
+<!-- docsync:object docs.readme.overview -->
 # Agent Maintainer
 
 <p align="center">
@@ -38,6 +39,7 @@ It is strongest when an AI agent is actively editing your repo: the agent gets a
 compact pass/fail summary, a run id, failed checks, and exact next commands while
 raw evidence stays in run-scoped artifacts.
 
+<!-- docsync:object docs.readme.quick_start -->
 ## Quick Start
 
 Install the core toolset:
@@ -100,6 +102,7 @@ Deeper reads:
 [agent hooks](docs/agent-client-hooks.md),
 [generated guidance](docs/agent-maintainer-guidance.md).
 
+<!-- docsync:object docs.readme.adoption_tracks -->
 ## Adoption Tracks
 
 `init` separates files written from policy strictness.
@@ -136,6 +139,7 @@ Read more:
 [fresh strict](docs/fresh-strict.md),
 [team policy templates](docs/team-policy-templates.md).
 
+<!-- docsync:object docs.readme.run_profiles -->
 ## Run Profiles
 
 <p align="center">
@@ -166,6 +170,7 @@ Read more:
 [diagnostics repair loop](docs/diagnostics-repair-loop.md),
 [verification cadence](docs/agent-maintainer-guidance.md).
 
+<!-- docsync:object docs.readme.supported_checks -->
 ## Supported Checks And Scans
 
 Agent Maintainer does not replace these tools. It coordinates them, gives them
@@ -229,6 +234,7 @@ Read more:
 [mutation testing](docs/mutation-testing.md),
 [cohesive change plans](docs/cohesive-change-plans.md).
 
+<!-- docsync:object docs.readme.agent_loop -->
 ## How Agents Should Use It
 
 For agent-heavy repos, install the `agent` track and commit the generated
@@ -359,6 +365,7 @@ Read more:
 
 [multi-ecosystem reviewability policy](docs/multi-ecosystem-reviewability-policy.md).
 
+<!-- docsync:object docs.readme.technical_debt -->
 ## Technical Debt Score
 
 Generate an advisory maintenance-risk scorecard:

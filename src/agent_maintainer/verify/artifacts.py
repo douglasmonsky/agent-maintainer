@@ -20,6 +20,7 @@ from agent_run_artifacts import history as verify_history
 from agent_run_artifacts import timing as verify_timing
 from agent_run_artifacts.git_state import git_state
 
+# docsync:evidence.start evidence.readme.diagnostic_artifacts
 MANIFEST_NAME = "manifest.json"
 LAST_FAILURE_NAME = "LAST_FAILURE.md"
 PR_SUMMARY_NAME = pr_summary.PR_SUMMARY_NAME
@@ -188,6 +189,9 @@ def write_last_failure(
     snapshot_path.parent.mkdir(parents=True, exist_ok=True)
     verify_history.atomic_write_text(snapshot_path, text)
     verify_history.atomic_write_text(path, text)
+
+
+# docsync:evidence.end evidence.readme.diagnostic_artifacts
 
 
 def json_text(payload: dict[str, object]) -> str:

@@ -25,7 +25,10 @@ def test_readme_uses_public_beta_framing() -> None:
     """README starts with package-first beta usage."""
     text = README.read_text(encoding="utf-8")
 
-    assert text.startswith("# Agent Maintainer\n")
+    visible_text = text.removeprefix(
+        "<!-- docsync:object docs.readme.overview -->\n",
+    )
+    assert visible_text.startswith("# Agent Maintainer\n")
     assert "Agent Maintainer is in beta" in text
     assert 'python -m pip install "agent-maintainer[core]"' in text
     assert "agent-maintainer init --track core" in text
