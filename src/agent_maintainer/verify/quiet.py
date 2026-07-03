@@ -22,6 +22,7 @@ from pathlib import Path
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core.args import apply_cli_overrides, parse_args
 from agent_maintainer.core.config import load_config
+from agent_maintainer.verify import runtime_eventing
 from agent_maintainer.verify.locking import VerificationLock, build_fingerprint
 from agent_maintainer.verify.result_summary import (
     apply_optional_skip_policy,
@@ -50,11 +51,22 @@ def main(argv: list[str]) -> int:
         staged=args.staged,
     )
     run_id = build_run_id(args.profile, fingerprint.to_dict())
+    profile_events = runtime_eventing.ProfileRuntimeEvents.create(
+        config,
+        profile=args.profile,
+        run_id=run_id,
+    )
     with VerificationLock(log_dir=log_dir, fingerprint=fingerprint) as verifier_lock:
         if verifier_lock.reused is not None:
+            profile_events.finished(
+                status="reused",
+                exit_code=verifier_lock.reused.exit_code,
+                log_dir=log_dir,
+            )
             return print_reused_result(log_dir, verifier_lock.reused.exit_code)
 
         execution_log_dir = run_snapshot_dir(log_dir, run_id)
+        profile_events.started(execution_log_dir)
         execution_config = replace(
             config,
             diagnostic_artifacts_dir=str(execution_log_dir),
@@ -65,8 +77,12 @@ def main(argv: list[str]) -> int:
             args.compare_branch,
             staged=args.staged,
         )
-        selected = [check for check in checks if args.profile in check.profiles]
-        results = collect_results(args, execution_config, selected, execution_log_dir)
+        results = collect_results(
+            args,
+            execution_config,
+            [check for check in checks if args.profile in check.profiles],
+            execution_log_dir,
+        )
         results = apply_optional_skip_policy(results, args.fail_on_optional_skip)
         write_artifacts_if_enabled(args, config, log_dir, results, run_id)
         exit_code = print_result_summary(
@@ -76,6 +92,11 @@ def main(argv: list[str]) -> int:
             run_id=run_id,
         )
         verifier_lock.write_result(exit_code)
+        profile_events.finished(
+            status="pass" if exit_code == 0 else "fail",
+            exit_code=exit_code,
+            log_dir=execution_log_dir,
+        )
         return exit_code
 
 

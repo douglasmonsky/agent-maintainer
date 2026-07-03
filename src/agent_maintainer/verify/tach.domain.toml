@@ -77,13 +77,22 @@ depends_on = [
 [[modules]]
 path = "quiet"
 depends_on = [
-"//agent_maintainer.catalogs.catalog",
-"//agent_maintainer.core.args",
-"//agent_maintainer.core.config",
-"//agent_run_artifacts.history",
-"locking",
-"result_summary",
-"run_steps",
+  "//agent_maintainer.catalogs.catalog",
+  "//agent_maintainer.core.args",
+  "//agent_maintainer.core.config",
+  "//agent_run_artifacts.history",
+  "locking",
+  "result_summary",
+  "runtime_eventing",
+  "run_steps",
+]
+
+[[modules]]
+path = "runtime_eventing"
+depends_on = [
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.runtime_events.models",
+  "//agent_maintainer.runtime_events.sinks",
 ]
 
 [[modules]]

@@ -1,0 +1,29 @@
+# Tach domain contract for agent_maintainer.runtime_events.
+# Runtime events must remain local, compact, and independent of verifier output.
+
+[root]
+
+depends_on = []
+
+
+[[modules]]
+
+path = "models"
+depends_on = [
+  "redaction",
+]
+
+
+[[modules]]
+
+path = "redaction"
+depends_on = []
+
+
+[[modules]]
+
+path = "sinks"
+depends_on = [
+  "models",
+  "//agent_maintainer.config.schema",
+]

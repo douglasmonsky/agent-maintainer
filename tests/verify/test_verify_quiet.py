@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from pathlib import Path
 
@@ -25,7 +26,7 @@ def test_collect_results_stops_on_layout_failure(
     args = verify_quiet.parse_args(["--profile", "precommit"])
     config = replace(MaintainerConfig(), source_roots=("missing",), package_paths=("missing",))
 
-    results = verify_quiet.collect_results(args, config, [])
+    results = verify_run_steps.collect_results(args, config, [])
 
     assert results[0].name == "maintainer-layout"
     assert results[0].passed is False
@@ -158,3 +159,54 @@ def test_main_prints_success_for_passing_selected_check(
     assert "PASS" in output
     assert "Profile: fast" in output
     assert "Duration: unknown (expected quick edit check)" in output
+
+
+def test_main_writes_runtime_profile_events_when_enabled(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Enabled runtime events record profile lifecycle without noisy output."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "scripts").mkdir()
+    event_dir = tmp_path / ".events"
+    monkeypatch.setattr(
+        verify_quiet,
+        "load_config",
+        lambda: replace(
+            MaintainerConfig(),
+            source_roots=("scripts",),
+            package_paths=("scripts",),
+            require_tests=False,
+            runtime_events_enabled=True,
+            runtime_events_dir=str(event_dir),
+        ),
+    )
+    monkeypatch.setattr(
+        verify_quiet,
+        "make_checks",
+        lambda config, base_ref, compare_branch, staged=False: [
+            Check("custom", ["true"], frozenset(("fast",)))
+        ],
+    )
+    monkeypatch.setattr(
+        verify_run_steps,
+        "run_check",
+        lambda check, log_dir, max_lines, max_chars: CheckResult(check.name, passed=True),
+    )
+
+    assert verify_quiet.main(["--profile", "fast"]) == 0
+
+    output = capsys.readouterr().out
+    assert "PASS" in output
+    assert ".events" not in output
+    event_files = tuple(event_dir.glob("*.jsonl"))
+    assert len(event_files) == 1
+    records = [json.loads(line) for line in event_files[0].read_text(encoding="utf-8").splitlines()]
+    assert [record["event_name"] for record in records] == [
+        "profile.started",
+        "profile.finished",
+    ]
+    assert records[0]["profile"] == "fast"
+    assert records[1]["status"] == "pass"
+    assert records[1]["exit_code"] == 0

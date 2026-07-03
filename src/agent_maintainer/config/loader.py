@@ -8,7 +8,7 @@ import tomllib
 from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from agent_maintainer.config import coercion, modes, schema
 
@@ -95,6 +95,8 @@ BOOL_ENVS = (
         "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_ENABLED",
     ),
     ("diagnostic_artifacts_enabled", "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED"),
+    ("runtime_events_enabled", "AGENT_MAINTAINER_RUNTIME_EVENTS_ENABLED"),
+    ("runtime_events_include_debug", "AGENT_MAINTAINER_RUNTIME_EVENTS_INCLUDE_DEBUG"),
     ("context_write_context_packs", "AGENT_MAINTAINER_CONTEXT_WRITE_CONTEXT_PACKS"),
     ("context_packs_local_only", "AGENT_MAINTAINER_CONTEXT_PACKS_LOCAL_ONLY"),
     ("context_pack_contains_source", "AGENT_MAINTAINER_CONTEXT_PACK_CONTAINS_SOURCE"),
@@ -164,6 +166,8 @@ STRING_ENVS = (
     ("xenon_max_modules", "AGENT_MAINTAINER_XENON_MAX_MODULES"),
     ("xenon_max_average", "AGENT_MAINTAINER_XENON_MAX_AVERAGE"),
     ("diagnostic_artifacts_dir", "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"),
+    ("runtime_events_dir", "AGENT_MAINTAINER_RUNTIME_EVENTS_DIR"),
+    ("runtime_event_level", "AGENT_MAINTAINER_RUNTIME_EVENT_LEVEL"),
     ("secret_scanner", "AGENT_MAINTAINER_SECRET_SCANNER"),
     ("ratchet_baseline_path", "AGENT_MAINTAINER_RATCHET_BASELINE_PATH"),
     ("ratchet_guidance_path", "AGENT_MAINTAINER_RATCHET_GUIDANCE_PATH"),
@@ -182,13 +186,14 @@ def read_pyproject(path: Path | None = None) -> dict[str, Any]:
     """Read `[tool.agent_maintainer]` from pyproject.toml."""
 
     payload = _read_toml(path or Path("pyproject.toml"))
-    tool = payload.get("tool", {})
-    if not isinstance(tool, dict):
+    raw_tool = payload.get("tool", {})
+    if not isinstance(raw_tool, dict):
         return {}
-    config = tool.get("agent_maintainer", {})
-    if not isinstance(config, dict):
+    tool = cast(dict[str, Any], raw_tool)
+    raw_config = tool.get("agent_maintainer", {})
+    if not isinstance(raw_config, dict):
         return {}
-    return config
+    return cast(dict[str, Any], raw_config)
 
 
 def read_neutral_config(
