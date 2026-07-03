@@ -116,8 +116,10 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "real Git diff behavior.",
             "Phase 138 added additional temporary Git repository shapes for "
             "npm, pnpm, Vite, and Vitest.",
-            "At least one external real-repo comparison is still needed before "
-            "any promotion beyond advisory output.",
+            "Phase 139 added one external public-repository comparison against "
+            "`vitest-dev/eslint-plugin-vitest`",
+            "broader repository samples are still needed before TypeScript "
+            "reviewability becomes blocking or supported.",
         ),
     }
     _assert_phrases_present(phrases)

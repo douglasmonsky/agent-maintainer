@@ -1,0 +1,90 @@
+{
+  "reviewability": {
+    "advisory_findings": [],
+    "advisory_note": "Advisory only: current blocking reviewability gates remain Python-backed until cross-ecosystem policy adapters are proven low-noise.",
+    "base_ref": "HEAD~1",
+    "broad_suppressions": 0,
+    "by_ecosystem": [
+      {
+        "count": 2,
+        "key": "typescript"
+      }
+    ],
+    "by_role": [
+      {
+        "count": 1,
+        "key": "source"
+      },
+      {
+        "count": 1,
+        "key": "test"
+      }
+    ],
+    "changes": [
+      {
+        "added": 1,
+        "change_kind": "unknown",
+        "deleted": 1,
+        "ecosystem": "typescript",
+        "generated": false,
+        "ignored": false,
+        "path": "src/rules/valid-expect.ts",
+        "role": "source"
+      },
+      {
+        "added": 27,
+        "change_kind": "unknown",
+        "deleted": 0,
+        "ecosystem": "typescript",
+        "generated": false,
+        "ignored": false,
+        "path": "tests/valid-expect.test.ts",
+        "role": "test"
+      }
+    ],
+    "classified_files": 2,
+    "next_commands": [
+      "python -m agent_maintainer verify --profile precommit",
+      "python -m agent_maintainer assess reviewability --json"
+    ],
+    "provider_summaries": [
+      {
+        "broad_suppressions": 0,
+        "changed_files": 2,
+        "ecosystem": "typescript",
+        "source_files": 1,
+        "source_lines": 2,
+        "test_files": 1,
+        "test_lines": 27
+      }
+    ],
+    "staged": false,
+    "suppressions": [],
+    "target": "vitest-dev/eslint-plugin-vitest",
+    "total_changed_files": 2,
+    "unclassified_files": 0
+  },
+  "source": {
+    "base_commit": "8fff9690c0c4008f93a636a62425dbe520ec7ce7",
+    "collected_date": "2026-07-03",
+    "command": "python -m agent_maintainer assess reviewability --target <clone> --base-ref HEAD~1 --json",
+    "head_commit": "7c697f8a53d7d7551b00ef11217d58cd45a0cf7d",
+    "head_subject": "fix(valid-expect): treat .finally() as part of async assertion promise chains (#908)",
+    "repository": "https://github.com/vitest-dev/eslint-plugin-vitest",
+    "temporary_config": {
+      "enable_typescript": true,
+      "typescript_lint_command": [
+        "pnpm",
+        "lint"
+      ],
+      "typescript_test_command": [
+        "pnpm",
+        "test"
+      ],
+      "typescript_typecheck_command": [
+        "pnpm",
+        "typecheck"
+      ]
+    }
+  }
+}
