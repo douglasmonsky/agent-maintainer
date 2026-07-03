@@ -1022,6 +1022,20 @@ Completed work:
 
 - [x] Phase 137: TypeScript Unsupported Surface Docs
 
+## Completed: TypeScript Package Shape Evidence
+
+Add real Git repository reviewability evidence for common npm, pnpm, Vite, and
+Vitest TypeScript/JavaScript project shapes without changing provider behavior
+or making TypeScript reviewability blocking.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-138-typescript-package-shape-evidence.md`](roadmap/phases/phase-138-typescript-package-shape-evidence.md)
+
+Completed work:
+
+- [x] Phase 138: TypeScript Package Shape Evidence
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,

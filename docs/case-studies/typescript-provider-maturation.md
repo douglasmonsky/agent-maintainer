@@ -30,8 +30,8 @@ without changing blocking verifier behavior.
 
 ## Real-Repo Diff Evidence
 
-Phase 131 added temporary Git repository tests that run public
-`assess reviewability --json` against actual TypeScript diffs. This evidence
+Phase 131 added temporary Git repository tests that run the public
+`assess reviewability --json` command against TypeScript diffs. The evidence
 covers:
 
 - source-plus-test changes producing TypeScript provider summaries without
@@ -42,8 +42,14 @@ covers:
 
 This closes one maturation gap between patched fixture readers and real Git
 diff behavior. It still does not justify blocking TypeScript reviewability
-gates: more repository shapes and at least one external real-repo comparison are
-still needed before any promotion beyond advisory output.
+gates.
+
+Phase 138 added additional temporary Git repository shapes for npm, pnpm, Vite,
+and Vitest. These tests prove npm/Vite/Vitest source-plus-test changes stay
+low-noise, and pnpm config/lockfile changes report config and dependency roles
+without source-heavy or source-without-test findings. At least one external
+real-repo comparison is still needed before any promotion beyond advisory
+output.
 
 ## Advisory Threshold Evidence
 
@@ -88,7 +94,8 @@ Use this page as an implementation notebook while TypeScript matures. Track:
 
 TypeScript/JavaScript should not move toward supported status until it has:
 
-- fixture evidence for common npm and pnpm project shapes;
+- fixture and temporary-Git evidence for common npm, pnpm, Vite, and Vitest
+  project shapes;
 - at least one real-repo comparison pass with acceptable noise;
 - stable explicit-command behavior;
 - clear doctor messages for missing commands and executables;
