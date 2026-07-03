@@ -9,16 +9,7 @@ from typing import cast
 
 import pytest
 
-from agent_maintainer.context import cli as context_cli
-from agent_maintainer.context.pack import cli as pack_cli
-from agent_maintainer.context.pack.builder import (
-    ContextPackRequest,
-    build_context_pack,
-    selected_log_names,
-    write_context_pack,
-)
-from agent_maintainer.context.pack.ratchet import target_commands
-from agent_maintainer.context.pack.rendering import (
+from agent_context.pack_rendering import (
     command_pointer_lines,
     exact_fact_lines,
     fact_location,
@@ -31,8 +22,24 @@ from agent_maintainer.context.pack.rendering import (
     supporting_item_lines,
     top_target_lines,
 )
+from agent_maintainer.context import cli as context_cli
+from agent_maintainer.context.pack import cli as pack_cli
+from agent_maintainer.context.pack import rendering as compatibility_rendering
+from agent_maintainer.context.pack.builder import (
+    ContextPackRequest,
+    build_context_pack,
+    selected_log_names,
+    write_context_pack,
+)
+from agent_maintainer.context.pack.ratchet import target_commands
 
 PACK_BUDGET = 2_200
+
+
+def test_context_pack_rendering_compatibility_shim() -> None:
+    """Old product import path forwards to reusable rendering helpers."""
+
+    assert compatibility_rendering.render_pack_pointer is render_pack_pointer
 
 
 def test_context_pack_writes_markdown_and_json(

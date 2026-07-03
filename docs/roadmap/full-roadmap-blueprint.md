@@ -110,6 +110,8 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 114 | [DocSync Dogfood Seed And Ratchet](phases/phase-114-docsync-dogfood-ratchet.md) |
 | 115 | [Agent Client Hooks Internal Package Extraction](phases/phase-115-agent-client-hooks-package.md) |
 | 116 | [Internal Package Boundary Regression Tests](phases/phase-116-internal-package-boundary-tests.md) |
+| 117 | [README DocSync Evidence Ratchet](phases/phase-117-readme-docsync-evidence.md) |
+| 118 | [Agent Context Pack Rendering Extraction](phases/phase-118-agent-context-pack-rendering.md) |
 
 ## Completion
 

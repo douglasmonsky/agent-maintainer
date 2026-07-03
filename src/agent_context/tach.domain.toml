@@ -27,6 +27,18 @@ path = "formatting"
 depends_on = ["models"]
 
 [[modules]]
+path = "pack_rendering"
+depends_on = [
+  "budget",
+  "formatting",
+  "models",
+]
+
+[[modules]]
+path = "sanitize"
+depends_on = []
+
+[[modules]]
 path = "models"
 depends_on = []
 
