@@ -697,11 +697,27 @@ Completed work:
 
 - [x] Phase 113: Agent Run Artifacts Internal Package Extraction
 
+## Completed: DocSync Dogfood Seed And Ratchet
+
+DocSync should start dogfooding this repository on its own durable extraction
+contract before broader docs coverage. This keeps the trace useful while the
+package-extraction refactor is still moving.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-114-docsync-dogfood-ratchet.md`](roadmap/phases/phase-114-docsync-dogfood-ratchet.md)
+
+Completed work:
+
+- [x] Phase 114: DocSync Dogfood Seed And Ratchet
+
 ## Future Work
 
-No active Future Work items remain beyond the numbered roadmap phases. Avoid
-adding new ecosystems until TypeScript/JavaScript reaches a clearly defined
-supported-experimental or supported bar.
+- Full DocSync dogfood ratchet: after the extraction sequence settles, review
+  public docs section by section and add trace evidence for durable
+  user-facing promises.
+- Avoid adding new ecosystems until TypeScript/JavaScript reaches clearly
+  defined supported-experimental or supported bar.
 
 ## Final Definition Of Done
 

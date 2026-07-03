@@ -110,6 +110,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 111 | [Agent Repair Facts Internal Package Extraction](phases/phase-111-agent-repair-facts-package.md) |
 | 112 | [Agent Context Primitives And Reading Extraction](phases/phase-112-agent-context-primitives.md) |
 | 113 | [Agent Run Artifacts Internal Package Extraction](phases/phase-113-agent-run-artifacts-package.md) |
+| 114 | [DocSync Dogfood Seed And Ratchet](phases/phase-114-docsync-dogfood-ratchet.md) |
 
 ## Completion
 

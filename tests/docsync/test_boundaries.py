@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+# docsync:evidence.start evidence.docsync.boundary_test
 FORBIDDEN_IMPORTS = ("agent_maintainer", "archguard")
 
 
@@ -24,6 +25,9 @@ def test_docsync_imports_no_project_internal_packages() -> None:
                 violations.append(f"{path.relative_to(repo_root)} imports {imported}")
 
     assert violations == []
+
+
+# docsync:evidence.end evidence.docsync.boundary_test
 
 
 def _imported_module(node: ast.AST) -> str | None:

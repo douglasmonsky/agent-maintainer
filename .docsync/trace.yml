@@ -1,5 +1,76 @@
 version: 1
-documents: {}
-objects: {}
-claims: {}
-evidence: {}
+documents:
+  docs.docsync_extraction:
+    path: docs/docsync-extraction.md
+    title: DocSync Extraction Notes
+    audience: maintainers
+objects:
+  docs.docsync_extraction.overview:
+    document: docs.docsync_extraction
+    kind: heading_section
+    path: docs/docsync-extraction.md
+    marker: docs.docsync_extraction.overview
+    heading:
+      level: 1
+      text: DocSync Extraction Notes
+claims:
+  claim.docsync.extractable_boundary:
+    object: docs.docsync_extraction.overview
+    text: DocSync is an extractable sibling package with no dependencies on Agent Maintainer or Archguard.
+    severity: high
+    evidence:
+      - evidence.docsync.domain_contract
+      - evidence.docsync.boundary_test
+    review:
+      acceptable_attestation_reasons:
+        - internal_refactor_only
+  claim.docsync.trace_source_truth:
+    object: docs.docsync_extraction.overview
+    text: DocSync uses explicit evidence regions and rebuildable generated outputs under .docsync/out.
+    severity: medium
+    evidence:
+      - evidence.docsync.explicit_evidence_scanner
+      - evidence.docsync.generated_outputs_commands
+    review:
+      acceptable_attestation_reasons:
+        - docs_only
+  claim.docsync.command_surface:
+    object: docs.docsync_extraction.overview
+    text: DocSync exposes init, index, check, prompt, attest, and doctor commands.
+    severity: medium
+    evidence:
+      - evidence.docsync.cli_commands
+    review:
+      acceptable_attestation_reasons:
+        - command_surface_reviewed
+evidence:
+  evidence.docsync.domain_contract:
+    type: code
+    description: Tach domain contract keeps DocSync independent from Agent Maintainer and Archguard.
+    anchors:
+      - path: src/docsync/tach.domain.toml
+        mode: explicit_region
+  evidence.docsync.boundary_test:
+    type: test
+    description: Boundary test forbids DocSync imports from project-internal packages.
+    anchors:
+      - path: tests/docsync/test_boundaries.py
+        mode: explicit_region
+  evidence.docsync.explicit_evidence_scanner:
+    type: code
+    description: DocSync scans explicit evidence regions by configured directive names.
+    anchors:
+      - path: src/docsync/comments/scanner.py
+        mode: explicit_region
+  evidence.docsync.generated_outputs_commands:
+    type: code
+    description: DocSync commands write generated outputs and initialize ignored output artifacts.
+    anchors:
+      - path: src/docsync/commands/core.py
+        mode: explicit_region
+  evidence.docsync.cli_commands:
+    type: code
+    description: DocSync CLI registers the supported command surface.
+    anchors:
+      - path: src/docsync/cli.py
+        mode: explicit_region

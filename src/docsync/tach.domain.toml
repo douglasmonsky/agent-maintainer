@@ -1,8 +1,10 @@
+# docsync:evidence.start evidence.docsync.domain_contract
 # Tach domain contract for docsync.
 # Keep DocSync extractable: no dependencies on agent_maintainer or archguard.
 
 [root]
 depends_on = []
+# docsync:evidence.end evidence.docsync.domain_contract
 
 [[modules]]
 path = "__main__"

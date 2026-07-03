@@ -20,9 +20,22 @@ def test_module_help_exits_success(capsys: pytest.CaptureFixture[str]) -> None:
     assert "Documentation traceability" in capsys.readouterr().out
 
 
-def test_doctor_reports_empty_trace(capsys: pytest.CaptureFixture[str]) -> None:
+def test_doctor_reports_empty_trace(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """Doctor loads repository config and reports an empty trace."""
-    result = docsync_cli.main(["doctor"])
+    (tmp_path / ".docsync").mkdir()
+    (tmp_path / ".docsync" / "config.yml").write_text(
+        DEFAULT_CONFIG_TEXT,
+        encoding="utf-8",
+    )
+    (tmp_path / ".docsync" / "trace.yml").write_text(
+        "version: 1\ndocuments: {}\nobjects: {}\nclaims: {}\nevidence: {}\n",
+        encoding="utf-8",
+    )
+
+    result = docsync_cli.main(["--repo-root", str(tmp_path), "doctor"])
 
     assert result == 1
     output = capsys.readouterr().out

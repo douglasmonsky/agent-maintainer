@@ -42,6 +42,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# docsync:evidence.start evidence.docsync.cli_commands
 def _add_core_commands(subparsers: Any) -> None:
     init_parser = subparsers.add_parser("init", help="Create .docsync files.")
     init_parser.add_argument("--force", action="store_true")
@@ -74,3 +75,6 @@ def _add_core_commands(subparsers: Any) -> None:
     attest_parser.add_argument("--reason", required=True)
     attest_parser.add_argument("--evidence", action="append", required=True)
     attest_parser.set_defaults(handler=core_commands.attest_main_from_args)
+
+
+# docsync:evidence.end evidence.docsync.cli_commands
