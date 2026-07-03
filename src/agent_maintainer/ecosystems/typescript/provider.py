@@ -8,6 +8,7 @@ from agent_maintainer.ecosystems.models import EcosystemCheckContext
 from agent_maintainer.models import Check
 
 
+# docsync:evidence.start evidence.typescript.provider_commands
 class TypeScriptProvider:
     """Build explicitly configured TypeScript/JavaScript checks."""
 
@@ -68,3 +69,6 @@ def _configured_check(
         selected_profiles,
         required_executable=command[0],
     )
+
+
+# docsync:evidence.end evidence.typescript.provider_commands

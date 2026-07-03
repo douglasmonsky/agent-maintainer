@@ -1,3 +1,4 @@
+<!-- docsync:object docs.typescript_provider.overview -->
 # Experimental TypeScript/JavaScript Provider
 
 Agent Maintainer includes an experimental TypeScript/JavaScript ecosystem

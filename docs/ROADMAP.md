@@ -808,6 +808,18 @@ Completed work:
 
 - [x] Phase 121: Operational DocSync Trace Closure
 
+## Completed: Provider-Specific DocSync Evidence
+
+Extend DocSync dogfooding into provider-specific public docs for the active
+TypeScript/JavaScript maturation track. This keeps provider docs tied to source
+and test evidence while avoiding new ecosystem scope. Detailed scope:
+
+[`docs/roadmap/phases/phase-122-provider-specific-docsync-evidence.md`](roadmap/phases/phase-122-provider-specific-docsync-evidence.md)
+
+Completed work:
+
+- [x] Phase 122: Provider-Specific DocSync Evidence
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,

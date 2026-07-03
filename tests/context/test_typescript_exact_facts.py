@@ -11,6 +11,7 @@ from agent_maintainer.context.pack import exact_facts
 APP_PATH = "src/app.ts"
 
 
+# docsync:evidence.start evidence.typescript.repair_fact_tests
 def test_typescript_typecheck_log_extracts_exact_fact(tmp_path: Path) -> None:
     """TypeScript compiler logs produce file, line, symbol facts."""
     log_path = tmp_path / "typescript-typecheck.log"
@@ -151,3 +152,6 @@ def record(check: str, log_path: Path) -> FailureRecord:
         expansion_commands=(),
         artifact_paths=(),
     )
+
+
+# docsync:evidence.end evidence.typescript.repair_fact_tests

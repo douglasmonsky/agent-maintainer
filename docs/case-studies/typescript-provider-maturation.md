@@ -1,3 +1,4 @@
+<!-- docsync:object docs.typescript_maturation.overview -->
 # TypeScript Provider Maturation Notes
 
 These notes track how TypeScript/JavaScript becomes the first serious
