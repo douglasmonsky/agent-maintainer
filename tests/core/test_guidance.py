@@ -69,6 +69,8 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "Keep chat updates summary-first" in text
     assert "Do not emit routine `still running` updates" in text
     assert "Use `apply_patch` for manual edits" in text
+    assert "commands for failures" in text
+    assert "Expand only if needed" in text
     assert "Mode: `fresh-strict`" in text
     assert (
         "Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`"
