@@ -290,7 +290,7 @@ Agent Maintainer is designed to be safe to try:
 Read more:
 [Release checklist](docs/release-checklist.md),
 [troubleshooting](docs/troubleshooting.md),
-[0.1.0b4 release notes](docs/releases/0.1.0b4.md).
+[0.1.0b5 release notes](docs/releases/0.1.0b5.md).
 
 ## Configuration
 
