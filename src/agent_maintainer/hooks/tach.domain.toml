@@ -7,7 +7,8 @@ depends_on = []
 [[modules]]
 path = "adapters"
 depends_on = [
-  "templates",
+  "//agent_client_hooks.adapters",
+  "//agent_client_hooks.constants",
 ]
 
 [[modules]]
@@ -35,19 +36,20 @@ depends_on = [
 [[modules]]
 path = "manager"
 depends_on = [
-  "adapters",
-  "merge",
+  "//agent_client_hooks.adapters",
+  "//agent_client_hooks.merge",
 ]
 
 [[modules]]
 path = "merge"
 depends_on = [
-  "templates",
+  "//agent_client_hooks.merge",
 ]
 
 [[modules]]
 path = "runtime"
 depends_on = [
+  "//agent_client_hooks.constants",
   "audit",
   "context",
   "subprocess_runner",
@@ -62,5 +64,6 @@ depends_on = [
 [[modules]]
 path = "templates"
 depends_on = [
-  "runtime",
+  "//agent_client_hooks.constants",
+  "//agent_client_hooks.templates",
 ]

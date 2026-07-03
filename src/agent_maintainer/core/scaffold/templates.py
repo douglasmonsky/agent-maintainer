@@ -5,9 +5,9 @@ from __future__ import annotations
 import textwrap
 from dataclasses import dataclass
 
+from agent_client_hooks import templates as hook_templates
 from agent_maintainer.core.scaffold.presets import apply_preset
 from agent_maintainer.core.scaffold.template_config import STARTER_PYPROJECT
-from agent_maintainer.hooks import templates as hook_templates
 
 CORE_TRACK = "core"
 AGENT_TRACK = "agent"

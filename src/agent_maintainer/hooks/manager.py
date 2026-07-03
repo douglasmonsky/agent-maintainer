@@ -6,8 +6,8 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-from agent_maintainer.hooks import adapters as hook_adapters
-from agent_maintainer.hooks import merge
+from agent_client_hooks import adapters as hook_adapters
+from agent_client_hooks import merge
 
 ALL_CLIENTS = hook_adapters.ALL_CLIENTS
 CLIENTS = hook_adapters.CLIENTS

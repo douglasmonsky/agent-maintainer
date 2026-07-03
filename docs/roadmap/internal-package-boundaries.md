@@ -39,6 +39,11 @@ rendering helpers, and timing metadata helpers. Product-owned artifact write
 orchestration remains under `agent_maintainer.verify.artifacts` until config and
 check-result adapters are fully isolated.
 
+Current-state note: `agent_client_hooks` owns hook templates, static client
+configuration merge helpers, adapter models, adapter selection, and planned
+writes. Product-owned hook CLI, runtime verification, context handling, audit
+logging, and subprocess execution remain under `agent_maintainer.hooks`.
+
 ## Hard Invariants
 
 - Keep `agent-maintainer` as the only public distribution in this pass.

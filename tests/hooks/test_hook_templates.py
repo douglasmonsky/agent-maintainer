@@ -6,8 +6,9 @@ import json
 
 import yaml
 
+from agent_client_hooks import templates
 from agent_maintainer.core.scaffold import templates as scaffold_templates
-from agent_maintainer.hooks import templates
+from agent_maintainer.hooks import templates as shim_templates
 
 
 def test_codex_config_file_enables_hooks() -> None:
@@ -44,6 +45,11 @@ def test_hook_wrappers_are_valid_python() -> None:
         templates.hook_audit_shim(),
     ):
         compile(source, "<hook-template>", "exec")
+
+
+def test_legacy_template_imports_still_work() -> None:
+    """Old Agent Maintainer hook template path remains compatible."""
+    assert shim_templates.codex_config_file() == templates.codex_config_file()
 
 
 def test_starter_workflow_installs_node_dependencies_inside_run_block() -> None:

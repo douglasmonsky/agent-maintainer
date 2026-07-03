@@ -1,0 +1,30 @@
+# Tach domain contract for agent_client_hooks.
+# Keep hook templates and client config planning independent of agent_maintainer.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "__init__"
+depends_on = []
+
+[[modules]]
+path = "constants"
+depends_on = []
+
+[[modules]]
+path = "templates"
+depends_on = ["constants"]
+
+[[modules]]
+path = "adapters"
+depends_on = [
+  "constants",
+  "templates",
+]
+
+[[modules]]
+path = "merge"
+depends_on = [
+  "templates",
+]

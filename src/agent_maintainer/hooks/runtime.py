@@ -8,18 +8,18 @@ import shutil
 import subprocess  # nosec B404
 import sys
 import time
-from contextlib import suppress
 from pathlib import Path
 
+from agent_client_hooks import constants as hook_constants
 from agent_maintainer.hooks import audit as hook_audit
 from agent_maintainer.hooks import context as hook_context
 from agent_maintainer.hooks.subprocess_runner import run_verifier_bounded
 
-CODEX_PLATFORM = "codex"
-CLAUDE_CODE_PLATFORM = "claude-code"
-POST_TOOL_USE_EVENT = "PostToolUse"
-STOP_EVENT = "Stop"
-SUBAGENT_STOP_EVENT = "SubagentStop"
+CODEX_PLATFORM = hook_constants.CODEX_PLATFORM
+CLAUDE_CODE_PLATFORM = hook_constants.CLAUDE_CODE_PLATFORM
+POST_TOOL_USE_EVENT = hook_constants.POST_TOOL_USE_EVENT
+STOP_EVENT = hook_constants.STOP_EVENT
+SUBAGENT_STOP_EVENT = hook_constants.SUBAGENT_STOP_EVENT
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -121,10 +121,12 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
 def read_hook_payload() -> dict[str, object]:
     """Read hook JSON from stdin, treating malformed input as empty."""
 
-    with suppress(json.JSONDecodeError, OSError):
+    try:
         payload = json.load(sys.stdin)
-        if isinstance(payload, dict):
-            return payload
+    except (json.JSONDecodeError, OSError):
+        return {}
+    if isinstance(payload, dict):
+        return payload
     return {}
 
 
@@ -158,9 +160,10 @@ def maintainer_configured(repo_root: Path) -> bool:
     pyproject = repo_root / "pyproject.toml"
     if not pyproject.exists():
         return False
-    with suppress(OSError):
+    try:
         return "[tool.agent_maintainer]" in pyproject.read_text(encoding="utf-8")
-    return False
+    except OSError:
+        return False
 
 
 def verifier_command(repo_root: Path, profile: str) -> list[str]:
