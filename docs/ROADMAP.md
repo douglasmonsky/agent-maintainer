@@ -870,6 +870,20 @@ Completed work:
 
 - [x] Phase 126: Roadmap Overview Current State
 
+## Completed: Git Metadata Duplicate Artifact Warning
+
+Extend duplicate-artifact doctor warnings to catch local Finder-style Git
+metadata duplicates such as `.git/index 2`, while keeping cleanup manual and
+warning-only.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-127-git-metadata-duplicate-artifact-warning.md`](roadmap/phases/phase-127-git-metadata-duplicate-artifact-warning.md)
+
+Completed work:
+
+- [x] Phase 127: Git Metadata Duplicate Artifact Warning
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
