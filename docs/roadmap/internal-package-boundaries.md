@@ -44,6 +44,10 @@ configuration merge helpers, adapter models, adapter selection, and planned
 writes. Product-owned hook CLI, runtime verification, context handling, audit
 logging, and subprocess execution remain under `agent_maintainer.hooks`.
 
+Current-state note: Phase 116 adds executable architecture regression tests for
+extracted packages. Keep these tests aligned with Tach and ADRs when changing
+cross-package dependencies.
+
 ## Hard Invariants
 
 - Keep `agent-maintainer` as the only public distribution in this pass.
