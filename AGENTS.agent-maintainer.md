@@ -62,8 +62,8 @@ Details: `docs/agent-maintainer-guidance.md`.
 - Do not emit routine `still running` updates for expected long checks.
 - Use `apply_patch` for manual edits; avoid heredoc rewrite commands.
 - Read `.verify-logs/LAST_FAILURE.md` before changing code or config.
-- Prefer run-scoped `context --log-dir ...` commands from failures.
-- Expand only needed context:
+- Prefer run-scoped `context --log-dir ...` commands for failures.
+- Expand only if needed:
  `python3 -m agent_maintainer context failures --limit 20`.
 - Fix the root cause; do not lower thresholds or add broad suppressions.
 
