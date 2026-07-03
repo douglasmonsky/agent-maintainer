@@ -12,7 +12,7 @@ Install the core dependency set:
 python -m pip install "agent-maintainer[core]"
 ```
 
-For source-checkout development of Agent Maintainer itself, use editable install
+For source-checkout development of Agent Maintainer itself, use an editable install
 instead:
 
 ```bash
