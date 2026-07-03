@@ -137,6 +137,7 @@ def test_context_pack_cli_outputs_json_and_writes_artifacts(
     assert (log_dir / "context" / "PACK.json").exists()
 
 
+# docsync:evidence.start evidence.context_safety.pointer_first_pack_tests
 def test_context_pack_cli_outputs_pointer_by_default(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -201,6 +202,9 @@ def test_context_pack_cli_prints_full_markdown_when_requested(
     assert result == 0
     assert output.startswith("# Agent Maintainer Context Pack")
     assert "## Exact Repair Facts" in output
+
+
+# docsync:evidence.end evidence.context_safety.pointer_first_pack_tests
 
 
 def test_context_pack_helpers_handle_defensive_branches() -> None:

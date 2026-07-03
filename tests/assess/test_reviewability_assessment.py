@@ -22,6 +22,7 @@ UNCLASSIFIED_FILES = 2
 SUPPRESSION_FINDINGS = 1
 
 
+# docsync:evidence.start evidence.multi_ecosystem_reviewability.assessment_tests
 def test_reviewability_groups_provider_changes(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -109,6 +110,9 @@ def test_reviewability_keeps_dependency_changes(
     assert dependency_changes == {
         ("package-lock.json", "typescript", "dependency"),
     }
+
+
+# docsync:evidence.end evidence.multi_ecosystem_reviewability.assessment_tests
 
 
 def test_reviewability_text_no_provider_files(

@@ -83,6 +83,7 @@ def test_setup_advisor_recommends_hardening_track(tmp_path: Path) -> None:
     assert any(gate.name == "yamllint" for gate in report.optional_gates)
 
 
+# docsync:evidence.start evidence.setup_advisor.recommendation_tests
 def test_setup_advisor_recommends_ts_scripts(tmp_path: Path) -> None:
     """Relevant package scripts produce explicit TypeScript provider advice."""
     write_repo(tmp_path)
@@ -106,6 +107,9 @@ def test_setup_advisor_ignores_irrelevant_scripts(tmp_path: Path) -> None:
 
     assert "osv-scanner" in gate_names
     assert "typescript-provider" not in gate_names
+
+
+# docsync:evidence.end evidence.setup_advisor.recommendation_tests
 
 
 def test_setup_advisor_recommends_legacy_ratchet(tmp_path: Path) -> None:

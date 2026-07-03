@@ -24,6 +24,7 @@ CANDIDATE_SCORE = 31
 CANDIDATE_COVERAGE = 95.0
 
 
+# docsync:evidence.start evidence.mutation_testing.sweep_executor_tests
 def test_executor_keeps_repo_config(tmp_path: Path) -> None:
     """Executor patches copied pyproject, not source checkout config."""
 
@@ -62,6 +63,9 @@ def test_executor_reports_success_stats(tmp_path: Path) -> None:
     assert result.promotion_ready is True
     assert result.stats is not None
     assert result.stats.survived == 0
+
+
+# docsync:evidence.end evidence.mutation_testing.sweep_executor_tests
 
 
 def test_executor_candidate_limit(tmp_path: Path) -> None:

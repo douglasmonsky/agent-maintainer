@@ -54,6 +54,7 @@ def test_mutation_results_cli_renders_json(
     }
 
 
+# docsync:evidence.start evidence.mutation_testing.results_cli_tests
 def test_mutation_results_cli_reads_latest_run_artifact(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -116,6 +117,9 @@ def test_mutation_results_cli_reads_latest_sweep_stats_artifact(
         ".verify-logs/mutation-sweeps/20200102T000000Z-new/"
         "candidate-01/mutants/mutmut-cicd-stats.json",
     )
+
+
+# docsync:evidence.end evidence.mutation_testing.results_cli_tests
 
 
 def test_mutation_results_cli_fails_when_stats_missing(

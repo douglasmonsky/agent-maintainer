@@ -117,6 +117,7 @@ def test_debt_score_penalizes_missing_controls(tmp_path: Path) -> None:
     assert categories["Diagnostics Repair Loop"].score > LOW_RISK_CATEGORY_SCORE
 
 
+# docsync:evidence.start evidence.technical_debt.score_tests
 def test_debt_score_rewards_mutation_ratchets_and_manifest(tmp_path: Path) -> None:
     """Healthy ratchet evidence lowers mutation debt and raises confidence."""
 
@@ -179,6 +180,9 @@ def test_debt_score_allows_excellent_repos_below_ten(tmp_path: Path) -> None:
     report = build_debt_report(collect_evidence(tmp_path), config, log_dir=log_dir)
 
     assert report.score < EXCELLENT_DEBT_SCORE
+
+
+# docsync:evidence.end evidence.technical_debt.score_tests
 
 
 def test_debt_score_penalizes_failed_manifest_check(tmp_path: Path) -> None:

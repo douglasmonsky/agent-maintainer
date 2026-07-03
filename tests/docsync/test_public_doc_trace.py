@@ -39,6 +39,12 @@ PUBLIC_DOC_OBJECTS = {
     "docs.context_compression.overview",
     "docs.release_checklist.overview",
     "docs.architecture_policy.overview",
+    "docs.agent_maintainer_guidance.overview",
+    "docs.setup_advisor.overview",
+    "docs.technical_debt_score.overview",
+    "docs.mutation_testing.overview",
+    "docs.context_safety.overview",
+    "docs.multi_ecosystem_reviewability_policy.overview",
 }
 
 PUBLIC_DOC_CLAIMS = {
@@ -57,6 +63,12 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.context_compression_safety",
     "claim.docs.release_checklist_packaging",
     "claim.docs.architecture_policy_tach",
+    "claim.docs.agent_guidance_compact_sidecar",
+    "claim.docs.setup_advisor_recommendations",
+    "claim.docs.technical_debt_score_advisory",
+    "claim.docs.mutation_testing_targeted_workflow",
+    "claim.docs.context_safety_pointer_first_packs",
+    "claim.docs.multi_ecosystem_reviewability_advisory",
 }
 
 ACTIVE_DOC_PATHS = {

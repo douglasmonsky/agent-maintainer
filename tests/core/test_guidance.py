@@ -51,6 +51,7 @@ def strict_config() -> MaintainerConfig:
     )
 
 
+# docsync:evidence.start evidence.agent_guidance.compact_sidecar_tests
 def test_render_guidance_includes_active_configuration() -> None:
     text = maintainer_guidance.render_guidance(strict_config())
 
@@ -140,6 +141,9 @@ def test_guidance_check_detects_current_missing_and_stale_files(tmp_path: Path) 
     maintainer_guidance.write_guidance(tmp_path, config)
 
     assert maintainer_guidance.guidance_state(tmp_path, config).status == "current"
+
+
+# docsync:evidence.end evidence.agent_guidance.compact_sidecar_tests
 
 
 def test_guidance_main_writes_and_checks_file(tmp_path: Path, monkeypatch, capsys) -> None:
