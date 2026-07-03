@@ -583,15 +583,15 @@ claims:
     - evidence.readme.catalog_composition
   claim.readme.supported_checks:
     object: docs.readme.supported_checks
-    text: README supported-checks overview is backed by the live check catalog, Python
-      provider checks, docs/config checks, and security scanner checks.
+    text: README supported-checks overview is backed by the live check catalog,
+      Python provider checks, docs/config checks, and security scanner checks.
     severity: high
     evidence:
-    - evidence.readme.catalog_composition
-    - evidence.readme.python_provider_checks
-    - evidence.readme.docs_config_checks
-    - evidence.readme.security_catalog_checks
-    - evidence.readme.secret_scan_checks
+      - evidence.readme.catalog_composition
+      - evidence.readme.python_provider_checks
+      - evidence.readme.docs_config_checks
+      - evidence.readme.security_catalog_checks
+      - evidence.readme.secret_scan_checks
   claim.readme.agent_repair_loop:
     object: docs.readme.agent_loop
     text: README tells agents to use compact verifier/context commands and run-scoped
@@ -652,8 +652,15 @@ claims:
       current provider expansion as staged.
     severity: medium
     evidence:
-    - evidence.readme.catalog_composition
-    - evidence.readme.python_provider_checks
+      - evidence.readme.catalog_composition
+      - evidence.readme.python_provider_checks
+      - evidence.provider_registry.active_providers
+  claim.docs.provider_status_no_active_go:
+    object: docs.provider_status.overview
+    text: Provider status docs state Go is not an active provider on main.
+    severity: medium
+    evidence:
+      - evidence.provider_registry.no_active_go
   claim.docs.typescript_provider_explicit_commands:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe disabled-by-default explicit
@@ -680,6 +687,14 @@ claims:
     severity: high
     evidence:
       - evidence.typescript.reviewability_fixture_tests
+  claim.docs.typescript_maturation_real_repo_evidence:
+    object: docs.typescript_maturation.overview
+    text: TypeScript maturation notes describe real Git repository reviewability
+      evidence for low-noise source-plus-test and source-heavy source-only
+      advisory scenarios.
+    severity: high
+    evidence:
+      - evidence.typescript.real_repo_reviewability_tests
   claim.docs.agent_hooks_install_surface:
     object: docs.agent_client_hooks.overview
     text: Agent hook docs describe Codex and Claude Code hook installation, repo/user scope behavior, and configured-repo-only hook execution.
@@ -842,6 +857,28 @@ evidence:
       source-heavy, generated, dependency/config, and suppression scenarios.
     anchors:
       - path: tests/assess/test_typescript_reviewability_fixtures.py
+        mode: explicit_region
+  evidence.typescript.real_repo_reviewability_tests:
+    type: test
+    description: TypeScript real-repo reviewability tests run the public CLI
+      against temporary Git repositories and verify low-noise and source-heavy
+      advisory output.
+    anchors:
+      - path: tests/assess/test_typescript_real_repo_reviewability.py
+        mode: explicit_region
+  evidence.provider_registry.active_providers:
+    type: test
+    description: Provider registry tests assert active built-in providers and
+      maturity labels.
+    anchors:
+      - path: tests/catalogs/test_provider_registry.py
+        mode: explicit_region
+  evidence.provider_registry.no_active_go:
+    type: test
+    description: Provider registry tests assert archived Go provider fields are
+      absent from active config.
+    anchors:
+      - path: tests/catalogs/test_provider_registry.py
         mode: explicit_region
   evidence.agent_hooks.generated_templates:
     type: code

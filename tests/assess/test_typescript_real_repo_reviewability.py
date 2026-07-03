@@ -18,6 +18,7 @@ HEAVY_SOURCE_LINES = 200
 ONE_BROAD_SUPPRESSION = 1
 
 
+# docsync:evidence.start evidence.typescript.real_repo_reviewability_tests
 def test_typescript_real_repo_source_plus_test_stays_low_noise(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
@@ -93,6 +94,9 @@ def test_typescript_real_repo_source_heavy_without_tests_reports_advisories(
     }
     assert payload["broad_suppressions"] == ONE_BROAD_SUPPRESSION
     assert payload["suppressions"][0]["broad"] is True
+
+
+# docsync:evidence.end evidence.typescript.real_repo_reviewability_tests
 
 
 def _typescript_repo(tmp_path: Path) -> Path:

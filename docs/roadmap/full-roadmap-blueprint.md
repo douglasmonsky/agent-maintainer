@@ -127,6 +127,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 130 | [Public First-Touch Docs Prose Polish](phases/phase-130-public-first-touch-docs-prose-polish.md) |
 | 131 | [TypeScript Real-Repo Reviewability Evidence](phases/phase-131-typescript-real-repo-reviewability-evidence.md) |
 | 132 | [Provider Maturation Docs Prose Polish](phases/phase-132-provider-maturation-docs-prose-polish.md) |
+| 133 | [Provider DocSync Evidence Ratchet](phases/phase-133-provider-docsync-evidence-ratchet.md) |
 
 ## Future Work
 
