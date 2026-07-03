@@ -31,6 +31,9 @@ ENV_MUTMUT_TARGET_MIN = 4
 CONFIG_MUTMUT_MAX_SURVIVORS = 84
 ENV_MUTMUT_MAX_SURVIVORS = 83
 CONFIG_MUTMUT_MIN_SCORE = 71
+CONFIG_TYPESCRIPT_SOURCE_WARN_FILES = 6
+CONFIG_TYPESCRIPT_SOURCE_WARN_LINES = 250
+CONFIG_TYPESCRIPT_BROAD_SUPPRESSION_WARN = 2
 
 
 def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
@@ -89,6 +92,9 @@ cohesive_change_override_max_files = 23
 coverage_fail_under = 91
 file_length_baseline = ".agent-maintainer/baseline.json"
 architecture_tool = "tach"
+typescript_advisory_source_warn_files = 6
+typescript_advisory_source_warn_lines = 250
+typescript_advisory_broad_suppression_warn = 2
 
 [tool.agent_maintainer.diagnostics]
 enabled = false
@@ -147,6 +153,11 @@ run_history_limit = 7
     assert loaded.cohesive_change_override_max_lines == CONFIG_OVERRIDE_MAX_LINES
     assert loaded.cohesive_change_override_max_files == CONFIG_OVERRIDE_MAX_FILES
     assert loaded.coverage_fail_under == CONFIG_COVERAGE_THRESHOLD
+    assert loaded.typescript_advisory_source_warn_files == (CONFIG_TYPESCRIPT_SOURCE_WARN_FILES)
+    assert loaded.typescript_advisory_source_warn_lines == (CONFIG_TYPESCRIPT_SOURCE_WARN_LINES)
+    assert loaded.typescript_advisory_broad_suppression_warn == (
+        CONFIG_TYPESCRIPT_BROAD_SUPPRESSION_WARN
+    )
     assert loaded.file_length_baseline == ".agent-maintainer/baseline.json"
     assert loaded.architecture_tool == "tach"
     assert loaded.diagnostic_artifacts_enabled is False

@@ -130,6 +130,15 @@ def test_missing_required_pr_explanation_blocks_override(
 # docsync:evidence.end evidence.cohesive_change_overrides.tests
 
 
+def test_path_allowlist_preserves_dot_directories() -> None:
+    """Cohesive override allowlists can target dot-prefixed paths."""
+
+    assert cohesive_override.path_allowed(
+        "./.codex/hooks/post_edit_fast_gate.py",
+        (".codex/hooks/**",),
+    )
+
+
 def test_overbroad_path_scope_blocks_override(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

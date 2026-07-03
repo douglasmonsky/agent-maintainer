@@ -149,6 +149,55 @@ def test_ts_source_only_advisory(
     assert "Advisory only" in report.advisory_note
 
 
+def test_ts_source_heavy_thresholds_are_configurable(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Config can make TypeScript source-heavy advisory output quieter."""
+    report = _build_report(
+        monkeypatch,
+        tmp_path,
+        changes=(
+            FileChange("src/pages/index.tsx", INDEX_ADDED, INDEX_DELETED),
+            FileChange("src/pages/settings.tsx", SETTINGS_ADDED, SETTINGS_DELETED),
+            FileChange("src/lib/client.ts", CLIENT_ADDED, CLIENT_DELETED),
+            FileChange("src/lib/session.ts", SESSION_ADDED, SESSION_DELETED),
+        ),
+        added_lines={},
+        config=replace(
+            MaintainerConfig(),
+            enable_typescript=True,
+            typescript_advisory_source_warn_files=10,
+            typescript_advisory_source_warn_lines=500,
+        ),
+    )
+
+    keys = _finding_keys(report)
+
+    assert (TYPESCRIPT, SOURCE_WITHOUT_TEST) in keys
+    assert (TYPESCRIPT, SOURCE_HEAVY) not in keys
+
+
+def test_ts_broad_suppression_threshold_is_configurable(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Config can raise TypeScript broad-suppression advisory threshold."""
+    report = _build_report(
+        monkeypatch,
+        tmp_path,
+        changes=(FileChange("src/pages/index.tsx", INDEX_ADDED, INDEX_DELETED),),
+        added_lines={"src/pages/index.tsx": ("// eslint-disable",)},
+        config=replace(
+            MaintainerConfig(),
+            enable_typescript=True,
+            typescript_advisory_broad_suppression_warn=2,
+        ),
+    )
+
+    assert (TYPESCRIPT, BROAD_SUPPRESSION) not in _finding_keys(report)
+
+
 def test_ts_generated_ignored_excluded(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -180,6 +229,7 @@ def _build_report(
     *,
     changes: tuple[FileChange, ...],
     added_lines: dict[str, tuple[str, ...]],
+    config: MaintainerConfig | None = None,
 ) -> ReviewabilityReport:
     """Build reviewability report with patched TypeScript fixture changes."""
     monkeypatch.setattr(
@@ -194,7 +244,7 @@ def _build_report(
     )
     return assessment_reviewability.build_reviewability_report(
         tmp_path,
-        replace(MaintainerConfig(), enable_typescript=True),
+        config or replace(MaintainerConfig(), enable_typescript=True),
         base_ref=BASE_REF,
         staged=False,
     )
