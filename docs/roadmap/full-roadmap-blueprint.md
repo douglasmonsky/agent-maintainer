@@ -123,6 +123,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 126 | [Roadmap Overview Current State](phases/phase-126-roadmap-overview-current-state.md) |
 | 127 | [Git Metadata Duplicate Artifact Warning](phases/phase-127-git-metadata-duplicate-artifact-warning.md) |
 | 128 | [Active DocSync Coverage Ratchet](phases/phase-128-active-docsync-coverage-ratchet.md) |
+| 129 | [Mutation Results Artifact Fallback](phases/phase-129-mutation-results-artifact-fallback.md) |
 
 ## Future Work
 

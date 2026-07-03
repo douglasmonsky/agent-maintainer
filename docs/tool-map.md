@@ -102,7 +102,9 @@ When `[tool.agent_maintainer].mutmut_result_ratchet_enabled = true`, the Mutmut
 runner exports `mutants/mutmut-cicd-stats.json` after a successful run and
 fails the manual gate if configured survivor, suspicious, timeout, or score
 budgets regress. Inspect the same stats with
-`python -m agent_maintainer test-intel mutation-results`.
+`python -m agent_maintainer test-intel mutation-results`. When live `mutants/`
+stats are cleaned, the command falls back to retained run or mutation-sweep
+artifacts and prints the source path.
 
 Use `python -m agent_maintainer test-intel mutation-sweep` to rank advisory
 deep mutation sweep candidates by change, coverage, complexity, churn, and
