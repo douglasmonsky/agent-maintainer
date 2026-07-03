@@ -795,10 +795,23 @@ Completed work:
 
 - [x] Phase 120: Public Docs DocSync Ratchet
 
+## Completed: Operational DocSync Trace Closure
+
+Close the stale roadmap gap after extending DocSync trace coverage into agent
+hooks, context compression, release checklist, and architecture policy docs.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-121-operational-docsync-trace-closure.md`](roadmap/phases/phase-121-operational-docsync-trace-closure.md)
+
+Completed work:
+
+- [x] Phase 121: Operational DocSync Trace Closure
+
 ## Future Work
 
-- Full DocSync dogfood ratchet: continue section-by-section coverage for hooks,
-  compression, release, and architecture docs after this public-docs slice.
+- Continue adding section-level DocSync claims as public docs materially change,
+  especially where a claim can point to durable implementation or test evidence.
 - Avoid adding new ecosystems until TypeScript/JavaScript reaches clearly
   defined supported-experimental or supported bar.
 
