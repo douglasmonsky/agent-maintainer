@@ -18,11 +18,13 @@ from agent_maintainer.ecosystems.registry import (
 
 def test_provider_metadata_names_and_maturity() -> None:
     """Built-in providers expose maturity without publishing plugin API."""
+    # docsync:evidence.start evidence.provider_registry.active_providers
     providers = {metadata.name: metadata for metadata in builtin_provider_metadata()}
 
     assert tuple(providers) == ("python", "typescript")
     assert providers["python"].maturity == ProviderMaturity.CORE
     assert providers["typescript"].maturity == ProviderMaturity.EXPERIMENTAL
+    # docsync:evidence.end evidence.provider_registry.active_providers
 
 
 def test_provider_metadata_enabled_fields() -> None:
@@ -47,6 +49,7 @@ def test_configured_provider_command_fields() -> None:
 
 def test_archived_go_provider_has_no_active_config_surface() -> None:
     """Go experiment remains archived outside active provider configuration."""
+    # docsync:evidence.start evidence.provider_registry.no_active_go
     config_fields = {field.name for field in fields(MaintainerConfig)}
     assert (
         not {
@@ -60,6 +63,7 @@ def test_archived_go_provider_has_no_active_config_surface() -> None:
         }
         & config_fields
     )
+    # docsync:evidence.end evidence.provider_registry.no_active_go
 
 
 def test_registry_provider_order() -> None:

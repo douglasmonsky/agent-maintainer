@@ -952,6 +952,19 @@ Completed work:
 
 - [x] Phase 132: Provider Maturation Docs Prose Polish
 
+## Completed: Provider DocSync Evidence Ratchet
+
+Extend DocSync dogfooding for provider docs by linking TypeScript maturation and
+provider-status claims to durable source and test evidence.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-133-provider-docsync-evidence-ratchet.md`](roadmap/phases/phase-133-provider-docsync-evidence-ratchet.md)
+
+Completed work:
+
+- [x] Phase 133: Provider DocSync Evidence Ratchet
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
