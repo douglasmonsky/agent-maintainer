@@ -12,11 +12,44 @@ from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.models import Check, CheckResult
 from agent_maintainer.verify import quiet as verify_quiet
 from agent_maintainer.verify import run_steps as verify_run_steps
+from agent_maintainer.verify.async_jobs import AsyncVerifierLaunch, AsyncVerifierRequest
 from agent_maintainer.verify.result_summary import apply_optional_skip_policy
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
 STRICT_COMPLEXITY = 8
+
+
+def test_main_async_launches_background_verifier(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Async verifier prints wait command without running checks inline."""
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        verify_quiet,
+        "load_config",
+        lambda: replace(
+            MaintainerConfig(),
+            source_roots=("src",),
+            package_paths=("src",),
+            test_roots=("tests",),
+            diagnostic_artifacts_dir=str(tmp_path / ".verify-logs"),
+        ),
+    )
+    monkeypatch.setattr(
+        verify_quiet.async_jobs,
+        "launch_async_verifier",
+        fake_async_launch,
+    )
+
+    status = verify_quiet.main(["--profile", "fast", "--async"])
+
+    assert status == 0
+    output = capsys.readouterr().out
+    assert "Result: PENDING" in output
+    assert "python -m agent_maintainer wait verifier async-run" in output
 
 
 def test_collect_results_stops_on_layout_failure(
@@ -227,3 +260,14 @@ def test_main_writes_runtime_profile_events_when_enabled(
     assert check_record["check"] == "custom"
     assert check_record["status"] == "pass"
     assert check_record["exit_code"] == 0
+
+
+def fake_async_launch(_request: AsyncVerifierRequest) -> AsyncVerifierLaunch:
+    """Return deterministic async launch for verifier CLI tests."""
+    return AsyncVerifierLaunch(
+        run_id="async-run",
+        profile="fast",
+        state_path=Path(".verify-logs/jobs/async-run.json"),
+        process_id=1234,
+        command=("python", "-m", "agent_maintainer", "verify"),
+    )

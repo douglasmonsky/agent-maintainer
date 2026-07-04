@@ -67,6 +67,13 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Rerun checks even when a same-state verifier result exists.",
     )
     parser.add_argument(
+        "--async",
+        action=ACTION_STORE_TRUE,
+        dest="async_verify",
+        help="Start verification in the background and print a wait command.",
+    )
+    parser.add_argument("--run-id", help=argparse.SUPPRESS)
+    parser.add_argument(
         "--mode",
         choices=sorted(VALID_MODES),
         help="Apply maintainer preset before other CLI overrides.",

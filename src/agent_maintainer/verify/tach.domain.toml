@@ -33,9 +33,15 @@ depends_on = [
 ]
 
 [[modules]]
+path = "async_jobs"
+depends_on = [
+  "//agent_maintainer.wait.models",
+]
+
+[[modules]]
 path = "git_state"
 depends_on = [
-"//agent_run_artifacts.git_state",
+  "//agent_run_artifacts.git_state",
 ]
 
 [[modules]]
@@ -81,6 +87,7 @@ depends_on = [
   "//agent_maintainer.core.args",
   "//agent_maintainer.core.config",
   "//agent_run_artifacts.history",
+  "async_jobs",
   "locking",
   "result_summary",
   "runtime_eventing",
