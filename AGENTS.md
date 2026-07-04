@@ -3,10 +3,13 @@
 For AI-assisted Python changes, the goal is maintainable code, not just passing
 code. Treat Agent Maintainer checks as source truth.
 
-Also read `AGENTS.agent-maintainer.md` before changing code. It is generated
-from `[tool.agent_maintainer]` and summarizes active mode, paths, thresholds,
-and required verification commands. If Agent Maintainer configuration changes,
-regenerate it with:
+Read `AGENTS.agent-maintainer.md` when starting fresh, after context
+compaction, after branch changes, or when guidance/config files changed. If
+already read in the current unchanged context, do not re-read it
+ritualistically; use targeted `rg` for specific rules. It is generated from
+`[tool.agent_maintainer]` and summarizes active mode, paths, thresholds, and
+verification commands. If Agent Maintainer configuration changes, regenerate
+with:
 
 ```bash
 python3 -m agent_maintainer guidance

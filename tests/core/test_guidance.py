@@ -68,6 +68,8 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "semgrep.yml" not in text
     assert "--builtin-schema" not in text
     assert "Keep chat updates summary-first" in text
+    assert "Always check current branch/worktree state before edits" in text
+    assert "instead of re-reading whole guidance" in text
     assert "Do not emit routine `still running` updates" in text
     assert "Use `apply_patch` for manual edits" in text
     assert "commands for failures" in text

@@ -13,6 +13,11 @@ Details: `docs/agent-maintainer-guidance.md`.
 
 ## Context Hygiene
 
+- Always check current branch/worktree state before edits.
+- Read long guidance files when starting fresh, after compaction,
+ branch changes, or when guidance/config changed.
+- If already read in current unchanged context, use targeted `rg`
+ for specific rules instead of re-reading whole guidance.
 - Prefer `rg --files` or `git ls-files` for file discovery.
 - Do not bulk-read generated/cache/binary paths:
   `__pycache__`, `*.pyc`, `.venv`, `venv`, `.verify-logs`, `.coverage`,

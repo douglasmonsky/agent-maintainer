@@ -44,6 +44,12 @@ Disabled checks are omitted. Detailed gate inventories belong in
 Agent Maintainer should reduce repair-loop noise, not become another source of
 context waste. Agent-facing output should stay summary-first:
 
+- check current branch/worktree state before edits, but do not re-read long
+  guidance files unless starting fresh, context was compacted, branch changed,
+  or guidance/config files changed;
+- if guidance was already read in current unchanged context, use targeted `rg`
+  or a narrow excerpt for the specific rule needed;
+
 - completed check, actionable failure, or material plan change;
 - pass/fail status, profile, run id, duration, failed checks, and exact next
   command;
