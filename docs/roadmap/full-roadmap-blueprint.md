@@ -139,6 +139,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 142 | [Runtime Telemetry And Dogfood Logging](phases/phase-142-runtime-telemetry-dogfood-logging.md) |
 | 143 | [DocSync Explicit Object End Markers](phases/phase-143-docsync-explicit-object-end-markers.md) |
 | 144 | [Runtime Event Foundation](phases/phase-144-runtime-event-foundation.md) |
+| 145 | [Runtime Event Contract Expansion](phases/phase-145-runtime-event-contract-expansion.md) |
 
 ## Future Work
 

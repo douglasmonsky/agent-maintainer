@@ -1114,18 +1114,29 @@ Completed work:
 
 - [x] Phase 143: DocSync Explicit Object End Markers
 
-## Planned: Runtime Event Foundation
+## Completed: Runtime Event Foundation
 
-Implement the first local structured runtime event foundation without adding
-OpenTelemetry or making normal verifier output noisier.
+Implement first local structured runtime event foundation without adding OpenTelemetry making normal verifier output noisier.
 
 Detailed scope:
 
 [`docs/roadmap/phases/phase-144-runtime-event-foundation.md`](roadmap/phases/phase-144-runtime-event-foundation.md)
 
+Completed work:
+
+- [x] Phase 144: Runtime Event Foundation
+
+## Planned: Runtime Event Contract Expansion
+
+Expand runtime event dogfooding from profile lifecycle events to required boundary events, compact exception events, and local dogfood-quality report before considering OpenTelemetry exporter work.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-145-runtime-event-contract-expansion.md`](roadmap/phases/phase-145-runtime-event-contract-expansion.md)
+
 Planned work:
 
-- [ ] Phase 144: Runtime Event Foundation
+- [ ] Phase 145: Runtime Event Contract Expansion
 
 ## Future Work
 
@@ -1133,6 +1144,7 @@ Planned work:
   especially where a claim can point to durable implementation or test evidence.
 - Avoid adding new ecosystems until TypeScript/JavaScript satisfies the
   promotion bar in
+
   [`docs/case-studies/typescript-provider-maturation.md`](case-studies/typescript-provider-maturation.md).
 
 ## Final Definition Of Done
