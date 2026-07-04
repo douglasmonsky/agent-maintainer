@@ -1,6 +1,6 @@
 # Phase 147: Repair-Fact Coverage Score
 
-Status: planned
+Status: completed
 
 ## Goal
 
@@ -35,4 +35,11 @@ Cost high, quality high, speed high: parser gaps directly drive token-heavy repa
 
 ## Notes For Future Tasks
 
-Treat this file as the implementation authority for Phase 147. Keep the PR scoped to this phase unless the user explicitly asks to bundle phases.
+Implemented as `python -m agent_maintainer assess repair-fact-coverage`.
+The command reports latest-run structured repair-fact coverage, keeps output
+summary-first, and ranks recent fallback parser targets from run-scoped
+manifests. Current dogfood output shows the latest run has no failures while
+recent history still ranks `architecture-decision` as a parser gap.
+
+Treat this file as the implementation authority for Phase 147. Keep follow-up
+work scoped to Phase 148 unless the user explicitly asks to bundle phases.

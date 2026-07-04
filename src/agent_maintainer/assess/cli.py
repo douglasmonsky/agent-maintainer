@@ -11,6 +11,8 @@ from pathlib import Path
 from agent_maintainer.assess import (
     debt_score,
     file_baselines,
+    repair_fact_coverage,
+    repair_fact_coverage_reporting,
     reporting,
     reviewability,
     setup_advisor,
@@ -20,21 +22,26 @@ from agent_maintainer.assess import (
 )
 from agent_maintainer.config import loader as config_loader
 
+DEFAULT_TARGET = Path(".")
+
 
 def main(argv: list[str] | None = None) -> int:
     """Run assessment subcommands."""
     args = parse_args([] if argv is None else argv)
     target = args.target.resolve()
     repo_evidence = assess_evidence.collect_evidence(target, max_files=args.max_files)
+    status = 1
     if args.command == "setup":
-        return _run_setup(args, repo_evidence)
+        status = _run_setup(args, repo_evidence)
     if args.command == "debt":
-        return _run_debt(args, target, repo_evidence)
+        status = _run_debt(args, target, repo_evidence)
     if args.command == "reviewability":
-        return _run_reviewability(args, target)
+        status = _run_reviewability(args, target)
     if args.command == "file-baselines":
-        return _run_file_baselines(args, target)
-    return 1
+        status = _run_file_baselines(args, target)
+    if args.command == "repair-fact-coverage":
+        status = _run_repair_fact_coverage(args, target)
+    return status
 
 
 def _run_setup(args: argparse.Namespace, repo_evidence) -> int:
@@ -98,12 +105,30 @@ def _run_file_baselines(args: argparse.Namespace, target: Path) -> int:
     return 0
 
 
+def _run_repair_fact_coverage(args: argparse.Namespace, target: Path) -> int:
+    """Run repair-fact coverage assessment."""
+
+    log_dir = args.log_dir if args.log_dir.is_absolute() else target / args.log_dir
+    report = repair_fact_coverage.build_repair_fact_coverage_report(
+        target,
+        log_dir=log_dir,
+        run_limit=args.run_limit,
+    )
+    output = (
+        repair_fact_coverage_reporting.render_json(report)
+        if args.json
+        else repair_fact_coverage_reporting.render_text(report)
+    )
+    print(output)
+    return 0
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse assessment arguments."""
     parser = argparse.ArgumentParser(prog="python -m agent_maintainer assess")
     subparsers = parser.add_subparsers(dest="command", required=True)
     setup = subparsers.add_parser("setup", help="Recommend track, preset, and gates.")
-    setup.add_argument("--target", type=Path, default=Path("."))
+    setup.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     setup.add_argument(
         "--max-files",
         type=int,
@@ -111,7 +136,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     setup.add_argument("--json", action="store_true")
     debt = subparsers.add_parser("debt", help="Render advisory Technical Debt Score.")
-    debt.add_argument("--target", type=Path, default=Path("."))
+    debt.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     debt.add_argument(
         "--max-files",
         type=int,
@@ -124,7 +149,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "reviewability",
         help="Render advisory changed-file reviewability summary.",
     )
-    reviewability_parser.add_argument("--target", type=Path, default=Path("."))
+    reviewability_parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     reviewability_parser.add_argument(
         "--max-files",
         type=int,
@@ -138,7 +163,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "file-baselines",
         help="Render advisory provider-neutral file baseline summary.",
     )
-    file_baselines_parser.add_argument("--target", type=Path, default=Path("."))
+    file_baselines_parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     file_baselines_parser.add_argument(
         "--max-files",
         type=int,
@@ -148,6 +173,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     file_baselines_parser.add_argument("--json", action="store_true")
     file_baselines_parser.add_argument("--base-ref", default="origin/main")
     file_baselines_parser.add_argument("--staged", action="store_true")
+    repair_fact_parser = subparsers.add_parser(
+        "repair-fact-coverage",
+        help="Assess structured repair facts for recent failures.",
+    )
+    repair_fact_parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
+    repair_fact_parser.add_argument(
+        "--max-files",
+        type=int,
+        default=assess_evidence.DEFAULT_MAX_EVIDENCE_FILES,
+        help=argparse.SUPPRESS,
+    )
+    repair_fact_parser.add_argument("--json", action="store_true")
+    repair_fact_parser.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
+    repair_fact_parser.add_argument("--run-limit", type=int, default=10)
     return parser.parse_args(argv)
 
 
