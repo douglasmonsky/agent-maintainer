@@ -48,12 +48,12 @@ discipline, not the normal local edit loop.
 Run the normal project gates first:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m agent_maintainer doctor --strict
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m agent_maintainer verify --profile precommit
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m agent_maintainer verify --profile full
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m agent_maintainer verify --profile security
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m agent_maintainer verify --profile manual
+just doctor
+just verify-precommit
+just verify
+just verify-ci
+just verify-security
+just verify-manual
 ```
 
 Then run release-only packaging checks:
@@ -109,7 +109,7 @@ when present.
 - [ ] Run `archguard --help`.
 - [ ] Run `agent-maintainer init --track core --target <tmp-repo>`.
 - [ ] Merge generated config into a minimal downstream `pyproject.toml`.
-- [ ] Run `python3 -m agent_maintainer verify --profile precommit` in that
+- [ ] Run `agent-maintainer verify --profile precommit` in that
   downstream repository.
 
 ## Rollback

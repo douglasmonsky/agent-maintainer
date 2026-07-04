@@ -90,11 +90,11 @@ python -m pip install "agent-maintainer[core]"
 agent-maintainer init --track agent --preset strict-new-repo
 ```
 
-Then ask your coding agent to build a small package, add tests, and finish by
-running:
+Then ask your coding agent to build a small package, add tests, and finish
+with the shortest available completion command:
 
 ```bash
-python3 -m agent_maintainer verify --profile precommit
+agent-maintainer verify --profile precommit
 ```
 
 The strict preset turns on the pressure that matters for AI-generated code:
@@ -170,11 +170,11 @@ DocSync freshness checks so code and documentation claims stay in sync.
 Canonical commands:
 
 ```bash
-python3 -m agent_maintainer verify --profile precommit
-python3 -m agent_maintainer verify --profile full
-python3 -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
-python3 -m agent_maintainer verify --profile security
-python3 -m agent_maintainer verify --profile manual
+agent-maintainer verify --profile precommit
+agent-maintainer verify --profile full
+agent-maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
+agent-maintainer verify --profile security
+agent-maintainer verify --profile manual
 ```
 
 Read more:
@@ -450,19 +450,20 @@ than copying `src/agent_maintainer` into application source trees.
 
 ## Local Development
 
-For this repo:
+For this repo, use the checked-in command wrappers so agents do not have to
+reconstruct long environment-prefixed commands:
 
 ```bash
-PYTHONPATH=src python3 -m agent_maintainer bootstrap
-PYTHONPATH=src python3 -m agent_maintainer doctor --strict
-PYTHONPATH=src python3 -m agent_maintainer verify --profile precommit
-PYTHONPATH=src python3 -m agent_maintainer verify --profile full
+just bootstrap
+just doctor
+just verify-precommit
+just verify
 ```
 
 Refresh the pinned dev lock after changing `config/dev-dependencies.txt`:
 
 ```bash
-PYTHONPATH=src python3 -m agent_maintainer bootstrap
+just bootstrap
 .venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
 ```
 

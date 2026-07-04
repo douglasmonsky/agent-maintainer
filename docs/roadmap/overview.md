@@ -148,7 +148,8 @@ top repair facts, one likely next action, and one explicit expansion command.
 6. Keep output stable, deterministic, and summary-first.
 7. Update generated guidance only when the phase requires it.
 8. Run focused tests during the edit loop.
-9. Run `verify --profile precommit` before finishing a phase.
+9. Run `just verify-precommit` before finishing a phase when hooks have not
+   already verified the same repository state.
 10. Run one broad local profile before PR/merge, usually `full`; use `ci` instead
     when diff/base-ref, workflow, or profile behavior changed. Run both only when
     that overlap is under test.
@@ -159,20 +160,20 @@ top repair facts, one likely next action, and one explicit expansion command.
 Most phases:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer guidance --check
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer doctor --strict
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile precommit
+just guidance-check
+just doctor
+just verify-precommit
 ```
 
 Verifier, hook, diagnostics, config, or architecture changes:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile full
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
+just verify
+just verify-ci
 ```
 
 Packaging and release changes:
 
 ```bash
-.venv/bin/just release-check
+just release-check
 ```
