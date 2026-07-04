@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Final
+
+TIMEOUT_EXIT_CODE: Final = 124
 
 
 def _empty_text() -> tuple[str, ...]:
@@ -15,6 +18,7 @@ class WaitRepairCapsule:
 
     result: str
     run_id: str
+    profile: str = ""
     details: tuple[str, ...] = field(default_factory=_empty_text)
     top_repair_facts: tuple[str, ...] = field(default_factory=_empty_text)
     likely_next_action: str = ""
@@ -23,7 +27,10 @@ class WaitRepairCapsule:
 
 def render_wait_capsule(capsule: WaitRepairCapsule) -> str:
     """Render a wait repair capsule without raw logs."""
-    lines = [f"Result: {capsule.result}", f"Run ID: {capsule.run_id}"]
+    lines = [f"Result: {capsule.result}"]
+    if capsule.profile:
+        lines.append(f"Profile: {capsule.profile}")
+    lines.append(f"Run ID: {capsule.run_id}")
     lines.extend(capsule.details)
     if capsule.top_repair_facts:
         lines.extend(("", "Top repair facts:"))

@@ -13,11 +13,11 @@ Actions run waiter.
 
 ## Decision
 
-Add `agent_maintainer.wait` as a small package for wait adapters and shared
-compact repair-capsule rendering. The package currently owns the GitHub Actions
-adapter and a shared wait output model. Top-level CLI routing may lazy-load the
-wait CLI, but polling behavior and wait result formatting stay inside the wait
-package.
+Add `agent_maintainer.wait` as a small package for wait adapters, verifier
+manifest reading, and shared compact repair-capsule rendering. The package
+currently owns the GitHub Actions adapter, local verifier artifact waiter, and a
+shared wait output model. Top-level CLI routing may lazy-load the wait CLI, but
+polling behavior and wait result formatting stay inside the wait package.
 
 ## Alternatives Considered
 
@@ -31,6 +31,8 @@ package.
 
 - `agent_maintainer.wait` owns polling adapters and compact final status
   rendering for waitable work.
+- `agent_maintainer.wait.verifier_manifest` owns the narrow manifest view used
+  by local verifier wait output; it must not become a second artifact schema.
 - Wait adapters should emit summary-first repair capsules and keep raw logs in
   the backing system or run artifacts.
 - The wait package must not own verifier execution, hook installation, or GitHub

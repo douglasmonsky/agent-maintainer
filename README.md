@@ -239,6 +239,7 @@ python3 -m agent_maintainer ratchet next
 python3 -m agent_maintainer events summary
 python3 -m agent_maintainer events waste
 python3 -m agent_maintainer wait github-run <run-id>
+python3 -m agent_maintainer wait verifier <run-id>
 python3 -m agent_maintainer test-intel mutation-results
 python3 -m agent_maintainer test-intel mutation-sweep
 ```
