@@ -12,6 +12,7 @@ from agent_maintainer.core.runtime import disable_bytecode_writes
 from agent_maintainer.core.scaffold.initializer import main as init_main
 from agent_maintainer.doctor.cli import main as doctor_main
 from agent_maintainer.hooks.cli import main as hooks_main
+from agent_maintainer.runtime_events.commands import run_with_command_events
 from agent_maintainer.verify.quiet import main as verify_main
 
 disable_bytecode_writes()
@@ -59,6 +60,16 @@ Examples:
 
 def main(argv: list[str]) -> int:
     """Dispatch top-level maintainer command line."""
+
+    return run_with_command_events(
+        argv,
+        lambda: _dispatch(argv),
+        known_commands=command_handlers(),
+    )
+
+
+def _dispatch(argv: list[str]) -> int:
+    """Dispatch top-level maintainer command line without event instrumentation."""
 
     if not argv or argv[0] in {"-h", "--help"}:
         print(USAGE.rstrip())
