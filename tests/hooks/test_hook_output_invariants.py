@@ -54,6 +54,7 @@ def test_hook_verifier_output_is_streamed_and_bounded(
         raise OSError("pack failed")
 
     monkeypatch.setattr(subprocess_runner.subprocess, "run", fake_run)
+    monkeypatch.setattr(runtime.hook_readiness, "hook_readiness", lambda *_args: None)
     monkeypatch.setattr(hook_context.context_packs, "write_context_pack", fail_pack)
 
     assert (

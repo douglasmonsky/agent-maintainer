@@ -68,8 +68,11 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "semgrep.yml" not in text
     assert "--builtin-schema" not in text
     assert "Keep chat updates summary-first" in text
+    assert "Always check current branch/worktree state before edits" in text
+    assert "instead of re-reading whole guidance" in text
     assert "Do not emit routine `still running` updates" in text
     assert "Use `apply_patch` for manual edits" in text
+    assert "After a failed verifier or hook result" in text
     assert "commands for failures" in text
     assert "Expand only if needed" in text
     assert "Mode: `fresh-strict`" in text
@@ -98,6 +101,9 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "do not duplicate a same-state hook pass manually" in text
     assert "Larger/shared changes: run one broad local profile" in text
     assert "Run both `full` and `ci` only when" in text
+    assert "Run `python3 -m agent_maintainer doctor` after setup" in text
+    assert "Read `.verify-logs/LAST_FAILURE.md` before changing code" not in text
+    assert " `python3 -m agent_maintainer doctor`" not in text.splitlines()
     assert "Before PR/merge: run `full`, `ci`, `security`, and `manual` once" not in text
     assert "Structure hint patterns advisory" not in text
 

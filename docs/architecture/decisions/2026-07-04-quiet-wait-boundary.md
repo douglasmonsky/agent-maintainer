@@ -21,8 +21,13 @@ polling behavior and wait result formatting stay inside the wait package.
 
 Async verifier launch state stays in `agent_maintainer.verify.async_jobs`
 because it starts verifier execution and records verifier-specific process
-metadata. The wait package consumes the completed verifier manifest by run id;
-it does not start or supervise verifier execution.
+metadata. The wait package consumes completed verifier manifest by run id; it
+does not supervise verifier execution. Hook-visible readiness stays in
+`agent_maintainer.hooks.readiness`: hooks may inspect same-state verifier locks
+and completed-result records, then emit the same wait-oriented capsule without
+starting another verifier process. Repository discovery for hooks stays in
+`agent_maintainer.hooks.discovery` so runtime orchestration does not own Git
+probing or executable lookup.
 
 ## Alternatives Considered
 
@@ -41,6 +46,11 @@ it does not start or supervise verifier execution.
 - `agent_maintainer.verify.async_jobs` may create background verifier jobs, but
   it must hand agents back the same wait repair-capsule contract used by wait
   adapters.
+- `agent_maintainer.hooks.readiness` may read verifier lock/result metadata to
+  avoid duplicate same-state hook work, but it must not execute verifier checks
+  or own artifact schemas.
+- `agent_maintainer.hooks.discovery` owns lightweight repo/executable
+  discovery for hook entrypoints.
 - Wait adapters should emit summary-first repair capsules and keep raw logs in
   the backing system or run artifacts.
 - The wait package must not own verifier execution, hook installation, or

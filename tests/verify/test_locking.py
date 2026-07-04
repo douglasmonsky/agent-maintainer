@@ -49,6 +49,20 @@ def test_lock_reuses_same_state_result(tmp_path: Path) -> None:
         assert not (log_dir / LOCK_NAME).exists()
 
 
+def test_lock_reused_result_includes_run_id(tmp_path: Path) -> None:
+    """Same-state completed result retains verifier run id."""
+    log_dir = tmp_path / ".verify-logs"
+    current = fingerprint()
+
+    with VerificationLock(log_dir=log_dir, fingerprint=current, run_id="run-1") as lock:
+        lock.write_result(1)
+
+    with VerificationLock(log_dir=log_dir, fingerprint=current) as lock:
+        assert lock.reused is not None
+        assert lock.reused.exit_code == 1
+        assert lock.reused.run_id == "run-1"
+
+
 def test_lock_force_skips_same_state_result(tmp_path: Path) -> None:
     """Forced verification bypasses completed same-state result reuse."""
 

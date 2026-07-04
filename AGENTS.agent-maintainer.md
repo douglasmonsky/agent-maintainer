@@ -13,6 +13,11 @@ Details: `docs/agent-maintainer-guidance.md`.
 
 ## Context Hygiene
 
+- Always check current branch/worktree state before edits.
+- Read long guidance files when starting fresh, after compaction,
+ branch changes, or when guidance/config changed.
+- If already read in current unchanged context, use targeted `rg`
+ for specific rules instead of re-reading whole guidance.
 - Prefer `rg --files` or `git ls-files` for file discovery.
 - Do not bulk-read generated/cache/binary paths:
   `__pycache__`, `*.pyc`, `.venv`, `venv`, `.verify-logs`, `.coverage`,
@@ -61,7 +66,8 @@ Details: `docs/agent-maintainer-guidance.md`.
  or plan change.
 - Do not emit routine `still running` updates for expected long checks.
 - Use `apply_patch` for manual edits; avoid heredoc rewrite commands.
-- Read `.verify-logs/LAST_FAILURE.md` before changing code or config.
+- After a failed verifier or hook result, read the repair capsule or
+ `.verify-logs/LAST_FAILURE.md` before changing code or config.
 - Prefer run-scoped `context --log-dir ...` commands for failures.
 - Expand only if needed:
  `python3 -m agent_maintainer context failures --limit 20`.
@@ -79,9 +85,10 @@ Details: `docs/agent-maintainer-guidance.md`.
  CI profile, or workflow behavior changed.
 - Run both `full` and `ci` only when verifier/profile/CI-diff
  behavior is under test.
-- Run `security` or `manual` when touching gates, before release,
- or explicitly requested.
-  `python3 -m agent_maintainer doctor`
+- Run `security` or `manual` when touching those gates, before release,
+ or when explicitly requested.
+- Run `python3 -m agent_maintainer doctor` after setup, config,
+ toolchain, hook, or initializer changes.
 
 ## Escape Hatches
 
