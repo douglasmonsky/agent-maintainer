@@ -1189,7 +1189,7 @@ Track work:
 
 - [x] Phase 146: Runtime Event Intelligence Summary CLI
 - [x] Phase 147: Repair-Fact Coverage Score
-- [ ] Phase 148: Surgical Context Expansion Ranking
+- [x] Phase 148: Surgical Context Expansion Ranking
 - [ ] Phase 149: DocSync Verifier Integration Repair Facts
 - [ ] Phase 150: Attention Ledger v0
 - [ ] Phase 151: Attention-Weighted Context Packs

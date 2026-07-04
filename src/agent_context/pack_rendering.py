@@ -82,18 +82,20 @@ def render_pack_pointer(
         "",
         "Top repair facts:",
     ]
-    fact_lines = fact_pointer_lines(payload.get("exact_repair_facts"), fact_limit)
+    facts = payload.get("exact_repair_facts")
+    fact_lines = fact_pointer_lines(facts, fact_limit)
+    ranked_commands = next_action_commands(facts, payload.get("expansion_commands"))
     lines.extend(fact_lines or ["1. (no structured repair facts found)"])
     lines.extend(
         (
             "",
             "Likely next action:",
-            next_action_line(payload.get("expansion_commands")),
+            next_action_line(ranked_commands),
             "",
             "Expand only if needed:",
         )
     )
-    lines.extend(command_pointer_lines(payload.get("expansion_commands"), command_limit))
+    lines.extend(command_pointer_lines(ranked_commands, command_limit))
     lines.extend(("", f"Context pack artifact: {display_path}"))
     return "\n".join(lines)
 
@@ -127,6 +129,37 @@ def fact_location(path: object, line: object) -> str:
     if isinstance(line, int):
         return f"{path}:{line} "
     return f"{path} "
+
+
+def next_action_commands(facts: object, commands: object) -> list[str]:
+    """Return surgical expansion commands before broader fallbacks."""
+
+    ranked: list[str] = []
+    if isinstance(facts, list):
+        for fact in facts:
+            if isinstance(fact, dict):
+                ranked.extend(fact_expansion_commands(fact))
+    if isinstance(commands, list):
+        ranked.extend(str(command) for command in commands)
+    return list(dict.fromkeys(ranked))
+
+
+def fact_expansion_commands(fact: dict[object, object]) -> list[str]:
+    """Return expansion commands implied by one exact repair fact."""
+
+    path = fact.get("path")
+    line = fact.get("line")
+    check = fact.get("check")
+    if path:
+        if isinstance(line, int):
+            return [f"python -m agent_maintainer context file {path} --around {line} --context 30"]
+        return [f"python -m agent_maintainer context file {path} --outline"]
+    if check:
+        return [
+            f"python -m agent_maintainer context failures --check {check} --limit 3",
+            f"python -m agent_maintainer context log {check} --tail 80",
+        ]
+    return []
 
 
 def next_action_line(commands: object) -> str:
