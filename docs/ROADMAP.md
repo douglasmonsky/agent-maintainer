@@ -1152,7 +1152,7 @@ Completed work:
 
 - [x] Phase 144: Runtime Event Foundation
 
-## Planned: Runtime Event Contract Expansion
+## Completed: Runtime Event Contract Expansion
 
 Expand runtime event dogfooding from profile lifecycle events to required boundary events, compact exception events, and local dogfood-quality report before considering OpenTelemetry exporter work.
 
@@ -1160,9 +1160,9 @@ Detailed scope:
 
 [`docs/roadmap/phases/phase-145-runtime-event-contract-expansion.md`](roadmap/phases/phase-145-runtime-event-contract-expansion.md)
 
-Planned work:
+Completed work:
 
-- [ ] Phase 145: Runtime Event Contract Expansion
+- [x] Phase 145: Runtime Event Contract Expansion
 
 ## Planned: Future-Call ROI Acceleration Track
 
@@ -1171,9 +1171,9 @@ Detailed scope:
 
 [`docs/roadmap/future-call-roi-acceleration.md`](roadmap/future-call-roi-acceleration.md)
 
-Planned work:
+Track work:
 
-- [ ] Phase 146: Runtime Event Intelligence Summary CLI
+- [x] Phase 146: Runtime Event Intelligence Summary CLI
 - [ ] Phase 147: Repair-Fact Coverage Score
 - [ ] Phase 148: Surgical Context Expansion Ranking
 - [ ] Phase 149: DocSync Verifier Integration Repair Facts

@@ -236,6 +236,7 @@ Useful commands:
 ```bash
 python3 -m agent_maintainer ratchet status
 python3 -m agent_maintainer ratchet next
+python3 -m agent_maintainer events summary
 python3 -m agent_maintainer test-intel mutation-results
 python3 -m agent_maintainer test-intel mutation-sweep
 ```

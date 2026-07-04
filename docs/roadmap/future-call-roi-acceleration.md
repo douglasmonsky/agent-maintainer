@@ -23,7 +23,7 @@ runtime events + repair facts + DocSync + context packs + file baselines + packa
 - Every new summary preserves raw evidence handles.
 - Every agent-facing output prefers compact repair capsules and expansion commands over pasted logs.
 - Any external orchestration framework sits behind an adapter and must not own Agent Maintainer policy.
-- Phase 145 remains the prerequisite for Phase 146 behavior work.
+- Phase 145 is the completed prerequisite for Phase 146 behavior work.
 
 ## ROI Order
 

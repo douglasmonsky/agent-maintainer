@@ -8,6 +8,16 @@ depends_on = []
 
 [[modules]]
 
+path = "cli"
+depends_on = [
+  "read",
+  "summary",
+  "//agent_maintainer.config.schema",
+]
+
+
+[[modules]]
+
 path = "commands"
 depends_on = [
   "models",
@@ -32,8 +42,22 @@ depends_on = []
 
 [[modules]]
 
+path = "read"
+depends_on = []
+
+
+[[modules]]
+
 path = "sinks"
 depends_on = [
   "models",
   "//agent_maintainer.config.schema",
+]
+
+
+[[modules]]
+
+path = "summary"
+depends_on = [
+  "read",
 ]
