@@ -267,8 +267,8 @@ Then agents should follow this loop:
 2. Make a small, coherent change.
 3. Run focused tests while editing.
 4. Let trusted Stop/SubagentStop hooks cover `precommit` for the final state.
-   Run `python3 -m agent_maintainer verify --profile precommit` only when hooks
-   are unavailable, bypassed, or a failure needs reproduction.
+   Run `just verify-precommit` only when hooks are unavailable, bypassed, or
+   a failure needs reproduction.
 5. If verification fails, inspect `.verify-logs/LAST_FAILURE.md` and use the
    suggested `context` command instead of dumping raw logs.
 6. For larger work, run one broad local profile before PR, usually `full`.
@@ -276,10 +276,9 @@ Then agents should follow this loop:
    run both only when that overlap is under test. Run `security` or `manual`
    when touching those gates, before release, or when explicitly requested.
 
-7. For GitHub Actions runs or long verifier jobs, use
- `python3 -m agent_maintainer wait github-run <run-id>` or
- `python3 -m agent_maintainer wait verifier <run-id>` so the tool owns
- polling and returns one final repair capsule.
+7. When GitHub Actions runs long verifier jobs, use
+   `just wait-github <run-id>` or `just wait-verifier <run-id>` so the tool owns
+   polling and returns one final repair capsule.
 
 Helpful repair commands:
 

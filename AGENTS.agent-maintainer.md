@@ -79,9 +79,8 @@ Do not read it during normal coding unless changing guidance.
 - Prefer repo wrappers when present: `just verify-precommit`,
  `just verify`, `just verify-ci`, `just wait-github <run-id>`,
  `just wait-verifier <run-id>`.
-- Normal finish: `python3 -m agent_maintainer verify --profile precommit`
- only when trusted hooks are unavailable, bypassed, or need
- failure reproduction.
+- Normal finish fallback: `just verify-precommit` only when trusted
+ hooks are unavailable, bypassed, or failure reproduction is needed.
 - Trusted hooks already run `fast` after edits and `precommit`
  at stop; do not duplicate a same-state hook pass manually.
 - Larger/shared changes: after coherent final state, run one broad
@@ -93,9 +92,10 @@ Do not read it during normal coding unless changing guidance.
 - Run `security` or `manual` when touching those gates, before release,
  or when explicitly requested.
 - For GitHub Actions or long verifier jobs, use
- `python3 -m agent_maintainer wait ...` so tools own polling.
-- Run `python3 -m agent_maintainer doctor` after setup, config,
- toolchain, hook, or initializer changes.
+ `just wait-github <run-id>` or `just wait-verifier <run-id>`
+ so tools own polling.
+- Run `just doctor` after setup, config, toolchain, hook,
+ or initializer changes.
 
 ## Escape Hatches
 
