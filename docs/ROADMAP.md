@@ -81,7 +81,7 @@ Detailed scope:
 
 Track work:
 
-- [ ] Phase 149: DocSync Verifier Integration Repair Facts
+- [x] Phase 149: DocSync Verifier Integration Repair Facts
 - [ ] Phase 150: Attention Ledger v0
 - [ ] Phase 151: Attention-Weighted Context Packs
 - [ ] Phase 152: Agent Task Broker Incubator Scaffold
