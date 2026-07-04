@@ -24,6 +24,9 @@ runtime events + repair facts + DocSync + context packs + file baselines + packa
 - Every agent-facing output prefers compact repair capsules and expansion commands over pasted logs.
 - Any external orchestration framework sits behind an adapter and must not own Agent Maintainer policy.
 - Phase 145 is the completed prerequisite for Phase 146 behavior work.
+- Priority-one cadence waste hardening pauses Phase 148 until duplicated
+  verification, model-managed polling, and noisy command patterns have a
+  concrete implementation track.
 
 ## ROI Order
 
@@ -48,6 +51,9 @@ runtime events + repair facts + DocSync + context packs + file baselines + packa
 <!-- docsync:object.end docs.future_call_roi_acceleration.overview -->
 
 ## Phase Index
+
+Priority-one interrupt before Phase 148:
+[`Agent Cadence Waste Hardening`](priority-one-agent-cadence-waste-hardening.md).
 
 | 146 | [Runtime Event Intelligence Summary CLI](phases/phase-146-runtime-event-intelligence-summary.md) |
 | 147 | [Repair-Fact Coverage Score](phases/phase-147-repair-fact-coverage-score.md) |

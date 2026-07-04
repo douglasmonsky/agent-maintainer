@@ -1164,6 +1164,20 @@ Completed work:
 
 - [x] Phase 145: Runtime Event Contract Expansion
 
+## Priority One: Agent Cadence Waste Hardening
+
+Recent dogfood log analysis found repeated verifier profile overlap, repeated
+wait polling, and noisy command patterns that increase token and wall-clock cost
+without improving output quality. Address this before Phase 148.
+
+Detailed scope:
+
+[`docs/roadmap/priority-one-agent-cadence-waste-hardening.md`](roadmap/priority-one-agent-cadence-waste-hardening.md)
+
+Priority work:
+
+- [ ] Agent Cadence Waste Hardening
+
 ## Planned: Future-Call ROI Acceleration Track
 
 Agent Maintainer should convert local primitives into compounding leverage for future agent calls. This track prioritizes work by expected return on cost, quality, and speed: runtime-event intelligence, repair-fact coverage, surgical next actions, DocSync verifier integration, attention scoring, and a hermetic downstream task-broker incubator.
