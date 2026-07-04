@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Protocol
 
 from agent_maintainer.core.check_run import utc_timestamp
 from agent_maintainer.core.config import MaintainerConfig
@@ -12,6 +14,22 @@ from agent_maintainer.core.layout import layout_failures
 from agent_maintainer.models import CI_PROFILE, Check, CheckResult
 from agent_maintainer.verify.artifacts import RunContext, write_run_artifacts
 from agent_maintainer.verify.git_refs import ref_failures
+
+
+class CheckRuntimeEvents(Protocol):
+    """Check-level runtime event reporter used by verifier steps."""
+
+    def selected(self, checks: Sequence[Check]) -> None:
+        """Record selected checks."""
+
+    def check_started(self, check: Check) -> None:
+        """Record check start."""
+
+    def check_finished(self, result: CheckResult) -> None:
+        """Record check finish."""
+
+    def check_exception(self, check: Check, exc: Exception) -> None:
+        """Record check exception."""
 
 
 def log_dir_for(config: MaintainerConfig) -> Path:
@@ -63,10 +81,13 @@ def collect_results(
     config: MaintainerConfig,
     selected: list[Check],
     log_dir: Path | None = None,
+    runtime_events: CheckRuntimeEvents | None = None,
 ) -> list[CheckResult]:
     """Run selected checks after validating layout requirements."""
 
     selected_log_dir = log_dir or log_dir_for(config)
+    if runtime_events is not None:
+        runtime_events.selected(selected)
     layout = layout_failures(config, args.profile)
     if layout:
         return [emit_layout_failure(layout, selected_log_dir)]
@@ -78,9 +99,40 @@ def collect_results(
     )
     if invalid_refs:
         return [emit_ref_failure(list(invalid_refs), selected_log_dir)]
-    return [
-        run_check(check, selected_log_dir, args.max_lines, args.max_chars) for check in selected
-    ]
+    return _run_selected_checks(args, selected, selected_log_dir, runtime_events)
+
+
+def _run_selected_checks(
+    args: argparse.Namespace,
+    selected: list[Check],
+    selected_log_dir: Path,
+    runtime_events: CheckRuntimeEvents | None,
+) -> list[CheckResult]:
+    """Run selected checks with runtime event instrumentation."""
+    results: list[CheckResult] = []
+    for check in selected:
+        results.append(_run_one_check(args, check, selected_log_dir, runtime_events))
+    return results
+
+
+def _run_one_check(
+    args: argparse.Namespace,
+    check: Check,
+    selected_log_dir: Path,
+    runtime_events: CheckRuntimeEvents | None,
+) -> CheckResult:
+    """Run one check with runtime event instrumentation."""
+    if runtime_events is not None:
+        runtime_events.check_started(check)
+    try:
+        result = run_check(check, selected_log_dir, args.max_lines, args.max_chars)
+    except Exception as exc:
+        if runtime_events is not None:
+            runtime_events.check_exception(check, exc)
+        raise
+    if runtime_events is not None:
+        runtime_events.check_finished(result)
+    return result
 
 
 def write_artifacts_if_enabled(

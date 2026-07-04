@@ -205,8 +205,13 @@ def test_main_writes_runtime_profile_events_when_enabled(
     records = [json.loads(line) for line in event_files[0].read_text(encoding="utf-8").splitlines()]
     assert [record["event_name"] for record in records] == [
         "profile.started",
+        "checks.selected",
+        "check.started",
+        "check.finished",
         "profile.finished",
     ]
     assert records[0]["profile"] == "fast"
-    assert records[1]["status"] == "pass"
-    assert records[1]["exit_code"] == 0
+    assert records[3]["check"] == "custom"
+    assert records[3]["status"] == "pass"
+    assert records[4]["status"] == "pass"
+    assert records[4]["exit_code"] == 0

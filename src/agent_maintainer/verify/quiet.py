@@ -82,6 +82,7 @@ def main(argv: list[str]) -> int:
             execution_config,
             [check for check in checks if args.profile in check.profiles],
             execution_log_dir,
+            runtime_events=profile_events,
         )
         results = apply_optional_skip_policy(results, args.fail_on_optional_skip)
         write_artifacts_if_enabled(args, config, log_dir, results, run_id)
