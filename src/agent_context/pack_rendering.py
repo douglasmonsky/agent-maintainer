@@ -9,6 +9,7 @@ from typing import Any
 from agent_context.budget import bound_text
 from agent_context.formatting import UNTRUSTED_EXCERPT_LABEL
 from agent_context.models import ContextBudget
+from agent_context.next_actions import next_action_commands
 
 HOOK_FACT_LIMIT = 3
 HOOK_COMMAND_LIMIT = 3
@@ -82,18 +83,20 @@ def render_pack_pointer(
         "",
         "Top repair facts:",
     ]
-    fact_lines = fact_pointer_lines(payload.get("exact_repair_facts"), fact_limit)
+    facts = payload.get("exact_repair_facts")
+    fact_lines = fact_pointer_lines(facts, fact_limit)
+    ranked_commands = next_action_commands(facts, payload.get("expansion_commands"))
     lines.extend(fact_lines or ["1. (no structured repair facts found)"])
     lines.extend(
         (
             "",
             "Likely next action:",
-            next_action_line(payload.get("expansion_commands")),
+            next_action_line(ranked_commands),
             "",
             "Expand only if needed:",
         )
     )
-    lines.extend(command_pointer_lines(payload.get("expansion_commands"), command_limit))
+    lines.extend(command_pointer_lines(ranked_commands, command_limit))
     lines.extend(("", f"Context pack artifact: {display_path}"))
     return "\n".join(lines)
 
