@@ -14,6 +14,9 @@ guidance:
 guidance-check:
     python3 -m agent_maintainer guidance --check
 
+change-plan-check:
+    python3 -m agent_maintainer change-plan check
+
 verify:
     python3 -m agent_maintainer verify --profile full
 

@@ -70,12 +70,10 @@ proportional to the change:
 
 - small edit loop: run affected tests and touched-file lint only;
 - coherent chunk: run the related focused suite plus `tach check --exact` or
-  `python3 -m agent_maintainer change-plan check` when architecture or change
-  budgets are involved;
+  `just change-plan-check` when architecture or change budgets are involved;
 - before commit: rely on trusted Stop/SubagentStop hooks when they already ran
-  `precommit` for the final same-state tree; run
-  `python3 -m agent_maintainer verify --profile precommit` only when hooks are
-  unavailable, bypassed, or a failure needs manual reproduction;
+  `precommit` for the final same-state tree; run `just verify-precommit` only
+  when hooks are unavailable, bypassed, or failure needs manual reproduction;
 - before PR or merge: after a coherent final state, run one broad local profile,
   usually `full`;
 - use `ci` locally instead of `full` when diff/base-ref handling, CI profile,

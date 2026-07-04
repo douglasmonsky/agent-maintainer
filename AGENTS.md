@@ -11,7 +11,7 @@ active mode, paths, thresholds, verification commands. If Agent Maintainer
 configuration changes, regenerate with:
 
 ```bash
-python3 -m agent_maintainer guidance
+just guidance
 ```
 
 ## Verification Workflow
