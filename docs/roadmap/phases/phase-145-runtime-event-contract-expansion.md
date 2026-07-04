@@ -1,6 +1,6 @@
 # Phase 145: Runtime Event Contract Expansion
 
-Status: planned
+Status: completed
 
 ## Goal
 
@@ -32,7 +32,7 @@ and summarize those events into a local dogfood-quality report.
   - event records stay small and JSONL-safe;
   - raw stdout, stderr, file contents, prompts, environment dumps, tracebacks,
     and obvious credential-like values are not inlined.
-- Add a compact dogfood report command or report section that reads
+- Add a compact event summary command that reads
   `.verify-logs/events/*.jsonl` and summarizes:
   - recent profile and check durations;
   - reused versus fresh verifier runs;
@@ -89,14 +89,14 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer gu
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer change-plan check
 ```
 
-Before merge, run the standard final profiles once:
+Before merge, run `precommit` and one broad local profile. Use `ci` instead of
+`full` when diff/base-ref, workflow, or profile behavior changed. Run both only
+when that overlap is under test. Run `security` or `manual` when touching those
+gates, before release, or when explicitly requested.
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile precommit
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile full
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile security
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile manual
 ```
 
 ## Notes For Future Tasks

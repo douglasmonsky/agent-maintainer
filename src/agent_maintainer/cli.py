@@ -27,6 +27,7 @@ Core commands:
   assess          Recommend setup and score maintenance debt.
   bootstrap       Install development dependencies for this checkout.
   doctor          Inspect setup health and configuration drift.
+  events        Summarize local runtime event JSONL artifacts.
   guidance        Generate or check AGENTS.agent-maintainer.md.
   init            Write starter files into a target repository.
   install         Install local hooks for this repository.
@@ -54,6 +55,7 @@ Examples:
   python -m agent_maintainer context log pyright --tail 120
   python -m agent_maintainer guidance --check
   python -m agent_maintainer hooks status
+  python -m agent_maintainer events summary
   python -m agent_maintainer report html
 """
 
@@ -105,6 +107,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "change-plan": change_plan_command,
         "context": context_main,
         "doctor": doctor_main,
+        "events": events_command,
         "guidance": guidance_main,
         "hooks": hooks_main,
         "init": init_main,
@@ -137,6 +140,12 @@ def change_plan_command(command_args: list[str]) -> int:
     """Run change-plan command lazily to keep entrypoint light."""
 
     module = __import__("agent_maintainer.change_plan.cli", fromlist=("main",))
+    return module.main(command_args)
+
+
+def events_command(command_args: list[str]) -> int:
+    """Run runtime events command lazily to keep entrypoint light."""
+    module = __import__("agent_maintainer.runtime_events.cli", fromlist=("main",))
     return module.main(command_args)
 
 
