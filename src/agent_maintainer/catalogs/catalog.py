@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 
 from agent_maintainer import models
-from agent_maintainer.catalogs.docs import docs_config_checks
+from agent_maintainer.catalogs.docs import docs_config_checks, docsync_checks
 from agent_maintainer.catalogs.global_checks import (
     architecture_checks,
     existing_or_configured,
@@ -80,6 +80,7 @@ def make_checks(
         python_provider_checks["wemake"],
         python_provider_checks["interrogate"],
         *docs_config_checks(config),
+        *docsync_checks(base_ref),
         python_provider_checks["diff-cover"],
     ]
 

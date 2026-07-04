@@ -21,6 +21,10 @@ TypeScript/JavaScript is the first serious non-Python provider maturation track.
 It should not move beyond experimental status until it satisfies the promotion
 bar in [TypeScript Provider Maturation Notes](case-studies/typescript-provider-maturation.md).
 
+
+DocSync is not an ecosystem provider. It is a repository documentation
+traceability gate that Agent Maintainer detects when `.docsync/trace.yml`
+exists and runs in local verification profiles.
 ## Design Rule
 
 Core owns the verification loop: profiles, command execution, bounded logs,
