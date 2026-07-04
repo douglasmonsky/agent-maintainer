@@ -1177,6 +1177,7 @@ Detailed scope:
 Priority work:
 
 - [x] Agent Cadence Waste Hardening
+- [x] Wait Readiness Adoption Hardening
 
 ## Planned: Future-Call ROI Acceleration Track
 

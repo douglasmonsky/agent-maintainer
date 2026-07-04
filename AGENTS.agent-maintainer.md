@@ -89,6 +89,8 @@ Do not read it during normal coding unless changing guidance.
  behavior is under test.
 - Run `security` or `manual` when touching those gates, before release,
  or when explicitly requested.
+- For GitHub Actions or long verifier jobs, use
+ `python3 -m agent_maintainer wait ...` so tools own polling.
 - Run `python3 -m agent_maintainer doctor` after setup, config,
  toolchain, hook, or initializer changes.
 
