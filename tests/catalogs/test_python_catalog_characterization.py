@@ -107,6 +107,7 @@ def test_default_catalog_profile_membership_is_characterized() -> None:
         "pyright",
         "pytest-coverage",
         "xenon-complexity-gate",
+        "docsync",
     ]
     assert _profile_names(checks, FULL_PROFILE) == [
         "file-length",
@@ -136,6 +137,7 @@ def test_default_catalog_profile_membership_is_characterized() -> None:
         "yamllint",
         "taplo",
         "check-jsonschema",
+        "docsync",
     ]
     assert _profile_names(checks, CI_PROFILE) == [
         "file-length",
@@ -166,6 +168,7 @@ def test_default_catalog_profile_membership_is_characterized() -> None:
         "yamllint",
         "taplo",
         "check-jsonschema",
+        "docsync",
         "diff-cover",
     ]
     assert _profile_names(checks, SECURITY_PROFILE) == ["secret-scan-history"]
@@ -201,6 +204,15 @@ def test_python_tool_commands_and_artifacts_are_characterized() -> None:
         ".verify-logs/pyrightconfig.generated.json",
     )
     assert checks["pyright"].required_executable == "pyright"
+    assert checks["docsync"].command == [
+        sys.executable,
+        "-m",
+        "docsync",
+        "check",
+        "--base",
+        "HEAD",
+    ]
+    assert checks["docsync"].artifact_paths == (".docsync/out/report.json",)
 
     pytest_check = checks["pytest-coverage"]
     assert pytest_check.command[:6] == [

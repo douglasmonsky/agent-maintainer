@@ -164,6 +164,9 @@ Read more:
 | `security` | Security-oriented scans, including history-oriented secret scanning when configured. |
 | `manual` | Slow or intentionally heavy checks such as Mutmut and Semgrep. |
 
+When a repository has `.docsync/trace.yml`, the local profiles also run
+DocSync freshness checks so code and documentation claims stay in sync.
+
 Canonical commands:
 
 ```bash
@@ -204,7 +207,7 @@ context.
 | Containers/IaC | Trivy when relevant to the repo. |
 | SBOM and licenses | CycloneDX Python SBOM, pip-licenses. |
 | GitHub Actions | actionlint, zizmor. |
-| Docs/config hygiene | markdownlint-cli2, yamllint, Taplo, check-jsonschema. |
+| Docs/config hygiene | DocSync freshness checks, markdownlint-cli2, yamllint, Taplo, check-jsonschema. |
 | Mutation testing | Mutmut target ratchet, result ratchets, advisory deep sweep executor. |
 | Agent repair loop | `.verify-logs`, context commands, repair plans, PR summaries, static HTML reports. |
 

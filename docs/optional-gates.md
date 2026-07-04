@@ -29,6 +29,7 @@ target repo has `[tool.agent_maintainer]`.
 
 Hardening covers docs/config and security-adjacent surfaces:
 
+- DocSync freshness checks when `.docsync/trace.yml` exists;
 - pip-audit;
 - Gitleaks when secret scanning is enabled;
 - actionlint and zizmor for GitHub Actions;

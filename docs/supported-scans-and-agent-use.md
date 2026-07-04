@@ -17,6 +17,7 @@ that keeps raw logs out of chat.
 | Dependency hygiene | deptry, vulture | `full`, `ci` | Remove dead code/deps or document intentional exports. |
 | Python security | Bandit, pip-audit | `full`, `ci` | Fix insecure patterns and vulnerable dependencies. |
 | Secrets | Gitleaks current-tree, range, and history modes | `full`, `ci`, `security` | Stop immediately and rotate secrets if real credentials appear. |
+| Documentation traceability | DocSync freshness checks when `.docsync/trace.yml` exists | `precommit`, `full`, `ci` | Update linked docs, add evidence, or create an attestation instead of ignoring stale claims. |
 | SAST | Semgrep | `manual` | Run on focused, stable configs; treat findings as review inputs. |
 | Multi-ecosystem CVEs | OSV Scanner | `manual` | Enable for repos with JS, lock files, or mixed ecosystems. |
 | Containers and IaC | Trivy | `manual` | Enable only when Docker, Kubernetes, Terraform, or images matter. |
