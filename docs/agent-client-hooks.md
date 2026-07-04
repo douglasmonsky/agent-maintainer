@@ -73,6 +73,13 @@ should not start a duplicate manual `precommit` run. Manual `precommit` is for
 hook-unavailable sessions, bypassed hooks, reproducing a hook failure, or changed
 repo state after the hook pass.
 
+Hooks check verifier readiness before starting new work. If the same repository
+state already has a verifier running, the hook returns a compact wait pointer
+instead of launching a duplicate process. If the same-state verifier already
+completed, the hook reuses that pass or failure result. If the working tree,
+index, configured profile, base, or compare state changed, the hook starts fresh
+verification.
+
 Repo-local wrappers use the checked-out source tree:
 
 ```bash

@@ -71,6 +71,7 @@ class ReusedVerification:
     """Previously completed verification result for the same repo state."""
 
     exit_code: int
+    run_id: str = ""
 
 
 class VerificationLock:
@@ -83,11 +84,13 @@ class VerificationLock:
         fingerprint: VerificationFingerprint,
         wait_seconds: float = LOCK_WAIT_SECONDS,
         reuse_result: bool = True,
+        run_id: str = "",
     ) -> None:
         self._log_dir = log_dir
         self._fingerprint = fingerprint
         self._wait_seconds = wait_seconds
         self._reuse_result = reuse_result
+        self._run_id = run_id
         self._lock_path = log_dir / LOCK_NAME
         self._result_path = log_dir / RESULT_NAME
         self._acquired = False
@@ -132,6 +135,7 @@ class VerificationLock:
         payload = {
             "pid": os.getpid(),
             "created_at": time.time(),
+            "run_id": self._run_id,
             "fingerprint": self._fingerprint.to_dict(),
         }
         try:
@@ -157,7 +161,10 @@ class VerificationLock:
             return None
         if self._lock_path.exists():
             return None
-        return ReusedVerification(exit_code=exit_code)
+        return ReusedVerification(
+            exit_code=exit_code,
+            run_id=str(payload.get("run_id", "")),
+        )
 
     def break_stale_lock(self) -> None:
         """Remove lock files older than the stale threshold."""
@@ -174,6 +181,7 @@ class VerificationLock:
             "fingerprint": self._fingerprint.to_dict(),
             "exit_code": exit_code,
             "completed_at": time.time(),
+            "run_id": self._run_id,
         }
         result_text = f"{json.dumps(payload, sort_keys=True)}\n"
         self._result_path.write_text(result_text, encoding="utf-8")

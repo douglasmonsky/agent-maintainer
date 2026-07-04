@@ -53,6 +53,8 @@ preserved inside those values.
 | Interrogate fails | Add useful docstrings or lower the ratchet only with an explicit baseline note. |
 | Branch is ahead or dirty | Commit/push intentionally, or run non-strict doctor while work is in progress. |
 | Verifier reuses a failed same-state result after a transient tool or network failure | Rerun the same profile with `--force`, for example `python3 -m agent_maintainer verify --profile full --force`. |
+| Hook says same-state verifier is already running | Wait with the command in the hook capsule instead of starting another verifier. If repo state changed after the hook started, rerun the relevant profile once. |
+| Hook reused a previous same-state failure | Inspect the run-scoped failure capsule, fix the root cause, then rerun the relevant profile with `--force` only for confirmed transient failures. |
 | CI diff-cover cannot compare branches | Use a fetched base ref such as `origin/main`. |
 | `zizmor` reports unpinned first-party actions | Either pin actions to commit SHAs or document the tag-pinning policy in `zizmor.yml`. |
 | `zizmor` reports Dependabot cooldown | Add a `cooldown` section to `.github/dependabot.yml`. |

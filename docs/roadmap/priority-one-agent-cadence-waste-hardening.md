@@ -215,7 +215,7 @@ report before making freshness hard gate.
 - [x] Initial local verifier artifact waiter:
   `python -m agent_maintainer wait verifier <run-id>`.
 - [x] Async verification readiness.
-- [ ] Hook-visible readiness.
+- [x] Hook-visible readiness.
 - [ ] Profile overlap guardrails beyond guidance.
 - [ ] Edit discipline advisory signals.
 - [ ] Passive DocSync freshness metadata.

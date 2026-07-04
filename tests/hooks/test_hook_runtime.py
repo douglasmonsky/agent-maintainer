@@ -61,7 +61,7 @@ def test_runtime_noops_without_repo_opt_in(
     def fail_verifier(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
         pytest.fail("unconfigured repository should not run verification")
 
-    monkeypatch.setattr(runtime, "run_verifier_bounded", fail_verifier)
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fail_verifier)
 
     status = runtime.run_hook(
         platform=runtime.CLAUDE_CODE_PLATFORM,
@@ -85,7 +85,7 @@ def test_codex_runtime_noops_without_repo_opt_in(
     def fail_verifier(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
         pytest.fail("unconfigured repository should not run verification")
 
-    monkeypatch.setattr(runtime, "run_verifier_bounded", fail_verifier)
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fail_verifier)
 
     status = runtime.run_hook(
         platform=runtime.CODEX_PLATFORM,
@@ -106,9 +106,9 @@ def test_discover_repo_root_falls_back_without_git(
 ) -> None:
     """Repo discovery falls back when git executable is unavailable."""
 
-    monkeypatch.setattr(runtime.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", lambda _name: None)
 
-    assert runtime.discover_repo_root(tmp_path) == tmp_path
+    assert runtime.hook_discovery.discover_repo_root(tmp_path) == tmp_path
 
 
 def test_discover_repo_root_uses_git_output(
@@ -124,10 +124,10 @@ def test_discover_repo_root_uses_git_output(
         assert kwargs["cwd"] == tmp_path
         return subprocess.CompletedProcess(command, 0, f"{expected}\n", "")
 
-    monkeypatch.setattr(runtime.shutil, "which", lambda _name: "/usr/bin/git")
-    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", lambda _name: "/usr/bin/git")
+    monkeypatch.setattr(runtime.hook_discovery.subprocess, "run", fake_run)
 
-    assert runtime.discover_repo_root(tmp_path) == expected
+    assert runtime.hook_discovery.discover_repo_root(tmp_path) == expected
 
 
 def test_main_dispatches_to_run_hook(
@@ -250,7 +250,7 @@ def test_failed_post_tool_use_blocks_with_context(
     def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "post failed", "")
 
-    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fake_verifier)
 
     assert (
         runtime.run_hook(
@@ -291,7 +291,7 @@ def test_failed_stop_events_block_with_context_pack(
     def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "", "stop failed")
 
-    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fake_verifier)
 
     assert (
         runtime.run_hook(
@@ -328,7 +328,7 @@ def test_hook_failure_falls_back_when_context_pack_fails(
     def fail_pack(*_args: object, **_kwargs: object) -> hook_context.context_packs.ContextPack:
         raise OSError("pack failed")
 
-    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fake_verifier)
     monkeypatch.setattr(hook_context.context_packs, "write_context_pack", fail_pack)
 
     assert (
@@ -368,7 +368,7 @@ def test_hook_context_pack_pointer_respects_budget(
     def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 1, "failed", "")
 
-    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fake_verifier)
     monkeypatch.setattr(hook_context.context_packs, "write_context_pack", lambda *_args: pack)
     monkeypatch.setattr(
         hook_context.pack_rendering, "render_pack_pointer", lambda *_args, **_kwargs: "x" * 200
@@ -405,7 +405,7 @@ def test_verifier_helpers_cover_virtualenv_and_global_command(
     python_path = tmp_path / ".venv" / "bin" / "python"
     python_path.parent.mkdir(parents=True)
     python_path.write_text("", encoding="utf-8")
-    monkeypatch.setattr(runtime.shutil, "which", lambda name: f"/bin/{name}")
+    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", lambda name: f"/bin/{name}")
 
     assert runtime.verifier_python(tmp_path) == str(python_path)
     assert runtime.package_command_available()
@@ -452,7 +452,7 @@ def test_runtime_records_platform_in_hook_audit(
     def fake_verifier(command: list[str], _repo_root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr(runtime, "run_verifier_bounded", fake_verifier)
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fake_verifier)
 
     status = runtime.run_hook(
         platform=runtime.CLAUDE_CODE_PLATFORM,

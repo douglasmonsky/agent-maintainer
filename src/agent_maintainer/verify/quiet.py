@@ -70,6 +70,7 @@ def main(argv: list[str]) -> int:
         log_dir=log_dir,
         fingerprint=fingerprint,
         reuse_result=not args.force,
+        run_id=run_id,
     ) as verifier_lock:
         if verifier_lock.reused is not None:
             runtime_eventing.run_reused(

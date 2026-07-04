@@ -35,8 +35,10 @@ Use `ci` instead when diff/base-ref, workflow, or profile behavior changed. Run
 both `full` and `ci` only when that overlap is under test. Run `security` or
 `manual` when touching those gates, before release, or when explicitly requested.
 
-Do not claim completion while required hooks or manual checks fail. Do not lower
-thresholds, delete checks, or add broad suppressions to make the pipeline pass.
+Do not claim completion while required hooks or checks for the touched surface
+fail. Treat `manual` as required only when requested, before release, or when
+manual gates are touched. Do not lower thresholds, delete checks, or add broad
+suppressions to make the pipeline pass.
 
 If the repository does not use `src/` and `tests/`, configure
 `[tool.agent_maintainer]` in `pyproject.toml` instead of letting checks drift or

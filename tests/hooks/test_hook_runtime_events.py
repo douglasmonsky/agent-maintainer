@@ -61,7 +61,7 @@ def test_hook_success_events(
 ) -> None:
     """Configured repositories record successful hook runtime events."""
     runtime_events_installed_repo(tmp_path)
-    monkeypatch.setattr(runtime, "run_verifier_bounded", SuccessfulVerifier())
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", SuccessfulVerifier())
 
     status = runtime.run_hook(
         platform=runtime.CODEX_PLATFORM,
@@ -83,7 +83,7 @@ def test_hook_recursive_noop_events(
     """Configured recursive stop hooks record no-op runtime events."""
     runtime_events_installed_repo(tmp_path)
     monkeypatch.setattr(sys, "stdin", StringIO('{"stop_hook_active": true}'))
-    monkeypatch.setattr(runtime, "run_verifier_bounded", ForbiddenVerifier())
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", ForbiddenVerifier())
 
     status = runtime.run_hook(
         platform=runtime.CODEX_PLATFORM,
@@ -124,7 +124,7 @@ def test_hook_exception_events(
 ) -> None:
     """Hook runtime exceptions emit compact sanitized runtime events."""
     runtime_events_installed_repo(tmp_path)
-    monkeypatch.setattr(runtime, "run_verifier_bounded", RaisingVerifier())
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", RaisingVerifier())
 
     with pytest.raises(RuntimeError):
         runtime.run_hook(

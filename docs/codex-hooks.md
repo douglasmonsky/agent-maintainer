@@ -45,6 +45,12 @@ python3 -m agent_maintainer verify --profile precommit
 
 If Codex reports a trusted Stop hook pass for the final repo state, do not start
 another manual `precommit` run unless the repo changed after that pass or the
+Codex hooks check verifier readiness before starting new work. If the same repo
+state already has a verifier running, the hook reports a compact wait command.
+If that same-state verifier has completed, the hook reuses the pass or failure
+result. A changed working tree, index, profile, base, or compare state requires a
+fresh verifier run.
+
 failure needs reproduction. The verifier lock and same-state result cache reduce
 exact duplicates, but the agent should still avoid unnecessary overlapping runs.
 

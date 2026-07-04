@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.hooks import runtime
+from agent_maintainer.hooks import runtime, subprocess_runner
 
 HOOK_CONTEXT_LIMIT = 120
 
@@ -36,10 +36,10 @@ def test_hook_failure_output_uses_context_hook_budget(
     repo_root = configured_installed_repo(tmp_path)
     large_output = "x" * (HOOK_CONTEXT_LIMIT * 3)
 
-    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess(command, 1, large_output, "")
+    def fake_run(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess([], 1, large_output, "")
 
-    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    monkeypatch.setattr(subprocess_runner.subprocess, "run", fake_run)
 
     status = runtime.run_hook(
         platform=runtime.CLAUDE_CODE_PLATFORM,

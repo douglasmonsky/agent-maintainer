@@ -136,12 +136,14 @@ Regenerate after changing:
 - active scanner or docs/config gate settings;
 - architecture-tool configuration.
 
-Then run:
+Then run the freshness check:
 
 ```bash
 python3 -m agent_maintainer guidance --check
-python3 -m agent_maintainer doctor
 ```
+
+Run `python3 -m agent_maintainer doctor` as well when the change affects setup,
+toolchains, hooks, initializer output, or config semantics.
 
 ## What Belongs Elsewhere
 

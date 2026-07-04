@@ -4,16 +4,28 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
-import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
 from agent_client_hooks import constants as hook_constants
-from agent_maintainer.hooks import audit as hook_audit
-from agent_maintainer.hooks import context as hook_context
-from agent_maintainer.hooks.runtime_eventing import HookRuntimeEvents
-from agent_maintainer.hooks.subprocess_runner import run_verifier_bounded
+from agent_maintainer.hooks import (
+    audit as hook_audit,
+)
+from agent_maintainer.hooks import (
+    context as hook_context,
+)
+from agent_maintainer.hooks import (
+    discovery as hook_discovery,
+)
+from agent_maintainer.hooks import (
+    readiness as hook_readiness,
+)
+from agent_maintainer.hooks import (
+    runtime_eventing,
+)
+from agent_maintainer.hooks import (
+    subprocess_runner as hook_subprocess,
+)
 
 CODEX_PLATFORM = hook_constants.CODEX_PLATFORM
 CLAUDE_CODE_PLATFORM = hook_constants.CLAUDE_CODE_PLATFORM
@@ -22,9 +34,8 @@ STOP_EVENT = hook_constants.STOP_EVENT
 SUBAGENT_STOP_EVENT = hook_constants.SUBAGENT_STOP_EVENT
 
 
-def parse_args(argv: list[str]) -> argparse.Namespace:
+def parse_args(argv: list[str]):
     """Parse hook runtime arguments."""
-
     parser = argparse.ArgumentParser(prog="python -m agent_maintainer.hooks.runtime")
     parser.add_argument("--platform", required=True, choices=(CODEX_PLATFORM, CLAUDE_CODE_PLATFORM))
     parser.add_argument("--event", required=True)
@@ -41,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
         platform=args.platform,
         event=args.event,
         profile=args.profile,
-        repo_root=args.repo_root or discover_repo_root(Path.cwd()),
+        repo_root=args.repo_root or hook_discovery.discover_repo_root(Path.cwd()),
     )
 
 
@@ -56,7 +67,7 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
 
     started_at = hook_audit.utc_timestamp()
     started = hook_audit.monotonic_timestamp()
-    runtime_events = HookRuntimeEvents.create(
+    runtime_events = runtime_eventing.HookRuntimeEvents.create(
         repo_root,
         platform=platform,
         event=event,
@@ -71,7 +82,6 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
         )
         return emit_continue()
     if not verifier_available(repo_root):
-        expected_package = repo_root / "src" / "agent_maintainer"
         duration_seconds = hook_audit.duration_since(started)
         hook_audit.record_hook_result(
             repo_root,
@@ -96,17 +106,27 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
         return emit_block(
             event=event,
             reason="Agent Maintainer verifier missing.",
-            context=(
-                "Expected verifier package at "
-                f"{expected_package} or an installed "
-                "`agent-maintainer` command. Run bootstrap/install before "
-                "continuing."
+            context=missing_verifier_context(repo_root),
+        )
+
+    readiness = hook_readiness.hook_readiness(repo_root, profile)
+    if readiness is not None:
+        return emit_readiness(
+            hook_readiness.HookExecution(
+                repo_root=repo_root,
+                platform=platform,
+                event=event,
+                profile=profile,
+                started_at=started_at,
+                started=started,
+                runtime_events=runtime_events,
             ),
+            readiness,
         )
 
     command = verifier_command(repo_root, profile)
     try:
-        result = run_verifier_bounded(command, repo_root)
+        result = hook_subprocess.run_verifier_bounded(command, repo_root)
     except Exception as exc:
         runtime_events.exception(exc, duration_seconds=hook_audit.duration_since(started))
         raise
@@ -131,19 +151,20 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
         duration_seconds=duration_seconds,
     )
     if result.returncode == 0:
-        return emit_success(event)
-
-    config = hook_context.hook_config(repo_root)
-    return emit_block(
-        event=event,
-        reason=block_reason(event),
-        context=hook_context.failure_context(
-            repo_root,
-            result,
-            config,
-            config.context_hook_budget_chars,
-        ),
-    )
+        hook_status = emit_success(event)
+    else:
+        config = hook_context.hook_config(repo_root)
+        hook_status = emit_block(
+            event=event,
+            reason=block_reason(event),
+            context=hook_context.failure_context(
+                repo_root,
+                result,
+                config,
+                config.context_hook_budget_chars,
+            ),
+        )
+    return hook_status
 
 
 def read_hook_payload() -> dict[str, object]:
@@ -162,24 +183,6 @@ def is_recursive_stop(event: str, payload: dict[str, object]) -> bool:
     """Return whether a stop hook is already active for this event."""
 
     return event in {STOP_EVENT, SUBAGENT_STOP_EVENT} and payload.get("stop_hook_active") is True
-
-
-def discover_repo_root(cwd: Path) -> Path:
-    """Return the Git repository root for hook execution."""
-
-    git_path = shutil.which("git")
-    if git_path is None:
-        return cwd
-    result = subprocess.run(  # nosec B603
-        [git_path, "rev-parse", "--show-toplevel"],
-        cwd=cwd,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode == 0 and result.stdout.strip():
-        return Path(result.stdout.strip())
-    return cwd
 
 
 def maintainer_configured(repo_root: Path) -> bool:
@@ -227,7 +230,17 @@ def verifier_python(repo_root: Path) -> str:
 def package_command_available() -> bool:
     """Return whether the console script is available for global hooks."""
 
-    return shutil.which("agent-maintainer") is not None
+    return hook_discovery.command_available("agent-maintainer")
+
+
+def missing_verifier_context(repo_root: Path) -> str:
+    """Return setup repair context when hook verifier is unavailable."""
+    expected_package = repo_root / "src" / "agent_maintainer"
+    return (
+        "Expected verifier package at "
+        f"{expected_package} or an installed "
+        "`agent-maintainer` command. Run bootstrap/install before continuing."
+    )
 
 
 def verifier_available(repo_root: Path) -> bool:
@@ -243,6 +256,56 @@ def emit_success(event: str) -> int:
     if event in {STOP_EVENT, SUBAGENT_STOP_EVENT}:
         return emit({"continue": True})
     return 0
+
+
+def emit_readiness(
+    execution: hook_readiness.HookExecution,
+    readiness: hook_readiness.HookReadiness,
+) -> int:
+    """Emit hook response for same-state verifier readiness."""
+    duration_seconds = hook_audit.duration_since(execution.started)
+    status = readiness_status(readiness)
+    hook_audit.record_hook_result(
+        execution.repo_root,
+        hook_audit.HookAuditRecord(
+            platform=execution.platform,
+            hook_name=execution.event,
+            profile=execution.profile,
+            status=status,
+            command=(),
+            exit_code=readiness.exit_code,
+            started_at=execution.started_at,
+            ended_at=hook_audit.utc_timestamp(),
+            duration_seconds=duration_seconds,
+            reason="same-state verifier readiness",
+        ),
+    )
+    execution.runtime_events.finished(
+        status=status,
+        exit_code=readiness.exit_code,
+        duration_seconds=duration_seconds,
+    )
+    if readiness.passed:
+        return emit_success(execution.event)
+    reason = (
+        "Agent Maintainer verification already running."
+        if readiness.pending
+        else block_reason(execution.event)
+    )
+    return emit_block(
+        event=execution.event,
+        reason=reason,
+        context=hook_readiness.render_hook_readiness(readiness),
+    )
+
+
+def readiness_status(readiness: hook_readiness.HookReadiness) -> str:
+    """Return hook audit status for verifier readiness."""
+    if readiness.pending:
+        return "pending"
+    if readiness.passed:
+        return "reused"
+    return "failed"
 
 
 def emit_block(*, event: str, reason: str, context: str) -> int:
