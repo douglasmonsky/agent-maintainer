@@ -198,6 +198,55 @@ def test_main_prints_success_for_passing_selected_check(
     assert "Duration: unknown (expected quick edit check)" in output
 
 
+def test_main_prints_profile_overlap_advisory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Successful redundant broad profile prints compact advisory."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "scripts").mkdir()
+    event_dir = tmp_path / ".events"
+    event_dir.mkdir()
+    (event_dir / "previous.jsonl").write_text(
+        f"{json.dumps({'event_name': 'profile.finished', 'profile': 'full'})}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        verify_quiet,
+        "load_config",
+        lambda: replace(
+            MaintainerConfig(),
+            source_roots=("scripts",),
+            package_paths=("scripts",),
+            require_tests=False,
+            runtime_events_enabled=True,
+            runtime_events_dir=str(event_dir),
+        ),
+    )
+    monkeypatch.setattr(
+        verify_quiet,
+        "make_checks",
+        lambda config, base_ref, compare_branch, staged=False: [
+            Check("custom", ["true"], frozenset(("ci",)))
+        ],
+    )
+    monkeypatch.setattr(
+        verify_run_steps,
+        "run_check",
+        lambda check, log_dir, max_lines, max_chars: CheckResult(
+            check.name,
+            passed=True,
+            exit_code=0,
+        ),
+    )
+
+    assert verify_quiet.main(["--profile", "ci"]) == 0
+
+    output = capsys.readouterr().out
+    assert "PASS" in output
+    assert "ADVISORY:" in output
+    assert "profile-overlap: Recent `full` run found before `ci`" in output
+
+
 def test_main_writes_runtime_profile_events_when_enabled(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

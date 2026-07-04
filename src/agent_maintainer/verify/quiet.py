@@ -22,7 +22,7 @@ from pathlib import Path
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core.args import apply_cli_overrides, parse_args
 from agent_maintainer.core.config import load_config
-from agent_maintainer.verify import async_jobs, runtime_eventing
+from agent_maintainer.verify import async_jobs, profile_overlap, runtime_eventing
 from agent_maintainer.verify.locking import VerificationLock, build_fingerprint
 from agent_maintainer.verify.result_summary import (
     apply_optional_skip_policy,
@@ -122,6 +122,10 @@ def main(argv: list[str]) -> int:
             context_log_dir_value=context_log_dir(config, log_dir, run_id),
             run_id=run_id,
         )
+        if exit_code == 0:
+            profile_overlap.print_profile_overlap_advisory(
+                profile_overlap.profile_overlap_advisory(args.profile, config),
+            )
         verifier_lock.write_result(exit_code)
         profile_events.finished(
             status="pass" if exit_code == 0 else "fail",
