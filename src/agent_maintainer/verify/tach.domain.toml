@@ -67,7 +67,14 @@ depends_on = []
 [[modules]]
 path = "pr_summary_support"
 depends_on = [
-"//agent_run_artifacts.pr_summary_support",
+  "//agent_run_artifacts.pr_summary_support",
+]
+
+[[modules]]
+path = "profile_overlap"
+depends_on = [
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.runtime_events.read",
 ]
 
 [[modules]]
@@ -89,6 +96,7 @@ depends_on = [
   "//agent_run_artifacts.history",
   "async_jobs",
   "locking",
+  "profile_overlap",
   "result_summary",
   "runtime_eventing",
   "run_steps",

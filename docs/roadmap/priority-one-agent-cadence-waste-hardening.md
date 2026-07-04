@@ -216,7 +216,7 @@ report before making freshness hard gate.
   `python -m agent_maintainer wait verifier <run-id>`.
 - [x] Async verification readiness.
 - [x] Hook-visible readiness.
-- [ ] Profile overlap guardrails beyond guidance.
+- [x] Profile overlap guardrails beyond guidance.
 - [ ] Edit discipline advisory signals.
 - [ ] Passive DocSync freshness metadata.
 
