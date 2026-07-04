@@ -2,7 +2,8 @@
 
 Generated from `[tool.agent_maintainer]` by
 `python3 -m agent_maintainer guidance`. Do not edit by hand.
-Details: `docs/agent-maintainer-guidance.md`.
+Human reference: `docs/agent-maintainer-guidance.md`.
+Do not read it during normal coding unless changing guidance.
 
 ## Hard Rules
 
@@ -13,9 +14,9 @@ Details: `docs/agent-maintainer-guidance.md`.
 
 ## Context Hygiene
 
-- Always check current branch/worktree state before edits.
-- Read long guidance files when starting fresh, after compaction,
- branch changes, or when guidance/config changed.
+- Check branch/worktree once at turn start and before staging.
+- Read long guidance files only when starting fresh, after compaction,
+ or when guidance/config changed.
 - If already read in current unchanged context, use targeted `rg`
  for specific rules instead of re-reading whole guidance.
 - Prefer `rg --files` or `git ls-files` for file discovery.
@@ -80,7 +81,8 @@ Details: `docs/agent-maintainer-guidance.md`.
  failure reproduction.
 - Trusted hooks already run `fast` after edits and `precommit`
  at stop; do not duplicate a same-state hook pass manually.
-- Larger/shared changes: run one broad local profile, usually `full`.
+- Larger/shared changes: after coherent final state, run one broad
+ local profile, usually `full`.
 - Use `ci` locally instead of `full` when diff/base-ref,
  CI profile, or workflow behavior changed.
 - Run both `full` and `ci` only when verifier/profile/CI-diff

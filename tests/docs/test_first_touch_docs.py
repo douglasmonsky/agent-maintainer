@@ -15,10 +15,10 @@ def test_agent_guidance_contains_full_operational_phrases() -> None:
     phrases = {
         "AGENTS.md": (
             "the goal is maintainable code, not just passing code.",
-            "It is generated from `[tool.agent_maintainer]`",
+            "It is the generated `[tool.agent_maintainer]`",
             "If hooks are unavailable, bypassed, or need a failure reproduced manually, run:",
-            "Do not duplicate a same-state hook pass manually.",
-            "Before opening or merging a larger change, run one broad local profile",
+            "same-state hook pass manually.",
+            "Before opening or merging a larger change, reach a coherent final state",
             "Do not claim completion while required hooks or checks for the touched surface fail.",
             "Keep Python files below 600 physical lines and 450 source lines.",
             "Changed code should be covered by tests; CI enforces changed-code coverage.",
@@ -27,7 +27,7 @@ def test_agent_guidance_contains_full_operational_phrases() -> None:
             "Do not edit by hand.",
             "Do not emit routine `still running` updates for expected long checks.",
             "Use `apply_patch` for manual edits; avoid heredoc rewrite commands.",
-            "do not duplicate a same-state hook pass manually.",
+            "same-state hook pass manually",
             "After a failed verifier or hook result, read the repair capsule",
             "Prefer run-scoped `context --log-dir ...` commands for failures.",
             "Expand only if needed:",
@@ -35,7 +35,8 @@ def test_agent_guidance_contains_full_operational_phrases() -> None:
         "docs/agent-maintainer-guidance.md": (
             "`AGENTS.agent-maintainer.md` is intentionally compact because agents "
             "load it into working context repeatedly.",
-            "This document is for humans who want the longer explanation.",
+            "Agents should not read it during normal coding unless they are changing "
+            "guidance behavior.",
             "Agent Maintainer should reduce repair-loop noise, not become another "
             "source of context waste.",
             'no routine "still running" updates for expected long checks;',

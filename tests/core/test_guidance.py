@@ -55,26 +55,36 @@ def strict_config() -> MaintainerConfig:
 def test_render_guidance_includes_active_configuration() -> None:
     text = maintainer_guidance.render_guidance(strict_config())
 
-    assert "Generated Agent Maintainer Guidance" in text
-    assert "Details: `docs/agent-maintainer-guidance.md`." in text
-    assert "## Hard Rules" in text
-    assert "## Context Hygiene" in text
-    assert "## Repo Contract" in text
-    assert "## Blocking Limits" in text
-    assert "## Active Gates" in text
-    assert "## Required Commands" in text
-    assert "## Optional Gates" not in text
-    assert "config/dev-lock.txt" not in text
-    assert "semgrep.yml" not in text
-    assert "--builtin-schema" not in text
-    assert "Keep chat updates summary-first" in text
-    assert "Always check current branch/worktree state before edits" in text
-    assert "instead of re-reading whole guidance" in text
-    assert "Do not emit routine `still running` updates" in text
-    assert "Use `apply_patch` for manual edits" in text
-    assert "After a failed verifier or hook result" in text
-    assert "commands for failures" in text
-    assert "Expand only if needed" in text
+    expected_phrases = (
+        "Generated Agent Maintainer Guidance",
+        "Human reference: `docs/agent-maintainer-guidance.md`.",
+        "Do not read it during normal coding unless changing guidance.",
+        "## Hard Rules",
+        "## Context Hygiene",
+        "## Repo Contract",
+        "## Blocking Limits",
+        "## Active Gates",
+        "## Required Commands",
+        "Keep chat updates summary-first",
+        "Check branch/worktree once at turn start and before staging",
+        "instead of re-reading whole guidance",
+        "Do not emit routine `still running` updates",
+        "Use `apply_patch` for manual edits",
+        "After a failed verifier or hook result",
+        "context --log-dir ...",
+        "Expand only if needed",
+    )
+    forbidden_phrases = (
+        "## Optional Gates",
+        "config/dev-lock.txt",
+        "semgrep.yml",
+        "--builtin-schema",
+        "branch changes",
+    )
+    for phrase in expected_phrases:
+        assert phrase in text
+    for phrase in forbidden_phrases:
+        assert phrase not in text
     assert "Mode: `fresh-strict`" in text
     assert (
         "Source roots: `src/agent_maintainer`, `src/archguard`, `.codex/hooks`, `.claude/hooks`"
@@ -99,7 +109,7 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "python3 -m agent_maintainer verify --profile precommit" in text
     assert "Trusted hooks already run `fast` after edits and `precommit`" in text
     assert "do not duplicate a same-state hook pass manually" in text
-    assert "Larger/shared changes: run one broad local profile" in text
+    assert "after coherent final state, run one broad" in text
     assert "Run both `full` and `ci` only when" in text
     assert "Run `python3 -m agent_maintainer doctor` after setup" in text
     assert "Read `.verify-logs/LAST_FAILURE.md` before changing code" not in text
