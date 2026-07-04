@@ -151,7 +151,11 @@ def test_main_prints_success_for_passing_selected_check(
     monkeypatch.setattr(
         verify_run_steps,
         "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(check.name, passed=True),
+        lambda check, log_dir, max_lines, max_chars: CheckResult(
+            check.name,
+            passed=True,
+            exit_code=0,
+        ),
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0
@@ -192,7 +196,11 @@ def test_main_writes_runtime_profile_events_when_enabled(
     monkeypatch.setattr(
         verify_run_steps,
         "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(check.name, passed=True),
+        lambda check, log_dir, max_lines, max_chars: CheckResult(
+            check.name,
+            passed=True,
+            exit_code=0,
+        ),
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0
@@ -205,13 +213,17 @@ def test_main_writes_runtime_profile_events_when_enabled(
     records = [json.loads(line) for line in event_files[0].read_text(encoding="utf-8").splitlines()]
     assert [record["event_name"] for record in records] == [
         "profile.started",
+        "verifier.fresh",
         "checks.selected",
         "check.started",
         "check.finished",
+        "artifact.written",
+        "artifact.written",
+        "artifact.written",
         "profile.finished",
     ]
+    check_record = next(record for record in records if record["event_name"] == "check.finished")
     assert records[0]["profile"] == "fast"
-    assert records[3]["check"] == "custom"
-    assert records[3]["status"] == "pass"
-    assert records[4]["status"] == "pass"
-    assert records[4]["exit_code"] == 0
+    assert check_record["check"] == "custom"
+    assert check_record["status"] == "pass"
+    assert check_record["exit_code"] == 0

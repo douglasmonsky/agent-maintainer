@@ -94,7 +94,11 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "- TOML formatting" in text
     assert "- Schema validation" in text
     assert "python3 -m agent_maintainer verify --profile precommit" in text
-    assert "Before PR/merge: run `full`, `ci`, `security`, and `manual` once" in text
+    assert "Trusted hooks already run `fast` after edits and `precommit`" in text
+    assert "do not duplicate a same-state hook pass manually" in text
+    assert "Larger/shared changes: run one broad local profile" in text
+    assert "Run both `full` and `ci` only when" in text
+    assert "Before PR/merge: run `full`, `ci`, `security`, and `manual` once" not in text
     assert "Structure hint patterns advisory" not in text
 
 

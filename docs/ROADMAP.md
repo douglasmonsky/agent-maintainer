@@ -181,8 +181,8 @@ context noise while preserving strict verification. Completed work:
   edits.
 
 - Encode verification cadence: focused checks during the edit loop, `precommit`
-  before commit, full profile set once before PR/merge, release checks only for
-  release work.
+  before commit, one broad local profile before PR/merge, both `full` and `ci`
+  only when their overlap is under test, release checks only for release work.
 
 - Add dogfood drift detection so this repository verifies against local
   `src/agent_maintainer` code, not stale installed package code.
@@ -220,8 +220,8 @@ Completed work:
   `.verify-logs/runs/<run-id>/` artifacts instead of chat or hook transcripts.
 
 - Encode verification cadence: focused checks during edit loop, `precommit`
-  before commit, full profile set once before PR/merge, release checks only for
-  release work.
+  before commit, one broad local profile before PR/merge, both `full` and `ci`
+  only when their overlap is under test, release checks only for release work.
 
 - Add dogfood drift detection so this checkout verifies local
   `src/agent_maintainer` code, not stale installed package code.

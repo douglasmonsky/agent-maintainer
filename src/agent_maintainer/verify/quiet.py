@@ -30,6 +30,7 @@ from agent_maintainer.verify.result_summary import (
     print_result_summary,
 )
 from agent_maintainer.verify.run_steps import (
+    ArtifactWriteOptions,
     collect_results,
     log_dir_for,
     write_artifacts_if_enabled,
@@ -56,17 +57,27 @@ def main(argv: list[str]) -> int:
         profile=args.profile,
         run_id=run_id,
     )
-    with VerificationLock(log_dir=log_dir, fingerprint=fingerprint) as verifier_lock:
+    with VerificationLock(
+        log_dir=log_dir,
+        fingerprint=fingerprint,
+        reuse_result=not args.force,
+    ) as verifier_lock:
         if verifier_lock.reused is not None:
+            runtime_eventing.run_reused(
+                profile_events,
+                exit_code=verifier_lock.reused.exit_code,
+                log_dir=log_dir,
+            )
             profile_events.finished(
                 status="reused",
                 exit_code=verifier_lock.reused.exit_code,
                 log_dir=log_dir,
             )
-            return print_reused_result(log_dir, verifier_lock.reused.exit_code)
+            return print_reused_result(args.profile, log_dir, verifier_lock.reused.exit_code)
 
         execution_log_dir = run_snapshot_dir(log_dir, run_id)
         profile_events.started(execution_log_dir)
+        runtime_eventing.run_fresh(profile_events, log_dir=execution_log_dir)
         execution_config = replace(
             config,
             diagnostic_artifacts_dir=str(execution_log_dir),
@@ -85,7 +96,16 @@ def main(argv: list[str]) -> int:
             runtime_events=profile_events,
         )
         results = apply_optional_skip_policy(results, args.fail_on_optional_skip)
-        write_artifacts_if_enabled(args, config, log_dir, results, run_id)
+        write_artifacts_if_enabled(
+            args,
+            config,
+            log_dir,
+            results,
+            options=ArtifactWriteOptions(
+                run_id=run_id,
+                runtime_events=runtime_eventing.artifact_events_for(profile_events),
+            ),
+        )
         exit_code = print_result_summary(
             args.profile,
             results,
@@ -101,14 +121,15 @@ def main(argv: list[str]) -> int:
         return exit_code
 
 
-def print_reused_result(log_dir: Path, exit_code: int) -> int:
-    """Print compact output for a same-state reused verifier result."""
+def print_reused_result(profile: str, log_dir: Path, exit_code: int) -> int:
+    """Print compact output for same-state reused verifier result."""
 
     if exit_code == 0:
         print("PASS")
         return 0
     last_failure = log_dir / "LAST_FAILURE.md"
     print(f"FAIL: reused verifier result for same repository state. See {last_failure}.")
+    print(f"Retry: python3 -m agent_maintainer verify --profile {profile} --force")
     return exit_code
 
 

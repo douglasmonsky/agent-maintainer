@@ -31,8 +31,13 @@ that keeps raw logs out of chat.
 1. Read `AGENTS.md` and `AGENTS.agent-maintainer.md`.
 2. Run focused tests and touched-file lint during the edit loop.
 3. Use `context failures` or `context log` only after a verifier failure.
-4. Run `verify --profile precommit` before finishing local work.
-5. Run `full`, `ci`, `security`, and `manual` once before PR or merge.
+4. Let trusted Stop/SubagentStop hooks cover `precommit` for the final state;
+   run `verify --profile precommit` manually only when hooks are unavailable,
+   bypassed, or a failure needs reproduction.
+5. Run one broad local profile before PR or merge, usually `full`; use `ci`
+   instead when diff/base-ref, workflow, or profile behavior changed. Run both
+   only when that overlap is under test. Run `security` or `manual` when touching
+   those gates, before release, or when explicitly requested.
 6. Use `assess setup` before first adoption or major config tightening.
 7. Use `assess debt` to choose the next hardening category.
 

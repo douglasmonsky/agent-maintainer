@@ -68,6 +68,11 @@ verification and without writing `.verify-logs`.
 `PostToolUse` hooks run the `fast` profile after edits. `Stop` and
 `SubagentStop` hooks run the `precommit` profile before the agent finishes.
 
+When those hooks are trusted and pass for the final repository state, agents
+should not start a duplicate manual `precommit` run. Manual `precommit` is for
+hook-unavailable sessions, bypassed hooks, reproducing a hook failure, or changed
+repo state after the hook pass.
+
 Repo-local wrappers use the checked-out source tree:
 
 ```bash

@@ -62,6 +62,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Use staged changes for diff-based checks.",
     )
     parser.add_argument(
+        "--force",
+        action=ACTION_STORE_TRUE,
+        help="Rerun checks even when a same-state verifier result exists.",
+    )
+    parser.add_argument(
         "--mode",
         choices=sorted(VALID_MODES),
         help="Apply maintainer preset before other CLI overrides.",

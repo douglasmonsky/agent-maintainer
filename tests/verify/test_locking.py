@@ -49,6 +49,23 @@ def test_lock_reuses_same_state_result(tmp_path: Path) -> None:
         assert not (log_dir / LOCK_NAME).exists()
 
 
+def test_lock_force_skips_same_state_result(tmp_path: Path) -> None:
+    """Forced verification bypasses completed same-state result reuse."""
+
+    log_dir = tmp_path / ".verify-logs"
+    current = fingerprint()
+    with VerificationLock(log_dir=log_dir, fingerprint=current) as lock:
+        lock.write_result(0)
+
+    with VerificationLock(
+        log_dir=log_dir,
+        fingerprint=current,
+        reuse_result=False,
+    ) as lock:
+        assert lock.reused is None
+        assert (log_dir / LOCK_NAME).exists()
+
+
 def test_lock_skips_changed_repo_state(tmp_path: Path) -> None:
     """A changed repo fingerprint must run fresh instead of reusing old output."""
 

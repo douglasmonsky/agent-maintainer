@@ -15,18 +15,22 @@ python3 -m agent_maintainer guidance
 ## Verification Workflow
 
 Trusted agent hooks normally run fast checks after edits and the precommit
-profile before completion. If hooks are unavailable, bypassed, or need a failure
-reproduced manually, run:
+profile before completion. Do not duplicate a same-state hook pass manually.
+If hooks are unavailable, bypassed, or need a failure reproduced manually, run:
 
 ```bash
 python3 -m agent_maintainer verify --profile precommit
 ```
 
-Before opening or merging a larger change, run:
+Before opening or merging a larger change, run one broad local profile, usually:
 
 ```bash
 python3 -m agent_maintainer verify --profile full
 ```
+
+Use `ci` instead when diff/base-ref, workflow, or profile behavior changed. Run
+both `full` and `ci` only when that overlap is under test. Run `security` or
+`manual` when touching those gates, before release, or when explicitly requested.
 
 Do not claim completion while required hooks or manual checks fail. Do not lower
 thresholds, delete checks, or add broad suppressions to make the pipeline pass.

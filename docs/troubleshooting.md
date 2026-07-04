@@ -52,6 +52,7 @@ preserved inside those values.
 | `interrogate` is disabled | Enable it after choosing a docstring coverage baseline. |
 | Interrogate fails | Add useful docstrings or lower the ratchet only with an explicit baseline note. |
 | Branch is ahead or dirty | Commit/push intentionally, or run non-strict doctor while work is in progress. |
+| Verifier reuses a failed same-state result after a transient tool or network failure | Rerun the same profile with `--force`, for example `python3 -m agent_maintainer verify --profile full --force`. |
 | CI diff-cover cannot compare branches | Use a fetched base ref such as `origin/main`. |
 | `zizmor` reports unpinned first-party actions | Either pin actions to commit SHAs or document the tag-pinning policy in `zizmor.yml`. |
 | `zizmor` reports Dependabot cooldown | Add a `cooldown` section to `.github/dependabot.yml`. |

@@ -64,8 +64,17 @@ proportional to the change:
 - coherent chunk: run the related focused suite plus `tach check --exact` or
   `python3 -m agent_maintainer change-plan check` when architecture or change
   budgets are involved;
-- before commit: run `python3 -m agent_maintainer verify --profile precommit`;
-- before PR or merge: run `full`, `ci`, `security`, and `manual` once;
+- before commit: rely on trusted Stop/SubagentStop hooks when they already ran
+  `precommit` for the final same-state tree; run
+  `python3 -m agent_maintainer verify --profile precommit` only when hooks are
+  unavailable, bypassed, or a failure needs manual reproduction;
+- before PR or merge: run one broad local profile, usually `full`;
+- use `ci` locally instead of `full` when diff/base-ref handling, CI profile,
+  workflow behavior, or verifier profile selection changed;
+- run both `full` and `ci` only when verifier/profile/CI-diff behavior is under
+  test;
+- run `security` or `manual` when touching those gates, before release, or when
+  explicitly requested;
 - before release: run release-only packaging checks.
 
 Failure summaries should recommend the smallest useful rerun command. When

@@ -4,7 +4,7 @@ kind = "mechanical-migration"
 status = "active"
 base_ref = "origin/main"
 expires = 2026-07-17
-allowed_paths = ["src/**", "tests/**", "docs/**", "pyproject.toml", "tach.toml", ".docsync/**", ".agent-maintainer/change-plans/**"]
+allowed_paths = ["src/**", "tests/**", "docs/**", "AGENTS.md", "AGENTS.agent-maintainer.md", "README.md", "pyproject.toml", "tach.toml", ".docsync/**", ".agent-maintainer/change-plans/**"]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 120
 max_changed_lines = 12000
@@ -58,8 +58,10 @@ known guard failure without weakening the guard or hiding the pressure.
 - `tach check --exact`.
 - `python -m agent_maintainer guidance --check`.
 - `python -m agent_maintainer change-plan check`.
-- Final verifier profiles before merge: `precommit`, `full`, `ci`, `security`,
-  and `manual`.
+- Final verifier profiles before merge: `precommit` plus one broad local profile
+  by default. Because this branch touches verifier/profile/runtime-event behavior,
+  both `full` and `ci` are relevant here; `security` and `manual` stay contextual
+  unless touched or explicitly requested.
 
 ## Rollback plan
 

@@ -288,7 +288,7 @@ def test_enabled_pip_audit_preserves_pinned_lock_fast_args() -> None:
         "--progress-spinner",
         "off",
         "--timeout",
-        "5",
+        "20",
     )
     config = replace(MaintainerConfig(), enable_pip_audit=True, pip_audit_args=args)
     checks = _checks_by_name(maintainer_catalog.make_checks(config, "HEAD", "origin/main"))

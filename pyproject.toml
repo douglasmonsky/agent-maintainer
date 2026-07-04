@@ -273,7 +273,7 @@ pip_audit_args = [
   "--progress-spinner",
   "off",
   "--timeout",
-  "5",
+  "20",
 ]
 enable_mutmut = true
 mutmut_args = ["run"]

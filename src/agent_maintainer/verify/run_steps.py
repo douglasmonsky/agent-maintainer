@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Protocol
+from typing import NamedTuple, Protocol
 
 from agent_maintainer.core.check_run import utc_timestamp
 from agent_maintainer.core.config import MaintainerConfig
@@ -30,6 +30,32 @@ class CheckRuntimeEvents(Protocol):
 
     def check_exception(self, check: Check, exc: Exception) -> None:
         """Record check exception."""
+
+
+class ArtifactRuntimeEvents(Protocol):
+    """Artifact runtime event reporter used by verifier steps."""
+
+    def artifact_written(self, *, path: str, kind: str) -> None:
+        """Record artifact write."""
+
+    def artifact_removed(self, *, path: str, kind: str) -> None:
+        """Record artifact removal."""
+
+    def artifact_retention_pruned(
+        self,
+        *,
+        log_dir: Path,
+        pruned_count: int,
+        keep: int,
+    ) -> None:
+        """Record run artifact retention pruning."""
+
+
+class ArtifactWriteOptions(NamedTuple):
+    """Options for writing verifier artifacts."""
+
+    run_id: str
+    runtime_events: ArtifactRuntimeEvents | None = None
 
 
 def log_dir_for(config: MaintainerConfig) -> Path:
@@ -140,7 +166,8 @@ def write_artifacts_if_enabled(
     config: MaintainerConfig,
     log_dir: Path,
     results: list[CheckResult],
-    run_id: str,
+    *,
+    options: ArtifactWriteOptions,
 ) -> None:
     """Write verifier artifacts when diagnostics are enabled."""
 
@@ -155,7 +182,8 @@ def write_artifacts_if_enabled(
             compare_branch=args.compare_branch,
             staged=args.staged,
             config=config,
-            run_id=run_id,
+            run_id=options.run_id,
         ),
         results,
+        runtime_events=options.runtime_events,
     )

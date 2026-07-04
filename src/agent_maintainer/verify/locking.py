@@ -82,10 +82,12 @@ class VerificationLock:
         log_dir: Path,
         fingerprint: VerificationFingerprint,
         wait_seconds: float = LOCK_WAIT_SECONDS,
+        reuse_result: bool = True,
     ) -> None:
         self._log_dir = log_dir
         self._fingerprint = fingerprint
         self._wait_seconds = wait_seconds
+        self._reuse_result = reuse_result
         self._lock_path = log_dir / LOCK_NAME
         self._result_path = log_dir / RESULT_NAME
         self._acquired = False
@@ -97,10 +99,11 @@ class VerificationLock:
         self._log_dir.mkdir(parents=True, exist_ok=True)
         deadline = time.monotonic() + self._wait_seconds
         while True:
-            reused = self.reusable_result()
-            if reused is not None:
-                self.reused = reused
-                return self
+            if self._reuse_result:
+                reused = self.reusable_result()
+                if reused is not None:
+                    self.reused = reused
+                    return self
 
             if self.try_acquire():
                 self._acquired = True
