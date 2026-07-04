@@ -96,6 +96,13 @@ def test_wait_for_github_run_times_out() -> None:
     assert "Result: TIMEOUT" in render_github_wait_text(result)
 
 
+def test_missing_state_renders_unknown_capsule() -> None:
+    """Missing state still renders the shared wait-capsule shape."""
+    assert render_github_wait_text(GitHubWaitResult(run_id="123", state=None)) == (
+        "Result: UNKNOWN\nRun ID: 123"
+    )
+
+
 def test_wait_json_includes_failed_jobs() -> None:
     """JSON output exposes compact machine-readable final state."""
     result = GitHubWaitResult(

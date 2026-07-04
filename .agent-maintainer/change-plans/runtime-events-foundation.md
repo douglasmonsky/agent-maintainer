@@ -17,11 +17,11 @@ ratchet_targets = []
 
 ## Why this change intentionally large
 
-Runtime event dogfooding needs a cohesive foundation: config fields, local JSONL
-event model, redaction, sinks, verifier profile lifecycle instrumentation,
-tests, Tach ownership, and an ADR. Splitting those into separate commits would
-leave partial runtime event plumbing that is either unconfigured, untested, or
-not architecture-owned.
+Runtime event dogfooding and cadence-waste hardening need a cohesive foundation:
+config fields, local JSONL event model, redaction, sinks, verifier profile
+lifecycle instrumentation, quiet wait commands, tests, Tach ownership, and ADR.
+Splitting into separate commits would leave partial runtime event or wait
+plumbing either unconfigured, untested, or not architecture-owned.
 
 ## Why this should not be split smaller
 
@@ -39,7 +39,11 @@ known guard failure without weakening the guard or hiding the pressure.
 - Config schema inventory extraction needed to keep file-length compliance.
 - Tach domain files and ADR documenting the new boundaries.
 - Focused tests for runtime events, config loading, and verifier emission.
-- Future-Call ROI roadmap planning that depends on the runtime event contract.
+- Quiet wait command surface for long-running external work.
+- Shared compact wait repair-capsule output.
+- Focused wait tests under `tests/wait`.
+- Future-Call ROI roadmap planning depends on runtime event and cadence-waste
+  contracts.
 - DocSync trace entries and evidence anchors for the new roadmap track.
 
 ## What must not change
@@ -72,8 +76,9 @@ the file-length cap after removing the runtime event fields.
 
 ## Follow-up ratchet work
 
-Later phases should add check-level, hook-level, artifact-retention, and
-dogfood-quality summary events before considering optional OpenTelemetry or
-`structlog` integrations.
+Later phases should add check-level, hook-level, artifact-retention,
+dogfood-quality summary events, local verifier wait/status support, and
+hook-visible readiness before considering optional OpenTelemetry or `structlog`
+integrations.
 After Phase 145 completes, implement the Future-Call ROI Acceleration
 track one phase per PR starting with runtime-event intelligence summary commands.
