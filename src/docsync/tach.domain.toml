@@ -72,10 +72,11 @@ path = "commands.core"
 depends_on = [
   "api",
   "config.defaults",
+  "freshness",
   "reports.human",
   "reports.json_report",
   "reports.review_packet",
-    "reports.sarif",
+  "reports.sarif",
 ]
 
 [[modules]]
@@ -93,6 +94,12 @@ depends_on = []
 
 [[modules]]
 path = "config.load"
+depends_on = [
+  "core.models",
+]
+
+[[modules]]
+path = "freshness"
 depends_on = [
   "core.models",
 ]

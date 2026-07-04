@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -123,6 +124,45 @@ def test_repair_object_end_markers_dry_run_and_write(
     content = (tmp_path / "README.md").read_text(encoding="utf-8")
     assert "<!-- docsync:object.end docs.readme.demo -->" in content
     assert docsync_cli.main(["--repo-root", str(tmp_path), "doctor"]) == 0
+
+
+def test_freshness_writes_generated_metadata(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Freshness command writes passive metadata under .docsync/out."""
+    _write_repo(tmp_path)
+
+    result = docsync_cli.main(["--repo-root", str(tmp_path), "freshness"])
+
+    assert result == 0
+    output = capsys.readouterr().out
+    freshness_path = tmp_path / ".docsync" / "out" / "freshness.json"
+    payload = json.loads(freshness_path.read_text(encoding="utf-8"))
+    assert "Objects: 1 current, 0 missing" in output
+    assert "Evidence: 1 current, 0 missing" in output
+    assert payload["version"] == 1
+    assert payload["ok"] is True
+    assert payload["objects"]["docs.readme.demo"]["status"] == "current"
+    assert payload["evidence"]["evidence.demo"]["status"] == "current"
+
+
+def test_freshness_json_no_write(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Freshness can report JSON without writing generated state."""
+    _write_repo(tmp_path)
+
+    result = docsync_cli.main(
+        ["--repo-root", str(tmp_path), "freshness", "--no-write", "--format", "json"]
+    )
+
+    assert result == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["summary"]["objects"] == {"current": 1, "missing": 0}
+    assert payload["summary"]["evidence"] == {"current": 1, "missing": 0}
+    assert not (tmp_path / ".docsync" / "out" / "freshness.json").exists()
 
 
 def _write_repo(tmp_path: Path) -> None:
