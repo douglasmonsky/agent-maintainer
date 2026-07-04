@@ -111,6 +111,8 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "do not duplicate a same-state hook pass manually" in text
     assert "after coherent final state, run one broad" in text
     assert "Run both `full` and `ci` only when" in text
+    assert "python3 -m agent_maintainer wait ..." in text
+    assert "tools own polling" in text
     assert "Run `python3 -m agent_maintainer doctor` after setup" in text
     assert "Read `.verify-logs/LAST_FAILURE.md` before changing code" not in text
     assert " `python3 -m agent_maintainer doctor`" not in text.splitlines()

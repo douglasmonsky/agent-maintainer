@@ -1,0 +1,276 @@
+# Completed Phases 001-073
+
+This archive bucket preserves completed roadmap history so `docs/ROADMAP.md` stays focused on active work.
+
+## Completed: DocSync Foundation
+
+DocSync now exists as an extractable sibling package under `src/docsync/`.
+It connects stable Markdown documentation objects to explicit source, test,
+schema, configuration, and generated-artifact evidence regions through the
+human-authored `.docsync/trace.yml` graph.
+
+Completed foundation capabilities:
+
+- `src/docsync/` is a sibling package, not a child of `agent_maintainer/`.
+- `.docsync/config.yml`, `.docsync/trace.yml`, `.docsync/schema.json`,
+  `.docsync/attestations/`, and `.docsync/out/` exist with generated output
+  kept out of source truth.
+
+- `AGENTS.md` records DocSync package-boundary rules.
+- Evidence regions use `docsync:evidence.start` and `docsync:evidence.end`.
+- Markdown objects use hidden `<!-- docsync:object ... -->` identifiers.
+- DocSync validates the trace graph, indexes evidence, maps changed evidence
+  to documentation claims, supports attestations, and generates review packets.
+
+- CLI commands include `docsync index`, `docsync check`, `docsync prompt`,
+  `docsync attest`, and `docsync doctor`.
+
+- Boundary tests keep DocSync extractable and independent from
+  `agent_maintainer` and `archguard`.
+
+Current evidence lives in `docs/docsync-extraction.md`, `.docsync/trace.yml`,
+`tests/docsync/`, and the DocSync dogfood phases 114, 117, and 120 through 122.
+The knowledge graph, local vector index, GraphQL query layer, and repo wiki
+projection prototype remain intentionally out of scope on
+`experiment/docsync-knowledge-graph`.
+
+## Completed: Context-Safe Legacy Ratchets
+
+Agent Maintainer's next focus is helping agents improve existing repositories
+without drowning in failures, giant files, huge diffs.
+
+Completed work:
+
+- Bounded failure summaries with explicit expansion commands.
+- Test intelligence for changed source and relevant tests.
+- Safe context commands for logs, failures, files, and diffs.
+- Python file outlines for large legacy files.
+- Context packs for agent repair loops.
+- Ratchet baselines with ranked repair targets.
+- Generated `AGENTS.ratchet.md` guidance.
+- Cohesive change plans for intentional large migrations.
+- Integration branch series support for large rewrites.
+- Optional compression backends for sanitized supporting context.
+- PR summaries with measured proof examples.
+
+## Implementation Phases
+
+- [x] Phase 1: ADR Context-Safe Legacy Ratchets
+- [x] Phase 2: ADR Test Intelligence Ladder
+- [x] Phase 3: Public Roadmap Docs Stubs
+- [x] Phase 4: Config Scaffolding
+- [x] Phase 5: Context Contract Implementation
+- [x] Phase 6: Bounded Verifier, Hook, LAST_FAILURE Output
+- [x] Phase 7: Test Intelligence MVP
+- [x] Phase 8: Smarter Source-Without-Test Guidance
+- [x] Phase 9: `context failures` and `context log`
+- [x] Phase 10: Context Budget Estimation
+- [x] Phase 11: Safe Large-File Reading
+- [x] Phase 12: Diff Context Safety
+- [x] Phase 13: Ratchet Baseline Status
+- [x] Phase 14: Ratchet Target Ranking
+- [x] Phase 15: Generate `AGENTS.ratchet.md`
+- [x] Phase 16: Context Packs
+- [x] Phase 17: Hook Output Uses Context Packs
+- [x] Phase 18: Context Artifact Retention Upload Policy
+- [x] Phase 19: Hypothesis Candidate Guidance
+- [x] Phase 20: Mutmut Target Suggestions
+- [x] Phase 21: CrossHair Candidate Guidance
+- [x] Phase 22: Cohesive Change Plans
+- [x] Phase 23: Change-Budget Integration Change Plans
+- [x] Phase 24: Integration Branch Series
+- [x] Phase 25: Compression Backend Interface
+- [x] Phase 26: Optional Headroom Backend
+- [x] Phase 27: Doctor Integration
+- [x] Phase 28: Examples Proof Repos
+- [x] Phase 29: PR / GitHub Actions Summary Report
+- [x] Phase 30: Policy Packs Onboarding Presets
+- [x] Phase 31: Archguard Impact Analysis
+- [x] Phase 32: Repair Plan Command
+- [x] Phase 33: Agent Adapter API
+- [x] Phase 34: Tach Architecture Contract Refit
+- [x] Phase 35: Static HTML Report
+- [x] Phase 36: Review-Driven Stabilization Plan
+- [x] Phase 37: Headroom Backend Correctness
+- [x] Phase 38: Change-Plan Authority Over Legacy Overrides
+- [x] Phase 39: Coverage Semantics Hardening
+- [x] Phase 40: Exact Repair Facts From Structured Artifacts
+- [x] Phase 41: Beta Release Metadata Refresh
+- [x] Phase 42: Pre-Case-Study Hardening Plan
+- [x] Phase 43: Context Package Boundary Split
+      Completed in PR #116. The remaining work after that PR is ordinary
+      domain-specific hardening, not another boundary-split phase.
+
+- [x] Phase 44: Hook Output Invariant Tests
+- [x] Phase 45: Release-Check Ergonomics
+- [x] Phase 46: Release-State Drift Check
+
+## Completed: Quiet Control Plane And Dogfood Drift
+
+Before external case studies resume, Agent Maintainer should reduce agent
+context noise while preserving strict verification. Completed work:
+
+- Commit current context-boundary and verifier-artifact refactor as an early
+  milestone after cleanup.
+
+- Keep agent-facing verifier output summary-first: pass/fail, profile, run id,
+  failed checks, exact next commands.
+
+- Keep raw logs and long diagnostics in run-scoped `.verify-logs/runs/<run-id>/`
+  artifacts instead of chat output.
+
+- Document agent narration discipline: no routine waiting chatter, no narrating
+  every focused rerun, batch check results, and use `apply_patch` for manual
+  edits.
+
+- Encode verification cadence: focused checks during the edit loop, `precommit`
+  before commit, one broad local profile before PR/merge, both `full` and `ci`
+  only when their overlap is under test, release checks only for release work.
+
+- Add dogfood drift detection so this repository verifies against local
+  `src/agent_maintainer` code, not stale installed package code.
+
+- Preserve configured-repo-only hooks: global hook install may exist, but hooks
+  no-op outside repos with `[tool.agent_maintainer]`.
+
+## Quiet Control Plane Phases
+
+- [x] Phase 47: Commit Context Boundary And Run Artifact Refactor
+- [x] Phase 48: Quiet Agent Output And Guidance Discipline
+- [x] Phase 49: Verification Cadence Recommendations
+- [x] Phase 50: Dogfood Drift Doctor Check
+- [x] Phase 51: Duplicate Artifact Detection And Cleanup Guard
+- [x] Phase 52: Configured-Repo Hook No-Op Tests
+
+## Completed: Overnight Hardening
+
+Before external case studies resume, Agent Maintainer should stay strict
+without flooding agent context. This hardening pass is the active recovery
+checklist and must be implemented in small PRs.
+
+Completed work:
+
+- Ship the current Mutmut target-ratchet branch as the first behavior
+  milestone.
+
+- Mature mutation testing beyond target count: better Mutmut config, result
+  ratchets, and an advisory deep sweep.
+
+- Keep verifier output summary-first: pass/fail, profile, run id, duration,
+  failed checks, exact next commands.
+
+- Keep raw logs and long diagnostics in run-scoped
+  `.verify-logs/runs/<run-id>/` artifacts instead of chat or hook transcripts.
+
+- Encode verification cadence: focused checks during edit loop, `precommit`
+  before commit, one broad local profile before PR/merge, both `full` and `ci`
+  only when their overlap is under test, release checks only for release work.
+
+- Add dogfood drift detection so this checkout verifies local
+  `src/agent_maintainer` code, not stale installed package code.
+
+- Preserve configured-repo-only hooks: global hook install may exist, but hooks
+  no-op outside repos with `[tool.agent_maintainer]`.
+
+- Slim generated agent guidance and move detailed gate explanation into
+  human-readable docs.
+
+## Overnight Hardening Phases
+
+- [x] Phase 53: Roadmap-First Overnight Hardening Plan
+- [x] Phase 54: Ship Mutmut Target Ratchet Branch
+- [x] Phase 55: Mutmut Config Hardening
+- [x] Phase 56: Mutation Result Ratchets
+- [x] Phase 57: Advisory Deep Mutation Sweep
+- [x] Phase 58: Quiet Verifier Output Contract
+- [x] Phase 59: Smarter Verification Cadence Guidance
+- [x] Phase 60: Dogfood Source-Checkout Drift Detection
+- [x] Phase 61: Run-Scoped Diagnostic Retention
+- [x] Phase 62: Duplicate Generated Artifact Detection
+- [x] Phase 63: Configured-Repo-Only Codex and Claude Hooks
+- [x] Phase 64: Documentation and Generated Guidance Slimming
+
+Acceptance criteria for this sequence:
+
+- Targeted Mutmut remains the blocking mutation gate; broad sweeps are advisory
+  until runtime and signal quality are proven.
+
+- Downstream defaults remain conservative; this repository dogfoods every
+  relevant enabled feature.
+
+- Verifier and hook output stays compact, with detailed evidence linked by run
+  id.
+
+- Existing CLI and profiles remain valid. No new scanners, old-name
+  compatibility, or Headroom integration are included in this pass.
+
+- Each behavior phase has focused tests, relevant docs, local verification, PR
+  CI, merge, and post-merge `main` CI confirmation.
+
+## Completed: Advisory Sweep Survivor Triage
+
+- [x] Phase 65: Mutation Sweep Executor Survivor Triage
+- [x] Phase 66: Advisory Sweep Survivor Triage
+
+Current advisory sweep findings remain non-blocking backlog:
+
+- `src/agent_maintainer/core/reporting.py`: reduced from 124 to 39 survivors,
+  not promotion-ready.
+
+- `src/agent_maintainer/doctor/cli.py`: reduced from 270 to 11 survivors, not
+  promotion-ready.
+
+Completed work:
+
+- Reduce `core/reporting.py` survivors first and document before/after counts.
+- Refactor `doctor/cli.py` before survivor-chasing if survivor clusters show CLI
+  plumbing rather than behavior contracts.
+
+- Keep current blocking Mutmut targets unchanged until advisory candidates are
+  promotion-ready.
+
+## Completed: Public Docs, Setup Advisor, and Technical Debt Score
+
+Agent Maintainer public onboarding now presents the product as a package-first
+maintenance layer for AI-assisted Python repositories. README links deeper docs
+at the point of need, and the implemented `assess` commands help users and
+agents choose setup and prioritize hardening work.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md`](roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md)
+
+Completed work:
+
+- README emphasizes package-first onboarding, fresh strict trial, supported
+  scans, ratchets, setup advisor, debt score, and just-in-time links.
+
+- `docs/supported-scans-and-agent-use.md` documents scan/profile/agent usage.
+- `python3 -m agent_maintainer assess setup` recommends track, preset, optional
+  gates, and follow-up AI prompts from local repo evidence.
+
+- `python3 -m agent_maintainer assess debt` writes transparent advisory score
+  artifacts and the HTML report renders the score when present.
+
+- The old HTML graphics render pipeline was removed; README keeps static PNG
+  assets without adding image-generation tooling to the developer workflow.
+
+## Public Docs And Score Phases
+
+- [x] Phase 67: Public Docs, Setup Advisor, and Technical Debt Score
+- [x] Phase 68: README Docs Information Architecture Rewrite
+- [x] Phase 69: Supported Scan Matrix Agent Utilization Guide
+- [x] Phase 70: Setup Advisor Command JSON Output
+- [x] Phase 71: Technical Debt Score v0 Scorecard Report Integration
+- [x] Phase 72: Static Product Graphics Strategy Cleanup
+
+## Completed: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion
+
+Continue release polish without adding new scanners or public profile
+semantics. Detailed scope:
+
+[`docs/roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md`](roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md)
+
+Completed work:
+
+- [x] Phase 73: Release Polish, Debt Score Clarity, Mutation UX, and Cohesion

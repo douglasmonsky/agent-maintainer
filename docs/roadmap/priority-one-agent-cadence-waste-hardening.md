@@ -214,6 +214,9 @@ report before making freshness hard gate.
   `python -m agent_maintainer wait github-run <run-id>`.
 - [x] Initial local verifier artifact waiter:
   `python -m agent_maintainer wait verifier <run-id>`.
+- [x] Agent-facing wait adoption guidance tells agents to use
+  `python -m agent_maintainer wait ...` for GitHub Actions runs and long
+  verifier jobs, so tools own polling and return one final repair capsule.
 - [x] Async verification readiness.
 - [x] Hook-visible readiness.
 - [x] Profile overlap guardrails beyond guidance.
