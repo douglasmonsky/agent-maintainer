@@ -9,11 +9,13 @@ path = "cli"
 depends_on = [
   "//agent_maintainer.config.loader",
   "debt_score",
-  "evidence",
-  "file_baselines",
-  "reporting",
-  "reviewability",
-  "setup_advisor",
+"evidence",
+"file_baselines",
+"repair_fact_coverage",
+"repair_fact_coverage_reporting",
+"reporting",
+"reviewability",
+"setup_advisor",
 ]
 
 [[modules]]
@@ -64,6 +66,22 @@ depends_on = [
 [[modules]]
 path = "models"
 depends_on = []
+
+[[modules]]
+path = "repair_fact_coverage"
+depends_on = [
+"//agent_context.failures",
+"repair_fact_coverage_models",
+"//agent_maintainer.context.pack.exact_facts",
+]
+
+[[modules]]
+path = "repair_fact_coverage_models"
+depends_on = []
+
+[[modules]]
+path = "repair_fact_coverage_reporting"
+depends_on = ["repair_fact_coverage_models"]
 
 [[modules]]
 path = "reporting"
