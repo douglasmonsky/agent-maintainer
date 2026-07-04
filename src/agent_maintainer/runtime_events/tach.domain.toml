@@ -8,6 +8,16 @@ depends_on = []
 
 [[modules]]
 
+path = "commands"
+depends_on = [
+  "models",
+  "sinks",
+  "//agent_maintainer.config.loader",
+]
+
+
+[[modules]]
+
 path = "models"
 depends_on = [
   "redaction",
