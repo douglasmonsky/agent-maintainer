@@ -6,6 +6,7 @@ import pytest
 
 from agent_maintainer.wait import cli
 from agent_maintainer.wait.github import GitHubRunState, GitHubWaitConfig, GitHubWaitResult
+from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 SUCCESS_TIMEOUT_SECONDS = 2
 ERROR_EXIT_CODE = 2
@@ -62,6 +63,19 @@ def test_github_run_cli_reports_query_errors(
     assert "gh auth required" in output
 
 
+def test_verifier_cli_prints_manifest_status(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Verifier wait CLI prints compact manifest-backed status."""
+    monkeypatch.setattr(cli, "wait_for_verifier_run", verifier_wait)
+
+    status = cli.main(["verifier", "run-1", "--format", "text"])
+
+    assert status == 0
+    assert capsys.readouterr().out == ("Result: PASS\nProfile: fast\nRun ID: run-1\n")
+
+
 class SuccessWait:
     """Fake successful GitHub waiter capturing config."""
 
@@ -87,3 +101,11 @@ def failure_wait(config: GitHubWaitConfig) -> GitHubWaitResult:
 def error_wait(_config: GitHubWaitConfig) -> GitHubWaitResult:
     """Raise a GitHub query error."""
     raise RuntimeError("gh auth required")
+
+
+def verifier_wait(_config: object) -> VerifierWaitResult:
+    """Return verifier pass result."""
+    return VerifierWaitResult(
+        run_id="run-1",
+        manifest=VerifierManifest(run_id="run-1", profile="fast"),
+    )

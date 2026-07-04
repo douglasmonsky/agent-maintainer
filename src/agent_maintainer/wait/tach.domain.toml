@@ -11,6 +11,7 @@ depends_on = []
 path = "cli"
 depends_on = [
   "github",
+  "verifier",
 ]
 
 
@@ -25,4 +26,19 @@ depends_on = [
 [[modules]]
 
 path = "models"
+depends_on = []
+
+
+[[modules]]
+
+path = "verifier"
+depends_on = [
+  "models",
+  "verifier_manifest",
+]
+
+
+[[modules]]
+
+path = "verifier_manifest"
 depends_on = []

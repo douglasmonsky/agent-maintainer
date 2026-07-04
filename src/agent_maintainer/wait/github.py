@@ -9,13 +9,16 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Final
 
-from agent_maintainer.wait.models import WaitRepairCapsule, render_wait_capsule
+from agent_maintainer.wait.models import (
+    TIMEOUT_EXIT_CODE,
+    WaitRepairCapsule,
+    render_wait_capsule,
+)
 
 COMPLETED = "completed"
 SUCCESS = "success"
 DEFAULT_INTERVAL_SECONDS: Final = 20
 DEFAULT_TIMEOUT_SECONDS: Final = 3600
-TIMEOUT_EXIT_CODE: Final = 124
 
 
 def _empty_jobs() -> tuple[GitHubJob, ...]:

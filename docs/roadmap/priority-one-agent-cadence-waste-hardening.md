@@ -211,7 +211,8 @@ report before making freshness hard gate.
   cadence waste signals and explicit measurement limitations.
 - [x] Initial quiet GitHub Actions waiter:
   `python -m agent_maintainer wait github-run <run-id>`.
-- [ ] Local verifier quiet waiter.
+- [x] Initial local verifier artifact waiter:
+  `python -m agent_maintainer wait verifier <run-id>`.
 - [ ] Async verification readiness.
 - [ ] Hook-visible readiness.
 - [ ] Profile overlap guardrails beyond guidance.
