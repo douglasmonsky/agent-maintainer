@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Protocol
 
 from agent_context import models as context_models
 from agent_context.budget import bound_text
@@ -27,10 +28,31 @@ PR_SUMMARY_NAME = pr_summary.PR_SUMMARY_NAME
 TRUNCATION_NOTE_ALLOWANCE = 320
 
 
+class ArtifactRuntimeEvents(Protocol):
+    """Artifact runtime event reporter for verifier runs."""
+
+    def artifact_written(self, *, path: str, kind: str) -> None:
+        """Record written artifact path and kind."""
+
+    def artifact_removed(self, *, path: str, kind: str) -> None:
+        """Record removed artifact path and kind."""
+
+    def artifact_retention_pruned(
+        self,
+        *,
+        log_dir: Path,
+        pruned_count: int,
+        keep: int,
+    ) -> None:
+        """Record retained run snapshot pruning."""
+
+
 def write_run_artifacts(
     log_dir: Path,
     context: RunContext,
     results: list[CheckResult],
+    *,
+    runtime_events: ArtifactRuntimeEvents | None = None,
 ) -> None:
     """Write latest and run-scoped artifacts for one verifier run."""
 
@@ -60,6 +82,21 @@ def write_run_artifacts(
         results,
         snapshot_artifacts=snapshot_artifacts,
     )
+    _emit_artifact_written(
+        runtime_events,
+        path=log_dir / MANIFEST_NAME,
+        context=context,
+        kind="latest-manifest",
+    )
+    _emit_artifact_written(
+        runtime_events,
+        path=snapshot_dir / MANIFEST_NAME,
+        context=context,
+        kind="run-manifest",
+    )
+    _emit_copied_log_events(runtime_events, snapshot_artifacts)
+    latest_failure_path = log_dir / LAST_FAILURE_NAME
+    had_latest_failure = latest_failure_path.exists()
     write_last_failure(
         log_dir,
         context,
@@ -67,14 +104,42 @@ def write_run_artifacts(
         failure_snapshot=snapshot_artifacts.failure_snapshot,
         context_log_dir=snapshot_artifacts.context_log_dir,
     )
-    verify_history.prune_run_history(log_dir, context.config.diagnostic_run_history_limit)
+    if failures:
+        _emit_artifact_written(
+            runtime_events,
+            path=latest_failure_path,
+            context=context,
+            kind="latest-failure",
+        )
+        if snapshot_artifacts.failure_snapshot is not None:
+            _emit_artifact_written(
+                runtime_events,
+                path=snapshot_artifacts.failure_snapshot,
+                context=context,
+                kind="run-failure",
+            )
+    elif had_latest_failure:
+        _emit_artifact_removed(
+            runtime_events,
+            path=latest_failure_path,
+            context=context,
+            kind="latest-failure",
+        )
+    _prune_run_history(log_dir, context, runtime_events)
+    summary_path = log_dir / pr_summary.PR_SUMMARY_NAME
     verify_history.atomic_write_text(
-        log_dir / pr_summary.PR_SUMMARY_NAME,
+        summary_path,
         pr_summary.render_pr_summary(
             log_dir=log_dir,
             context=artifact_context,
             results=artifact_results,
         ),
+    )
+    _emit_artifact_written(
+        runtime_events,
+        path=summary_path,
+        context=context,
+        kind="pr-summary",
     )
 
 
@@ -198,6 +263,78 @@ def json_text(payload: dict[str, object]) -> str:
     """Return stable JSON artifact text."""
 
     return f"{json.dumps(payload, indent=2, sort_keys=True)}\n"
+
+
+def _emit_artifact_written(
+    runtime_events: ArtifactRuntimeEvents | None,
+    *,
+    path: Path,
+    context: RunContext,
+    kind: str,
+) -> None:
+    """Emit written artifact event when runtime events are available."""
+
+    if runtime_events is not None:
+        runtime_events.artifact_written(
+            path=verify_history.path_text(path, context.repo_root),
+            kind=kind,
+        )
+
+
+def _emit_artifact_removed(
+    runtime_events: ArtifactRuntimeEvents | None,
+    *,
+    path: Path,
+    context: RunContext,
+    kind: str,
+) -> None:
+    """Emit removed artifact event when runtime events are available."""
+
+    if runtime_events is not None:
+        runtime_events.artifact_removed(
+            path=verify_history.path_text(path, context.repo_root),
+            kind=kind,
+        )
+
+
+def _emit_copied_log_events(
+    runtime_events: ArtifactRuntimeEvents | None,
+    snapshot_artifacts: verify_history.SnapshotArtifacts,
+) -> None:
+    """Emit one event per copied check log snapshot."""
+
+    if runtime_events is None:
+        return
+    for copied_log_path in snapshot_artifacts.log_path_overrides.values():
+        runtime_events.artifact_written(path=copied_log_path, kind="run-check-log")
+
+
+def _prune_run_history(
+    log_dir: Path,
+    context: RunContext,
+    runtime_events: ArtifactRuntimeEvents | None,
+) -> None:
+    """Prune retained runs and emit compact pruning event."""
+
+    before = _run_snapshot_names(log_dir)
+    keep = context.config.diagnostic_run_history_limit
+    verify_history.prune_run_history(log_dir, keep)
+    pruned_count = len(before - _run_snapshot_names(log_dir))
+    if runtime_events is not None and pruned_count:
+        runtime_events.artifact_retention_pruned(
+            log_dir=log_dir,
+            pruned_count=pruned_count,
+            keep=keep,
+        )
+
+
+def _run_snapshot_names(log_dir: Path) -> set[str]:
+    """Return retained run snapshot directory names."""
+
+    runs_dir = log_dir / verify_history.RUNS_DIR_NAME
+    if not runs_dir.exists():
+        return set()
+    return {path.name for path in runs_dir.iterdir() if path.is_dir()}
 
 
 def failure_section(

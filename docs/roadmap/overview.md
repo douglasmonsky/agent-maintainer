@@ -149,8 +149,9 @@ top repair facts, one likely next action, and one explicit expansion command.
 7. Update generated guidance only when the phase requires it.
 8. Run focused tests during the edit loop.
 9. Run `verify --profile precommit` before finishing a phase.
-10. Run `full` and `ci` when verifier, hooks, diagnostics, config, or shared
-    architecture behavior changes.
+10. Run one broad local profile before PR/merge, usually `full`; use `ci` instead
+    when diff/base-ref, workflow, or profile behavior changed. Run both only when
+    that overlap is under test.
 11. Run release checks only when packaging or release behavior changes.
 
 ## Standard Verification

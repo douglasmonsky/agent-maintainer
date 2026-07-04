@@ -261,11 +261,15 @@ Then agents should follow this loop:
 1. Read `AGENTS.md` and `AGENTS.agent-maintainer.md`.
 2. Make a small, coherent change.
 3. Run focused tests while editing.
-4. Run `python3 -m agent_maintainer verify --profile precommit` before
-   finishing.
+4. Let trusted Stop/SubagentStop hooks cover `precommit` for the final state.
+   Run `python3 -m agent_maintainer verify --profile precommit` only when hooks
+   are unavailable, bypassed, or a failure needs reproduction.
 5. If verification fails, inspect `.verify-logs/LAST_FAILURE.md` and use the
    suggested `context` command instead of dumping raw logs.
-6. For larger work, run `full`, `ci`, `security`, and `manual` once before PR.
+6. For larger work, run one broad local profile before PR, usually `full`.
+   Use `ci` instead when diff/base-ref, workflow, or profile behavior changed;
+   run both only when that overlap is under test. Run `security` or `manual`
+   when touching those gates, before release, or when explicitly requested.
 
 Helpful repair commands:
 

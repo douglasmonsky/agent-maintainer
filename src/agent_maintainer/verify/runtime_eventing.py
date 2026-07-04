@@ -11,6 +11,8 @@ from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.runtime_events.models import RuntimeEvent
 from agent_maintainer.runtime_events.sinks import RuntimeEventSink, make_runtime_event_sink
 
+VERIFY_COMMAND = "verify"
+
 
 @dataclass(frozen=True)
 class ProfileRuntimeEvents:
@@ -29,6 +31,7 @@ class ProfileRuntimeEvents:
         run_id: str,
     ) -> Self:
         """Create profile runtime event adapter."""
+
         return cls(
             sink=make_runtime_event_sink(config, stream_id=run_id),
             profile=profile,
@@ -40,7 +43,7 @@ class ProfileRuntimeEvents:
         self.sink.emit(
             RuntimeEvent(
                 "profile.started",
-                command="verify",
+                command=VERIFY_COMMAND,
                 profile=self.profile,
                 run_id=self.run_id,
                 attributes={"log_dir": str(log_dir)},
@@ -53,7 +56,7 @@ class ProfileRuntimeEvents:
             RuntimeEvent(
                 "profile.finished",
                 severity="info" if exit_code == 0 else "error",
-                command="verify",
+                command=VERIFY_COMMAND,
                 profile=self.profile,
                 run_id=self.run_id,
                 status=status,
@@ -67,7 +70,7 @@ class ProfileRuntimeEvents:
         self.sink.emit(
             RuntimeEvent(
                 "checks.selected",
-                command="verify",
+                command=VERIFY_COMMAND,
                 profile=self.profile,
                 run_id=self.run_id,
                 attributes={
@@ -82,7 +85,7 @@ class ProfileRuntimeEvents:
         self.sink.emit(
             RuntimeEvent(
                 "check.started",
-                command="verify",
+                command=VERIFY_COMMAND,
                 profile=self.profile,
                 run_id=self.run_id,
                 check=_name(check),
@@ -98,7 +101,7 @@ class ProfileRuntimeEvents:
             RuntimeEvent(
                 "check.finished",
                 severity="info" if passed else "error",
-                command="verify",
+                command=VERIFY_COMMAND,
                 profile=self.profile,
                 run_id=self.run_id,
                 check=_name(result),
@@ -111,7 +114,7 @@ class ProfileRuntimeEvents:
             self.sink.emit(
                 RuntimeEvent(
                     "check.skipped",
-                    command="verify",
+                    command=VERIFY_COMMAND,
                     profile=self.profile,
                     run_id=self.run_id,
                     check=_name(result),
@@ -124,7 +127,7 @@ class ProfileRuntimeEvents:
                 RuntimeEvent(
                     "check.failed",
                     severity="error",
-                    command="verify",
+                    command=VERIFY_COMMAND,
                     profile=self.profile,
                     run_id=self.run_id,
                     check=_name(result),
@@ -140,7 +143,7 @@ class ProfileRuntimeEvents:
             RuntimeEvent(
                 "check.exception",
                 severity="error",
-                command="verify",
+                command=VERIFY_COMMAND,
                 profile=self.profile,
                 run_id=self.run_id,
                 check=_name(check),
@@ -153,8 +156,110 @@ class ProfileRuntimeEvents:
         )
 
 
+@dataclass(frozen=True)
+class ArtifactRuntimeEvents:
+    """Runtime event adapter for verifier artifact writes."""
+
+    sink: RuntimeEventSink
+    profile: str
+    run_id: str
+
+    def artifact_written(self, *, path: str, kind: str) -> None:
+        """Emit verifier artifact write event."""
+        self.sink.emit(
+            RuntimeEvent(
+                "artifact.written",
+                command=VERIFY_COMMAND,
+                profile=self.profile,
+                run_id=self.run_id,
+                attributes={"path": path, "kind": kind},
+            ),
+        )
+
+    def artifact_removed(self, *, path: str, kind: str) -> None:
+        """Emit verifier artifact removal event."""
+        self.sink.emit(
+            RuntimeEvent(
+                "artifact.removed",
+                command=VERIFY_COMMAND,
+                profile=self.profile,
+                run_id=self.run_id,
+                attributes={"path": path, "kind": kind},
+            ),
+        )
+
+    def artifact_retention_pruned(
+        self,
+        *,
+        log_dir: Path,
+        pruned_count: int,
+        keep: int,
+    ) -> None:
+        """Emit retained artifact pruning event."""
+        self.sink.emit(
+            RuntimeEvent(
+                "artifact.retention_pruned",
+                command=VERIFY_COMMAND,
+                profile=self.profile,
+                run_id=self.run_id,
+                attributes={
+                    "log_dir": str(log_dir),
+                    "pruned_count": pruned_count,
+                    "keep": keep,
+                },
+            ),
+        )
+
+
+def artifact_events_for(profile_events: ProfileRuntimeEvents) -> ArtifactRuntimeEvents:
+    """Return artifact event adapter sharing a profile event sink."""
+
+    return ArtifactRuntimeEvents(
+        sink=profile_events.sink,
+        profile=profile_events.profile,
+        run_id=profile_events.run_id,
+    )
+
+
+def run_reused(
+    profile_events: ProfileRuntimeEvents,
+    *,
+    exit_code: int,
+    log_dir: Path,
+) -> None:
+    """Emit same-state verifier result reuse event."""
+
+    profile_events.sink.emit(
+        RuntimeEvent(
+            "verifier.reused",
+            command=VERIFY_COMMAND,
+            profile=profile_events.profile,
+            run_id=profile_events.run_id,
+            status="reused",
+            exit_code=exit_code,
+            attributes={"log_dir": str(log_dir)},
+        ),
+    )
+
+
+def run_fresh(profile_events: ProfileRuntimeEvents, *, log_dir: Path) -> None:
+    """Emit fresh verifier execution event."""
+
+    profile_events.sink.emit(
+        RuntimeEvent(
+            "verifier.fresh",
+            command=VERIFY_COMMAND,
+            profile=profile_events.profile,
+            run_id=profile_events.run_id,
+            status="fresh",
+            attributes={"log_dir": str(log_dir)},
+        ),
+    )
+
+
 def _result_status(result: Any) -> str:
     """Return compact check status for runtime events."""
+
     if getattr(result, "skipped", False):
         return str(getattr(result, "skip_status", "")) or "skipped"
     if getattr(result, "passed", False):
@@ -164,6 +269,7 @@ def _result_status(result: Any) -> str:
 
 def _result_attributes(result: Any) -> dict[str, object]:
     """Return compact check result attributes for runtime events."""
+
     attributes: dict[str, object] = {
         "log_path": str(getattr(result, "log_path", "")),
         "artifact_paths": list(getattr(result, "artifact_paths", ())),
@@ -177,11 +283,13 @@ def _result_attributes(result: Any) -> dict[str, object]:
 
 def _name(source: Any) -> str:
     """Return compact runtime event source name."""
+
     return str(getattr(source, "name", "unknown"))
 
 
 def _exit_code(result: Any) -> int | None:
     """Return result exit code if present and integer-like."""
+
     exit_code = getattr(result, "exit_code", None)
     if exit_code is None:
         return None

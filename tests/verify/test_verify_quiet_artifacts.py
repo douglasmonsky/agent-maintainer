@@ -61,7 +61,9 @@ def test_main_writes_artifacts_for_selected_profile(
     monkeypatch.setattr(
         verify_run_steps,
         "write_run_artifacts",
-        lambda log_dir, context, results: calls.append((log_dir, context, results)),
+        lambda log_dir, context, results, **_kwargs: calls.append(
+            (log_dir, context, results),
+        ),
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0

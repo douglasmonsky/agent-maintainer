@@ -45,7 +45,7 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/tach check --exact
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m agent_maintainer verify --profile precommit
 ```
 
-Before merge, run full, CI-equivalent, security, and manual profiles once.
+Before merge, run one broad local profile by default; use CI-equivalent instead when diff/base-ref, workflow, or profile behavior changed. Run both only when that overlap is under test. Run security or manual when touching those gates, before release, or when explicitly requested.
 
 ## Notes For Future Codex Tasks
 

@@ -43,6 +43,11 @@ python3 -m agent_maintainer verify --profile fast
 python3 -m agent_maintainer verify --profile precommit
 ```
 
+If Codex reports a trusted Stop hook pass for the final repo state, do not start
+another manual `precommit` run unless the repo changed after that pass or the
+failure needs reproduction. The verifier lock and same-state result cache reduce
+exact duplicates, but the agent should still avoid unnecessary overlapping runs.
+
 They prefer `.venv/bin/python` or `venv/bin/python` when present. Run `python3 -m agent_maintainer doctor` if hooks are configured but not behaving as expected.
 
 ## Audit Trail
