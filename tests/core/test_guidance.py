@@ -106,6 +106,10 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "- YAML linting" in text
     assert "- TOML formatting" in text
     assert "- Schema validation" in text
+    assert "Prefer repo wrappers when present" in text
+    assert "just verify-precommit" in text
+    assert "just wait-github <run-id>" in text
+    assert "just wait-verifier <run-id>" in text
     assert "python3 -m agent_maintainer verify --profile precommit" in text
     assert "Trusted hooks already run `fast` after edits and `precommit`" in text
     assert "do not duplicate a same-state hook pass manually" in text
