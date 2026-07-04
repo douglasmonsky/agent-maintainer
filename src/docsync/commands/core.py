@@ -8,6 +8,12 @@ from pathlib import Path
 
 from docsync import api
 from docsync.config import defaults
+from docsync.freshness import (
+    build_freshness_report,
+    default_freshness_path,
+    render_freshness_text,
+    write_freshness_report,
+)
 from docsync.reports import human, json_report, review_packet, sarif
 
 
@@ -52,6 +58,27 @@ def index_main_from_args(args: argparse.Namespace) -> int:
     )
     print(f"Wrote DocSync index: {result.output_path}")
     return 1 if result.findings else 0
+
+
+def freshness_main_from_args(args: argparse.Namespace) -> int:
+    """Write passive freshness metadata for current DocSync index."""
+    index = api.build_index(
+        api.IndexOptions(
+            repo_root=args.repo_root.resolve(),
+            config_path=args.config,
+            trace_path=args.trace,
+        )
+    )
+    report = build_freshness_report(index)
+    output_path = args.output or default_freshness_path(index)
+    if not args.no_write:
+        write_freshness_report(report, output_path)
+    if args.format == "json":
+        print(json.dumps(report.to_json(), indent=2, sort_keys=True))
+    else:
+        written_path = None if args.no_write else output_path
+        print(render_freshness_text(report, written_path))
+    return 0
 
 
 def check_main_from_args(args: argparse.Namespace) -> int:

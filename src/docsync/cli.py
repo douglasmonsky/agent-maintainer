@@ -54,6 +54,7 @@ def _add_core_commands(subparsers: Any) -> None:
     index_parser.add_argument("--trace", type=Path, default=None)
     index_parser.set_defaults(handler=core_commands.index_main_from_args)
 
+    _add_freshness_command(subparsers)
     check_parser = subparsers.add_parser("check", help="Run DocSync checks.")
     check_parser.add_argument("--base", default="origin/main")
     check_parser.add_argument("--config", type=Path, default=None)
@@ -85,6 +86,24 @@ def _add_core_commands(subparsers: Any) -> None:
     attest_parser.add_argument("--evidence", action="append", required=True)
     attest_parser.add_argument("--reason", required=True)
     attest_parser.set_defaults(handler=core_commands.attest_main_from_args)
+
+
+def _add_freshness_command(subparsers: Any) -> None:
+    """Register passive freshness metadata command."""
+    freshness_parser = subparsers.add_parser(
+        "freshness",
+        help="Write passive DocSync freshness metadata.",
+    )
+    freshness_parser.add_argument("--config", type=Path, default=None)
+    freshness_parser.add_argument("--trace", type=Path, default=None)
+    freshness_parser.add_argument("--output", type=Path, default=None)
+    freshness_parser.add_argument("--no-write", action="store_true")
+    freshness_parser.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+    )
+    freshness_parser.set_defaults(handler=core_commands.freshness_main_from_args)
 
 
 # docsync:evidence.end evidence.docsync.cli_commands

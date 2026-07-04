@@ -218,7 +218,7 @@ report before making freshness hard gate.
 - [x] Hook-visible readiness.
 - [x] Profile overlap guardrails beyond guidance.
 - [x] Edit discipline advisory signals.
-- [ ] Passive DocSync freshness metadata.
+- [x] Passive DocSync freshness metadata.
 
 ## Non-Goals
 

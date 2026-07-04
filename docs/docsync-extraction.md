@@ -35,6 +35,11 @@ To extract DocSync into a standalone package:
 
 Generated files under `.docsync/out/` are not source truth. They can be rebuilt
 with `docsync index`, `docsync check`, `docsync prompt`, `docsync attest`, and
+
+`python -m docsync freshness` writes passive freshness metadata to
+`.docsync/out/freshness.json`. The report records last observed content
+hashes and cheap Git state for traced documentation objects and evidence
+anchors without adding manual timestamps to human docs.
 `docsync doctor`.
 
 The experimental knowledge graph, vector retrieval, GraphQL, and wiki prototype
