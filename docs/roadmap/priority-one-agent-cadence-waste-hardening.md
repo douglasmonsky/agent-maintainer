@@ -38,6 +38,12 @@ checks, GitHub polling, or review loops that should preserve thread context.
 Agent Maintainer should provide durable prompts and compact status commands that
 fit this automation model instead of forcing the model to poll manually.
 
+This should eventually abstract upward into a thin waitable work contract,
+not a scheduler framework. GitHub runs, local verifier jobs, hook-launched
+checks, and thread automations should share the same basic shape: run id,
+current state, stale-state detection, compact final result, and one exact
+wait/status command. Provider-specific waiters can stay small adapters.
+
 ## Scope
 
 ### 1. Cadence Waste Report
@@ -113,6 +119,11 @@ The final command names are implementation details; the needed behavior is:
 - completed jobs return the same compact repair capsule as foreground verify;
 - changed repo state invalidates or labels the job result stale;
 - retention prevents job-state buildup.
+
+This status protocol should become the shared source for checks launched by
+manual commands and hooks. If a hook starts or observes verification, a
+later manual command should wait on that same job when repo state still
+matches instead of launching duplicate work.
 
 ### 4. Hook-Visible Readiness
 
@@ -198,7 +209,9 @@ report before making freshness hard gate.
 
 - [x] Initial `events waste` command summarizing measured runtime-event
   cadence waste signals and explicit measurement limitations.
-- [ ] Quiet waiter commands.
+- [x] Initial quiet GitHub Actions waiter:
+  `python -m agent_maintainer wait github-run <run-id>`.
+- [ ] Local verifier quiet waiter.
 - [ ] Async verification readiness.
 - [ ] Hook-visible readiness.
 - [ ] Profile overlap guardrails beyond guidance.

@@ -31,6 +31,7 @@ Core commands:
   guidance        Generate or check AGENTS.agent-maintainer.md.
   init            Write starter files into a target repository.
   install         Install local hooks for this repository.
+  wait            Wait quietly for long-running external work.
   verify          Run configured verification profiles.
 
 Agent repair commands:
@@ -56,6 +57,7 @@ Examples:
   python -m agent_maintainer guidance --check
   python -m agent_maintainer hooks status
   python -m agent_maintainer events summary
+  python -m agent_maintainer wait github-run <run-id>
   python -m agent_maintainer report html
 """
 
@@ -116,6 +118,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "report": report_command,
         "repair-plan": repair_plan_command,
         "test-intel": test_intel_command,
+        "wait": wait_command,
         "verify": verify_main,
     }
 
@@ -125,59 +128,57 @@ def command_handlers() -> dict[str, CommandRunner]:
 
 def assess_command(command_args: list[str]) -> int:
     """Run assess command lazily to keep entrypoint light."""
-
-    module = __import__("agent_maintainer.assess.cli", fromlist=("main",))
-    return module.main(command_args)
+    return _run_module_main("agent_maintainer.assess.cli", command_args)
 
 
 def bootstrap_command(_command_args: list[str]) -> int:
-    """Adapt bootstrap to the shared command handler signature."""
-
+    """Adapt bootstrap shared command handler signature."""
     return bootstrap()
 
 
 def change_plan_command(command_args: list[str]) -> int:
     """Run change-plan command lazily to keep entrypoint light."""
-
-    module = __import__("agent_maintainer.change_plan.cli", fromlist=("main",))
-    return module.main(command_args)
+    return _run_module_main("agent_maintainer.change_plan.cli", command_args)
 
 
 def events_command(command_args: list[str]) -> int:
     """Run runtime events command lazily to keep entrypoint light."""
-    module = __import__("agent_maintainer.runtime_events.cli", fromlist=("main",))
-    return module.main(command_args)
+    return _run_module_main("agent_maintainer.runtime_events.cli", command_args)
 
 
 def install_command(_command_args: list[str]) -> int:
-    """Adapt install to the shared command handler signature."""
-
+    """Adapt install shared command handler signature."""
     return install()
 
 
 def ratchet_command(command_args: list[str]) -> int:
-    """Run ratchet command with lazy import to keep entrypoint light."""
-
-    module = __import__("agent_maintainer.ratchet.cli", fromlist=("main",))
-    return module.main(command_args)
+    """Run ratchet command lazily to keep entrypoint light."""
+    return _run_module_main("agent_maintainer.ratchet.cli", command_args)
 
 
 def report_command(command_args: list[str]) -> int:
-    """Run report command."""
-    module = __import__("agent_maintainer.report.cli", fromlist=("main",))
-    return module.main(command_args)
+    """Run report command lazily to keep entrypoint light."""
+    return _run_module_main("agent_maintainer.report.cli", command_args)
 
 
 def repair_plan_command(command_args: list[str]) -> int:
     """Run repair-plan command lazily to keep entrypoint light."""
-
-    module = __import__("agent_maintainer.repair_plan.cli", fromlist=("main",))
-    return module.main(command_args)
+    return _run_module_main("agent_maintainer.repair_plan.cli", command_args)
 
 
 def test_intel_command(command_args: list[str]) -> int:
     """Run test-intel command lazily to keep entrypoint light."""
-    module = __import__("agent_maintainer.test_intel.cli", fromlist=("main",))
+    return _run_module_main("agent_maintainer.test_intel.cli", command_args)
+
+
+def wait_command(command_args: list[str]) -> int:
+    """Run quiet wait command lazily to keep entrypoint light."""
+    return _run_module_main("agent_maintainer.wait.cli", command_args)
+
+
+def _run_module_main(module_name: str, command_args: list[str]) -> int:
+    """Import one command module and run its main function."""
+    module = __import__(module_name, fromlist=("main",))
     return module.main(command_args)
 
 
