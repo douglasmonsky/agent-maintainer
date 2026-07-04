@@ -52,7 +52,17 @@ depends_on = [
   "//agent_client_hooks.constants",
   "audit",
   "context",
+  "runtime_eventing",
   "subprocess_runner",
+]
+
+[[modules]]
+path = "runtime_eventing"
+depends_on = [
+  "//agent_maintainer.config.loader",
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.runtime_events.models",
+  "//agent_maintainer.runtime_events.sinks",
 ]
 
 [[modules]]
