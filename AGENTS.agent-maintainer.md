@@ -76,6 +76,9 @@ Do not read it during normal coding unless changing guidance.
 
 ## Required Commands
 
+- Prefer repo wrappers when present: `just verify-precommit`,
+ `just verify`, `just verify-ci`, `just wait-github <run-id>`,
+ `just wait-verifier <run-id>`.
 - Normal finish: `python3 -m agent_maintainer verify --profile precommit`
  only when trusted hooks are unavailable, bypassed, or need
  failure reproduction.

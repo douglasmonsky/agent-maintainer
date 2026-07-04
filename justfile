@@ -26,11 +26,20 @@ verify-precommit:
 verify-ci:
     python3 -m agent_maintainer verify --profile ci --base-ref origin/main --compare-branch origin/main
 
+verify-security:
+    python3 -m agent_maintainer verify --profile security
+
 verify-manual:
-	python3 -m agent_maintainer verify --profile manual
+    python3 -m agent_maintainer verify --profile manual
+
+wait-github RUN_ID:
+    python3 -m agent_maintainer wait github-run {{RUN_ID}}
+
+wait-verifier RUN_ID:
+    python3 -m agent_maintainer wait verifier {{RUN_ID}}
 
 release-check:
-	PYTHON="$([ -x .venv/bin/python ] && printf '%s' .venv/bin/python || printf '%s' python3)"; AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 "$PYTHON" -m pytest -m release tests/release -q
+    PYTHON="$([ -x .venv/bin/python ] && printf '%s' .venv/bin/python || printf '%s' python3)"; AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 "$PYTHON" -m pytest -m release tests/release -q
 
 # Example for a flat package layout:
 verify-flat PACKAGE:

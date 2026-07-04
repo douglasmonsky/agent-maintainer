@@ -21,19 +21,22 @@ profile before completion. Do not duplicate a same-state hook pass manually.
 If hooks are unavailable, bypassed, or need a failure reproduced manually, run:
 
 ```bash
-python3 -m agent_maintainer verify --profile precommit
+just verify-precommit
 ```
 
 Before opening or merging a larger change, reach a coherent final state, then
 run one broad local profile, usually:
 
 ```bash
-python3 -m agent_maintainer verify --profile full
+just verify
 ```
 
 Use `ci` instead when diff/base-ref, workflow, or profile behavior changed. Run
 both `full` and `ci` only when that overlap is under test. Run `security` or
 `manual` when touching those gates, before release, or when explicitly requested.
+
+Use `just wait-github <run-id>` or `just wait-verifier <run-id>` for long
+GitHub Actions or verifier jobs instead of hand-polling.
 
 Do not claim completion while required hooks or checks for the touched surface
 fail. Treat `manual` as required only when requested, before release, or when
