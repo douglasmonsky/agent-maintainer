@@ -32,6 +32,12 @@ single blocking command or hook-visible readiness state that returns one compact
 final repair capsule. The agent should not spend repeated turns asking whether a
 known long-running command is done.
 
+Codex thread automations are a preferred client-level option where available:
+use a heartbeat automation attached to the same thread for long-running command
+checks, GitHub polling, or review loops that should preserve thread context.
+Agent Maintainer should provide durable prompts and compact status commands that
+fit this automation model instead of forcing the model to poll manually.
+
 ## Scope
 
 ### 1. Cadence Waste Report
@@ -73,6 +79,11 @@ python -m agent_maintainer wait verifier <job-id>
 The exact command shape may change during implementation, but the invariant is
 stable: the model makes one tool call, and the command owns polling, backoff,
 timeout, final status, and compact failure output.
+
+Where Codex thread automations are available, Agent Maintainer should also
+document or generate a durable thread-automation prompt that wakes the thread and
+calls the quiet waiter/status command. This should hand off to the Codex app
+automation surface, not create a second custom scheduler.
 
 For GitHub Actions, the waiter should:
 
@@ -182,6 +193,17 @@ The command can update or report generated metadata such as:
 This should integrate with DocSync verifier/doctor later. initial roadmap item
 should stay small: define state file, retention/update rules, non-blocking
 report before making freshness hard gate.
+
+## Implementation Status
+
+- [x] Initial `events waste` command summarizing measured runtime-event
+  cadence waste signals and explicit measurement limitations.
+- [ ] Quiet waiter commands.
+- [ ] Async verification readiness.
+- [ ] Hook-visible readiness.
+- [ ] Profile overlap guardrails beyond guidance.
+- [ ] Edit discipline advisory signals.
+- [ ] Passive DocSync freshness metadata.
 
 ## Non-Goals
 

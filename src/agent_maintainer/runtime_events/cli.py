@@ -13,6 +13,11 @@ from agent_maintainer.runtime_events.summary import (
     render_summary_text,
     summarize_runtime_events,
 )
+from agent_maintainer.runtime_events.waste import (
+    RuntimeEventWasteReport,
+    render_waste_text,
+    summarize_runtime_waste,
+)
 
 JSON_FORMAT = "json"
 TEXT_FORMAT = "text"
@@ -27,7 +32,8 @@ def main(argv: list[str] | None = None) -> int:
         recent_limit=args.limit,
         slow_limit=args.limit,
     )
-    print(_render(args.command, args.format, summary))
+    waste_report = summarize_runtime_waste(read_result)
+    print(_render(args.command, args.format, summary, waste_report))
     return 0
 
 
@@ -82,10 +88,18 @@ def _subcommands() -> dict[str, str]:
         "failures": "Show recent failures and exceptions.",
         "slow-checks": "Show slowest check events.",
         "recent": "Show recent runtime events.",
+        "waste": "Show duplicated verification and cadence waste signals.",
     }
 
 
-def _render(command: str, output_format: str, summary: RuntimeEventSummary) -> str:
+def _render(
+    command: str,
+    output_format: str,
+    summary: RuntimeEventSummary,
+    waste_report: RuntimeEventWasteReport,
+) -> str:
+    if command == "waste":
+        return _render_waste(output_format, waste_report)
     if output_format == JSON_FORMAT:
         return summary.to_json()
     if command == "failures":
@@ -95,3 +109,12 @@ def _render(command: str, output_format: str, summary: RuntimeEventSummary) -> s
     if command == "recent":
         return render_rows_text("Runtime Event Recent", summary.recent)
     return render_summary_text(summary)
+
+
+def _render_waste(
+    output_format: str,
+    waste_report: RuntimeEventWasteReport,
+) -> str:
+    if output_format == JSON_FORMAT:
+        return waste_report.to_json()
+    return render_waste_text(waste_report)

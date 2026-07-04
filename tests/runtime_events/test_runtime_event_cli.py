@@ -33,6 +33,42 @@ def test_events_summary_json(tmp_path: Path, capsys: pytest.CaptureFixture[str])
     assert payload["hook_noops"] == 1
 
 
+def test_events_waste_text_reports_measured_signals(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Waste command reports compact cadence signals."""
+    write_event(tmp_path, {"event_name": "profile.finished", "profile": "full"})
+    write_event(tmp_path, {"event_name": "profile.finished", "profile": "full"})
+    write_event(tmp_path, {"event_name": "profile.finished", "profile": "ci"})
+
+    status = cli.main(["--events-dir", str(tmp_path), "waste"])
+
+    output = capsys.readouterr().out
+    assert status == 0
+    assert "Runtime Event Waste Report" in output
+    assert "repeated-profile" in output
+    assert "full-ci-overlap" in output
+    assert "Not yet measurable:" in output
+    assert "{" not in output
+
+
+def test_events_waste_json_reports_limitations(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Waste JSON reports signals and current measurement gaps."""
+    write_event(tmp_path, {"event_name": "verifier.fresh", "profile": "precommit"})
+    write_event(tmp_path, {"event_name": "verifier.fresh", "profile": "precommit"})
+
+    status = cli.main(["waste", "--events-dir", str(tmp_path), "--format", "json"])
+
+    payload = json.loads(capsys.readouterr().out)
+    assert status == 0
+    assert payload["signals"][0]["signal"] == "fresh-run-only"
+    assert "wait-poll counts require wait command runtime events" in payload["limitations"]
+
+
 def test_events_failures_handles_empty_dir(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
@@ -49,4 +85,5 @@ def test_events_failures_handles_empty_dir(
 def write_event(events_dir: Path, record: dict[str, object]) -> None:
     """Write one runtime event JSONL file."""
     event_file = events_dir / "events.jsonl"
-    event_file.write_text(f"{json.dumps(record)}\n", encoding="utf-8")
+    with event_file.open("a", encoding="utf-8") as handle:
+        handle.write(f"{json.dumps(record)}\n")
