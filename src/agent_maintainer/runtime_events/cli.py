@@ -98,23 +98,32 @@ def _render(
     summary: RuntimeEventSummary,
     waste_report: RuntimeEventWasteReport,
 ) -> str:
-    if command == "waste":
-        return _render_waste(output_format, waste_report)
     if output_format == JSON_FORMAT:
-        return summary.to_json()
+        return _render_json(command, summary, waste_report)
+    return _render_text(command, summary, waste_report)
+
+
+def _render_json(
+    command: str,
+    summary: RuntimeEventSummary,
+    waste_report: RuntimeEventWasteReport,
+) -> str:
+    if command == "waste":
+        return waste_report.to_json()
+    return summary.to_json()
+
+
+def _render_text(
+    command: str,
+    summary: RuntimeEventSummary,
+    waste_report: RuntimeEventWasteReport,
+) -> str:
     if command == "failures":
         return render_rows_text("Runtime Event Failures", summary.failures)
     if command == "slow-checks":
         return render_rows_text("Runtime Event Slow Checks", summary.slow_checks)
     if command == "recent":
         return render_rows_text("Runtime Event Recent", summary.recent)
+    if command == "waste":
+        return render_waste_text(waste_report)
     return render_summary_text(summary)
-
-
-def _render_waste(
-    output_format: str,
-    waste_report: RuntimeEventWasteReport,
-) -> str:
-    if output_format == JSON_FORMAT:
-        return waste_report.to_json()
-    return render_waste_text(waste_report)

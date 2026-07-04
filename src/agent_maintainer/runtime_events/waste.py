@@ -9,7 +9,7 @@ from typing import Any
 
 from agent_maintainer.runtime_events.read import RuntimeEventReadResult
 
-HEAVY_PROFILES = frozenset({"full", "ci", "security", "manual"})
+HEAVY_PROFILES = frozenset(("full", "ci", "security", "manual"))
 MIN_HEAVY_PROFILE_OVERLAP = 3
 MEASUREMENT_LIMITATIONS = (
     "wait-poll counts require wait command runtime events",

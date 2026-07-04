@@ -47,6 +47,7 @@ def test_events_waste_text_reports_measured_signals(
     output = capsys.readouterr().out
     assert status == 0
     assert "Runtime Event Waste Report" in output
+    assert "Measured signals:" in output
     assert "repeated-profile" in output
     assert "full-ci-overlap" in output
     assert "Not yet measurable:" in output
