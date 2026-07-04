@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from agent_context.pack_rendering import next_action_commands, render_pack_pointer
+from agent_context.next_actions import next_action_commands
+from agent_context.pack_rendering import render_pack_pointer
 
 
 def test_next_action_prefers_exact_file_line_before_broad_fallback() -> None:
