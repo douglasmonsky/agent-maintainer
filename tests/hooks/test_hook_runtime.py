@@ -72,6 +72,7 @@ def test_runtime_noops_without_repo_opt_in(
 
     assert status == 0
     assert not (tmp_path / ".verify-logs").exists()
+    assert not (tmp_path / ".events").exists()
 
 
 def test_codex_runtime_noops_without_repo_opt_in(
@@ -96,6 +97,7 @@ def test_codex_runtime_noops_without_repo_opt_in(
     assert status == 0
     assert capsys.readouterr().out == ""
     assert not (tmp_path / ".verify-logs").exists()
+    assert not (tmp_path / ".events").exists()
 
 
 def test_discover_repo_root_falls_back_without_git(

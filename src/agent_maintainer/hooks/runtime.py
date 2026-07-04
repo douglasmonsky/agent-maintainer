@@ -7,12 +7,12 @@ import json
 import shutil
 import subprocess  # nosec B404
 import sys
-import time
 from pathlib import Path
 
 from agent_client_hooks import constants as hook_constants
 from agent_maintainer.hooks import audit as hook_audit
 from agent_maintainer.hooks import context as hook_context
+from agent_maintainer.hooks.runtime_eventing import HookRuntimeEvents
 from agent_maintainer.hooks.subprocess_runner import run_verifier_bounded
 
 CODEX_PLATFORM = hook_constants.CODEX_PLATFORM
@@ -50,17 +50,29 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
     """Run Agent Maintainer verification for one hook event."""
 
     payload = read_hook_payload()
-    if is_recursive_stop(event, payload):
-        return emit_continue()
-
     repo_root = repo_root.resolve()
     if not maintainer_configured(repo_root):
         return emit_success(event)
 
     started_at = hook_audit.utc_timestamp()
-    started = time.monotonic()
+    started = hook_audit.monotonic_timestamp()
+    runtime_events = HookRuntimeEvents.create(
+        repo_root,
+        platform=platform,
+        event=event,
+        profile=profile,
+    )
+    runtime_events.invoked(repo_configured=True)
+    if is_recursive_stop(event, payload):
+        runtime_events.finished(
+            status="recursive_noop",
+            exit_code=0,
+            duration_seconds=hook_audit.duration_since(started),
+        )
+        return emit_continue()
     if not verifier_available(repo_root):
         expected_package = repo_root / "src" / "agent_maintainer"
+        duration_seconds = hook_audit.duration_since(started)
         hook_audit.record_hook_result(
             repo_root,
             hook_audit.HookAuditRecord(
@@ -72,9 +84,14 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
                 exit_code=None,
                 started_at=started_at,
                 ended_at=hook_audit.utc_timestamp(),
-                duration_seconds=hook_audit.duration_since(started),
+                duration_seconds=duration_seconds,
                 reason="missing verifier",
             ),
+        )
+        runtime_events.finished(
+            status="missing_verifier",
+            exit_code=None,
+            duration_seconds=duration_seconds,
         )
         return emit_block(
             event=event,
@@ -88,7 +105,12 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
         )
 
     command = verifier_command(repo_root, profile)
-    result = run_verifier_bounded(command, repo_root)
+    try:
+        result = run_verifier_bounded(command, repo_root)
+    except Exception as exc:
+        runtime_events.exception(exc, duration_seconds=hook_audit.duration_since(started))
+        raise
+    duration_seconds = hook_audit.duration_since(started)
     hook_audit.record_hook_result(
         repo_root,
         hook_audit.HookAuditRecord(
@@ -100,8 +122,13 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
             exit_code=result.returncode,
             started_at=started_at,
             ended_at=hook_audit.utc_timestamp(),
-            duration_seconds=hook_audit.duration_since(started),
+            duration_seconds=duration_seconds,
         ),
+    )
+    runtime_events.finished(
+        status=hook_audit.status_for_exit(result.returncode),
+        exit_code=result.returncode,
+        duration_seconds=duration_seconds,
     )
     if result.returncode == 0:
         return emit_success(event)

@@ -59,6 +59,12 @@ def utc_timestamp() -> str:
     return datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
+def monotonic_timestamp() -> float:
+    """Return monotonic timestamp for hook duration calculations."""
+
+    return time.monotonic()
+
+
 def duration_since(started_at: float) -> float:
     """Return elapsed seconds from a monotonic timestamp."""
 
