@@ -6,9 +6,12 @@ import re
 from pathlib import Path
 
 ROADMAP_ROOT = Path("docs/roadmap")
+ACTIVE_ROADMAP = Path("docs/ROADMAP.md")
+ROADMAP_ARCHIVE = ROADMAP_ROOT / "archive"
 ROADMAP_INDEX = ROADMAP_ROOT / "full-roadmap-blueprint.md"
 ROADMAP_OVERVIEW = ROADMAP_ROOT / "overview.md"
 PHASES_DIR = ROADMAP_ROOT / "phases"
+MAX_ACTIVE_ROADMAP_LINES = 180
 MAX_INDEX_LINES = 160
 MAX_PHASE_LINES = 500
 MIN_PHASE_FILES = 50
@@ -40,6 +43,22 @@ def test_roadmap_index_stays_small_and_links_split_specs() -> None:
 
     for target in markdown_links(text):
         assert (ROADMAP_ROOT / target).exists(), target
+
+
+def test_active_roadmap_stays_small_and_links_archive_buckets() -> None:
+    """Active roadmap stays focused and points to completed-history buckets."""
+
+    text = ACTIVE_ROADMAP.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    archive_text = (ROADMAP_ARCHIVE / "README.md").read_text(encoding="utf-8")
+
+    assert len(lines) <= MAX_ACTIVE_ROADMAP_LINES
+    assert "Completed Phase Archive" in text
+    assert "Phase 149: DocSync Verifier Integration Repair Facts" in text
+    assert "## Completed: DocSync Foundation" not in text
+    for bucket in sorted(ROADMAP_ARCHIVE.glob("completed-phases-*.md")):
+        assert f"(roadmap/archive/{bucket.name})" in text, bucket.name
+        assert f"({bucket.name})" in archive_text, bucket.name
 
 
 def test_roadmap_overview_describes_current_state() -> None:
