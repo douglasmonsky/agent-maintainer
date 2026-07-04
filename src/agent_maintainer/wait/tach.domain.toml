@@ -1,0 +1,28 @@
+# Tach domain contract for agent_maintainer.wait.
+# Wait adapters own polling for external work and emit compact final results.
+
+[root]
+
+depends_on = []
+
+
+[[modules]]
+
+path = "cli"
+depends_on = [
+  "github",
+]
+
+
+[[modules]]
+
+path = "github"
+depends_on = [
+  "models",
+]
+
+
+[[modules]]
+
+path = "models"
+depends_on = []
