@@ -102,28 +102,29 @@ For GitHub Actions, the waiter should:
 
 ### 3. Async Verification Readiness
 
-Design a local asynchronous verification path without requiring client-specific
+Design local asynchronous verification path without requiring client-specific
 magic first:
 
 ```bash
 python -m agent_maintainer verify --profile full --async
-python -m agent_maintainer wait verifier <job-id>
-python -m agent_maintainer verify status <job-id>
+python -m agent_maintainer wait verifier <run-id>
 ```
 
-The final command names are implementation details; the needed behavior is:
+The command names are implementation details; needed behavior is:
 
-- background verifier jobs write a small state file with job id, profile,
-  fingerprint, started time, status, and final run id;
-- readiness status is machine-readable;
+- background verifier jobs write a small state file with run id, profile,
+  fingerprint, started time, process id, command, stdout, and stderr;
+- foreground wait follows the same run id used by the verifier manifest;
 - completed jobs return the same compact repair capsule as foreground verify;
 - changed repo state invalidates or labels the job result stale;
 - retention prevents job-state buildup.
 
 This status protocol should become the shared source for checks launched by
-manual commands and hooks. If a hook starts or observes verification, a
-later manual command should wait on that same job when repo state still
-matches instead of launching duplicate work.
+manual commands and hooks. The abstraction boundary is intentionally small:
+verifier execution owns async launch state, while `agent_maintainer.wait` owns
+polling and compact repair-capsule rendering. If a hook starts or observes
+verification, a later manual command should wait on the same job when repo state
+still matches instead of launching duplicate work.
 
 ### 4. Hook-Visible Readiness
 
@@ -213,7 +214,7 @@ report before making freshness hard gate.
   `python -m agent_maintainer wait github-run <run-id>`.
 - [x] Initial local verifier artifact waiter:
   `python -m agent_maintainer wait verifier <run-id>`.
-- [ ] Async verification readiness.
+- [x] Async verification readiness.
 - [ ] Hook-visible readiness.
 - [ ] Profile overlap guardrails beyond guidance.
 - [ ] Edit discipline advisory signals.

@@ -22,7 +22,7 @@ from pathlib import Path
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core.args import apply_cli_overrides, parse_args
 from agent_maintainer.core.config import load_config
-from agent_maintainer.verify import runtime_eventing
+from agent_maintainer.verify import async_jobs, runtime_eventing
 from agent_maintainer.verify.locking import VerificationLock, build_fingerprint
 from agent_maintainer.verify.result_summary import (
     apply_optional_skip_policy,
@@ -51,7 +51,16 @@ def main(argv: list[str]) -> int:
         compare_branch=args.compare_branch,
         staged=args.staged,
     )
-    run_id = build_run_id(args.profile, fingerprint.to_dict())
+    run_id = args.run_id or build_run_id(args.profile, fingerprint.to_dict())
+    if args.async_verify:
+        return start_async_verifier(
+            args.profile,
+            argv,
+            log_dir,
+            fingerprint.to_dict(),
+            run_id,
+        )
+
     profile_events = runtime_eventing.ProfileRuntimeEvents.create(
         config,
         profile=args.profile,
@@ -131,6 +140,25 @@ def print_reused_result(profile: str, log_dir: Path, exit_code: int) -> int:
     print(f"FAIL: reused verifier result for same repository state. See {last_failure}.")
     print(f"Retry: python3 -m agent_maintainer verify --profile {profile} --force")
     return exit_code
+
+
+def start_async_verifier(
+    profile: str,
+    argv: list[str],
+    log_dir: Path,
+    fingerprint: dict[str, object],
+    run_id: str,
+) -> int:
+    """Start background verifier and print wait-ready capsule."""
+    request = async_jobs.AsyncVerifierRequest(
+        argv=argv,
+        profile=profile,
+        run_id=run_id,
+        log_dir=log_dir,
+        fingerprint=fingerprint,
+    )
+    print(async_jobs.render_async_launch(async_jobs.launch_async_verifier(request)))
+    return 0
 
 
 if __name__ == "__main__":
