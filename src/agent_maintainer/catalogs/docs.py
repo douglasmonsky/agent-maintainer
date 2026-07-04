@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from glob import glob
 from pathlib import Path
 
@@ -40,6 +41,8 @@ CHECK_JSONSCHEMA_SKIP_REASON = (
     "disabled by default; enable with AGENT_MAINTAINER_ENABLE_CHECK_JSONSCHEMA=1 or "
     "[tool.agent_maintainer].enable_check_jsonschema = true"
 )
+DOCSYNC_TRACE_PATH = ".docsync/trace.yml"
+DOCSYNC_REPORT_PATH = ".docsync/out/report.json"
 
 
 # docsync:evidence.start evidence.readme.docs_config_checks
@@ -50,6 +53,22 @@ def docs_config_checks(config: MaintainerConfig) -> list[models.Check]:
         yamllint_check(config),
         taplo_check(config),
         check_jsonschema_check(config),
+    ]
+
+
+def docsync_checks(base_ref: str) -> list[models.Check]:
+    """Build DocSync freshness check when repository has a trace graph."""
+
+    if not Path(DOCSYNC_TRACE_PATH).exists():
+        return []
+    return [
+        models.Check(
+            "docsync",
+            [sys.executable, "-m", "docsync", "check", "--base", base_ref],
+            models.LOCAL_GATE_PROFILES,
+            required_paths=(DOCSYNC_TRACE_PATH,),
+            artifact_paths=(DOCSYNC_REPORT_PATH,),
+        )
     ]
 
 
