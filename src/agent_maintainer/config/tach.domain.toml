@@ -34,9 +34,14 @@ depends_on = [
 [[modules]]
 path = "schema"
 depends_on = [
+  "schema_fields",
   "structure_defaults",
   "workspaces",
 ]
+
+[[modules]]
+path = "schema_fields"
+depends_on = []
 
 [[modules]]
 path = "structure_defaults"

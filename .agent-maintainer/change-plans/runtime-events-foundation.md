@@ -1,0 +1,73 @@
++++
+id = "runtime-events-foundation"
+kind = "mechanical-migration"
+status = "active"
+base_ref = "origin/main"
+expires = 2026-07-17
+allowed_paths = ["src/**", "tests/**", "docs/**", "pyproject.toml", ".agent-maintainer/change-plans/**"]
+forbidden_paths = ["config/prod/**", ".env", ".env.*"]
+max_changed_files = 120
+max_changed_lines = 12000
+allow_source_without_test_change = false
+requires_tests = true
+requires_full_verify = true
+ratchet_targets = []
++++
+# Cohesive Change Plan: runtime-events-foundation
+
+## Why this change intentionally large
+
+Runtime event dogfooding needs a cohesive foundation: config fields, local JSONL
+event model, redaction, sinks, verifier profile lifecycle instrumentation,
+tests, Tach ownership, and an ADR. Splitting those into separate commits would
+leave partial runtime event plumbing that is either unconfigured, untested, or
+not architecture-owned.
+
+## Why this should not be split smaller
+
+The runtime event package is small, but it crosses the verifier and config
+boundaries by design. The schema inventory extraction is also part of this
+change because `schema.py` crossed the file-length source-line cap after adding
+the new config fields. Keeping the extraction with the config change prevents a
+known guard failure without weakening the guard or hiding the pressure.
+
+## What allowed to change
+
+- Runtime event config fields and environment loading.
+- Local runtime event model, redaction, JSONL sink, retention, and tests.
+- Verifier profile start/finish event emission.
+- Config schema inventory extraction needed to keep file-length compliance.
+- Tach domain files and ADR documenting the new boundaries.
+- Focused tests for runtime events, config loading, and verifier emission.
+
+## What must not change
+
+- No OpenTelemetry exporter, remote logging, or new logging dependency.
+- No raw stdout, stderr, tracebacks, prompts, environment dumps, secrets, or
+  file contents in runtime event records.
+- No change to normal verifier summary wording beyond writing local events.
+- No downstream default enablement; only this repository dogfoods the feature.
+- No relaxing file-length, architecture, or change-budget thresholds.
+
+## Verification plan
+
+- Focused runtime event/config/verifier tests.
+- Ruff on touched source and tests.
+- `tach check --exact`.
+- `python -m agent_maintainer guidance --check`.
+- `python -m agent_maintainer change-plan check`.
+- Final verifier profiles before merge: `precommit`, `full`, `ci`, `security`,
+  and `manual`.
+
+## Rollback plan
+
+Remove the runtime event config fields, runtime event package, verifier event
+emission calls, and the self-dogfood config entries. Keep or separately revert
+the schema inventory extraction depending on whether `schema.py` remains under
+the file-length cap after removing the runtime event fields.
+
+## Follow-up ratchet work
+
+Later phases should add check-level, hook-level, artifact-retention, and
+dogfood-quality summary events before considering optional OpenTelemetry or
+`structlog` integrations.

@@ -1084,7 +1084,7 @@ Completed work:
 
 - [x] Phase 141: Provider-Neutral File Baseline Controls
 
-## Planned: Runtime Telemetry And Dogfood Logging
+## Completed: Runtime Telemetry And Dogfood Logging
 
 Design a standards-aligned logging and telemetry path so Agent Maintainer can
 debug dogfooding quality without making normal agent output noisier.
@@ -1097,9 +1097,9 @@ Detailed spec:
 
 [`docs/roadmap/runtime-telemetry-dogfood-logging.md`](roadmap/runtime-telemetry-dogfood-logging.md)
 
-Planned work:
+Completed work:
 
-- [ ] Phase 142: Runtime Telemetry And Dogfood Logging
+- [x] Phase 142: Runtime Telemetry And Dogfood Logging
 
 ## Completed: DocSync Explicit Object End Markers
 
@@ -1113,6 +1113,19 @@ Detailed scope:
 Completed work:
 
 - [x] Phase 143: DocSync Explicit Object End Markers
+
+## Planned: Runtime Event Foundation
+
+Implement the first local structured runtime event foundation without adding
+OpenTelemetry or making normal verifier output noisier.
+
+Detailed scope:
+
+[`docs/roadmap/phases/phase-144-runtime-event-foundation.md`](roadmap/phases/phase-144-runtime-event-foundation.md)
+
+Planned work:
+
+- [ ] Phase 144: Runtime Event Foundation
 
 ## Future Work
 

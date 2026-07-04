@@ -348,6 +348,11 @@ check_jsonschema_args = [
   ".github/workflows/verify.yml",
   ".github/workflows/publish.yml",
 ]
+runtime_events_enabled = true
+runtime_events_dir = ".verify-logs/events"
+runtime_event_history_limit = 14
+runtime_event_level = "info"
+runtime_events_include_debug = false
 
 [tool.agent_maintainer.file_baselines]
 enabled = true

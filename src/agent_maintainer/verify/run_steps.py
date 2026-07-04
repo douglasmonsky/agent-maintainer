@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 from agent_maintainer.core.check_run import utc_timestamp
@@ -58,7 +59,7 @@ def emit_ref_failure(failures: list[str], log_dir: Path) -> CheckResult:
 
 
 def collect_results(
-    args,
+    args: argparse.Namespace,
     config: MaintainerConfig,
     selected: list[Check],
     log_dir: Path | None = None,
@@ -83,7 +84,7 @@ def collect_results(
 
 
 def write_artifacts_if_enabled(
-    args,
+    args: argparse.Namespace,
     config: MaintainerConfig,
     log_dir: Path,
     results: list[CheckResult],
