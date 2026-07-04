@@ -1,22 +1,27 @@
-"""Detect local runtime-event signals that waste agent time or tokens."""
+"""Detect local runtime-event signals that waste agent time and tokens."""
 
 from __future__ import annotations
 
 import json
 from collections import Counter
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from agent_maintainer.runtime_events.read import RuntimeEventReadResult
 
 HEAVY_PROFILES = frozenset(("full", "ci", "security", "manual"))
 MIN_HEAVY_PROFILE_OVERLAP = 3
+GENERATED_SIGNAL_LIMIT = 10
 MEASUREMENT_LIMITATIONS = (
     "wait-poll counts require wait command runtime events",
     "agent narration patterns require aggregate conversation telemetry",
-    "heredoc edit patterns require command-line event attributes",
+    "heredoc and chained-shell edit patterns require command-shape events",
     "same-state duplication requires verifier fingerprint events",
 )
+GENERATED_DIR_NAMES = frozenset(("__pycache__", "mutants", ".semgrep"))
+GENERATED_SUFFIXES = (".pyc",)
+DUPLICATE_NAME_MARKERS = (" 2", " copy")
 
 
 def _empty_rows() -> list[dict[str, object]]:
@@ -25,7 +30,7 @@ def _empty_rows() -> list[dict[str, object]]:
 
 @dataclass(frozen=True)
 class RuntimeEventWasteReport:
-    """Compact report of measurable and not-yet-measurable cadence waste."""
+    """Compact measurable and not-yet-measurable cadence waste."""
 
     files_read: int
     total_events: int
@@ -48,7 +53,11 @@ class RuntimeEventWasteReport:
         return json.dumps(self.to_payload(), indent=2, sort_keys=True)
 
 
-def summarize_runtime_waste(read_result: RuntimeEventReadResult) -> RuntimeEventWasteReport:
+def summarize_runtime_waste(
+    read_result: RuntimeEventReadResult,
+    *,
+    repo_root: Path | None = None,
+) -> RuntimeEventWasteReport:
     """Return compact cadence-waste signals from local runtime events."""
     records = read_result.records
     signals: list[dict[str, object]] = []
@@ -56,6 +65,8 @@ def summarize_runtime_waste(read_result: RuntimeEventReadResult) -> RuntimeEvent
     signals.extend(_profile_overlap_signals(records))
     signals.extend(_fresh_reuse_signal(records))
     signals.extend(_failed_command_signal(records))
+    if repo_root is not None:
+        signals.extend(_generated_artifact_signals(repo_root))
     return RuntimeEventWasteReport(
         files_read=read_result.files_read,
         total_events=len(records),
@@ -65,7 +76,7 @@ def summarize_runtime_waste(read_result: RuntimeEventReadResult) -> RuntimeEvent
 
 
 def render_waste_text(report: RuntimeEventWasteReport) -> str:
-    """Render a compact waste report without raw event contents."""
+    """Render compact text cadence-waste report."""
     lines = [
         "Runtime Event Waste Report",
         f"Events: {report.total_events} across {report.files_read} file(s)",
@@ -75,25 +86,21 @@ def render_waste_text(report: RuntimeEventWasteReport) -> str:
     if report.signals:
         lines.extend(f"- {_signal_text(signal)}" for signal in report.signals)
     else:
-        lines.append("- none")
+        lines.append("- none measured")
     lines.append("Not yet measurable:")
     lines.extend(f"- {limitation}" for limitation in report.limitations)
     return "\n".join(lines)
 
 
 def _repeated_profile_signals(records: list[dict[str, Any]]) -> list[dict[str, object]]:
-    profile_counts = Counter(
-        str(record.get("profile"))
-        for record in records
-        if record.get("event_name") == "profile.finished" and record.get("profile")
-    )
+    profile_counts = _profile_counts(records)
     return [
         {
             "signal": "repeated-profile",
             "profile": profile,
             "count": count,
             "severity": "warning",
-            "message": f"{profile} ran {count} times in the sampled event window",
+            "message": f"{profile} ran {count} times in sampled event window",
         }
         for profile, count in sorted(profile_counts.items())
         if count > 1
@@ -114,7 +121,7 @@ def _profile_overlap_signals(records: list[dict[str, Any]]) -> list[dict[str, ob
         signals.append(
             _overlap_signal(
                 "security-manual-overlap",
-                "security and manual both ran; reserve this for releases or gate changes",
+                "security and manual both ran; reserve for releases or gate changes",
             ),
         )
     heavy_count = sum(1 for profile in HEAVY_PROFILES if profile_counts[profile])
@@ -122,7 +129,7 @@ def _profile_overlap_signals(records: list[dict[str, Any]]) -> list[dict[str, ob
         signals.append(
             _overlap_signal(
                 "three-heavy-profiles",
-                f"{heavy_count} heavy profiles ran in the sampled event window",
+                f"{heavy_count} heavy profiles ran in sampled event window",
             ),
         )
     return signals
@@ -157,11 +164,63 @@ def _failed_command_signal(records: list[dict[str, Any]]) -> list[dict[str, obje
             "command": command,
             "count": count,
             "severity": "warning",
-            "message": f"{command} failed {count} times in the sampled event window",
+            "message": f"{command} failed {count} times in sampled event window",
         }
         for command, count in sorted(failed_commands.items())
         if count > 1
     ]
+
+
+def _generated_artifact_signals(repo_root: Path) -> list[dict[str, object]]:
+    paths = _generated_artifact_paths(repo_root)
+    if not paths:
+        return []
+    return [
+        {
+            "signal": "generated-artifact-debris",
+            "severity": "warning",
+            "count": len(paths),
+            "message": (
+                "generated/cache artifacts found; clean them instead of letting "
+                "agents read or commit them"
+            ),
+            "paths": [path.as_posix() for path in paths[:GENERATED_SIGNAL_LIMIT]],
+        },
+    ]
+
+
+def _generated_artifact_paths(repo_root: Path) -> list[Path]:
+    ignored_dirs = {".git", ".venv", "venv", "node_modules", ".verify-logs"}
+    matches: list[Path] = []
+    for path in repo_root.rglob("*"):
+        relative = path.relative_to(repo_root)
+        if _ignored_path(relative, ignored_dirs):
+            continue
+        if _generated_artifact_path(path, relative):
+            matches.append(relative)
+    return sorted(matches)
+
+
+def _ignored_path(path: Path, ignored_dirs: set[str]) -> bool:
+    return any(part in ignored_dirs for part in path.parts)
+
+
+def _generated_artifact_path(path: Path, relative: Path) -> bool:
+    if path.is_dir():
+        return path.name in GENERATED_DIR_NAMES
+    if _inside_generated_dir(relative):
+        return False
+    return path.is_file() and _generated_file_name(path.name)
+
+
+def _inside_generated_dir(path: Path) -> bool:
+    return any(part in GENERATED_DIR_NAMES for part in path.parts[:-1])
+
+
+def _generated_file_name(name: str) -> bool:
+    return name.endswith(GENERATED_SUFFIXES) or any(
+        marker in name for marker in DUPLICATE_NAME_MARKERS
+    )
 
 
 def _profile_counts(records: list[dict[str, Any]]) -> Counter[str]:

@@ -6,7 +6,8 @@ into working context repeatedly. It should tell a coding agent what to do now:
 which roots matter, which limits block work, which gates are active, and which
 commands prove the task.
 
-This document is for humans who want the longer explanation.
+This document is for humans who want a longer explanation. Agents should not
+read it during normal coding unless they are changing guidance behavior.
 
 ## How The Sidecar Is Generated
 
@@ -44,10 +45,11 @@ Disabled checks are omitted. Detailed gate inventories belong in
 Agent Maintainer should reduce repair-loop noise, not become another source of
 context waste. Agent-facing output should stay summary-first:
 
-- check current branch/worktree state before edits, but do not re-read long
-  guidance files unless starting fresh, context was compacted, branch changed,
-  or guidance/config files changed;
-- if guidance was already read in current unchanged context, use targeted `rg`
+- check current branch/worktree state once at turn start and before staging,
+  but do not re-read long guidance files unless starting fresh, context was
+  compacted, or guidance/config files changed;
+- if guidance was already read in the current unchanged context, use targeted
+  `rg` or a narrow excerpt for the specific rule needed;
   or a narrow excerpt for the specific rule needed;
 
 - completed check, actionable failure, or material plan change;
@@ -74,7 +76,8 @@ proportional to the change:
   `precommit` for the final same-state tree; run
   `python3 -m agent_maintainer verify --profile precommit` only when hooks are
   unavailable, bypassed, or a failure needs manual reproduction;
-- before PR or merge: run one broad local profile, usually `full`;
+- before PR or merge: after a coherent final state, run one broad local profile,
+  usually `full`;
 - use `ci` locally instead of `full` when diff/base-ref handling, CI profile,
   workflow behavior, or verifier profile selection changed;
 - run both `full` and `ci` only when verifier/profile/CI-diff behavior is under

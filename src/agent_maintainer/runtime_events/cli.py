@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
         recent_limit=args.limit,
         slow_limit=args.limit,
     )
-    waste_report = summarize_runtime_waste(read_result)
+    waste_report = summarize_runtime_waste(read_result, repo_root=Path.cwd())
     print(_render(args.command, args.format, summary, waste_report))
     return 0
 
