@@ -72,6 +72,7 @@ changed_line_warn = 400
     )
 
 
+# docsync:evidence.start evidence.file_baselines.provider_neutral
 def test_report_flags_generic_groups(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -164,6 +165,9 @@ max_physical_lines = 1
     assert payload["enabled"] is True
     assert payload["groups"][0]["name"] == DOCS_GROUP
     assert payload["findings"][0]["kind"] == "physical-lines"
+
+
+# docsync:evidence.end evidence.file_baselines.provider_neutral
 
 
 def test_text_renders_findings() -> None:

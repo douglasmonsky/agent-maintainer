@@ -4,7 +4,7 @@ kind = "mechanical-migration"
 status = "active"
 base_ref = "origin/main"
 expires = 2026-07-17
-allowed_paths = ["src/**", "tests/**", "docs/**", "pyproject.toml", ".agent-maintainer/change-plans/**"]
+allowed_paths = ["src/**", "tests/**", "docs/**", "pyproject.toml", ".docsync/**", ".agent-maintainer/change-plans/**"]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 120
 max_changed_lines = 12000
@@ -39,6 +39,8 @@ known guard failure without weakening the guard or hiding the pressure.
 - Config schema inventory extraction needed to keep file-length compliance.
 - Tach domain files and ADR documenting the new boundaries.
 - Focused tests for runtime events, config loading, and verifier emission.
+- Future-Call ROI roadmap planning that depends on the runtime event contract.
+- DocSync trace entries and evidence anchors for the new roadmap track.
 
 ## What must not change
 
@@ -71,3 +73,5 @@ the file-length cap after removing the runtime event fields.
 Later phases should add check-level, hook-level, artifact-retention, and
 dogfood-quality summary events before considering optional OpenTelemetry or
 `structlog` integrations.
+After Phase 145 completes, implement the Future-Call ROI Acceleration
+track one phase per PR starting with runtime-event intelligence summary commands.

@@ -23,6 +23,7 @@ EVENT_DURATION_MS = 123
 EVENT_STREAM_ID = "run-1"
 
 
+# docsync:evidence.start evidence.runtime_events.foundation
 def test_runtime_event_record_is_compact_and_sanitized() -> None:
     """Serialized events include stable fields and sanitized attributes."""
     event = RuntimeEvent(
@@ -61,6 +62,9 @@ def test_runtime_event_record_is_compact_and_sanitized() -> None:
     assert record["attributes"]["stderr"] == OMITTED_RAW_VALUE
     assert record["attributes"]["token"] == REDACTED
     assert "abcdefghijklmnopqrstuvwxyz" not in record["attributes"]["message"]
+
+
+# docsync:evidence.end evidence.runtime_events.foundation
 
 
 def test_runtime_event_record_normalizes_naive_timestamp_to_utc() -> None:

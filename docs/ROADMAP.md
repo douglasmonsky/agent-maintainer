@@ -72,13 +72,16 @@ Completed foundation capabilities:
 - `.docsync/config.yml`, `.docsync/trace.yml`, `.docsync/schema.json`,
   `.docsync/attestations/`, and `.docsync/out/` exist with generated output
   kept out of source truth.
+
 - `AGENTS.md` records DocSync package-boundary rules.
 - Evidence regions use `docsync:evidence.start` and `docsync:evidence.end`.
 - Markdown objects use hidden `<!-- docsync:object ... -->` identifiers.
 - DocSync validates the trace graph, indexes evidence, maps changed evidence
   to documentation claims, supports attestations, and generates review packets.
+
 - CLI commands include `docsync index`, `docsync check`, `docsync prompt`,
   `docsync attest`, and `docsync doctor`.
+
 - Boundary tests keep DocSync extractable and independent from
   `agent_maintainer` and `archguard`.
 
@@ -154,6 +157,7 @@ Completed work:
 - [x] Phase 43: Context Package Boundary Split
       Completed in PR #116. The remaining work after that PR is ordinary
       domain-specific hardening, not another boundary-split phase.
+
 - [x] Phase 44: Hook Output Invariant Tests
 - [x] Phase 45: Release-Check Ergonomics
 - [x] Phase 46: Release-State Drift Check
@@ -165,18 +169,24 @@ context noise while preserving strict verification. Completed work:
 
 - Commit current context-boundary and verifier-artifact refactor as an early
   milestone after cleanup.
+
 - Keep agent-facing verifier output summary-first: pass/fail, profile, run id,
   failed checks, exact next commands.
+
 - Keep raw logs and long diagnostics in run-scoped `.verify-logs/runs/<run-id>/`
   artifacts instead of chat output.
+
 - Document agent narration discipline: no routine waiting chatter, no narrating
   every focused rerun, batch check results, and use `apply_patch` for manual
   edits.
+
 - Encode verification cadence: focused checks during the edit loop, `precommit`
   before commit, full profile set once before PR/merge, release checks only for
   release work.
+
 - Add dogfood drift detection so this repository verifies against local
   `src/agent_maintainer` code, not stale installed package code.
+
 - Preserve configured-repo-only hooks: global hook install may exist, but hooks
   no-op outside repos with `[tool.agent_maintainer]`.
 
@@ -199,19 +209,26 @@ Completed work:
 
 - Ship the current Mutmut target-ratchet branch as the first behavior
   milestone.
+
 - Mature mutation testing beyond target count: better Mutmut config, result
   ratchets, and an advisory deep sweep.
+
 - Keep verifier output summary-first: pass/fail, profile, run id, duration,
   failed checks, exact next commands.
+
 - Keep raw logs and long diagnostics in run-scoped
   `.verify-logs/runs/<run-id>/` artifacts instead of chat or hook transcripts.
+
 - Encode verification cadence: focused checks during edit loop, `precommit`
   before commit, full profile set once before PR/merge, release checks only for
   release work.
+
 - Add dogfood drift detection so this checkout verifies local
   `src/agent_maintainer` code, not stale installed package code.
+
 - Preserve configured-repo-only hooks: global hook install may exist, but hooks
   no-op outside repos with `[tool.agent_maintainer]`.
+
 - Slim generated agent guidance and move detailed gate explanation into
   human-readable docs.
 
@@ -234,12 +251,16 @@ Acceptance criteria for this sequence:
 
 - Targeted Mutmut remains the blocking mutation gate; broad sweeps are advisory
   until runtime and signal quality are proven.
+
 - Downstream defaults remain conservative; this repository dogfoods every
   relevant enabled feature.
+
 - Verifier and hook output stays compact, with detailed evidence linked by run
   id.
+
 - Existing CLI and profiles remain valid. No new scanners, old-name
   compatibility, or Headroom integration are included in this pass.
+
 - Each behavior phase has focused tests, relevant docs, local verification, PR
   CI, merge, and post-merge `main` CI confirmation.
 
@@ -252,6 +273,7 @@ Current advisory sweep findings remain non-blocking backlog:
 
 - `src/agent_maintainer/core/reporting.py`: reduced from 124 to 39 survivors,
   not promotion-ready.
+
 - `src/agent_maintainer/doctor/cli.py`: reduced from 270 to 11 survivors, not
   promotion-ready.
 
@@ -260,6 +282,7 @@ Completed work:
 - Reduce `core/reporting.py` survivors first and document before/after counts.
 - Refactor `doctor/cli.py` before survivor-chasing if survivor clusters show CLI
   plumbing rather than behavior contracts.
+
 - Keep current blocking Mutmut targets unchanged until advisory candidates are
   promotion-ready.
 
@@ -278,11 +301,14 @@ Completed work:
 
 - README emphasizes package-first onboarding, fresh strict trial, supported
   scans, ratchets, setup advisor, debt score, and just-in-time links.
+
 - `docs/supported-scans-and-agent-use.md` documents scan/profile/agent usage.
 - `python3 -m agent_maintainer assess setup` recommends track, preset, optional
   gates, and follow-up AI prompts from local repo evidence.
+
 - `python3 -m agent_maintainer assess debt` writes transparent advisory score
   artifacts and the HTML report renders the score when present.
+
 - The old HTML graphics render pipeline was removed; README keeps static PNG
   assets without adding image-generation tooling to the developer workflow.
 
@@ -1138,10 +1164,36 @@ Planned work:
 
 - [ ] Phase 145: Runtime Event Contract Expansion
 
+## Planned: Future-Call ROI Acceleration Track
+
+Agent Maintainer should convert local primitives into compounding leverage for future agent calls. This track prioritizes work by expected return on cost, quality, and speed: runtime-event intelligence, repair-fact coverage, surgical next actions, DocSync verifier integration, attention scoring, and a hermetic downstream task-broker incubator.
+Detailed scope:
+
+[`docs/roadmap/future-call-roi-acceleration.md`](roadmap/future-call-roi-acceleration.md)
+
+Planned work:
+
+- [ ] Phase 146: Runtime Event Intelligence Summary CLI
+- [ ] Phase 147: Repair-Fact Coverage Score
+- [ ] Phase 148: Surgical Context Expansion Ranking
+- [ ] Phase 149: DocSync Verifier Integration Repair Facts
+- [ ] Phase 150: Attention Ledger v0
+- [ ] Phase 151: Attention-Weighted Context Packs
+- [ ] Phase 152: Agent Task Broker Incubator Scaffold
+- [ ] Phase 153: Task Broker Handoff Result Protocol
+- [ ] Phase 154: Task Broker Locks And Worktree Planning
+- [ ] Phase 155: Claude Async Rewake Hook Option
+- [ ] Phase 156: Agent Maintainer MCP Surface v0
+- [ ] Phase 157: Context Recall Compaction Ledger v0
+- [ ] Phase 158: Local Observability Export Contract
+- [ ] Phase 159: Scoring Dataset Optimization Prep
+- [ ] Phase 160: ROI Loop Dogfood Case Study
+
 ## Future Work
 
 - Continue adding section-level DocSync claims as public docs materially change,
   especially where a claim can point to durable implementation or test evidence.
+
 - Avoid adding new ecosystems until TypeScript/JavaScript satisfies the
   promotion bar in
 

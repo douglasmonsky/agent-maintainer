@@ -6,6 +6,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 
 - [Mission, baseline, architecture target, execution rules](overview.md)
 - [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md)
+- [Future-Call ROI Acceleration Track](future-call-roi-acceleration.md)
 - [Final Definition Done](final-definition-of-done.md)
 
 ## Phases
@@ -140,9 +141,18 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 143 | [DocSync Explicit Object End Markers](phases/phase-143-docsync-explicit-object-end-markers.md) |
 | 144 | [Runtime Event Foundation](phases/phase-144-runtime-event-foundation.md) |
 | 145 | [Runtime Event Contract Expansion](phases/phase-145-runtime-event-contract-expansion.md) |
-
-## Future Work
-
-- [Future Work: External Case Studies and Measured Proof Harness](future-work/external-case-studies-and-measured-proof-harness.md)
-- [Future Work: Monorepo / Multi-Package Support](future-work/monorepo-multi-package-support.md)
-- [Future Work: Team Policy Templates](future-work/team-policy-templates.md)
+| 146 | [Runtime Event Intelligence Summary CLI](phases/phase-146-runtime-event-intelligence-summary.md) |
+| 147 | [Repair-Fact Coverage Score](phases/phase-147-repair-fact-coverage-score.md) |
+| 148 | [Surgical Context Expansion Ranking](phases/phase-148-surgical-context-expansion-ranking.md) |
+| 149 | [DocSync Verifier Integration Repair Facts](phases/phase-149-docsync-verifier-integration.md) |
+| 150 | [Attention Ledger v0](phases/phase-150-attention-ledger-v0.md) |
+| 151 | [Attention-Weighted Context Packs](phases/phase-151-attention-weighted-context-packs.md) |
+| 152 | [Agent Task Broker Incubator Scaffold](phases/phase-152-agent-task-broker-incubator.md) |
+| 153 | [Task Broker Handoff Result Protocol](phases/phase-153-task-broker-handoff-result-protocol.md) |
+| 154 | [Task Broker Locks And Worktree Planning](phases/phase-154-task-broker-locks-and-worktrees.md) |
+| 155 | [Claude Async Rewake Hook Option](phases/phase-155-claude-async-rewake-hook-option.md) |
+| 156 | [Agent Maintainer MCP Surface v0](phases/phase-156-agent-maintainer-mcp-surface-v0.md) |
+| 157 | [Context Recall Compaction Ledger v0](phases/phase-157-context-recall-compaction-ledger-v0.md) |
+| 158 | [Local Observability Export Contract](phases/phase-158-local-observability-export-contract.md) |
+| 159 | [Scoring Dataset Optimization Prep](phases/phase-159-scoring-dataset-optimization-prep.md) |
+| 160 | [ROI Loop Dogfood Case Study](phases/phase-160-roi-loop-dogfood-case-study.md) |

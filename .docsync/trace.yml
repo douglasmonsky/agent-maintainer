@@ -156,6 +156,11 @@ documents:
     path: docs/releases/0.1.0b5.md
     title: Agent Maintainer 0.1.0b5 Release Evidence
     audience: maintainers
+
+  docs.future_call_roi_acceleration:
+    path: docs/roadmap/future-call-roi-acceleration.md
+    title: Future-Call ROI Acceleration
+    audience: maintainers
 objects:
   docs.docsync_extraction.overview:
     document: docs.docsync_extraction
@@ -517,18 +522,35 @@ objects:
     heading:
       level: 1
       text: Agent Maintainer 0.1.0b5 Release Evidence
+
+  docs.future_call_roi_acceleration.overview:
+    document: docs.future_call_roi_acceleration
+    kind: heading_section
+    path: docs/roadmap/future-call-roi-acceleration.md
+    marker: docs.future_call_roi_acceleration.overview
+    heading:
+      level: 1
+      text: Future-Call ROI Acceleration Roadmap
 claims:
   claim.docsync.extractable_boundary:
     object: docs.docsync_extraction.overview
-    text: DocSync is an extractable sibling package with no dependencies on Agent
-      Maintainer or Archguard.
+    text: DocSync is an extractable sibling package with no dependencies on Agent Maintainer or Archguard.
     severity: high
     evidence:
-    - evidence.docsync.domain_contract
-    - evidence.docsync.boundary_test
+      - evidence.docsync.domain_contract
+      - evidence.docsync.boundary_test
     review:
       acceptable_attestation_reasons:
-      - internal_refactor_only
+        - internal_refactor_only
+  claim.docs.future_call_roi_ordering:
+    object: docs.future_call_roi_acceleration.overview
+    text: The Future-Call ROI track prioritizes runtime-event intelligence, repair-fact coverage, surgical expansion, DocSync verifier integration, attention scoring, and hermetic task-broker incubation around existing local primitives.
+    severity: medium
+    evidence:
+      - evidence.runtime_events.foundation
+      - evidence.context_safety.pointer_first_pack_tests
+      - evidence.docsync.explicit_evidence_scanner
+      - evidence.file_baselines.provider_neutral
   claim.docsync.trace_source_truth:
     object: docs.docsync_extraction.overview
     text: DocSync uses explicit evidence regions and rebuildable generated outputs
@@ -1273,4 +1295,17 @@ evidence:
     description: Cohesive change-plan fixture documents scoped large-change validation and verification commands.
     anchors:
       - path: examples/cohesive-change-plan/README.md
+        mode: explicit_region
+
+  evidence.runtime_events.foundation:
+    type: test
+    description: Runtime event foundation tests assert compact sanitized event records and bounded local event behavior.
+    anchors:
+      - path: tests/runtime_events/test_runtime_events.py
+        mode: explicit_region
+  evidence.file_baselines.provider_neutral:
+    type: test
+    description: Provider-neutral file baseline tests cover non-Python file groups such as TSX, docs, and config files.
+    anchors:
+      - path: tests/assess/test_file_baselines.py
         mode: explicit_region
