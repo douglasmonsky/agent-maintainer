@@ -83,8 +83,8 @@ verification.
 Repo-local wrappers use the checked-out source tree:
 
 ```bash
-python3 -m agent_maintainer verify --profile fast
-python3 -m agent_maintainer verify --profile precommit
+just verify-fast
+just verify-precommit
 ```
 
 User-level hooks call the installed console command:
