@@ -1,0 +1,16 @@
+version: 1
+attestations:
+- id: attest.20260704T223740Z.claim.readme.agent_repair_loop.9bc0761
+  claim: claim.readme.agent_repair_loop
+  doc_object: docs.readme.agent_loop
+  evidence:
+  - evidence.readme.command_registry
+  reason: CLI command registry gained attention command; linked documentation reviewed
+    and remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-04T22:37:40Z'
+  base: HEAD
+  head: 9bc0761
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:9044bfaf8aa2acc958caccdd74638a70d62e32fe9c45c3801c06d21593998941
+  statement: Reviewed changed evidence region. Documentation remains accurate.

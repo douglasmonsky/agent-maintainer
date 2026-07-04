@@ -1,0 +1,36 @@
+# Tach domain contract for agent_maintainer.attention.
+# Attention scoring must stay deterministic, local, and artifact-backed.
+
+[root]
+
+depends_on = []
+
+
+[[modules]]
+
+path = "builder"
+depends_on = ["models", "signals"]
+
+
+[[modules]]
+
+path = "cli"
+depends_on = ["builder", "rendering"]
+
+
+[[modules]]
+
+path = "models"
+depends_on = []
+
+
+[[modules]]
+
+path = "rendering"
+depends_on = ["models"]
+
+
+[[modules]]
+
+path = "signals"
+depends_on = ["//agent_maintainer.runtime_events.read"]

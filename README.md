@@ -239,6 +239,8 @@ Useful commands:
 ```bash
 python3 -m agent_maintainer ratchet status
 python3 -m agent_maintainer ratchet next
+python3 -m agent_maintainer attention update
+python3 -m agent_maintainer attention top
 python3 -m agent_maintainer events summary
 python3 -m agent_maintainer events waste
 python3 -m agent_maintainer verify --profile full --async

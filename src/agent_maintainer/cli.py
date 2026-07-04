@@ -24,6 +24,7 @@ USAGE = """Usage:
   python -m agent_maintainer <command> [options]
 
 Core commands:
+  attention       Build and inspect local file attention ledgers.
   assess          Recommend setup and score maintenance debt.
   bootstrap       Install development dependencies for this checkout.
   doctor          Inspect setup health and configuration drift.
@@ -104,6 +105,7 @@ def command_handlers() -> dict[str, CommandRunner]:
     """Return command handlers keyed by top-level subcommand name."""
 
     return {
+        "attention": attention_command,
         "assess": assess_command,
         "bootstrap": bootstrap_command,
         "change-plan": change_plan_command,
@@ -129,6 +131,11 @@ def command_handlers() -> dict[str, CommandRunner]:
 def assess_command(command_args: list[str]) -> int:
     """Run assess command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.assess.cli", command_args)
+
+
+def attention_command(command_args: list[str]) -> int:
+    """Run attention command lazily to keep entrypoint light."""
+    return _run_module_main("agent_maintainer.attention.cli", command_args)
 
 
 def bootstrap_command(_command_args: list[str]) -> int:
