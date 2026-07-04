@@ -76,6 +76,21 @@ def test_verifier_cli_prints_manifest_status(
     assert capsys.readouterr().out == ("Result: PASS\nProfile: fast\nRun ID: run-1\n")
 
 
+def test_verifier_cli_json_status(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Verifier wait CLI supports machine-readable output."""
+    monkeypatch.setattr(cli, "wait_for_verifier_run", verifier_wait)
+
+    status = cli.main(["verifier", "run-1", "--format", "json"])
+
+    output = capsys.readouterr().out
+    assert status == 0
+    assert '"profile": "fast"' in output
+    assert '"status": "passed"' in output
+
+
 class SuccessWait:
     """Fake successful GitHub waiter capturing config."""
 

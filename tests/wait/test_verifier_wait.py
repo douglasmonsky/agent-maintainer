@@ -8,11 +8,14 @@ from pathlib import Path
 from agent_maintainer.wait.models import TIMEOUT_EXIT_CODE
 from agent_maintainer.wait.verifier import (
     VerifierWaitConfig,
+    VerifierWaitResult,
     parse_verifier_manifest,
     render_verifier_wait_json,
     render_verifier_wait_text,
     wait_for_verifier_run,
 )
+
+ERROR_EXIT_CODE = 2
 
 
 def test_verifier_wait_renders_success_manifest(tmp_path: Path) -> None:
@@ -102,6 +105,68 @@ def test_verifier_wait_json_lists_failed_checks(tmp_path: Path) -> None:
     assert payload["exit_code"] == 1
     assert payload["profile"] == "ci"
     assert payload["failed_checks"] == ["change-budget"]
+
+
+def test_verifier_wait_reports_invalid_manifest(tmp_path: Path) -> None:
+    """Invalid manifest content becomes compact error output."""
+    run_dir = tmp_path / "runs" / "bad"
+    run_dir.mkdir(parents=True)
+    (run_dir / "manifest.json").write_text("[]", encoding="utf-8")
+
+    result = wait_for_verifier_run(VerifierWaitConfig(run_id="bad", log_dir=tmp_path))
+    text = render_verifier_wait_text(result)
+
+    assert result.exit_code == ERROR_EXIT_CODE
+    assert "Result: ERROR" in text
+    assert "python -m agent_maintainer wait verifier bad" in text
+
+
+def test_verifier_unknown_result_exits_nonzero() -> None:
+    """Missing manifest result renders unknown capsule."""
+    result = VerifierWaitResult(run_id="unknown", manifest=None)
+    text = render_verifier_wait_text(result)
+
+    assert result.exit_code == 1
+    assert "UNKNOWN" in text
+
+
+def test_verifier_manifest_handles_sparse_fields(tmp_path: Path) -> None:
+    """Sparse manifest fields use safe defaults."""
+    run_dir = tmp_path / "runs" / "sparse"
+    run_dir.mkdir(parents=True)
+    manifest_path = run_dir / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "checks": "not-a-list",
+                "timing": {},
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    manifest = parse_verifier_manifest(manifest_path)
+
+    assert manifest.run_id == "sparse"
+    assert manifest.checks == ()
+    assert manifest.duration_seconds is None
+
+
+def test_verifier_duration_renders_minutes(tmp_path: Path) -> None:
+    """Minute-scale durations render compactly."""
+    manifest_path = write_manifest(
+        tmp_path,
+        "run-4",
+        profile="manual",
+        checks=({"name": "mutmut", "status": "passed"},),
+    )
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["timing"]["duration_seconds"] = 65
+    manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = wait_for_verifier_run(VerifierWaitConfig(run_id="run-4", log_dir=tmp_path))
+
+    assert "Duration: 1m 5s" in render_verifier_wait_text(result)
 
 
 def write_manifest(
