@@ -54,7 +54,9 @@ def render_explain_text(score: AttentionFileScore | None, *, path: str) -> str:
 
 def render_changed_text(ledger: AttentionLedger, *, limit: int) -> str:
     """Render currently changed attention files."""
-    changed = tuple(score for score in ledger.files if score.components.get("git_changed", 0.0) > 0)
+    changed = tuple(
+        score for score in ledger.files if score.components.get("git_changed", float(0)) > 0
+    )
     lines = [
         "Attention Changed",
         f"Result: {len(changed)} changed scored files",

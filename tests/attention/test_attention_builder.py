@@ -19,6 +19,8 @@ def test_attention_ledger_is_deterministic_with_missing_inputs(tmp_path: Path) -
     second = builder.build_attention_ledger(tmp_path).to_payload()
 
     assert first == second
+    assert first["schema_version"] == 1
+    assert isinstance(first["files"], list)
     paths = {item["path"] for item in first["files"]}
     assert {"README.md", "src/app.py"} <= paths
 

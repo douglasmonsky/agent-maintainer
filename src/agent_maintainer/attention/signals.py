@@ -13,7 +13,7 @@ from typing import Any
 from agent_maintainer.runtime_events.read import read_runtime_events
 
 IGNORED_PARTS = frozenset(
-    {
+    (
         ".git",
         ".mypy_cache",
         ".pytest_cache",
@@ -27,11 +27,11 @@ IGNORED_PARTS = frozenset(
         "mutants",
         "node_modules",
         "venv",
-    },
+    ),
 )
 
 PATH_KEYS = frozenset(
-    {
+    (
         "artifact",
         "artifact_path",
         "file",
@@ -42,8 +42,11 @@ PATH_KEYS = frozenset(
         "source",
         "target",
         "target_path",
-    },
+    ),
 )
+
+DEFAULT_PATH_SCORE = 0.15
+HIGH_PRIORITY_PATH_SCORE = 0.75
 
 
 def tracked_files(repo_root: Path) -> tuple[str, ...]:
@@ -56,7 +59,9 @@ def tracked_files(repo_root: Path) -> tuple[str, ...]:
         )
     paths: list[str] = []
     for current, dirs, files in os.walk(repo_root):
-        dirs[:] = [name for name in dirs if name not in IGNORED_PARTS]
+        allowed_dirs = [name for name in dirs if name not in IGNORED_PARTS]
+        dirs.clear()
+        dirs.extend(allowed_dirs)
         current_path = Path(current)
         for filename in files:
             path = current_path / filename
@@ -71,13 +76,13 @@ def changed_counts(repo_root: Path) -> Counter[str]:
     counts: Counter[str] = Counter()
     for path in _git_lines(repo_root, ("diff", "--name-only", "HEAD")):
         if _is_attention_path(path):
-            counts[path] += 1
+            _increment(counts, path)
     for path in _git_lines(repo_root, ("diff", "--cached", "--name-only")):
         if _is_attention_path(path):
-            counts[path] += 1
+            _increment(counts, path)
     for path in _git_lines(repo_root, ("ls-files", "--others", "--exclude-standard")):
         if _is_attention_path(path):
-            counts[path] += 1
+            _increment(counts, path)
     return counts
 
 
@@ -87,7 +92,7 @@ def churn_counts(repo_root: Path, *, commit_limit: int = 40) -> Counter[str]:
     args = ("log", f"--max-count={commit_limit}", "--name-only", "--pretty=format:")
     for path in _git_lines(repo_root, args):
         if _is_attention_path(path):
-            counts[path] += 1
+            _increment(counts, path)
     return counts
 
 
@@ -98,7 +103,7 @@ def runtime_event_counts(repo_root: Path, *, events_dir: Path) -> Counter[str]:
     counts: Counter[str] = Counter()
     for record in result.records:
         for path in _record_paths(record, repo_root=repo_root, known_paths=known):
-            counts[path] += 1
+            _increment(counts, path)
     return counts
 
 
@@ -114,7 +119,7 @@ def verifier_artifact_counts(repo_root: Path, *, log_dir: Path) -> Counter[str]:
         if payload is None:
             continue
         for path in _payload_paths(payload, repo_root=repo_root, known_paths=known):
-            counts[path] += 1
+            _increment(counts, path)
     return counts
 
 
@@ -134,7 +139,7 @@ def docsync_counts(repo_root: Path) -> Counter[str]:
             continue
         for path in paths:
             if path in text:
-                counts[path] += text.count(path)
+                _increment(counts, path, count=text.count(path))
     return counts
 
 
@@ -151,14 +156,14 @@ def file_baseline_counts(repo_root: Path, *, log_dir: Path) -> Counter[str]:
         if payload is None:
             continue
         for path in _payload_paths(payload, repo_root=repo_root, known_paths=known):
-            counts[path] += 1
+            _increment(counts, path)
     return counts
 
 
 def path_heuristic_score(path: str) -> float:
     """Return deterministic path-priority score."""
     if path in {"README.md", "AGENTS.md", "AGENTS.agent-maintainer.md", "pyproject.toml"}:
-        return 0.75
+        return HIGH_PRIORITY_PATH_SCORE
     prefixes = (
         ("src/", 0.55),
         ((".github/", ".codex/", ".claude/", "config/"), 0.5),
@@ -170,13 +175,13 @@ def path_heuristic_score(path: str) -> float:
     for prefix, score in prefixes:
         if path.startswith(prefix):
             return score
-    return 0.15
+    return DEFAULT_PATH_SCORE
 
 
 def _git_lines(repo_root: Path, args: tuple[str, ...]) -> tuple[str, ...]:
     """Run git and return non-empty stdout lines."""
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603 - fixed git executable with bounded args.
             ("git", *args),
             cwd=repo_root,
             check=False,
@@ -189,6 +194,11 @@ def _git_lines(repo_root: Path, args: tuple[str, ...]) -> tuple[str, ...]:
     if result.returncode != 0:
         return ()
     return tuple(line.strip() for line in result.stdout.splitlines() if line.strip())
+
+
+def _increment(counts: Counter[str], path: str, *, count: int = 1) -> None:
+    """Increment one path count."""
+    counts.update({path: count})
 
 
 def _is_attention_path(path: str) -> bool:

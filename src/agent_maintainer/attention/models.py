@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Final
 
 SCHEMA_VERSION: Final = 1
@@ -30,4 +30,18 @@ class AttentionLedger:
 
     def to_payload(self) -> dict[str, Any]:
         """Return JSON-serializable payload."""
-        return asdict(self)
+        return {
+            "schema_version": self.schema_version,
+            "target": self.target,
+            "file_count": self.file_count,
+            "inputs": self.inputs,
+            "files": [
+                {
+                    "path": score.path,
+                    "score": score.score,
+                    "components": score.components,
+                    "reasons": score.reasons,
+                }
+                for score in self.files
+            ],
+        }

@@ -15,39 +15,44 @@ from agent_maintainer.attention.models import (
 
 DEFAULT_OUTPUT_PATH = Path(".verify-logs/attention/files.json")
 
-WEIGHTS = {
-    "git_changed": 0.24,
-    "git_churn": 0.18,
-    "runtime_events": 0.17,
-    "verifier_artifacts": 0.14,
-    "docsync": 0.1,
-    "file_baselines": 0.1,
-    "path": 0.07,
-}
+WEIGHT_ITEMS = (
+    ("git_changed", 0.24),
+    ("git_churn", 0.18),
+    ("runtime_events", 0.17),
+    ("verifier_artifacts", 0.14),
+    ("docsync", 0.1),
+    ("file_baselines", 0.1),
+    ("path", 0.07),
+)
 
 
 def build_attention_ledger(
     target: Path,
     *,
-    log_dir: Path = Path(".verify-logs"),
-    events_dir: Path = Path(".verify-logs/events"),
+    log_dir: Path | None = None,
+    events_dir: Path | None = None,
 ) -> AttentionLedger:
     """Return deterministic attention ledger for target repository."""
     repo_root = target.resolve()
+    resolved_log_dir = log_dir or Path(".verify-logs")
+    resolved_events_dir = events_dir or Path(".verify-logs/events")
     files = signals.tracked_files(repo_root)
     raw_components = {
         "git_changed": signals.changed_counts(repo_root),
         "git_churn": signals.churn_counts(repo_root),
         "runtime_events": signals.runtime_event_counts(
             repo_root,
-            events_dir=repo_root / events_dir,
+            events_dir=repo_root / resolved_events_dir,
         ),
         "verifier_artifacts": signals.verifier_artifact_counts(
             repo_root,
-            log_dir=repo_root / log_dir,
+            log_dir=repo_root / resolved_log_dir,
         ),
         "docsync": signals.docsync_counts(repo_root),
-        "file_baselines": signals.file_baseline_counts(repo_root, log_dir=repo_root / log_dir),
+        "file_baselines": signals.file_baseline_counts(
+            repo_root,
+            log_dir=repo_root / resolved_log_dir,
+        ),
     }
     normalized = {name: _normalize_counts(counts) for name, counts in raw_components.items()}
     scored_files = tuple(_score_file(path, normalized=normalized) for path in files)
@@ -63,8 +68,8 @@ def build_attention_ledger(
         file_count=len(visible_files),
         inputs={
             "tracked_files": len(files),
-            "log_dir": log_dir.as_posix(),
-            "events_dir": events_dir.as_posix(),
+            "log_dir": resolved_log_dir.as_posix(),
+            "events_dir": resolved_events_dir.as_posix(),
             **{f"{name}_files": len(counts) for name, counts in raw_components.items()},
         },
         files=visible_files,
@@ -74,8 +79,9 @@ def build_attention_ledger(
 def write_attention_ledger(ledger: AttentionLedger, output_path: Path) -> Path:
     """Write ledger JSON."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(ledger.to_payload(), indent=2, sort_keys=True)
     output_path.write_text(
-        json.dumps(ledger.to_payload(), indent=2, sort_keys=True) + "\n",
+        f"{payload}\n",
         encoding="utf-8",
     )
     return output_path
@@ -108,11 +114,11 @@ def _score_file(
     normalized: dict[str, dict[str, float]],
 ) -> AttentionFileScore:
     """Return weighted score for one file."""
-    components = {name: values.get(path, 0.0) for name, values in normalized.items()}
+    components = {name: values.get(path, float(0)) for name, values in normalized.items()}
     components["path"] = signals.path_heuristic_score(path)
     score = min(
         1.0,
-        sum(WEIGHTS[name] * value for name, value in components.items()),
+        sum(weight * components[name] for name, weight in WEIGHT_ITEMS),
     )
     rounded_components = {
         name: round(value, 4) for name, value in sorted(components.items()) if value > 0
