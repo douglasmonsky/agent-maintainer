@@ -53,8 +53,24 @@ def test_downstream_install_and_cli_contract(tmp_path: Path) -> None:
         in run([broker, "--root", str(repo), "claim", "task-0001", "--agent", "codex"]).stdout
     )
     assert (
+        "task_id"
+        in run([broker, "--root", str(repo), "handoff", "task-0001", "--format", "json"]).stdout
+    )
+    assert (
         "COMPLETED task-0001: Done"
-        in run([broker, "--root", str(repo), "complete", "task-0001", "--summary", "Done"]).stdout
+        in run(
+            [
+                broker,
+                "--root",
+                str(repo),
+                "complete",
+                "task-0001",
+                "--summary",
+                "Done",
+                "--verification",
+                "pytest -q",
+            ]
+        ).stdout
     )
     run([broker, "--root", str(repo), "add", "Blocked task"])
     assert (
@@ -62,7 +78,7 @@ def test_downstream_install_and_cli_contract(tmp_path: Path) -> None:
         in run([broker, "--root", str(repo), "list", "--status", "open"]).stdout
     )
     assert (
-        "GAVE-UP task-0002: blocked"
+        "ABANDONED task-0002: blocked"
         in run([broker, "--root", str(repo), "give-up", "task-0002", "--reason", "blocked"]).stdout
     )
 
@@ -77,13 +93,15 @@ def test_downstream_install_and_cli_contract(tmp_path: Path) -> None:
 
 def run(command: list[str]) -> subprocess.CompletedProcess[str]:
     """Run command and return completed process."""
-    return subprocess.run(
+    result = subprocess.run(
         command,
-        check=True,
+        check=False,
         text=True,
         capture_output=True,
         env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
     )
+    assert result.returncode == 0, result.stdout + result.stderr
+    return result
 
 
 def venv_python(venv_path: Path) -> str:

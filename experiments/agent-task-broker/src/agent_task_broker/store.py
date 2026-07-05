@@ -7,13 +7,30 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from agent_task_broker.results import STATUS_ABANDONED, STATUS_DONE, ResultInput
+from agent_task_broker.results import result_payload as make_result_payload
+
 BOARD_DIR = ".agent-task-broker"
 BOARD_FILE = "board.json"
 TASK_STATUS_OPEN = "open"
 TASK_STATUS_CLAIMED = "claimed"
-TASK_STATUS_DONE = "done"
-TASK_STATUS_GIVEN_UP = "given-up"
+TASK_STATUS_DONE = STATUS_DONE
+TASK_STATUS_ABANDONED = STATUS_ABANDONED
 ACTIVE_STATUSES = {TASK_STATUS_OPEN, TASK_STATUS_CLAIMED}
+
+
+@dataclass(frozen=True)
+class TaskInput:
+    """Task creation input."""
+
+    title: str
+    body: str = ""
+    priority: int = 0
+    allowed_paths: tuple[str, ...] = ()
+    do_not_edit_paths: tuple[str, ...] = ()
+    constraints: tuple[str, ...] = ()
+    evidence: tuple[str, ...] = ()
+    acceptance_commands: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -63,26 +80,25 @@ class BrokerStore:
         write_json(self.board_path, board)
         return board
 
-    def add_task(
-        self,
-        title: str,
-        *,
-        body: str = "",
-        priority: int = 0,
-    ) -> dict[str, object]:
+    def add_task(self, task_input: TaskInput) -> dict[str, object]:
         """Add one task."""
         board = self.require_board()
         task_id = next_task_id(board)
         task = {
             "id": task_id,
-            "title": title,
-            "body": body,
-            "priority": priority,
+            "title": task_input.title,
+            "body": task_input.body,
+            "priority": task_input.priority,
             "status": TASK_STATUS_OPEN,
             "created_at": utc_now(),
             "updated_at": utc_now(),
             "attempts": [],
             "results": [],
+            "allowed_paths": list(task_input.allowed_paths),
+            "do_not_edit_paths": list(task_input.do_not_edit_paths),
+            "constraints": list(task_input.constraints),
+            "evidence": list(task_input.evidence),
+            "acceptance_commands": list(task_input.acceptance_commands),
         }
         task_ids = list(board.get("tasks", []))
         task_ids.append(task_id)
@@ -127,27 +143,53 @@ class BrokerStore:
         write_json(self.task_path(task_id), task)
         return attempt
 
-    def complete_task(self, task_id: str, *, summary: str) -> dict[str, object]:
+    def complete_task(
+        self,
+        task_id: str,
+        *,
+        summary: str,
+        verification: list[str],
+        changed_files: list[str] | None = None,
+    ) -> dict[str, object]:
         """Complete one task."""
-        return self.finish_task(task_id, status=TASK_STATUS_DONE, summary=summary)
+        result = make_result_payload(
+            ResultInput(
+                root=self.root,
+                task_id=task_id,
+                status=TASK_STATUS_DONE,
+                summary=summary,
+                verification=tuple(verification),
+                changed_files=tuple(changed_files or []),
+            )
+        )
+        return self.finish_task(task_id, result)
 
     def give_up_task(self, task_id: str, *, reason: str) -> dict[str, object]:
-        """Mark one task given up."""
-        return self.finish_task(task_id, status=TASK_STATUS_GIVEN_UP, summary=reason)
+        """Mark one task abandoned."""
+        result = make_result_payload(
+            ResultInput(
+                root=self.root,
+                task_id=task_id,
+                status=TASK_STATUS_ABANDONED,
+                summary=reason,
+                reason=reason,
+            )
+        )
+        return self.finish_task(task_id, result)
 
-    def finish_task(self, task_id: str, *, status: str, summary: str) -> dict[str, object]:
+    def result_task(self, result: dict[str, object]) -> dict[str, object]:
+        """Write an arbitrary validated result."""
+        task_id = str(result["task_id"])
+        return self.finish_task(task_id, result)
+
+    def finish_task(self, task_id: str, result: dict[str, object]) -> dict[str, object]:
         """Write result for one task."""
         task = self.require_task(task_id)
-        result = {
-            "task_id": task_id,
-            "status": status,
-            "summary": summary,
-            "created_at": utc_now(),
-        }
+        result = {**result, "created_at": utc_now()}
         results = list(task.get("results", []))
         results.append(str(self.result_path(task_id).relative_to(self.board_dir)))
         task["results"] = results
-        task["status"] = status
+        task["status"] = result["status"]
         task["updated_at"] = utc_now()
         write_json(self.result_path(task_id), result)
         write_json(self.task_path(task_id), task)

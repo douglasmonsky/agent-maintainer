@@ -85,7 +85,7 @@ Track work:
 - [x] Phase 150: Attention Ledger v0
 - [x] Phase 151: Attention-Weighted Context Packs
 - [x] Phase 152: Agent Task Broker Incubator Scaffold
-- [ ] Phase 153: Task Broker Handoff Result Protocol
+- [x] Phase 153: Task Broker Handoff Result Protocol
 - [ ] Phase 154: Task Broker Locks And Worktree Planning
 - [ ] Phase 155: Claude Async Rewake Hook Option
 - [ ] Phase 156: Agent Maintainer MCP Surface v0
