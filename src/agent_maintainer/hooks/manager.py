@@ -51,7 +51,14 @@ def install_hooks(options: InstallOptions) -> int:
 
 def planned_writes(client: str, options: InstallOptions) -> tuple[PlannedWrite, ...]:
     """Return planned writes for one hook client."""
-    return hook_adapters.adapter_for_client(client).install(options.target, options.scope)
+    adapter = hook_adapters.adapter_for_client(client)
+    if isinstance(adapter, hook_adapters.ClaudeCodeAdapter):
+        return adapter.install(
+            options.target,
+            options.scope,
+            async_rewake_stop=options.async_rewake_stop,
+        )
+    return adapter.install(options.target, options.scope)
 
 
 def write_plan(plan: PlannedWrite, options: InstallOptions) -> None:

@@ -69,7 +69,11 @@ def codex_config_file(*, user_scope: bool = False) -> str:
     return f"[features]\nhooks = true\n\n{codex_config_block(user_scope=user_scope)}"
 
 
-def claude_settings(*, user_scope: bool = False) -> str:
+def claude_settings(
+    *,
+    user_scope: bool = False,
+    async_rewake_stop: bool = False,
+) -> str:
     """Return project-local Claude Code hook settings JSON."""
 
     post_command = hook_command(
@@ -93,6 +97,19 @@ def claude_settings(*, user_scope: bool = False) -> str:
         wrapper_path=CLAUDE_SUBAGENT_STOP_HOOK,
         user_scope=user_scope,
     )
+    stop_hook = {
+        "type": "command",
+        "command": stop_command,
+        "timeout": 600,
+    }
+    subagent_stop_hook = {
+        "type": "command",
+        "command": subagent_stop_command,
+        "timeout": 600,
+    }
+    if async_rewake_stop:
+        stop_hook.update({"async": True, "asyncRewake": True})
+        subagent_stop_hook.update({"async": True, "asyncRewake": True})
     data = {
         "hooks": {
             POST_TOOL_USE_EVENT: [
@@ -107,28 +124,8 @@ def claude_settings(*, user_scope: bool = False) -> str:
                     ],
                 }
             ],
-            STOP_EVENT: [
-                {
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": stop_command,
-                            "timeout": 600,
-                        }
-                    ]
-                }
-            ],
-            SUBAGENT_STOP_EVENT: [
-                {
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": subagent_stop_command,
-                            "timeout": 600,
-                        }
-                    ]
-                }
-            ],
+            STOP_EVENT: [{"hooks": [stop_hook]}],
+            SUBAGENT_STOP_EVENT: [{"hooks": [subagent_stop_hook]}],
         }
     }
     return f"{json.dumps(data, indent=2, sort_keys=True)}\n"

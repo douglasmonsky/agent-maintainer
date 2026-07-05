@@ -53,6 +53,41 @@ def test_install_command_delegates_options(
     ]
 
 
+def test_install_command_delegates_async_rewake_option(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Install subcommand passes Claude async rewake option."""
+    calls: list[manager.InstallOptions] = []
+
+    def fake_install(options: manager.InstallOptions) -> int:
+        calls.append(options)
+        return INSTALL_STATUS
+
+    monkeypatch.setattr(cli, "install_hooks", fake_install)
+
+    status = cli.main(
+        [
+            "install",
+            "claude-code",
+            "--target",
+            str(tmp_path),
+            "--dry-run",
+            "--async-rewake-stop",
+        ],
+    )
+
+    assert status == INSTALL_STATUS
+    assert calls == [
+        manager.InstallOptions(
+            target=tmp_path,
+            client=manager.CLAUDE_CODE_CLIENT,
+            dry_run=True,
+            async_rewake_stop=True,
+        ),
+    ]
+
+
 def test_status_command_delegates_options(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

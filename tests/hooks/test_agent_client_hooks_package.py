@@ -19,6 +19,8 @@ def test_agent_client_hooks_templates_are_direct_package_surface() -> None:
 
     claude_settings = json.loads(templates.claude_settings())
     assert set(claude_settings["hooks"]) == {"PostToolUse", "Stop", "SubagentStop"}
+    async_claude_settings = json.loads(templates.claude_settings(async_rewake_stop=True))
+    assert async_claude_settings["hooks"]["Stop"][0]["hooks"][0]["asyncRewake"] is True
 
 
 def test_agent_client_hooks_adapters_plan_existing_clients(tmp_path: Path) -> None:
@@ -32,6 +34,17 @@ def test_agent_client_hooks_adapters_plan_existing_clients(tmp_path: Path) -> No
         "Codex hook-audit compatibility shim",
     ]
     assert plans[0].merge_codex
+
+
+def test_claude_adapter_describes_async_rewake_plan(tmp_path: Path) -> None:
+    """Claude adapter dry-run descriptions expose async rewake mode."""
+    plans = adapters.ClaudeCodeAdapter().install(
+        tmp_path,
+        adapters.REPO_SCOPE,
+        async_rewake_stop=True,
+    )
+
+    assert plans[0].description == "Claude Code hook settings (async rewake Stop/SubagentStop)"
 
 
 def test_agent_client_hooks_merge_uses_package_templates() -> None:

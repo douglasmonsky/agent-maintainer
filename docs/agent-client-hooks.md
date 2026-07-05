@@ -35,6 +35,17 @@ Preview changes before writing files:
 python3 -m agent_maintainer hooks install all --dry-run
 ```
 
+Claude Code can opt into asynchronous rewake for slow stop-time validation while
+keeping `PostToolUse` fast checks synchronous:
+
+```bash
+python3 -m agent_maintainer hooks install claude-code --dry-run --async-rewake-stop
+python3 -m agent_maintainer hooks install claude-code --async-rewake-stop
+```
+
+In this mode, only Claude Code `Stop` and `SubagentStop` entries receive
+`async: true` and `asyncRewake: true`.
+
 Install only one client:
 
 ```bash

@@ -87,7 +87,7 @@ Track work:
 - [x] Phase 152: Agent Task Broker Incubator Scaffold
 - [x] Phase 153: Task Broker Handoff Result Protocol
 - [x] Phase 154: Task Broker Locks And Worktree Planning
-- [ ] Phase 155: Claude Async Rewake Hook Option
+- [x] Phase 155: Claude Async Rewake Hook Option
 - [ ] Phase 156: Agent Maintainer MCP Surface v0
 - [ ] Phase 157: Context Recall Compaction Ledger v0
 - [ ] Phase 158: Local Observability Export Contract

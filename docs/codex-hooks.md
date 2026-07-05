@@ -4,6 +4,10 @@
 For the full managed hook installer covering Codex and Claude Code, see
 [Agent client hooks](agent-client-hooks.md).
 
+Claude Code installations can opt into asynchronous rewake for slow
+`Stop`/`SubagentStop` validation through the shared installer:
+`python3 -m agent_maintainer hooks install claude-code --async-rewake-stop`.
+
 The kit includes repo-local Codex hooks under `.codex/`:
 
 | Hook | Purpose |
