@@ -12,6 +12,7 @@ from agent_context.reading import diff as diff_reader
 from agent_context.reading import diff_git
 from agent_context.reading import files as file_reader
 from agent_context.reading import logs as log_reader
+from agent_maintainer.context import recall
 from agent_maintainer.context.pack import cli as pack_cli
 
 FORMAT_JSON = "json"
@@ -30,6 +31,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     add_file_parser(subparsers)
     add_failures_parser(subparsers)
     add_log_parser(subparsers)
+    add_ledger_parser(subparsers)
+    add_recall_parser(subparsers)
     pack_cli.add_pack_parser(subparsers)
     return parser.parse_args(argv)
 
@@ -101,6 +104,34 @@ def add_log_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParse
     parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
 
 
+def add_ledger_parser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    """Register recall ledger mutation subcommands."""
+    parser = subparsers.add_parser("ledger", help="Manage context recall ledger.")
+    ledger_subparsers = parser.add_subparsers(dest="ledger_command", required=True)
+    add_parser = ledger_subparsers.add_parser("add", help="Add a recall ledger item.")
+    add_parser.add_argument("--kind", required=True, choices=sorted(recall.VALID_KINDS))
+    add_parser.add_argument("--summary", required=True)
+    add_parser.add_argument("--path", action="append")
+    add_parser.add_argument("--artifact", action="append")
+    add_parser.add_argument("--command", action="append", dest="rehydrate_command")
+    add_parser.add_argument("--tag", action="append")
+    add_parser.add_argument("--value", action="append")
+    add_parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
+
+
+def add_recall_parser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    """Register recall lookup subcommand."""
+    parser = subparsers.add_parser("recall", help="Show context recall ledger items.")
+    parser.add_argument("--kind", choices=sorted(recall.VALID_KINDS))
+    parser.add_argument("--query")
+    parser.add_argument("--limit", type=int, default=recall.DEFAULT_RECALL_LIMIT)
+    parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
+
+
 def main(argv: list[str]) -> int:
     """Run context command."""
 
@@ -120,8 +151,10 @@ def run_context_command(args: argparse.Namespace) -> int:
         "estimate": run_estimate,
         "failures": run_failures,
         "file": run_file,
+        "ledger": run_ledger,
         "log": run_log,
         "pack": pack_cli.run_pack,
+        "recall": run_recall,
     }.get(args.command)
     if runner is not None:
         return runner(args)
@@ -215,6 +248,48 @@ def run_failures(args: argparse.Namespace) -> int:
             log_dir=args.log_dir,
             budget=args.budget,
         )
+    )
+    print(output)
+    return 0
+
+
+def run_ledger(args: argparse.Namespace) -> int:
+    """Run ledger mutation subcommands."""
+    if args.ledger_command != "add":
+        return 2
+    item = recall.add_item(
+        args.log_dir,
+        recall.RecallInput(
+            kind=args.kind,
+            summary=args.summary,
+            paths=tuple(args.path or ()),
+            artifacts=tuple(args.artifact or ()),
+            commands=tuple(args.rehydrate_command or ()),
+            tags=tuple(args.tag or ()),
+            values=tuple(args.value or ()),
+        ),
+    )
+    output = (
+        recall.render_item_json(item)
+        if args.format == FORMAT_JSON
+        else recall.render_item_text(item)
+    )
+    print(output)
+    return 0
+
+
+def run_recall(args: argparse.Namespace) -> int:
+    """Run recall lookup subcommand."""
+    items = recall.recall_items(
+        args.log_dir,
+        kind=args.kind,
+        query=args.query,
+        limit=args.limit,
+    )
+    output = (
+        recall.render_items_json(items)
+        if args.format == FORMAT_JSON
+        else recall.render_recall_text(items)
     )
     print(output)
     return 0

@@ -1,6 +1,6 @@
 # Phase 157: Context Recall Compaction Ledger v0
 
-Status: planned
+Status: complete
 
 ## Goal
 
