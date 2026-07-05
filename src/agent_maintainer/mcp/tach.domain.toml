@@ -1,0 +1,21 @@
+# Tach domain contract for agent_maintainer.mcp.
+# MCP is an optional adapter over existing CLI/domain contracts.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "tools"
+depends_on = [
+  "models",
+]
+
+[[modules]]
+path = "server"
+depends_on = [
+  "tools",
+]

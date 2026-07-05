@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+import sysconfig
 import tomllib
 import venv
 from pathlib import Path
@@ -21,14 +22,37 @@ def test_downstream_install_and_cli_contract(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    venv.EnvBuilder(with_pip=True).create(venv_path)
+    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(venv_path)
     python = venv_python(venv_path)
     broker = venv_bin(venv_path, "agent-task-broker")
 
-    run([sys.executable, "-m", "build", "--wheel", "--outdir", str(dist_dir), str(ROOT)])
+    run(
+        [
+            sys.executable,
+            "-m",
+            "build",
+            "--wheel",
+            "--no-isolation",
+            "--outdir",
+            str(dist_dir),
+            str(ROOT),
+        ],
+    )
     wheel = next(dist_dir.glob("agent_maintainer-*.whl"))
-    run([python, "-m", "pip", "install", str(wheel)])
-    run([python, "-m", "pip", "install", "-e", str(EXPERIMENT)])
+    run([python, "-m", "pip", "install", "--no-deps", str(wheel)])
+    run(
+        [
+            python,
+            "-m",
+            "pip",
+            "install",
+            "--no-build-isolation",
+            "--no-deps",
+            "-e",
+            str(EXPERIMENT),
+        ],
+        env=build_backend_env(),
+    )
     version = run(
         [
             python,
@@ -122,14 +146,18 @@ def test_downstream_install_and_cli_contract(tmp_path: Path) -> None:
     assert (repo / ".agent-task-broker" / "results" / "task-0002.json").exists()
 
 
-def run(command: list[str]) -> subprocess.CompletedProcess[str]:
+def run(
+    command: list[str],
+    *,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     """Run command and return completed process."""
     result = subprocess.run(
         command,
         check=False,
         text=True,
         capture_output=True,
-        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+        env={**(env or os.environ), "PYTHONDONTWRITEBYTECODE": "1"},
     )
     assert result.returncode == 0, result.stdout + result.stderr
     return result
@@ -149,3 +177,11 @@ def agent_maintainer_version() -> str:
     """Return source checkout Agent Maintainer version."""
     metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     return str(metadata["project"]["version"])
+
+
+def build_backend_env() -> dict[str, str]:
+    """Return environment that exposes current build backend to temp venvs."""
+
+    env = dict(os.environ)
+    env["PYTHONPATH"] = sysconfig.get_paths()["purelib"]
+    return env

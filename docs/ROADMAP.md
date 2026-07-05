@@ -75,9 +75,7 @@ needed:
 ## Planned: Future-Call ROI Acceleration Track
 
 Agent Maintainer should convert local primitives into compounding leverage for future agent calls. This track prioritizes work by expected return on cost, quality, and speed: runtime-event intelligence, repair-fact coverage, surgical next actions, DocSync verifier integration, attention scoring, and a hermetic downstream task-broker incubator.
-Detailed scope:
-
-[`docs/roadmap/future-call-roi-acceleration.md`](roadmap/future-call-roi-acceleration.md)
+Detailed scope: [`docs/roadmap/future-call-roi-acceleration.md`](roadmap/future-call-roi-acceleration.md)
 
 Track work:
 
@@ -88,13 +86,15 @@ Track work:
 - [x] Phase 153: Task Broker Handoff Result Protocol
 - [x] Phase 154: Task Broker Locks And Worktree Planning
 - [x] Phase 155: Claude Async Rewake Hook Option
-- [ ] Phase 156: Agent Maintainer MCP Surface v0
+- [x] Phase 156: Agent Maintainer MCP Surface v0
 - [ ] Phase 157: Context Recall Compaction Ledger v0
 - [ ] Phase 158: Local Observability Export Contract
 - [ ] Phase 159: Scoring Dataset Optimization Prep
 - [ ] Phase 160: ROI Loop Dogfood Case Study
 - [ ] Phase 161: Task Broker Adapter Contracts
 - [ ] Phase 162: Task Broker Model-Tier Routing Policy
+- [ ] Phase 163: Attention Ledger Performance Guards
+- [ ] Phase 164: Agent Efficacy Metrics
 
 ## Future Work
 

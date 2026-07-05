@@ -4,10 +4,7 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 
 ## Overview
 
-- [Mission, baseline, architecture target, execution rules](overview.md)
-- [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md)
-- [Future-Call ROI Acceleration Track](future-call-roi-acceleration.md)
-- [Final Definition Done](final-definition-of-done.md)
+Overview links: [Mission, baseline, architecture target, execution rules](overview.md), [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md), [Future-Call ROI Acceleration Track](future-call-roi-acceleration.md), [Final Definition Done](final-definition-of-done.md).
 
 ## Phases
 
@@ -158,3 +155,5 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 160 | [ROI Loop Dogfood Case Study](phases/phase-160-roi-loop-dogfood-case-study.md) |
 | 161 | [Task Broker Adapter Contracts](phases/phase-161-task-broker-adapter-contracts.md) |
 | 162 | [Task Broker Model-Tier Routing Policy](phases/phase-162-task-broker-model-tier-routing-policy.md) |
+| 163 | [Attention Ledger Performance Guards](phases/phase-163-attention-ledger-performance-guards.md) |
+| 164 | [Agent Efficacy Metrics](phases/phase-164-agent-efficacy-metrics.md) |
