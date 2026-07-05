@@ -12,6 +12,7 @@ depends_on = ["//agent_context.budget"]
 [[modules]]
 path = "cli"
 depends_on = [
+  "recall",
   "pack.cli",
   "//agent_context.estimate",
   "//agent_context.failures",
@@ -56,6 +57,10 @@ depends_on = ["//agent_context.formatting"]
 [[modules]]
 path = "models"
 depends_on = ["//agent_context.models"]
+
+[[modules]]
+path = "recall"
+depends_on = []
 
 [[modules]]
 path = "pack"

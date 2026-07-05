@@ -87,7 +87,7 @@ Track work:
 - [x] Phase 154: Task Broker Locks And Worktree Planning
 - [x] Phase 155: Claude Async Rewake Hook Option
 - [x] Phase 156: Agent Maintainer MCP Surface v0
-- [ ] Phase 157: Context Recall Compaction Ledger v0
+- [x] Phase 157: Context Recall Compaction Ledger v0
 - [ ] Phase 158: Local Observability Export Contract
 - [ ] Phase 159: Scoring Dataset Optimization Prep
 - [ ] Phase 160: ROI Loop Dogfood Case Study
