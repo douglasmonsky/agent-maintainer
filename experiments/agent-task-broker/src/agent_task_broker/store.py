@@ -7,11 +7,15 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from agent_task_broker.locks import LockConflict, LockRequest, find_lock_conflicts
+from agent_task_broker.locks import lock_payload as make_lock_payload
 from agent_task_broker.results import STATUS_ABANDONED, STATUS_DONE, ResultInput
 from agent_task_broker.results import result_payload as make_result_payload
+from agent_task_broker.worktrees import WorktreePlan
 
 BOARD_DIR = ".agent-task-broker"
 BOARD_FILE = "board.json"
+
 TASK_STATUS_OPEN = "open"
 TASK_STATUS_CLAIMED = "claimed"
 TASK_STATUS_DONE = STATUS_DONE
@@ -64,24 +68,34 @@ class BrokerStore:
         """Return result directory."""
         return self.board_dir / "results"
 
+    @property
+    def locks_dir(self) -> Path:
+        """Return lock directory."""
+        return self.board_dir / "locks"
+
+    @property
+    def worktree_plans_dir(self) -> Path:
+        """Return worktree plan directory."""
+        return self.board_dir / "worktree-plans"
+
     def init(self, *, force: bool = False) -> dict[str, object]:
         """Initialize broker state."""
         if self.board_path.exists() and not force:
             raise BrokerError("board already exists; use --force to reinitialize")
-        self.tasks_dir.mkdir(parents=True, exist_ok=True)
-        self.attempts_dir.mkdir(parents=True, exist_ok=True)
-        self.results_dir.mkdir(parents=True, exist_ok=True)
-        board = {
-            "schema_version": 1,
-            "created_at": utc_now(),
-            "updated_at": utc_now(),
-            "tasks": [],
-        }
+        for directory in (
+            self.tasks_dir,
+            self.attempts_dir,
+            self.results_dir,
+            self.locks_dir,
+            self.worktree_plans_dir,
+        ):
+            directory.mkdir(parents=True, exist_ok=True)
+        board = {"schema_version": 1, "tasks": [], "created_at": utc_now(), "updated_at": utc_now()}
         write_json(self.board_path, board)
         return board
 
     def add_task(self, task_input: TaskInput) -> dict[str, object]:
-        """Add one task."""
+        """Add task to board."""
         board = self.require_board()
         task_id = next_task_id(board)
         task = {
@@ -160,7 +174,7 @@ class BrokerStore:
                 summary=summary,
                 verification=tuple(verification),
                 changed_files=tuple(changed_files or []),
-            )
+            ),
         )
         return self.finish_task(task_id, result)
 
@@ -173,7 +187,7 @@ class BrokerStore:
                 status=TASK_STATUS_ABANDONED,
                 summary=reason,
                 reason=reason,
-            )
+            ),
         )
         return self.finish_task(task_id, result)
 
@@ -195,10 +209,45 @@ class BrokerStore:
         write_json(self.task_path(task_id), task)
         return result
 
+    def locks(self) -> list[dict[str, object]]:
+        """Return active locks."""
+        self.require_board()
+        return sorted(
+            (read_json(path) for path in self.locks_dir.glob("*.json")),
+            key=lambda lock: str(lock.get("id", "")),
+        )
+
+    def claim_lock(self, request: LockRequest) -> dict[str, object]:
+        """Claim one lock if it does not conflict."""
+        self.require_task(request.task_id)
+        conflicts = find_lock_conflicts(self.locks(), request)
+        if conflicts:
+            raise LockConflictError(conflicts)
+        lock_id = next_lock_id(self.locks())
+        payload = {**make_lock_payload(lock_id, request), "created_at": utc_now()}
+        write_json(self.lock_path(lock_id), payload)
+        return payload
+
+    def release_lock(self, lock_id: str) -> dict[str, object]:
+        """Release one lock."""
+        path = self.lock_path(lock_id)
+        if not path.exists():
+            raise BrokerError(f"lock not found: {lock_id}")
+        payload = read_json(path)
+        path.unlink()
+        return payload
+
+    def record_worktree_plan(self, plan: WorktreePlan) -> dict[str, object]:
+        """Write worktree plan for one task."""
+        self.require_task(plan.task_id)
+        payload = {**plan.payload(self.root), "created_at": utc_now()}
+        write_json(self.worktree_plan_path(plan.task_id), payload)
+        return payload
+
     def require_board(self) -> dict[str, object]:
         """Return board metadata or fail clearly."""
         if not self.board_path.exists():
-            raise BrokerError("board is not initialized; run `agent-task-broker init`")
+            raise BrokerError("board not initialized; run `agent-task-broker init`")
         return read_json(self.board_path)
 
     def require_task(self, task_id: str) -> dict[str, object]:
@@ -220,9 +269,30 @@ class BrokerStore:
         """Return result path."""
         return self.results_dir / f"{task_id}.json"
 
+    def lock_path(self, lock_id: str) -> Path:
+        """Return lock path."""
+        return self.locks_dir / f"{lock_id}.json"
+
+    def worktree_plan_path(self, task_id: str) -> Path:
+        """Return worktree plan path."""
+        return self.worktree_plans_dir / f"{task_id}.json"
+
 
 class BrokerError(RuntimeError):
     """Broker operation failed."""
+
+
+class LockConflictError(BrokerError):
+    """Lock request conflicted with active locks."""
+
+    def __init__(self, conflicts: list[LockConflict]) -> None:
+        """Initialize from lock conflicts."""
+        self.conflicts = conflicts
+        details = ", ".join(
+            f"{conflict.lock_id}({conflict.task_id}:{conflict.mode}:{conflict.target})"
+            for conflict in conflicts
+        )
+        super().__init__(f"lock conflict: {details}")
 
 
 def read_json(path: Path) -> dict[str, object]:
@@ -234,7 +304,7 @@ def read_json(path: Path) -> dict[str, object]:
 
 
 def write_json(path: Path, payload: dict[str, object]) -> None:
-    """Write deterministic JSON object."""
+    """Write stable JSON object."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
@@ -248,6 +318,11 @@ def next_task_id(board: dict[str, object]) -> str:
     if not isinstance(tasks, list):
         raise BrokerError("board tasks must be a list")
     return f"task-{len(tasks) + 1:04d}"
+
+
+def next_lock_id(locks: list[dict[str, object]]) -> str:
+    """Return next stable lock id."""
+    return f"lock-{len(locks) + 1:04d}"
 
 
 def task_sort_key(task: dict[str, object]) -> tuple[int, str]:

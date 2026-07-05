@@ -1,6 +1,6 @@
 # Phase 154: Task Broker Locks And Worktree Planning
 
-Status: planned
+Status: complete
 
 ## Goal
 
