@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess  # nosec B404
 import sys
+import sysconfig
 import tomllib
 import venv
 from pathlib import Path
@@ -45,7 +46,7 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     )
     assert "License :: OSI Approved :: MIT License" not in metadata["project"]["classifiers"]
     assert "Programming Language :: Python :: 3.14" in metadata["project"]["classifiers"]
-    assert {"core", "agent", "hardening", "manual", "compression", "all"} <= set(
+    assert {"core", "agent", "hardening", "manual", "compression", "mcp", "all"} <= set(
         metadata["project"]["optional-dependencies"]
     )
 
@@ -67,7 +68,9 @@ def test_optional_dependency_extras_are_flattened() -> None:
     assert set(extras["manual"]) <= set(extras["all"])
     assert set(extras["hardening"]) <= set(extras["all"])
     assert extras["compression"] == ["headroom-ai"]
+    assert extras["mcp"] == ["mcp>=1.0"]
     assert "headroom-ai" not in extras["all"]
+    assert "mcp>=1.0" in extras["all"]
     assert all("hypothesis" not in dependencies for dependencies in extras.values())
     assert all("rust-just" not in dependencies for dependencies in extras.values())
     assert "semgrep; python_version < '3.13'" in extras["manual"]
@@ -78,7 +81,7 @@ def test_package_extras_install_in_clean_virtualenv(tmp_path: Path) -> None:
     """Each declared extra is accepted by pip in a clean virtualenv."""
 
     venv_dir = tmp_path / "venv"
-    venv.EnvBuilder(with_pip=True).create(venv_dir)
+    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(venv_dir)
     python = venv_dir / "bin" / "python"
 
     try:
@@ -90,10 +93,12 @@ def test_package_extras_install_in_clean_virtualenv(tmp_path: Path) -> None:
                     "pip",
                     "install",
                     "--disable-pip-version-check",
+                    "--no-build-isolation",
                     "--no-deps",
                     "-e",
                     f"{REPO_ROOT}[{extra}]",
                 ],
+                env=build_backend_env(),
                 text=True,
                 capture_output=True,
                 check=False,
@@ -110,6 +115,14 @@ def test_package_extras_install_in_clean_virtualenv(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert result.stdout.strip() == "agent_maintainer"
+
+
+def build_backend_env() -> dict[str, str]:
+    """Return environment that exposes current build backend to temp venvs."""
+
+    env = dict(os.environ)
+    env["PYTHONPATH"] = sysconfig.get_paths()["purelib"]
+    return env
 
 
 def test_package_module_entrypoint_help() -> None:

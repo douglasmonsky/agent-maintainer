@@ -1,5 +1,7 @@
 actionlint-py
 build
+setuptools
+wheel
 ruff
 pyright
 pytest

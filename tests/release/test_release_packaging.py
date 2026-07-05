@@ -21,7 +21,7 @@ release_only = pytest.mark.skipif(
     reason="set AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 to run release packaging checks",
 )
 
-EXTRAS = ("core", "agent", "hardening", "manual", "all")
+EXTRAS = ("core", "agent", "hardening", "manual", "mcp", "all")
 SOURCE_METADATA = REPO_ROOT / "src" / "agent_maintainer.egg-info"
 BUILD_DIR = REPO_ROOT / "build"
 

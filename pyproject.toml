@@ -117,6 +117,7 @@ manual = [
   "semgrep; python_version < '3.13'",
 ]
 compression = ["headroom-ai"]
+mcp = ["mcp>=1.0"]
 all = [
   "actionlint-py",
   "bandit",
@@ -129,6 +130,7 @@ all = [
   "import-linter",
   "interrogate",
   "mutmut",
+  "mcp>=1.0",
   "pip-audit",
   "pip-licenses",
   "pre-commit",

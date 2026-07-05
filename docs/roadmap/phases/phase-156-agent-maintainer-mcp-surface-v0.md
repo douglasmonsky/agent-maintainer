@@ -1,6 +1,6 @@
 # Phase 156: Agent Maintainer MCP Surface v0
 
-Status: planned
+Status: complete
 
 ## Goal
 
@@ -36,3 +36,12 @@ Cost medium-high, quality medium-high, speed high: schema-backed tools reduce sh
 ## Notes For Future Tasks
 
 Treat this file as the implementation authority for Phase 156. Keep the PR scoped to this phase unless the user explicitly asks to bundle phases.
+
+## Notes Future Tasks
+
+Implemented as optional `agent_maintainer.mcp` adapter package. The MCP surface
+keeps CLI/domain contracts authoritative, bounds output, and imports the MCP SDK
+only when `mcp serve` starts.
+
+Keep future MCP work behind this adapter boundary. Do not move verifier,
+context, attention, DocSync, or task-broker policy into MCP-specific objects.

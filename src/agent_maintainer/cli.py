@@ -32,6 +32,7 @@ Core commands:
   guidance        Generate or check AGENTS.agent-maintainer.md.
   init            Write starter files into a target repository.
   install         Install local hooks for this repository.
+  mcp             Run optional typed MCP tool surface.
   wait            Wait quietly for long-running external work.
   verify          Run configured verification profiles.
 
@@ -116,6 +117,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "hooks": hooks_main,
         "init": init_main,
         "install": install_command,
+        "mcp": mcp_command,
         "ratchet": ratchet_command,
         "report": report_command,
         "repair-plan": repair_plan_command,
@@ -156,6 +158,11 @@ def events_command(command_args: list[str]) -> int:
 def install_command(_command_args: list[str]) -> int:
     """Adapt install shared command handler signature."""
     return install()
+
+
+def mcp_command(command_args: list[str]) -> int:
+    """Run optional MCP server command lazily."""
+    return _run_module_main("agent_maintainer.mcp.server", command_args)
 
 
 def ratchet_command(command_args: list[str]) -> int:
