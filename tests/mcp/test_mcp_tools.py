@@ -183,6 +183,7 @@ def test_build_server_registers_expected_tools(monkeypatch: pytest.MonkeyPatch) 
         "events_summary",
         "verify",
     }
+    assert fake_server.tools["context_pack_pointer"] is server.context_pack_pointer
     assert fake_server.tools["verify"]() == {
         "tool": "fake",
         "ok": True,
