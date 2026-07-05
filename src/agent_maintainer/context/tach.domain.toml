@@ -64,6 +64,7 @@ depends_on = []
 [[modules]]
 path = "pack.builder"
 depends_on = [
+  "pack.attention",
   "pack.compression",
   "pack.exact_facts",
   "pack.ratchet",
@@ -72,6 +73,13 @@ depends_on = [
   "//agent_context.reading.files",
   "//agent_context.reading.logs",
   "//agent_context.sanitize",
+]
+
+[[modules]]
+path = "pack.attention"
+depends_on = [
+  "//agent_maintainer.attention.builder",
+  "//agent_maintainer.attention.models",
 ]
 
 [[modules]]

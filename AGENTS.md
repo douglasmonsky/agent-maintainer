@@ -21,21 +21,21 @@ profile before completion. Do not duplicate a same-state hook pass manually.
 If hooks are unavailable, bypassed, or need a failure reproduced manually, run:
 
 ```bash
-just verify-precommit
+just vp
 ```
 
 Before opening or merging a larger change, reach a coherent final state, then
 run one broad local profile, usually:
 
 ```bash
-just verify
+just v
 ```
 
-Use `ci` instead when diff/base-ref, workflow, or profile behavior changed. Run
+Use `ci` instead when diff/base-ref, workflow, or profile behavior changed: `just vc`. Run
 both `full` and `ci` only when that overlap is under test. Run `security` or
 `manual` when touching those gates, before release, or when explicitly requested.
 
-Use `just wait-github <run-id>` or `just wait-verifier <run-id>` for long
+Use `just wg <run-id>` or `just wv <run-id>` for long
 GitHub Actions or verifier jobs instead of hand-polling.
 
 Do not claim completion while required hooks or checks for the touched surface

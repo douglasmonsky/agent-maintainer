@@ -35,6 +35,15 @@ verify-security:
 verify-manual:
     python3 -m agent_maintainer verify --profile manual
 
+alias vf := verify-fast
+alias vp := verify-precommit
+alias v := verify
+alias vc := verify-ci
+alias vs := verify-security
+alias vm := verify-manual
+alias wg := wait-github
+alias wv := wait-verifier
+
 wait-github RUN_ID:
     python3 -m agent_maintainer wait github-run {{RUN_ID}}
 

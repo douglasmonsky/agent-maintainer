@@ -106,7 +106,12 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "- YAML linting" in text
     assert "- TOML formatting" in text
     assert "- Schema validation" in text
-    assert "Prefer repo wrappers when present" in text
+    assert "Prefer shortest repo wrappers when present" in text
+    assert "just vp" in text
+    assert "just vc" in text
+    assert "just wg <run-id>" in text
+    assert "just wv <run-id>" in text
+    assert "Readable forms remain valid" in text
     assert "just verify-precommit" in text
     assert "just wait-github <run-id>" in text
     assert "just wait-verifier <run-id>" in text
