@@ -93,8 +93,13 @@ Track work:
 - [ ] Phase 158: Local Observability Export Contract
 - [ ] Phase 159: Scoring Dataset Optimization Prep
 - [ ] Phase 160: ROI Loop Dogfood Case Study
+- [ ] Phase 161: Task Broker Adapter Contracts
+- [ ] Phase 162: Task Broker Model-Tier Routing Policy
 
 ## Future Work
+
+- Keep agent orchestration framework work behind replaceable adapter contracts:
+  [`docs/roadmap/agent-orchestration-adapter-doctrine.md`](roadmap/agent-orchestration-adapter-doctrine.md).
 
 - Continue adding section-level DocSync claims as public docs materially change,
   especially where a claim can point to durable implementation or test evidence.

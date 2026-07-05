@@ -156,3 +156,5 @@ This compact roadmap index points to split specs under `docs/roadmap`; use `docs
 | 158 | [Local Observability Export Contract](phases/phase-158-local-observability-export-contract.md) |
 | 159 | [Scoring Dataset Optimization Prep](phases/phase-159-scoring-dataset-optimization-prep.md) |
 | 160 | [ROI Loop Dogfood Case Study](phases/phase-160-roi-loop-dogfood-case-study.md) |
+| 161 | [Task Broker Adapter Contracts](phases/phase-161-task-broker-adapter-contracts.md) |
+| 162 | [Task Broker Model-Tier Routing Policy](phases/phase-162-task-broker-model-tier-routing-policy.md) |
