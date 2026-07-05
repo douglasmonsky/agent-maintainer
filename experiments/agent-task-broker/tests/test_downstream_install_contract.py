@@ -53,8 +53,39 @@ def test_downstream_install_and_cli_contract(tmp_path: Path) -> None:
         in run([broker, "--root", str(repo), "claim", "task-0001", "--agent", "codex"]).stdout
     )
     assert (
+        "LOCKED lock-0001 task-0001 write path src/example.py"
+        in run(
+            [
+                broker,
+                "--root",
+                str(repo),
+                "lock",
+                "claim",
+                "task-0001",
+                "--kind",
+                "path",
+                "--target",
+                "src/example.py",
+                "--mode",
+                "write",
+            ],
+        ).stdout
+    )
+    assert (
+        "lock-0001 task-0001 write path src/example.py"
+        in run(
+            [broker, "--root", str(repo), "locks"],
+        ).stdout
+    )
+    assert (
         "task_id"
         in run([broker, "--root", str(repo), "handoff", "task-0001", "--format", "json"]).stdout
+    )
+    assert (
+        "task/task-0001"
+        in run(
+            [broker, "--root", str(repo), "worktree", "plan", "task-0001", "--format", "json"],
+        ).stdout
     )
     assert (
         "COMPLETED task-0001: Done"
