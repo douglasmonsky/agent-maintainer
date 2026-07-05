@@ -160,6 +160,7 @@ def test_build_server_registers_expected_tools(monkeypatch: pytest.MonkeyPatch) 
     def fake_run_tool_request(_request: object) -> McpToolResult:
         return McpToolResult(
             name="fake",
+            description="Fake tool.",
             command=("fake",),
             cwd=REPO_ROOT,
             returncode=0,
@@ -186,6 +187,7 @@ def test_build_server_registers_expected_tools(monkeypatch: pytest.MonkeyPatch) 
     assert fake_server.tools["context_pack_pointer"] is server.context_pack_pointer
     assert fake_server.tools["verify"]() == {
         "tool": "fake",
+        "description": "Fake tool.",
         "ok": True,
         "returncode": 0,
         "command": ["fake"],

@@ -25,6 +25,7 @@ class McpToolResult:
     """Compact command result suitable for MCP responses."""
 
     name: str
+    description: str
     command: tuple[str, ...]
     cwd: Path
     returncode: int
@@ -44,6 +45,7 @@ class McpToolResult:
 
         return {
             "tool": self.name,
+            "description": self.description,
             "ok": self.ok,
             "returncode": self.returncode,
             "command": list(self.command),

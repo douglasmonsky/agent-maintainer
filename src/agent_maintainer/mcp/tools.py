@@ -8,6 +8,8 @@ from pathlib import Path
 
 from agent_maintainer.mcp.models import McpToolRequest, McpToolResult
 
+VERIFY_TIMEOUT_SECONDS = 1_800
+
 
 def verify_request(
     *,
@@ -32,7 +34,7 @@ def verify_request(
         name="verify",
         description="Run an Agent Maintainer verification profile.",
         command=tuple(command),
-        timeout_seconds=1_800,
+        timeout_seconds=VERIFY_TIMEOUT_SECONDS,
     )
 
 
@@ -222,6 +224,7 @@ def run_tool_request(
     )
     return McpToolResult(
         name=request.name,
+        description=request.description,
         command=request.command,
         cwd=working_dir,
         returncode=completed.returncode,
@@ -245,4 +248,5 @@ def _bound_text(text: str, *, limit: int) -> tuple[str, bool]:
         return text, False
     marker = f"\n[output truncated to last {limit} characters]\n"
     keep = max(0, limit - len(marker))
-    return f"{marker}{text[-keep:]}", True
+    tail = text[-keep:]
+    return f"{marker}{tail}", True
