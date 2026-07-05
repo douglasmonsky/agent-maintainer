@@ -17,15 +17,46 @@ from tests.support.paths import REPO_ROOT
 MISSING_DEPENDENCY_STATUS = 2
 
 
-def test_mcp_tool_requests_use_current_module_entrypoints() -> None:
-    """Tool requests should keep behavior backed by existing CLIs."""
+class FakeFastMCP:
+    """Small FastMCP stand-in that records registered tools."""
 
-    verify = tools.verify_request(profile="precommit", staged=True, force=True)
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.tools: dict[str, Callable[..., object]] = {}
+        self.ran = False
+
+    def tool(self) -> Callable[[Callable[..., object]], Callable[..., object]]:
+        """Return a decorator matching FastMCP's tool registration shape."""
+
+        def decorate(function: Callable[..., object]) -> Callable[..., object]:
+            self.tools[function.__name__] = function
+            return function
+
+        return decorate
+
+    def run(self) -> None:
+        """Record that the server loop would start."""
+        self.ran = True
+
+
+def test_mcp_tool_requests_use_current_module_entrypoints() -> None:
+    """Tool requests are backed by existing CLIs."""
+    verify = tools.verify_request(
+        profile="precommit",
+        base_ref="origin/main",
+        compare_branch="HEAD",
+        staged=True,
+        force=True,
+    )
     assert verify.command[:3] == (sys.executable, "-m", "agent_maintainer")
     assert verify.command[3:] == (
         "verify",
         "--profile",
         "precommit",
+        "--base-ref",
+        "origin/main",
+        "--compare-branch",
+        "HEAD",
         "--staged",
         "--force",
     )
@@ -41,7 +72,11 @@ def test_mcp_tool_requests_use_current_module_entrypoints() -> None:
     assert "--format" in failures.command
     assert "json" in failures.command
 
-    docsync = tools.docsync_check_request(base="origin/main")
+    docsync = tools.docsync_check_request(
+        base="origin/main",
+        config=".docsync.yml",
+        trace=".verify-logs/docsync.json",
+    )
     assert docsync.command == (
         sys.executable,
         "-m",
@@ -49,12 +84,78 @@ def test_mcp_tool_requests_use_current_module_entrypoints() -> None:
         "check",
         "--base",
         "origin/main",
+        "--config",
+        ".docsync.yml",
+        "--trace",
+        ".verify-logs/docsync.json",
+    )
+
+
+def test_mcp_context_file_and_runtime_requests_are_bounded_json() -> None:
+    """Context, event, and attention tools return bounded JSON commands."""
+    context_file = tools.context_file_request(
+        path="src/agent_maintainer/mcp/tools.py",
+        lines="1:20",
+        symbol="verify_request",
+        around=10,
+        context_lines=4,
+    )
+    assert context_file.command == (
+        sys.executable,
+        "-m",
+        "agent_maintainer",
+        "context",
+        "file",
+        "src/agent_maintainer/mcp/tools.py",
+        "--format",
+        "json",
+        "--lines",
+        "1:20",
+        "--symbol",
+        "verify_request",
+        "--around",
+        "10",
+        "--context",
+        "4",
+    )
+
+    events = tools.events_summary_request(
+        events_dir=".verify-logs/events",
+        limit=2,
+        summary="summary",
+    )
+    assert events.command == (
+        sys.executable,
+        "-m",
+        "agent_maintainer",
+        "events",
+        "summary",
+        "--events-dir",
+        ".verify-logs/events",
+        "--limit",
+        "2",
+        "--format",
+        "json",
+    )
+
+    attention = tools.attention_request(target=".", limit=3)
+    assert attention.command == (
+        sys.executable,
+        "-m",
+        "agent_maintainer",
+        "attention",
+        "--target",
+        ".",
+        "top",
+        "--limit",
+        "3",
+        "--format",
+        "json",
     )
 
 
 def test_context_pack_request_returns_pointer_not_full_pack_command() -> None:
     """MCP context packs must default to compact pointer output."""
-
     request = tools.context_pack_pointer_request(check="pyright", budget=1000)
     assert request.command[:4] == (
         sys.executable,
@@ -68,7 +169,10 @@ def test_context_pack_request_returns_pointer_not_full_pack_command() -> None:
     assert "json" in request.command
 
 
-def test_run_tool_request_bounds_output(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_run_tool_request_bounds_output(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
     """Tool execution captures bounded output instead of leaking transcripts."""
 
     def fake_run(*args: object, **kwargs: object) -> SimpleNamespace:
@@ -94,15 +198,35 @@ def test_run_tool_request_bounds_output(monkeypatch: pytest.MonkeyPatch, tmp_pat
     result = tools.run_tool_request(short_request, cwd=tmp_path)
 
     assert result.returncode == 1
+    assert result.description == request.description
     assert result.stdout_truncated is True
     assert result.stderr_truncated is True
     assert result.stdout.endswith("x")
     assert result.stderr.endswith("y")
 
 
+def test_run_tool_request_leaves_short_output_unmodified(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Short command output is returned without truncation markers."""
+
+    def fake_run(*args: object, **kwargs: object) -> SimpleNamespace:
+        return SimpleNamespace(returncode=0, stdout="ok", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    result = tools.run_tool_request(tools.verify_request(profile="fast"), cwd=tmp_path)
+
+    assert result.returncode == 0
+    assert result.stdout == "ok"
+    assert result.stderr == ""
+    assert result.stdout_truncated is False
+    assert result.stderr_truncated is False
+
+
 def test_mcp_serve_help_does_not_require_optional_dependency() -> None:
     """The help path must work in core installs without the MCP extra."""
-
     result = subprocess.run(  # nosec B603
         [
             sys.executable,
@@ -113,7 +237,10 @@ def test_mcp_serve_help_does_not_require_optional_dependency() -> None:
             "--help",
         ],
         cwd=REPO_ROOT,
-        env={"PYTHONPATH": str(REPO_ROOT / "src"), "PYTHONDONTWRITEBYTECODE": "1"},
+        env={
+            "PYTHONPATH": str(REPO_ROOT / "src"),
+            "PYTHONDONTWRITEBYTECODE": "1",
+        },
         text=True,
         capture_output=True,
         check=False,
@@ -139,23 +266,24 @@ def test_mcp_serve_missing_dependency_exits_with_install_hint(
     assert "agent-maintainer[mcp]" in captured.err
 
 
+def test_mcp_serve_runs_loaded_server(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Starting the server runs the loaded FastMCP server."""
+    seen_servers: list[FakeFastMCP] = []
+
+    def factory(name: str) -> FakeFastMCP:
+        fast_mcp = FakeFastMCP(name)
+        seen_servers.append(fast_mcp)
+        return fast_mcp
+
+    monkeypatch.setattr(server, "_load_fastmcp", lambda: factory)
+
+    assert server.main(["serve"]) == 0
+    assert seen_servers[0].ran is True
+    assert "verify" in seen_servers[0].tools
+
+
 def test_build_server_registers_expected_tools(monkeypatch: pytest.MonkeyPatch) -> None:
     """FastMCP registration stays limited to the Phase 156 surface."""
-
-    class FakeFastMCP:
-        def __init__(self, name: str) -> None:
-            self.name = name
-            self.tools: dict[str, object] = {}
-
-        def tool(self) -> Callable[[Callable[..., object]], Callable[..., object]]:
-            def decorate(function: Callable[..., object]) -> Callable[..., object]:
-                self.tools[function.__name__] = function
-                return function
-
-            return decorate
-
-        def run(self) -> None:
-            raise AssertionError("test should not start server loop")
 
     def fake_run_tool_request(_request: object) -> McpToolResult:
         return McpToolResult(
@@ -185,6 +313,12 @@ def test_build_server_registers_expected_tools(monkeypatch: pytest.MonkeyPatch) 
         "verify",
     }
     assert fake_server.tools["context_pack_pointer"] is server.context_pack_pointer
+    assert fake_server.tools["context_failures"]()["ok"] is True
+    assert fake_server.tools["context_pack_pointer"]()["ok"] is True
+    assert fake_server.tools["context_file"]("README.md")["ok"] is True
+    assert fake_server.tools["events_summary"]()["ok"] is True
+    assert fake_server.tools["attention"]()["ok"] is True
+    assert fake_server.tools["docsync_check"]()["ok"] is True
     assert fake_server.tools["verify"]() == {
         "tool": "fake",
         "description": "Fake tool.",
