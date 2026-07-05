@@ -72,7 +72,7 @@ proportional to the change:
 - coherent chunk: run the related focused suite plus `tach check --exact` or
   `just change-plan-check` when architecture or change budgets are involved;
 - before commit: rely on trusted Stop/SubagentStop hooks when they already ran
-  `precommit` for the final same-state tree; run `just verify-precommit` only
+  `precommit` for the final same-state tree; run `just vp` only
   when hooks are unavailable, bypassed, or failure needs manual reproduction;
 - before PR or merge: after a coherent final state, run one broad local profile,
   usually `full`;

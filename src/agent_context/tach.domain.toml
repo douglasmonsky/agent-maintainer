@@ -5,6 +5,10 @@
 depends_on = []
 
 [[modules]]
+path = "attention_rendering"
+depends_on = []
+
+[[modules]]
 path = "budget"
 depends_on = ["models"]
 
@@ -48,6 +52,7 @@ depends_on = ["models"]
 [[modules]]
 path = "pack_rendering"
 depends_on = [
+  "attention_rendering",
   "budget",
   "formatting",
   "models",

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from agent_context.attention_rendering import attention_lines, attention_pointer_lines
 from agent_context.budget import bound_text
 from agent_context.formatting import UNTRUSTED_EXCERPT_LABEL
 from agent_context.models import ContextBudget
@@ -34,6 +35,7 @@ def render_pack_markdown(
         "",
     ]
     add_section(lines, "Exact Repair Facts", exact_fact_lines(payload["exact_repair_facts"]))
+    add_section(lines, "Attention", attention_lines(payload.get("attention")))
     add_section(
         lines, "Supporting Context", supporting_context_lines(payload["supporting_context"])
     )
@@ -87,6 +89,7 @@ def render_pack_pointer(
     fact_lines = fact_pointer_lines(facts, fact_limit)
     ranked_commands = next_action_commands(facts, payload.get("expansion_commands"))
     lines.extend(fact_lines or ["1. (no structured repair facts found)"])
+    lines.extend(attention_pointer_lines(payload.get("attention")))
     lines.extend(
         (
             "",

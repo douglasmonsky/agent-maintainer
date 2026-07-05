@@ -76,10 +76,13 @@ Do not read it during normal coding unless changing guidance.
 
 ## Required Commands
 
-- Prefer repo wrappers when present: `just verify-precommit`,
+- Prefer shortest repo wrappers when present: `just vp` (precommit),
+ `just v` (full), `just vc` (CI-equivalent),
+ `just wg <run-id>`, `just wv <run-id>`.
+- Readable forms remain valid: `just verify-precommit`,
  `just verify`, `just verify-ci`, `just wait-github <run-id>`,
  `just wait-verifier <run-id>`.
-- Normal finish fallback: `just verify-precommit` only when trusted
+- Normal finish fallback: `just vp` only when trusted
  hooks are unavailable, bypassed, or failure reproduction is needed.
 - Trusted hooks already run `fast` after edits and `precommit`
  at stop; do not duplicate a same-state hook pass manually.
