@@ -31,6 +31,23 @@ def test_claude_settings_template_declares_supported_events() -> None:
     assert settings["hooks"]["PostToolUse"][0]["matcher"] == "Write|Edit|MultiEdit"
     command = settings["hooks"]["PostToolUse"][0]["hooks"][0]["command"]
     assert ".claude/hooks/post_tool_use.py" in command
+    assert "async" not in settings["hooks"]["PostToolUse"][0]["hooks"][0]
+    assert "async" not in settings["hooks"]["Stop"][0]["hooks"][0]
+    assert "asyncRewake" not in settings["hooks"]["SubagentStop"][0]["hooks"][0]
+
+
+def test_claude_async_rewake_applies_only_to_stop_hooks() -> None:
+    """Claude Code async rewake is opt-in for slow stop-time hooks."""
+
+    settings = json.loads(templates.claude_settings(async_rewake_stop=True))
+
+    assert "async" not in settings["hooks"]["PostToolUse"][0]["hooks"][0]
+    stop_hook = settings["hooks"]["Stop"][0]["hooks"][0]
+    subagent_hook = settings["hooks"]["SubagentStop"][0]["hooks"][0]
+    assert stop_hook["async"] is True
+    assert stop_hook["asyncRewake"] is True
+    assert subagent_hook["async"] is True
+    assert subagent_hook["asyncRewake"] is True
 
 
 def test_hook_wrappers_are_valid_python() -> None:

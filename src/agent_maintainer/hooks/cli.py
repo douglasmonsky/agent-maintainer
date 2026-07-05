@@ -31,6 +31,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     install_parser.add_argument("--force", action="store_true", help="overwrite after backing up")
     install_parser.add_argument("--yes", action="store_true", help="confirm user-scope writes")
     install_parser.add_argument("--dry-run", action="store_true", help="print planned writes only")
+    install_parser.add_argument(
+        "--async-rewake-stop",
+        action="store_true",
+        help="install Claude Code Stop/SubagentStop hooks with async rewake enabled",
+    )
 
     status_parser = subparsers.add_parser("status", help="show managed hook status")
     add_common_client_args(status_parser)
@@ -65,6 +70,7 @@ def main(argv: list[str]) -> int:
                 force=args.force,
                 yes=args.yes,
                 dry_run=args.dry_run,
+                async_rewake_stop=args.async_rewake_stop,
             )
         )
     if args.command == "status":

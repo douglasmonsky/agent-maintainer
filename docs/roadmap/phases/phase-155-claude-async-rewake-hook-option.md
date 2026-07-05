@@ -1,6 +1,6 @@
 # Phase 155: Claude Async Rewake Hook Option
 
-Status: planned
+Status: complete
 
 ## Goal
 

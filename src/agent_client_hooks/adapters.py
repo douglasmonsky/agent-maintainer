@@ -38,6 +38,7 @@ class InstallOptions:
     force: bool = False
     yes: bool = False
     dry_run: bool = False
+    async_rewake_stop: bool = False
 
 
 @dataclass(frozen=True)
@@ -71,7 +72,11 @@ class AgentClientAdapter(Protocol):
         """Return current install status for target and scope."""
         raise NotImplementedError
 
-    def install(self, target: Path, scope: str) -> tuple[PlannedWrite, ...]:
+    def install(
+        self,
+        target: Path,
+        scope: str,
+    ) -> tuple[PlannedWrite, ...]:
         """Return planned writes for target and scope."""
         raise NotImplementedError
 
@@ -95,7 +100,11 @@ class CodexAdapter:
         """Return Codex hook install status."""
         return hook_status(self, target, scope)
 
-    def install(self, target: Path, scope: str) -> tuple[PlannedWrite, ...]:
+    def install(
+        self,
+        target: Path,
+        scope: str,
+    ) -> tuple[PlannedWrite, ...]:
         """Return Codex hook installation writes."""
         root = target.resolve()
         plans = (
@@ -150,14 +159,26 @@ class ClaudeCodeAdapter:
         """Return Claude Code hook install status."""
         return hook_status(self, target, scope)
 
-    def install(self, target: Path, scope: str) -> tuple[PlannedWrite, ...]:
+    def install(
+        self,
+        target: Path,
+        scope: str,
+        *,
+        async_rewake_stop: bool = False,
+    ) -> tuple[PlannedWrite, ...]:
         """Return Claude Code hook installation writes."""
         root = target.resolve()
+        settings_description = "Claude Code hook settings"
+        if async_rewake_stop:
+            settings_description = "Claude Code hook settings (async rewake Stop/SubagentStop)"
         plans = (
             PlannedWrite(
                 scoped_path(root, scope, self.config_paths[0]),
-                templates.claude_settings(user_scope=scope == USER_SCOPE),
-                "Claude Code hook settings",
+                templates.claude_settings(
+                    user_scope=scope == USER_SCOPE,
+                    async_rewake_stop=async_rewake_stop,
+                ),
+                settings_description,
                 merge_json=True,
             ),
         )
