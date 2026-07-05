@@ -463,6 +463,7 @@ known_first_party = [
   "agent_context",
   "agent_client_hooks",
   "agent_maintainer",
+  "agent_task_broker",
   "agent_repair_facts",
   "agent_run_artifacts",
   "archguard",
