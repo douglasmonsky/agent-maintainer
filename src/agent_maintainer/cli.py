@@ -41,6 +41,7 @@ Agent repair commands:
   context         Read bounded failure, log, file, and diff context.
   ratchet         Inspect legacy-ratchet baselines and repair targets.
   repair-plan     Generate repair guidance from current diagnostics.
+  scoring         Manage local scoring dataset examples.
   test-intel      Suggest relevant tests and deeper test targets.
 
 Operations:
@@ -59,6 +60,7 @@ Examples:
   python -m agent_maintainer guidance --check
   python -m agent_maintainer hooks status
   python -m agent_maintainer events summary
+  python -m agent_maintainer scoring examples export --format jsonl
   python -m agent_maintainer wait github-run <run-id>
   python -m agent_maintainer report html
 """
@@ -121,6 +123,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "ratchet": ratchet_command,
         "report": report_command,
         "repair-plan": repair_plan_command,
+        "scoring": scoring_command,
         "test-intel": test_intel_command,
         "wait": wait_command,
         "verify": verify_main,
@@ -178,6 +181,11 @@ def report_command(command_args: list[str]) -> int:
 def repair_plan_command(command_args: list[str]) -> int:
     """Run repair-plan command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.repair_plan.cli", command_args)
+
+
+def scoring_command(command_args: list[str]) -> int:
+    """Run scoring command lazily to keep entrypoint light."""
+    return _run_module_main("agent_maintainer.scoring.cli", command_args)
 
 
 def test_intel_command(command_args: list[str]) -> int:

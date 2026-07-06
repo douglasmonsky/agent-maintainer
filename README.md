@@ -245,6 +245,8 @@ python3 -m agent_maintainer events summary
 python3 -m agent_maintainer events waste
 python3 -m agent_maintainer events export --format jsonl
 python3 -m agent_maintainer events export --format otel-json
+python3 -m agent_maintainer scoring examples list
+python3 -m agent_maintainer scoring examples export --format jsonl
 python3 -m agent_maintainer verify --profile full --async
 python3 -m agent_maintainer wait github-run <run-id>
 python3 -m agent_maintainer wait verifier <run-id>
