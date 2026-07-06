@@ -1,6 +1,6 @@
 # Phase 161: Task Broker Adapter Contracts
 
-Status: planned
+Status: completed
 
 ## Goal
 
