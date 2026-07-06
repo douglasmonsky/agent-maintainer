@@ -16,6 +16,10 @@ from agent_task_broker.worktrees import build_worktree_plan, create_worktree
 
 WORKER_STATUS_MANUAL = "manual"
 WORKER_STATUSES = (*RESULT_STATUSES, WORKER_STATUS_MANUAL)
+CODEX_SDK_CLIENT = "AsyncCodex"
+CODEX_SDK_PACKAGE = "openai-codex"
+CODEX_SDK_PLAN_BACKEND = "codex-sdk-plan"
+CODEX_SDK_SANDBOX = "workspace_write"
 
 
 class BackendError(RuntimeError):
@@ -207,6 +211,35 @@ class ManualWorkerBackend:
 
 
 @dataclass(frozen=True)
+class CodexSdkWorkerBackend:
+    """Plan-only Codex SDK worker backend that never spawns agents."""
+
+    backend_name: str = CODEX_SDK_PLAN_BACKEND
+
+    def run(
+        self,
+        task: WorkerTask,
+        workspace: WorkspaceHandle,
+        result: ResultInput | None = None,
+    ) -> WorkerRun:
+        """Return a Codex SDK worker request plan without executing it."""
+
+        if result is not None:
+            return ManualWorkerBackend(backend_name=self.backend_name).run(
+                task,
+                workspace,
+                result,
+            )
+        request = codex_sdk_worker_request(task, workspace)
+        return WorkerRun(
+            task_id=task.task_id,
+            status=WORKER_STATUS_MANUAL,
+            summary="codex sdk backend planned worker request; no agent was spawned",
+            result=request,
+        )
+
+
+@dataclass(frozen=True)
 class GitWorktreeWorkspaceBackend:
     """Git worktree workspace backend with explicit creation."""
 
@@ -367,6 +400,61 @@ def disabled_backend_diagnostic(
         status="disabled",
         reason=f"missing optional dependency: {dependency}",
         install_hint=install_hint,
+    )
+
+
+def codex_sdk_worker_request(
+    task: WorkerTask,
+    workspace: WorkspaceHandle,
+) -> dict[str, object]:
+    """Return deterministic plan for a future Codex SDK worker run."""
+
+    prompt = codex_sdk_worker_prompt(task, workspace)
+    return {
+        "task_id": task.task_id,
+        "status": WORKER_STATUS_MANUAL,
+        "backend": CODEX_SDK_PLAN_BACKEND,
+        "spawn_enabled": False,
+        "orchestrator": "codex-sdk",
+        "sdk": {
+            "language": "python",
+            "package": CODEX_SDK_PACKAGE,
+            "client": CODEX_SDK_CLIENT,
+            "sandbox": CODEX_SDK_SANDBOX,
+        },
+        "workspace": {
+            "path": str(workspace.path),
+            "branch": workspace.branch,
+            "base": workspace.base,
+            "created": workspace.created,
+        },
+        "request": {
+            "thread": "start",
+            "resume_thread_id": None,
+            "prompt": prompt,
+        },
+        "future_execution": {
+            "description": (
+                "Enable this backend only after wiring the official Codex SDK "
+                "runner to execute the request and persist the returned thread."
+            ),
+            "requires_user_enablement": True,
+        },
+    }
+
+
+def codex_sdk_worker_prompt(task: WorkerTask, workspace: WorkspaceHandle) -> str:
+    """Return compact prompt for a planned Codex SDK worker."""
+
+    return "\n".join(
+        (
+            f"Task broker task: {task.task_id}",
+            f"Workspace: {workspace.path}",
+            f"Branch: {workspace.branch}",
+            "Use the handoff capsule below. Stay within allowed paths. "
+            "Record the structured task result when done.",
+            json.dumps(task.capsule, sort_keys=True),
+        ),
     )
 
 

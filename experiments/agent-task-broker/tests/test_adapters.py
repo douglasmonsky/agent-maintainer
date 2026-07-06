@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_task_broker.adapters import (
+    CodexSdkWorkerBackend,
     DisabledBackend,
     GitWorktreeWorkspaceBackend,
     LocalJsonlTraceSink,
@@ -80,6 +81,83 @@ def test_manual_worker_wraps_supplied_result_input(tmp_path: Path) -> None:
         "reason": "",
         "changed_files": [],
     }
+
+
+def test_codex_sdk_backend_plans_request(tmp_path: Path) -> None:
+    """Codex SDK worker returns an execution plan without spawning."""
+
+    task = WorkerTask(
+        task_id="task-0001",
+        capsule={
+            "task_id": "task-0001",
+            "goal": "Review task",
+            "allowed_paths": ["src/pkg.py"],
+        },
+    )
+    workspace = WorkspaceHandle(
+        task_id="task-0001",
+        path=tmp_path,
+        branch="task/task-0001",
+        base="HEAD",
+    )
+
+    run = CodexSdkWorkerBackend().run(task, workspace)
+
+    assert isinstance(run, WorkerRun)
+    assert run.__class__.__module__ == "agent_task_broker.adapters"
+    assert run.status == "manual"
+    assert "no agent was spawned" in run.summary
+    assert run.result is not None
+    assert run.result["backend"] == "codex-sdk-plan"
+    assert run.result["spawn_enabled"] is False
+    assert run.result["orchestrator"] == "codex-sdk"
+    assert run.result["sdk"] == {
+        "language": "python",
+        "package": "openai-codex",
+        "client": "AsyncCodex",
+        "sandbox": "workspace_write",
+    }
+    assert run.result["workspace"] == {
+        "path": str(tmp_path),
+        "branch": "task/task-0001",
+        "base": "HEAD",
+        "created": False,
+    }
+    assert "command" not in run.result
+    assert run.result["request"]["thread"] == "start"
+    assert run.result["request"]["resume_thread_id"] is None
+    assert "task-0001" in str(run.result["request"]["prompt"])
+    assert "src/pkg.py" in str(run.result["request"]["prompt"])
+
+
+def test_codex_sdk_backend_wraps_result(tmp_path: Path) -> None:
+    """Codex SDK worker wraps supplied local structured results."""
+
+    task = WorkerTask(
+        task_id="task-0001",
+        capsule={"task_id": "task-0001", "goal": "Review task"},
+    )
+    workspace = WorkspaceHandle(
+        task_id="task-0001",
+        path=tmp_path,
+        branch="task/task-0001",
+        base="HEAD",
+    )
+    result = ResultInput(
+        root=tmp_path,
+        task_id="task-0001",
+        status="done",
+        summary="Done",
+        verification=("pytest -q",),
+    )
+
+    run = CodexSdkWorkerBackend().run(task, workspace, result)
+
+    assert run.status == "done"
+    assert run.summary == "Done"
+    assert run.result is not None
+    assert "backend" not in run.result
+    assert run.result["verification"] == ["pytest -q"]
 
 
 def test_git_worktree_backend_plan_is_explicit_opt_in(tmp_path: Path) -> None:
