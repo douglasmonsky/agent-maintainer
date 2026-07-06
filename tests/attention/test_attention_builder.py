@@ -5,8 +5,14 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from typing import cast
 
-from agent_maintainer.attention import builder
+import pytest
+
+from agent_maintainer.attention import builder, signals
+
+TRACKED_FILE_CAP_TEST_TOTAL = 5
+TRACKED_FILE_CAP_TEST_LIMIT = 2
 
 
 def test_attention_ledger_is_deterministic_with_missing_inputs(tmp_path: Path) -> None:
@@ -73,6 +79,50 @@ def test_attention_ledger_scores_untracked_repo_files(tmp_path: Path) -> None:
     by_path = {score.path: score for score in ledger.files}
 
     assert by_path["src/new_module.py"].components["git_changed"] == 1.0
+
+
+def test_attention_ledger_collects_tracked_files_once(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Builder shares one tracked-file collection with signal readers."""
+
+    _write(tmp_path / "src" / "app.py", "VALUE = 1\n")
+    _write(
+        tmp_path / ".docsync" / "trace.yml",
+        "documents:\n  app:\n    path: src/app.py\n",
+    )
+    calls = 0
+    original = signals.tracked_files
+
+    def counted_tracked_files(repo_root: Path) -> tuple[str, ...]:
+        nonlocal calls
+        calls += 1
+        return original(repo_root)
+
+    monkeypatch.setattr(signals, "tracked_files", counted_tracked_files)
+
+    ledger = builder.build_attention_ledger(tmp_path)
+
+    assert calls == 1
+    assert ledger.inputs["docsync_files"] == 1
+
+
+def test_attention_ledger_reports_tracked_file_cap(tmp_path: Path) -> None:
+    """Large repositories use deterministic cap and report guard note."""
+
+    for index in range(TRACKED_FILE_CAP_TEST_TOTAL):
+        _write(tmp_path / "src" / f"file_{index}.py", f"VALUE = {index}\n")
+
+    ledger = builder.build_attention_ledger(
+        tmp_path,
+        max_tracked_files=TRACKED_FILE_CAP_TEST_LIMIT,
+    )
+    guards = cast(dict[str, object], ledger.inputs["performance_guards"])
+
+    assert guards["all_tracked_file_count"] == TRACKED_FILE_CAP_TEST_TOTAL
+    assert guards["scored_file_count"] == TRACKED_FILE_CAP_TEST_LIMIT
+    assert guards["notes"] == ["tracked file set capped 2/5 using deterministic sampling"]
 
 
 def _init_repo(path: Path) -> None:
