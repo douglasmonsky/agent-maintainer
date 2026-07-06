@@ -63,6 +63,11 @@ exact duplicates, but the agent should still avoid unnecessary overlapping runs.
 
 They prefer `.venv/bin/python` or `venv/bin/python` when present. Run `python3 -m agent_maintainer doctor` if hooks are configured but not behaving as expected.
 
+A Bash `gh pr create` `PostToolUse` hook detects created PR URLs and asks
+Codex to continue by running the PR-check waiter before review or merge. Codex
+does not currently run async command hooks, so this is a continuation handoff
+rather than a background rewake.
+
 ## Audit Trail
 
 Successful Codex hook passes are not guaranteed to appear in Codex session JSONL.

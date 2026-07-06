@@ -16,6 +16,7 @@ def test_agent_client_hooks_templates_are_direct_package_surface() -> None:
     codex_config = templates.codex_config_file()
     assert "agent-maintainer:codex-hooks" in codex_config
     assert ".codex/hooks/post_edit_fast_gate.py" in codex_config
+    assert ".codex/hooks/post_pr_wait.py" in codex_config
 
     claude_settings = json.loads(templates.claude_settings())
     assert set(claude_settings["hooks"]) == {"PostToolUse", "Stop", "SubagentStop"}
@@ -30,6 +31,7 @@ def test_agent_client_hooks_adapters_plan_existing_clients(tmp_path: Path) -> No
     assert [plan.description for plan in plans] == [
         "Codex hook config",
         "Codex post-edit hook",
+        "Codex PR wait hook",
         "Codex stop hook",
         "Codex hook-audit compatibility shim",
     ]

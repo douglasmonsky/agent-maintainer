@@ -93,6 +93,7 @@ class CodexAdapter:
     config_paths: tuple[str, ...] = (".codex/config.toml",)
     hook_paths: tuple[str, ...] = (
         templates.CODEX_POST_HOOK,
+        templates.CODEX_PR_WAIT_HOOK,
         templates.CODEX_STOP_HOOK,
     )
 
@@ -125,6 +126,11 @@ class CodexAdapter:
                 "Codex post-edit hook",
             ),
             PlannedWrite(
+                root / templates.CODEX_PR_WAIT_HOOK,
+                templates.codex_pr_wait_hook(),
+                "Codex PR wait hook",
+            ),
+            PlannedWrite(
                 root / templates.CODEX_STOP_HOOK, templates.codex_stop_hook(), "Codex stop hook"
             ),
             PlannedWrite(
@@ -151,6 +157,7 @@ class ClaudeCodeAdapter:
     config_paths: tuple[str, ...] = (".claude/settings.json",)
     hook_paths: tuple[str, ...] = (
         templates.CLAUDE_POST_HOOK,
+        templates.CLAUDE_PR_WAIT_HOOK,
         templates.CLAUDE_STOP_HOOK,
         templates.CLAUDE_SUBAGENT_STOP_HOOK,
     )
@@ -190,6 +197,11 @@ class ClaudeCodeAdapter:
                 root / templates.CLAUDE_POST_HOOK,
                 templates.claude_post_hook(),
                 "Claude Code post-edit hook",
+            ),
+            PlannedWrite(
+                root / templates.CLAUDE_PR_WAIT_HOOK,
+                templates.claude_pr_wait_hook(),
+                "Claude Code PR wait hook",
             ),
             PlannedWrite(
                 root / templates.CLAUDE_STOP_HOOK,

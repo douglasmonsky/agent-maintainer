@@ -16,8 +16,10 @@ from agent_client_hooks.constants import (
 MANAGED_PREFIX = "agent-maintainer"
 CODEX_MARKER = f"{MANAGED_PREFIX}:codex-hooks"
 CODEX_POST_HOOK = ".codex/hooks/post_edit_fast_gate.py"
+CODEX_PR_WAIT_HOOK = ".codex/hooks/post_pr_wait.py"
 CODEX_STOP_HOOK = ".codex/hooks/stop_full_verify.py"
 CLAUDE_POST_HOOK = ".claude/hooks/post_tool_use.py"
+CLAUDE_PR_WAIT_HOOK = ".claude/hooks/post_pr_wait.py"
 CLAUDE_STOP_HOOK = ".claude/hooks/stop.py"
 CLAUDE_SUBAGENT_STOP_HOOK = ".claude/hooks/subagent_stop.py"
 
@@ -32,6 +34,12 @@ def codex_config_block(*, user_scope: bool = False) -> str:
         profile="fast",
         wrapper_path=CODEX_POST_HOOK,
         user_scope=user_scope,
+    )
+    pr_wait_command = pr_wait_command_for(
+        platform=CODEX_PLATFORM,
+        wrapper_path=CODEX_PR_WAIT_HOOK,
+        user_scope=user_scope,
+        async_rewake=False,
     )
     stop_command = hook_command(
         platform=CODEX_PLATFORM,
@@ -50,6 +58,15 @@ def codex_config_block(*, user_scope: bool = False) -> str:
         command = {json.dumps(post_command)}
         timeout = 60
         statusMessage = "Running fast Agent Maintainer checks"
+
+        [[hooks.PostToolUse]]
+        matcher = "Bash"
+
+        [[hooks.PostToolUse.hooks]]
+        type = "command"
+        command = {json.dumps(pr_wait_command)}
+        timeout = 30
+        statusMessage = "Checking PR wait handoff"
 
         [[hooks.Stop]]
 
@@ -83,6 +100,12 @@ def claude_settings(
         wrapper_path=CLAUDE_POST_HOOK,
         user_scope=user_scope,
     )
+    pr_wait_command = pr_wait_command_for(
+        platform=CLAUDE_CODE_PLATFORM,
+        wrapper_path=CLAUDE_PR_WAIT_HOOK,
+        user_scope=user_scope,
+        async_rewake=True,
+    )
     stop_command = hook_command(
         platform=CLAUDE_CODE_PLATFORM,
         event=STOP_EVENT,
@@ -110,6 +133,13 @@ def claude_settings(
         "command": subagent_stop_command,
         "timeout": 600,
     }
+    pr_wait_hook = {
+        "type": "command",
+        "command": pr_wait_command,
+        "timeout": 1800,
+        "async": True,
+        "asyncRewake": True,
+    }
     if async_rewake_stop:
         stop_hook.update({"async": True, "asyncRewake": True})
         subagent_stop_hook.update({"async": True, "asyncRewake": True})
@@ -125,7 +155,11 @@ def claude_settings(
                             "timeout": 60,
                         }
                     ],
-                }
+                },
+                {
+                    "matcher": "Bash",
+                    "hooks": [pr_wait_hook],
+                },
             ],
             STOP_EVENT: [{"hooks": [stop_hook]}],
             SUBAGENT_STOP_EVENT: [{"hooks": [subagent_stop_hook]}],
@@ -148,6 +182,22 @@ def hook_command(
         return (
             f"agent-maintainer hooks run --platform {platform} --event {event} --profile {profile}"
         )
+    return f'python3 "$(git rev-parse --show-toplevel)/{wrapper_path}"'
+
+
+def pr_wait_command_for(
+    *,
+    platform: str,
+    wrapper_path: str,
+    user_scope: bool,
+    async_rewake: bool,
+) -> str:
+    """Return PR wait hook command for repo-local or user-level installation."""
+    if user_scope:
+        command = f"agent-maintainer hooks pr-wait --platform {platform}"
+        if async_rewake:
+            return f"{command} --async-rewake"
+        return command
     return f'python3 "$(git rev-parse --show-toplevel)/{wrapper_path}"'
 
 
@@ -195,6 +245,40 @@ def hook_wrapper(
     ).lstrip()
 
 
+def pr_wait_hook_wrapper(*, platform: str, async_rewake: bool) -> str:
+    """Return repo-local PR wait hook wrapper."""
+    return textwrap.dedent(
+        f"""
+            \"\"\"Agent Maintainer {platform} PR wait hook wrapper.\"\"\"
+            from __future__ import annotations
+
+            import importlib
+            import sys
+            from pathlib import Path
+
+            REPO_ROOT = Path(__file__).resolve().parents[2]
+            sys.dont_write_bytecode = True
+            sys.path.insert(0, str(REPO_ROOT / "src"))
+
+            run_hook = importlib.import_module("agent_maintainer.hooks.pr_wait").run_hook
+
+
+            def main() -> int:
+                \"\"\"Run Agent Maintainer PR wait hook.\"\"\"
+
+                return run_hook(
+                    platform="{platform}",
+                    repo_root=REPO_ROOT,
+                    async_rewake={async_rewake!r},
+                )
+
+
+            if __name__ == "__main__":
+                sys.exit(main())
+        """
+    ).lstrip()
+
+
 def codex_post_hook() -> str:
     """Return Codex PostToolUse wrapper source."""
 
@@ -207,10 +291,20 @@ def codex_stop_hook() -> str:
     return hook_wrapper(platform=CODEX_PLATFORM, event=STOP_EVENT, profile="precommit")
 
 
+def codex_pr_wait_hook() -> str:
+    """Return Codex PR wait hook wrapper source."""
+    return pr_wait_hook_wrapper(platform=CODEX_PLATFORM, async_rewake=False)
+
+
 def claude_post_hook() -> str:
     """Return Claude Code PostToolUse wrapper source."""
 
     return hook_wrapper(platform=CLAUDE_CODE_PLATFORM, event=POST_TOOL_USE_EVENT, profile="fast")
+
+
+def claude_pr_wait_hook() -> str:
+    """Return Claude Code PR wait hook wrapper source."""
+    return pr_wait_hook_wrapper(platform=CLAUDE_CODE_PLATFORM, async_rewake=True)
 
 
 def claude_stop_hook(*, async_rewake: bool = False) -> str:

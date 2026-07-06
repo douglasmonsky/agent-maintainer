@@ -11,6 +11,8 @@ import pytest
 from agent_client_hooks import adapters, merge, templates
 from agent_maintainer.hooks import manager
 
+MANAGED_CODEX_POST_TOOL_USE_HOOKS = 2
+
 
 def test_repo_install_writes_codex_and_claude_files(tmp_path: Path) -> None:
     """Repo-scope install writes shareable client hook files."""
@@ -27,9 +29,11 @@ def test_repo_install_writes_codex_and_claude_files(tmp_path: Path) -> None:
     expected = (
         tmp_path / ".codex" / "config.toml",
         tmp_path / ".codex" / "hooks" / "post_edit_fast_gate.py",
+        tmp_path / ".codex" / "hooks" / "post_pr_wait.py",
         tmp_path / ".codex" / "hooks" / "stop_full_verify.py",
         tmp_path / ".claude" / "settings.json",
         tmp_path / ".claude" / "hooks" / "post_tool_use.py",
+        tmp_path / ".claude" / "hooks" / "post_pr_wait.py",
         tmp_path / ".claude" / "hooks" / "stop.py",
         tmp_path / ".claude" / "hooks" / "subagent_stop.py",
     )
@@ -105,6 +109,7 @@ def test_adapter_selection_and_path_helpers(
         manager.REPO_SCOPE,
     ) == (
         repo_path / ".claude/hooks/post_tool_use.py",
+        repo_path / ".claude/hooks/post_pr_wait.py",
         repo_path / ".claude/hooks/stop.py",
         repo_path / ".claude/hooks/subagent_stop.py",
     )
@@ -123,6 +128,7 @@ def test_manager_path_helpers_delegate_to_adapters(tmp_path: Path) -> None:
         manager.REPO_SCOPE,
     ) == (
         tmp_path / ".codex/hooks/post_edit_fast_gate.py",
+        tmp_path / ".codex/hooks/post_pr_wait.py",
         tmp_path / ".codex/hooks/stop_full_verify.py",
     )
     assert manager.home() == adapters.home()
@@ -140,11 +146,13 @@ def test_adapter_uninstall_paths_follow_scope(
     assert adapters.CodexAdapter().uninstall(repo_path, manager.USER_SCOPE) == (
         home_path / ".codex/config.toml",
         home_path / ".codex/hooks/post_edit_fast_gate.py",
+        home_path / ".codex/hooks/post_pr_wait.py",
         home_path / ".codex/hooks/stop_full_verify.py",
     )
     assert adapters.ClaudeCodeAdapter().uninstall(repo_path, manager.REPO_SCOPE) == (
         repo_path / ".claude/settings.json",
         repo_path / ".claude/hooks/post_tool_use.py",
+        repo_path / ".claude/hooks/post_pr_wait.py",
         repo_path / ".claude/hooks/stop.py",
         repo_path / ".claude/hooks/subagent_stop.py",
     )
@@ -164,6 +172,7 @@ def test_adapter_status_reports_config_and_scripts(tmp_path: Path) -> None:
     for relative_path in (
         ".codex/config.toml",
         ".codex/hooks/post_edit_fast_gate.py",
+        ".codex/hooks/post_pr_wait.py",
         ".codex/hooks/stop_full_verify.py",
     ):
         path = tmp_path / relative_path
@@ -229,7 +238,7 @@ command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/stop_full_veri
 """
     merged = merge.merge_codex_config(previous, templates.codex_config_block())
 
-    assert merged.count("[[hooks.PostToolUse]]") == 1
+    assert merged.count("[[hooks.PostToolUse]]") == MANAGED_CODEX_POST_TOOL_USE_HOOKS
     assert merged.count("[[hooks.Stop]]") == 1
     assert "hooks = true" in merged
     assert "agent-maintainer:codex-hooks" in merged

@@ -94,6 +94,11 @@ completed, the hook reuses that pass or failure result. If the working tree,
 index, configured profile, base, or compare state changed, the hook starts fresh
 verification.
 
+A Bash `gh pr create` `PostToolUse` hook detects created PR URLs and hands off
+PR-check waiting before review or merge. Claude Code uses async rewake for that
+handoff. Codex receives a supported continuation because Codex command hooks do
+not currently run async handlers.
+
 Repo-local wrappers use the checked-out source tree:
 
 ```bash
