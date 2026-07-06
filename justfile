@@ -42,10 +42,14 @@ alias vc := verify-ci
 alias vs := verify-security
 alias vm := verify-manual
 alias wg := wait-github
+alias wp := wait-pr
 alias wv := wait-verifier
 
 wait-github RUN_ID:
     python3 -m agent_maintainer wait github-run {{RUN_ID}}
+
+wait-pr PR_NUMBER:
+    python3 -m agent_maintainer wait github-pr {{PR_NUMBER}}
 
 wait-verifier RUN_ID:
     python3 -m agent_maintainer wait verifier {{RUN_ID}}

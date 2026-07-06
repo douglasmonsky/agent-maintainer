@@ -35,7 +35,7 @@ Use `ci` instead when diff/base-ref, workflow, or profile behavior changed: `jus
 both `full` and `ci` only when that overlap is under test. Run `security` or
 `manual` when touching those gates, before release, or when explicitly requested.
 
-Use `just wg <run-id>` or `just wv <run-id>` for long
+Use `just wg <run-id>`, `just wp <pr-number>`, or `just wv <run-id>` for long
 GitHub Actions or verifier jobs instead of hand-polling.
 
 Do not claim completion while required hooks or checks for the touched surface

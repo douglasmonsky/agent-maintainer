@@ -12,6 +12,13 @@ from agent_maintainer.wait.github import (
     render_github_wait_text,
     wait_for_github_run,
 )
+from agent_maintainer.wait.github_pr import (
+    GitHubPrWaitConfig,
+    GitHubPrWaitResult,
+    render_github_pr_wait_json,
+    render_github_pr_wait_text,
+    wait_for_github_pr_checks,
+)
 from agent_maintainer.wait.verifier import (
     VerifierWaitConfig,
     VerifierWaitResult,
@@ -33,6 +40,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args([] if argv is None else argv)
     if args.command == "github-run":
         return _github_run(args)
+    if args.command == "github-pr":
+        return _github_pr(args)
     if args.command == "verifier":
         return _verifier_run(args)
     return 2
@@ -48,6 +57,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     github.add_argument("--interval", type=int, default=DEFAULT_GITHUB_INTERVAL_SECONDS)
     github.add_argument("--timeout-seconds", type=int, default=DEFAULT_GITHUB_TIMEOUT_SECONDS)
     github.add_argument("--format", choices=(TEXT_FORMAT, JSON_FORMAT), default=TEXT_FORMAT)
+    github_pr = subparsers.add_parser("github-pr", help="Wait one GitHub PR check set.")
+    github_pr.add_argument("pr_number")
+    github_pr.add_argument("--repo")
+    github_pr.add_argument("--interval", type=int, default=DEFAULT_GITHUB_INTERVAL_SECONDS)
+    github_pr.add_argument(
+        "--timeout-seconds",
+        type=int,
+        default=DEFAULT_GITHUB_TIMEOUT_SECONDS,
+    )
+    github_pr.add_argument("--format", choices=(TEXT_FORMAT, JSON_FORMAT), default=TEXT_FORMAT)
     verifier = subparsers.add_parser("verifier", help="Wait for one verifier run.")
     verifier.add_argument("run_id")
     verifier.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
@@ -80,6 +99,25 @@ def _github_run(args: argparse.Namespace) -> int:
     return result.exit_code
 
 
+def _github_pr(args: argparse.Namespace) -> int:
+    config = GitHubPrWaitConfig(
+        pr_number=args.pr_number,
+        repo=args.repo,
+        interval_seconds=args.interval,
+        timeout_seconds=args.timeout_seconds,
+    )
+    try:
+        result = wait_for_github_pr_checks(config)
+    except RuntimeError as exc:
+        result = GitHubPrWaitResult(
+            pr_number=args.pr_number,
+            state=None,
+            error=str(exc),
+        )
+    print(_render_github_pr(args.format, result))
+    return result.exit_code
+
+
 def _verifier_run(args: argparse.Namespace) -> int:
     config = VerifierWaitConfig(
         run_id=args.run_id,
@@ -96,6 +134,12 @@ def _render(output_format: str, result: GitHubWaitResult) -> str:
     if output_format == JSON_FORMAT:
         return render_github_wait_json(result)
     return render_github_wait_text(result)
+
+
+def _render_github_pr(output_format: str, result: GitHubPrWaitResult) -> str:
+    if output_format == JSON_FORMAT:
+        return render_github_pr_wait_json(result)
+    return render_github_pr_wait_text(result)
 
 
 def _render_verifier(output_format: str, result: VerifierWaitResult) -> str:

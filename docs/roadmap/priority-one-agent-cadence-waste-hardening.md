@@ -251,7 +251,8 @@ report before making freshness hard gate.
 
 1. Add `events waste` based on existing runtime event files and explicit
    limitations.
-2. Add a quiet GitHub run waiter wrapper to replace noisy `gh run watch`.
+2. Add quiet GitHub run and PR-check waiters to replace noisy `gh run watch`
+   and model-managed `gh pr checks` polling.
 3. Add local verifier job-state models and retention.
 4. Add foreground `wait verifier` behavior for async jobs.
 5. Teach hooks to reuse in-flight or completed same-state jobs.
