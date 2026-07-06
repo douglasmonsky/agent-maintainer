@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import Any
 
 from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait.github import (
@@ -45,7 +46,6 @@ DEFAULT_GITHUB_INTERVAL_SECONDS = 20
 DEFAULT_GITHUB_TIMEOUT_SECONDS = 3600
 DEFAULT_VERIFIER_INTERVAL_SECONDS = 5
 DEFAULT_VERIFIER_TIMEOUT_SECONDS = 3600
-Subparsers = argparse._SubParsersAction
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -78,7 +78,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _add_github_run_parser(subparsers: Subparsers) -> None:
+def _add_github_run_parser(subparsers: Any) -> None:
     """Add GitHub run wait parser."""
 
     github = subparsers.add_parser("github-run", help="Wait one GitHub Actions run.")
@@ -89,7 +89,7 @@ def _add_github_run_parser(subparsers: Subparsers) -> None:
     github.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
-def _add_github_pr_parser(subparsers: Subparsers) -> None:
+def _add_github_pr_parser(subparsers: Any) -> None:
     """Add GitHub PR wait parser."""
 
     github_pr = subparsers.add_parser("github-pr", help="Wait one GitHub PR check set.")
@@ -104,7 +104,7 @@ def _add_github_pr_parser(subparsers: Subparsers) -> None:
     github_pr.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
-def _add_verifier_parser(subparsers: Subparsers) -> None:
+def _add_verifier_parser(subparsers: Any) -> None:
     """Add verifier wait parser."""
 
     verifier = subparsers.add_parser("verifier", help="Wait for one verifier run.")
@@ -119,7 +119,7 @@ def _add_verifier_parser(subparsers: Subparsers) -> None:
     verifier.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
-def _add_register_parser(subparsers: Subparsers) -> None:
+def _add_register_parser(subparsers: Any) -> None:
     """Add wait registration parser."""
 
     register = subparsers.add_parser("register", help="Register a resumable wait.")
@@ -130,7 +130,7 @@ def _add_register_parser(subparsers: Subparsers) -> None:
     _add_register_github_pr_parser(register_subparsers)
 
 
-def _add_register_github_pr_parser(subparsers: Subparsers) -> None:
+def _add_register_github_pr_parser(subparsers: Any) -> None:
     """Add GitHub PR wait registration parser."""
 
     register_pr = subparsers.add_parser(
@@ -156,7 +156,7 @@ def _add_register_github_pr_parser(subparsers: Subparsers) -> None:
     register_pr.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
-def _add_resume_parser(subparsers: Subparsers) -> None:
+def _add_resume_parser(subparsers: Any) -> None:
     """Add wait resume parser."""
 
     resume = subparsers.add_parser("resume", help="Render a registered wait.")

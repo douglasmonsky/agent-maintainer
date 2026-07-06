@@ -224,6 +224,19 @@ def test_resume_github_pr_cli_prints_continuation(
     assert "PR checks reached PASS for PR #291" in output
 
 
+def test_resume_cli_parser_accepts_root(tmp_path: Path) -> None:
+    """Wait resume parser accepts explicit root and JSON output."""
+
+    args = cli.parse_args(
+        ["resume", "wait-1", "--root", str(tmp_path), "--format", "json"],
+    )
+
+    assert args.command == "resume"
+    assert args.wait_id == "wait-1"
+    assert args.root == tmp_path
+    assert args.format == "json"
+
+
 class SuccessWait:
     """Fake successful GitHub waiter capturing config."""
 
