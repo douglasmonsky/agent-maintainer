@@ -108,6 +108,7 @@ ACTIVE_DOC_PATHS = {
     "docs/typescript-javascript-provider.md",
     "docs/case-studies/README.md",
     "docs/case-studies/context-safe-ratchet-repair.md",
+    "docs/case-studies/future-call-roi-loop.md",
     "docs/case-studies/split-large-legacy-file.md",
     "docs/case-studies/typescript-provider-maturation.md",
     "docs/releases/0.1.0b4.md",

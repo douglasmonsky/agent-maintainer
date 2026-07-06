@@ -1,6 +1,6 @@
 # Phase 160: ROI Loop Dogfood Case Study
 
-Status: planned
+Status: completed
 
 ## Goal
 
