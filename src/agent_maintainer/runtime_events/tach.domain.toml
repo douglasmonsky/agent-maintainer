@@ -9,7 +9,11 @@ depends_on = []
 [[modules]]
 
 path = "cli"
-depends_on = ["read", "summary", "waste", "//agent_maintainer.config.schema"]
+depends_on = ["export", "read", "summary", "waste", "//agent_maintainer.config.schema"]
+
+[[modules]]
+path = "export"
+depends_on = ["read"]
 
 
 [[modules]]

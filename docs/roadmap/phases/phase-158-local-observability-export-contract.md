@@ -1,6 +1,6 @@
 # Phase 158: Local Observability Export Contract
 
-Status: planned
+Status: completed
 
 ## Goal
 

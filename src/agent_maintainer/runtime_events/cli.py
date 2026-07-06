@@ -6,6 +6,11 @@ import argparse
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.runtime_events.export import (
+    EXPORT_FORMATS,
+    JSONL_FORMAT,
+    export_runtime_events,
+)
 from agent_maintainer.runtime_events.read import read_runtime_events
 from agent_maintainer.runtime_events.summary import (
     RuntimeEventSummary,
@@ -27,6 +32,10 @@ def main(argv: list[str] | None = None) -> int:
     """Run runtime event subcommands."""
     args = parse_args([] if argv is None else argv)
     read_result = read_runtime_events(args.events_dir, file_limit=args.file_limit)
+    if args.command == "export":
+        export = export_runtime_events(read_result, output_format=args.format)
+        print(export.text, end="")
+        return 0
     summary = summarize_runtime_events(
         read_result,
         recent_limit=args.limit,
@@ -44,7 +53,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command", required=True)
     for command, help_text in _subcommands().items():
         command_parser = subparsers.add_parser(command, help=help_text)
-        _add_common_options(command_parser, suppress_defaults=True)
+        if command == "export":
+            _add_export_options(command_parser)
+        else:
+            _add_common_options(command_parser, suppress_defaults=True)
     return parser.parse_args(argv)
 
 
@@ -53,42 +65,44 @@ def _add_common_options(
     *,
     suppress_defaults: bool,
 ) -> None:
-    """Add event reader output options to one parser."""
+    """Add common event parser options."""
     default_events_dir = (
-        argparse.SUPPRESS if suppress_defaults else Path(MaintainerConfig.runtime_events_dir)
+        argparse.SUPPRESS
+        if suppress_defaults
+        else Path(
+            MaintainerConfig.runtime_events_dir,
+        )
     )
-    default_file_limit: int | None | str = argparse.SUPPRESS if suppress_defaults else None
-    default_limit: int | str = argparse.SUPPRESS if suppress_defaults else 8
+    default_limit = argparse.SUPPRESS if suppress_defaults else 8
+    default_file_limit = argparse.SUPPRESS if suppress_defaults else None
     default_format = argparse.SUPPRESS if suppress_defaults else TEXT_FORMAT
-    parser.add_argument(
-        "--events-dir",
-        type=Path,
-        default=default_events_dir,
-        help="Runtime event JSONL directory.",
-    )
-    parser.add_argument(
-        "--file-limit",
-        type=int,
-        default=default_file_limit,
-        help="Read only the newest N event files.",
-    )
-    parser.add_argument("--limit", type=int, default=default_limit, help="Rows to show.")
+    parser.add_argument("--events-dir", type=Path, default=default_events_dir)
+    parser.add_argument("--limit", type=int, default=default_limit)
+    parser.add_argument("--file-limit", type=int, default=default_file_limit)
     parser.add_argument(
         "--format",
         choices=(TEXT_FORMAT, JSON_FORMAT),
         default=default_format,
-        help="Output format.",
     )
 
 
+def _add_export_options(parser: argparse.ArgumentParser) -> None:
+    """Add export-specific parser options."""
+    parser.add_argument("--events-dir", type=Path, default=argparse.SUPPRESS)
+    parser.add_argument("--limit", type=int, default=argparse.SUPPRESS)
+    parser.add_argument("--file-limit", type=int, default=argparse.SUPPRESS)
+    parser.add_argument("--format", choices=EXPORT_FORMATS, default=JSONL_FORMAT)
+
+
 def _subcommands() -> dict[str, str]:
-    """Return runtime event subcommand help text."""
+    """Return runtime event subcommands."""
     return {
-        "summary": "Summarize runtime events.",
-        "failures": "Show recent failures and exceptions.",
-        "slow-checks": "Show slowest check events.",
+        "summary": "Show runtime event aggregate counts.",
+        "failures": "Show failing runtime events.",
+        "slow-checks": "Show slow check events.",
         "recent": "Show recent runtime events.",
-        "waste": "Show duplicated verification and cadence waste signals.",
+        "waste": "Show duplicated verification cadence waste signals.",
+        "export": "Export local runtime event artifacts.",
     }
 
 
