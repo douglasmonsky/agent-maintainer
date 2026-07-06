@@ -23,8 +23,9 @@ depends_on = [
 [[modules]]
 path = "cli"
 depends_on = [
-  "manager",
-  "runtime",
+"manager",
+"pr_wait",
+"runtime",
 ]
 
 
@@ -54,7 +55,15 @@ depends_on = [
 [[modules]]
 path = "merge"
 depends_on = [
-  "//agent_client_hooks.merge",
+"//agent_client_hooks.merge",
+]
+
+
+[[modules]]
+path = "pr_wait"
+depends_on = [
+"//agent_client_hooks.constants",
+"//agent_maintainer.wait.github_pr",
 ]
 
 

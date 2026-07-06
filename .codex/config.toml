@@ -14,6 +14,15 @@ command = "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/post_edit_fas
 timeout = 60
 statusMessage = "Running fast Agent Maintainer checks"
 
+[[hooks.PostToolUse]]
+matcher = "Bash"
+
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/post_pr_wait.py\""
+timeout = 30
+statusMessage = "Checking PR wait handoff"
+
 [[hooks.Stop]]
 
 [[hooks.Stop.hooks]]

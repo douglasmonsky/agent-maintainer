@@ -46,6 +46,10 @@ path = "post_edit_fast_gate"
 depends_on = []
 
 [[modules]]
+path = "post_pr_wait"
+depends_on = []
+
+[[modules]]
 path = "post_tool_use"
 depends_on = []
 

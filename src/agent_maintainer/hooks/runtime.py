@@ -41,6 +41,7 @@ def parse_args(argv: list[str]):
     parser.add_argument("--event", required=True)
     parser.add_argument("--profile", required=True)
     parser.add_argument("--repo-root", type=Path)
+    parser.add_argument("--async-rewake", action="store_true")
     return parser.parse_args(argv)
 
 
@@ -53,11 +54,19 @@ def main(argv: list[str] | None = None) -> int:
         event=args.event,
         profile=args.profile,
         repo_root=args.repo_root or hook_discovery.discover_repo_root(Path.cwd()),
+        async_rewake=args.async_rewake,
     )
 
 
 # docsync:evidence.start evidence.agent_hooks.configured_repo_noop
-def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int:
+def run_hook(
+    *,
+    platform: str,
+    event: str,
+    profile: str,
+    repo_root: Path,
+    async_rewake: bool = False,
+) -> int:
     """Run Agent Maintainer verification for one hook event."""
 
     payload = read_hook_payload()
@@ -107,6 +116,7 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
             event=event,
             reason="Agent Maintainer verifier missing.",
             context=missing_verifier_context(repo_root),
+            async_rewake=async_rewake,
         )
 
     readiness = hook_readiness.hook_readiness(repo_root, profile)
@@ -122,6 +132,7 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
                 runtime_events=runtime_events,
             ),
             readiness,
+            async_rewake=async_rewake,
         )
 
     command = verifier_command(repo_root, profile)
@@ -150,21 +161,37 @@ def run_hook(*, platform: str, event: str, profile: str, repo_root: Path) -> int
         exit_code=result.returncode,
         duration_seconds=duration_seconds,
     )
+    return emit_verifier_result(
+        event=event,
+        repo_root=repo_root,
+        result=result,
+        async_rewake=async_rewake,
+    )
+
+
+def emit_verifier_result(
+    *,
+    event: str,
+    repo_root: Path,
+    result: hook_subprocess.subprocess.CompletedProcess[str],
+    async_rewake: bool = False,
+) -> int:
+    """Emit success or block response for a completed verifier run."""
     if result.returncode == 0:
-        hook_status = emit_success(event)
-    else:
-        config = hook_context.hook_config(repo_root)
-        hook_status = emit_block(
-            event=event,
-            reason=block_reason(event),
-            context=hook_context.failure_context(
-                repo_root,
-                result,
-                config,
-                config.context_hook_budget_chars,
-            ),
-        )
-    return hook_status
+        return emit_success(event)
+
+    config = hook_context.hook_config(repo_root)
+    return emit_block(
+        event=event,
+        reason=block_reason(event),
+        context=hook_context.failure_context(
+            repo_root,
+            result,
+            config,
+            config.context_hook_budget_chars,
+        ),
+        async_rewake=async_rewake,
+    )
 
 
 def read_hook_payload() -> dict[str, object]:
@@ -261,6 +288,8 @@ def emit_success(event: str) -> int:
 def emit_readiness(
     execution: hook_readiness.HookExecution,
     readiness: hook_readiness.HookReadiness,
+    *,
+    async_rewake: bool = False,
 ) -> int:
     """Emit hook response for same-state verifier readiness."""
     duration_seconds = hook_audit.duration_since(execution.started)
@@ -296,6 +325,7 @@ def emit_readiness(
         event=execution.event,
         reason=reason,
         context=hook_readiness.render_hook_readiness(readiness),
+        async_rewake=async_rewake,
     )
 
 
@@ -308,8 +338,17 @@ def readiness_status(readiness: hook_readiness.HookReadiness) -> str:
     return "failed"
 
 
-def emit_block(*, event: str, reason: str, context: str) -> int:
+def emit_block(
+    *,
+    event: str,
+    reason: str,
+    context: str,
+    async_rewake: bool = False,
+) -> int:
     """Emit a hook block decision for supported agent clients."""
+    if async_rewake:
+        print(f"{reason}\n\n{context}", file=sys.stderr)
+        return 2
 
     if event == POST_TOOL_USE_EVENT:
         return emit(

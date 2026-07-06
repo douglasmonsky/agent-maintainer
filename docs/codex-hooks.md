@@ -7,6 +7,9 @@ For the full managed hook installer covering Codex and Claude Code, see
 Claude Code installations can opt into asynchronous rewake for slow
 `Stop`/`SubagentStop` validation through the shared installer:
 `python3 -m agent_maintainer hooks install claude-code --async-rewake-stop`.
+In that mode, generated Claude stop hooks pass runtime async-rewake mode and
+return exit `2` with compact wait/repair context when verification is pending
+or failed, so Claude Code wakes back into the turn.
 
 The kit includes repo-local Codex hooks under `.codex/`:
 
@@ -59,6 +62,11 @@ failure needs reproduction. The verifier lock and same-state result cache reduce
 exact duplicates, but the agent should still avoid unnecessary overlapping runs.
 
 They prefer `.venv/bin/python` or `venv/bin/python` when present. Run `python3 -m agent_maintainer doctor` if hooks are configured but not behaving as expected.
+
+A Bash `gh pr create` `PostToolUse` hook detects created PR URLs and asks
+Codex to continue by running the PR-check waiter before review or merge. Codex
+does not currently run async command hooks, so this is a continuation handoff
+rather than a background rewake.
 
 ## Audit Trail
 

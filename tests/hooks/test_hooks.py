@@ -64,6 +64,40 @@ def test_hook_wrappers_delegate_to_shared_runtime(
             "event": event,
             "profile": profile,
             "repo_root": REPO_ROOT,
+            "async_rewake": False,
+        }
+    ]
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "platform", "async_rewake"),
+    (
+        (".codex/hooks/post_pr_wait.py", "codex", False),
+        (".claude/hooks/post_pr_wait.py", "claude-code", True),
+    ),
+)
+def test_pr_wait_wrappers_delegate_to_pr_wait_runtime(
+    relative_path: str,
+    platform: str,
+    async_rewake: bool,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """PR wait wrappers carry client async metadata."""
+    module = load_hook(f"pr_wait_wrapper_{platform}", relative_path)
+    calls: list[dict[str, object]] = []
+
+    def fake_run_hook(**kwargs: object) -> int:
+        calls.append(kwargs)
+        return HOOK_EXIT
+
+    monkeypatch.setattr(module, "run_hook", fake_run_hook)
+
+    assert module.main() == HOOK_EXIT
+    assert calls == [
+        {
+            "platform": platform,
+            "repo_root": REPO_ROOT,
+            "async_rewake": async_rewake,
         }
     ]
 

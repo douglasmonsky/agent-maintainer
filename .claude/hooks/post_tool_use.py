@@ -21,6 +21,7 @@ def main() -> int:
         event="PostToolUse",
         profile="fast",
         repo_root=REPO_ROOT,
+        async_rewake=False,
     )
 
 

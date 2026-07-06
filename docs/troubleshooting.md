@@ -59,6 +59,10 @@ preserved inside those values.
 | `zizmor` reports unpinned first-party actions | Either pin actions to commit SHAs or document the tag-pinning policy in `zizmor.yml`. |
 | `zizmor` reports Dependabot cooldown | Add a `cooldown` section to `.github/dependabot.yml`. |
 
+Claude async-rewake stop hooks surface the same compact hook capsule on stderr
+and exit `2`; treat that as Claude Code being reawakened to wait or repair,
+not as an unstructured shell failure.
+
 ## Dependency Lock
 
 `config/dev-dependencies.txt` is the human-edited dependency input. `config/dev-lock.txt` is generated and preferred by bootstrap and CI when present.
