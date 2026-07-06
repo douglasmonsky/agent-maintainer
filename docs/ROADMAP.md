@@ -94,7 +94,7 @@ Track work:
 - [x] Phase 161: Task Broker Adapter Contracts
 - [x] Phase 162: Task Broker Model-Tier Routing Policy
 - [x] Phase 163: Attention Ledger Performance Guards
-- [ ] Phase 164: Agent Efficacy Metrics
+- [x] Phase 164: Agent Efficacy Metrics
 
 ## Future Work
 

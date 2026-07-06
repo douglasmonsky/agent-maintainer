@@ -1,6 +1,6 @@
 # Phase 164: Agent Efficacy Metrics
 
-Status: planned
+Status: completed
 
 ## Goal
 
@@ -42,6 +42,34 @@ repair-loop thrash while preserving or improving output quality.
 - Report clearly distinguishes measured data from estimates.
 - Docs explain how to interpret the metrics and what actions should follow.
 - Dogfood run records baseline before turning any metric into a ratchet.
+
+## Completed
+
+- Added `python3 -m agent_maintainer assess efficacy` as a compact advisory
+  report over local runtime-event JSONL and verifier manifests.
+- Included measured duplicate verifier reuse, wait-helper success, context
+  command expansion counts, first-failure-to-passing-profile timing, and latest
+  manifest failed-check counts.
+- Included estimated pointer follow-through, repair next-action success, and
+  repair-capsule token-savings proxies, while leaving manual escalation explicit
+  as `unknown`.
+- Kept evidence local and artifact-backed: no transcript ingestion, raw log
+  dumping, provider billing integration, or network telemetry.
+- Dogfood baseline command:
+
+  ```bash
+  python3 -m agent_maintainer assess efficacy
+  ```
+
+  The baseline is advisory only. Metrics marked `measured` can guide follow-up
+  tuning now; metrics marked `estimated` need corroboration before ratchets;
+  metrics marked `unknown` identify the next runtime-event gaps.
+- Local dogfood baseline on July 6, 2026 read 49 runtime events from 15 event
+  files, measured one wait helper completion at 100% success, measured
+  first-failure-to-passing-profile at 11,757 ms, found zero latest-manifest
+  failed checks, and kept duplicate-run avoidance, pointer follow-through,
+  repair-next-action success, and manual escalation explicit as unknown where
+  current events do not yet support them.
 
 ## Notes
 
