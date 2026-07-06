@@ -226,6 +226,7 @@ def run_reused(
     *,
     exit_code: int,
     log_dir: Path,
+    fingerprint: dict[str, object],
 ) -> None:
     """Emit same-state verifier result reuse event."""
 
@@ -237,12 +238,17 @@ def run_reused(
             run_id=profile_events.run_id,
             status="reused",
             exit_code=exit_code,
-            attributes={"log_dir": str(log_dir)},
+            attributes={"log_dir": str(log_dir), "fingerprint": fingerprint},
         ),
     )
 
 
-def run_fresh(profile_events: ProfileRuntimeEvents, *, log_dir: Path) -> None:
+def run_fresh(
+    profile_events: ProfileRuntimeEvents,
+    *,
+    log_dir: Path,
+    fingerprint: dict[str, object],
+) -> None:
     """Emit fresh verifier execution event."""
 
     profile_events.sink.emit(
@@ -252,7 +258,26 @@ def run_fresh(profile_events: ProfileRuntimeEvents, *, log_dir: Path) -> None:
             profile=profile_events.profile,
             run_id=profile_events.run_id,
             status="fresh",
-            attributes={"log_dir": str(log_dir)},
+            attributes={"log_dir": str(log_dir), "fingerprint": fingerprint},
+        ),
+    )
+
+
+def manual_escalation(
+    profile_events: ProfileRuntimeEvents,
+    *,
+    fingerprint: dict[str, object],
+) -> None:
+    """Emit explicit manual verifier escalation event."""
+
+    profile_events.sink.emit(
+        RuntimeEvent(
+            "manual.escalation",
+            command=VERIFY_COMMAND,
+            profile=profile_events.profile,
+            run_id=profile_events.run_id,
+            status="requested",
+            attributes={"fingerprint": fingerprint},
         ),
     )
 

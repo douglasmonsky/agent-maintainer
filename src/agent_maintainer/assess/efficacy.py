@@ -249,7 +249,7 @@ def _limitations(metrics: list[EfficacyMetric]) -> tuple[str, ...]:
     limitations = [
         "token savings are estimated from artifact bytes, not provider billing",
         "pointer follow-through uses local command events, not chat transcripts",
-        "manual escalation requires a future explicit runtime event",
+        "manual escalation counts explicit local runtime events only",
     ]
     if any(metric.kind == UNKNOWN for metric in metrics):
         limitations.append("unknown metrics need more runtime events or manifests")

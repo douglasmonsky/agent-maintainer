@@ -13,6 +13,7 @@ depends_on = [
   "github",
   "github_pr",
   "verifier",
+  "//agent_maintainer.runtime_events.waiting",
 ]
 
 

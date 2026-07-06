@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
+from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import cli
 from agent_maintainer.wait.github import GitHubRunState, GitHubWaitConfig, GitHubWaitResult
 from agent_maintainer.wait.github_pr import (
@@ -16,6 +20,40 @@ from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 SUCCESS_TIMEOUT_SECONDS = 2
 ERROR_EXIT_CODE = 2
+
+
+def test_poll_observer_helpers_emit_events() -> None:
+    """Wait CLI observer helpers emit compact poll events."""
+
+    sink = InMemoryRuntimeEventSink()
+    runtime_events = WaitRuntimeEvents(
+        sink=sink,
+        target_kind="github-run",
+        target_id="123",
+    )
+
+    cli._observe_github_run(
+        runtime_events,
+        1,
+        GitHubRunState(status="completed", conclusion="success", url="https://run"),
+    )
+    cli._observe_github_pr(
+        runtime_events,
+        2,
+        GitHubPrChecksState(
+            pr_number="303",
+            checks=(GitHubPrCheck(name="verify", state="success"),),
+        ),
+    )
+
+    assert [record["event_name"] for record in sink.records] == [
+        "wait.poll",
+        "wait.poll",
+    ]
+    run_attributes = cast("dict[str, object]", sink.records[0]["attributes"])
+    pr_attributes = cast("dict[str, object]", sink.records[1]["attributes"])
+    assert run_attributes["conclusion"] == "success"
+    assert pr_attributes["check_count"] == 1
 
 
 def test_github_run_cli_prints_success(
@@ -122,7 +160,7 @@ class SuccessWait:
     def __init__(self) -> None:
         self.seen_config: GitHubWaitConfig | None = None
 
-    def __call__(self, config: GitHubWaitConfig) -> GitHubWaitResult:
+    def __call__(self, config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
         self.seen_config = config
         return GitHubWaitResult(
             run_id=config.run_id,
@@ -136,7 +174,11 @@ class SuccessPrWait:
     def __init__(self) -> None:
         self.seen_config: GitHubPrWaitConfig | None = None
 
-    def __call__(self, config: GitHubPrWaitConfig) -> GitHubPrWaitResult:
+    def __call__(
+        self,
+        config: GitHubPrWaitConfig,
+        **_kwargs: object,
+    ) -> GitHubPrWaitResult:
         self.seen_config = config
         return GitHubPrWaitResult(
             pr_number=config.pr_number,
@@ -147,7 +189,7 @@ class SuccessPrWait:
         )
 
 
-def failure_wait(config: GitHubWaitConfig) -> GitHubWaitResult:
+def failure_wait(config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
     """Return one failed GitHub wait result."""
     return GitHubWaitResult(
         run_id=config.run_id,
@@ -155,12 +197,12 @@ def failure_wait(config: GitHubWaitConfig) -> GitHubWaitResult:
     )
 
 
-def error_wait(_config: GitHubWaitConfig) -> GitHubWaitResult:
+def error_wait(_config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
     """Raise a GitHub query error."""
     raise RuntimeError("gh auth required")
 
 
-def verifier_wait(_config: object) -> VerifierWaitResult:
+def verifier_wait(_config: object, **_kwargs: object) -> VerifierWaitResult:
     """Return verifier pass result."""
     return VerifierWaitResult(
         run_id="run-1",
