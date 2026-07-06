@@ -11,7 +11,8 @@ from agent_repair_facts.payloads import (
 )
 
 FILE_LENGTH_RE = re.compile(r"^(?P<path>[^:\n]+\.py): (?P<message>.+)$")
-CHANGE_BUDGET_BLOCK_RE = re.compile(r"^BLOCK:\s*(?P<message>.+)$")
+CHANGE_BUDGET_RE = re.compile(r"^(?:BLOCK|WARN):\s*(?P<message>.+)$")
+CHANGE_BUDGET_BLOCK_RE = CHANGE_BUDGET_RE
 ARCHITECTURE_DECISION_RE = re.compile(
     r"^architecture policy changed without decision note:\s*(?P<path>.+)$",
 )
@@ -51,7 +52,7 @@ def change_budget_facts(path: Path, check: str) -> list[dict[str, object]]:
 
     return [
         change_budget_fact(check, match.group(MESSAGE_FIELD))
-        for match in log_matches(path, CHANGE_BUDGET_BLOCK_RE)
+        for match in log_matches(path, CHANGE_BUDGET_RE)
     ]
 
 

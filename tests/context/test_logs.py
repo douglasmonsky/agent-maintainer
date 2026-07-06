@@ -144,6 +144,27 @@ def test_architecture_log_extracts_policy_path(tmp_path: Path) -> None:
     assert "decision note" in str(fact["message"])
 
 
+def test_change_budget_log_extracts_warning_fact(tmp_path: Path) -> None:
+    """Change-budget warning logs produce exact repair facts."""
+
+    log_path = tmp_path / "change-budget.log"
+    log_path.write_text(
+        (
+            "WARN: Source changed without likely relevant test changes. "
+            "Likely test files: tests/context/test_logs.py\n"
+        ),
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record_with_log("change-budget", log_path),))
+
+    fact = first_fact(facts)
+    assert fact["check"] == "change-budget"
+    assert fact["path"] is None
+    assert fact["symbol"] == "change-budget"
+    assert "likely relevant test changes" in str(fact["message"])
+
+
 def test_ruff_format_log_extracts_targets(tmp_path: Path) -> None:
     """Ruff format logs point at files requiring formatting."""
 
