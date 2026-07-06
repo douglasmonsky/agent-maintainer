@@ -1,0 +1,11 @@
+[[modules]]
+path = "__init__"
+depends_on = []
+
+[[modules]]
+path = "cli"
+depends_on = ["dataset"]
+
+[[modules]]
+path = "dataset"
+depends_on = []

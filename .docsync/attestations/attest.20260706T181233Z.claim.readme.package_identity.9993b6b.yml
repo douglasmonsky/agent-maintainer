@@ -1,0 +1,16 @@
+version: 1
+attestations:
+- id: attest.20260706T181233Z.claim.readme.package_identity.9993b6b
+  claim: claim.readme.package_identity
+  doc_object: docs.readme.overview
+  evidence:
+  - evidence.readme.command_registry
+  reason: Added provider-neutral scoring examples command to the command registry;
+    linked command-surface documentation remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-06T18:12:33Z'
+  base: HEAD
+  head: 9993b6b
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:e7d5e579f653cd31b5b4f7aaafee2ef874d08925ac8be7074d33875bd53b3491
+  statement: Reviewed changed evidence region. Documentation remains accurate.
