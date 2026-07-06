@@ -21,6 +21,7 @@ def main() -> int:
         event="Stop",
         profile="precommit",
         repo_root=REPO_ROOT,
+        async_rewake=False,
     )
 
 

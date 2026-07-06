@@ -10,6 +10,18 @@
           }
         ],
         "matcher": "Write|Edit|MultiEdit"
+      },
+      {
+        "hooks": [
+          {
+            "async": true,
+            "asyncRewake": true,
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/post_pr_wait.py\"",
+            "timeout": 1800,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
       }
     ],
     "Stop": [

@@ -15,6 +15,7 @@ from agent_maintainer.hooks.manager import (
     selected_clients,
     status_hooks,
 )
+from agent_maintainer.hooks.pr_wait import main as pr_wait_main
 from agent_maintainer.hooks.runtime import main as runtime_main
 
 CLIENT_CHOICES = (*CLIENTS, ALL_CLIENTS)
@@ -45,6 +46,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     run_parser.add_argument("--event", required=True)
     run_parser.add_argument("--profile", required=True)
     run_parser.add_argument("--repo-root", type=Path)
+    run_parser.add_argument("--async-rewake", action="store_true")
+
+    pr_wait_parser = subparsers.add_parser("pr-wait", help=argparse.SUPPRESS)
+    pr_wait_parser.add_argument("--platform", required=True)
+    pr_wait_parser.add_argument("--repo-root", type=Path)
+    pr_wait_parser.add_argument("--async-rewake", action="store_true")
 
     return parser.parse_args(argv)
 
@@ -78,15 +85,39 @@ def main(argv: list[str]) -> int:
             status_hooks(args.target, client, args.scope)
         return 0
     if args.command == "run":
-        runtime_args = [
-            "--platform",
-            args.platform,
-            "--event",
-            args.event,
-            "--profile",
-            args.profile,
-        ]
-        if args.repo_root is not None:
-            runtime_args.extend(("--repo-root", str(args.repo_root)))
-        return runtime_main(runtime_args)
+        return runtime_main(runtime_args(args))
+    if args.command == "pr-wait":
+        return pr_wait_main(pr_wait_args(args))
     return 1
+
+
+def runtime_args(args: argparse.Namespace) -> list[str]:
+    """Return hidden runtime subcommand arguments."""
+    command_args = [
+        "--platform",
+        args.platform,
+        "--event",
+        args.event,
+        "--profile",
+        args.profile,
+    ]
+    add_common_run_args(command_args, args)
+    return command_args
+
+
+def pr_wait_args(args: argparse.Namespace) -> list[str]:
+    """Return hidden PR wait hook subcommand arguments."""
+    command_args = [
+        "--platform",
+        args.platform,
+    ]
+    add_common_run_args(command_args, args)
+    return command_args
+
+
+def add_common_run_args(command_args: list[str], args: argparse.Namespace) -> None:
+    """Add repo root and async rewake flags to hidden hook commands."""
+    if args.repo_root is not None:
+        command_args.extend(("--repo-root", str(args.repo_root)))
+    if args.async_rewake:
+        command_args.append("--async-rewake")

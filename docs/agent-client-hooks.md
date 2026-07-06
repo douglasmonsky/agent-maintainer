@@ -44,7 +44,10 @@ python3 -m agent_maintainer hooks install claude-code --async-rewake-stop
 ```
 
 In this mode, only Claude Code `Stop` and `SubagentStop` entries receive
-`async: true` and `asyncRewake: true`.
+`async: true` and `asyncRewake: true`. Their generated commands/wrappers also
+pass Agent Maintainer runtime async-rewake mode, so pending or failed
+verification emits the compact wait/repair context on stderr and exits `2` for
+Claude Code rewake.
 
 Install only one client:
 
@@ -90,6 +93,11 @@ instead of launching a duplicate process. If the same-state verifier already
 completed, the hook reuses that pass or failure result. If the working tree,
 index, configured profile, base, or compare state changed, the hook starts fresh
 verification.
+
+A Bash `gh pr create` `PostToolUse` hook detects created PR URLs and hands off
+PR-check waiting before review or merge. Claude Code uses async rewake for that
+handoff. Codex receives a supported continuation because Codex command hooks do
+not currently run async handlers.
 
 Repo-local wrappers use the checked-out source tree:
 
