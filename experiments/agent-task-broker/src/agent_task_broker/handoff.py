@@ -20,9 +20,13 @@ DEFAULT_GIVE_UP_RULES = (
 )
 
 
-def handoff_payload(task: dict[str, object]) -> dict[str, object]:
+def handoff_payload(
+    task: dict[str, object],
+    *,
+    routing: dict[str, object] | None = None,
+) -> dict[str, object]:
     """Return JSON-serializable handoff capsule."""
-    return {
+    payload = {
         "schema_version": 1,
         "task_id": task["id"],
         "goal": task["title"],
@@ -35,11 +39,19 @@ def handoff_payload(task: dict[str, object]) -> dict[str, object]:
         "give_up_rules": list(DEFAULT_GIVE_UP_RULES),
         "result_schema": RESULT_SCHEMA,
     }
+    if routing is not None:
+        payload["model_routing"] = routing
+    return payload
 
 
-def render_handoff(task: dict[str, object], *, output_format: str) -> str:
+def render_handoff(
+    task: dict[str, object],
+    *,
+    output_format: str,
+    routing: dict[str, object] | None = None,
+) -> str:
     """Render handoff capsule as Markdown or JSON."""
-    payload = handoff_payload(task)
+    payload = handoff_payload(task, routing=routing)
     if output_format == "json":
         return json.dumps(payload, indent=2, sort_keys=True)
     if output_format == "markdown":
@@ -59,6 +71,7 @@ def render_handoff_markdown(payload: dict[str, object]) -> str:
         section("Constraints", payload["constraints"]),
         section("Evidence", payload["evidence"]),
         section("Acceptance commands", payload["acceptance_commands"]),
+        model_routing_section(payload.get("model_routing")),
         section("Give-up rules", payload["give_up_rules"]),
         "## Result schema",
         "Return one status: `done`, `blocked`, `escalate`, or `abandoned`.",
@@ -66,6 +79,25 @@ def render_handoff_markdown(payload: dict[str, object]) -> str:
         "`escalate` and `abandoned` require reason.",
     ]
     return "\n".join(lines).rstrip()
+
+
+def model_routing_section(value: object) -> str:
+    """Render compact model routing section."""
+
+    if not isinstance(value, dict):
+        return ""
+    route = value.get("route", "unknown")
+    reason = value.get("reason", "")
+    advisory = value.get("advisory", True)
+    return "\n".join(
+        [
+            "## Model routing",
+            f"- Route: `{route}`",
+            f"- Advisory: `{advisory}`",
+            f"- Reason: {reason}",
+            "",
+        ]
+    )
 
 
 def section(title: str, values: object) -> str:

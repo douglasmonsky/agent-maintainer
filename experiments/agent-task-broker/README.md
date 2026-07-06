@@ -70,3 +70,20 @@ spawning or external orchestration framework is enabled:
 Future framework backends should start disabled with explicit missing-dependency
 diagnostics. Adapters must not decide verifier policy, merge safety, lock
 policy, task acceptance, model tier, task risk, or escalation policy.
+
+## Model-Tier Routing
+
+Phase 162 adds deterministic advisory routing before any worker backend can make
+model or provider choices. `ModelRoutingPolicy` returns one of:
+
+- `cheap-local-allowed`;
+- `standard-worker-required`;
+- `strong-worker-required`;
+- `human-review-required`.
+
+Cheap/local routing requires low difficulty, high confidence, bounded context,
+explicit allowed paths, and focused verification. Failed verification,
+low-confidence classification, repeated cheap-worker failure, oversized context,
+ambiguous ownership, architecture/CI/security surfaces, and credential or
+sensitive-data surfaces all escalate. Route decisions are advisory until
+dogfood evidence proves low false-negative risk.
