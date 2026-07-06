@@ -9,7 +9,7 @@ depends_on = []
 [[modules]]
 
 path = "builder"
-depends_on = ["models", "signals"]
+depends_on = ["models", "signal_context", "signals"]
 
 
 [[modules]]
@@ -32,5 +32,11 @@ depends_on = ["models"]
 
 [[modules]]
 
+path = "signal_context"
+depends_on = []
+
+
+[[modules]]
+
 path = "signals"
-depends_on = ["//agent_maintainer.runtime_events.read"]
+depends_on = ["signal_context", "//agent_maintainer.runtime_events.read"]

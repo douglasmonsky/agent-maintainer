@@ -6,7 +6,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from agent_maintainer.attention import signals
+from agent_maintainer.attention import signal_context, signals
 from agent_maintainer.attention.models import (
     SCHEMA_VERSION,
     AttentionFileScore,
@@ -31,15 +31,16 @@ def build_attention_ledger(
     *,
     log_dir: Path | None = None,
     events_dir: Path | None = None,
-    max_tracked_files: int = signals.DEFAULT_MAX_TRACKED_FILES,
-    artifact_read_limit_bytes: int = signals.DEFAULT_ARTIFACT_READ_LIMIT_BYTES,
+    max_tracked_files: int = signal_context.DEFAULT_MAX_TRACKED_FILES,
+    artifact_read_limit_bytes: int = (signal_context.DEFAULT_ARTIFACT_READ_LIMIT_BYTES),
 ) -> AttentionLedger:
     """Return deterministic attention ledger for target repository."""
     repo_root = target.resolve()
     resolved_log_dir = log_dir or Path(".verify-logs")
     resolved_events_dir = events_dir or Path(".verify-logs/events")
-    context = signals.AttentionSignalContext.build(
+    context = signal_context.AttentionSignalContext.build(
         repo_root,
+        tracked_files=signals.tracked_files,
         max_tracked_files=max_tracked_files,
         artifact_read_limit_bytes=artifact_read_limit_bytes,
     )

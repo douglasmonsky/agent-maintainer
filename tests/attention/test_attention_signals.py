@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from agent_maintainer.attention import signals
+from agent_maintainer.attention import signal_context, signals
 
 
 def test_payload_paths_extracts_nested_known_paths(tmp_path: Path) -> None:
@@ -47,8 +47,9 @@ def test_docsync_counts_records_bounded_artifact_read(tmp_path: Path) -> None:
         tmp_path / ".docsync" / "trace.yml",
         "src/app.py\n" + ("x" * 100),
     )
-    context = signals.AttentionSignalContext.build(
+    context = signal_context.AttentionSignalContext.build(
         tmp_path,
+        tracked_files=signals.tracked_files,
         artifact_read_limit_bytes=12,
     )
 
