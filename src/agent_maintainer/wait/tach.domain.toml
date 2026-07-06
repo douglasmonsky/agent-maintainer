@@ -12,6 +12,7 @@ path = "cli"
 depends_on = [
   "github",
   "github_pr",
+  "registry",
   "verifier",
   "//agent_maintainer.runtime_events.waiting",
 ]
@@ -37,6 +38,15 @@ depends_on = [
 
 path = "models"
 depends_on = []
+
+
+[[modules]]
+
+path = "registry"
+depends_on = [
+  "github_pr",
+  "models",
+]
 
 
 [[modules]]
