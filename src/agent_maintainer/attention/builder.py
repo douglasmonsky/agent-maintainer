@@ -31,27 +31,37 @@ def build_attention_ledger(
     *,
     log_dir: Path | None = None,
     events_dir: Path | None = None,
+    max_tracked_files: int = signals.DEFAULT_MAX_TRACKED_FILES,
+    artifact_read_limit_bytes: int = signals.DEFAULT_ARTIFACT_READ_LIMIT_BYTES,
 ) -> AttentionLedger:
     """Return deterministic attention ledger for target repository."""
     repo_root = target.resolve()
     resolved_log_dir = log_dir or Path(".verify-logs")
     resolved_events_dir = events_dir or Path(".verify-logs/events")
-    files = signals.tracked_files(repo_root)
+    context = signals.AttentionSignalContext.build(
+        repo_root,
+        max_tracked_files=max_tracked_files,
+        artifact_read_limit_bytes=artifact_read_limit_bytes,
+    )
+    files = context.tracked_paths
     raw_components = {
         "git_changed": signals.changed_counts(repo_root),
         "git_churn": signals.churn_counts(repo_root),
         "runtime_events": signals.runtime_event_counts(
             repo_root,
             events_dir=repo_root / resolved_events_dir,
+            context=context,
         ),
         "verifier_artifacts": signals.verifier_artifact_counts(
             repo_root,
             log_dir=repo_root / resolved_log_dir,
+            context=context,
         ),
-        "docsync": signals.docsync_counts(repo_root),
+        "docsync": signals.docsync_counts(repo_root, context=context),
         "file_baselines": signals.file_baseline_counts(
             repo_root,
             log_dir=repo_root / resolved_log_dir,
+            context=context,
         ),
     }
     normalized = {name: _normalize_counts(counts) for name, counts in raw_components.items()}
@@ -70,6 +80,12 @@ def build_attention_ledger(
             "tracked_files": len(files),
             "log_dir": resolved_log_dir.as_posix(),
             "events_dir": resolved_events_dir.as_posix(),
+            "performance_guards": {
+                "all_tracked_file_count": context.all_tracked_file_count,
+                "scored_file_count": len(files),
+                "artifact_read_limit_bytes": context.artifact_read_limit_bytes,
+                "notes": list(context.performance_notes),
+            },
             **{f"{name}_files": len(counts) for name, counts in raw_components.items()},
         },
         files=visible_files,

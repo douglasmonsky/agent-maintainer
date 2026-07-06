@@ -39,6 +39,25 @@ def test_runtime_event_counts_reads_jsonl_paths(tmp_path: Path) -> None:
     assert counts["src/app.py"] == 1
 
 
+def test_docsync_counts_records_bounded_artifact_read(tmp_path: Path) -> None:
+    """DocSync artifact reads are capped and reported."""
+
+    _write(tmp_path / "src" / "app.py", "VALUE = 1\n")
+    _write(
+        tmp_path / ".docsync" / "trace.yml",
+        "src/app.py\n" + ("x" * 100),
+    )
+    context = signals.AttentionSignalContext.build(
+        tmp_path,
+        artifact_read_limit_bytes=12,
+    )
+
+    counts = signals.docsync_counts(tmp_path, context=context)
+
+    assert counts["src/app.py"] == 1
+    assert context.performance_notes == ["artifact read capped trace.yml at 12 bytes"]
+
+
 def _write(path: Path, content: str) -> None:
     """Write a file, creating parents."""
     path.parent.mkdir(parents=True, exist_ok=True)

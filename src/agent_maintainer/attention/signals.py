@@ -7,6 +7,7 @@ import os
 import subprocess  # nosec B404
 from collections import Counter
 from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +48,51 @@ PATH_KEYS = frozenset(
 
 DEFAULT_PATH_SCORE = 0.15
 HIGH_PRIORITY_PATH_SCORE = 0.75
+DEFAULT_MAX_TRACKED_FILES = 5_000
+DEFAULT_ARTIFACT_READ_LIMIT_BYTES = 200_000
+
+
+@dataclass
+class AttentionSignalContext:
+    """Shared bounded inputs for one attention ledger build."""
+
+    repo_root: Path
+    tracked_paths: tuple[str, ...]
+    all_tracked_file_count: int
+    artifact_read_limit_bytes: int = DEFAULT_ARTIFACT_READ_LIMIT_BYTES
+    performance_notes: list[str] = field(default_factory=list)
+
+    @classmethod
+    def build(
+        cls,
+        repo_root: Path,
+        *,
+        max_tracked_files: int = DEFAULT_MAX_TRACKED_FILES,
+        artifact_read_limit_bytes: int = DEFAULT_ARTIFACT_READ_LIMIT_BYTES,
+    ) -> AttentionSignalContext:
+        """Collect tracked files once and apply deterministic cap."""
+
+        paths = tracked_files(repo_root)
+        sampled_paths = _sample_paths(paths, max_tracked_files)
+        notes: list[str] = []
+        if len(sampled_paths) < len(paths):
+            notes.append(
+                "tracked file set capped "
+                f"{len(sampled_paths)}/{len(paths)} using deterministic sampling"
+            )
+        return cls(
+            repo_root=repo_root,
+            tracked_paths=sampled_paths,
+            all_tracked_file_count=len(paths),
+            artifact_read_limit_bytes=artifact_read_limit_bytes,
+            performance_notes=notes,
+        )
+
+    @property
+    def known_paths(self) -> set[str]:
+        """Return sampled tracked paths as a set."""
+
+        return set(self.tracked_paths)
 
 
 def tracked_files(repo_root: Path) -> tuple[str, ...]:
@@ -69,6 +115,38 @@ def tracked_files(repo_root: Path) -> tuple[str, ...]:
             if _is_attention_path(relative):
                 paths.append(relative)
     return tuple(sorted(paths))
+
+
+def _sample_paths(paths: tuple[str, ...], limit: int) -> tuple[str, ...]:
+    """Return deterministic sampled paths within limit."""
+
+    if limit <= 0 or len(paths) <= limit:
+        return paths
+    if limit == 1:
+        return (paths[0],)
+    step = (len(paths) - 1) / (limit - 1)
+    indexes = {round(index * step) for index in range(limit)}
+    return tuple(paths[index] for index in sorted(indexes))
+
+
+def _tracked_paths(
+    repo_root: Path,
+    context: AttentionSignalContext | None,
+) -> tuple[str, ...]:
+    """Return tracked paths from shared context or fallback collection."""
+
+    if context is not None:
+        return context.tracked_paths
+    return tracked_files(repo_root)
+
+
+def _known_paths(
+    repo_root: Path,
+    context: AttentionSignalContext | None,
+) -> set[str]:
+    """Return tracked paths as a set."""
+
+    return set(_tracked_paths(repo_root, context))
 
 
 def changed_counts(repo_root: Path) -> Counter[str]:
@@ -96,10 +174,15 @@ def churn_counts(repo_root: Path, *, commit_limit: int = 40) -> Counter[str]:
     return counts
 
 
-def runtime_event_counts(repo_root: Path, *, events_dir: Path) -> Counter[str]:
+def runtime_event_counts(
+    repo_root: Path,
+    *,
+    events_dir: Path,
+    context: AttentionSignalContext | None = None,
+) -> Counter[str]:
     """Return file mentions from runtime event artifacts."""
     result = read_runtime_events(events_dir)
-    known = set(tracked_files(repo_root))
+    known = _known_paths(repo_root, context)
     counts: Counter[str] = Counter()
     for record in result.records:
         for path in _record_paths(record, repo_root=repo_root, known_paths=known):
@@ -107,15 +190,20 @@ def runtime_event_counts(repo_root: Path, *, events_dir: Path) -> Counter[str]:
     return counts
 
 
-def verifier_artifact_counts(repo_root: Path, *, log_dir: Path) -> Counter[str]:
+def verifier_artifact_counts(
+    repo_root: Path,
+    *,
+    log_dir: Path,
+    context: AttentionSignalContext | None = None,
+) -> Counter[str]:
     """Return file mentions from verifier manifests."""
-    known = set(tracked_files(repo_root))
+    known = _known_paths(repo_root, context)
     counts: Counter[str] = Counter()
     runs_dir = log_dir / "runs"
     if not runs_dir.exists():
         return counts
     for manifest_path in sorted(runs_dir.glob("*/manifest.json")):
-        payload = _read_json(manifest_path)
+        payload = _read_json(manifest_path, context=context)
         if payload is None:
             continue
         for path in _payload_paths(payload, repo_root=repo_root, known_paths=known):
@@ -123,9 +211,13 @@ def verifier_artifact_counts(repo_root: Path, *, log_dir: Path) -> Counter[str]:
     return counts
 
 
-def docsync_counts(repo_root: Path) -> Counter[str]:
+def docsync_counts(
+    repo_root: Path,
+    *,
+    context: AttentionSignalContext | None = None,
+) -> Counter[str]:
     """Return file mentions from DocSync trace and report artifacts."""
-    paths = tracked_files(repo_root)
+    paths = _tracked_paths(repo_root, context)
     counts: Counter[str] = Counter()
     for artifact in (
         repo_root / ".docsync" / "trace.yml",
@@ -134,7 +226,7 @@ def docsync_counts(repo_root: Path) -> Counter[str]:
         if not artifact.exists():
             continue
         try:
-            text = artifact.read_text(encoding="utf-8")
+            text = _read_text(artifact, context=context)
         except OSError:
             continue
         for path in paths:
@@ -143,16 +235,21 @@ def docsync_counts(repo_root: Path) -> Counter[str]:
     return counts
 
 
-def file_baseline_counts(repo_root: Path, *, log_dir: Path) -> Counter[str]:
+def file_baseline_counts(
+    repo_root: Path,
+    *,
+    log_dir: Path,
+    context: AttentionSignalContext | None = None,
+) -> Counter[str]:
     """Return file mentions from file-baseline artifacts when present."""
-    known = set(tracked_files(repo_root))
+    known = _known_paths(repo_root, context)
     counts: Counter[str] = Counter()
     for artifact in (
         log_dir / "file-baselines.json",
         log_dir / "file-baseline.json",
         log_dir / "file-baselines" / "report.json",
     ):
-        payload = _read_json(artifact)
+        payload = _read_json(artifact, context=context)
         if payload is None:
             continue
         for path in _payload_paths(payload, repo_root=repo_root, known_paths=known):
@@ -283,11 +380,36 @@ def _relative_text(value: str, *, repo_root: Path) -> str:
         return value
 
 
-def _read_json(path: Path) -> object | None:
+def _read_text(
+    path: Path,
+    *,
+    context: AttentionSignalContext | None,
+) -> str:
+    """Read bounded text artifact."""
+
+    limit = (
+        context.artifact_read_limit_bytes
+        if context is not None
+        else DEFAULT_ARTIFACT_READ_LIMIT_BYTES
+    )
+    with path.open("rb") as handle:
+        data = handle.read(limit + 1)
+    if len(data) > limit:
+        if context is not None:
+            context.performance_notes.append(f"artifact read capped {path.name} at {limit} bytes")
+        data = data[:limit]
+    return data.decode("utf-8", errors="replace")
+
+
+def _read_json(
+    path: Path,
+    *,
+    context: AttentionSignalContext | None = None,
+) -> object | None:
     """Read JSON artifact if present and valid."""
     if not path.exists():
         return None
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(_read_text(path, context=context))
     except (OSError, json.JSONDecodeError):
         return None
