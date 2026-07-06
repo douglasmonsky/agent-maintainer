@@ -19,11 +19,15 @@ ARTIFACT_FACT_PARSERS: tuple[FactParserEntry, ...] = (
 )
 
 LOG_FACT_PARSERS: tuple[FactParserEntry, ...] = (
+    ("architecture-decision", logs.architecture_decision_facts),
     ("file-length", logs.file_length_facts),
     ("change-budget", logs.change_budget_facts),
+    ("ruff-format", logs.ruff_format_facts),
     ("typescript-lint", typescript.typescript_lint_facts),
     ("typescript-typecheck", typescript.typescript_typecheck_facts),
     ("typescript-test", typescript.typescript_test_facts),
+    ("wemake", logs.wemake_facts),
+    ("xenon-complexity-gate", logs.xenon_complexity_facts),
 )
 
 

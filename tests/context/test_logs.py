@@ -5,15 +5,23 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from agent_context.failures import FailureRecord
 from agent_context.reading.logs import LogRequest, render_log_text, select_log
 from agent_maintainer.context import cli as context_cli
+from agent_maintainer.context.pack import exact_facts
 
+APP_PATH = "src/pkg/app.py"
+TACH_DOMAIN_PATH = "src/agent_maintainer/attention/tach.domain.toml"
 TWO_LINES = 2
 THREE_LINES = 3
 FIVE_LINES = 5
 SIX_LINES = 6
+WEMAKE_LINE = 12
+WEMAKE_COLUMN = 9
+XENON_LINE = 98
 TWENTY_LINES = 20
 THIRTY_CHARS = 30
+ENCODING = "utf-8"
 
 
 def test_missing_log_is_graceful(tmp_path: Path) -> None:
@@ -27,7 +35,6 @@ def test_missing_log_is_graceful(tmp_path: Path) -> None:
 
 def test_tail_slicing_selects_last_lines(tmp_path: Path) -> None:
     """Tail slicing selects the requested log suffix."""
-
     write_log(tmp_path, "pyright", line_count=FIVE_LINES)
 
     selection = select_log(tmp_path, "pyright", LogRequest(tail=TWO_LINES))
@@ -53,7 +60,6 @@ def test_head_tail_slicing_marks_omission(tmp_path: Path) -> None:
 
 def test_line_range_slicing_is_one_based(tmp_path: Path) -> None:
     """Line-range slicing uses one-based inclusive ranges."""
-
     write_log(tmp_path, "ruff", line_count=FIVE_LINES)
 
     selection = select_log(tmp_path, "ruff", LogRequest(line_range="2:4"))
@@ -111,3 +117,111 @@ def write_log(log_dir: Path, check_name: str, *, line_count: int) -> None:
     log_dir.mkdir(parents=True, exist_ok=True)
     text = "\n".join(f"line {index}" for index in range(1, line_count + 1))
     (log_dir / f"{check_name}.log").write_text(text, encoding="utf-8")
+
+
+def test_architecture_log_extracts_policy_path(tmp_path: Path) -> None:
+    """Architecture decision logs point at changed policy files."""
+
+    log_path = tmp_path / "architecture-decision.log"
+    log_path.write_text(
+        (
+            "architecture policy changed without decision note: "
+            f"{TACH_DOMAIN_PATH}\n"
+            "Add or update a decision note under docs/architecture/decisions/.\n"
+        ),
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(
+        tmp_path,
+        (record_with_log("architecture-decision", log_path),),
+    )
+
+    fact = first_fact(facts)
+    assert fact["check"] == "architecture-decision"
+    assert fact["path"] == TACH_DOMAIN_PATH
+    assert fact["symbol"] == "architecture-decision"
+    assert "decision note" in str(fact["message"])
+
+
+def test_ruff_format_log_extracts_targets(tmp_path: Path) -> None:
+    """Ruff format logs point at files requiring formatting."""
+
+    log_path = tmp_path / "ruff-format.log"
+    log_path.write_text(
+        f"Would reformat: {APP_PATH}\n1 file would be reformatted\n",
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record_with_log("ruff-format", log_path),))
+
+    fact = first_fact(facts)
+    assert fact["check"] == "ruff-format"
+    assert fact["path"] == APP_PATH
+    assert fact["symbol"] == "ruff-format"
+    assert fact["message"] == "Run ruff format on this file."
+
+
+def test_wemake_log_extracts_style_fact(tmp_path: Path) -> None:
+    """Wemake flake8 logs produce exact style facts."""
+
+    log_path = tmp_path / "wemake.log"
+    log_path.write_text(
+        (
+            f"{APP_PATH}:{WEMAKE_LINE}:{WEMAKE_COLUMN}: "
+            "WPS202 Found too many module members: 22 > 20\n"
+        ),
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record_with_log("wemake", log_path),))
+
+    fact = first_fact(facts)
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == WEMAKE_LINE
+    assert fact["column"] == WEMAKE_COLUMN
+    assert fact["symbol"] == "WPS202"
+    assert "too many module members" in str(fact["message"])
+
+
+def test_xenon_log_extracts_complexity_fact(tmp_path: Path) -> None:
+    """Xenon logs produce exact complex block facts."""
+
+    log_path = tmp_path / "xenon-complexity-gate.log"
+    log_path.write_text(
+        (f'ERROR:xenon:block "{APP_PATH}:{XENON_LINE} _followthrough_metrics" has a rank of C\n'),
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(
+        tmp_path,
+        (record_with_log("xenon-complexity-gate", log_path),),
+    )
+
+    fact = first_fact(facts)
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == XENON_LINE
+    assert fact["symbol"] == "_followthrough_metrics"
+    assert "rank of C" in str(fact["message"])
+
+
+def first_fact(facts: list[dict[str, object]]) -> dict[str, object]:
+    """Return first exact fact fixture output."""
+
+    return facts[0]
+
+
+def record_with_log(check: str, log_path: Path) -> FailureRecord:
+    """Return failure record fixture log-only check."""
+
+    return FailureRecord(
+        name=check,
+        status="failed",
+        category="test",
+        priority=1,
+        exit_code=1,
+        log_path=str(log_path),
+        log_bytes=log_path.stat().st_size,
+        expansion_commands=(),
+        artifact_paths=(),
+    )
