@@ -243,6 +243,8 @@ python3 -m agent_maintainer attention update
 python3 -m agent_maintainer attention top
 python3 -m agent_maintainer events summary
 python3 -m agent_maintainer events waste
+python3 -m agent_maintainer events export --format jsonl
+python3 -m agent_maintainer events export --format otel-json
 python3 -m agent_maintainer verify --profile full --async
 python3 -m agent_maintainer wait github-run <run-id>
 python3 -m agent_maintainer wait verifier <run-id>
@@ -281,9 +283,10 @@ Then agents should follow this loop:
    run both only when that overlap is under test. Run `security` or `manual`
    when touching those gates, before release, or when explicitly requested.
 
-7. When GitHub Actions runs long verifier jobs, use
-   `just wait-github <run-id>` or `just wait-verifier <run-id>` so the tool owns
-   polling and returns one final repair capsule.
+7. When GitHub Actions or verifier jobs are still running, use
+   `just wait-github <run-id>`, `just wait-pr <pr-number>`, or
+   `just wait-verifier <run-id>` so the tool owns polling and returns one final
+   repair capsule.
 
 Helpful repair commands:
 
