@@ -62,13 +62,13 @@ class EfficacyBuilder:
         reused_runs = _event_count(self.records, "verifier.reused")
         verifier_runs = fresh_runs + reused_runs
         failure_to_pass_ms = _first_failure_to_pass_ms(self.records)
-        failure_to_pass_value: int | str = UNKNOWN
-        failure_to_pass_kind = UNKNOWN
+        duration_value: int | str = UNKNOWN
+        duration_kind = UNKNOWN
         if failure_to_pass_ms is None:
-            failure_to_pass_value = UNKNOWN
+            duration_value = UNKNOWN
         else:
-            failure_to_pass_value = failure_to_pass_ms
-            failure_to_pass_kind = "measured"
+            duration_value = failure_to_pass_ms
+            duration_kind = "measured"
         return [
             EfficacyMetric(
                 name="verifier_fresh_runs",
@@ -88,9 +88,9 @@ class EfficacyBuilder:
             ),
             EfficacyMetric(
                 name="first_failure_to_passing_profile_ms",
-                value=failure_to_pass_value,
+                value=duration_value,
                 unit="milliseconds",
-                kind=failure_to_pass_kind,
+                kind=duration_kind,
                 detail="elapsed time from first failure event to next passing profile",
             ),
         ]
