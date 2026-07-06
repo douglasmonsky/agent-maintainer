@@ -9,8 +9,10 @@ path = "cli"
 depends_on = [
   "//agent_maintainer.config.loader",
   "debt_score",
-"evidence",
-"file_baselines",
+  "efficacy",
+  "efficacy_reporting",
+  "evidence",
+  "file_baselines",
 "repair_fact_coverage",
 "repair_fact_coverage_reporting",
 "reporting",
@@ -50,6 +52,27 @@ depends_on = []
 [[modules]]
 path = "debt_security"
 depends_on = ["//agent_maintainer.config.schema", "models"]
+
+[[modules]]
+path = "efficacy"
+depends_on = [
+  "//agent_context.failures",
+  "//agent_maintainer.runtime_events.read",
+  "efficacy_followthrough",
+  "efficacy_models",
+]
+
+[[modules]]
+path = "efficacy_followthrough"
+depends_on = ["efficacy_models"]
+
+[[modules]]
+path = "efficacy_models"
+depends_on = []
+
+[[modules]]
+path = "efficacy_reporting"
+depends_on = ["efficacy_models"]
 
 [[modules]]
 path = "evidence"

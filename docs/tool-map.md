@@ -151,6 +151,15 @@ human/default format; `--format json` exists for automation. The command only
 prints bounded guidance and context/test/verification commands; it does not edit
 files, update baselines, or run checks.
 
+`python3 -m agent_maintainer assess efficacy` summarizes local agent efficacy
+signals from runtime-event JSONL and verifier manifests without reading raw chat
+transcripts or raw check logs. Use it after dogfood sessions to inspect measured
+duplicate-run avoidance, wait-helper success, context pointer follow-through,
+repair-loop outcomes, first-failure-to-pass timing, and estimated repair-capsule
+token savings. Metrics labeled `estimated` are artifact-backed proxies; metrics
+labeled `unknown` need more explicit runtime events before they should drive a
+ratchet.
+
 ## Maintainability gates
 
 Radon reports cyclomatic complexity and maintainability metrics. Xenon converts complexity thresholds into a failing gate.
