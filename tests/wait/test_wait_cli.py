@@ -6,6 +6,12 @@ import pytest
 
 from agent_maintainer.wait import cli
 from agent_maintainer.wait.github import GitHubRunState, GitHubWaitConfig, GitHubWaitResult
+from agent_maintainer.wait.github_pr import (
+    GitHubPrCheck,
+    GitHubPrChecksState,
+    GitHubPrWaitConfig,
+    GitHubPrWaitResult,
+)
 from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 SUCCESS_TIMEOUT_SECONDS = 2
@@ -63,6 +69,25 @@ def test_github_run_cli_reports_query_errors(
     assert "gh auth required" in output
 
 
+def test_github_pr_cli_prints_success(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """GitHub PR CLI prints only final success status."""
+    fake_wait = SuccessPrWait()
+    monkeypatch.setattr(cli, "wait_for_github_pr_checks", fake_wait)
+
+    status = cli.main(["github-pr", "291", "--interval", "1", "--timeout-seconds", "2"])
+
+    assert status == 0
+    assert fake_wait.seen_config == GitHubPrWaitConfig(
+        pr_number="291",
+        interval_seconds=1,
+        timeout_seconds=SUCCESS_TIMEOUT_SECONDS,
+    )
+    assert capsys.readouterr().out == "Result: PASS\nRun ID: PR #291\n"
+
+
 def test_verifier_cli_prints_manifest_status(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -102,6 +127,23 @@ class SuccessWait:
         return GitHubWaitResult(
             run_id=config.run_id,
             state=GitHubRunState(status="completed", conclusion="success", url="https://run"),
+        )
+
+
+class SuccessPrWait:
+    """Fake successful GitHub PR waiter capturing config."""
+
+    def __init__(self) -> None:
+        self.seen_config: GitHubPrWaitConfig | None = None
+
+    def __call__(self, config: GitHubPrWaitConfig) -> GitHubPrWaitResult:
+        self.seen_config = config
+        return GitHubPrWaitResult(
+            pr_number=config.pr_number,
+            state=GitHubPrChecksState(
+                pr_number=config.pr_number,
+                checks=(GitHubPrCheck(name="verify", state="success"),),
+            ),
         )
 
 

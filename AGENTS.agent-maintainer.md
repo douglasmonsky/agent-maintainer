@@ -78,10 +78,10 @@ Do not read it during normal coding unless changing guidance.
 
 - Prefer shortest repo wrappers when present: `just vp` (precommit),
  `just v` (full), `just vc` (CI-equivalent),
- `just wg <run-id>`, `just wv <run-id>`.
+ `just wg <run-id>`, `just wp <pr-number>`, `just wv <run-id>`.
 - Readable forms remain valid: `just verify-precommit`,
  `just verify`, `just verify-ci`, `just wait-github <run-id>`,
- `just wait-verifier <run-id>`.
+ `just wait-pr <pr-number>`, `just wait-verifier <run-id>`.
 - Normal finish fallback: `just vp` only when trusted
  hooks are unavailable, bypassed, or failure reproduction is needed.
 - Trusted hooks already run `fast` after edits and `precommit`
@@ -95,7 +95,8 @@ Do not read it during normal coding unless changing guidance.
 - Run `security` or `manual` when touching those gates, before release,
  or when explicitly requested.
 - For GitHub Actions or long verifier jobs, use
- `just wait-github <run-id>` or `just wait-verifier <run-id>`
+ `just wait-github <run-id>`, `just wait-pr <pr-number>`,
+ or `just wait-verifier <run-id>`
  so tools own polling.
 - Run `just doctor` after setup, config, toolchain, hook,
  or initializer changes.

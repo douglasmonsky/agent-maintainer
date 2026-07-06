@@ -15,8 +15,8 @@ GitHub Actions run waiter, followed by a local verifier manifest waiter.
 
 Add the small `agent_maintainer.wait` package for wait adapters, verifier
 manifest reading, and shared compact repair-capsule rendering. The package
-currently owns the GitHub Actions adapter, local verifier artifact waiter, and
-shared wait output model. Top-level CLI routing may lazy-load wait CLI, but
+currently owns GitHub Actions run and PR-check adapters, local verifier
+artifact waiter, and shared wait output model. Top-level CLI routing may lazy-load wait CLI, but
 polling behavior and wait result formatting stay inside the wait package.
 
 Async verifier launch state stays in `agent_maintainer.verify.async_jobs`

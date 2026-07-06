@@ -110,10 +110,12 @@ def test_render_guidance_includes_active_configuration() -> None:
     assert "just vp" in text
     assert "just vc" in text
     assert "just wg <run-id>" in text
+    assert "just wp <pr-number>" in text
     assert "just wv <run-id>" in text
     assert "Readable forms remain valid" in text
     assert "just verify-precommit" in text
     assert "just wait-github <run-id>" in text
+    assert "just wait-pr <pr-number>" in text
     assert "just wait-verifier <run-id>" in text
     assert "python3 -m agent_maintainer verify --profile precommit" not in text
     assert "Trusted hooks already run `fast` after edits and `precommit`" in text

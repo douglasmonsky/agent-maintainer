@@ -1,0 +1,15 @@
+version: 1
+attestations:
+- id: attest.20260706T162026Z.claim.docs.agent_guidance_compact_sidecar.26909fa
+  claim: claim.docs.agent_guidance_compact_sidecar
+  doc_object: docs.agent_maintainer_guidance.overview
+  evidence:
+  - evidence.agent_guidance.compact_sidecar_tests
+  reason: Generated guidance documents quiet PR wait command.
+  reviewer: agent
+  reviewed_at: '2026-07-06T16:20:26Z'
+  base: HEAD
+  head: 26909fa
+  evidence_fingerprints:
+    evidence.agent_guidance.compact_sidecar_tests: sha256:d662b2672d32fc98bedeaa659fd797fa0c17a4b03b40ce13ecaec856d31eef16
+  statement: Reviewed changed evidence region. Documentation remains accurate.
