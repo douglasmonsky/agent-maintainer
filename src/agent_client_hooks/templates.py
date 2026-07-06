@@ -97,6 +97,9 @@ def claude_settings(
         wrapper_path=CLAUDE_SUBAGENT_STOP_HOOK,
         user_scope=user_scope,
     )
+    if async_rewake_stop and user_scope:
+        stop_command = f"{stop_command} --async-rewake"
+        subagent_stop_command = f"{subagent_stop_command} --async-rewake"
     stop_hook = {
         "type": "command",
         "command": stop_command,
@@ -148,7 +151,13 @@ def hook_command(
     return f'python3 "$(git rev-parse --show-toplevel)/{wrapper_path}"'
 
 
-def hook_wrapper(*, platform: str, event: str, profile: str) -> str:
+def hook_wrapper(
+    *,
+    platform: str,
+    event: str,
+    profile: str,
+    async_rewake: bool = False,
+) -> str:
     """Return repo-local Python hook wrapper."""
 
     return textwrap.dedent(
@@ -176,6 +185,7 @@ def hook_wrapper(*, platform: str, event: str, profile: str) -> str:
                 event="{event}",
                 profile="{profile}",
                 repo_root=REPO_ROOT,
+                async_rewake={async_rewake!r},
             )
 
 
@@ -203,19 +213,25 @@ def claude_post_hook() -> str:
     return hook_wrapper(platform=CLAUDE_CODE_PLATFORM, event=POST_TOOL_USE_EVENT, profile="fast")
 
 
-def claude_stop_hook() -> str:
+def claude_stop_hook(*, async_rewake: bool = False) -> str:
     """Return Claude Code Stop wrapper source."""
 
-    return hook_wrapper(platform=CLAUDE_CODE_PLATFORM, event=STOP_EVENT, profile="precommit")
+    return hook_wrapper(
+        platform=CLAUDE_CODE_PLATFORM,
+        event=STOP_EVENT,
+        profile="precommit",
+        async_rewake=async_rewake,
+    )
 
 
-def claude_subagent_stop_hook() -> str:
+def claude_subagent_stop_hook(*, async_rewake: bool = False) -> str:
     """Return Claude Code SubagentStop wrapper source."""
 
     return hook_wrapper(
         platform=CLAUDE_CODE_PLATFORM,
         event=SUBAGENT_STOP_EVENT,
         profile="precommit",
+        async_rewake=async_rewake,
     )
 
 

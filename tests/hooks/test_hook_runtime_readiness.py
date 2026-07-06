@@ -10,6 +10,8 @@ import pytest
 
 from agent_maintainer.hooks import runtime
 
+ASYNC_REWAKE_EXIT_CODE = 2
+
 
 def installed_repo(tmp_path: Path) -> Path:
     """Create minimal configured repository with local package entrypoint."""
@@ -55,6 +57,44 @@ def test_runtime_reports_pending_same_state_verifier(
     assert payload["decision"] == "block"
     assert "already running" in payload["reason"]
     assert "wait verifier run-pending" in payload["hookSpecificOutput"]["additionalContext"]
+
+
+def test_runtime_async_rewake_pending_readiness_exits_two(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Claude async-rewake pending wait pointers wake Claude on exit code 2."""
+    installed_repo(tmp_path)
+
+    def fail_verifier(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        pytest.fail("same-state pending verifier should not run again")
+        return subprocess.CompletedProcess([], 99, "", "")
+
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fail_verifier)
+    monkeypatch.setattr(
+        runtime.hook_readiness,
+        "hook_readiness",
+        lambda _repo_root, profile: runtime.hook_readiness.HookReadiness(
+            status="pending",
+            profile=profile,
+            run_id="run-pending",
+        ),
+    )
+
+    status = runtime.run_hook(
+        platform=runtime.CLAUDE_CODE_PLATFORM,
+        event=runtime.STOP_EVENT,
+        profile="precommit",
+        repo_root=tmp_path,
+        async_rewake=True,
+    )
+
+    captured = capsys.readouterr()
+    assert status == ASYNC_REWAKE_EXIT_CODE
+    assert captured.out == ""
+    assert "already running" in captured.err
+    assert "wait verifier run-pending" in captured.err
 
 
 def test_runtime_reuses_completed_same_state_success(
@@ -127,3 +167,42 @@ def test_runtime_reuses_completed_same_state_failure(
     assert status == 0
     assert payload["decision"] == "block"
     assert "wait verifier run-fail" in payload["reason"]
+
+
+def test_runtime_async_rewake_failed_readiness_exits_two(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Claude async-rewake hooks use exit 2 so Claude wakes for repair."""
+    installed_repo(tmp_path)
+
+    def fail_verifier(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        pytest.fail("same-state failed verifier should not run again")
+        return subprocess.CompletedProcess([], 99, "", "")
+
+    monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fail_verifier)
+    monkeypatch.setattr(
+        runtime.hook_readiness,
+        "hook_readiness",
+        lambda _repo_root, profile: runtime.hook_readiness.HookReadiness(
+            status="completed",
+            profile=profile,
+            run_id="run-fail",
+            exit_code=1,
+        ),
+    )
+
+    status = runtime.run_hook(
+        platform=runtime.CLAUDE_CODE_PLATFORM,
+        event=runtime.STOP_EVENT,
+        profile="precommit",
+        repo_root=tmp_path,
+        async_rewake=True,
+    )
+
+    captured = capsys.readouterr()
+    assert status == ASYNC_REWAKE_EXIT_CODE
+    assert captured.out == ""
+    assert "Final verification failed" in captured.err
+    assert "wait verifier run-fail" in captured.err

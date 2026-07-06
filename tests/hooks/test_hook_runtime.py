@@ -164,6 +164,7 @@ def test_main_dispatches_to_run_hook(
             "event": runtime.POST_TOOL_USE_EVENT,
             "profile": "fast",
             "repo_root": tmp_path,
+            "async_rewake": False,
         }
     ]
 

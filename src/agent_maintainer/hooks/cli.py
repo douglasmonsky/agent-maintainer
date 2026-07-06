@@ -45,6 +45,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     run_parser.add_argument("--event", required=True)
     run_parser.add_argument("--profile", required=True)
     run_parser.add_argument("--repo-root", type=Path)
+    run_parser.add_argument("--async-rewake", action="store_true")
 
     return parser.parse_args(argv)
 
@@ -88,5 +89,7 @@ def main(argv: list[str]) -> int:
         ]
         if args.repo_root is not None:
             runtime_args.extend(("--repo-root", str(args.repo_root)))
+        if args.async_rewake:
+            runtime_args.append("--async-rewake")
         return runtime_main(runtime_args)
     return 1

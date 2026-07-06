@@ -50,6 +50,28 @@ def test_claude_async_rewake_applies_only_to_stop_hooks() -> None:
     assert subagent_hook["asyncRewake"] is True
 
 
+def test_claude_async_rewake_user_scope_commands_pass_runtime_flag() -> None:
+    """User-scope async rewake commands invoke runtime async-rewake mode."""
+
+    settings = json.loads(templates.claude_settings(user_scope=True, async_rewake_stop=True))
+
+    post_command = settings["hooks"]["PostToolUse"][0]["hooks"][0]["command"]
+    stop_command = settings["hooks"]["Stop"][0]["hooks"][0]["command"]
+    subagent_command = settings["hooks"]["SubagentStop"][0]["hooks"][0]["command"]
+
+    assert "--async-rewake" not in post_command
+    assert stop_command.endswith("--async-rewake")
+    assert subagent_command.endswith("--async-rewake")
+
+
+def test_claude_async_rewake_repo_wrappers_pass_runtime_flag() -> None:
+    """Repo-local async rewake wrappers call runtime async-rewake mode."""
+
+    assert "async_rewake=True" in templates.claude_stop_hook(async_rewake=True)
+    assert "async_rewake=True" in templates.claude_subagent_stop_hook(async_rewake=True)
+    assert "async_rewake=False" in templates.claude_stop_hook()
+
+
 def test_hook_wrappers_are_valid_python() -> None:
     """Generated wrapper strings compile without writing bytecode."""
 
@@ -58,7 +80,9 @@ def test_hook_wrappers_are_valid_python() -> None:
         templates.codex_stop_hook(),
         templates.claude_post_hook(),
         templates.claude_stop_hook(),
+        templates.claude_stop_hook(async_rewake=True),
         templates.claude_subagent_stop_hook(),
+        templates.claude_subagent_stop_hook(async_rewake=True),
         templates.hook_audit_shim(),
     ):
         compile(source, "<hook-template>", "exec")

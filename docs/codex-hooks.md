@@ -7,6 +7,9 @@ For the full managed hook installer covering Codex and Claude Code, see
 Claude Code installations can opt into asynchronous rewake for slow
 `Stop`/`SubagentStop` validation through the shared installer:
 `python3 -m agent_maintainer hooks install claude-code --async-rewake-stop`.
+In that mode, generated Claude stop hooks pass runtime async-rewake mode and
+return exit `2` with compact wait/repair context when verification is pending
+or failed, so Claude Code wakes back into the turn.
 
 The kit includes repo-local Codex hooks under `.codex/`:
 

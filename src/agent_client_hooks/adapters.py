@@ -193,12 +193,12 @@ class ClaudeCodeAdapter:
             ),
             PlannedWrite(
                 root / templates.CLAUDE_STOP_HOOK,
-                templates.claude_stop_hook(),
+                templates.claude_stop_hook(async_rewake=async_rewake_stop),
                 "Claude Code stop hook",
             ),
             PlannedWrite(
                 root / templates.CLAUDE_SUBAGENT_STOP_HOOK,
-                templates.claude_subagent_stop_hook(),
+                templates.claude_subagent_stop_hook(async_rewake=async_rewake_stop),
                 "Claude Code subagent stop hook",
             ),
         )

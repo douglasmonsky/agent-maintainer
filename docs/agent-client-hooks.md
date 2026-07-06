@@ -44,7 +44,10 @@ python3 -m agent_maintainer hooks install claude-code --async-rewake-stop
 ```
 
 In this mode, only Claude Code `Stop` and `SubagentStop` entries receive
-`async: true` and `asyncRewake: true`.
+`async: true` and `asyncRewake: true`. Their generated commands/wrappers also
+pass Agent Maintainer runtime async-rewake mode, so pending or failed
+verification emits the compact wait/repair context on stderr and exits `2` for
+Claude Code rewake.
 
 Install only one client:
 

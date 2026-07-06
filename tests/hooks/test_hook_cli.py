@@ -133,6 +133,7 @@ def test_run_command_delegates_to_runtime(
             "precommit",
             "--repo-root",
             str(tmp_path),
+            "--async-rewake",
         ],
     )
 
@@ -147,5 +148,6 @@ def test_run_command_delegates_to_runtime(
             "precommit",
             "--repo-root",
             str(tmp_path),
+            "--async-rewake",
         ],
     ]
