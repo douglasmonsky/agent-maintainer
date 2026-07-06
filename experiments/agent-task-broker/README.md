@@ -58,6 +58,10 @@ spawning or external orchestration framework is enabled:
 - `WorkerBackend` returns `WorkerRun` domain objects. The bundled
   `ManualWorkerBackend` only records a capsule or supplied structured result; it
   does not start Codex, Claude Code, OpenHands, or another agent.
+- `CodexSdkWorkerBackend` is a plan-only adapter for the official Python Codex
+  SDK path (`openai-codex`, `AsyncCodex`, `workspace_write`). It emits the
+  request shape a future runner should execute, but it does not import the SDK,
+  create threads, or spawn an agent.
 - `WorkspaceBackend` returns `WorkspaceHandle` domain objects. The bundled
   `GitWorktreeWorkspaceBackend.plan(...)` only returns the worktree command;
   worktree creation requires calling `create(...)` explicitly.
@@ -70,6 +74,8 @@ spawning or external orchestration framework is enabled:
 Future framework backends should start disabled with explicit missing-dependency
 diagnostics. Adapters must not decide verifier policy, merge safety, lock
 policy, task acceptance, model tier, task risk, or escalation policy.
+Worker execution should use official Codex SDK or Codex MCP plus Agents SDK
+surfaces rather than a broker-owned agent polling loop.
 
 ## Model-Tier Routing
 
