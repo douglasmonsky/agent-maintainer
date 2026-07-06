@@ -19,6 +19,8 @@ URL into a `wait github-pr` handoff, and delegates actual polling to
 `agent_maintainer.wait.github_pr`.
 
 The Tach contract allows only this narrow dependency from hooks to the PR waiter.
+Root Tach wrapper metadata also treats generated `post_pr_wait` hook files as
+standalone client wrappers.
 The hook adapter does not add GitHub polling logic of its own.
 
 ## Consequences

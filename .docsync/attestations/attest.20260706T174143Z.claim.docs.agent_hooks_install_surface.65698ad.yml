@@ -1,0 +1,16 @@
+version: 1
+attestations:
+- id: attest.20260706T174143Z.claim.docs.agent_hooks_install_surface.65698ad
+  claim: claim.docs.agent_hooks_install_surface
+  doc_object: docs.agent_client_hooks.overview
+  evidence:
+  - evidence.agent_hooks.configured_repo_noop
+  reason: Mechanical hook runtime extraction; configured-repo no-op behavior and documented
+    hook surface unchanged.
+  reviewer: agent
+  reviewed_at: '2026-07-06T17:41:43Z'
+  base: HEAD
+  head: 65698ad
+  evidence_fingerprints:
+    evidence.agent_hooks.configured_repo_noop: sha256:2431a4b70943f0beed1c503f7bdfe11554ff64db2b320c7c972c44701ee62b52
+  statement: Reviewed changed evidence region. Documentation remains accurate.

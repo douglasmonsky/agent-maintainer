@@ -40,6 +40,68 @@ def test_detect_handoff_ignores_other_bash_commands() -> None:
     assert pr_wait.detect_handoff(payload) is None
 
 
+def test_main_delegates_parsed_args(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """PR wait hook CLI parses arguments and delegates runtime."""
+    calls: list[dict[str, object]] = []
+
+    def fake_run_hook(**kwargs: object) -> int:
+        calls.append(kwargs)
+        return pr_wait.ASYNC_REWAKE_EXIT_CODE
+
+    monkeypatch.setattr(pr_wait, "run_hook", fake_run_hook)
+
+    status = pr_wait.main(
+        [
+            "--platform",
+            pr_wait.CLAUDE_CODE_PLATFORM,
+            "--repo-root",
+            str(tmp_path),
+            "--async-rewake",
+            "--interval",
+            "1",
+            "--timeout-seconds",
+            "2",
+        ]
+    )
+
+    assert status == pr_wait.ASYNC_REWAKE_EXIT_CODE
+    assert calls == [
+        {
+            "platform": pr_wait.CLAUDE_CODE_PLATFORM,
+            "repo_root": tmp_path,
+            "async_rewake": True,
+            "interval_seconds": 1,
+            "timeout_seconds": 2,
+        }
+    ]
+
+
+def test_run_hook_ignores_non_pr_payload(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Hooks no-op when payload did not create a PR."""
+    monkeypatch.setattr(sys, "stdin", StringIO('{"tool_input": {"command": "date"}}'))
+
+    assert pr_wait.run_hook(platform=pr_wait.CODEX_PLATFORM, repo_root=tmp_path) == 0
+
+
+def test_payload_helpers_handle_malformed_and_unmatched_input(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Payload helpers tolerate malformed hook input and missing PR URLs."""
+    monkeypatch.setattr(sys, "stdin", StringIO("{"))
+
+    assert pr_wait.read_hook_payload() == {}
+    assert pr_wait.command_text("gh pr create --fill") == "gh pr create --fill"
+    assert pr_wait.command_text({"command": 293}) == ""
+    assert pr_wait.handoff_from_text("Created pull request") is None
+    assert pr_wait.iter_text(["a", {"b": ["c", None]}]) == ("a", "c")
+
+
 def test_codex_handoff_emits_post_tool_use_continuation(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -100,3 +162,41 @@ def test_claude_async_rewake_waits_and_exits_two(
             timeout_seconds=2,
         )
     ]
+
+
+def test_claude_sync_handoff_exits_two(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Non-async Claude hook receives compact wait command handoff."""
+    payload = pr_create_payload()
+    payload["tool_response"] = {"stdout": "https://github.com/example/repo/pull/7\n"}
+    monkeypatch.setattr(sys, "stdin", StringIO(json.dumps(payload)))
+
+    status = pr_wait.run_hook(
+        platform=pr_wait.CLAUDE_CODE_PLATFORM,
+        repo_root=tmp_path,
+        async_rewake=False,
+    )
+
+    captured = capsys.readouterr()
+    assert status == pr_wait.ASYNC_REWAKE_EXIT_CODE
+    assert captured.out == ""
+    assert "wait github-pr 7 --repo example/repo" in captured.err
+
+
+def test_rewake_failure_message_and_wait_command_without_repo() -> None:
+    """Failure rendering and repo-less wait commands stay compact."""
+    result = GitHubPrWaitResult(
+        pr_number="7",
+        state=GitHubPrChecksState(
+            pr_number="7",
+            checks=(GitHubPrCheck(name="verify", state="failure", bucket="fail"),),
+        ),
+    )
+
+    assert "not passing" in pr_wait.render_rewake_message(result)
+    assert pr_wait.wait_command(pr_wait.PrWaitHandoff(pr_number="7")) == (
+        "python -m agent_maintainer wait github-pr 7"
+    )

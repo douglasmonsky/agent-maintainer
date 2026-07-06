@@ -64,6 +64,7 @@ def run_hook(
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
 ) -> int:
     """Handle a PR-create tool result by waiting or handing off a wait command."""
+    repo_root = repo_root.resolve()
     handoff = detect_handoff(read_hook_payload())
     if handoff is None:
         return 0

@@ -151,3 +151,39 @@ def test_run_command_delegates_to_runtime(
             "--async-rewake",
         ],
     ]
+
+
+def test_pr_wait_command_delegates_to_runtime(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Hidden PR wait subcommand delegates PR wait hook runtime."""
+    calls: list[list[str]] = []
+
+    def fake_pr_wait(argv: list[str]) -> int:
+        calls.append(argv)
+        return RUNTIME_STATUS
+
+    monkeypatch.setattr(cli, "pr_wait_main", fake_pr_wait)
+
+    status = cli.main(
+        [
+            "pr-wait",
+            "--platform",
+            "claude-code",
+            "--repo-root",
+            str(tmp_path),
+            "--async-rewake",
+        ]
+    )
+
+    assert status == RUNTIME_STATUS
+    assert calls == [
+        [
+            "--platform",
+            "claude-code",
+            "--repo-root",
+            str(tmp_path),
+            "--async-rewake",
+        ]
+    ]

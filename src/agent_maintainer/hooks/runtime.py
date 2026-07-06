@@ -161,22 +161,37 @@ def run_hook(
         exit_code=result.returncode,
         duration_seconds=duration_seconds,
     )
+    return emit_verifier_result(
+        event=event,
+        repo_root=repo_root,
+        result=result,
+        async_rewake=async_rewake,
+    )
+
+
+def emit_verifier_result(
+    *,
+    event: str,
+    repo_root: Path,
+    result: hook_subprocess.subprocess.CompletedProcess[str],
+    async_rewake: bool = False,
+) -> int:
+    """Emit success or block response for a completed verifier run."""
     if result.returncode == 0:
-        hook_status = emit_success(event)
-    else:
-        config = hook_context.hook_config(repo_root)
-        hook_status = emit_block(
-            event=event,
-            reason=block_reason(event),
-            context=hook_context.failure_context(
-                repo_root,
-                result,
-                config,
-                config.context_hook_budget_chars,
-            ),
-            async_rewake=async_rewake,
-        )
-    return hook_status
+        return emit_success(event)
+
+    config = hook_context.hook_config(repo_root)
+    return emit_block(
+        event=event,
+        reason=block_reason(event),
+        context=hook_context.failure_context(
+            repo_root,
+            result,
+            config,
+            config.context_hook_budget_chars,
+        ),
+        async_rewake=async_rewake,
+    )
 
 
 def read_hook_payload() -> dict[str, object]:
