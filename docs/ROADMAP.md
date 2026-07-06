@@ -92,7 +92,7 @@ Track work:
 - [x] Phase 159: Scoring Dataset Optimization Prep
 - [x] Phase 160: ROI Loop Dogfood Case Study
 - [x] Phase 161: Task Broker Adapter Contracts
-- [ ] Phase 162: Task Broker Model-Tier Routing Policy
+- [x] Phase 162: Task Broker Model-Tier Routing Policy
 - [ ] Phase 163: Attention Ledger Performance Guards
 - [ ] Phase 164: Agent Efficacy Metrics
 

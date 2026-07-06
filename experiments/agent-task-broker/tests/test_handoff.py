@@ -7,6 +7,7 @@ from pathlib import Path
 
 from agent_task_broker.cli import main
 from agent_task_broker.handoff import handoff_payload, render_handoff
+from agent_task_broker.routing import ROUTE_STANDARD_WORKER_REQUIRED
 from agent_task_broker.store import BrokerStore, TaskInput
 
 
@@ -49,6 +50,26 @@ def test_handoff_renders_markdown_and_json(tmp_path: Path) -> None:
     assert "# Task Handoff: task-0001" in markdown
     assert "## Acceptance commands" in markdown
     assert payload["task_id"] == "task-0001"
+
+
+def test_handoff_can_include_model_routing(tmp_path: Path) -> None:
+    """Handoff renderer includes optional model-routing reason."""
+
+    store = BrokerStore(tmp_path)
+    store.init()
+    task = store.add_task(TaskInput("Add tests", acceptance_commands=("pytest -q",)))
+    routing = {
+        "route": ROUTE_STANDARD_WORKER_REQUIRED,
+        "advisory": True,
+        "reason": "default advisory route",
+    }
+
+    markdown = render_handoff(task, output_format="markdown", routing=routing)
+    payload = handoff_payload(task, routing=routing)
+
+    assert payload["model_routing"] == routing
+    assert f"- Route: `{ROUTE_STANDARD_WORKER_REQUIRED}`" in markdown
+    assert "- Reason: default advisory route" in markdown
 
 
 def test_handoff_cli_outputs_json(tmp_path: Path, capsys) -> None:
