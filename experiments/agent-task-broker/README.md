@@ -49,3 +49,24 @@ Locks are advisory but conflict-checked. Read locks can overlap; write and
 exclusive locks conflict when exact paths, globs, package prefixes, docs, config,
 or Tach policy targets overlap. Worktree planning is explicit: claiming a task or
 lock does not create a worktree automatically.
+
+## Adapter Contracts
+
+Phase 161 defines broker-local adapter contracts before any automatic worker
+spawning or external orchestration framework is enabled:
+
+- `WorkerBackend` returns `WorkerRun` domain objects. The bundled
+  `ManualWorkerBackend` only records a capsule or supplied structured result; it
+  does not start Codex, Claude Code, OpenHands, or another agent.
+- `WorkspaceBackend` returns `WorkspaceHandle` domain objects. The bundled
+  `GitWorktreeWorkspaceBackend.plan(...)` only returns the worktree command;
+  worktree creation requires calling `create(...)` explicitly.
+- `WorkflowEngine` returns `WorkflowTransition` domain objects over local
+  `BrokerStore` state. The bundled state machine selects, claims, and finishes
+  tasks deterministically.
+- `TraceSink` emits bounded local task-broker events. The bundled JSONL sink
+  writes under `.agent-task-broker/traces/events.jsonl`.
+
+Future framework backends should start disabled with explicit missing-dependency
+diagnostics. Adapters must not decide verifier policy, merge safety, lock
+policy, task acceptance, model tier, task risk, or escalation policy.

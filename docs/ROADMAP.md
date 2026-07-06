@@ -91,7 +91,7 @@ Track work:
 - [x] Phase 158: Local Observability Export Contract
 - [x] Phase 159: Scoring Dataset Optimization Prep
 - [x] Phase 160: ROI Loop Dogfood Case Study
-- [ ] Phase 161: Task Broker Adapter Contracts
+- [x] Phase 161: Task Broker Adapter Contracts
 - [ ] Phase 162: Task Broker Model-Tier Routing Policy
 - [ ] Phase 163: Attention Ledger Performance Guards
 - [ ] Phase 164: Agent Efficacy Metrics
