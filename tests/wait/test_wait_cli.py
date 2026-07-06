@@ -180,13 +180,16 @@ def test_register_github_pr_cli_writes_json(
     )
 
     payload = json.loads(capsys.readouterr().out)
+    expected_fields = {
+        "kind": "github-pr",
+        "status": "pending",
+        "pr_number": "291",
+        "repo": "douglasmonsky/agent-maintainer",
+        "platform": "codex",
+    }
 
     assert status == 0
-    assert payload["kind"] == "github-pr"
-    assert payload["status"] == "pending"
-    assert payload["pr_number"] == "291"
-    assert payload["repo"] == "douglasmonsky/agent-maintainer"
-    assert payload["platform"] == "codex"
+    assert {field: payload[field] for field in expected_fields} == expected_fields
     assert "wait resume" in payload["resume_instruction"]
     assert (tmp_path / ".verify-logs" / "waits" / f"{payload['wait_id']}.json").exists()
 

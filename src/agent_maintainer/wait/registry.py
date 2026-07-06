@@ -194,8 +194,9 @@ class WaitRegistry:
         self.waits_dir.mkdir(parents=True, exist_ok=True)
         path = self.waits_dir / record.path_name
         temporary = path.with_suffix(".json.tmp")
+        record_text = json.dumps(record.as_dict(), indent=2, sort_keys=True)
         temporary.write_text(
-            json.dumps(record.as_dict(), indent=2, sort_keys=True) + "\n",
+            f"{record_text}\n",
             encoding="utf-8",
         )
         temporary.replace(path)

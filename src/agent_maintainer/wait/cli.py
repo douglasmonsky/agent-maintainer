@@ -40,38 +40,58 @@ from agent_maintainer.wait.verifier import (
 
 JSON_FORMAT = "json"
 TEXT_FORMAT = "text"
+OUTPUT_FORMATS = (TEXT_FORMAT, JSON_FORMAT)
 DEFAULT_GITHUB_INTERVAL_SECONDS = 20
 DEFAULT_GITHUB_TIMEOUT_SECONDS = 3600
 DEFAULT_VERIFIER_INTERVAL_SECONDS = 5
 DEFAULT_VERIFIER_TIMEOUT_SECONDS = 3600
+Subparsers = argparse._SubParsersAction
 
 
 def main(argv: list[str] | None = None) -> int:
     """Run quiet wait subcommands."""
+
     args = parse_args([] if argv is None else argv)
-    if args.command == "github-run":
-        return _github_run(args)
-    if args.command == "github-pr":
-        return _github_pr(args)
-    if args.command == "verifier":
-        return _verifier_run(args)
-    if args.command == "register":
-        return _register(args)
-    if args.command == "resume":
-        return _resume(args)
+    handlers = {
+        "github-run": _github_run,
+        "github-pr": _github_pr,
+        "verifier": _verifier_run,
+        "register": _register,
+        "resume": _resume,
+    }
+    handler = handlers.get(args.command)
+    if handler is not None:
+        return handler(args)
     return 2
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse wait command arguments."""
+
     parser = argparse.ArgumentParser(prog="python -m agent_maintainer wait")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    github = subparsers.add_parser("github-run", help="Wait for one GitHub Actions run.")
+    _add_github_run_parser(subparsers)
+    _add_github_pr_parser(subparsers)
+    _add_verifier_parser(subparsers)
+    _add_register_parser(subparsers)
+    _add_resume_parser(subparsers)
+    return parser.parse_args(argv)
+
+
+def _add_github_run_parser(subparsers: Subparsers) -> None:
+    """Add GitHub run wait parser."""
+
+    github = subparsers.add_parser("github-run", help="Wait one GitHub Actions run.")
     github.add_argument("run_id")
     github.add_argument("--repo")
     github.add_argument("--interval", type=int, default=DEFAULT_GITHUB_INTERVAL_SECONDS)
     github.add_argument("--timeout-seconds", type=int, default=DEFAULT_GITHUB_TIMEOUT_SECONDS)
-    github.add_argument("--format", choices=(TEXT_FORMAT, JSON_FORMAT), default=TEXT_FORMAT)
+    github.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_github_pr_parser(subparsers: Subparsers) -> None:
+    """Add GitHub PR wait parser."""
+
     github_pr = subparsers.add_parser("github-pr", help="Wait one GitHub PR check set.")
     github_pr.add_argument("pr_number")
     github_pr.add_argument("--repo")
@@ -81,7 +101,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         type=int,
         default=DEFAULT_GITHUB_TIMEOUT_SECONDS,
     )
-    github_pr.add_argument("--format", choices=(TEXT_FORMAT, JSON_FORMAT), default=TEXT_FORMAT)
+    github_pr.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_verifier_parser(subparsers: Subparsers) -> None:
+    """Add verifier wait parser."""
+
     verifier = subparsers.add_parser("verifier", help="Wait for one verifier run.")
     verifier.add_argument("run_id")
     verifier.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
@@ -91,17 +116,24 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         type=int,
         default=DEFAULT_VERIFIER_TIMEOUT_SECONDS,
     )
-    verifier.add_argument(
-        "--format",
-        choices=(TEXT_FORMAT, JSON_FORMAT),
-        default=TEXT_FORMAT,
-    )
+    verifier.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_register_parser(subparsers: Subparsers) -> None:
+    """Add wait registration parser."""
+
     register = subparsers.add_parser("register", help="Register a resumable wait.")
     register_subparsers = register.add_subparsers(
         dest="register_kind",
         required=True,
     )
-    register_pr = register_subparsers.add_parser(
+    _add_register_github_pr_parser(register_subparsers)
+
+
+def _add_register_github_pr_parser(subparsers: Subparsers) -> None:
+    """Add GitHub PR wait registration parser."""
+
+    register_pr = subparsers.add_parser(
         "github-pr",
         help="Register one GitHub PR wait.",
     )
@@ -121,16 +153,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         type=int,
         default=DEFAULT_GITHUB_TIMEOUT_SECONDS,
     )
-    register_pr.add_argument(
-        "--format",
-        choices=(TEXT_FORMAT, JSON_FORMAT),
-        default=TEXT_FORMAT,
-    )
+    register_pr.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_resume_parser(subparsers: Subparsers) -> None:
+    """Add wait resume parser."""
+
     resume = subparsers.add_parser("resume", help="Render a registered wait.")
     resume.add_argument("wait_id")
     resume.add_argument("--root", type=Path, default=Path.cwd())
-    resume.add_argument("--format", choices=(TEXT_FORMAT, JSON_FORMAT), default=TEXT_FORMAT)
-    return parser.parse_args(argv)
+    resume.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _github_run(args: argparse.Namespace) -> int:
