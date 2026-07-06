@@ -59,6 +59,7 @@ class VerifierWaitResult:
 
 Sleep = Callable[[int], None]
 Monotonic = Callable[[], float]
+VerifierPollObserver = Callable[[int, bool], None]
 
 
 def wait_for_verifier_run(
@@ -66,12 +67,18 @@ def wait_for_verifier_run(
     *,
     sleep: Sleep = time.sleep,
     monotonic: Monotonic = time.monotonic,
+    poll_observer: VerifierPollObserver | None = None,
 ) -> VerifierWaitResult:
     """Wait quietly until a verifier manifest exists or timeout expires."""
     started = monotonic()
     manifest_path = verifier_manifest_path(config)
+    attempt = 0
     while True:
-        if manifest_path.exists():
+        attempt += 1
+        manifest_exists = manifest_path.exists()
+        if poll_observer is not None:
+            poll_observer(attempt, manifest_exists)
+        if manifest_exists:
             return _read_manifest(config.run_id, manifest_path)
         if monotonic() - started >= config.timeout_seconds:
             return VerifierWaitResult(

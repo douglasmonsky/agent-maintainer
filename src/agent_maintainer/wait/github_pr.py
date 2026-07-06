@@ -127,6 +127,7 @@ class GitHubPrWaitResult:
 QueryPrChecks = Callable[[GitHubPrWaitConfig], GitHubPrChecksState]
 Sleep = Callable[[int], None]
 Monotonic = Callable[[], float]
+GitHubPrPollObserver = Callable[[int, GitHubPrChecksState], None]
 
 
 def wait_for_github_pr_checks(
@@ -135,12 +136,17 @@ def wait_for_github_pr_checks(
     query_checks: QueryPrChecks | None = None,
     sleep: Sleep = time.sleep,
     monotonic: Monotonic = time.monotonic,
+    poll_observer: GitHubPrPollObserver | None = None,
 ) -> GitHubPrWaitResult:
     """Wait quietly until GitHub PR checks complete or time out."""
     query = query_checks or query_github_pr_checks
     started = monotonic()
+    attempt = 0
     while True:
+        attempt += 1
         state = query(config)
+        if poll_observer is not None:
+            poll_observer(attempt, state)
         if state.completed:
             return GitHubPrWaitResult(pr_number=config.pr_number, state=state)
         if monotonic() - started >= config.timeout_seconds:

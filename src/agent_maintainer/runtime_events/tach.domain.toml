@@ -21,6 +21,11 @@ depends_on = ["read"]
 path = "commands"
 depends_on = ["models", "sinks", "//agent_maintainer.config.loader"]
 
+[[modules]]
+
+path = "waiting"
+depends_on = ["models", "sinks", "//agent_maintainer.config.loader"]
+
 
 [[modules]]
 

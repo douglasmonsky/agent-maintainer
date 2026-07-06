@@ -28,13 +28,7 @@ def metrics(records: list[dict[str, Any]]) -> list[EfficacyMetric]:
         ),
         _repair_success_metric(records, failure_count),
         _wait_metric(records),
-        EfficacyMetric(
-            name="manual_escalation_rate",
-            value=UNKNOWN,
-            unit="percent",
-            kind=UNKNOWN,
-            detail="manual escalation events are not emitted yet",
-        ),
+        _manual_escalation_metric(records, failure_count),
     ]
 
 
@@ -94,6 +88,24 @@ def _wait_metric(records: list[dict[str, Any]]) -> EfficacyMetric:
         detail="wait command passes divided by all wait command completions",
         numerator=wait_passes if wait_total else None,
         denominator=wait_total if wait_total else None,
+    )
+
+
+def _manual_escalation_metric(
+    records: list[dict[str, Any]],
+    failure_count: int,
+) -> EfficacyMetric:
+    """Return manual escalation rate from explicit runtime events."""
+
+    escalation_count = _event_count(records, "manual.escalation")
+    return EfficacyMetric(
+        name="manual_escalation_rate",
+        value=_percentage(escalation_count, failure_count),
+        unit="percent",
+        kind="measured" if failure_count else UNKNOWN,
+        detail="manual.escalation events divided by check failures",
+        numerator=escalation_count if failure_count else None,
+        denominator=failure_count if failure_count else None,
     )
 
 

@@ -97,6 +97,7 @@ class GitHubWaitResult:
 QueryRun = Callable[[GitHubWaitConfig], GitHubRunState]
 Sleep = Callable[[int], None]
 Monotonic = Callable[[], float]
+GitHubPollObserver = Callable[[int, GitHubRunState], None]
 
 
 def wait_for_github_run(
@@ -105,12 +106,17 @@ def wait_for_github_run(
     query_run: QueryRun | None = None,
     sleep: Sleep = time.sleep,
     monotonic: Monotonic = time.monotonic,
+    poll_observer: GitHubPollObserver | None = None,
 ) -> GitHubWaitResult:
     """Wait quietly until a GitHub Actions run completes or times out."""
     query = query_run or query_github_run
     started = monotonic()
+    attempt = 0
     while True:
+        attempt += 1
         state = query(config)
+        if poll_observer is not None:
+            poll_observer(attempt, state)
         if state.completed:
             return GitHubWaitResult(run_id=config.run_id, state=state)
         if monotonic() - started >= config.timeout_seconds:

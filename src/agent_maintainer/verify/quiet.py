@@ -66,6 +66,11 @@ def main(argv: list[str]) -> int:
         profile=args.profile,
         run_id=run_id,
     )
+    if args.profile == "manual":
+        runtime_eventing.manual_escalation(
+            profile_events,
+            fingerprint=fingerprint.to_dict(),
+        )
     with VerificationLock(
         log_dir=log_dir,
         fingerprint=fingerprint,
@@ -77,6 +82,7 @@ def main(argv: list[str]) -> int:
                 profile_events,
                 exit_code=verifier_lock.reused.exit_code,
                 log_dir=log_dir,
+                fingerprint=fingerprint.to_dict(),
             )
             profile_events.finished(
                 status="reused",
@@ -87,7 +93,11 @@ def main(argv: list[str]) -> int:
 
         execution_log_dir = run_snapshot_dir(log_dir, run_id)
         profile_events.started(execution_log_dir)
-        runtime_eventing.run_fresh(profile_events, log_dir=execution_log_dir)
+        runtime_eventing.run_fresh(
+            profile_events,
+            log_dir=execution_log_dir,
+            fingerprint=fingerprint.to_dict(),
+        )
         execution_config = replace(
             config,
             diagnostic_artifacts_dir=str(execution_log_dir),

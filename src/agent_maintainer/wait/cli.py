@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait.github import (
+    GitHubRunState,
     GitHubWaitConfig,
     GitHubWaitResult,
     render_github_wait_json,
@@ -13,6 +15,7 @@ from agent_maintainer.wait.github import (
     wait_for_github_run,
 )
 from agent_maintainer.wait.github_pr import (
+    GitHubPrChecksState,
     GitHubPrWaitConfig,
     GitHubPrWaitResult,
     render_github_pr_wait_json,
@@ -91,8 +94,19 @@ def _github_run(args: argparse.Namespace) -> int:
         interval_seconds=args.interval,
         timeout_seconds=args.timeout_seconds,
     )
+    runtime_events = WaitRuntimeEvents.create(
+        target_kind="github-run",
+        target_id=args.run_id,
+    )
     try:
-        result = wait_for_github_run(config)
+        result = wait_for_github_run(
+            config,
+            poll_observer=lambda attempt, state: _observe_github_run(
+                runtime_events,
+                attempt,
+                state,
+            ),
+        )
     except RuntimeError as exc:
         result = GitHubWaitResult(run_id=args.run_id, state=None, error=str(exc))
     print(_render(args.format, result))
@@ -106,8 +120,19 @@ def _github_pr(args: argparse.Namespace) -> int:
         interval_seconds=args.interval,
         timeout_seconds=args.timeout_seconds,
     )
+    runtime_events = WaitRuntimeEvents.create(
+        target_kind="github-pr",
+        target_id=args.pr_number,
+    )
     try:
-        result = wait_for_github_pr_checks(config)
+        result = wait_for_github_pr_checks(
+            config,
+            poll_observer=lambda attempt, state: _observe_github_pr(
+                runtime_events,
+                attempt,
+                state,
+            ),
+        )
     except RuntimeError as exc:
         result = GitHubPrWaitResult(
             pr_number=args.pr_number,
@@ -125,7 +150,18 @@ def _verifier_run(args: argparse.Namespace) -> int:
         interval_seconds=args.interval,
         timeout_seconds=args.timeout_seconds,
     )
-    result = wait_for_verifier_run(config)
+    runtime_events = WaitRuntimeEvents.create(
+        target_kind="verifier",
+        target_id=args.run_id,
+    )
+    result = wait_for_verifier_run(
+        config,
+        poll_observer=lambda attempt, exists: runtime_events.polled(
+            attempt=attempt,
+            completed=exists,
+            status="manifest-found" if exists else "manifest-missing",
+        ),
+    )
     print(_render_verifier(args.format, result))
     return result.exit_code
 
@@ -146,3 +182,36 @@ def _render_verifier(output_format: str, result: VerifierWaitResult) -> str:
     if output_format == JSON_FORMAT:
         return render_verifier_wait_json(result)
     return render_verifier_wait_text(result)
+
+
+def _observe_github_run(
+    runtime_events: WaitRuntimeEvents,
+    attempt: int,
+    state: GitHubRunState,
+) -> None:
+    """Emit compact GitHub run poll event."""
+
+    runtime_events.polled(
+        attempt=attempt,
+        completed=state.completed,
+        status=state.status,
+        attributes={"conclusion": state.conclusion},
+    )
+
+
+def _observe_github_pr(
+    runtime_events: WaitRuntimeEvents,
+    attempt: int,
+    state: GitHubPrChecksState,
+) -> None:
+    """Emit compact GitHub PR checks poll event."""
+
+    runtime_events.polled(
+        attempt=attempt,
+        completed=state.completed,
+        status="completed" if state.completed else "pending",
+        attributes={
+            "check_count": len(state.checks),
+            "failed_count": len(state.failed_checks()),
+        },
+    )

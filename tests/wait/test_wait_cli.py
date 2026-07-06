@@ -122,7 +122,7 @@ class SuccessWait:
     def __init__(self) -> None:
         self.seen_config: GitHubWaitConfig | None = None
 
-    def __call__(self, config: GitHubWaitConfig) -> GitHubWaitResult:
+    def __call__(self, config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
         self.seen_config = config
         return GitHubWaitResult(
             run_id=config.run_id,
@@ -136,7 +136,11 @@ class SuccessPrWait:
     def __init__(self) -> None:
         self.seen_config: GitHubPrWaitConfig | None = None
 
-    def __call__(self, config: GitHubPrWaitConfig) -> GitHubPrWaitResult:
+    def __call__(
+        self,
+        config: GitHubPrWaitConfig,
+        **_kwargs: object,
+    ) -> GitHubPrWaitResult:
         self.seen_config = config
         return GitHubPrWaitResult(
             pr_number=config.pr_number,
@@ -147,7 +151,7 @@ class SuccessPrWait:
         )
 
 
-def failure_wait(config: GitHubWaitConfig) -> GitHubWaitResult:
+def failure_wait(config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
     """Return one failed GitHub wait result."""
     return GitHubWaitResult(
         run_id=config.run_id,
@@ -155,12 +159,12 @@ def failure_wait(config: GitHubWaitConfig) -> GitHubWaitResult:
     )
 
 
-def error_wait(_config: GitHubWaitConfig) -> GitHubWaitResult:
+def error_wait(_config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
     """Raise a GitHub query error."""
     raise RuntimeError("gh auth required")
 
 
-def verifier_wait(_config: object) -> VerifierWaitResult:
+def verifier_wait(_config: object, **_kwargs: object) -> VerifierWaitResult:
     """Return verifier pass result."""
     return VerifierWaitResult(
         run_id="run-1",

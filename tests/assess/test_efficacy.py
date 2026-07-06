@@ -48,7 +48,8 @@ def test_efficacy_kinds_and_savings(tmp_path: Path) -> None:
 
     assert metrics["duplicate_run_avoidance_rate"].kind == "measured"
     assert metrics["pointer_follow_through_rate"].kind == "estimated"
-    assert metrics["manual_escalation_rate"].kind == "unknown"
+    assert metrics["manual_escalation_rate"].kind == "measured"
+    assert metrics["manual_escalation_rate"].value == pytest.approx(0)
     assert metrics["repair_capsule_token_savings_proxy"].value == (EXPECTED_TOKEN_SAVINGS)
 
 
