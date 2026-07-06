@@ -148,6 +148,10 @@ documents:
     path: docs/case-studies/split-large-legacy-file.md
     title: Split Large Legacy File
     audience: public
+  docs.case_studies_future_call_roi_loop:
+    path: docs/case-studies/future-call-roi-loop.md
+    title: Future-Call ROI Loop Dogfood Case Study
+    audience: public
   docs.release_0_1_0b4:
     path: docs/releases/0.1.0b4.md
     title: Agent Maintainer 0.1.0b4 Release Evidence
@@ -506,6 +510,14 @@ objects:
     heading:
       level: 1
       text: Split Large Legacy File
+  docs.case_studies_future_call_roi_loop.overview:
+    document: docs.case_studies_future_call_roi_loop
+    kind: heading_section
+    path: docs/case-studies/future-call-roi-loop.md
+    marker: docs.case_studies_future_call_roi_loop.overview
+    heading:
+      level: 1
+      text: Future-Call ROI Loop Dogfood Case Study
   docs.release_0_1_0b4.overview:
     document: docs.release_0_1_0b4
     kind: heading_section
@@ -924,6 +936,13 @@ claims:
     evidence:
       - evidence.case_studies.context_safe_fixture
       - evidence.context_safety.pointer_first_pack_tests
+  claim.docs.case_studies_future_call_roi_loop:
+    object: docs.case_studies_future_call_roi_loop.overview
+    text: Future-call ROI loop case study docs measured dogfood evidence and explicit routing gaps.
+    severity: medium
+    evidence:
+    - evidence.case_studies.future_call_roi_loop_tests
+    - evidence.runtime_events.foundation
   claim.docs.release_0_1_0b4_evidence:
     object: docs.release_0_1_0b4.overview
     text: 0.1.0b4 release evidence docs describe release-gate packaging checks and trusted publishing workflow evidence.
@@ -1296,6 +1315,13 @@ evidence:
     anchors:
       - path: examples/cohesive-change-plan/README.md
         mode: explicit_region
+
+  evidence.case_studies.future_call_roi_loop_tests:
+    type: test
+    description: Future-call ROI loop case-study tests require measured dogfood evidence, routing limits, and remaining gaps.
+    anchors:
+    - path: tests/docs/test_future_call_roi_case_study.py
+      mode: explicit_region
 
   evidence.runtime_events.foundation:
     type: test
