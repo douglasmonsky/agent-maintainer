@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import cast
 
 import pytest
@@ -16,6 +18,7 @@ from agent_maintainer.wait.github_pr import (
     GitHubPrWaitConfig,
     GitHubPrWaitResult,
 )
+from agent_maintainer.wait.registry import RegisterGitHubPrWait, WaitRegistry
 from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 SUCCESS_TIMEOUT_SECONDS = 2
@@ -152,6 +155,70 @@ def test_verifier_cli_json_status(
     assert status == 0
     assert '"profile": "fast"' in output
     assert '"status": "passed"' in output
+
+
+def test_register_github_pr_cli_writes_json(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Wait register CLI persists PR waits and renders JSON."""
+
+    status = cli.main(
+        [
+            "register",
+            "github-pr",
+            "291",
+            "--repo",
+            "douglasmonsky/agent-maintainer",
+            "--platform",
+            "codex",
+            "--root",
+            str(tmp_path),
+            "--format",
+            "json",
+        ],
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+
+    assert status == 0
+    assert payload["kind"] == "github-pr"
+    assert payload["status"] == "pending"
+    assert payload["pr_number"] == "291"
+    assert payload["repo"] == "douglasmonsky/agent-maintainer"
+    assert payload["platform"] == "codex"
+    assert "wait resume" in payload["resume_instruction"]
+    assert (tmp_path / ".verify-logs" / "waits" / f"{payload['wait_id']}.json").exists()
+
+
+def test_resume_github_pr_cli_prints_continuation(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Wait resume CLI renders terminal continuation text."""
+
+    registry = WaitRegistry(tmp_path)
+    record = registry.register_github_pr(
+        RegisterGitHubPrWait(root=tmp_path, pr_number="291"),
+    )
+    completed = registry.complete_github_pr(
+        record,
+        GitHubPrWaitResult(
+            pr_number="291",
+            state=GitHubPrChecksState(
+                pr_number="291",
+                checks=(GitHubPrCheck(name="verify", state="success"),),
+            ),
+        ),
+    )
+
+    status = cli.main(["resume", completed.wait_id, "--root", str(tmp_path)])
+
+    output = capsys.readouterr().out
+    assert status == 0
+    assert output.startswith("Result: PASS\nRun ID: PR #291")
+    assert "Continuation:" in output
+    assert "PR checks reached PASS for PR #291" in output
 
 
 class SuccessWait:
