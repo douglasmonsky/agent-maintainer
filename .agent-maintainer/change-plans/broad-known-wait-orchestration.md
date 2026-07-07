@@ -1,63 +1,60 @@
 +++
-id = "broad-known-wait-orchestration"
+id = "docsync-standalone-readiness"
 kind = "migration"
 status = "active"
 base_ref = "origin/main"
-expires = 2026-07-20
-allowed_paths = ["src/**", "tests/**", "docs/**", ".agent-maintainer/change-plans/**", "pyproject.toml"]
+expires = 2026-07-21
+allowed_paths = ["src/docsync/**", "tests/docsync/**", "tests/docs/**", "docs/docsync*.md", "examples/docsync/**", ".docsync/trace.yml", ".agent-maintainer/change-plans/**", "pyproject.toml"]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 120
-max_changed_lines = 12000
+max_changed_files = 40
+max_changed_lines = 4000
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
 ratchet_targets = []
 +++
 
-# Cohesive Change Plan: broad-known-wait-orchestration
+# Cohesive Change Plan: docsync-standalone-readiness
 
 ## Why this change intentionally large
 
-Codex foreground waiters were still possible for GitHub run and verifier waits,
-and the PR-only background sweeper could not support the broader known-wait
-contract. This change intentionally touches the reusable wait core, maintainer
-wait adapters, CLI, hooks, docs, and tests so all known wait kinds share one
-background registration and sweep path.
+DocSync is moving from an internal dogfood utility toward a standalone product
+surface. That requires keeping source, tests, docs, trace metadata, and examples
+aligned so extraction remains mechanical instead of becoming a later redesign.
 
 ## Why this should not be split smaller
 
-Splitting the handler registry, CLI guards, hook handoff, and heartbeat request
-shape would leave intermediate branches where some known waits still foreground
-poll in Codex or the sweeper cannot resume records it can register. The code is
-split internally by responsibility and can still be reviewed by subsystem.
+The work should still land in small commits, but the active branch needs one
+scope that permits DocSync docs, trace metadata, focused tests, and examples to
+change together. Splitting the policy scope would cause valid DocSync trace
+updates to fail while the product contract is being documented.
 
 ## What allowed to change
 
-Allowed paths are the wait core, Agent Maintainer wait adapters, Codex/Claude
-hook integration, runtime wait events, wait-focused tests, architecture
-decisions, and Codex hook docs.
+Allowed changes are limited to DocSync package code, DocSync tests, DocSync docs,
+DocSync examples, DocSync trace metadata, package metadata required for the
+DocSync command surface, and this change-plan directory.
 
 ## What must not change
 
-Do not alter production credentials, external account settings, unrelated
-verification profiles, or arbitrary tool-use interception. Do not persist Codex
-thread ids, API keys, hook stdin, prompts, or private payloads in wait records.
+Do not change production credentials, external account settings, unrelated
+Agent Maintainer checks, non-DocSync architecture boundaries, deployment
+configuration, or broad repository structure.
 
 ## Verification plan
 
-Run targeted wait, hook, and runtime-event tests; Ruff check and format check on
-the touched surface; `tach check --exact`; `python -m docsync check`;
-`git diff --check`; and the full Agent Maintainer verifier profile.
+Run DocSync doctor, DocSync check, the focused `tests/docsync` suite, and
+`git diff --check`. Run broader verification only when DocSync package code,
+packaging, or integration behavior changes.
 
 ## Rollback plan
 
-Revert the handler registry, CLI background guards, hook handoff changes, and
-structured heartbeat rendering together. The fallback foreground wait commands
-remain available when `AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1` is set.
+Revert DocSync readiness commits and restore the previous change-plan scope if
+wait-orchestration work resumes on this branch. Since generated `.docsync/out/`
+files are not source truth, no generated artifacts need manual rollback.
 
 ## Follow-up ratchet work
 
-After dogfooding, review runtime wait events for foreground-blocked and
-background-ready counts. If stable, consider the next phase for broader known
-Bash watcher classification, still separate from arbitrary tool-call
-interception.
+Ratchet toward a standalone README, minimal fixture repository, command authoring
+helpers, and eventual package extraction once the schema and CLI contract are
+stable.

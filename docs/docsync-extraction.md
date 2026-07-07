@@ -1,9 +1,19 @@
 <!-- docsync:object docs.docsync_extraction.overview -->
 # DocSync Extraction Notes
 
-DocSync is implemented as an extractable sibling package under `src/docsync/`.
-It must not import `agent_maintainer` or `archguard`; the boundary is enforced
-by Tach extraction tests.
+DocSync should be incubated in this repository until the standalone package
+boundary is boring. DocSync is implemented as an extractable sibling package
+under `src/docsync/`. It must not import `agent_maintainer` or `archguard`; the
+boundary is enforced by Tach and import tests.
+
+Keep in-repo work aligned with these standalone-readiness rules:
+
+1. DocSync source stays under `src/docsync/`.
+2. DocSync tests stay under `tests/docsync/`.
+3. Agent Maintainer integration uses the public `docsync.api` boundary.
+4. DocSync must not import `agent_maintainer` or `archguard`.
+5. Runtime dependencies stay minimal and explicit in package metadata.
+6. CLI behavior is documented before it becomes part of the extraction contract.
 
 DocSync source truth lives under `.docsync/`. The trace file is human-authored,
 and generated files under `.docsync/out/` are rebuildable artifacts that should
@@ -19,7 +29,25 @@ Markdown object regions use explicit start and end markers when
 ```
 
 Run `python -m docsync repair-object-end-markers --write` to insert missing
-object end markers after introducing DocSync to legacy docs.
+object end markers when introducing DocSync to legacy docs.
+
+DocSync currently exposes these user-facing commands:
+
+- `docsync init`
+- `docsync index`
+- `docsync freshness`
+- `docsync check`
+- `docsync doctor`
+- `docsync prompt`
+- `docsync repair-object-end-markers`
+- `docsync attest`
+
+Do not extract DocSync only because the directory is separable. Extract it when
+the product contract needs independent versioning, external issue tracking,
+package releases, or adoption by projects that should not vendor Agent
+Maintainer. Before extraction, the trace schema, CLI command names, generated
+output paths, and attestation format should be stable enough to document as
+compatibility commitments.
 
 To extract DocSync into a standalone package:
 
@@ -27,22 +55,26 @@ To extract DocSync into a standalone package:
 2. Copy `tests/docsync/`.
 3. Copy `.docsync/config.yml`, `.docsync/schema.json`, and an empty
    `.docsync/trace.yml` template.
-4. Copy the `docsync = "docsync.cli:console_main"` entry point and PyYAML
+4. Move or copy DocSync-focused docs and fixture repositories.
+5. Copy `docsync = "docsync.cli:console_main"` entry point and the PyYAML
    runtime dependency into the target `pyproject.toml`.
-5. Run `python -m pytest tests/docsync -q`.
-6. Run `python -m docsync --help` and `python -m docsync doctor` from the
+6. Add standalone package metadata, README, license, CI, and release workflow.
+7. Run `python -m pytest tests/docsync -q`.
+8. Run `python -m docsync --help` and `python -m docsync doctor` from a
    fixture repository.
+9. Replace in-repo source imports in Agent Maintainer with the package
+   dependency and keep integration tests here.
 
-Generated files under `.docsync/out/` are not source truth. They can be rebuilt
-with `docsync index`, `docsync check`, `docsync prompt`, `docsync attest`, and
+Generated files under `.docsync/out/` are not source truth. They are rebuilt by
+`docsync index`, `docsync check`, `docsync prompt`, `docsync attest`, and
+`python -m docsync freshness`.
 
 `python -m docsync freshness` writes passive freshness metadata to
-`.docsync/out/freshness.json`. The report records last observed content
-hashes and cheap Git state for traced documentation objects and evidence
-anchors without adding manual timestamps to human docs.
-`docsync doctor`.
+`.docsync/out/freshness.json`. The report records last observed content hashes
+and cheap Git state for traced documentation objects and evidence anchors
+without adding manual timestamps to human docs.
 
 The experimental knowledge graph, vector retrieval, GraphQL, and wiki prototype
-are preserved on `experiment/docsync-knowledge-graph`; that work is not part of
-the foundation extraction surface.
+remain preserved on `experiment/docsync-knowledge-graph`; that work is not part
+of the foundation extraction surface.
 <!-- docsync:object.end docs.docsync_extraction.overview -->

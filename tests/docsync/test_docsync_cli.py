@@ -22,6 +22,30 @@ def test_module_help_exits_success(capsys: pytest.CaptureFixture[str]) -> None:
     assert "Documentation traceability" in capsys.readouterr().out
 
 
+def test_module_help_lists_standalone_command_surface(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Top-level help keeps the documented standalone command surface visible."""
+    expected_commands = (
+        "init",
+        "index",
+        "freshness",
+        "check",
+        "doctor",
+        "prompt",
+        "repair-object-end-markers",
+        "attest",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        docsync_cli.main(["--help"])
+
+    assert exc_info.value.code == 0
+    output = capsys.readouterr().out
+    for command in expected_commands:
+        assert command in output
+
+
 def test_doctor_reports_empty_trace(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

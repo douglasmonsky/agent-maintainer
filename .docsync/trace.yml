@@ -576,7 +576,7 @@ claims:
       - docs_only
   claim.docsync.command_surface:
     object: docs.docsync_extraction.overview
-    text: DocSync exposes init, index, check, prompt, attest, and doctor commands.
+    text: DocSync exposes init, index, freshness, check, doctor, prompt, repair-object-end-markers, and attest commands.
     severity: medium
     evidence:
     - evidence.docsync.cli_commands
