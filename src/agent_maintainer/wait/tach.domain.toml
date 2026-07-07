@@ -10,6 +10,7 @@ depends_on = []
 
 path = "cli"
 depends_on = [
+  "codex_rewake",
   "github",
   "github_pr",
   "registry",
@@ -32,6 +33,14 @@ depends_on = [
 path = "github_pr"
 depends_on = [
   "models",
+]
+
+[[modules]]
+
+path = "codex_rewake"
+depends_on = [
+  "models",
+  "registry",
 ]
 
 
