@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass
@@ -16,8 +17,11 @@ from agent_maintainer.wait.github_pr import (
     render_github_pr_wait_text,
     wait_for_github_pr_checks,
 )
+from agent_maintainer.wait.registry import RegisterGitHubPrWait, WaitRegistry
+from agent_maintainer.wait.sweeper import start_wait_watcher
 
 ASYNC_REWAKE_EXIT_CODE = 2
+BACKGROUND_PR_WAIT_ENV = "AGENT_MAINTAINER_BACKGROUND_PR_WAIT"
 DEFAULT_INTERVAL_SECONDS = 20
 DEFAULT_TIMEOUT_SECONDS = 1800
 GH_PR_CREATE_PATTERN = re.compile(r"(?:^|[;&|]\s*|\s)gh\s+pr\s+create\b")
@@ -81,6 +85,14 @@ def run_hook(
         print(render_rewake_message(result), file=sys.stderr)
         return ASYNC_REWAKE_EXIT_CODE
 
+    if platform == CODEX_PLATFORM and background_pr_wait_enabled():
+        return emit_codex_background_handoff(
+            handoff,
+            repo_root,
+            interval_seconds=interval_seconds,
+            timeout_seconds=timeout_seconds,
+        )
+
     if platform == CODEX_PLATFORM:
         return emit_codex_handoff(handoff)
 
@@ -133,12 +145,61 @@ def iter_text(value: object) -> tuple[str, ...]:
     return ()
 
 
+def background_pr_wait_enabled() -> bool:
+    """Return whether Codex PR waits should register background waits."""
+
+    return os.environ.get(BACKGROUND_PR_WAIT_ENV) == "1"
+
+
 def emit_codex_handoff(handoff: PrWaitHandoff) -> int:
     """Ask Codex to wait for PR checks through PostToolUse continuation."""
     command = wait_command(handoff)
     reason = (
         f"Pull request #{handoff.pr_number} was opened. "
         f"Wait for checks before reviewing or merging:\n{command}"
+    )
+    print(
+        json.dumps(
+            {
+                "decision": "block",
+                "reason": reason,
+                "hookSpecificOutput": {
+                    "hookEventName": "PostToolUse",
+                    "additionalContext": reason,
+                },
+            }
+        )
+    )
+    return 0
+
+
+def emit_codex_background_handoff(
+    handoff: PrWaitHandoff,
+    repo_root: Path,
+    *,
+    interval_seconds: int,
+    timeout_seconds: int,
+) -> int:
+    """Register a background Codex PR wait and emit one compact handoff."""
+
+    record = WaitRegistry(repo_root).register_github_pr(
+        RegisterGitHubPrWait(
+            root=repo_root,
+            pr_number=handoff.pr_number,
+            repo=handoff.repo,
+            platform=CODEX_PLATFORM,
+            interval_seconds=interval_seconds,
+            timeout_seconds=timeout_seconds,
+        ),
+    )
+    try:
+        start_wait_watcher(repo_root, record.wait_id)
+    except OSError:
+        return emit_codex_handoff(handoff)
+    reason = (
+        f"Pull request #{handoff.pr_number} was opened. "
+        "Background check wait registered. Resume when ready:\n"
+        f"{record.resume_instruction}"
     )
     print(
         json.dumps(

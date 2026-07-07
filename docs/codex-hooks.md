@@ -68,6 +68,12 @@ Codex to continue by running the PR-check waiter before review or merge. Codex
 does not currently run async command hooks, so this is a continuation handoff
 rather than a background rewake.
 
+Set `AGENT_MAINTAINER_BACKGROUND_PR_WAIT=1` to make the Codex PR hook register
+a durable wait record under `.verify-logs/waits/` and start a detached local
+watcher instead of asking the foreground agent to run `wait github-pr`. The hook
+then emits only the `wait resume <id>` command. If the watcher cannot start, the
+hook falls back to the foreground waiter handoff.
+
 ## Audit Trail
 
 Successful Codex hook passes are not guaranteed to appear in Codex session JSONL.

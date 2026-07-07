@@ -62,8 +62,10 @@ depends_on = [
 [[modules]]
 path = "pr_wait"
 depends_on = [
-"//agent_client_hooks.constants",
-"//agent_maintainer.wait.github_pr",
+  "//agent_client_hooks.constants",
+  "//agent_maintainer.wait.github_pr",
+  "//agent_maintainer.wait.registry",
+  "//agent_maintainer.wait.sweeper",
 ]
 
 
