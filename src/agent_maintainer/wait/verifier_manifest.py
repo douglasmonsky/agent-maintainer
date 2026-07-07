@@ -10,6 +10,8 @@ from typing import Any
 
 PASSED = "passed"
 SKIPPED = "skipped"
+WARNING = "warning"
+NON_FAILED_STATUSES = frozenset((PASSED, SKIPPED, WARNING))
 
 
 def _empty_checks() -> tuple[VerifierCheck, ...]:
@@ -40,7 +42,7 @@ class VerifierManifest:
     @property
     def failed_checks(self) -> tuple[VerifierCheck, ...]:
         """Return checks that should make the verifier run fail."""
-        return tuple(check for check in self.checks if check.status not in {PASSED, SKIPPED})
+        return tuple(check for check in self.checks if check.status not in NON_FAILED_STATUSES)
 
     @property
     def succeeded(self) -> bool:
