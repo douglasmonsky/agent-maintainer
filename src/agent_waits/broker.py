@@ -48,7 +48,7 @@ def render_background_registration_text(
     record = registration.record
     return render_wait_capsule(
         WaitRepairCapsule(
-            result="PENDING",
+            result=record.terminal_result if record.ready else "PENDING",
             run_id=record.wait_id,
             details=(
                 _wait_detail(record),
@@ -98,7 +98,7 @@ def heartbeat_request(
     """Return machine-readable Codex heartbeat creation request."""
 
     root_text = str(root)
-    sweep_command = f"python -m agent_maintainer wait sweep --watch {record.wait_id}"
+    sweep_command = "python -m agent_maintainer wait heartbeat"
     resume_command = record.resume_instruction
     if root_text:
         sweep_command = f"{sweep_command} --root {root_text}"
@@ -107,6 +107,7 @@ def heartbeat_request(
         "type": HEARTBEAT_REQUEST_TYPE,
         "wait_id": record.wait_id,
         "wait_kind": record.kind,
+        "scope": "repo",
         "target_id": record.target_id,
         "repo": record.repo,
         "root": root_text,

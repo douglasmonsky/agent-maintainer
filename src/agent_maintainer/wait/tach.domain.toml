@@ -86,6 +86,8 @@ depends_on = [
   "github_pr",
   "verifier",
   "verifier_manifest",
+  "//agent_waits.constants",
+  "//agent_waits.rendering",
   "//agent_waits.registry",
 ]
 

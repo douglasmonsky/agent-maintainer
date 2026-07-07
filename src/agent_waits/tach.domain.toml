@@ -16,7 +16,24 @@ path = "models"
 depends_on = []
 
 [[modules]]
+path = "constants"
+depends_on = []
+
+[[modules]]
+path = "heartbeat"
+depends_on = []
+
+[[modules]]
 path = "registry"
 depends_on = [
+  "constants",
+  "heartbeat",
+]
+
+[[modules]]
+path = "rendering"
+depends_on = [
+  "constants",
   "models",
+  "registry",
 ]

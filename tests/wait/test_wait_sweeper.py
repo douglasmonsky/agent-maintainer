@@ -13,6 +13,7 @@ from agent_maintainer.wait.github_pr import (
     GitHubPrWaitConfig,
 )
 from agent_maintainer.wait.registry import (
+    RESULT_TIMEOUT,
     WAIT_STATUS_PENDING,
     WAIT_STATUS_READY,
     RegisterGitHubPrWait,
@@ -22,6 +23,7 @@ from agent_maintainer.wait.registry import (
 from agent_maintainer.wait.sweeper import (
     start_wait_watcher,
     sweep_once,
+    sweep_ready_notifications,
     watch_wait,
 )
 from agent_maintainer.wait.sweeper_rendering import render_sweep_json, render_sweep_text
@@ -68,17 +70,41 @@ def test_sweep_observes_pending_quietly(
 
 
 def test_sweep_once_times_out_expired_wait(tmp_path: Path) -> None:
-    """One-shot sweep marks expired pending waits ready for resume."""
+    """One-shot sweep marks expired waits ready for resume."""
 
     registry = WaitRegistry(tmp_path)
     record = register_wait(registry, tmp_path)
 
-    summary = sweep_once(registry, query_checks=pending_query, now=EXPIRED)
+    def fail_query(_config: GitHubPrWaitConfig) -> GitHubPrChecksState:
+        raise AssertionError("expired waits should not poll")
+
+    summary = sweep_once(registry, query_checks=fail_query, now=EXPIRED)
     completed = registry.read(record.wait_id)
 
     assert summary.ready == 1
-    assert completed.terminal_result == "TIMEOUT"
+    assert completed.terminal_result == RESULT_TIMEOUT
     assert completed.status == WAIT_STATUS_READY
+
+
+def test_repo_heartbeat_claims_new_ready_wait_once(tmp_path: Path) -> None:
+    """Repo heartbeat sweeps and emits each ready wait once."""
+
+    registry = WaitRegistry(tmp_path)
+    record = register_wait(registry, tmp_path)
+
+    claimed = sweep_ready_notifications(
+        registry,
+        query_checks=successful_query,
+        now=LATER,
+    )
+    second_claim = sweep_ready_notifications(
+        registry,
+        query_checks=successful_query,
+        now=LATER.replace(minute=2),
+    )
+
+    assert [item.wait_id for item in claimed] == [record.wait_id]
+    assert second_claim == ()
 
 
 def test_watch_wait_returns_after_terminal_poll(tmp_path: Path) -> None:

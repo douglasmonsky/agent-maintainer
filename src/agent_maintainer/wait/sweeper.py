@@ -7,7 +7,7 @@ import sys
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_maintainer.wait import handlers as wait_handlers
@@ -78,6 +78,14 @@ def sweep_record(
 
     if record.status != wait_registry.WAIT_STATUS_PENDING:
         return record
+    if _expired(record, now):
+        return registry.complete(
+            record,
+            terminal_result=wait_registry.RESULT_TIMEOUT,
+            resume_message="",
+            state_data={"timed_out": True},
+            now=now,
+        )
     effective_queries = queries or wait_handlers.WaitQueries()
     return wait_handlers.handler_for(record.kind).poll_once(
         registry,
@@ -85,6 +93,26 @@ def sweep_record(
         queries=effective_queries,
         now=now,
     )
+
+
+def sweep_ready_notifications(
+    registry: wait_registry.WaitRegistry,
+    *,
+    query_checks: QueryPrChecks | None = None,
+    query_run: QueryRun | None = None,
+    query_verifier: wait_handlers.VerifierQuery | None = None,
+    now: datetime | None = None,
+) -> tuple[wait_registry.WaitRecord, ...]:
+    """Sweep once and claim repo-heartbeat ready records."""
+
+    sweep_once(
+        registry,
+        query_checks=query_checks,
+        query_run=query_run,
+        query_verifier=query_verifier,
+        now=now,
+    )
+    return registry.claim_ready_for_notification(now=now)
 
 
 def watch_wait(
@@ -145,3 +173,9 @@ def _pending_records(registry: wait_registry.WaitRegistry) -> tuple[wait_registr
         for item in wait_registry.wait_records(registry)
         if item.status == wait_registry.WAIT_STATUS_PENDING
     )
+
+
+def _expired(record: wait_registry.WaitRecord, now: datetime | None) -> bool:
+    deadline = datetime.fromisoformat(record.deadline_at.replace("Z", "+00:00"))
+    current = now or datetime.now(UTC)
+    return current.astimezone(UTC) >= deadline

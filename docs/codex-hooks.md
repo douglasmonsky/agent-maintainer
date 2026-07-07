@@ -71,9 +71,9 @@ as expected.
 
 A Bash `gh pr create` `PostToolUse` hook detects created PR URLs, registers a
 durable wait record under `.verify-logs/waits/`, and starts a detached local
-watcher. Codex gets one compact message with the manual `wait resume <id>`
-command and a structured heartbeat request for thread automation. Pending checks
-must not produce repeated chat updates.
+watcher. Codex gets one compact message with a manual `wait resume <id>`
+command and a structured heartbeat request for thread automation. Pending
+checks must not produce repeated chat updates.
 
 Codex PR, GitHub run, and verifier waits use background ownership by default.
 Set `AGENT_MAINTAINER_BACKGROUND_PR_WAIT=0` only when debugging the old PR
@@ -83,17 +83,18 @@ known wait foreground paths. Direct foreground `wait github-pr`,
 registration inside Codex unless `AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1` is
 set.
 
-When a Codex heartbeat request appears and the Codex app `automation_update`
-tool is available, create a thread heartbeat for the current thread using the
-request prompt. The heartbeat should run the sweep command, stay silent while
-pending, and use the resume command once terminal.
+Codex heartbeat requests are repo-scoped. When the Codex app
+`automation_update` tool is available, create one current-thread heartbeat
+that runs `python -m agent_maintainer wait heartbeat --root <repo>`. The
+heartbeat command sweeps all known waits once, prints nothing while they are
+pending, and prints each terminal resume capsule once.
 
-Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let the terminal background watcher try
+Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let terminal background watchers try
 automatic Codex SDK continuation. Rewake requires Codex thread metadata
 `CODEX_THREAD_ID` or `AGENT_MAINTAINER_CODEX_THREAD_ID`, plus the optional
-`openai-codex` SDK. If either is unavailable or SDK resume fails, the wait stays
-ready for the manual `wait resume <id>` command, and no thread id or prompt is
-stored in the wait record.
+`openai-codex` SDK. If either is unavailable or SDK resume fails, the wait
+stays ready for the manual `wait resume <id>` command. No thread id or prompt
+is stored in the wait record.
 
 ## Audit Trail
 

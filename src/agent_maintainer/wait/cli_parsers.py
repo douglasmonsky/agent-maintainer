@@ -28,6 +28,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     _add_register_parser(subparsers)
     _add_resume_parser(subparsers)
     _add_sweep_parser(subparsers)
+    _add_heartbeat_parser(subparsers)
     return parser.parse_args(argv)
 
 
@@ -190,3 +191,13 @@ def _add_sweep_parser(subparsers: Any) -> None:
     mode.add_argument("--watch")
     sweep.add_argument("--root", type=Path, default=Path.cwd())
     sweep.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_heartbeat_parser(subparsers: Any) -> None:
+    """Add repo-level wait heartbeat parser."""
+
+    heartbeat = subparsers.add_parser(
+        "heartbeat",
+        help="Sweep once and print ready wait resumptions only.",
+    )
+    heartbeat.add_argument("--root", type=Path, default=Path.cwd())

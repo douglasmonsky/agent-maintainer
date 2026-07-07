@@ -38,6 +38,7 @@ from agent_maintainer.wait.registry import (
 from agent_maintainer.wait.sweeper import (
     SweepSummary,
     sweep_once,
+    sweep_ready_notifications,
     watch_wait,
 )
 from agent_maintainer.wait.sweeper_rendering import render_sweep_json, render_sweep_text
@@ -61,6 +62,7 @@ def main(argv: list[str] | None = None) -> int:
         "register": _register,
         "resume": _resume,
         "sweep": _sweep,
+        "heartbeat": _heartbeat,
     }
     handler = handlers.get(args.command)
     if handler is not None:
@@ -217,6 +219,14 @@ def _sweep(args: argparse.Namespace) -> int:
         print(render_codex_rewake_text(record, rewake))
         return 0
     print(cli_background.render_resume(record))
+    return 0
+
+
+def _heartbeat(args: argparse.Namespace) -> int:
+    registry = WaitRegistry(args.root)
+    ready_records = sweep_ready_notifications(registry)
+    if ready_records:
+        print("\n\n".join(cli_background.render_resume(record) for record in ready_records))
     return 0
 
 
