@@ -13,6 +13,7 @@ depends_on = [
   "github",
   "github_pr",
   "registry",
+  "sweeper",
   "verifier",
   "//agent_maintainer.runtime_events.waiting",
 ]
@@ -46,6 +47,15 @@ path = "registry"
 depends_on = [
   "github_pr",
   "models",
+]
+
+[[modules]]
+
+path = "sweeper"
+depends_on = [
+  "github_pr",
+  "models",
+  "registry",
 ]
 
 

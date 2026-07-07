@@ -256,6 +256,36 @@ def render_resume_text(record: WaitRecord) -> str:
     return f"{record.resume_message}\n\nContinuation:\n{continuation}"
 
 
+def observe_github_pr(
+    registry: WaitRegistry,
+    record: WaitRecord,
+    state: GitHubPrChecksState,
+    *,
+    now: datetime | None = None,
+) -> WaitRecord:
+    """Persist last observed non-terminal GitHub PR wait state."""
+
+    observed = replace(
+        record,
+        updated_at=_timestamp(now),
+        last_observed_state=_github_pr_state_data(state),
+    )
+    registry.write(observed)
+    return observed
+
+
+def wait_records(registry: WaitRegistry) -> tuple[WaitRecord, ...]:
+    """Return all registered wait records."""
+
+    if not registry.waits_dir.exists():
+        return ()
+    return tuple(
+        registry.read(path.stem)
+        for path in sorted(registry.waits_dir.glob("*.json"))
+        if path.is_file()
+    )
+
+
 def wait_record_json(record: WaitRecord) -> str:
     """Render one wait record as stable JSON."""
 

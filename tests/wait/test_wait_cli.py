@@ -23,6 +23,7 @@ from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 SUCCESS_TIMEOUT_SECONDS = 2
 ERROR_EXIT_CODE = 2
+PR_NUMBER = "291"
 
 
 def test_poll_observer_helpers_emit_events() -> None:
@@ -34,7 +35,6 @@ def test_poll_observer_helpers_emit_events() -> None:
         target_kind="github-run",
         target_id="123",
     )
-
     cli._observe_github_run(
         runtime_events,
         1,
@@ -69,7 +69,7 @@ def test_github_run_cli_prints_success(
 
     status = cli.main(["github-run", "123", "--interval", "1", "--timeout-seconds", "2"])
 
-    assert status == 0
+    assert_success(status)
     assert fake_wait.seen_config == GitHubWaitConfig(
         run_id="123",
         interval_seconds=1,
@@ -118,11 +118,13 @@ def test_github_pr_cli_prints_success(
     fake_wait = SuccessPrWait()
     monkeypatch.setattr(cli, "wait_for_github_pr_checks", fake_wait)
 
-    status = cli.main(["github-pr", "291", "--interval", "1", "--timeout-seconds", "2"])
+    status = cli.main(
+        ["github-pr", PR_NUMBER, "--interval", "1", "--timeout-seconds", "2"],
+    )
 
-    assert status == 0
+    assert_success(status)
     assert fake_wait.seen_config == GitHubPrWaitConfig(
-        pr_number="291",
+        pr_number=PR_NUMBER,
         interval_seconds=1,
         timeout_seconds=SUCCESS_TIMEOUT_SECONDS,
     )
@@ -138,7 +140,7 @@ def test_verifier_cli_prints_manifest_status(
 
     status = cli.main(["verifier", "run-1", "--format", "text"])
 
-    assert status == 0
+    assert_success(status)
     assert capsys.readouterr().out == ("Result: PASS\nProfile: fast\nRun ID: run-1\n")
 
 
@@ -167,7 +169,7 @@ def test_register_github_pr_cli_writes_json(
         [
             "register",
             "github-pr",
-            "291",
+            PR_NUMBER,
             "--repo",
             "douglasmonsky/agent-maintainer",
             "--platform",
@@ -183,7 +185,7 @@ def test_register_github_pr_cli_writes_json(
     expected_fields = {
         "kind": "github-pr",
         "status": "pending",
-        "pr_number": "291",
+        "pr_number": PR_NUMBER,
         "repo": "douglasmonsky/agent-maintainer",
         "platform": "codex",
     }
@@ -202,14 +204,14 @@ def test_resume_github_pr_cli_prints_continuation(
 
     registry = WaitRegistry(tmp_path)
     record = registry.register_github_pr(
-        RegisterGitHubPrWait(root=tmp_path, pr_number="291"),
+        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER),
     )
     completed = registry.complete_github_pr(
         record,
         GitHubPrWaitResult(
-            pr_number="291",
+            pr_number=PR_NUMBER,
             state=GitHubPrChecksState(
-                pr_number="291",
+                pr_number=PR_NUMBER,
                 checks=(GitHubPrCheck(name="verify", state="success"),),
             ),
         ),
@@ -235,6 +237,88 @@ def test_resume_cli_parser_accepts_root(tmp_path: Path) -> None:
     assert args.wait_id == "wait-1"
     assert args.root == tmp_path
     assert args.format == "json"
+
+
+def test_register_cli_can_start_watcher(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Wait register CLI can start a detached watcher."""
+
+    calls: list[tuple[Path, str]] = []
+    monkeypatch.setattr(
+        cli,
+        "start_wait_watcher",
+        lambda root, wait_id: calls.append((root, wait_id)),
+    )
+
+    status = cli.main(
+        ["register", "github-pr", PR_NUMBER, "--root", str(tmp_path), "--start-watcher"],
+    )
+
+    assert status == 0
+    assert len(calls) == 1
+    assert calls[0][0] == tmp_path
+    assert calls[0][1] in capsys.readouterr().out
+
+
+def test_sweep_once_cli_prints_summary(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Wait sweep once CLI renders compact summary."""
+
+    monkeypatch.setattr(
+        cli,
+        "sweep_once",
+        lambda _registry: cli.SweepSummary(checked=1, updated=1, pending=0, ready=1),
+    )
+
+    status = cli.main(["sweep", "--once", "--root", str(tmp_path)])
+
+    output = capsys.readouterr().out
+    assert status == 0
+    assert "Result: PASS" in output
+    assert "updated: 1" in output
+
+
+def test_sweep_watch_cli_prints_resume(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Wait sweep watch CLI renders final resume text."""
+
+    registry = WaitRegistry(tmp_path)
+    record = registry.register_github_pr(
+        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER),
+    )
+    completed = registry.complete_github_pr(
+        record,
+        GitHubPrWaitResult(
+            pr_number=PR_NUMBER,
+            state=GitHubPrChecksState(
+                pr_number=PR_NUMBER,
+                checks=(GitHubPrCheck(name="verify", state="success"),),
+            ),
+        ),
+    )
+    monkeypatch.setattr(cli, "watch_wait", lambda _registry, _wait_id: completed)
+
+    status = cli.main(["sweep", "--watch", record.wait_id, "--root", str(tmp_path)])
+
+    output = capsys.readouterr().out
+    assert status == 0
+    assert "Result: PASS" in output
+    assert "Continuation:" in output
+
+
+def assert_success(status: int) -> None:
+    """Assert command success without repeating assertion expressions."""
+
+    assert status == 0
 
 
 class SuccessWait:
