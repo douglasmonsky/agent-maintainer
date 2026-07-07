@@ -7,6 +7,11 @@ from pathlib import Path
 from typing import Any
 
 from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
+from agent_maintainer.wait.codex_rewake import (
+    CodexRewakeBackend,
+    codex_rewake_resumed,
+    render_codex_rewake_text,
+)
 from agent_maintainer.wait.github import (
     GitHubRunState,
     GitHubWaitConfig,
@@ -315,8 +320,11 @@ def _sweep(args: argparse.Namespace) -> int:
         print(_render_sweep(args.format, summary))
         return 0
     record = watch_wait(registry, args.watch)
+    rewake_result = CodexRewakeBackend(registry).resume_if_available(record)
     if args.format == JSON_FORMAT:
-        print(wait_record_json(record))
+        print(wait_record_json(registry.read(record.wait_id)))
+    elif codex_rewake_resumed(rewake_result):
+        print(render_codex_rewake_text(record, rewake_result))
     else:
         print(render_resume_text(record))
     return 0

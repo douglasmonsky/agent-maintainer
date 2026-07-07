@@ -74,6 +74,13 @@ watcher instead of asking the foreground agent to run `wait github-pr`. The hook
 then emits only the `wait resume <id>` command. If the watcher cannot start, the
 hook falls back to the foreground waiter handoff.
 
+Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let a terminal background watcher try
+an automatic Codex SDK continuation. Rewake requires Codex thread metadata such
+as `CODEX_THREAD_ID` or `AGENT_MAINTAINER_CODEX_THREAD_ID`, plus the optional
+`openai-codex` SDK. If either is unavailable or SDK resume fails, the wait stays
+ready for the manual `wait resume <id>` command and no thread id or prompt is
+stored in the wait record.
+
 ## Audit Trail
 
 Successful Codex hook passes are not guaranteed to appear in Codex session JSONL.
