@@ -14,6 +14,10 @@ The in-repository product roadmap is tracked in
 [`docs/docsync-roadmap.md`](docsync-roadmap.md) until DocSync is ready to extract
 as an independently versioned package.
 
+The first-run product workflow is documented in
+[`docs/docsync-onboarding.md`](docsync-onboarding.md). A copyable fixture lives
+under `examples/docsync-first-run/`.
+
 ## Core Workflow
 
 1. Mark stable documentation objects with `<!-- docsync:object ... -->`.
@@ -34,6 +38,7 @@ as an independently versioned package.
 - `docsync prompt` writes a compact review packet for agents.
 - `docsync repair-object-end-markers` inserts missing Markdown end markers.
 - `docsync attest` records reviewed-but-unchanged claim evidence.
+- `docsync trace ...` authors documents, objects, evidence, and claims.
 
 ## Minimal Trace
 

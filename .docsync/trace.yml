@@ -12,6 +12,10 @@ documents:
     path: docs/docsync-roadmap.md
     title: DocSync Usefulness Roadmap
     audience: maintainers
+  docs.docsync_onboarding:
+    path: docs/docsync-onboarding.md
+    title: DocSync First-Run Tutorial
+    audience: public
   docs.readme:
     path: README.md
     title: Agent Maintainer
@@ -198,6 +202,14 @@ objects:
     heading:
       level: 1
       text: DocSync Usefulness Roadmap
+  docs.docsync_onboarding.overview:
+    document: docs.docsync_onboarding
+    kind: heading_section
+    path: docs/docsync-onboarding.md
+    marker: docs.docsync_onboarding.overview
+    heading:
+      level: 1
+      text: DocSync First-Run Tutorial
   docs.readme.overview:
     document: docs.readme
     kind: heading_section
@@ -609,6 +621,12 @@ claims:
     review:
       acceptable_attestation_reasons:
       - command_surface_reviewed
+  claim.docsync.onboarding_authoring_review_packet:
+    object: docs.docsync_onboarding.overview
+    text: DocSync first-run tutorial is backed by an acceptance test covering init, trace authoring, doctor, check, and prompt review packet output.
+    severity: high
+    evidence:
+    - evidence.docsync.onboarding_acceptance_test
   claim.readme.package_identity:
     object: docs.readme.overview
     text: README presents Agent Maintainer as the agent-maintainer package with the
@@ -1014,6 +1032,12 @@ evidence:
     description: DocSync CLI registers command surface.
     anchors:
     - path: src/docsync/cli.py
+      mode: explicit_region
+  evidence.docsync.onboarding_acceptance_test:
+    type: test
+    description: DocSync onboarding flow acceptance test.
+    anchors:
+    - path: tests/docsync/test_docsync_onboarding_flow.py
       mode: explicit_region
   evidence.readme.package_metadata:
     type: config

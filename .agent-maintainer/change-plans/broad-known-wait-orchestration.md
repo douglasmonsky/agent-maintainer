@@ -4,7 +4,7 @@ kind = "migration"
 status = "active"
 base_ref = "origin/main"
 expires = 2026-07-21
-allowed_paths = ["src/docsync/**", "tests/docsync/**", "tests/docs/**", "docs/docsync*.md", "examples/docsync/**", ".docsync/trace.yml", ".agent-maintainer/change-plans/**", "pyproject.toml", "docs/architecture/decisions/**", "src/archguard/decision_notes.py", "tests/archguard/test_decision_notes.py"]
+allowed_paths = ["src/docsync/**", "tests/docsync/**", "tests/docs/**", "docs/docsync*.md", "examples/docsync/**", "examples/docsync-first-run/**", "{.docsync => examples/docsync-first-run/.docsync}/**", ".docsync/trace.yml", ".agent-maintainer/change-plans/**", "pyproject.toml", "docs/architecture/decisions/**", "src/archguard/decision_notes.py", "tests/archguard/test_decision_notes.py"]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 40
 max_changed_lines = 4000
