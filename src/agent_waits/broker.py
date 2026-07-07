@@ -61,7 +61,7 @@ def render_background_registration_text(
     )
 
 
-def heartbeat_prompt(record: WaitRecord) -> str:
+def heartbeat_prompt(_record: WaitRecord) -> str:
     """Return Codex heartbeat prompt for a repo-scoped wait sweep."""
 
     return (
