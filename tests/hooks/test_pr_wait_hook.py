@@ -112,7 +112,8 @@ def test_codex_handoff_emits_post_tool_use_continuation(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Codex gets a continuation because Codex command-hook async is unsupported."""
+    """Codex gets a continuation when background waits are disabled."""
+    monkeypatch.setenv(pr_wait.BACKGROUND_PR_WAIT_ENV, "0")
     monkeypatch.setattr(sys, "stdin", StringIO(json.dumps(pr_create_payload())))
 
     status = pr_wait.run_hook(platform=pr_wait.CODEX_PLATFORM, repo_root=tmp_path)
@@ -131,11 +132,9 @@ def test_codex_background_wait_registers_wait(
 ) -> None:
     """Codex background PR wait registers durable wait state."""
     calls: list[tuple[Path, str]] = []
-    monkeypatch.setenv(pr_wait.BACKGROUND_PR_WAIT_ENV, "1")
     monkeypatch.setattr(sys, "stdin", StringIO(json.dumps(pr_create_payload())))
     monkeypatch.setattr(
-        pr_wait,
-        "start_wait_watcher",
+        "agent_maintainer.wait.broker.start_wait_watcher",
         lambda root, wait_id: calls.append((root, wait_id)),
     )
 
@@ -152,20 +151,18 @@ def test_codex_background_wait_registers_wait(
     assert len(calls) == 1
     assert len(wait_files) == 1
     assert "wait resume" in payload["reason"]
-    assert "wait github-pr" not in payload["reason"]
+    assert "python -m agent_maintainer wait github-pr" not in payload["reason"]
 
 
-def test_codex_bg_wait_falls_back_on_spawn(
+def test_codex_bg_wait_survives_spawn_error(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Codex background wait falls back when watcher cannot start."""
-    monkeypatch.setenv(pr_wait.BACKGROUND_PR_WAIT_ENV, "1")
+    """Codex background wait still returns manual resume when watcher fails."""
     monkeypatch.setattr(sys, "stdin", StringIO(json.dumps(pr_create_payload())))
     monkeypatch.setattr(
-        pr_wait,
-        "start_wait_watcher",
+        "agent_maintainer.wait.broker.start_wait_watcher",
         fail_start_watcher,
     )
 
@@ -173,7 +170,8 @@ def test_codex_bg_wait_falls_back_on_spawn(
 
     payload = json.loads(capsys.readouterr().out)
     assert status == 0
-    assert "wait github-pr 293" in payload["reason"]
+    assert "wait resume" in payload["reason"]
+    assert "wait github-pr 293" not in payload["reason"]
     assert payload["decision"] == "block"
 
 

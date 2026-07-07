@@ -4,24 +4,29 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from agent_client_hooks.constants import CLAUDE_CODE_PLATFORM, CODEX_PLATFORM
+from agent_maintainer.wait.broker import (
+    CODEX_BACKGROUND_PR_WAIT_ENV,
+    BackgroundGitHubPrWait,
+    BackgroundWaitRegistration,
+    codex_background_pr_wait_enabled,
+    heartbeat_prompt,
+    register_background_github_pr,
+)
 from agent_maintainer.wait.github_pr import (
     GitHubPrWaitConfig,
     GitHubPrWaitResult,
     render_github_pr_wait_text,
     wait_for_github_pr_checks,
 )
-from agent_maintainer.wait.registry import RegisterGitHubPrWait, WaitRegistry
-from agent_maintainer.wait.sweeper import start_wait_watcher
 
 ASYNC_REWAKE_EXIT_CODE = 2
-BACKGROUND_PR_WAIT_ENV = "AGENT_MAINTAINER_BACKGROUND_PR_WAIT"
+BACKGROUND_PR_WAIT_ENV = CODEX_BACKGROUND_PR_WAIT_ENV
 DEFAULT_INTERVAL_SECONDS = 20
 DEFAULT_TIMEOUT_SECONDS = 1800
 GH_PR_CREATE_PATTERN = re.compile(r"(?:^|[;&|]\s*|\s)gh\s+pr\s+create\b")
@@ -148,7 +153,7 @@ def iter_text(value: object) -> tuple[str, ...]:
 def background_pr_wait_enabled() -> bool:
     """Return whether Codex PR waits should register background waits."""
 
-    return os.environ.get(BACKGROUND_PR_WAIT_ENV) == "1"
+    return codex_background_pr_wait_enabled()
 
 
 def emit_codex_handoff(handoff: PrWaitHandoff) -> int:
@@ -182,8 +187,8 @@ def emit_codex_background_handoff(
 ) -> int:
     """Register a background Codex PR wait and emit one compact handoff."""
 
-    record = WaitRegistry(repo_root).register_github_pr(
-        RegisterGitHubPrWait(
+    registration = register_background_github_pr(
+        BackgroundGitHubPrWait(
             root=repo_root,
             pr_number=handoff.pr_number,
             repo=handoff.repo,
@@ -192,15 +197,7 @@ def emit_codex_background_handoff(
             timeout_seconds=timeout_seconds,
         ),
     )
-    try:
-        start_wait_watcher(repo_root, record.wait_id)
-    except OSError:
-        return emit_codex_handoff(handoff)
-    reason = (
-        f"Pull request #{handoff.pr_number} was opened. "
-        "Background check wait registered. Resume when ready:\n"
-        f"{record.resume_instruction}"
-    )
+    reason = _codex_background_reason(handoff, registration)
     print(
         json.dumps(
             {
@@ -214,6 +211,20 @@ def emit_codex_background_handoff(
         )
     )
     return 0
+
+
+def _codex_background_reason(
+    handoff: PrWaitHandoff,
+    registration: BackgroundWaitRegistration,
+) -> str:
+    record = registration.record
+    watcher = "Watcher started." if registration.watcher_started else "Watcher did not start."
+    return (
+        f"Pull request #{handoff.pr_number} was opened. "
+        f"Background check wait registered. {watcher}\n"
+        f"Manual resume:\n{record.resume_instruction}\n"
+        f"Heartbeat prompt:\n{heartbeat_prompt(record)}"
+    )
 
 
 def emit_sync_handoff(handoff: PrWaitHandoff) -> int:
