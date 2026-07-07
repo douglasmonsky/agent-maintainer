@@ -59,3 +59,99 @@ class WaitRuntimeEvents:
                 },
             ),
         )
+
+    def registered(self, *, wait_id: str, background: bool) -> None:
+        """Emit one wait registration event."""
+
+        self.sink.emit(
+            RuntimeEvent(
+                "wait.registered",
+                command=WAIT_COMMAND,
+                run_id=self.target_id,
+                status="background" if background else "foreground",
+                attributes={
+                    "target_kind": self.target_kind,
+                    "target_id": self.target_id,
+                    "wait_id": wait_id,
+                    "background": background,
+                },
+            ),
+        )
+
+    def foreground_blocked(self, *, wait_id: str) -> None:
+        """Emit one Codex foreground-wait block event."""
+
+        self.sink.emit(
+            RuntimeEvent(
+                "wait.foreground_blocked",
+                command=WAIT_COMMAND,
+                run_id=self.target_id,
+                status="background",
+                attributes={
+                    "target_kind": self.target_kind,
+                    "target_id": self.target_id,
+                    "wait_id": wait_id,
+                },
+            ),
+        )
+
+    def swept(
+        self,
+        *,
+        checked: int,
+        updated: int,
+        pending: int,
+        ready: int,
+    ) -> None:
+        """Emit one wait registry sweep summary event."""
+
+        self.sink.emit(
+            RuntimeEvent(
+                "wait.swept",
+                command=WAIT_COMMAND,
+                run_id=self.target_id,
+                status="completed",
+                attributes={
+                    "target_kind": self.target_kind,
+                    "target_id": self.target_id,
+                    "checked": checked,
+                    "updated": updated,
+                    "pending": pending,
+                    "ready": ready,
+                },
+            ),
+        )
+
+    def ready(self, *, wait_id: str, result: str) -> None:
+        """Emit one terminal wait-ready event."""
+
+        self.sink.emit(
+            RuntimeEvent(
+                "wait.ready",
+                command=WAIT_COMMAND,
+                run_id=self.target_id,
+                status=result,
+                attributes={
+                    "target_kind": self.target_kind,
+                    "target_id": self.target_id,
+                    "wait_id": wait_id,
+                },
+            ),
+        )
+
+    def resumed(self, *, wait_id: str) -> None:
+        """Emit one automatic wait-resume event."""
+
+        self.sink.emit(
+            RuntimeEvent(
+                "wait.resumed",
+                command=WAIT_COMMAND,
+                run_id=self.target_id,
+                status="resumed",
+                attributes={
+                    "target_kind": self.target_kind,
+                    "target_id": self.target_id,
+                    "wait_id": wait_id,
+                },
+            ),
+        )

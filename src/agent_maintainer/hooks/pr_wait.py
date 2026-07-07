@@ -15,8 +15,8 @@ from agent_maintainer.wait.broker import (
     BackgroundGitHubPrWait,
     BackgroundWaitRegistration,
     codex_background_pr_wait_enabled,
-    heartbeat_prompt,
     register_background_github_pr,
+    render_background_registration_text,
 )
 from agent_maintainer.wait.github_pr import (
     GitHubPrWaitConfig,
@@ -35,7 +35,7 @@ PR_URL_PATTERN = re.compile(r"github\.com/([^/\s]+/[^/\s]+)/pull/(\d+)")
 
 @dataclass(frozen=True)
 class PrWaitHandoff:
-    """One detected PR wait handoff from hook input."""
+    """One detected PR wait handoff hook input."""
 
     pr_number: str
     repo: str | None = None
@@ -43,9 +43,10 @@ class PrWaitHandoff:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse PR wait hook arguments."""
-    parser = argparse.ArgumentParser(prog="python -m agent_maintainer.hooks.pr_wait")
+
+    parser = argparse.ArgumentParser(prog="python agent_maintainer.hooks.pr_wait")
     parser.add_argument("--platform", required=True, choices=(CODEX_PLATFORM, CLAUDE_CODE_PLATFORM))
-    parser.add_argument("--repo-root", type=Path)
+    parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--async-rewake", action="store_true")
     parser.add_argument("--interval", type=int, default=DEFAULT_INTERVAL_SECONDS)
     parser.add_argument("--timeout-seconds", type=int, default=DEFAULT_TIMEOUT_SECONDS)
@@ -54,10 +55,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     """Run PR wait hook command."""
+
     args = parse_args(sys.argv[1:] if argv is None else argv)
     return run_hook(
         platform=args.platform,
-        repo_root=args.repo_root or Path.cwd(),
+        repo_root=args.repo_root,
         async_rewake=args.async_rewake,
         interval_seconds=args.interval,
         timeout_seconds=args.timeout_seconds,
@@ -72,12 +74,12 @@ def run_hook(
     interval_seconds: int = DEFAULT_INTERVAL_SECONDS,
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
 ) -> int:
-    """Handle a PR-create tool result by waiting or handing off a wait command."""
+    """Handle PR-create tool result and hand off check waiting."""
+
     repo_root = repo_root.resolve()
     handoff = detect_handoff(read_hook_payload())
     if handoff is None:
         return 0
-
     if platform == CLAUDE_CODE_PLATFORM and async_rewake:
         result = wait_for_github_pr_checks(
             GitHubPrWaitConfig(
@@ -85,11 +87,10 @@ def run_hook(
                 repo=handoff.repo,
                 interval_seconds=interval_seconds,
                 timeout_seconds=timeout_seconds,
-            )
+            ),
         )
         print(render_rewake_message(result), file=sys.stderr)
         return ASYNC_REWAKE_EXIT_CODE
-
     if platform == CODEX_PLATFORM and background_pr_wait_enabled():
         return emit_codex_background_handoff(
             handoff,
@@ -97,15 +98,14 @@ def run_hook(
             interval_seconds=interval_seconds,
             timeout_seconds=timeout_seconds,
         )
-
     if platform == CODEX_PLATFORM:
         return emit_codex_handoff(handoff)
-
     return emit_sync_handoff(handoff)
 
 
 def read_hook_payload() -> dict[str, object]:
     """Read hook JSON stdin, treating malformed input as empty."""
+
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, OSError):
@@ -114,17 +114,18 @@ def read_hook_payload() -> dict[str, object]:
 
 
 def detect_handoff(payload: dict[str, object]) -> PrWaitHandoff | None:
-    """Return PR wait handoff when a hook payload created a GitHub PR."""
+    """Return PR wait handoff from a hook payload that created a GitHub PR."""
+
     command = command_text(payload.get("tool_input"))
     if not GH_PR_CREATE_PATTERN.search(command):
         return None
-
     response_text = "\n".join(iter_text(payload.get("tool_response")))
     return handoff_from_text(response_text)
 
 
 def command_text(value: object) -> str:
     """Return shell command text from hook tool input."""
+
     if isinstance(value, dict):
         command = value.get("command")
         return command if isinstance(command, str) else ""
@@ -132,7 +133,8 @@ def command_text(value: object) -> str:
 
 
 def handoff_from_text(text: str) -> PrWaitHandoff | None:
-    """Extract PR repository and number from GitHub CLI output text."""
+    """Extract repository and PR number from GitHub CLI output text."""
+
     match = PR_URL_PATTERN.search(text)
     if match is None:
         return None
@@ -140,7 +142,8 @@ def handoff_from_text(text: str) -> PrWaitHandoff | None:
 
 
 def iter_text(value: object) -> tuple[str, ...]:
-    """Return text leaves from nested hook response data."""
+    """Return text nested inside hook response data."""
+
     if isinstance(value, str):
         return (value,)
     if isinstance(value, dict):
@@ -151,17 +154,18 @@ def iter_text(value: object) -> tuple[str, ...]:
 
 
 def background_pr_wait_enabled() -> bool:
-    """Return whether Codex PR waits should register background waits."""
+    """Return whether Codex PR background waits are enabled."""
 
     return codex_background_pr_wait_enabled()
 
 
 def emit_codex_handoff(handoff: PrWaitHandoff) -> int:
     """Ask Codex to wait for PR checks through PostToolUse continuation."""
+
     command = wait_command(handoff)
     reason = (
-        f"Pull request #{handoff.pr_number} was opened. "
-        f"Wait for checks before reviewing or merging:\n{command}"
+        f"Pull request #{handoff.pr_number} opened. "
+        f"Wait for checks before reviewing and merging:\n{command}"
     )
     print(
         json.dumps(
@@ -172,8 +176,8 @@ def emit_codex_handoff(handoff: PrWaitHandoff) -> int:
                     "hookEventName": "PostToolUse",
                     "additionalContext": reason,
                 },
-            }
-        )
+            },
+        ),
     )
     return 0
 
@@ -185,7 +189,7 @@ def emit_codex_background_handoff(
     interval_seconds: int,
     timeout_seconds: int,
 ) -> int:
-    """Register a background Codex PR wait and emit one compact handoff."""
+    """Register background Codex PR wait and emit one compact handoff."""
 
     registration = register_background_github_pr(
         BackgroundGitHubPrWait(
@@ -207,8 +211,8 @@ def emit_codex_background_handoff(
                     "hookEventName": "PostToolUse",
                     "additionalContext": reason,
                 },
-            }
-        )
+            },
+        ),
     )
     return 0
 
@@ -217,40 +221,32 @@ def _codex_background_reason(
     handoff: PrWaitHandoff,
     registration: BackgroundWaitRegistration,
 ) -> str:
-    record = registration.record
-    watcher = "Watcher started." if registration.watcher_started else "Watcher did not start."
     return (
-        f"Pull request #{handoff.pr_number} was opened. "
-        f"Background check wait registered. {watcher}\n"
-        f"Manual resume:\n{record.resume_instruction}\n"
-        f"Heartbeat prompt:\n{heartbeat_prompt(record)}"
+        f"Pull request #{handoff.pr_number} opened.\n"
+        f"{render_background_registration_text(registration)}"
     )
 
 
 def emit_sync_handoff(handoff: PrWaitHandoff) -> int:
-    """Emit a generic synchronous handoff for non-Codex clients."""
+    """Emit generic synchronous handoff for non-Codex clients."""
+
     print(wait_command(handoff), file=sys.stderr)
     return ASYNC_REWAKE_EXIT_CODE
 
 
 def render_rewake_message(result: GitHubPrWaitResult) -> str:
-    """Render Claude async-rewake message after PR checks reach a final state."""
+    """Render Claude async-rewake message once PR checks reach final state."""
+
     text = render_github_pr_wait_text(result)
     if result.exit_code == 0:
-        return (
-            f"{text}\n\n"
-            f"PR checks passed for #{result.pr_number}. Review the PR and merge if satisfactory."
-        )
-    return f"{text}\n\nPR checks are not passing for #{result.pr_number}; inspect before merging."
+        return f"{text}\n\nReview the PR and merge if satisfactory, then continue prior task."
+    return f"{text}\n\nPR checks are not passing. Inspect failures before continuing."
 
 
 def wait_command(handoff: PrWaitHandoff) -> str:
-    """Return explicit PR wait command for an agent continuation."""
+    """Return manual wait command for a detected PR handoff."""
+
     command = f"python -m agent_maintainer wait github-pr {handoff.pr_number}"
     if handoff.repo:
-        return f"{command} --repo {handoff.repo}"
+        command = f"{command} --repo {handoff.repo}"
     return command
-
-
-if __name__ == "__main__":
-    sys.exit(main())

@@ -7,8 +7,9 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from importlib import import_module
 from types import ModuleType
-from typing import Any, Final, cast
+from typing import Any, Final
 
+from agent_maintainer.wait.handlers import continuation_prompt as handler_prompt
 from agent_maintainer.wait.registry import WaitRecord, WaitRegistry
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 
@@ -22,6 +23,7 @@ REWAKE_STATUS_MANUAL: Final = "ready_for_manual_resume"
 REWAKE_STATUS_RESUMED: Final = "resumed"
 REWAKE_STATUS_SKIPPED: Final = "skipped"
 SDK_RESUME_METHODS: Final = ("thread_resume", "resume_thread")
+
 ImportModule = Callable[[str], ModuleType]
 
 
@@ -34,8 +36,16 @@ class CodexRewakeResult:
     prompt: str = ""
 
 
+@dataclass(frozen=True)
+class _RewakeContext:
+    """Prepared Codex SDK resume context."""
+
+    thread_id: str
+    sdk_module: ModuleType
+
+
 class CodexRewakeBackend:
-    """Resume a Codex SDK thread when terminal wait state is ready."""
+    """Resume Codex SDK continuation when explicitly enabled."""
 
     def __init__(
         self,
@@ -49,40 +59,57 @@ class CodexRewakeBackend:
         self._importer = importer
 
     def enabled(self) -> bool:
-        """Return whether this backend is configured to attempt rewake."""
+        """Return whether SDK rewake is enabled."""
 
         return codex_rewake_enabled(self._env)
 
     def resume_if_available(self, record: WaitRecord) -> CodexRewakeResult:
-        """Attempt Codex SDK rewake or leave the record ready for manual resume."""
+        """Resume Codex thread when SDK metadata is available."""
 
-        if not _codex_record_ready(record):
-            return CodexRewakeResult(REWAKE_STATUS_SKIPPED, "wait is not a ready Codex record")
-        if not self.enabled():
-            return CodexRewakeResult(REWAKE_STATUS_DISABLED, "Codex rewake is disabled")
-
-        thread_id = codex_thread_id(self._env)
-        if not thread_id:
-            return _manual_result(record, "Codex thread metadata is unavailable")
-        return self._resume_with_thread(record, thread_id)
-
-    def _resume_with_thread(self, record: WaitRecord, thread_id: str) -> CodexRewakeResult:
-        sdk_module = self._sdk_module()
-        if sdk_module is None:
-            return _manual_result(record, "openai-codex SDK is unavailable")
-
+        resume_target = self._resume_context(record)
+        if isinstance(resume_target, CodexRewakeResult):
+            return resume_target
         prompt = continuation_prompt(record)
         try:
-            _run_sdk_rewake(sdk_module, thread_id, prompt)
+            self._resume_with_thread(
+                resume_target.sdk_module,
+                resume_target.thread_id,
+                prompt,
+            )
         except Exception as exc:  # pylint: disable=broad-exception-caught
             return _manual_result(record, f"Codex SDK rewake failed: {exc}")
-
         self._registry.mark_resumed(record)
         return CodexRewakeResult(
             REWAKE_STATUS_RESUMED,
             "Codex SDK continuation started",
             prompt=prompt,
         )
+
+    def _resume_context(self, record: WaitRecord) -> _RewakeContext | CodexRewakeResult:
+        """Return prepared resume context or terminal non-resume result."""
+
+        if not self.enabled():
+            return CodexRewakeResult(REWAKE_STATUS_DISABLED, "Codex SDK rewake disabled")
+        if not _codex_record_ready(record):
+            return CodexRewakeResult(REWAKE_STATUS_SKIPPED, "wait not ready Codex")
+        thread_id = codex_thread_id(self._env)
+        if not thread_id:
+            return _manual_result(record, "Codex thread id unavailable")
+        sdk_module = self._sdk_module()
+        if sdk_module is None:
+            return _manual_result(record, "openai-codex SDK is unavailable")
+        return _RewakeContext(thread_id=thread_id, sdk_module=sdk_module)
+
+    def _resume_with_thread(
+        self,
+        sdk_module: ModuleType,
+        thread_id: str,
+        prompt: str,
+    ) -> None:
+        codex_factory = sdk_module.Codex
+        with codex_factory() as codex:
+            thread = _resume_thread(codex, thread_id)
+            thread.run(prompt)
 
     def _sdk_module(self) -> ModuleType | None:
         try:
@@ -92,7 +119,7 @@ class CodexRewakeBackend:
 
 
 def codex_rewake_enabled(env: Mapping[str, str]) -> bool:
-    """Return whether automatic Codex rewake is enabled."""
+    """Return whether Codex rewake is enabled."""
 
     return env.get(CODEX_REWAKE_ENV) == "1"
 
@@ -104,23 +131,22 @@ def codex_thread_id(env: Mapping[str, str]) -> str:
 
 
 def continuation_prompt(record: WaitRecord) -> str:
-    """Return the Codex continuation prompt for one terminal PR wait."""
+    """Return Codex continuation prompt for terminal wait."""
 
-    return (
-        f"PR checks reached {record.terminal_result} for PR #{record.pr_number}. "
-        "Review the PR diff, inspect failures if any, merge only if satisfactory, "
-        "then continue the prior roadmap task."
-    )
+    return handler_prompt(record)
 
 
 def codex_rewake_resumed(result: CodexRewakeResult) -> bool:
-    """Return whether a Codex continuation was started."""
+    """Return whether Codex continuation started."""
 
     return result.status == REWAKE_STATUS_RESUMED
 
 
-def render_codex_rewake_text(record: WaitRecord, result: CodexRewakeResult) -> str:
-    """Render compact output for a successful Codex rewake."""
+def render_codex_rewake_text(
+    record: WaitRecord,
+    result: CodexRewakeResult,
+) -> str:
+    """Render compact output for successful Codex rewake."""
 
     return render_wait_capsule(
         WaitRepairCapsule(
@@ -138,27 +164,16 @@ def _codex_record_ready(record: WaitRecord) -> bool:
 def _manual_result(record: WaitRecord, detail: str) -> CodexRewakeResult:
     return CodexRewakeResult(
         REWAKE_STATUS_MANUAL,
-        f"{detail}; run `{record.resume_instruction}`",
+        f"{detail}; manual resume: {record.resume_instruction}",
+        prompt=continuation_prompt(record),
     )
-
-
-def _run_sdk_rewake(sdk_module: ModuleType, thread_id: str, prompt: str) -> None:
-    codex_factory = getattr(sdk_module, "Codex", None)
-    if not callable(codex_factory):
-        raise RuntimeError("openai_codex.Codex is unavailable")
-
-    codex_context = cast("Any", codex_factory())
-    with codex_context as codex:
-        thread = _resume_thread(codex, thread_id)
-        run = getattr(thread, "run", None)
-        if not callable(run):
-            raise RuntimeError("Codex SDK thread.run is unavailable")
-        run(prompt)
 
 
 def _resume_thread(codex: Any, thread_id: str) -> Any:
     for method_name in SDK_RESUME_METHODS:
-        method = getattr(codex, method_name, None)
-        if callable(method):
-            return method(thread_id)
-    raise RuntimeError("Codex SDK thread resume method is unavailable")
+        try:
+            method = getattr(codex, method_name)
+        except AttributeError:
+            continue
+        return method(thread_id)
+    raise RuntimeError("Codex SDK thread resume method unavailable")

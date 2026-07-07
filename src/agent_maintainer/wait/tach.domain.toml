@@ -1,20 +1,37 @@
 # Tach domain contract for agent_maintainer.wait.
 # Wait adapters own maintainer-specific polling and CLI integration.
-
 [root]
 depends_on = []
 
 [[modules]]
 path = "cli"
 depends_on = [
+    "cli_background",
+    "cli_parsers",
+    "codex_rewake",
+    "github",
+    "github_pr",
+    "registry",
+    "sweeper",
+    "sweeper_rendering",
+    "verifier",
+    "//agent_maintainer.runtime_events.waiting",
+]
+
+[[modules]]
+path = "cli_background"
+depends_on = [
   "broker",
-  "codex_rewake",
-  "github",
-  "github_pr",
+  "handlers",
   "registry",
   "sweeper",
-  "verifier",
   "//agent_maintainer.runtime_events.waiting",
+]
+
+[[modules]]
+path = "cli_parsers"
+depends_on = [
+  "verifier",
 ]
 
 [[modules]]
@@ -32,6 +49,7 @@ depends_on = [
 [[modules]]
 path = "broker"
 depends_on = [
+  "handlers",
   "registry",
   "sweeper",
   "//agent_waits.broker",
@@ -40,8 +58,19 @@ depends_on = [
 [[modules]]
 path = "codex_rewake"
 depends_on = [
+  "handlers",
   "registry",
   "//agent_waits.models",
+]
+
+[[modules]]
+path = "handlers"
+depends_on = [
+  "github",
+  "github_pr",
+  "registry",
+  "verifier",
+  "verifier_manifest",
 ]
 
 [[modules]]
@@ -53,16 +82,27 @@ depends_on = [
 [[modules]]
 path = "registry"
 depends_on = [
+  "github",
   "github_pr",
+  "verifier",
+  "verifier_manifest",
   "//agent_waits.registry",
 ]
 
 [[modules]]
 path = "sweeper"
 depends_on = [
-  "github_pr",
-  "registry",
-  "//agent_waits.models",
+    "github",
+    "github_pr",
+    "handlers",
+    "registry",
+]
+
+[[modules]]
+path = "sweeper_rendering"
+depends_on = [
+    "sweeper",
+    "//agent_waits.models",
 ]
 
 [[modules]]

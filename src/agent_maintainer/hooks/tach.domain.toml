@@ -1,9 +1,7 @@
 # Tach domain contract for agent_maintainer.hooks.
 # Keep file close to the code it governs.
-
 [root]
 depends_on = []
-
 
 [[modules]]
 path = "adapters"
@@ -12,22 +10,19 @@ depends_on = [
   "//agent_client_hooks.constants",
 ]
 
-
 [[modules]]
 path = "audit"
 depends_on = [
   "//agent_maintainer.core.runtime",
 ]
 
-
 [[modules]]
 path = "cli"
 depends_on = [
-"manager",
-"pr_wait",
-"runtime",
+  "manager",
+  "pr_wait",
+  "runtime",
 ]
-
 
 [[modules]]
 path = "context"
@@ -38,11 +33,9 @@ depends_on = [
   "//agent_maintainer.context.pack.builder",
 ]
 
-
 [[modules]]
 path = "discovery"
 depends_on = []
-
 
 [[modules]]
 path = "manager"
@@ -51,13 +44,11 @@ depends_on = [
   "//agent_client_hooks.merge",
 ]
 
-
 [[modules]]
 path = "merge"
 depends_on = [
-"//agent_client_hooks.merge",
+  "//agent_client_hooks.merge",
 ]
-
 
 [[modules]]
 path = "pr_wait"
@@ -67,14 +58,13 @@ depends_on = [
   "//agent_maintainer.wait.github_pr",
 ]
 
-
 [[modules]]
 path = "readiness"
 depends_on = [
+  "//agent_maintainer.wait.broker",
   "//agent_maintainer.verify.locking",
   "//agent_waits.models",
 ]
-
 
 [[modules]]
 path = "runtime"
@@ -88,7 +78,6 @@ depends_on = [
   "subprocess_runner",
 ]
 
-
 [[modules]]
 path = "runtime_eventing"
 depends_on = [
@@ -98,13 +87,11 @@ depends_on = [
   "//agent_maintainer.runtime_events.sinks",
 ]
 
-
 [[modules]]
 path = "subprocess_runner"
 depends_on = [
   "audit",
 ]
-
 
 [[modules]]
 path = "templates"

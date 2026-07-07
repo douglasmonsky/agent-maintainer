@@ -40,6 +40,31 @@ def test_verifier_wait_renders_success_manifest(tmp_path: Path) -> None:
     )
 
 
+def test_verifier_wait_treats_warning_checks_as_success(tmp_path: Path) -> None:
+    """Warning-only verifier manifests are successful waits."""
+
+    manifest_path = write_manifest(
+        tmp_path,
+        "run-warning",
+        profile="precommit",
+        checks=(
+            {"name": "ruff", "status": "passed"},
+            {"name": "change-budget", "status": "warning"},
+        ),
+    )
+
+    result = wait_for_verifier_run(
+        VerifierWaitConfig(run_id="run-warning", log_dir=tmp_path),
+    )
+    payload = json.loads(render_verifier_wait_json(result))
+
+    assert result.exit_code == 0
+    assert parse_verifier_manifest(manifest_path).succeeded
+    assert payload["status"] == "passed"
+    assert payload["failed_checks"] == []
+    assert "Result: PASS" in render_verifier_wait_text(result)
+
+
 def test_verifier_wait_renders_failure_capsule(tmp_path: Path) -> None:
     """Failed manifest renders facts and expansion commands, not log content."""
     write_manifest(

@@ -1,8 +1,7 @@
-"""Tests quiet wait CLI commands."""
+"""Tests quiet wait CLI foreground commands."""
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import cast
 
@@ -11,7 +10,11 @@ import pytest
 from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
 from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import cli
-from agent_maintainer.wait.github import GitHubRunState, GitHubWaitConfig, GitHubWaitResult
+from agent_maintainer.wait.github import (
+    GitHubRunState,
+    GitHubWaitConfig,
+    GitHubWaitResult,
+)
 from agent_maintainer.wait.github_pr import (
     GitHubPrCheck,
     GitHubPrChecksState,
@@ -35,6 +38,7 @@ def test_poll_observer_helpers_emit_events() -> None:
         target_kind="github-run",
         target_id="123",
     )
+
     cli._observe_github_run(
         runtime_events,
         1,
@@ -64,7 +68,9 @@ def test_github_run_cli_prints_success(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """GitHub run CLI prints only final success status."""
+
     fake_wait = SuccessWait()
+    monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_github_run", fake_wait)
 
     status = cli.main(["github-run", "123", "--interval", "1", "--timeout-seconds", "2"])
@@ -85,6 +91,8 @@ def test_github_run_cli_json_reports_failure(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """GitHub run CLI preserves nonzero status for failed runs."""
+
+    monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_github_run", failure_wait)
 
     status = cli.main(["github-run", "123", "--format", "json"])
@@ -100,6 +108,8 @@ def test_github_run_cli_reports_query_errors(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """GitHub CLI query errors become compact repair output."""
+
+    monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_github_run", error_wait)
 
     status = cli.main(["github-run", "123"])
@@ -115,6 +125,7 @@ def test_github_pr_cli_prints_success(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """GitHub PR CLI prints only final success status."""
+
     fake_wait = SuccessPrWait()
     monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_github_pr_checks", fake_wait)
@@ -132,54 +143,19 @@ def test_github_pr_cli_prints_success(
     assert capsys.readouterr().out == "Result: PASS\nRun ID: PR #291\n"
 
 
-def test_codex_pr_cli_backgrounds_wait(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """Codex foreground PR waits convert into background registrations."""
-    calls: list[tuple[Path, str]] = []
-    monkeypatch.delenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", raising=False)
-    monkeypatch.setenv("CODEX_SHELL", "1")
-    monkeypatch.setattr(
-        "agent_maintainer.wait.broker.start_wait_watcher",
-        lambda root, wait_id: calls.append((root, wait_id)),
-    )
-
-    status = cli.main(
-        [
-            "github-pr",
-            PR_NUMBER,
-            "--repo",
-            "douglasmonsky/agent-maintainer",
-            "--root",
-            str(tmp_path),
-            "--interval",
-            "1",
-            "--timeout-seconds",
-            "2",
-        ],
-    )
-
-    output = capsys.readouterr().out
-    assert_success(status)
-    assert "Result: PENDING" in output
-    assert "manual resume:" in output
-    assert "heartbeat prompt:" in output
-    assert len(calls) == 1
-
-
 def test_verifier_cli_prints_manifest_status(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Verifier wait CLI prints compact manifest-backed status."""
+
+    monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_verifier_run", verifier_wait)
 
     status = cli.main(["verifier", "run-1", "--format", "text"])
 
     assert_success(status)
-    assert capsys.readouterr().out == ("Result: PASS\nProfile: fast\nRun ID: run-1\n")
+    assert capsys.readouterr().out == "Result: PASS\nProfile: fast\nRun ID: run-1\n"
 
 
 def test_verifier_cli_json_status(
@@ -187,6 +163,8 @@ def test_verifier_cli_json_status(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Verifier wait CLI supports machine-readable output."""
+
+    monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_verifier_run", verifier_wait)
 
     status = cli.main(["verifier", "run-1", "--format", "json"])
@@ -195,43 +173,6 @@ def test_verifier_cli_json_status(
     assert status == 0
     assert '"profile": "fast"' in output
     assert '"status": "passed"' in output
-
-
-def test_register_github_pr_cli_writes_json(
-    tmp_path: Path,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """Wait register CLI persists PR waits and renders JSON."""
-
-    status = cli.main(
-        [
-            "register",
-            "github-pr",
-            PR_NUMBER,
-            "--repo",
-            "douglasmonsky/agent-maintainer",
-            "--platform",
-            "codex",
-            "--root",
-            str(tmp_path),
-            "--format",
-            "json",
-        ],
-    )
-
-    payload = json.loads(capsys.readouterr().out)
-    expected_fields = {
-        "kind": "github-pr",
-        "status": "pending",
-        "pr_number": PR_NUMBER,
-        "repo": "douglasmonsky/agent-maintainer",
-        "platform": "codex",
-    }
-
-    assert status == 0
-    assert {field: payload[field] for field in expected_fields} == expected_fields
-    assert "wait resume" in payload["resume_instruction"]
-    assert (tmp_path / ".verify-logs" / "waits" / f"{payload['wait_id']}.json").exists()
 
 
 def test_resume_github_pr_cli_prints_continuation(
@@ -261,11 +202,11 @@ def test_resume_github_pr_cli_prints_continuation(
     assert status == 0
     assert output.startswith("Result: PASS\nRun ID: PR #291")
     assert "Continuation:" in output
-    assert "PR checks reached PASS for PR #291" in output
+    assert "PR checks reached PASS" in output
 
 
 def test_resume_cli_parser_accepts_root(tmp_path: Path) -> None:
-    """Wait resume parser accepts explicit root and JSON output."""
+    """Wait resume parser accepts explicit root JSON output."""
 
     args = cli.parse_args(
         ["resume", "wait-1", "--root", str(tmp_path), "--format", "json"],
@@ -277,84 +218,8 @@ def test_resume_cli_parser_accepts_root(tmp_path: Path) -> None:
     assert args.format == "json"
 
 
-def test_register_cli_can_start_watcher(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """Wait register CLI can start a detached watcher."""
-
-    calls: list[tuple[Path, str]] = []
-    monkeypatch.setattr(
-        cli,
-        "start_wait_watcher",
-        lambda root, wait_id: calls.append((root, wait_id)),
-    )
-
-    status = cli.main(
-        ["register", "github-pr", PR_NUMBER, "--root", str(tmp_path), "--start-watcher"],
-    )
-
-    assert status == 0
-    assert len(calls) == 1
-    assert calls[0][0] == tmp_path
-    assert calls[0][1] in capsys.readouterr().out
-
-
-def test_sweep_once_cli_prints_summary(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """Wait sweep once CLI renders compact summary."""
-
-    monkeypatch.setattr(
-        cli,
-        "sweep_once",
-        lambda _registry: cli.SweepSummary(checked=1, updated=1, pending=0, ready=1),
-    )
-
-    status = cli.main(["sweep", "--once", "--root", str(tmp_path)])
-
-    output = capsys.readouterr().out
-    assert status == 0
-    assert "Result: PASS" in output
-    assert "updated: 1" in output
-
-
-def test_sweep_watch_cli_prints_resume(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """Wait sweep watch CLI renders final resume text."""
-
-    registry = WaitRegistry(tmp_path)
-    record = registry.register_github_pr(
-        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER),
-    )
-    completed = registry.complete_github_pr(
-        record,
-        GitHubPrWaitResult(
-            pr_number=PR_NUMBER,
-            state=GitHubPrChecksState(
-                pr_number=PR_NUMBER,
-                checks=(GitHubPrCheck(name="verify", state="success"),),
-            ),
-        ),
-    )
-    monkeypatch.setattr(cli, "watch_wait", lambda _registry, _wait_id: completed)
-
-    status = cli.main(["sweep", "--watch", record.wait_id, "--root", str(tmp_path)])
-
-    output = capsys.readouterr().out
-    assert status == 0
-    assert "Result: PASS" in output
-    assert "Continuation:" in output
-
-
 def assert_success(status: int) -> None:
-    """Assert command success without repeating assertion expressions."""
+    """Assert success without repeating assertion expressions."""
 
     assert status == 0
 
@@ -369,7 +234,11 @@ class SuccessWait:
         self.seen_config = config
         return GitHubWaitResult(
             run_id=config.run_id,
-            state=GitHubRunState(status="completed", conclusion="success", url="https://run"),
+            state=GitHubRunState(
+                status="completed",
+                conclusion="success",
+                url="https://run",
+            ),
         )
 
 
@@ -396,19 +265,26 @@ class SuccessPrWait:
 
 def failure_wait(config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
     """Return one failed GitHub wait result."""
+
     return GitHubWaitResult(
         run_id=config.run_id,
-        state=GitHubRunState(status="completed", conclusion="failure", url="https://run"),
+        state=GitHubRunState(
+            status="completed",
+            conclusion="failure",
+            url="https://run",
+        ),
     )
 
 
 def error_wait(_config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
     """Raise a GitHub query error."""
+
     raise RuntimeError("gh auth required")
 
 
 def verifier_wait(_config: object, **_kwargs: object) -> VerifierWaitResult:
     """Return verifier pass result."""
+
     return VerifierWaitResult(
         run_id="run-1",
         manifest=VerifierManifest(run_id="run-1", profile="fast"),

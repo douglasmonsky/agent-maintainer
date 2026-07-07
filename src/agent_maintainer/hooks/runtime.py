@@ -314,6 +314,13 @@ def emit_readiness(
         exit_code=readiness.exit_code,
         duration_seconds=duration_seconds,
     )
+    if execution.platform == CODEX_PLATFORM and readiness.pending:
+        return emit_block(
+            event=execution.event,
+            reason="Agent Maintainer verification already running.",
+            context=hook_readiness.render_codex_background_wait(execution, readiness),
+            async_rewake=False,
+        )
     if readiness.passed:
         return emit_success(execution.event)
     reason = (

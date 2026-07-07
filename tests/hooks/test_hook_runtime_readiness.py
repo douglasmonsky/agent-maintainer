@@ -56,7 +56,10 @@ def test_runtime_reports_pending_same_state_verifier(
     assert status == 0
     assert payload["decision"] == "block"
     assert "already running" in payload["reason"]
-    assert "wait verifier run-pending" in payload["hookSpecificOutput"]["additionalContext"]
+    context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "verifier wait registered" in context
+    assert "heartbeat request:" in context
+    assert '"wait_kind": "verifier"' in context
 
 
 def test_runtime_async_rewake_pending_readiness_exits_two(

@@ -17,10 +17,16 @@ from agent_maintainer.verify.locking import (
     VerificationFingerprint,
     build_fingerprint,
 )
+from agent_maintainer.wait.broker import (
+    BackgroundVerifierWait,
+    register_background_verifier,
+    render_background_registration_text,
+)
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 
 BASE_REF: Final = "HEAD"
 COMPARE_BRANCH: Final = "origin/main"
+CODEX_VERIFIER_WAIT_TIMEOUT_SECONDS: Final = 3600
 
 
 @dataclass(frozen=True)
@@ -147,6 +153,24 @@ def render_hook_readiness(readiness: HookReadiness) -> str:
             likely_next_action=_wait_command(readiness),
         ),
     )
+
+
+def render_codex_background_wait(
+    execution: HookExecution,
+    readiness: HookReadiness,
+) -> str:
+    """Register and render Codex background wait for pending verifier readiness."""
+
+    registration = register_background_verifier(
+        BackgroundVerifierWait(
+            root=execution.repo_root,
+            run_id=readiness.run_id,
+            platform=execution.platform,
+            interval_seconds=5,
+            timeout_seconds=CODEX_VERIFIER_WAIT_TIMEOUT_SECONDS,
+        ),
+    )
+    return render_background_registration_text(registration)
 
 
 def _wait_command(readiness: HookReadiness) -> str:
