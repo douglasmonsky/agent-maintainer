@@ -22,7 +22,12 @@ from pathlib import Path
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core.args import apply_cli_overrides, parse_args
 from agent_maintainer.core.config import load_config
-from agent_maintainer.verify import async_jobs, profile_overlap, runtime_eventing
+from agent_maintainer.verify import (
+    async_jobs,
+    background_wait,
+    profile_overlap,
+    runtime_eventing,
+)
 from agent_maintainer.verify.locking import VerificationLock, build_fingerprint
 from agent_maintainer.verify.result_summary import (
     apply_optional_skip_policy,
@@ -52,6 +57,14 @@ def main(argv: list[str]) -> int:
         staged=args.staged,
     )
     run_id = args.run_id or build_run_id(args.profile, fingerprint.to_dict())
+    if _codex_background_verify(args):
+        return start_async_verifier(
+            args.profile,
+            argv,
+            log_dir,
+            fingerprint.to_dict(),
+            run_id,
+        )
     if args.async_verify:
         return start_async_verifier(
             args.profile,
@@ -164,7 +177,8 @@ def start_async_verifier(
     fingerprint: dict[str, object],
     run_id: str,
 ) -> int:
-    """Start background verifier and print wait-ready capsule."""
+    """Start background verifier print wait-ready capsule."""
+
     request = async_jobs.AsyncVerifierRequest(
         argv=argv,
         profile=profile,
@@ -172,8 +186,32 @@ def start_async_verifier(
         log_dir=log_dir,
         fingerprint=fingerprint,
     )
-    print(async_jobs.render_async_launch(async_jobs.launch_async_verifier(request)))
+    launch = async_jobs.launch_async_verifier(request)
+    if _codex_background_async_launch():
+        registration = background_wait.register_background_verifier_wait(
+            launch.run_id,
+            log_dir,
+        )
+        print(background_wait.render_background_registration_text(registration))
+        return 0
+    print(async_jobs.render_async_launch(launch))
     return 0
+
+
+def _codex_background_verify(args: object) -> bool:
+    """Return whether Codex should background this verifier run."""
+
+    return (
+        not getattr(args, "async_verify", False)
+        and not getattr(args, "run_id", "")
+        and _codex_background_async_launch()
+    )
+
+
+def _codex_background_async_launch() -> bool:
+    """Return whether async verifier launch should register a wait."""
+
+    return background_wait.background_launch_enabled()
 
 
 if __name__ == "__main__":

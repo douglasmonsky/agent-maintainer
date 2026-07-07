@@ -39,6 +39,13 @@ depends_on = [
 ]
 
 [[modules]]
+path = "background_wait"
+depends_on = [
+  "//agent_waits.broker",
+  "//agent_waits.registry",
+]
+
+[[modules]]
 path = "git_state"
 depends_on = [
   "//agent_run_artifacts.git_state",
@@ -95,6 +102,7 @@ depends_on = [
   "//agent_maintainer.core.config",
   "//agent_run_artifacts.history",
   "async_jobs",
+  "background_wait",
   "locking",
   "profile_overlap",
   "result_summary",

@@ -29,6 +29,13 @@ class SweepSummary:
 
 
 @dataclass(frozen=True)
+class CleanupSummary:
+    """Summary of stale wait cleanup."""
+
+    expired_ready: int
+
+
+@dataclass(frozen=True)
 class DetachedWatcher:
     """Detached watcher metadata."""
 
@@ -113,6 +120,22 @@ def sweep_ready_notifications(
         now=now,
     )
     return registry.claim_ready_for_notification(now=now)
+
+
+def cleanup_waits(
+    registry: wait_registry.WaitRegistry,
+    *,
+    ready_older_than_seconds: int,
+    now: datetime | None = None,
+) -> CleanupSummary:
+    """Expire stale ready waits that should no longer notify."""
+
+    expired = wait_registry.expire_ready_records(
+        registry,
+        older_than_seconds=ready_older_than_seconds,
+        now=now,
+    )
+    return CleanupSummary(expired_ready=len(expired))
 
 
 def watch_wait(

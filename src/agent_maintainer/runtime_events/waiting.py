@@ -155,3 +155,58 @@ class WaitRuntimeEvents:
                 },
             ),
         )
+
+
+def emit_heartbeat_noop(events: WaitRuntimeEvents) -> None:
+    """Emit one repo heartbeat sweep with no terminal output."""
+
+    _emit_wait_event(events, "wait.heartbeat_noop", status="pending")
+
+
+def emit_terminal_claimed(
+    events: WaitRuntimeEvents,
+    *,
+    wait_id: str,
+    result: str,
+) -> None:
+    """Emit one terminal wait claimed by repo heartbeat."""
+
+    _emit_wait_event(
+        events,
+        "wait.terminal_claimed",
+        status=result,
+        attributes={"wait_id": wait_id},
+    )
+
+
+def emit_cleaned(events: WaitRuntimeEvents, *, expired_ready: int) -> None:
+    """Emit one wait cleanup summary event."""
+
+    _emit_wait_event(
+        events,
+        "wait.cleaned",
+        status="completed",
+        attributes={"expired_ready": expired_ready},
+    )
+
+
+def _emit_wait_event(
+    events: WaitRuntimeEvents,
+    event_name: str,
+    *,
+    status: str,
+    attributes: dict[str, object] | None = None,
+) -> None:
+    events.sink.emit(
+        RuntimeEvent(
+            event_name,
+            command=WAIT_COMMAND,
+            run_id=events.target_id,
+            status=status,
+            attributes={
+                "target_kind": events.target_kind,
+                "target_id": events.target_id,
+                **(attributes or {}),
+            },
+        ),
+    )
