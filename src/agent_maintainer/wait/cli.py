@@ -31,9 +31,16 @@ from agent_maintainer.wait.registry import (
     render_wait_record_text,
     wait_record_json,
 )
+from agent_maintainer.wait.sweeper import (
+    SweepSummary,
+    render_sweep_json,
+    render_sweep_text,
+    start_wait_watcher,
+    sweep_once,
+    watch_wait,
+)
 from agent_maintainer.wait.verifier import (
     VerifierWaitConfig,
-    VerifierWaitResult,
     render_verifier_wait_json,
     render_verifier_wait_text,
     wait_for_verifier_run,
@@ -58,6 +65,7 @@ def main(argv: list[str] | None = None) -> int:
         "verifier": _verifier_run,
         "register": _register,
         "resume": _resume,
+        "sweep": _sweep,
     }
     handler = handlers.get(args.command)
     if handler is not None:
@@ -75,6 +83,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     _add_verifier_parser(subparsers)
     _add_register_parser(subparsers)
     _add_resume_parser(subparsers)
+    _add_sweep_parser(subparsers)
     return parser.parse_args(argv)
 
 
@@ -143,6 +152,7 @@ def _add_register_github_pr_parser(subparsers: Any) -> None:
     register_pr.add_argument("--branch", default="")
     register_pr.add_argument("--head-sha", default="")
     register_pr.add_argument("--root", type=Path, default=Path.cwd())
+    register_pr.add_argument("--start-watcher", action="store_true")
     register_pr.add_argument(
         "--interval",
         type=int,
@@ -163,6 +173,17 @@ def _add_resume_parser(subparsers: Any) -> None:
     resume.add_argument("wait_id")
     resume.add_argument("--root", type=Path, default=Path.cwd())
     resume.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_sweep_parser(subparsers: Any) -> None:
+    """Add wait sweep parser."""
+
+    sweep = subparsers.add_parser("sweep", help="Sweep registered waits.")
+    mode = sweep.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--once", action="store_true")
+    mode.add_argument("--watch")
+    sweep.add_argument("--root", type=Path, default=Path.cwd())
+    sweep.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _github_run(args: argparse.Namespace) -> int:
@@ -187,7 +208,10 @@ def _github_run(args: argparse.Namespace) -> int:
         )
     except RuntimeError as exc:
         result = GitHubWaitResult(run_id=args.run_id, state=None, error=str(exc))
-    print(_render(args.format, result))
+    if args.format == JSON_FORMAT:
+        print(render_github_wait_json(result))
+    else:
+        print(render_github_wait_text(result))
     return result.exit_code
 
 
@@ -217,7 +241,10 @@ def _github_pr(args: argparse.Namespace) -> int:
             state=None,
             error=str(exc),
         )
-    print(_render_github_pr(args.format, result))
+    if args.format == JSON_FORMAT:
+        print(render_github_pr_wait_json(result))
+    else:
+        print(render_github_pr_wait_text(result))
     return result.exit_code
 
 
@@ -240,7 +267,10 @@ def _verifier_run(args: argparse.Namespace) -> int:
             status="manifest-found" if exists else "manifest-missing",
         ),
     )
-    print(_render_verifier(args.format, result))
+    if args.format == JSON_FORMAT:
+        print(render_verifier_wait_json(result))
+    else:
+        print(render_verifier_wait_text(result))
     return result.exit_code
 
 
@@ -263,6 +293,8 @@ def _register_github_pr(args: argparse.Namespace) -> int:
             timeout_seconds=args.timeout_seconds,
         ),
     )
+    if args.start_watcher:
+        start_wait_watcher(args.root, record.wait_id)
     print(_render_wait_record(args.format, record))
     return 0
 
@@ -276,28 +308,30 @@ def _resume(args: argparse.Namespace) -> int:
     return 0
 
 
-def _render(output_format: str, result: GitHubWaitResult) -> str:
-    if output_format == JSON_FORMAT:
-        return render_github_wait_json(result)
-    return render_github_wait_text(result)
-
-
-def _render_github_pr(output_format: str, result: GitHubPrWaitResult) -> str:
-    if output_format == JSON_FORMAT:
-        return render_github_pr_wait_json(result)
-    return render_github_pr_wait_text(result)
-
-
-def _render_verifier(output_format: str, result: VerifierWaitResult) -> str:
-    if output_format == JSON_FORMAT:
-        return render_verifier_wait_json(result)
-    return render_verifier_wait_text(result)
+def _sweep(args: argparse.Namespace) -> int:
+    registry = WaitRegistry(args.root)
+    if args.once:
+        summary = sweep_once(registry)
+        print(_render_sweep(args.format, summary))
+        return 0
+    record = watch_wait(registry, args.watch)
+    if args.format == JSON_FORMAT:
+        print(wait_record_json(record))
+    else:
+        print(render_resume_text(record))
+    return 0
 
 
 def _render_wait_record(output_format: str, record: WaitRecord) -> str:
     if output_format == JSON_FORMAT:
         return wait_record_json(record)
     return render_wait_record_text(record)
+
+
+def _render_sweep(output_format: str, summary: SweepSummary) -> str:
+    if output_format == JSON_FORMAT:
+        return render_sweep_json(summary)
+    return render_sweep_text(summary)
 
 
 def _observe_github_run(
