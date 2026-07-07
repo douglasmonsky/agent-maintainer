@@ -9,15 +9,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
-from agent_maintainer.wait.models import (
-    TIMEOUT_EXIT_CODE,
-    WaitRepairCapsule,
-    render_wait_capsule,
-)
 from agent_maintainer.wait.verifier_manifest import (
     VerifierCheck,
     VerifierManifest,
     parse_verifier_manifest,
+)
+from agent_waits.models import (
+    TIMEOUT_EXIT_CODE,
+    WaitRepairCapsule,
+    render_wait_capsule,
 )
 
 DEFAULT_LOG_DIR: Final = Path(".verify-logs")

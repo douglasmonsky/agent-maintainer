@@ -30,7 +30,7 @@ Do not read it during normal coding unless changing guidance.
 ## Repo Contract
 
 - Mode: `fresh-strict`
-- Source roots: `src/agent_context`, `src/agent_client_hooks`, `src/agent_maintainer`, `src/agent_repair_facts`, `src/agent_run_artifacts`, `src/archguard`, `src/docsync`, `.codex/hooks`, `.claude/hooks`
+- Source roots: `src/agent_context`, `src/agent_client_hooks`, `src/agent_maintainer`, `src/agent_waits`, `src/agent_repair_facts`, `src/agent_run_artifacts`, `src/archguard`, `src/docsync`, `.codex/hooks`, `.claude/hooks`
 - Tests: `tests`
 - Architecture: `tach` with Tach domain contracts
 - If Tach policy changes, add or update an ADR under

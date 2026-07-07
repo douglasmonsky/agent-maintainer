@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, cast
 
-from agent_maintainer.wait.models import WaitRepairCapsule, render_wait_capsule
+from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 
 ASYNC_FLAG: Final = "--async"
 JOBS_DIR_NAME: Final = "jobs"

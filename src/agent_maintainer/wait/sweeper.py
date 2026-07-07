@@ -17,7 +17,6 @@ from agent_maintainer.wait.github_pr import (
     QueryPrChecks,
     query_github_pr_checks,
 )
-from agent_maintainer.wait.models import WaitRepairCapsule, render_wait_capsule
 from agent_maintainer.wait.registry import (
     WAIT_STATUS_PENDING,
     WaitRecord,
@@ -25,6 +24,7 @@ from agent_maintainer.wait.registry import (
     observe_github_pr,
     wait_records,
 )
+from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 
 SWEEP_RUN_ID = "wait-sweep"
 Sleep = Callable[[int], None]

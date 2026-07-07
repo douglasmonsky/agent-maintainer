@@ -1,4 +1,4 @@
-"""Background wait broker for Codex-safe long-running waits."""
+"""Agent Maintainer background wait broker adapters."""
 
 from __future__ import annotations
 
@@ -6,16 +6,23 @@ import os
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Final
 
-from agent_maintainer.wait.models import WaitRepairCapsule, render_wait_capsule
-from agent_maintainer.wait.registry import RegisterGitHubPrWait, WaitRecord, WaitRegistry
+from agent_maintainer.wait.registry import RegisterGitHubPrWait, WaitRegistry
 from agent_maintainer.wait.sweeper import start_wait_watcher
+from agent_waits import broker as wait_broker
 
-CODEX_PLATFORM: Final = "codex"
 CODEX_BACKGROUND_PR_WAIT_ENV: Final = "AGENT_MAINTAINER_BACKGROUND_PR_WAIT"
-CODEX_ALLOW_FOREGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT"
-CODEX_ENV_MARKERS: Final = ("CODEX_SHELL", "CODEX_THREAD_ID")
+CODEX_ALLOW_FOREGROUND_WAIT_ENV = wait_broker.CODEX_ALLOW_FOREGROUND_WAIT_ENV
+CODEX_ENV_MARKERS = wait_broker.CODEX_ENV_MARKERS
+CODEX_PLATFORM = wait_broker.CODEX_PLATFORM
+BACKGROUND_PR_WAIT_FLAGS: Final[Mapping[str | None, bool]] = MappingProxyType({"0": False})
+BackgroundWaitRegistration = wait_broker.BackgroundWaitRegistration
+codex_foreground_wait_allowed = wait_broker.codex_foreground_wait_allowed
+heartbeat_prompt = wait_broker.heartbeat_prompt
+render_background_registration_text = wait_broker.render_background_registration_text
+running_in_codex = wait_broker.running_in_codex
 
 
 @dataclass(frozen=True)
@@ -30,17 +37,8 @@ class BackgroundGitHubPrWait:
     timeout_seconds: int = 3600
 
 
-@dataclass(frozen=True)
-class BackgroundWaitRegistration:
-    """Result from registering a wait for background ownership."""
-
-    record: WaitRecord
-    watcher_started: bool
-    watcher_error: str = ""
-
-
 def register_background_github_pr(wait: BackgroundGitHubPrWait) -> BackgroundWaitRegistration:
-    """Register a GitHub PR wait and try to start a silent watcher."""
+    """Register a GitHub PR wait with a silent watcher."""
 
     record = WaitRegistry(wait.root).register_github_pr(
         RegisterGitHubPrWait(
@@ -64,64 +62,14 @@ def register_background_github_pr(wait: BackgroundGitHubPrWait) -> BackgroundWai
 
 
 def codex_background_pr_wait_enabled(env: Mapping[str, str] | None = None) -> bool:
-    """Return whether Codex PR waits should use background ownership."""
+    """Return whether Codex PR waits should register background waits."""
 
-    values = os.environ if env is None else env
-    if values.get(CODEX_ALLOW_FOREGROUND_WAIT_ENV) == "1":
+    if env is None:
+        return _codex_background_pr_wait_enabled(os.environ)
+    return _codex_background_pr_wait_enabled(env)
+
+
+def _codex_background_pr_wait_enabled(current: Mapping[str, str]) -> bool:
+    if current.get(CODEX_ALLOW_FOREGROUND_WAIT_ENV) == "1":
         return False
-    return values.get(CODEX_BACKGROUND_PR_WAIT_ENV, "1") != "0"
-
-
-def codex_foreground_wait_allowed(env: Mapping[str, str] | None = None) -> bool:
-    """Return whether foreground wait polling is explicitly allowed in Codex."""
-
-    values = os.environ if env is None else env
-    return values.get(CODEX_ALLOW_FOREGROUND_WAIT_ENV) == "1"
-
-
-def running_in_codex(env: Mapping[str, str] | None = None) -> bool:
-    """Return whether the current process looks like a Codex-run command."""
-
-    values = os.environ if env is None else env
-    return any(values.get(name) for name in CODEX_ENV_MARKERS)
-
-
-def render_background_registration_text(registration: BackgroundWaitRegistration) -> str:
-    """Render one compact background-wait handoff for humans and agents."""
-
-    resume_instruction = registration.record.resume_instruction
-    details = (
-        _wait_detail(registration.record),
-        _watcher_detail(registration),
-        f"manual resume: {resume_instruction}",
-        f"heartbeat prompt: {heartbeat_prompt(registration.record)}",
-    )
-    return render_wait_capsule(
-        WaitRepairCapsule(
-            result="PENDING",
-            run_id=registration.record.wait_id,
-            details=details,
-        ),
-    )
-
-
-def heartbeat_prompt(record: WaitRecord) -> str:
-    """Return the Codex heartbeat prompt for a registered wait."""
-
-    return (
-        f"Sweep wait {record.wait_id}. If it is still pending, stay silent and "
-        "let the next heartbeat continue polling. If terminal, render the wait "
-        "resume capsule, inspect failures if any, merge only if satisfactory, "
-        "then continue the prior roadmap task."
-    )
-
-
-def _wait_detail(record: WaitRecord) -> str:
-    repo = f" repo={record.repo}" if record.repo else ""
-    return f"{record.kind} pr={record.pr_number} platform={record.platform}{repo}"
-
-
-def _watcher_detail(registration: BackgroundWaitRegistration) -> str:
-    if registration.watcher_started:
-        return "watcher: started"
-    return f"watcher: not started ({registration.watcher_error})"
+    return BACKGROUND_PR_WAIT_FLAGS.get(current.get(CODEX_BACKGROUND_PR_WAIT_ENV), True)

@@ -72,7 +72,7 @@ depends_on = [
 path = "readiness"
 depends_on = [
   "//agent_maintainer.verify.locking",
-  "//agent_maintainer.wait.models",
+  "//agent_waits.models",
 ]
 
 
