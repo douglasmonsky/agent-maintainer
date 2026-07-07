@@ -99,7 +99,7 @@ def test_pending_and_resumed_render_compact_text(tmp_path: Path) -> None:
     resumed = registry.mark_resumed(record)
 
     assert "Result: PENDING" in render_wait_record_text(record)
-    assert "wait resume" in render_wait_record_text(record)
+    assert "status: pending" in render_wait_record_text(record)
     assert resumed.status == WAIT_STATUS_RESUMED
 
 

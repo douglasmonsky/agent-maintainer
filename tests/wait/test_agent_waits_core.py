@@ -88,6 +88,7 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     )
 
     assert f"Result: {RESULT_PENDING}" in text
-    assert "verifier target=run-123 platform=codex" in text
+    assert "verifier wait registered for run-123" in text
     assert "watcher: started" in text
+    assert "heartbeat request:" in text
     assert heartbeat_prompt(record) in text

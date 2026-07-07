@@ -151,6 +151,8 @@ def test_codex_background_wait_registers_wait(
     assert len(calls) == 1
     assert len(wait_files) == 1
     assert "wait resume" in payload["reason"]
+    assert "heartbeat request:" in payload["reason"]
+    assert '"wait_kind": "github-pr"' in payload["reason"]
     assert "python -m agent_maintainer wait github-pr" not in payload["reason"]
 
 
@@ -171,6 +173,7 @@ def test_codex_bg_wait_survives_spawn_error(
     payload = json.loads(capsys.readouterr().out)
     assert status == 0
     assert "wait resume" in payload["reason"]
+    assert "heartbeat request:" in payload["reason"]
     assert "wait github-pr 293" not in payload["reason"]
     assert payload["decision"] == "block"
 

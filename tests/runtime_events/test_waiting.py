@@ -35,6 +35,29 @@ def test_wait_runtime_events_emit_poll_record() -> None:
     assert attributes["check_count"] == CHECK_COUNT
 
 
+def test_wait_runtime_events_emit_lifecycle_records() -> None:
+    """Wait event adapter emits registration, sweep, ready, and resume records."""
+
+    sink = InMemoryRuntimeEventSink()
+    events = WaitRuntimeEvents(sink=sink, target_kind="github-run", target_id="123")
+
+    events.registered(wait_id="wait-1", background=True)
+    events.foreground_blocked(wait_id="wait-1")
+    events.swept(checked=1, updated=1, pending=0, ready=1)
+    events.ready(wait_id="wait-1", result="PASS")
+    events.resumed(wait_id="wait-1")
+
+    assert [record["event_name"] for record in sink.records] == [
+        "wait.registered",
+        "wait.foreground_blocked",
+        "wait.swept",
+        "wait.ready",
+        "wait.resumed",
+    ]
+    assert sink.records[0]["status"] == "background"
+    assert sink.records[3]["status"] == "PASS"
+
+
 def test_wait_events_fallback_to_null_sink(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

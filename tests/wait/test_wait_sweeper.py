@@ -20,12 +20,11 @@ from agent_maintainer.wait.registry import (
     WaitRegistry,
 )
 from agent_maintainer.wait.sweeper import (
-    render_sweep_json,
-    render_sweep_text,
     start_wait_watcher,
     sweep_once,
     watch_wait,
 )
+from agent_maintainer.wait.sweeper_rendering import render_sweep_json, render_sweep_text
 
 NOW = datetime.fromisoformat("2026-07-06T22:00:00+00:00")
 LATER = datetime.fromisoformat("2026-07-06T22:01:00+00:00")

@@ -25,7 +25,7 @@ RESULT_UNKNOWN: Final = "UNKNOWN"
 
 @dataclass(frozen=True)
 class RegisterWait:
-    """Inputs for registering one resumable wait."""
+    """Inputs registering one resumable wait."""
 
     root: Path
     kind: str
@@ -37,6 +37,7 @@ class RegisterWait:
     interval_seconds: int = 20
     timeout_seconds: int = 3600
     resume_instruction: str = ""
+    metadata: dict[str, object] | None = None
     now: datetime | None = None
 
 
@@ -61,28 +62,29 @@ class WaitRecord:
     terminal_result: str = ""
     last_observed_state: dict[str, object] | None = None
     resume_message: str = ""
+    metadata: dict[str, object] | None = None
     schema_version: int = SCHEMA_VERSION
 
     @property
     def path_name(self) -> str:
-        """Return safe registry file name."""
+        """Return safe JSON filename for this wait."""
 
         return f"{self.wait_id}.json"
 
     @property
     def ready(self) -> bool:
-        """Return whether wait has terminal continuation content."""
+        """Return whether the wait has terminal continuation content."""
 
         return self.status == WAIT_STATUS_READY
 
     @property
     def pr_number(self) -> str:
-        """Return GitHub PR number compatibility alias."""
+        """Return compatibility PR number for PR wait records."""
 
         return self.target_id
 
     def as_dict(self) -> dict[str, object]:
-        """Return JSON-safe representation."""
+        """Return stable JSON-safe wait record data."""
 
         payload: dict[str, object] = {
             "schema_version": self.schema_version,
@@ -103,6 +105,7 @@ class WaitRecord:
             "terminal_result": self.terminal_result,
             "resume_instruction": self.resume_instruction,
             "resume_message": self.resume_message,
+            "metadata": self.metadata,
         }
         if self.kind == "github-pr":
             payload["pr_number"] = self.target_id
@@ -146,6 +149,7 @@ class WaitRegistry:
             deadline_at=_deadline(created_at, inputs.timeout_seconds),
             resume_instruction=inputs.resume_instruction
             or f"python -m agent_maintainer wait resume {wait_id}",
+            metadata=_optional_mapping(inputs.metadata),
         )
         _write_record(self.waits_dir, record)
         return record
@@ -157,7 +161,7 @@ class WaitRegistry:
         *,
         now: datetime | None = None,
     ) -> WaitRecord:
-        """Persist last observed non-terminal wait state."""
+        """Persist the last observed non-terminal wait state."""
 
         observed = replace(
             record,
@@ -195,7 +199,7 @@ class WaitRegistry:
         *,
         now: datetime | None = None,
     ) -> WaitRecord:
-        """Mark wait record consumed by continuation."""
+        """Mark wait record consumed by a continuation."""
 
         resumed = replace(record, status=WAIT_STATUS_RESUMED, updated_at=_timestamp(now))
         _write_record(self.waits_dir, resumed)
@@ -214,7 +218,7 @@ class WaitRegistry:
 
 
 def wait_record_from_dict(payload: dict[str, object]) -> WaitRecord:
-    """Build wait record from JSON object data."""
+    """Build a wait record from JSON object data."""
 
     try:
         return WaitRecord(
@@ -236,63 +240,55 @@ def wait_record_from_dict(payload: dict[str, object]) -> WaitRecord:
             terminal_result=str(payload.get("terminal_result", "")),
             resume_instruction=str(payload["resume_instruction"]),
             resume_message=str(payload.get("resume_message", "")),
+            metadata=_optional_mapping(payload.get("metadata")),
         )
     except KeyError as exc:
         raise WaitRegistryError(f"missing wait record field: {exc.args[0]}") from exc
 
 
-def render_wait_record_text(record: WaitRecord) -> str:
-    """Render compact wait registration output."""
-
-    return render_wait_capsule(
-        WaitRepairCapsule(
-            result=RESULT_PENDING,
-            run_id=record.wait_id,
-            details=(
-                f"kind: {record.kind}",
-                f"target: {record.target_id}",
-                f"status: {record.status}",
-                f"resume: {record.resume_instruction}",
-            ),
-        ),
-    )
-
-
-def render_resume_text(record: WaitRecord) -> str:
-    """Render manual resume text for a wait record."""
-
-    if record.status != WAIT_STATUS_READY:
-        return render_wait_capsule(
-            WaitRepairCapsule(
-                result=RESULT_PENDING,
-                run_id=record.wait_id,
-                details=(f"status: {record.status}",),
-                likely_next_action=record.resume_instruction,
-            ),
-        )
-    return "\n\n".join(
-        (
-            record.resume_message,
-            "Continuation:",
-            _continuation_prompt(record),
-        ),
-    )
-
-
 def wait_records(registry: WaitRegistry) -> tuple[WaitRecord, ...]:
-    """Return all registered wait records."""
+    """Return all wait records sorted by update time and id."""
 
     if not registry.waits_dir.exists():
         return ()
-    return tuple(
-        registry.read(path.stem)
-        for path in sorted(registry.waits_dir.glob("*.json"))
-        if path.is_file()
+    records: list[WaitRecord] = []
+    for path in registry.waits_dir.glob("*.json"):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            records.append(wait_record_from_dict(payload))
+    return tuple(sorted(records, key=lambda record: (record.updated_at, record.wait_id)))
+
+
+def render_resume_text(record: WaitRecord) -> str:
+    """Render terminal wait continuation text."""
+
+    if not record.ready:
+        return render_wait_record_text(record)
+    message = record.resume_message or render_wait_record_text(record)
+    return "\n".join((message, "", "Continuation:", _continuation_prompt(record)))
+
+
+def render_wait_record_text(record: WaitRecord) -> str:
+    """Render compact wait record state."""
+
+    result = record.terminal_result or RESULT_PENDING
+    details = (
+        f"kind: {record.kind}",
+        f"target: {record.target_id}",
+        f"status: {record.status}",
+    )
+    return render_wait_capsule(
+        WaitRepairCapsule(
+            result=result,
+            run_id=record.wait_id,
+            details=details,
+            likely_next_action=record.resume_instruction if record.ready else "",
+        ),
     )
 
 
 def wait_record_json(record: WaitRecord) -> str:
-    """Render one wait record as stable JSON."""
+    """Render wait record as stable JSON."""
 
     return json.dumps(record.as_dict(), indent=2, sort_keys=True)
 
@@ -304,55 +300,59 @@ def _continuation_prompt(record: WaitRecord) -> str:
             "Review the PR diff, inspect failures if any, merge only if satisfactory, "
             "then continue the prior roadmap task."
         )
+    if record.kind == "github-run":
+        return (
+            f"GitHub run {record.target_id} reached {record.terminal_result}. "
+            "Inspect failed jobs if any, repair or rerun only as needed, "
+            "then continue the prior task."
+        )
+    if record.kind == "verifier":
+        return (
+            f"Verifier run {record.target_id} reached {record.terminal_result}. "
+            "Inspect failed checks if any, repair the branch, then continue the prior task."
+        )
     return (
         f"Wait {record.wait_id} reached {record.terminal_result}. "
-        "Inspect failures if any, take the appropriate follow-up, then continue the prior task."
+        "Inspect failures if any, take appropriate follow-up, then continue the prior task."
     )
 
 
 def _wait_id(kind: str, target_id: str, created_at: str) -> str:
-    safe_timestamp = created_at.replace("-", "").replace(":", "").replace(".", "").replace("Z", "Z")
+    safe_timestamp = created_at.replace("-", "").replace(":", "").replace(".", "")
     safe_kind = _safe_segment(kind)
     safe_target = _safe_segment(target_id)
     return f"{safe_kind}-{safe_target}-{safe_timestamp}"
 
 
 def _safe_segment(value: str) -> str:
-    return "".join(
-        character if character.isalnum() or character in "-_" else "-" for character in value
-    )
+    safe = "".join(character if character.isalnum() else "-" for character in value)
+    return "-".join(part for part in safe.strip("-").split("-") if part) or "wait"
 
 
 def _timestamp(now: datetime | None = None) -> str:
-    value = now or datetime.now(UTC)
-    return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
+    current = now or datetime.now(UTC)
+    return current.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
 def _deadline(created_at: str, timeout_seconds: int) -> str:
     created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-    return _timestamp(created + timedelta(seconds=timeout_seconds))
-
-
-def _target_id(payload: dict[str, object]) -> str:
-    target_id = payload.get("target_id")
-    if target_id is not None:
-        return str(target_id)
-    pr_number = payload.get("pr_number")
-    if pr_number is not None:
-        return str(pr_number)
-    raise WaitRegistryError("missing wait record field: target_id")
+    deadline = created + timedelta(seconds=timeout_seconds)
+    return deadline.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
 def _write_record(waits_dir: Path, record: WaitRecord) -> None:
     waits_dir.mkdir(parents=True, exist_ok=True)
     path = waits_dir / record.path_name
-    temporary = path.with_suffix(".json.tmp")
-    record_text = json.dumps(record.as_dict(), indent=2, sort_keys=True)
-    temporary.write_text(
-        f"{record_text}\n",
-        encoding="utf-8",
-    )
-    temporary.replace(path)
+    tmp_path = path.with_suffix(".json.tmp")
+    tmp_path.write_text(wait_record_json(record), encoding="utf-8")
+    tmp_path.replace(path)
+
+
+def _target_id(payload: dict[str, object]) -> str:
+    target = payload.get("target_id", payload.get("pr_number"))
+    if target is None:
+        raise WaitRegistryError("missing wait record field: target_id")
+    return str(target)
 
 
 def _required_int(payload: dict[str, object], field: str) -> int:
@@ -372,5 +372,5 @@ def _optional_mapping(value: object) -> dict[str, object] | None:
     if value is None:
         return None
     if not isinstance(value, dict):
-        raise WaitRegistryError("last_observed_state must be an object")
+        raise WaitRegistryError("wait record mapping field must be an object")
     return dict(value)
