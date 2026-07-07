@@ -23,6 +23,7 @@ def test_doctor_passes_minimal_valid_trace(tmp_path: Path) -> None:
 <!-- docsync:evidence.start evidence.demo -->
 Demo behavior.
 <!-- docsync:evidence.end evidence.demo -->
+<!-- docsync:object.end docs.readme.demo -->
 """.lstrip(),
         encoding="utf-8",
     )
@@ -77,6 +78,7 @@ def test_doctor_reports_missing_claim_evidence(tmp_path: Path) -> None:
         """
 <!-- docsync:object docs.readme.demo -->
 # Demo
+<!-- docsync:object.end docs.readme.demo -->
 """.lstrip(),
         encoding="utf-8",
     )
@@ -163,6 +165,7 @@ def test_doctor_reports_title_change(tmp_path: Path) -> None:
         """
 <!-- docsync:object docs.readme.demo -->
 # Current Demo
+<!-- docsync:object.end docs.readme.demo -->
 """.lstrip(),
         encoding="utf-8",
     )

@@ -63,6 +63,23 @@ def test_docsync_standalone_readme_records_product_workflow() -> None:
     assert not missing, missing
 
 
+def test_docsync_roadmap_names_usefulness_tracks() -> None:
+    """DocSync roadmap records the planned usefulness tracks."""
+    text = normalized_text("docs/docsync-roadmap.md")
+
+    expected = (
+        "Authoring UX",
+        "Hybrid claim precision",
+        "Agent review packets",
+        "Attestations",
+        "Diagnostics",
+        "Standalone defaults",
+    )
+    missing = [phrase for phrase in expected if phrase not in text]
+
+    assert not missing, missing
+
+
 def test_important_public_docs_avoid_known_compressed_fragments() -> None:
     """Guard against compressed note fragments found during documentation audit."""
     text = "\n".join(

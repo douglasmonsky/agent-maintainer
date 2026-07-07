@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from docsync import api
+from docsync.commands import object_markers
 from docsync.config import defaults
 from docsync.freshness import (
     build_freshness_report,
@@ -37,7 +38,8 @@ def init_main_from_args(args: argparse.Namespace) -> int:
             return 1
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
-    _ensure_agents_section(repo_root / "AGENTS.md")
+    if args.agents:
+        _ensure_agents_section(repo_root / "AGENTS.md")
     print(f"Created DocSync files under {docsync_root}")
     return 0
 
@@ -99,9 +101,21 @@ def check_main_from_args(args: argparse.Namespace) -> int:
 
 def doctor_main_from_args(args: argparse.Namespace) -> int:
     """Run structural DocSync validation."""
+    repo_root = args.repo_root.resolve()
+    if args.fix:
+        _ensure_starter_dirs(repo_root)
+        repair_result = object_markers.repair_object_end_markers(
+            repo_root,
+            config_path=args.config,
+            trace_path=args.trace,
+            write=True,
+        )
+        if repair_result.insertions:
+            print(f"Inserted {len(repair_result.insertions)} DocSync object end marker(s).")
+        _print_stale_generated_hint(repo_root)
     result = api.doctor_repo(
         api.CheckOptions(
-            repo_root=args.repo_root.resolve(),
+            repo_root=repo_root,
             config_path=args.config,
             trace_path=args.trace,
         )
@@ -158,3 +172,33 @@ def _ensure_agents_section(path: Path) -> None:
         f"{existing.rstrip()}\n{defaults.DOCSYNC_AGENTS_SECTION}",
         encoding="utf-8",
     )
+
+
+def _ensure_starter_dirs(repo_root: Path) -> None:
+    docsync_root = repo_root / ".docsync"
+    attestations_dir = docsync_root / "attestations"
+    out_dir = docsync_root / "out"
+    attestations_dir.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    gitkeep = attestations_dir / ".gitkeep"
+    if not gitkeep.exists():
+        gitkeep.write_text("", encoding="utf-8")
+    gitignore = out_dir / ".gitignore"
+    if not gitignore.exists():
+        gitignore.write_text("*\n!.gitignore\n", encoding="utf-8")
+
+
+def _print_stale_generated_hint(repo_root: Path) -> None:
+    trace_path = repo_root / ".docsync" / "trace.yml"
+    out_dir = repo_root / ".docsync" / "out"
+    if not trace_path.exists() or not out_dir.exists():
+        return
+    trace_mtime = trace_path.stat().st_mtime
+    stale = sorted(
+        path.relative_to(repo_root)
+        for path in out_dir.iterdir()
+        if path.is_file() and path.name != ".gitignore" and path.stat().st_mtime < trace_mtime
+    )
+    if stale:
+        joined = ", ".join(str(path) for path in stale)
+        print(f"DocSync generated output may be stale: {joined}")

@@ -84,7 +84,7 @@ def _document_findings(repo_root: Path, trace: TraceGraph) -> list[Finding]:
                     code="DS000",
                     severity="error",
                     message=f"Document path does not exist: {document.path}",
-                    locations=(_line(trace.path),),
+                    locations=(document.trace_span or _line(trace.path),),
                 )
             )
     return findings
@@ -102,7 +102,7 @@ def _object_findings(trace: TraceGraph) -> list[Finding]:
                         f"Doc object {doc_object.object_id} references missing "
                         f"document {doc_object.document_id}."
                     ),
-                    locations=(_line(trace.path),),
+                    locations=(doc_object.trace_span or _line(trace.path),),
                 )
             )
     return findings
@@ -119,7 +119,7 @@ def _claim_findings(trace: TraceGraph) -> list[Finding]:
                     message=(
                         f"Claim {claim.claim_id} points to missing doc object {claim.object_id}."
                     ),
-                    locations=(_line(trace.path),),
+                    locations=(claim.trace_span or _line(trace.path),),
                     related_claims=(claim.claim_id,),
                 )
             )
@@ -129,7 +129,7 @@ def _claim_findings(trace: TraceGraph) -> list[Finding]:
                     code="DS205",
                     severity="error",
                     message=f"Claim {claim.claim_id} has no evidence.",
-                    locations=(_line(trace.path),),
+                    locations=(claim.trace_span or _line(trace.path),),
                     related_claims=(claim.claim_id,),
                 )
             )
@@ -147,7 +147,7 @@ def _missing_claim_evidence_findings(
             code="DS204",
             severity="error",
             message=f"Claim {claim_id} points to missing evidence {evidence_id}.",
-            locations=(_line(trace.path),),
+            locations=(claim.trace_span or _line(trace.path),),
             related_claims=(claim_id,),
             related_evidence=(evidence_id,),
         )
@@ -165,7 +165,7 @@ def _evidence_findings(trace: TraceGraph) -> list[Finding]:
                     code="DS006",
                     severity="error",
                     message=f"Evidence {evidence.evidence_id} has no anchors.",
-                    locations=(_line(trace.path),),
+                    locations=(evidence.trace_span or _line(trace.path),),
                     related_evidence=(evidence.evidence_id,),
                 )
             )

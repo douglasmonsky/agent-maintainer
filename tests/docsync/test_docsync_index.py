@@ -51,6 +51,7 @@ def _write_repo(tmp_path: Path) -> None:
 <!-- docsync:evidence.start evidence.demo -->
 Demo behavior.
 <!-- docsync:evidence.end evidence.demo -->
+<!-- docsync:object.end docs.readme.demo -->
 """.lstrip(),
         encoding="utf-8",
     )

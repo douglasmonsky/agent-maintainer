@@ -35,6 +35,7 @@ def test_module_help_lists_standalone_command_surface(
         "prompt",
         "repair-object-end-markers",
         "attest",
+        "trace",
     )
 
     with pytest.raises(SystemExit) as exc_info:
@@ -69,6 +70,27 @@ def test_doctor_reports_empty_trace(
     assert "empty or incomplete" in output
 
 
+def test_repo_root_global_option_can_follow_subcommand(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Global repo root option works after a subcommand."""
+    (tmp_path / ".docsync").mkdir()
+    (tmp_path / ".docsync" / "config.yml").write_text(
+        DEFAULT_CONFIG_TEXT,
+        encoding="utf-8",
+    )
+    (tmp_path / ".docsync" / "trace.yml").write_text(
+        "version: 1\ndocuments: {}\nobjects: {}\nclaims: {}\nevidence: {}\n",
+        encoding="utf-8",
+    )
+
+    result = docsync_cli.main(["doctor", "--repo-root", str(tmp_path)])
+
+    assert result == 1
+    assert "empty or incomplete" in capsys.readouterr().out
+
+
 def test_init_writes_docsync_files_and_agents_section(tmp_path: Path) -> None:
     """Init creates DocSync files and repository guidance."""
     result = docsync_cli.main(["--repo-root", str(tmp_path), "init"])
@@ -76,10 +98,16 @@ def test_init_writes_docsync_files_and_agents_section(tmp_path: Path) -> None:
     assert result == 0
     assert (tmp_path / ".docsync" / "config.yml").exists()
     assert (tmp_path / ".docsync" / "trace.yml").exists()
-    assert "## DocSync policy" in (tmp_path / "AGENTS.md").read_text(encoding="utf-8")
+    assert not (tmp_path / "AGENTS.md").exists()
+
+    agents_root = tmp_path / "agents"
+    agents_root.mkdir()
+    agents_result = docsync_cli.main(["--repo-root", str(agents_root), "init", "--agents"])
+    assert agents_result == 0
+    assert "## DocSync policy" in (agents_root / "AGENTS.md").read_text(encoding="utf-8")
     config = load_config(tmp_path)
     assert config.object_end_marker == "docsync:object.end"
-    assert not config.require_object_end_markers
+    assert config.require_object_end_markers
 
 
 def test_init_refuses_existing_files_without_force(
@@ -133,6 +161,14 @@ def test_repair_object_end_markers_dry_run_and_write(
 ) -> None:
     """Repair command inserts explicit object end markers only with --write."""
     _write_repo(tmp_path)
+    readme_path = tmp_path / "README.md"
+    readme_path.write_text(
+        readme_path.read_text(encoding="utf-8").replace(
+            "<!-- docsync:object.end docs.readme.demo -->\n",
+            "",
+        ),
+        encoding="utf-8",
+    )
 
     dry_run = docsync_cli.main(["--repo-root", str(tmp_path), "repair-object-end-markers"])
 
@@ -200,7 +236,10 @@ def _write_repo(tmp_path: Path) -> None:
 <!-- docsync:object docs.readme.demo -->
 # Demo
 
+<!-- docsync:claim claim.demo -->
 Demo claim.
+<!-- docsync:claim.end claim.demo -->
+<!-- docsync:object.end docs.readme.demo -->
 """.lstrip(),
         encoding="utf-8",
     )
@@ -230,6 +269,7 @@ objects:
 claims:
   claim.demo:
     object: docs.readme.demo
+    marker: claim.demo
     text: Demo claim.
     severity: high
     evidence:

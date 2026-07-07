@@ -15,6 +15,10 @@ Keep in-repo work aligned with these standalone-readiness rules:
 5. Runtime dependencies stay minimal and explicit in package metadata.
 6. CLI behavior is documented before it becomes part of the extraction contract.
 
+The product and implementation sequence lives in
+[`docs/docsync-roadmap.md`](docsync-roadmap.md).
+
+<!-- docsync:claim claim.docsync.trace_source_truth -->
 DocSync source truth lives under `.docsync/`. The trace file is human-authored,
 and generated files under `.docsync/out/` are rebuildable artifacts that should
 not be committed.
@@ -30,7 +34,9 @@ Markdown object regions use explicit start and end markers when
 
 Run `python -m docsync repair-object-end-markers --write` to insert missing
 object end markers when introducing DocSync to legacy docs.
+<!-- docsync:claim.end claim.docsync.trace_source_truth -->
 
+<!-- docsync:claim claim.docsync.command_surface -->
 DocSync currently exposes these user-facing commands:
 
 - `docsync init`
@@ -41,6 +47,12 @@ DocSync currently exposes these user-facing commands:
 - `docsync prompt`
 - `docsync repair-object-end-markers`
 - `docsync attest`
+- `docsync trace ...`
+
+`docsync init --agents` opts into AGENTS.md policy changes, `docsync doctor
+--fix` applies safe starter repairs, and `docsync trace ...` provides grouped
+authoring commands for documents, objects, evidence, claims, and trace listing.
+<!-- docsync:claim.end claim.docsync.command_surface -->
 
 Do not extract DocSync only because the directory is separable. Extract it when
 the product contract needs independent versioning, external issue tracking,

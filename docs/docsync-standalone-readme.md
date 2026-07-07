@@ -10,6 +10,10 @@ DocSync is intentionally file-based. The source truth is a human-authored
 `.docsync/trace.yml`; generated reports live under `.docsync/out/` and can be
 rebuilt at any time.
 
+The in-repository product roadmap is tracked in
+[`docs/docsync-roadmap.md`](docsync-roadmap.md) until DocSync is ready to extract
+as an independently versioned package.
+
 ## Core Workflow
 
 1. Mark stable documentation objects with `<!-- docsync:object ... -->`.

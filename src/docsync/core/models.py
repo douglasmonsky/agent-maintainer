@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
@@ -84,6 +84,7 @@ class TraceDocument:
     path: Path
     title: str | None
     audience: str | None
+    trace_span: LineSpan | None = None
 
     def to_json(self) -> dict[str, Any]:
         """Return JSON-ready trace document metadata."""
@@ -106,6 +107,7 @@ class TraceObject:
     marker: str
     heading_level: int | None = None
     heading_text: str | None = None
+    trace_span: LineSpan | None = None
 
 
 @dataclass(frozen=True)
@@ -118,6 +120,9 @@ class Claim:
     severity: Severity
     evidence_ids: tuple[str, ...]
     acceptable_attestation_reasons: tuple[str, ...] = ()
+    content_hash: str = ""
+    marker: str | None = None
+    trace_span: LineSpan | None = None
 
 
 @dataclass(frozen=True)
@@ -136,6 +141,7 @@ class TraceEvidence:
     evidence_type: str
     description: str | None
     anchors: tuple[TraceEvidenceAnchor, ...]
+    trace_span: LineSpan | None = None
 
 
 @dataclass(frozen=True)
@@ -218,6 +224,7 @@ class DocSyncIndex:
     trace: TraceGraph
     doc_objects: dict[str, DocObject]
     evidence_anchors: dict[str, tuple[EvidenceAnchor, ...]]
+    claim_spans: dict[str, LineSpan] = field(default_factory=dict)
     findings: tuple[Finding, ...] = ()
 
     @property
@@ -249,6 +256,9 @@ class DocSyncIndex:
                     "text": value.text,
                     "severity": value.severity,
                     "evidence": list(value.evidence_ids),
+                    "content_hash": value.content_hash,
+                    "marker": value.marker,
+                    "span": self.claim_spans[key].to_json() if key in self.claim_spans else None,
                 }
                 for key, value in sorted(self.trace.claims.items())
             },
@@ -267,6 +277,13 @@ class Attestation:
     reason: str
     evidence_fingerprints: dict[str, str]
     path: Path
+    reviewer: str | None = None
+    reviewed_at: str | None = None
+    base_ref: str | None = None
+    head_ref: str | None = None
+    expires_at: str | None = None
+    statement: str | None = None
+    evidence_anchor_fingerprints: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
     def to_json(self) -> dict[str, Any]:
         """Return JSON-ready attestation metadata."""
@@ -277,6 +294,15 @@ class Attestation:
             "evidence": list(self.evidence_ids),
             "reason": self.reason,
             "evidence_fingerprints": dict(sorted(self.evidence_fingerprints.items())),
+            "evidence_anchor_fingerprints": {
+                key: list(value) for key, value in sorted(self.evidence_anchor_fingerprints.items())
+            },
+            "reviewer": self.reviewer,
+            "reviewed_at": self.reviewed_at,
+            "base": self.base_ref,
+            "head": self.head_ref,
+            "expires_at": self.expires_at,
+            "statement": self.statement,
             "path": self.path.as_posix(),
         }
 
