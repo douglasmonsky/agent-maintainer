@@ -5,8 +5,7 @@ from __future__ import annotations
 import argparse
 
 from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
-from agent_maintainer.wait import cli_background
-from agent_maintainer.wait.cli_parsers import JSON_FORMAT, parse_args
+from agent_maintainer.wait import cli_background, cli_parsers, cli_register
 from agent_maintainer.wait.codex_rewake import (
     CodexRewakeBackend,
     codex_rewake_resumed,
@@ -28,13 +27,7 @@ from agent_maintainer.wait.github_pr import (
     render_github_pr_wait_text,
     wait_for_github_pr_checks,
 )
-from agent_maintainer.wait.registry import (
-    RegisterGitHubPrWait,
-    RegisterGitHubRunWait,
-    RegisterVerifierWait,
-    WaitRegistry,
-    wait_record_json,
-)
+from agent_maintainer.wait.registry import WaitRegistry, wait_record_json
 from agent_maintainer.wait.sweeper import (
     SweepSummary,
     sweep_once,
@@ -50,6 +43,8 @@ from agent_maintainer.wait.verifier import (
     wait_for_verifier_run,
 )
 
+parse_args = cli_parsers.parse_args
+
 
 def main(argv: list[str] | None = None) -> int:
     """Run quiet wait subcommands."""
@@ -59,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
         "github-run": _github_run,
         "github-pr": _github_pr,
         "verifier": _verifier_run,
-        "register": _register,
+        "register": cli_register.register_wait,
         "resume": _resume,
         "sweep": _sweep,
         "heartbeat": _heartbeat,
@@ -76,7 +71,7 @@ def _github_run(args: argparse.Namespace) -> int:
         print(cli_background.render_background(args.format, background))
         return 0
     result = _wait_github_run(args)
-    if args.format == JSON_FORMAT:
+    if args.format == cli_parsers.JSON_FORMAT:
         print(render_github_wait_json(result))
     else:
         print(render_github_wait_text(result))
@@ -89,7 +84,7 @@ def _github_pr(args: argparse.Namespace) -> int:
         print(cli_background.render_background(args.format, background))
         return 0
     result = _wait_github_pr(args)
-    if args.format == JSON_FORMAT:
+    if args.format == cli_parsers.JSON_FORMAT:
         print(render_github_pr_wait_json(result))
     else:
         print(render_github_pr_wait_text(result))
@@ -102,99 +97,17 @@ def _verifier_run(args: argparse.Namespace) -> int:
         print(cli_background.render_background(args.format, background))
         return 0
     result = _wait_verifier(args)
-    if args.format == JSON_FORMAT:
+    if args.format == cli_parsers.JSON_FORMAT:
         print(render_verifier_wait_json(result))
     else:
         print(render_verifier_wait_text(result))
     return result.exit_code
 
 
-def _register(args: argparse.Namespace) -> int:
-    if args.wait_kind == "github-pr":
-        return _register_github_pr(args)
-    if args.wait_kind == "github-run":
-        return _register_github_run(args)
-    if args.wait_kind == "verifier":
-        return _register_verifier(args)
-    return 2
-
-
-def _register_github_pr(args: argparse.Namespace) -> int:
-    registry = WaitRegistry(args.root)
-    record = registry.register_github_pr(
-        RegisterGitHubPrWait(
-            root=args.root,
-            pr_number=args.pr_number,
-            repo=args.repo,
-            platform=args.platform,
-            branch=args.branch,
-            head_sha=args.head_sha,
-            interval_seconds=args.interval,
-            timeout_seconds=args.timeout_seconds,
-        ),
-    )
-    registration = cli_background.maybe_start_registered_watcher(
-        args.root,
-        record,
-        args.start_watcher,
-    )
-    cli_background.emit_registered(record, background=args.start_watcher)
-    print(cli_background.render_registered(args.format, record, registration))
-    return 0
-
-
-def _register_github_run(args: argparse.Namespace) -> int:
-    registry = WaitRegistry(args.root)
-    record = registry.register_github_run(
-        RegisterGitHubRunWait(
-            root=args.root,
-            run_id=args.run_id,
-            repo=args.repo,
-            platform=args.platform,
-            branch=args.branch,
-            head_sha=args.head_sha,
-            interval_seconds=args.interval,
-            timeout_seconds=args.timeout_seconds,
-        ),
-    )
-    registration = cli_background.maybe_start_registered_watcher(
-        args.root,
-        record,
-        args.start_watcher,
-    )
-    cli_background.emit_registered(record, background=args.start_watcher)
-    print(cli_background.render_registered(args.format, record, registration))
-    return 0
-
-
-def _register_verifier(args: argparse.Namespace) -> int:
-    registry = WaitRegistry(args.root)
-    record = registry.register_verifier(
-        RegisterVerifierWait(
-            root=args.root,
-            run_id=args.run_id,
-            platform=args.platform,
-            branch=args.branch,
-            head_sha=args.head_sha,
-            log_dir=args.log_dir,
-            interval_seconds=args.interval,
-            timeout_seconds=args.timeout_seconds,
-        ),
-    )
-    registration = cli_background.maybe_start_registered_watcher(
-        args.root,
-        record,
-        args.start_watcher,
-    )
-    cli_background.emit_registered(record, background=args.start_watcher)
-    print(cli_background.render_registered(args.format, record, registration))
-    return 0
-
-
 def _resume(args: argparse.Namespace) -> int:
     registry = WaitRegistry(args.root)
     record = registry.read(args.wait_id)
-    if args.format == JSON_FORMAT:
+    if args.format == cli_parsers.JSON_FORMAT:
         print(wait_record_json(record))
     else:
         print(cli_background.render_resume(record))
@@ -210,7 +123,7 @@ def _sweep(args: argparse.Namespace) -> int:
         return 0
     record = watch_wait(registry, args.watch)
     cli_background.emit_ready(record)
-    if args.format == JSON_FORMAT:
+    if args.format == cli_parsers.JSON_FORMAT:
         print(wait_record_json(record))
         return 0
     rewake = CodexRewakeBackend(registry).resume_if_available(record)
@@ -304,7 +217,7 @@ def _wait_verifier(args: argparse.Namespace) -> VerifierWaitResult:
 
 
 def _render_sweep(output_format: str, summary: SweepSummary) -> str:
-    if output_format == JSON_FORMAT:
+    if output_format == cli_parsers.JSON_FORMAT:
         return render_sweep_json(summary)
     return render_sweep_text(summary)
 
