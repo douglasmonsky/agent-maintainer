@@ -62,31 +62,13 @@ def render_background_registration_text(
 
 
 def heartbeat_prompt(record: WaitRecord) -> str:
-    """Return Codex heartbeat prompt for one durable wait."""
+    """Return Codex heartbeat prompt for a repo-scoped wait sweep."""
 
-    if record.kind == "github-pr":
-        return (
-            f"Sweep wait {record.wait_id}. If it is still pending, stay silent and "
-            "let the next heartbeat continue polling. If terminal, render the wait "
-            "resume capsule, inspect failures if any, merge only if satisfactory, "
-            "then continue the prior roadmap task."
-        )
-    if record.kind == "github-run":
-        return (
-            f"Sweep wait {record.wait_id}. If it is still pending, stay silent and "
-            "let the next heartbeat continue polling. If terminal, render the wait "
-            "resume capsule, inspect failed jobs if any, then continue the prior task."
-        )
-    if record.kind == "verifier":
-        return (
-            f"Sweep wait {record.wait_id}. If it is still pending, stay silent and "
-            "let the next heartbeat continue polling. If terminal, render the wait "
-            "resume capsule, inspect failed checks if any, then continue the prior task."
-        )
     return (
-        f"Sweep wait {record.wait_id}. If it is still pending, stay silent and let "
-        "the next heartbeat continue polling. If terminal, render the wait resume "
-        "capsule and continue the prior task."
+        "Run the repo wait heartbeat sweep command from this request. "
+        "If it prints nothing, stay silent and let the next heartbeat continue "
+        "polling. If it prints one or more terminal resume capsules, inspect "
+        "failures if any, merge only if satisfactory, then continue the prior task."
     )
 
 

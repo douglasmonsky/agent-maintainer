@@ -196,6 +196,8 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     request = json.loads(heartbeat_request_json(record, root=tmp_path))
     assert request["scope"] == "repo"
     assert request["sweep_command"].endswith("wait heartbeat --root " + str(tmp_path))
+    assert "repo wait heartbeat sweep command" in request["prompt"]
+    assert record.wait_id not in request["prompt"]
 
 
 def test_background_registration_text_reflects_ready_result(tmp_path: Path) -> None:
