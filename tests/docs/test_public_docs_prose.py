@@ -46,6 +46,23 @@ def test_docsync_extraction_doc_preserves_boundary_wording() -> None:
     assert not missing, missing
 
 
+def test_docsync_standalone_readme_records_product_workflow() -> None:
+    """DocSync standalone README draft keeps product promise and command flow."""
+    text = normalized_text("docs/docsync-standalone-readme.md")
+
+    expected = (
+        "DocSync keeps documentation claims tied to source evidence",
+        "The source truth is a human-authored `.docsync/trace.yml`",
+        "Run `docsync doctor` to validate structure.",
+        "Run `docsync check --base origin/main` in review",
+        "`docsync prompt` writes a compact review packet for agents.",
+        "Agent Maintainer should remain one integration consumer",
+    )
+    missing = [phrase for phrase in expected if phrase not in text]
+
+    assert not missing, missing
+
+
 def test_important_public_docs_avoid_known_compressed_fragments() -> None:
     """Guard against compressed note fragments found during documentation audit."""
     text = "\n".join(

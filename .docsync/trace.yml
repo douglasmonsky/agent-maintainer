@@ -4,6 +4,10 @@ documents:
     path: docs/docsync-extraction.md
     title: DocSync Extraction Notes
     audience: maintainers
+  docs.docsync_standalone_readme:
+    path: docs/docsync-standalone-readme.md
+    title: DocSync
+    audience: public
   docs.readme:
     path: README.md
     title: Agent Maintainer
@@ -174,6 +178,14 @@ objects:
     heading:
       level: 1
       text: DocSync Extraction Notes
+  docs.docsync_standalone_readme.overview:
+    document: docs.docsync_standalone_readme
+    kind: heading_section
+    path: docs/docsync-standalone-readme.md
+    marker: docs.docsync_standalone_readme.overview
+    heading:
+      level: 1
+      text: DocSync
   docs.readme.overview:
     document: docs.readme
     kind: heading_section
