@@ -168,7 +168,7 @@ def _load_payload(
     trace_path: Path | None,
 ) -> tuple[Path, dict[str, Any]]:
     resolved_root = repo_root.resolve()
-    resolved_trace = trace_path if trace_path is not None else Path(".docsync/trace.yml")
+    resolved_trace = Path(".docsync/trace.yml") if trace_path is None else trace_path
     if not resolved_trace.is_absolute():
         resolved_trace = resolved_root / resolved_trace
     try:
@@ -190,8 +190,9 @@ def _section(payload: dict[str, Any], section: str) -> dict[str, Any]:
 
 
 def _reject_existing(section: dict[str, Any], item_id: str, force: bool) -> None:
-    if item_id in section and not force:
-        raise TraceEditError(f"DocSync trace entry already exists: {item_id}")
+    if force or item_id not in section:
+        return
+    raise TraceEditError(f"DocSync trace entry already exists: {item_id}")
 
 
 def _write_payload(path: Path, payload: dict[str, Any]) -> None:
@@ -233,9 +234,10 @@ def _append_evidence_region(path: Path, evidence_id: str) -> None:
     if start in path.read_text(encoding="utf-8"):
         return
     content = path.read_text(encoding="utf-8")
-    suffix = f"\n{start}\n<!-- docsync:evidence.end {evidence_id} -->\n"
+    end = f"<!-- docsync:evidence.end {evidence_id} -->"
+    suffix = f"\n{start}\n{end}\n"
     path.write_text(f"{content.rstrip()}{suffix}", encoding="utf-8")
 
 
 def _joined_lines(lines: list[str]) -> str:
-    return f"{chr(10).join(lines)}\n"
+    return "{}\n".format("\n".join(lines))

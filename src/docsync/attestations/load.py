@@ -198,6 +198,15 @@ def _evidence_fingerprint_findings(
     current_anchors = _current_anchor_fingerprints(index, evidence_id)
     if current is None:
         return []
+    return _current_fingerprint_findings(record, evidence_id, current, current_anchors)
+
+
+def _current_fingerprint_findings(
+    record: Attestation,
+    evidence_id: str,
+    current: str,
+    current_anchors: tuple[str, ...],
+) -> list[Finding]:
     if record.evidence_fingerprints.get(evidence_id) == current:
         if record.evidence_anchor_fingerprints.get(evidence_id) == current_anchors:
             return []

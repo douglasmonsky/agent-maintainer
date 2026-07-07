@@ -4,7 +4,7 @@ kind = "migration"
 status = "active"
 base_ref = "origin/main"
 expires = 2026-07-21
-allowed_paths = ["src/docsync/**", "tests/docsync/**", "tests/docs/**", "docs/docsync*.md", "examples/docsync/**", ".docsync/trace.yml", ".agent-maintainer/change-plans/**", "pyproject.toml"]
+allowed_paths = ["src/docsync/**", "tests/docsync/**", "tests/docs/**", "docs/docsync*.md", "examples/docsync/**", ".docsync/trace.yml", ".agent-maintainer/change-plans/**", "pyproject.toml", "docs/architecture/decisions/**", "src/archguard/decision_notes.py", "tests/archguard/test_decision_notes.py"]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 40
 max_changed_lines = 4000
@@ -33,7 +33,8 @@ updates to fail while the product contract is being documented.
 
 Allowed changes are limited to DocSync package code, DocSync tests, DocSync docs,
 DocSync examples, DocSync trace metadata, package metadata required for the
-DocSync command surface, and this change-plan directory.
+DocSync command surface, this change-plan directory, and architecture
+decision-note updates strictly required by DocSync Tach domain contract changes.
 
 ## What must not change
 

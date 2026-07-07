@@ -24,6 +24,7 @@ depends_on = [
 [[modules]]
 path = "attestations.create"
 depends_on = [
+  "core.fingerprints",
   "indexer",
 ]
 
@@ -31,6 +32,7 @@ depends_on = [
 path = "attestations.load"
 depends_on = [
   "config.load",
+  "core.fingerprints",
   "core.models",
 ]
 
@@ -38,6 +40,7 @@ depends_on = [
 path = "checks.claims"
 depends_on = [
   "attestations.load",
+  "core.fingerprints",
   "core.models",
 ]
 
@@ -63,14 +66,16 @@ depends_on = [
 [[modules]]
 path = "cli"
 depends_on = [
-    "commands.core",
-    "commands.object_markers",
+  "commands.core",
+  "commands.object_markers",
+  "commands.trace",
 ]
 
 [[modules]]
 path = "commands.core"
 depends_on = [
   "api",
+  "commands.object_markers",
   "config.defaults",
   "freshness",
   "reports.human",
@@ -82,10 +87,16 @@ depends_on = [
 [[modules]]
 path = "commands.object_markers"
 depends_on = [
-    "config.load",
-    "markdown.object_regions",
-    "markdown.parser",
-    "trace.load",
+  "config.load",
+  "markdown.object_regions",
+  "markdown.parser",
+  "trace.load",
+]
+
+[[modules]]
+path = "commands.trace"
+depends_on = [
+  "trace.edit",
 ]
 
 [[modules]]
@@ -177,5 +188,12 @@ depends_on = [
 path = "trace.load"
 depends_on = [
   "config.load",
+  "core.fingerprints",
   "core.models",
+]
+
+[[modules]]
+path = "trace.edit"
+depends_on = [
+  "config.load",
 ]

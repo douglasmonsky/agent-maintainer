@@ -67,8 +67,13 @@ def _git_diff(repo_root: Path, base_ref: str) -> str:
         )
         if completed.returncode == 0:
             return completed.stdout
-        errors.append(f"{candidate}: {completed.stderr.strip() or 'git diff failed'}")
+        errors.append(_git_error(candidate, completed.stderr))
     raise GitDiffError("; ".join(errors) or "git diff failed")
+
+
+def _git_error(candidate: str, stderr: str) -> str:
+    message = stderr.strip() or "git diff failed"
+    return f"{candidate}: {message}"
 
 
 def _base_ref_candidates(repo_root: Path, base_ref: str) -> tuple[str, ...]:
@@ -86,7 +91,7 @@ def _base_ref_candidates(repo_root: Path, base_ref: str) -> tuple[str, ...]:
 
 
 def _git_output(repo_root: Path, args: tuple[str, ...]) -> str:
-    completed = subprocess.run(  # nosec B603
+    completed = subprocess.run(  # nosec B603, B607
         ["git", *args],
         cwd=repo_root,
         check=False,
