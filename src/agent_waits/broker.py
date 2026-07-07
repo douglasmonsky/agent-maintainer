@@ -48,7 +48,7 @@ def render_background_registration_text(
     record = registration.record
     return render_wait_capsule(
         WaitRepairCapsule(
-            result="PENDING",
+            result=record.terminal_result if record.ready else "PENDING",
             run_id=record.wait_id,
             details=(
                 _wait_detail(record),
@@ -61,32 +61,14 @@ def render_background_registration_text(
     )
 
 
-def heartbeat_prompt(record: WaitRecord) -> str:
-    """Return Codex heartbeat prompt for one durable wait."""
+def heartbeat_prompt(_record: WaitRecord) -> str:
+    """Return Codex heartbeat prompt for a repo-scoped wait sweep."""
 
-    if record.kind == "github-pr":
-        return (
-            f"Sweep wait {record.wait_id}. If it is still pending, stay silent and "
-            "let the next heartbeat continue polling. If terminal, render the wait "
-            "resume capsule, inspect failures if any, merge only if satisfactory, "
-            "then continue the prior roadmap task."
-        )
-    if record.kind == "github-run":
-        return (
-            f"Sweep wait {record.wait_id}. If it is still pending, stay silent and "
-            "let the next heartbeat continue polling. If terminal, render the wait "
-            "resume capsule, inspect failed jobs if any, then continue the prior task."
-        )
-    if record.kind == "verifier":
-        return (
-            f"Sweep wait {record.wait_id}. If it is still pending, stay silent and "
-            "let the next heartbeat continue polling. If terminal, render the wait "
-            "resume capsule, inspect failed checks if any, then continue the prior task."
-        )
     return (
-        f"Sweep wait {record.wait_id}. If it is still pending, stay silent and let "
-        "the next heartbeat continue polling. If terminal, render the wait resume "
-        "capsule and continue the prior task."
+        "Run the repo wait heartbeat sweep command from this request. "
+        "If it prints nothing, stay silent and let the next heartbeat continue "
+        "polling. If it prints one or more terminal resume capsules, inspect "
+        "failures if any, merge only if satisfactory, then continue the prior task."
     )
 
 
@@ -98,7 +80,7 @@ def heartbeat_request(
     """Return machine-readable Codex heartbeat creation request."""
 
     root_text = str(root)
-    sweep_command = f"python -m agent_maintainer wait sweep --watch {record.wait_id}"
+    sweep_command = "python -m agent_maintainer wait heartbeat"
     resume_command = record.resume_instruction
     if root_text:
         sweep_command = f"{sweep_command} --root {root_text}"
@@ -107,6 +89,7 @@ def heartbeat_request(
         "type": HEARTBEAT_REQUEST_TYPE,
         "wait_id": record.wait_id,
         "wait_kind": record.kind,
+        "scope": "repo",
         "target_id": record.target_id,
         "repo": record.repo,
         "root": root_text,

@@ -95,11 +95,14 @@ index, configured profile, base, or compare state changed, the hook starts fresh
 verification.
 
 A Bash `gh pr create` `PostToolUse` hook detects created PR URLs before review
-or merge. Claude Code uses async rewake for that handoff. Codex registers a
+or merge. Claude Code uses async rewake handoff. Codex registers a
 durable background wait by default, starts a silent watcher, and emits one
-compact manual-resume plus heartbeat prompt. Direct Codex `wait github-pr`
-commands also convert to background waits unless
-`AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1` is set.
+compact manual-resume plus repo-scoped heartbeat prompt. Direct Codex
+`wait github-pr`, `wait github-run`, and `wait verifier` commands also convert
+to background waits unless `AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1` is set.
+The heartbeat prompt should run `python -m agent_maintainer wait heartbeat --root <repo>`,
+stay silent while all waits are pending, and print each terminal resume capsule
+once.
 
 Repo-local wrappers use the checked-out source tree:
 

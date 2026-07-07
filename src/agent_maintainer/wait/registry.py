@@ -21,31 +21,34 @@ from agent_maintainer.wait.github_pr import (
 )
 from agent_maintainer.wait.verifier import VerifierWaitResult, render_verifier_wait_text
 from agent_maintainer.wait.verifier_manifest import VerifierManifest
+from agent_waits import constants as wait_constants
 from agent_waits import registry as wait_registry
-from agent_waits.registry import RegisterWait, WaitRecord
-from agent_waits.registry import WaitRegistry as BaseWaitRegistry
+from agent_waits import rendering as wait_rendering
 
 WAIT_KIND_GITHUB_PR: Final = "github-pr"
 WAIT_KIND_GITHUB_RUN: Final = "github-run"
 WAIT_KIND_VERIFIER: Final = "verifier"
 VERIFIER_LOG_DIR_METADATA: Final = "log_dir"
 
-RESULT_ERROR = wait_registry.RESULT_ERROR
-RESULT_FAIL = wait_registry.RESULT_FAIL
-RESULT_PASS = wait_registry.RESULT_PASS
-RESULT_PENDING = wait_registry.RESULT_PENDING
-RESULT_TIMEOUT = wait_registry.RESULT_TIMEOUT
-RESULT_UNKNOWN = wait_registry.RESULT_UNKNOWN
-SCHEMA_VERSION = wait_registry.SCHEMA_VERSION
-WAIT_STATUS_PENDING = wait_registry.WAIT_STATUS_PENDING
-WAIT_STATUS_READY = wait_registry.WAIT_STATUS_READY
-WAIT_STATUS_RESUMED = wait_registry.WAIT_STATUS_RESUMED
-WAITS_DIR = wait_registry.WAITS_DIR
+RESULT_ERROR = wait_constants.RESULT_ERROR
+RESULT_FAIL = wait_constants.RESULT_FAIL
+RESULT_PASS = wait_constants.RESULT_PASS
+RESULT_PENDING = wait_constants.RESULT_PENDING
+RESULT_TIMEOUT = wait_constants.RESULT_TIMEOUT
+RESULT_UNKNOWN: Final = "UNKNOWN"
+SCHEMA_VERSION: Final = 1
+WAIT_STATUS_PENDING = wait_constants.WAIT_STATUS_PENDING
+WAIT_STATUS_READY = wait_constants.WAIT_STATUS_READY
+WAIT_STATUS_RESUMED = wait_constants.WAIT_STATUS_RESUMED
+WAITS_DIR = wait_constants.WAITS_DIR
 WaitRegistryError = wait_registry.WaitRegistryError
-render_resume_text = wait_registry.render_resume_text
-render_wait_record_text = wait_registry.render_wait_record_text
+RegisterWait = wait_registry.RegisterWait
+WaitRecord = wait_registry.WaitRecord
+BaseWaitRegistry = wait_registry.WaitRegistry
+render_resume_text = wait_rendering.render_resume_text
+render_wait_record_text = wait_rendering.render_wait_record_text
 wait_record_from_dict = wait_registry.wait_record_from_dict
-wait_record_json = wait_registry.wait_record_json
+wait_record_json = wait_rendering.wait_record_json
 wait_records = wait_registry.wait_records
 
 

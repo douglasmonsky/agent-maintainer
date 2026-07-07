@@ -6,10 +6,11 @@ depends_on = []
 [[modules]]
 path = "cli"
 depends_on = [
-    "cli_background",
-    "cli_parsers",
-    "codex_rewake",
-    "github",
+  "cli_background",
+  "cli_parsers",
+  "cli_register",
+  "codex_rewake",
+  "github",
     "github_pr",
     "registry",
     "sweeper",
@@ -29,6 +30,14 @@ depends_on = [
 ]
 
 [[modules]]
+path = "cli_register"
+depends_on = [
+  "cli_background",
+  "git_context",
+  "registry",
+]
+
+[[modules]]
 path = "cli_parsers"
 depends_on = [
   "verifier",
@@ -45,6 +54,10 @@ path = "github_pr"
 depends_on = [
   "//agent_waits.models",
 ]
+
+[[modules]]
+path = "git_context"
+depends_on = []
 
 [[modules]]
 path = "broker"
@@ -86,6 +99,8 @@ depends_on = [
   "github_pr",
   "verifier",
   "verifier_manifest",
+  "//agent_waits.constants",
+  "//agent_waits.rendering",
   "//agent_waits.registry",
 ]
 

@@ -6,21 +6,9 @@ import json
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Final
 
-from agent_waits.models import WaitRepairCapsule, render_wait_capsule
-
-SCHEMA_VERSION: Final = 1
-WAITS_DIR: Final = ".verify-logs/waits"
-WAIT_STATUS_PENDING: Final = "pending"
-WAIT_STATUS_READY: Final = "ready_for_manual_resume"
-WAIT_STATUS_RESUMED: Final = "resumed"
-RESULT_PENDING: Final = "PENDING"
-RESULT_PASS: Final = "PASS"
-RESULT_FAIL: Final = "FAIL"
-RESULT_TIMEOUT: Final = "TIMEOUT"
-RESULT_ERROR: Final = "ERROR"
-RESULT_UNKNOWN: Final = "UNKNOWN"
+from agent_waits import constants as wait_constants
+from agent_waits import heartbeat as wait_heartbeat
 
 
 @dataclass(frozen=True)
@@ -63,7 +51,7 @@ class WaitRecord:
     last_observed_state: dict[str, object] | None = None
     resume_message: str = ""
     metadata: dict[str, object] | None = None
-    schema_version: int = SCHEMA_VERSION
+    schema_version: int = 1
 
     @property
     def path_name(self) -> str:
@@ -75,7 +63,7 @@ class WaitRecord:
     def ready(self) -> bool:
         """Return whether the wait has terminal continuation content."""
 
-        return self.status == WAIT_STATUS_READY
+        return self.status == wait_constants.WAIT_STATUS_READY
 
     @property
     def pr_number(self) -> str:
@@ -121,22 +109,36 @@ class WaitRegistry:
 
     def __init__(self, root: Path) -> None:
         self.root = root
-
-    @property
-    def waits_dir(self) -> Path:
-        """Return directory storing wait records."""
-
-        return self.root / WAITS_DIR
+        self.waits_dir = root / wait_constants.WAITS_DIR
 
     def register(self, inputs: RegisterWait) -> WaitRecord:
         """Create and persist one pending wait."""
 
+        existing = max(
+            (
+                record
+                for record in wait_records(self)
+                if _same_identity(
+                    record,
+                    kind=inputs.kind,
+                    target_id=inputs.target_id,
+                    repo=inputs.repo,
+                    head_sha=inputs.head_sha,
+                )
+                and record.status
+                in {wait_constants.WAIT_STATUS_PENDING, wait_constants.WAIT_STATUS_READY}
+            ),
+            key=lambda record: record.created_at,
+            default=None,
+        )
+        if existing is not None:
+            return existing
         created_at = _timestamp(inputs.now)
         wait_id = _wait_id(inputs.kind, inputs.target_id, created_at)
         record = WaitRecord(
             wait_id=wait_id,
             kind=inputs.kind,
-            status=WAIT_STATUS_PENDING,
+            status=wait_constants.WAIT_STATUS_PENDING,
             target_id=inputs.target_id,
             repo=inputs.repo,
             platform=inputs.platform,
@@ -149,7 +151,9 @@ class WaitRegistry:
             deadline_at=_deadline(created_at, inputs.timeout_seconds),
             resume_instruction=inputs.resume_instruction
             or f"python -m agent_maintainer wait resume {wait_id}",
-            metadata=_optional_mapping(inputs.metadata),
+            metadata=wait_heartbeat.registration_metadata(
+                _optional_mapping(inputs.metadata),
+            ),
         )
         _write_record(self.waits_dir, record)
         return record
@@ -184,7 +188,7 @@ class WaitRegistry:
 
         completed = replace(
             record,
-            status=WAIT_STATUS_READY,
+            status=wait_constants.WAIT_STATUS_READY,
             updated_at=_timestamp(now),
             terminal_result=terminal_result,
             last_observed_state=state_data,
@@ -201,7 +205,9 @@ class WaitRegistry:
     ) -> WaitRecord:
         """Mark wait record consumed by a continuation."""
 
-        resumed = replace(record, status=WAIT_STATUS_RESUMED, updated_at=_timestamp(now))
+        resumed = replace(
+            record, status=wait_constants.WAIT_STATUS_RESUMED, updated_at=_timestamp(now)
+        )
         _write_record(self.waits_dir, resumed)
         return resumed
 
@@ -215,6 +221,25 @@ class WaitRegistry:
         if not isinstance(payload, dict):
             raise WaitRegistryError(f"wait record is not an object: {wait_id}")
         return wait_record_from_dict(payload)
+
+    def claim_ready_for_notification(
+        self,
+        *,
+        now: datetime | None = None,
+    ) -> tuple[WaitRecord, ...]:
+        """Claim ready repo-heartbeat records that have not notified yet."""
+
+        claimed: list[WaitRecord] = []
+        timestamp = _timestamp(now)
+        for record in wait_records(self):
+            if not _repo_heartbeat_ready(record):
+                continue
+            metadata = dict(record.metadata or {})
+            metadata[wait_heartbeat.HEARTBEAT_NOTIFIED_AT_METADATA] = timestamp
+            notified = replace(record, updated_at=timestamp, metadata=metadata)
+            _write_record(self.waits_dir, notified)
+            claimed.append(notified)
+        return tuple(claimed)
 
 
 def wait_record_from_dict(payload: dict[str, object]) -> WaitRecord:
@@ -259,61 +284,23 @@ def wait_records(registry: WaitRegistry) -> tuple[WaitRecord, ...]:
     return tuple(sorted(records, key=lambda record: (record.updated_at, record.wait_id)))
 
 
-def render_resume_text(record: WaitRecord) -> str:
-    """Render terminal wait continuation text."""
-
-    if not record.ready:
-        return render_wait_record_text(record)
-    message = record.resume_message or render_wait_record_text(record)
-    return "\n".join((message, "", "Continuation:", _continuation_prompt(record)))
+def _repo_heartbeat_ready(record: WaitRecord) -> bool:
+    return record.ready and wait_heartbeat.repo_heartbeat_ready(record.metadata)
 
 
-def render_wait_record_text(record: WaitRecord) -> str:
-    """Render compact wait record state."""
-
-    result = record.terminal_result or RESULT_PENDING
-    details = (
-        f"kind: {record.kind}",
-        f"target: {record.target_id}",
-        f"status: {record.status}",
-    )
-    return render_wait_capsule(
-        WaitRepairCapsule(
-            result=result,
-            run_id=record.wait_id,
-            details=details,
-            likely_next_action=record.resume_instruction if record.ready else "",
-        ),
-    )
-
-
-def wait_record_json(record: WaitRecord) -> str:
-    """Render wait record as stable JSON."""
-
-    return json.dumps(record.as_dict(), indent=2, sort_keys=True)
-
-
-def _continuation_prompt(record: WaitRecord) -> str:
-    if record.kind == "github-pr":
-        return (
-            f"PR checks reached {record.terminal_result} for PR #{record.target_id}. "
-            "Review the PR diff, inspect failures if any, merge only if satisfactory, "
-            "then continue the prior roadmap task."
-        )
-    if record.kind == "github-run":
-        return (
-            f"GitHub run {record.target_id} reached {record.terminal_result}. "
-            "Inspect failed jobs if any, repair or rerun only as needed, "
-            "then continue the prior task."
-        )
-    if record.kind == "verifier":
-        return (
-            f"Verifier run {record.target_id} reached {record.terminal_result}. "
-            "Inspect failed checks if any, repair the branch, then continue the prior task."
-        )
+def _same_identity(
+    record: WaitRecord,
+    *,
+    kind: str,
+    target_id: str,
+    repo: str | None,
+    head_sha: str,
+) -> bool:
     return (
-        f"Wait {record.wait_id} reached {record.terminal_result}. "
-        "Inspect failures if any, take appropriate follow-up, then continue the prior task."
+        record.kind == kind
+        and record.target_id == target_id
+        and record.repo == repo
+        and record.head_sha == head_sha
     )
 
 
@@ -344,7 +331,7 @@ def _write_record(waits_dir: Path, record: WaitRecord) -> None:
     waits_dir.mkdir(parents=True, exist_ok=True)
     path = waits_dir / record.path_name
     tmp_path = path.with_suffix(".json.tmp")
-    tmp_path.write_text(wait_record_json(record), encoding="utf-8")
+    tmp_path.write_text(json.dumps(record.as_dict(), indent=2, sort_keys=True), encoding="utf-8")
     tmp_path.replace(path)
 
 

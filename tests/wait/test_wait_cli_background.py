@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.wait import cli
-from agent_maintainer.wait.github import GitHubRunState
+from agent_maintainer.wait.github import GitHubRunState, GitHubWaitResult
 from agent_maintainer.wait.github_pr import (
     GitHubPrCheck,
     GitHubPrChecksState,
@@ -272,6 +272,52 @@ def test_sweep_once_cli_prints_summary(
     assert status == 0
     assert "Result: PASS" in output
     assert "updated: 1" in output
+
+
+def test_heartbeat_cli_stays_silent_without_ready_records(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Repo heartbeat prints nothing when no wait is ready."""
+
+    status = cli.main(["heartbeat", "--root", str(tmp_path)])
+
+    assert status == 0
+    assert capsys.readouterr().out == ""
+
+
+def test_heartbeat_cli_prints_ready_records_once(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Repo heartbeat renders ready capsules once."""
+
+    registry = WaitRegistry(tmp_path)
+    record = registry.register_github_run(
+        RegisterGitHubRunWait(root=tmp_path, run_id="123"),
+    )
+    registry.complete_github_run(
+        record,
+        GitHubWaitResult(
+            run_id="123",
+            state=GitHubRunState(
+                status="completed",
+                conclusion="success",
+                url="https://run",
+            ),
+        ),
+    )
+
+    first_status = cli.main(["heartbeat", "--root", str(tmp_path)])
+    first_output = capsys.readouterr().out
+    second_status = cli.main(["heartbeat", "--root", str(tmp_path)])
+    second_output = capsys.readouterr().out
+
+    assert first_status == 0
+    assert "Result: PASS" in first_output
+    assert "GitHub run 123 reached PASS" in first_output
+    assert second_status == 0
+    assert second_output == ""
 
 
 def test_sweep_once_completes_github_run(tmp_path: Path) -> None:
