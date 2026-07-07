@@ -160,7 +160,10 @@ def assert_private_data_not_persisted(root: Path, record: WaitRecord) -> None:
 def fake_importer(_name: str) -> ModuleType:
     """Return a fake openai-codex SDK module."""
 
-    return FakeOpenaiCodex("openai_codex")
+    module = FakeOpenaiCodex("openai_codex")
+    if module.sdk_name() != _name:
+        raise ImportError(_name)
+    return module
 
 
 def missing_importer(_name: str) -> ModuleType:
@@ -180,9 +183,16 @@ class FakeCodex:
     def __exit__(self, *_args: object) -> bool:
         return False
 
-    def thread_resume(self, thread_id: str) -> FakeThread:
+    def __getattr__(self, name: str) -> object:
+        if name == "thread_resume":
+            return self._resume
+        raise AttributeError(name)
+
+    def _resume(self, thread_id: str) -> FakeThread:
         self.calls.append(("thread", thread_id))
-        return FakeThread(self.calls)
+        thread = FakeThread(self.calls)
+        thread.call_count()
+        return thread
 
 
 class FakeOpenaiCodex(ModuleType):

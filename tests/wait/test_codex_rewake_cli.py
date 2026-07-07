@@ -63,6 +63,7 @@ class SuccessfulRewakeBackend:
 
     def resume_if_available(self, record: WaitRecord) -> CodexRewakeResult:
         self.seen_waits.append(record.wait_id)
+        self.seen_count()
         return CodexRewakeResult(
             REWAKE_STATUS_RESUMED,
             "Codex SDK continuation started",
