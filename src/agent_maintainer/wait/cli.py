@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import argparse
 
-from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
+from agent_maintainer.runtime_events.waiting import (
+    WaitRuntimeEvents,
+    emit_cleaned,
+    emit_heartbeat_noop,
+    emit_terminal_claimed,
+)
 from agent_maintainer.wait import cli_background, cli_parsers, cli_register
 from agent_maintainer.wait.codex_rewake import (
     CodexRewakeBackend,
@@ -29,7 +34,9 @@ from agent_maintainer.wait.github_pr import (
 )
 from agent_maintainer.wait.registry import WaitRegistry, wait_record_json
 from agent_maintainer.wait.sweeper import (
+    CleanupSummary,
     SweepSummary,
+    cleanup_waits,
     sweep_once,
     sweep_ready_notifications,
     watch_wait,
@@ -58,6 +65,7 @@ def main(argv: list[str] | None = None) -> int:
         "resume": _resume,
         "sweep": _sweep,
         "heartbeat": _heartbeat,
+        "cleanup": _cleanup,
     }
     handler = handlers.get(args.command)
     if handler is not None:
@@ -138,8 +146,29 @@ def _sweep(args: argparse.Namespace) -> int:
 def _heartbeat(args: argparse.Namespace) -> int:
     registry = WaitRegistry(args.root)
     ready_records = sweep_ready_notifications(registry)
+    events = WaitRuntimeEvents.create(target_kind="repo", target_id="heartbeat")
     if ready_records:
-        print("\n\n".join(cli_background.render_resume(record) for record in ready_records))
+        for ready_record in ready_records:
+            emit_terminal_claimed(
+                events,
+                wait_id=ready_record.wait_id,
+                result=ready_record.terminal_result,
+            )
+        print("\n\n".join(cli_background.render_resume(item) for item in ready_records))
+    else:
+        emit_heartbeat_noop(events)
+    return 0
+
+
+def _cleanup(args: argparse.Namespace) -> int:
+    registry = WaitRegistry(args.root)
+    summary = cleanup_waits(
+        registry,
+        ready_older_than_seconds=args.ready_older_than_seconds,
+    )
+    events = WaitRuntimeEvents.create(target_kind="repo", target_id="cleanup")
+    emit_cleaned(events, expired_ready=summary.expired_ready)
+    print(_render_cleanup(args.format, summary))
     return 0
 
 
@@ -220,6 +249,12 @@ def _render_sweep(output_format: str, summary: SweepSummary) -> str:
     if output_format == cli_parsers.JSON_FORMAT:
         return render_sweep_json(summary)
     return render_sweep_text(summary)
+
+
+def _render_cleanup(output_format: str, summary: CleanupSummary) -> str:
+    if output_format == cli_parsers.JSON_FORMAT:
+        return f'{{"expired_ready": {summary.expired_ready}}}'
+    return f"expired ready waits: {summary.expired_ready}"
 
 
 def _observe_github_run(

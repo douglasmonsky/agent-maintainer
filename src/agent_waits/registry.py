@@ -242,6 +242,33 @@ class WaitRegistry:
         return tuple(claimed)
 
 
+def expire_ready_records(
+    registry: WaitRegistry,
+    *,
+    older_than_seconds: int,
+    now: datetime | None = None,
+) -> tuple[WaitRecord, ...]:
+    """Mark stale ready records expired so heartbeats ignore them."""
+
+    expired: list[WaitRecord] = []
+    timestamp = _timestamp(now)
+    current = _parse_timestamp(timestamp)
+    for record in wait_records(registry):
+        if not _stale_ready(record, current, older_than_seconds):
+            continue
+        metadata = dict(record.metadata or {})
+        metadata["expired_reason"] = "ready_ttl"
+        updated = replace(
+            record,
+            status=wait_constants.WAIT_STATUS_EXPIRED_READY,
+            updated_at=timestamp,
+            metadata=metadata,
+        )
+        _write_record(registry.waits_dir, updated)
+        expired.append(updated)
+    return tuple(expired)
+
+
 def wait_record_from_dict(payload: dict[str, object]) -> WaitRecord:
     """Build a wait record from JSON object data."""
 
@@ -296,12 +323,26 @@ def _same_identity(
     repo: str | None,
     head_sha: str,
 ) -> bool:
-    return (
-        record.kind == kind
-        and record.target_id == target_id
-        and record.repo == repo
-        and record.head_sha == head_sha
-    )
+    if record.kind != kind or record.target_id != target_id:
+        return False
+    if kind == "github-pr":
+        return record.repo == repo and record.head_sha == head_sha
+    if kind == "github-run":
+        return record.repo == repo
+    if kind == "verifier":
+        return record.head_sha == head_sha
+    return record.repo == repo and record.head_sha == head_sha
+
+
+def _stale_ready(
+    record: WaitRecord,
+    now: datetime,
+    older_than_seconds: int,
+) -> bool:
+    if not record.ready or older_than_seconds < 0:
+        return False
+    updated_at = _parse_timestamp(record.updated_at)
+    return (now - updated_at).total_seconds() >= older_than_seconds
 
 
 def _wait_id(kind: str, target_id: str, created_at: str) -> str:
@@ -319,6 +360,10 @@ def _safe_segment(value: str) -> str:
 def _timestamp(now: datetime | None = None) -> str:
     current = now or datetime.now(UTC)
     return current.astimezone(UTC).isoformat().replace("+00:00", "Z")
+
+
+def _parse_timestamp(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
 
 
 def _deadline(created_at: str, timeout_seconds: int) -> str:

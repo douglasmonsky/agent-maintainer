@@ -81,13 +81,19 @@ foreground handoff path, or `AGENT_MAINTAINER_BACKGROUND_WAIT=0` to debug all
 known wait foreground paths. Direct foreground `wait github-pr`,
 `wait github-run`, and `wait verifier` commands also convert to background
 registration inside Codex unless `AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1` is
-set.
+set. Direct Codex verifier commands such as `python -m agent_maintainer verify --profile ci`
+and repo `just v` / `just vc` wrappers start an async verifier and emit the
+same background wait heartbeat handoff by default.
 
 Codex heartbeat requests are repo-scoped. When the Codex app
 `automation_update` tool is available, create one current-thread heartbeat
 that runs `python -m agent_maintainer wait heartbeat --root <repo>`. The
+heartbeat request includes `on_pending: silent`, `on_terminal:
+resume_and_review`, and `merge_policy: merge_only_if_satisfactory`. The
 heartbeat command sweeps all known waits once, prints nothing while they are
-pending, and prints each terminal resume capsule once.
+pending, and prints each terminal resume capsule once. Use `python -m
+agent_maintainer wait cleanup --root <repo>` to expire stale ready records
+after a terminal wait is no longer useful.
 
 Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let terminal background watchers try
 automatic Codex SDK continuation. Rewake requires Codex thread metadata

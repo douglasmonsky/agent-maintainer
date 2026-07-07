@@ -7,7 +7,12 @@ from typing import cast
 import pytest
 
 from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
-from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
+from agent_maintainer.runtime_events.waiting import (
+    WaitRuntimeEvents,
+    emit_cleaned,
+    emit_heartbeat_noop,
+    emit_terminal_claimed,
+)
 
 POLL_ATTEMPT = 2
 CHECK_COUNT = 5
@@ -46,6 +51,9 @@ def test_wait_runtime_events_emit_lifecycle_records() -> None:
     events.swept(checked=1, updated=1, pending=0, ready=1)
     events.ready(wait_id="wait-1", result="PASS")
     events.resumed(wait_id="wait-1")
+    emit_heartbeat_noop(events)
+    emit_terminal_claimed(events, wait_id="wait-1", result="PASS")
+    emit_cleaned(events, expired_ready=1)
 
     assert [record["event_name"] for record in sink.records] == [
         "wait.registered",
@@ -53,9 +61,15 @@ def test_wait_runtime_events_emit_lifecycle_records() -> None:
         "wait.swept",
         "wait.ready",
         "wait.resumed",
+        "wait.heartbeat_noop",
+        "wait.terminal_claimed",
+        "wait.cleaned",
     ]
     assert sink.records[0]["status"] == "background"
     assert sink.records[3]["status"] == "PASS"
+    assert sink.records[5]["status"] == "pending"
+    assert sink.records[6]["status"] == "PASS"
+    assert sink.records[7]["status"] == "completed"
 
 
 def test_wait_events_fallback_to_null_sink(

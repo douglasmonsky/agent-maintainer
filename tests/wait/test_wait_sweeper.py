@@ -21,6 +21,7 @@ from agent_maintainer.wait.registry import (
     WaitRegistry,
 )
 from agent_maintainer.wait.sweeper import (
+    cleanup_waits,
     start_wait_watcher,
     sweep_once,
     sweep_ready_notifications,
@@ -155,6 +156,23 @@ def test_render_sweep_outputs_are_compact(tmp_path: Path) -> None:
 
     assert "Result: PASS" in render_sweep_text(summary)
     assert '"updated": 1' in render_sweep_json(summary)
+
+
+def test_cleanup_waits_expires_stale_ready(tmp_path: Path) -> None:
+    """Cleanup expires ready records past the notification TTL."""
+
+    registry = WaitRegistry(tmp_path)
+    record = register_wait(registry, tmp_path)
+    sweep_once(registry, query_checks=successful_query, now=LATER)
+
+    summary = cleanup_waits(
+        registry,
+        ready_older_than_seconds=60,
+        now=LATER.replace(minute=3),
+    )
+
+    assert summary.expired_ready == 1
+    assert registry.read(record.wait_id).status != WAIT_STATUS_READY
 
 
 def register_wait(registry: WaitRegistry, root: Path) -> WaitRecord:

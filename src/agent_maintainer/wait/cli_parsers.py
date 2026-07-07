@@ -11,10 +11,13 @@ from agent_maintainer.wait.verifier import DEFAULT_LOG_DIR
 JSON_FORMAT = "json"
 TEXT_FORMAT = "text"
 OUTPUT_FORMATS = (TEXT_FORMAT, JSON_FORMAT)
+ROOT_OPTION = "--root"
+FORMAT_OPTION = "--format"
 DEFAULT_GITHUB_INTERVAL_SECONDS = 20
 DEFAULT_GITHUB_TIMEOUT_SECONDS = 3600
 DEFAULT_VERIFIER_INTERVAL_SECONDS = 5
 DEFAULT_VERIFIER_TIMEOUT_SECONDS = 3600
+DEFAULT_READY_CLEANUP_SECONDS = 7 * 24 * 60 * 60
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -29,6 +32,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     _add_resume_parser(subparsers)
     _add_sweep_parser(subparsers)
     _add_heartbeat_parser(subparsers)
+    _add_cleanup_parser(subparsers)
     return parser.parse_args(argv)
 
 
@@ -38,14 +42,14 @@ def _add_github_run_parser(subparsers: Any) -> None:
     github = subparsers.add_parser("github-run", help="Wait one GitHub run.")
     github.add_argument("run_id")
     github.add_argument("--repo")
-    github.add_argument("--root", type=Path, default=Path.cwd())
+    github.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
     github.add_argument("--interval", type=int, default=DEFAULT_GITHUB_INTERVAL_SECONDS)
     github.add_argument(
         "--timeout-seconds",
         type=int,
         default=DEFAULT_GITHUB_TIMEOUT_SECONDS,
     )
-    github.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+    github.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_github_pr_parser(subparsers: Any) -> None:
@@ -57,14 +61,14 @@ def _add_github_pr_parser(subparsers: Any) -> None:
     )
     github_pr.add_argument("pr_number")
     github_pr.add_argument("--repo")
-    github_pr.add_argument("--root", type=Path, default=Path.cwd())
+    github_pr.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
     github_pr.add_argument("--interval", type=int, default=DEFAULT_GITHUB_INTERVAL_SECONDS)
     github_pr.add_argument(
         "--timeout-seconds",
         type=int,
         default=DEFAULT_GITHUB_TIMEOUT_SECONDS,
     )
-    github_pr.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+    github_pr.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_verifier_parser(subparsers: Any) -> None:
@@ -72,7 +76,7 @@ def _add_verifier_parser(subparsers: Any) -> None:
 
     verifier = subparsers.add_parser("verifier", help="Wait for one verifier run.")
     verifier.add_argument("run_id")
-    verifier.add_argument("--root", type=Path, default=Path.cwd())
+    verifier.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
     verifier.add_argument("--log-dir", type=Path, default=DEFAULT_LOG_DIR)
     verifier.add_argument("--interval", type=int, default=DEFAULT_VERIFIER_INTERVAL_SECONDS)
     verifier.add_argument(
@@ -80,7 +84,7 @@ def _add_verifier_parser(subparsers: Any) -> None:
         type=int,
         default=DEFAULT_VERIFIER_TIMEOUT_SECONDS,
     )
-    verifier.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+    verifier.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_register_parser(subparsers: Any) -> None:
@@ -112,7 +116,7 @@ def _add_register_github_pr_parser(subparsers: Any) -> None:
         type=int,
         default=DEFAULT_GITHUB_TIMEOUT_SECONDS,
     )
-    register_pr.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+    register_pr.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_register_github_run_parser(subparsers: Any) -> None:
@@ -134,7 +138,7 @@ def _add_register_github_run_parser(subparsers: Any) -> None:
         type=int,
         default=DEFAULT_GITHUB_TIMEOUT_SECONDS,
     )
-    register_run.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+    register_run.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_register_verifier_parser(subparsers: Any) -> None:
@@ -148,7 +152,7 @@ def _add_register_verifier_parser(subparsers: Any) -> None:
     register_verifier.add_argument("--platform", default="codex")
     register_verifier.add_argument("--branch", default="")
     register_verifier.add_argument("--head-sha", default="")
-    register_verifier.add_argument("--root", type=Path, default=Path.cwd())
+    register_verifier.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
     register_verifier.add_argument("--log-dir", type=Path, default=DEFAULT_LOG_DIR)
     register_verifier.add_argument("--start-watcher", action="store_true")
     register_verifier.add_argument(
@@ -161,7 +165,7 @@ def _add_register_verifier_parser(subparsers: Any) -> None:
         type=int,
         default=DEFAULT_VERIFIER_TIMEOUT_SECONDS,
     )
-    register_verifier.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+    register_verifier.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_common_register_args(parser: Any) -> None:
@@ -169,7 +173,7 @@ def _add_common_register_args(parser: Any) -> None:
     parser.add_argument("--platform", default="codex")
     parser.add_argument("--branch", default="")
     parser.add_argument("--head-sha", default="")
-    parser.add_argument("--root", type=Path, default=Path.cwd())
+    parser.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
     parser.add_argument("--start-watcher", action="store_true")
 
 
@@ -178,8 +182,8 @@ def _add_resume_parser(subparsers: Any) -> None:
 
     resume = subparsers.add_parser("resume", help="Render registered wait.")
     resume.add_argument("wait_id")
-    resume.add_argument("--root", type=Path, default=Path.cwd())
-    resume.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+    resume.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
+    resume.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_sweep_parser(subparsers: Any) -> None:
@@ -189,8 +193,8 @@ def _add_sweep_parser(subparsers: Any) -> None:
     mode = sweep.add_mutually_exclusive_group(required=True)
     mode.add_argument("--once", action="store_true")
     mode.add_argument("--watch")
-    sweep.add_argument("--root", type=Path, default=Path.cwd())
-    sweep.add_argument("--format", choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+    sweep.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
+    sweep.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_heartbeat_parser(subparsers: Any) -> None:
@@ -200,4 +204,20 @@ def _add_heartbeat_parser(subparsers: Any) -> None:
         "heartbeat",
         help="Sweep once and print ready wait resumptions only.",
     )
-    heartbeat.add_argument("--root", type=Path, default=Path.cwd())
+    heartbeat.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
+
+
+def _add_cleanup_parser(subparsers: Any) -> None:
+    """Add wait cleanup parser."""
+
+    cleanup = subparsers.add_parser(
+        "cleanup",
+        help="Expire stale ready wait records.",
+    )
+    cleanup.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
+    cleanup.add_argument(
+        "--ready-older-than-seconds",
+        type=int,
+        default=DEFAULT_READY_CLEANUP_SECONDS,
+    )
+    cleanup.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
