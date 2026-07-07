@@ -22,6 +22,11 @@ def pr_create_payload() -> dict[str, object]:
     }
 
 
+def fail_start_watcher(_root: Path, _wait_id: str) -> None:
+    """Raise the watcher spawn error used by fallback coverage."""
+    raise OSError("spawn failed")
+
+
 def test_detect_handoff_extracts_pr_url() -> None:
     """PR-create hook payloads extract repository and PR number."""
     handoff = pr_wait.detect_handoff(pr_create_payload())
@@ -117,6 +122,59 @@ def test_codex_handoff_emits_post_tool_use_continuation(
     assert payload["decision"] == "block"
     assert "wait github-pr 293" in payload["reason"]
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
+
+
+def test_codex_background_wait_registers_wait(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Codex background PR wait registers durable wait state."""
+    calls: list[tuple[Path, str]] = []
+    monkeypatch.setenv(pr_wait.BACKGROUND_PR_WAIT_ENV, "1")
+    monkeypatch.setattr(sys, "stdin", StringIO(json.dumps(pr_create_payload())))
+    monkeypatch.setattr(
+        pr_wait,
+        "start_wait_watcher",
+        lambda root, wait_id: calls.append((root, wait_id)),
+    )
+
+    status = pr_wait.run_hook(
+        platform=pr_wait.CODEX_PLATFORM,
+        repo_root=tmp_path,
+        interval_seconds=1,
+        timeout_seconds=2,
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    wait_files = tuple((tmp_path / ".verify-logs" / "waits").glob("*.json"))
+    assert status == 0
+    assert len(calls) == 1
+    assert len(wait_files) == 1
+    assert "wait resume" in payload["reason"]
+    assert "wait github-pr" not in payload["reason"]
+
+
+def test_codex_bg_wait_falls_back_on_spawn(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Codex background wait falls back when watcher cannot start."""
+    monkeypatch.setenv(pr_wait.BACKGROUND_PR_WAIT_ENV, "1")
+    monkeypatch.setattr(sys, "stdin", StringIO(json.dumps(pr_create_payload())))
+    monkeypatch.setattr(
+        pr_wait,
+        "start_wait_watcher",
+        fail_start_watcher,
+    )
+
+    status = pr_wait.run_hook(platform=pr_wait.CODEX_PLATFORM, repo_root=tmp_path)
+
+    payload = json.loads(capsys.readouterr().out)
+    assert status == 0
+    assert "wait github-pr 293" in payload["reason"]
+    assert payload["decision"] == "block"
 
 
 def test_claude_async_rewake_waits_and_exits_two(
