@@ -7,6 +7,13 @@ from pathlib import Path
 from typing import Any
 
 from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
+from agent_maintainer.wait.broker import (
+    BackgroundGitHubPrWait,
+    codex_foreground_wait_allowed,
+    register_background_github_pr,
+    render_background_registration_text,
+    running_in_codex,
+)
 from agent_maintainer.wait.codex_rewake import (
     CodexRewakeBackend,
     codex_rewake_resumed,
@@ -109,6 +116,7 @@ def _add_github_pr_parser(subparsers: Any) -> None:
     github_pr = subparsers.add_parser("github-pr", help="Wait one GitHub PR check set.")
     github_pr.add_argument("pr_number")
     github_pr.add_argument("--repo")
+    github_pr.add_argument("--root", type=Path, default=Path.cwd())
     github_pr.add_argument("--interval", type=int, default=DEFAULT_GITHUB_INTERVAL_SECONDS)
     github_pr.add_argument(
         "--timeout-seconds",
@@ -221,6 +229,21 @@ def _github_run(args: argparse.Namespace) -> int:
 
 
 def _github_pr(args: argparse.Namespace) -> int:
+    if running_in_codex() and not codex_foreground_wait_allowed():
+        registration = register_background_github_pr(
+            BackgroundGitHubPrWait(
+                root=args.root,
+                pr_number=args.pr_number,
+                repo=args.repo,
+                interval_seconds=args.interval,
+                timeout_seconds=args.timeout_seconds,
+            ),
+        )
+        if args.format == JSON_FORMAT:
+            print(wait_record_json(registration.record))
+        else:
+            print(render_background_registration_text(registration))
+        return 0
     config = GitHubPrWaitConfig(
         pr_number=args.pr_number,
         repo=args.repo,

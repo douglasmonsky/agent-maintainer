@@ -116,6 +116,7 @@ def test_github_pr_cli_prints_success(
 ) -> None:
     """GitHub PR CLI prints only final success status."""
     fake_wait = SuccessPrWait()
+    monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_github_pr_checks", fake_wait)
 
     status = cli.main(
@@ -129,6 +130,43 @@ def test_github_pr_cli_prints_success(
         timeout_seconds=SUCCESS_TIMEOUT_SECONDS,
     )
     assert capsys.readouterr().out == "Result: PASS\nRun ID: PR #291\n"
+
+
+def test_codex_pr_cli_backgrounds_wait(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Codex foreground PR waits convert into background registrations."""
+    calls: list[tuple[Path, str]] = []
+    monkeypatch.delenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", raising=False)
+    monkeypatch.setenv("CODEX_SHELL", "1")
+    monkeypatch.setattr(
+        "agent_maintainer.wait.broker.start_wait_watcher",
+        lambda root, wait_id: calls.append((root, wait_id)),
+    )
+
+    status = cli.main(
+        [
+            "github-pr",
+            PR_NUMBER,
+            "--repo",
+            "douglasmonsky/agent-maintainer",
+            "--root",
+            str(tmp_path),
+            "--interval",
+            "1",
+            "--timeout-seconds",
+            "2",
+        ],
+    )
+
+    output = capsys.readouterr().out
+    assert_success(status)
+    assert "Result: PENDING" in output
+    assert "manual resume:" in output
+    assert "heartbeat prompt:" in output
+    assert len(calls) == 1
 
 
 def test_verifier_cli_prints_manifest_status(

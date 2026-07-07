@@ -63,16 +63,17 @@ exact duplicates, but the agent should still avoid unnecessary overlapping runs.
 
 They prefer `.venv/bin/python` or `venv/bin/python` when present. Run `python3 -m agent_maintainer doctor` if hooks are configured but not behaving as expected.
 
-A Bash `gh pr create` `PostToolUse` hook detects created PR URLs and asks
-Codex to continue by running the PR-check waiter before review or merge. Codex
-does not currently run async command hooks, so this is a continuation handoff
-rather than a background rewake.
+A Bash `gh pr create` `PostToolUse` hook detects created PR URLs, registers a
+durable wait record under `.verify-logs/waits/`, and starts a detached local
+watcher. Codex gets one compact message with the manual `wait resume <id>`
+command and the heartbeat prompt to use for thread automation. Pending checks
+must not produce repeated chat updates.
 
-Set `AGENT_MAINTAINER_BACKGROUND_PR_WAIT=1` to make the Codex PR hook register
-a durable wait record under `.verify-logs/waits/` and start a detached local
-watcher instead of asking the foreground agent to run `wait github-pr`. The hook
-then emits only the `wait resume <id>` command. If the watcher cannot start, the
-hook falls back to the foreground waiter handoff.
+Codex PR waits use background ownership by default. Set
+`AGENT_MAINTAINER_BACKGROUND_PR_WAIT=0` only when debugging the old foreground
+handoff path. Direct foreground `wait github-pr` commands also convert to a
+background registration inside Codex unless
+`AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1` is set.
 
 Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let a terminal background watcher try
 an automatic Codex SDK continuation. Rewake requires Codex thread metadata such
