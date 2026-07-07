@@ -4,6 +4,14 @@ documents:
     path: docs/docsync-extraction.md
     title: DocSync Extraction Notes
     audience: maintainers
+  docs.docsync_standalone_readme:
+    path: docs/docsync-standalone-readme.md
+    title: DocSync
+    audience: public
+  docs.docsync_roadmap:
+    path: docs/docsync-roadmap.md
+    title: DocSync Usefulness Roadmap
+    audience: maintainers
   docs.readme:
     path: README.md
     title: Agent Maintainer
@@ -174,6 +182,22 @@ objects:
     heading:
       level: 1
       text: DocSync Extraction Notes
+  docs.docsync_standalone_readme.overview:
+    document: docs.docsync_standalone_readme
+    kind: heading_section
+    path: docs/docsync-standalone-readme.md
+    marker: docs.docsync_standalone_readme.overview
+    heading:
+      level: 1
+      text: DocSync
+  docs.docsync_roadmap.overview:
+    document: docs.docsync_roadmap
+    kind: heading_section
+    path: docs/docsync-roadmap.md
+    marker: docs.docsync_roadmap.overview
+    heading:
+      level: 1
+      text: DocSync Usefulness Roadmap
   docs.readme.overview:
     document: docs.readme
     kind: heading_section
@@ -565,6 +589,7 @@ claims:
       - evidence.file_baselines.provider_neutral
   claim.docsync.trace_source_truth:
     object: docs.docsync_extraction.overview
+    marker: claim.docsync.trace_source_truth
     text: DocSync uses explicit evidence regions and rebuildable generated outputs
       under .docsync/out.
     severity: medium
@@ -576,7 +601,8 @@ claims:
       - docs_only
   claim.docsync.command_surface:
     object: docs.docsync_extraction.overview
-    text: DocSync exposes init, index, check, prompt, attest, and doctor commands.
+    marker: claim.docsync.command_surface
+    text: DocSync exposes init, index, freshness, check, doctor, prompt, repair-object-end-markers, attest, trace commands.
     severity: medium
     evidence:
     - evidence.docsync.cli_commands

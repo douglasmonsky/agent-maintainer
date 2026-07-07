@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 from docsync.config.load import ConfigError, load_yaml_mapping
+from docsync.core.fingerprints import sha256_text
 from docsync.core.models import Attestation, DocSyncIndex, Finding, LineSpan
 
 if TYPE_CHECKING:
@@ -26,13 +28,22 @@ class AttestationSet:
         claim_id: str,
         evidence_id: str,
         current_fingerprint: str,
+        current_anchor_fingerprints: tuple[str, ...] = (),
     ) -> bool:
         """Return whether an attestation matches the current evidence fingerprint."""
 
         return any(
             record.claim_id == claim_id
             and evidence_id in record.evidence_ids
-            and record.evidence_fingerprints.get(evidence_id) == current_fingerprint
+            and (
+                record.evidence_fingerprints.get(evidence_id) == current_fingerprint
+                or (
+                    bool(current_anchor_fingerprints)
+                    and not record.evidence_anchor_fingerprints
+                    and record.evidence_fingerprints.get(evidence_id)
+                    == current_anchor_fingerprints[0]
+                )
+            )
             for record in self.records
         )
 
@@ -92,6 +103,15 @@ def _record(path: Path, payload: dict[str, Any]) -> Attestation:
         evidence_ids=_string_tuple(payload.get("evidence", ())),
         reason=str(payload.get("reason", "")),
         evidence_fingerprints=_fingerprint_map(payload.get("evidence_fingerprints", {})),
+        evidence_anchor_fingerprints=_anchor_fingerprint_map(
+            payload.get("evidence_anchor_fingerprints", {})
+        ),
+        reviewer=_optional_string(payload.get("reviewer")),
+        reviewed_at=_optional_string(payload.get("reviewed_at")),
+        base_ref=_optional_string(payload.get("base")),
+        head_ref=_optional_string(payload.get("head")),
+        expires_at=_optional_string(payload.get("expires_at")),
+        statement=_optional_string(payload.get("statement")),
         path=path,
     )
 
@@ -101,6 +121,13 @@ def _fingerprint_map(value: object) -> dict[str, str]:
         return {}
     mapping = cast(dict[object, object], value)
     return {str(key): str(item) for key, item in mapping.items()}
+
+
+def _anchor_fingerprint_map(value: object) -> dict[str, tuple[str, ...]]:
+    if not isinstance(value, dict):
+        return {}
+    mapping = cast(dict[object, object], value)
+    return {str(key): _string_tuple(item) for key, item in mapping.items()}
 
 
 def _semantic_findings(index: DocSyncIndex, records: list[Attestation]) -> list[Finding]:
@@ -117,8 +144,18 @@ def _record_semantic_findings(index: DocSyncIndex, record: Attestation) -> list[
                 record.path,
             )
         ]
-    findings = _reason_findings(claim, record)
+    findings = _audit_findings(record)
+    findings.extend(_reason_findings(claim, record))
     findings.extend(_evidence_findings(index, record))
+    return findings
+
+
+def _audit_findings(record: Attestation) -> list[Finding]:
+    findings: list[Finding] = []
+    if not record.reviewer:
+        findings.append(_finding("DS306", "Attestation reviewer is missing.", record.path))
+    if record.expires_at and _expired(record.expires_at):
+        findings.append(_finding("DS307", "Attestation has expired.", record.path))
     return findings
 
 
@@ -158,7 +195,29 @@ def _evidence_fingerprint_findings(
             )
         ]
     current = _current_fingerprint(index, evidence_id)
-    if current is None or record.evidence_fingerprints.get(evidence_id) == current:
+    current_anchors = _current_anchor_fingerprints(index, evidence_id)
+    if current is None:
+        return []
+    return _current_fingerprint_findings(record, evidence_id, current, current_anchors)
+
+
+def _current_fingerprint_findings(
+    record: Attestation,
+    evidence_id: str,
+    current: str,
+    current_anchors: tuple[str, ...],
+) -> list[Finding]:
+    if record.evidence_fingerprints.get(evidence_id) == current:
+        if record.evidence_anchor_fingerprints.get(evidence_id) == current_anchors:
+            return []
+        return [
+            _finding(
+                "DS308",
+                f"Attestation is missing current anchor fingerprints for {evidence_id}.",
+                record.path,
+            )
+        ]
+    if _legacy_first_anchor_matches(record, evidence_id, current_anchors):
         return []
     return [
         _finding(
@@ -173,7 +232,26 @@ def _current_fingerprint(index: DocSyncIndex, evidence_id: str) -> str | None:
     anchors = index.evidence_anchors.get(evidence_id, ())
     if not anchors:
         return None
-    return anchors[0].content_hash
+    return sha256_text("\n".join(anchor.content_hash for anchor in anchors))
+
+
+def _current_anchor_fingerprints(
+    index: DocSyncIndex,
+    evidence_id: str,
+) -> tuple[str, ...]:
+    return tuple(anchor.content_hash for anchor in index.evidence_anchors.get(evidence_id, ()))
+
+
+def _legacy_first_anchor_matches(
+    record: Attestation,
+    evidence_id: str,
+    current_anchors: tuple[str, ...],
+) -> bool:
+    return (
+        bool(current_anchors)
+        and not record.evidence_anchor_fingerprints
+        and record.evidence_fingerprints.get(evidence_id) == current_anchors[0]
+    )
 
 
 def _string_tuple(value: object) -> tuple[str, ...]:
@@ -183,6 +261,23 @@ def _string_tuple(value: object) -> tuple[str, ...]:
         items = cast(list[object] | tuple[object, ...], value)
         return tuple(str(item) for item in items)
     return (str(value),)
+
+
+def _optional_string(value: object) -> str | None:
+    if value is None:
+        return None
+    text = str(value)
+    return text or None
+
+
+def _expired(value: str) -> bool:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return True
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed < datetime.now(tz=UTC)
 
 
 def _finding(code: str, message: str, path: Path) -> Finding:

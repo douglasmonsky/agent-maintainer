@@ -110,36 +110,38 @@ def normalized_decision_root(value: str) -> str:
 def decision_template(slug: str) -> str:
     """Return the starter content for a new architecture decision note."""
     title = slug.replace("-", " ").replace("_", " ").title()
-    return f"""# Architecture Decision: {title}
-
-Status: proposed
-
-## What changed?
-
-Describe the Tach architecture-policy change.
-
-## Why was this necessary?
-
-Explain the concrete requirement that made the boundary change necessary.
-
-## Why is this not just architecture drift?
-
-Explain why the change preserves or improves architecture quality.
-
-## Alternatives considered
-
-1. Keep the existing boundary unchanged.
-2. Refactor implementation code instead of changing policy.
-
-## Boundary impact
-
-State which modules, layers, or dependency rules changed.
-
-## What remains forbidden?
-
-State what agents and maintainers should still avoid.
-
-## Review or expiration condition
-
-State when this decision should be revisited, removed, or tightened.
-"""
+    lines = [
+        f"# Architecture Decision: {title}",
+        "",
+        "Status: proposed",
+        "",
+        "## What changed?",
+        "",
+        "Describe the Tach architecture-policy change.",
+        "",
+        "## Why was this necessary?",
+        "",
+        "Explain the concrete requirement that made the boundary change necessary.",
+        "",
+        "## Why is this not just architecture drift?",
+        "",
+        "Explain why the change preserves or improves architecture quality.",
+        "",
+        "## Alternatives considered",
+        "",
+        "1. Keep the existing boundary unchanged.",
+        "2. Refactor implementation code instead of changing policy.",
+        "",
+        "## Boundary impact",
+        "",
+        "State which modules, layers, or dependency rules changed.",
+        "",
+        "## What remains forbidden?",
+        "",
+        "State what agents and maintainers should still avoid.",
+        "",
+        "## Review or expiration condition",
+        "",
+        "State when this decision should be revisited, removed, or tightened.",
+    ]
+    return "\n".join(lines)

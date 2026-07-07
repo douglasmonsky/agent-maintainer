@@ -23,7 +23,7 @@ markdown:
   require_hidden_object_ids: true
   object_marker: "docsync:object"
   object_end_marker: "docsync:object.end"
-  require_object_end_markers: false
+  require_object_end_markers: true
   heading_object_end: next_heading_same_or_higher_level
 source_evidence:
   require_explicit_regions: true

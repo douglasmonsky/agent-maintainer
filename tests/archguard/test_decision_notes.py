@@ -165,6 +165,15 @@ def test_slug_normalization_handles_spaces_and_symbols() -> None:
     assert decision_notes.normalize_slug("!!!") == "architecture-decision"
 
 
+def test_decision_template_contains_title_and_sections() -> None:
+    """Starter decision notes include expected section text."""
+    text = decision_notes.decision_template("allow-billing-users-api")
+
+    assert text.startswith("# Architecture Decision: Allow Billing Users Api")
+    assert "## Boundary impact" in text
+    assert "## Review or expiration condition" in text
+
+
 def test_decision_note_paths_preserve_dot_directories() -> None:
     """Decision-note roots may live under dot-prefixed directories."""
 

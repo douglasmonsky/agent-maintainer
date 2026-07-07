@@ -9,6 +9,7 @@ from typing import Any
 
 import yaml
 
+from docsync.core.fingerprints import sha256_text
 from docsync.indexer import build_docsync_index
 
 
@@ -21,9 +22,13 @@ def create_attestation_file(
     """Create an attestation for current evidence fingerprints."""
     index = build_docsync_index(repo_root)
     claim = index.trace.claims[claim_id]
-    fingerprints = {
-        evidence_id: index.evidence_anchors[evidence_id][0].content_hash
+    anchor_fingerprints = {
+        evidence_id: tuple(anchor.content_hash for anchor in index.evidence_anchors[evidence_id])
         for evidence_id in evidence_ids
+    }
+    fingerprints = {
+        evidence_id: _aggregate_fingerprint(values)
+        for evidence_id, values in anchor_fingerprints.items()
     }
     now = datetime.now(UTC).replace(microsecond=0)
     head = _git_head(repo_root)
@@ -42,6 +47,10 @@ def create_attestation_file(
                 "base": "HEAD",
                 "head": head,
                 "evidence_fingerprints": fingerprints,
+                "evidence_anchor_fingerprints": {
+                    evidence_id: list(values) for evidence_id, values in anchor_fingerprints.items()
+                },
+                "expires_at": None,
                 "statement": "Reviewed changed evidence region. Documentation remains accurate.",
             }
         ],
@@ -62,6 +71,10 @@ def _git_head(repo_root: Path) -> str:
         text=True,
     )
     return completed.stdout.strip() or "working-tree"
+
+
+def _aggregate_fingerprint(values: tuple[str, ...]) -> str:
+    return sha256_text("\n".join(values))
 
 
 def _yaml_module() -> Any:

@@ -38,12 +38,14 @@ def resolve_index(config: DocSyncConfig, trace: TraceGraph) -> DocSyncIndex:
     """Resolve trace graph objects against live repository files."""
     parsed_objects, doc_findings = _resolve_doc_objects(config, trace)
     evidence_anchors, evidence_findings = _resolve_evidence_anchors(config, trace)
-    findings = tuple(doc_findings + evidence_findings)
+    claim_spans, claim_findings = _resolve_claim_spans(config, trace, parsed_objects)
+    findings = tuple(doc_findings + evidence_findings + claim_findings)
     return DocSyncIndex(
         config=config,
         trace=trace,
         doc_objects=parsed_objects,
         evidence_anchors=evidence_anchors,
+        claim_spans=claim_spans,
         findings=findings,
     )
 
@@ -174,6 +176,52 @@ def _resolve_evidence_anchors(
     return evidence_anchors, findings
 
 
+def _resolve_claim_spans(
+    config: DocSyncConfig,
+    trace: TraceGraph,
+    doc_objects: dict[str, DocObject],
+) -> tuple[dict[str, LineSpan], list[Finding]]:
+    spans: dict[str, LineSpan] = {}
+    findings: list[Finding] = []
+    for claim in trace.claims.values():
+        if claim.marker is None:
+            continue
+        doc_object = doc_objects.get(claim.object_id)
+        if doc_object is None:
+            continue
+        span = _claim_span(config.repo_root, doc_object.path, claim.marker)
+        if span is None:
+            findings.append(
+                Finding(
+                    code="DS206",
+                    severity="error",
+                    message=f"Claim marker not found for {claim.claim_id}: {claim.marker}",
+                    locations=(claim.trace_span or _trace_line(trace),),
+                    related_claims=(claim.claim_id,),
+                )
+            )
+            continue
+        spans[claim.claim_id] = span
+    return spans, findings
+
+
+def _claim_span(repo_root: Path, path: Path, marker: str) -> LineSpan | None:
+    full_path = repo_root / path
+    if not full_path.exists():
+        return None
+    start = f"<!-- docsync:claim {marker} -->"
+    end = f"<!-- docsync:claim.end {marker} -->"
+    start_line: int | None = None
+    for line_number, line in enumerate(full_path.read_text(encoding="utf-8").splitlines(), start=1):
+        stripped = line.strip()
+        if stripped == start:
+            start_line = line_number
+            continue
+        if stripped == end and start_line is not None:
+            return LineSpan(path=path, start_line=start_line, end_line=line_number)
+    return None
+
+
 def _missing_evidence_anchor_findings(
     trace: TraceGraph,
     evidence_anchors: dict[str, tuple[EvidenceAnchor, ...]],
@@ -183,7 +231,7 @@ def _missing_evidence_anchor_findings(
             code="DS006",
             severity="error",
             message=f"Evidence {evidence_id} has no live anchor.",
-            locations=(_trace_line(trace),),
+            locations=(evidence.trace_span or _trace_line(trace),),
             related_evidence=(evidence_id,),
         )
         for evidence_id, evidence in sorted(trace.evidence.items())

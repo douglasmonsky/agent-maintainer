@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from docsync.attestations.load import AttestationSet
+from docsync.core.fingerprints import sha256_text
 from docsync.core.models import DocSyncIndex, Finding, LineSpan
 
 
@@ -13,15 +14,15 @@ def changed_claim_findings(
 ) -> tuple[Finding, ...]:
     """Return findings for claims whose evidence changed without review."""
     changed_evidence = _changed_evidence(index, changed_spans)
-    changed_doc_objects = _changed_doc_objects(index, changed_spans)
+    changed_claims = _changed_claims(index, changed_spans)
     findings: list[Finding] = []
     for evidence_id in sorted(changed_evidence):
         for claim in index.trace.claims_citing(evidence_id):
-            if claim.object_id in changed_doc_objects:
+            if claim.claim_id in changed_claims:
                 continue
             if _attested(index, attestations, claim.claim_id, evidence_id):
                 continue
-            locations = _claim_locations(index, claim.object_id, evidence_id)
+            locations = _claim_locations(index, claim.claim_id, claim.object_id, evidence_id)
             findings.append(
                 Finding(
                     code="DS201",
@@ -45,13 +46,13 @@ def _attested(
     evidence_id: str,
 ) -> bool:
     anchors = index.evidence_anchors.get(evidence_id, ())
-    return any(
-        attestations.has_valid_attestation(
-            claim_id=claim_id,
-            evidence_id=evidence_id,
-            current_fingerprint=anchor.content_hash,
-        )
-        for anchor in anchors
+    anchor_fingerprints = tuple(anchor.content_hash for anchor in anchors)
+    current_fingerprint = sha256_text("\n".join(anchor_fingerprints))
+    return attestations.has_valid_attestation(
+        claim_id=claim_id,
+        evidence_id=evidence_id,
+        current_fingerprint=current_fingerprint,
+        current_anchor_fingerprints=anchor_fingerprints,
     )
 
 
@@ -66,25 +67,33 @@ def _changed_evidence(
     return changed
 
 
-def _changed_doc_objects(
+def _changed_claims(
     index: DocSyncIndex,
     changed_spans: tuple[LineSpan, ...],
 ) -> set[str]:
-    return {
-        object_id
-        for object_id, doc_object in index.doc_objects.items()
-        if _any_overlap(doc_object.span, changed_spans)
-    }
+    changed: set[str] = set()
+    for claim in index.trace.claims.values():
+        if claim.trace_span is not None and _any_overlap(claim.trace_span, changed_spans):
+            changed.add(claim.claim_id)
+            continue
+        claim_span = index.claim_spans.get(claim.claim_id)
+        if claim_span is not None and _any_overlap(claim_span, changed_spans):
+            changed.add(claim.claim_id)
+    return changed
 
 
 def _claim_locations(
     index: DocSyncIndex,
+    claim_id: str,
     object_id: str,
     evidence_id: str,
 ) -> tuple[LineSpan, ...]:
     locations: list[LineSpan] = []
     anchors = index.evidence_anchors.get(evidence_id, ())
     locations.extend(anchor.content_span for anchor in anchors)
+    claim_span = index.claim_spans.get(claim_id)
+    if claim_span is not None:
+        locations.append(claim_span)
     doc_object = index.doc_objects.get(object_id)
     if doc_object is not None:
         locations.append(doc_object.span)

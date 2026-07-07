@@ -55,17 +55,52 @@ def parse_changed_line_spans(diff_text: str) -> tuple[LineSpan, ...]:
 
 
 def _git_diff(repo_root: Path, base_ref: str) -> str:
-    command = ["git", "diff", "--unified=0", "--no-ext-diff", base_ref, "--"]
-    completed = subprocess.run(  # nosec B603
-        command,
+    errors: list[str] = []
+    for candidate in _base_ref_candidates(repo_root, base_ref):
+        command = ["git", "diff", "--unified=0", "--no-ext-diff", candidate, "--"]
+        completed = subprocess.run(  # nosec B603
+            command,
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if completed.returncode == 0:
+            return completed.stdout
+        errors.append(_git_error(candidate, completed.stderr))
+    raise GitDiffError("; ".join(errors) or "git diff failed")
+
+
+def _git_error(candidate: str, stderr: str) -> str:
+    message = stderr.strip() or "git diff failed"
+    return f"{candidate}: {message}"
+
+
+def _base_ref_candidates(repo_root: Path, base_ref: str) -> tuple[str, ...]:
+    if base_ref != "origin/main":
+        return (base_ref,)
+    candidates = ["origin/main"]
+    upstream = _git_output(
+        repo_root,
+        ("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"),
+    )
+    if upstream:
+        candidates.append(upstream)
+    candidates.extend(("main", "master", "HEAD"))
+    return tuple(dict.fromkeys(candidates))
+
+
+def _git_output(repo_root: Path, args: tuple[str, ...]) -> str:
+    completed = subprocess.run(  # nosec B603, B607
+        ["git", *args],
         cwd=repo_root,
         check=False,
         capture_output=True,
         text=True,
     )
     if completed.returncode != 0:
-        raise GitDiffError(completed.stderr.strip() or "git diff failed")
-    return completed.stdout
+        return ""
+    return completed.stdout.strip()
 
 
 def _new_path(line: str) -> Path | None:
