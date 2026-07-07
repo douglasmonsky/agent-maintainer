@@ -9,7 +9,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any, Final
 
-from agent_maintainer.wait.models import (
+from agent_waits.models import (
     TIMEOUT_EXIT_CODE,
     WaitRepairCapsule,
     render_wait_capsule,

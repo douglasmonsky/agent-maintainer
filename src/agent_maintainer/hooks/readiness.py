@@ -17,7 +17,7 @@ from agent_maintainer.verify.locking import (
     VerificationFingerprint,
     build_fingerprint,
 )
-from agent_maintainer.wait.models import WaitRepairCapsule, render_wait_capsule
+from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 
 BASE_REF: Final = "HEAD"
 COMPARE_BRANCH: Final = "origin/main"

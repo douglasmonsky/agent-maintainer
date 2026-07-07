@@ -1,18 +1,15 @@
 # Tach domain contract for agent_maintainer.wait.
-# Wait adapters own polling for external work and emit compact final results.
+# Wait adapters own maintainer-specific polling and CLI integration.
 
 [root]
-
 depends_on = []
 
-
 [[modules]]
-
 path = "cli"
 depends_on = [
-"broker",
-"codex_rewake",
-"github",
+  "broker",
+  "codex_rewake",
+  "github",
   "github_pr",
   "registry",
   "sweeper",
@@ -20,74 +17,61 @@ depends_on = [
   "//agent_maintainer.runtime_events.waiting",
 ]
 
-
 [[modules]]
-
 path = "github"
 depends_on = [
-  "models",
+  "//agent_waits.models",
 ]
 
-
 [[modules]]
-
 path = "github_pr"
 depends_on = [
-"models",
+  "//agent_waits.models",
 ]
 
 [[modules]]
-
 path = "broker"
 depends_on = [
-"models",
-"registry",
-"sweeper",
+  "registry",
+  "sweeper",
+  "//agent_waits.broker",
 ]
 
 [[modules]]
-
 path = "codex_rewake"
 depends_on = [
-  "models",
   "registry",
+  "//agent_waits.models",
 ]
 
-
 [[modules]]
-
 path = "models"
-depends_on = []
-
+depends_on = [
+  "//agent_waits.models",
+]
 
 [[modules]]
-
 path = "registry"
 depends_on = [
   "github_pr",
-  "models",
+  "//agent_waits.registry",
 ]
 
 [[modules]]
-
 path = "sweeper"
 depends_on = [
   "github_pr",
-  "models",
   "registry",
+  "//agent_waits.models",
 ]
 
-
 [[modules]]
-
 path = "verifier"
 depends_on = [
-  "models",
   "verifier_manifest",
+  "//agent_waits.models",
 ]
 
-
 [[modules]]
-
 path = "verifier_manifest"
 depends_on = []

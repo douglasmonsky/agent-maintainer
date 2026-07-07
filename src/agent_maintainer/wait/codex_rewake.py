@@ -9,8 +9,8 @@ from importlib import import_module
 from types import ModuleType
 from typing import Any, Final, cast
 
-from agent_maintainer.wait.models import WaitRepairCapsule, render_wait_capsule
 from agent_maintainer.wait.registry import WaitRecord, WaitRegistry
+from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 
 CODEX_PLATFORM: Final = "codex"
 CODEX_REWAKE_ENV: Final = "AGENT_MAINTAINER_CODEX_REWAKE"

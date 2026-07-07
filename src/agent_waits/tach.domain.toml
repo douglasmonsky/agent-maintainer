@@ -1,0 +1,22 @@
+# Tach domain contract for reusable wait orchestration primitives.
+# Keep this package independent from agent_maintainer adapters.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "broker"
+depends_on = [
+  "models",
+  "registry",
+]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "registry"
+depends_on = [
+  "models",
+]
