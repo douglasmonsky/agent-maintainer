@@ -7,6 +7,7 @@ import os
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Final
 
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
@@ -14,8 +15,10 @@ from agent_waits.registry import WaitRecord
 
 CODEX_PLATFORM: Final = "codex"
 CODEX_ALLOW_FOREGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT"
+CODEX_BACKGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_BACKGROUND_WAIT"
 CODEX_ENV_MARKERS: Final = ("CODEX_SHELL", "CODEX_THREAD_ID")
 HEARTBEAT_REQUEST_TYPE: Final = "codex_heartbeat_wait"
+BACKGROUND_WAIT_FLAGS: Final[Mapping[str | None, bool]] = MappingProxyType({"0": False})
 
 
 @dataclass(frozen=True)
@@ -38,6 +41,12 @@ def running_in_codex(env: Mapping[str, str] | None = None) -> bool:
     """Return whether current process appears to run inside Codex."""
 
     return _running_in_codex(os.environ if env is None else env)
+
+
+def codex_background_wait_enabled(env: Mapping[str, str] | None = None) -> bool:
+    """Return whether Codex background wait registration is enabled."""
+
+    return _codex_background_wait_enabled(os.environ if env is None else env)
 
 
 def render_background_registration_text(
@@ -95,6 +104,9 @@ def heartbeat_request(
         "root": root_text,
         "sweep_command": sweep_command,
         "resume_command": resume_command,
+        "on_pending": "silent",
+        "on_terminal": "resume_and_review",
+        "merge_policy": "merge_only_if_satisfactory",
         "prompt": heartbeat_prompt(record),
     }
 
@@ -123,6 +135,10 @@ def _watcher_detail(registration: BackgroundWaitRegistration) -> str:
 
 def _codex_foreground_wait_allowed(env: Mapping[str, str]) -> bool:
     return env.get(CODEX_ALLOW_FOREGROUND_WAIT_ENV) == "1"
+
+
+def _codex_background_wait_enabled(env: Mapping[str, str]) -> bool:
+    return BACKGROUND_WAIT_FLAGS.get(env.get(CODEX_BACKGROUND_WAIT_ENV), True)
 
 
 def _running_in_codex(env: Mapping[str, str]) -> bool:

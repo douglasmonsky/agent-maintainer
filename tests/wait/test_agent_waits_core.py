@@ -12,7 +12,11 @@ from agent_waits.broker import (
     heartbeat_request_json,
     render_background_registration_text,
 )
-from agent_waits.constants import RESULT_PASS, RESULT_PENDING
+from agent_waits.constants import (
+    RESULT_PASS,
+    RESULT_PENDING,
+    WAIT_STATUS_EXPIRED_READY,
+)
 from agent_waits.heartbeat import (
     HEARTBEAT_MODE_METADATA,
     HEARTBEAT_MODE_REPO,
@@ -21,6 +25,7 @@ from agent_waits.heartbeat import (
 from agent_waits.registry import (
     RegisterWait,
     WaitRegistry,
+    expire_ready_records,
     wait_record_from_dict,
 )
 from agent_waits.rendering import render_wait_record_text
@@ -102,6 +107,62 @@ def test_register_deduplicates_active_wait_without_repo(tmp_path: Path) -> None:
     assert len(tuple(registry.waits_dir.glob("*.json"))) == 1
 
 
+def test_github_run_identity_ignores_head_sha(tmp_path: Path) -> None:
+    """GitHub run waits are keyed by run id and repo, not changing SHA metadata."""
+
+    registry = WaitRegistry(tmp_path)
+
+    first = registry.register(
+        RegisterWait(
+            root=tmp_path,
+            kind="github-run",
+            target_id="123",
+            repo="douglasmonsky/agent-maintainer",
+            head_sha="abc123",
+            now=NOW,
+        ),
+    )
+    second = registry.register(
+        RegisterWait(
+            root=tmp_path,
+            kind="github-run",
+            target_id="123",
+            repo="douglasmonsky/agent-maintainer",
+            head_sha="def456",
+            now=NOW.replace(minute=1),
+        ),
+    )
+
+    assert second.wait_id == first.wait_id
+
+
+def test_verifier_identity_uses_head_sha(tmp_path: Path) -> None:
+    """Verifier waits for different repo states do not deduplicate."""
+
+    registry = WaitRegistry(tmp_path)
+
+    first = registry.register(
+        RegisterWait(
+            root=tmp_path,
+            kind="verifier",
+            target_id="run-1",
+            head_sha="abc123",
+            now=NOW,
+        ),
+    )
+    second = registry.register(
+        RegisterWait(
+            root=tmp_path,
+            kind="verifier",
+            target_id="run-1",
+            head_sha="def456",
+            now=NOW.replace(minute=1),
+        ),
+    )
+
+    assert second.wait_id != first.wait_id
+
+
 def test_resumed_wait_identity_can_register_again(tmp_path: Path) -> None:
     """Consumed wait records do not block a later matching registration."""
 
@@ -145,6 +206,41 @@ def test_claim_ready_for_notification_marks_once(tmp_path: Path) -> None:
     assert claimed[0].metadata is not None
     assert HEARTBEAT_NOTIFIED_AT_METADATA in claimed[0].metadata
     assert second_claim == ()
+
+
+def test_expire_ready_records_marks_stale_ready(tmp_path: Path) -> None:
+    """Stale ready records expire and cannot trigger future heartbeat claims."""
+
+    registry = WaitRegistry(tmp_path)
+    record = registry.register(
+        RegisterWait(root=tmp_path, kind="verifier", target_id="run-123", now=NOW),
+    )
+    completed = registry.complete(
+        record,
+        terminal_result=RESULT_PASS,
+        resume_message="done",
+        state_data={"ok": True},
+        now=NOW.replace(minute=1),
+    )
+
+    expired = expire_ready_records(
+        registry,
+        older_than_seconds=60,
+        now=NOW.replace(minute=3),
+    )
+    second_expired = expire_ready_records(
+        registry,
+        older_than_seconds=60,
+        now=NOW.replace(minute=4),
+    )
+
+    expired_record = registry.read(completed.wait_id)
+    assert [item.wait_id for item in expired] == [completed.wait_id]
+    assert second_expired == ()
+    assert expired_record.status == WAIT_STATUS_EXPIRED_READY
+    assert expired_record.metadata is not None
+    assert expired_record.metadata["expired_reason"] == "ready_ttl"
+    assert registry.claim_ready_for_notification(now=NOW.replace(minute=5)) == ()
 
 
 def test_legacy_pr_number_records_still_read() -> None:
@@ -195,6 +291,9 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     assert heartbeat_prompt(record) in text
     request = json.loads(heartbeat_request_json(record, root=tmp_path))
     assert request["scope"] == "repo"
+    assert request["on_pending"] == "silent"
+    assert request["on_terminal"] == "resume_and_review"
+    assert request["merge_policy"] == "merge_only_if_satisfactory"
     assert request["sweep_command"].endswith("wait heartbeat --root " + str(tmp_path))
     assert "repo wait heartbeat sweep command" in request["prompt"]
     assert record.wait_id not in request["prompt"]

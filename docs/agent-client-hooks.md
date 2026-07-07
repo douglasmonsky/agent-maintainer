@@ -99,10 +99,15 @@ or merge. Claude Code uses async rewake handoff. Codex registers a
 durable background wait by default, starts a silent watcher, and emits one
 compact manual-resume plus repo-scoped heartbeat prompt. Direct Codex
 `wait github-pr`, `wait github-run`, and `wait verifier` commands also convert
-to background waits unless `AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1` is set.
+to background waits unless `AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1` is set. Direct Codex
+verifier commands such as `python -m agent_maintainer verify --profile ci` and
+repo `just v` / `just vc` wrappers start an async verifier and emit the same
+background wait heartbeat handoff by default.
 The heartbeat prompt should run `python -m agent_maintainer wait heartbeat --root <repo>`,
 stay silent while all waits are pending, and print each terminal resume capsule
-once.
+once. Structured heartbeat requests include `on_pending: silent`, `on_terminal:
+resume_and_review`, and `merge_policy: merge_only_if_satisfactory`; stale ready
+records can be expired with `python -m agent_maintainer wait cleanup --root <repo>`.
 
 Repo-local wrappers use the checked-out source tree:
 

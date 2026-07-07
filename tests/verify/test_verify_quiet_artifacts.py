@@ -23,6 +23,7 @@ def test_main_writes_artifacts_for_selected_profile(
     calls = []
     configured_artifact_dirs: list[str] = []
     monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     monkeypatch.setattr(
         verify_quiet,
@@ -85,6 +86,7 @@ def test_failed_run_prints_snapshot_scoped_context_commands(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     monkeypatch.setattr(
         verify_quiet,
@@ -132,6 +134,7 @@ def test_main_skips_artifacts_when_diagnostics_are_disabled(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     monkeypatch.setattr(
         verify_quiet,
@@ -163,3 +166,9 @@ def test_main_skips_artifacts_when_diagnostics_are_disabled(
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0
+
+
+def allow_foreground_verify(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Allow foreground verifier execution in tests with inherited Codex env."""
+
+    monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")

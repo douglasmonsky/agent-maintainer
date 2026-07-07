@@ -27,6 +27,7 @@ def test_main_async_launches_background_verifier(
 ) -> None:
     """Async verifier prints wait command without running checks inline."""
     monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
     monkeypatch.setattr(
         verify_quiet,
         "load_config",
@@ -121,6 +122,7 @@ def test_main_prints_success_with_warning_results(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     monkeypatch.setattr(
         verify_quiet,
@@ -162,6 +164,7 @@ def test_main_prints_success_for_passing_selected_check(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
 
     monkeypatch.setattr(
@@ -203,6 +206,7 @@ def test_main_prints_profile_overlap_advisory(
 ) -> None:
     """Successful redundant broad profile prints compact advisory."""
     monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     event_dir = tmp_path / ".events"
     event_dir.mkdir()
@@ -254,6 +258,7 @@ def test_main_writes_runtime_profile_events_when_enabled(
 ) -> None:
     """Enabled runtime events record profile lifecycle without noisy output."""
     monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     event_dir = tmp_path / ".events"
     monkeypatch.setattr(
@@ -320,3 +325,9 @@ def fake_async_launch(_request: AsyncVerifierRequest) -> AsyncVerifierLaunch:
         process_id=1234,
         command=("python", "-m", "agent_maintainer", "verify"),
     )
+
+
+def allow_foreground_verify(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Allow foreground verifier execution in tests with inherited Codex env."""
+
+    monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
