@@ -1,7 +1,7 @@
 +++
 id = "setup-advisor-workspace-command-example"
 kind = "docs"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-22
 allowed_paths = [
