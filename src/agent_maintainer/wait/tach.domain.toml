@@ -88,7 +88,6 @@ depends_on = [
   "github_pr",
   "registry",
   "verifier",
-  "verifier_manifest",
 ]
 
 [[modules]]

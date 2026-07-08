@@ -4,30 +4,24 @@ from __future__ import annotations
 
 import json
 import queue
-import subprocess
 import threading
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from typing import Final, Protocol, TextIO
+from subprocess import PIPE, Popen, TimeoutExpired  # nosec B404
+from typing import Final, TextIO
 
 APP_SERVER_COMPLETED_METHODS: Final = frozenset(("turn/completed", "turn.completed"))
 APP_SERVER_TURN_START_REQUEST_ID: Final = 3
 APP_SERVER_THREAD_READ_REQUEST_START_ID: Final = 1000
 APP_SERVER_THREAD_READ_POLL_SECONDS: Final = 2.0
+APP_SERVER_STDERR_LIMIT: Final = 2000
 APP_SERVER_TERMINAL_TURN_STATUSES: Final = frozenset(
     ("completed", "failed", "interrupted"),
 )
 
-PopenFactory = Callable[..., subprocess.Popen[str]]
+PopenFactory = Callable[..., Popen[str]]
 LineQueue = queue.Queue[str | None]
-
-
-class CodexContinuationClient(Protocol):
-    """Client capable of continuing a Codex thread."""
-
-    def resume_thread(self, thread_id: str, prompt: str) -> None:
-        """Resume thread with prompt."""
 
 
 @dataclass(frozen=True)
@@ -46,7 +40,7 @@ class _AppServerWaitState:
     turn_accepted: bool = False
     turn_id: str = ""
     next_thread_read_request_id: int = APP_SERVER_THREAD_READ_REQUEST_START_ID
-    last_thread_read_requested_at: float = 0.0
+    last_thread_read_requested_at: float = 0
     completed: bool = False
 
 
@@ -58,7 +52,7 @@ class CodexAppServerClient:
         *,
         codex_bin: str,
         timeout_seconds: float,
-        popen_factory: PopenFactory = subprocess.Popen,
+        popen_factory: PopenFactory = Popen,
         thread_read_poll_seconds: float = APP_SERVER_THREAD_READ_POLL_SECONDS,
     ) -> None:
         self._codex_bin = codex_bin
@@ -71,35 +65,50 @@ class CodexAppServerClient:
 
         process = self._start_process()
         try:
-            self._send_start_turn(process, thread_id, prompt)
-            self._wait_for_completion(process, thread_id)
-        finally:
+            self._resume_process(process, thread_id, prompt)
+        except (OSError, RuntimeError, TimeoutError):
             _stop_process(process)
+            raise
+        _stop_process(process)
 
-    def _start_process(self) -> subprocess.Popen[str]:
+    def command(self) -> tuple[str, str, str, str]:
+        """Return Codex app-server command."""
+
+        return (self._codex_bin, "app-server", "--listen", "stdio://")
+
+    def _start_process(self) -> Popen[str]:
         return self._popen_factory(
-            [self._codex_bin, "app-server", "--listen", "stdio://"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            list(self.command()),
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
             text=True,
         )
 
     def _send_start_turn(
         self,
-        process: subprocess.Popen[str],
+        process: Popen[str],
         thread_id: str,
         prompt: str,
     ) -> None:
         if process.stdin is None:
             raise RuntimeError("Codex app-server stdin unavailable")
         for message in _app_server_messages(thread_id, prompt):
-            process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
+            process.stdin.write(f"{json.dumps(message, separators=(',', ':'))}\n")
         process.stdin.flush()
+
+    def _resume_process(
+        self,
+        process: Popen[str],
+        thread_id: str,
+        prompt: str,
+    ) -> None:
+        self._send_start_turn(process, thread_id, prompt)
+        self._wait_for_completion(process, thread_id)
 
     def _wait_for_completion(
         self,
-        process: subprocess.Popen[str],
+        process: Popen[str],
         thread_id: str,
     ) -> None:
         if process.stdout is None:
@@ -264,7 +273,7 @@ def _turn_from_result(
 
 
 def _maybe_request_thread_read(
-    process: subprocess.Popen[str],
+    process: Popen[str],
     thread_id: str,
     state: _AppServerWaitState,
     *,
@@ -285,7 +294,7 @@ def _maybe_request_thread_read(
         "method": "thread/read",
         "params": {"threadId": thread_id, "includeTurns": True},
     }
-    process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
+    process.stdin.write(f"{json.dumps(message, separators=(',', ':'))}\n")
     process.stdin.flush()
 
 
@@ -304,21 +313,21 @@ def _json_object(line: str) -> dict[str, object]:
     return payload if isinstance(payload, dict) else {}
 
 
-def _bounded_stderr(process: subprocess.Popen[str]) -> str:
+def _bounded_stderr(process: Popen[str]) -> str:
     if process.stderr is None:
         return ""
-    stderr = process.stderr.read(2000).strip()
+    stderr = process.stderr.read(APP_SERVER_STDERR_LIMIT).strip()
     if not stderr:
         return ""
     return f": {stderr}"
 
 
-def _stop_process(process: subprocess.Popen[str]) -> None:
+def _stop_process(process: Popen[str]) -> None:
     if process.poll() is not None:
         return
     process.terminate()
     try:
         process.wait(timeout=2)
-    except subprocess.TimeoutExpired:
+    except TimeoutExpired:
         process.kill()
         process.wait(timeout=2)

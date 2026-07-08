@@ -33,6 +33,10 @@ API keys, environment dumps, or app-server payloads.
 extracts an existing implementation detail from the same adapter boundary and
 does not add a new outward dependency.
 
+`handlers` consumes verifier wait results through `verifier` rather than
+`verifier_manifest` so cached verifier jobs and manifest parsing share one
+terminal-result boundary.
+
 ## Alternatives Considered
 
 - Keep app-server code inside `codex_rewake`. Rejected because it violates the

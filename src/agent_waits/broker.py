@@ -28,6 +28,7 @@ CODEX_ENV_MARKERS: Final = (
     CODEX_THREAD_ID_OVERRIDE_ENV,
 )
 CHEAP_MONITOR_MODEL: Final = "gpt-5.3-codex-spark"
+HEARTBEAT_DEFAULT_INTERVAL_SECONDS: Final = 120
 HEARTBEAT_REQUEST_TYPE: Final = "codex_heartbeat_wait"
 OPENAI_CODEX_PACKAGE: Final = "openai_codex"
 CODEX_CLI_NAME: Final = "codex"
@@ -68,17 +69,13 @@ def codex_terminal_rewake_available(
     env: Mapping[str, str] | None = None,
     sdk_available: bool | None = None,
 ) -> bool:
-    """Return whether a detached watcher can wake Codex on terminal state."""
+    """Return whether detached watcher can wake Codex on terminal state."""
 
     current = os.environ if env is None else env
-    record = registration.record
-    return (
-        registration.watcher_started
-        and record.platform == CODEX_PLATFORM
-        and current.get(CODEX_REWAKE_ENV) == "1"
-        and _codex_thread_id(current) != ""
-        and _codex_rewake_backend_available(sdk_available, current)
-    )
+    return _codex_terminal_context_available(
+        registration,
+        current,
+    ) and _codex_rewake_backend_available(sdk_available, current)
 
 
 def render_background_registration_text(
@@ -162,7 +159,10 @@ def heartbeat_request(
         "fallback_only": True,
         "preferred_monitor_model": CHEAP_MONITOR_MODEL,
         "preferred_monitor_reasoning": "minimal",
-        "preferred_interval_seconds": max(record.interval_seconds, 120),
+        "preferred_interval_seconds": max(
+            record.interval_seconds,
+            HEARTBEAT_DEFAULT_INTERVAL_SECONDS,
+        ),
         "merge_policy": "merge_only_if_satisfactory",
         "prompt": heartbeat_prompt(record),
     }
@@ -204,6 +204,18 @@ def _running_in_codex(env: Mapping[str, str]) -> bool:
 
 def _codex_thread_id(env: Mapping[str, str]) -> str:
     return env.get(CODEX_THREAD_ID_OVERRIDE_ENV) or env.get(CODEX_THREAD_ID_ENV, "")
+
+
+def _codex_terminal_context_available(
+    registration: BackgroundWaitRegistration,
+    env: Mapping[str, str],
+) -> bool:
+    return (
+        registration.watcher_started
+        and registration.record.platform == CODEX_PLATFORM
+        and env.get(CODEX_REWAKE_ENV) == "1"
+        and _codex_thread_id(env) != ""
+    )
 
 
 def _codex_rewake_backend_available(
