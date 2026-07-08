@@ -127,6 +127,11 @@ specific default checks, generated-file rules, coverage commands, or dependency
 policies. Configure the repository's own scripts first, then use
 `assess reviewability` to inspect advisory changed-file evidence.
 
+Workspace command ownership is manual. Configure root TypeScript commands only
+when they intentionally cover packages you want Agent Maintainer to verify.
+For package-specific checks, keep commands outside automatic setup advice until
+workspace ownership semantics are designed.
+
 Coverage summaries and LCOV files can improve `typescript-test` repair facts
 when a repository already produces those artifacts, but TypeScript coverage
 enforcement, dependency/security, mutation, and blocking reviewability adapters
