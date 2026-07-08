@@ -1,10 +1,17 @@
 """Compatibility shim for TypeScript diagnostic parsers."""
 
-from agent_repair_facts.parsers import typescript_diagnostics
+from agent_repair_facts.parsers import (
+    typescript_coverage,
+    typescript_diagnostics,
+    typescript_tests,
+)
 
 TSC_DIAGNOSTIC_RE = typescript_diagnostics.TSC_DIAGNOSTIC_RE
+LCOV_LINE_RE = typescript_coverage.LCOV_LINE_RE
 JsonObject = typescript_diagnostics.JsonObject
 TypeScriptDiagnostic = typescript_diagnostics.TypeScriptDiagnostic
+coverage_summary_diagnostic = typescript_coverage.coverage_summary_diagnostic
+coverage_summary_diagnostics = typescript_coverage.coverage_summary_diagnostics
 eslint_message_diagnostic = typescript_diagnostics.eslint_message_diagnostic
 eslint_messages = typescript_diagnostics.eslint_messages
 eslint_payload_diagnostics = typescript_diagnostics.eslint_payload_diagnostics
@@ -18,9 +25,20 @@ jest_location = typescript_diagnostics.jest_location
 jest_payload_diagnostics = typescript_diagnostics.jest_payload_diagnostics
 jest_suite_diagnostics = typescript_diagnostics.jest_suite_diagnostics
 jest_test_name = typescript_diagnostics.jest_test_name
+lcov_record_diagnostics = typescript_coverage.lcov_record_diagnostics
+metric_message = typescript_coverage.metric_message
+first_error_object = typescript_tests.first_error_object
 optional_int = typescript_diagnostics.optional_int
+optional_float = typescript_coverage.optional_float
 optional_text = typescript_diagnostics.optional_text
+parse_coverage_summary_json = typescript_coverage.parse_coverage_summary_json
 parse_eslint_json = typescript_diagnostics.parse_eslint_json
 parse_jest_json = typescript_diagnostics.parse_jest_json
+parse_lcov_info = typescript_coverage.parse_lcov_info
 parse_tsc_output = typescript_diagnostics.parse_tsc_output
+parse_vitest_json = typescript_tests.parse_vitest_json
 tsc_diagnostic = typescript_diagnostics.tsc_diagnostic
+vitest_failure_message = typescript_tests.vitest_failure_message
+vitest_payload_diagnostics = typescript_tests.vitest_payload_diagnostics
+vitest_task_diagnostic = typescript_tests.vitest_task_diagnostic
+vitest_task_diagnostics = typescript_tests.vitest_task_diagnostics

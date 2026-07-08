@@ -97,11 +97,12 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "other runners must be wired through `typescript_test_command`.",
             "`Next.js`, `Vite`, `Astro`, `SvelteKit`, and monorepo "
             "workspace layouts are not inferred into framework specific "
-            "default checks, generated-file rules, coverage adapters, "
+            "default checks, generated-file rules, coverage commands, "
             "or dependency policies.",
-            "Coverage, dependency/security, mutation, and blocking "
-            "reviewability adapters are not implemented for "
-            "TypeScript/JavaScript yet.",
+            "Coverage summaries and LCOV files can improve `typescript-test` repair facts",
+            "TypeScript coverage enforcement, dependency/security, "
+            "mutation, and blocking reviewability adapters are not "
+            "implemented yet.",
             "No TypeScript reviewability gate is blocking by default.",
         ),
         "docs/multi-ecosystem-reviewability-policy.md": (

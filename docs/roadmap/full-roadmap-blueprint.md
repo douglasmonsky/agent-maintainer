@@ -157,3 +157,4 @@ Overview links: [Mission, baseline, architecture target, execution rules](overvi
 | 164 | [Agent Efficacy Metrics](phases/phase-164-agent-efficacy-metrics.md) |
 | 165 | [React Fixture Corpus And Reviewability Baseline](phases/phase-165-react-fixture-corpus-and-reviewability-baseline.md) |
 | 166 | [TypeScript Package-Manager And Workspace Evidence](phases/phase-166-typescript-package-manager-and-workspace-evidence.md) |
+| 167 | [React/Vite/Next Structured Test And Coverage Facts](phases/phase-167-react-vite-next-structured-test-and-coverage-facts.md) |

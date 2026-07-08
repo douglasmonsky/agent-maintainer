@@ -1,0 +1,21 @@
+version: 1
+attestations:
+- id: attest.20260708T053342Z.claim.docs.typescript_provider_unsupported_surface.4554a0d
+  claim: claim.docs.typescript_provider_unsupported_surface
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.provider_docs_maturity_tests
+  reason: Reviewed Phase 167 TypeScript provider unsupported-surface wording after
+    adding coverage artifact repair facts; docs still state coverage enforcement and
+    adapters remain unsupported.
+  reviewer: agent
+  reviewed_at: '2026-07-08T05:33:42Z'
+  base: HEAD
+  head: 4554a0d
+  evidence_fingerprints:
+    evidence.typescript.provider_docs_maturity_tests: sha256:bfce693c74b438d140114fa527756c060dabaff797af352755a076af4de5138c
+  evidence_anchor_fingerprints:
+    evidence.typescript.provider_docs_maturity_tests:
+    - sha256:cbc4a8dca935c6c886ff6c420a851570ac1c37d1f12e42cafcf9c3c39a4e37dc
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
