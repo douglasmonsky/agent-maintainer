@@ -1,0 +1,21 @@
+version: 1
+attestations:
+- id: attest.20260708T085014Z.claim.docs.typescript_provider_unsupported_surface.d06ef56
+  claim: claim.docs.typescript_provider_unsupported_surface
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.provider_docs_maturity_tests
+  reason: Reviewed Phase 174 explicit workspace TypeScript command ownership docs;
+    unsupported-surface docs remain accurate and now describe explicit workspace command
+    ownership.
+  reviewer: agent
+  reviewed_at: '2026-07-08T08:50:14Z'
+  base: HEAD
+  head: d06ef56
+  evidence_fingerprints:
+    evidence.typescript.provider_docs_maturity_tests: sha256:770511458f3f0396fa21323ba5650263033d7c983c7c3243fd508a28dd4cb87f
+  evidence_anchor_fingerprints:
+    evidence.typescript.provider_docs_maturity_tests:
+    - sha256:f9d6d0c372602e416a334edeb1fc0160b4ae90bae3b53de861e83d43b7a3d5c7
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

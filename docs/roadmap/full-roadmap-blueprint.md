@@ -158,3 +158,4 @@
 | 171 | [TypeScript Setup Advisor Script Fixtures](phases/phase-171-typescript-setup-advisor-script-fixtures.md) |
 | 172 | [TypeScript Setup Advisor Root Package Boundary](phases/phase-172-typescript-setup-advisor-root-package-boundary.md) |
 | 173 | [TypeScript Workspace Command Ownership Design](phases/phase-173-typescript-workspace-command-ownership-design.md) |
+| 174 | [TypeScript Workspace Command Config](phases/phase-174-typescript-workspace-command-config.md) |

@@ -744,7 +744,7 @@ claims:
   claim.docs.typescript_provider_unsupported_surface:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs document unsupported package managers,
-      test runners, frameworks, workspace command ownership, coverage,
+      test runners, frameworks, explicit workspace command ownership, coverage,
       dependency, security, mutation, and blocking reviewability surfaces.
     severity: medium
     evidence:
@@ -812,7 +812,7 @@ claims:
       - evidence.agent_guidance.compact_sidecar_tests
   claim.docs.setup_advisor_recommendations:
     object: docs.setup_advisor.overview
-    text: "Setup advisor docs describe advisory local recommendations, root package TypeScript command mapping from existing scripts, parser-friendly repair-fact outputs, common pnpm/Vite/Next.js script shapes, nested workspace package limitations, manual workspace command ownership, and dry-run first adoption flow."
+    text: "Setup advisor docs describe advisory local recommendations, root package TypeScript command mapping from existing scripts, parser-friendly repair-fact outputs, common pnpm/Vite/Next.js script shapes, nested workspace package limitations, explicit workspace command ownership, and dry-run first adoption flow."
     severity: medium
     evidence:
       - evidence.setup_advisor.recommendation_tests
