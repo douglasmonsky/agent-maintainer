@@ -842,7 +842,7 @@ claims:
       - evidence.typescript.advisory_threshold_config_tests
   claim.docs.change_plans_validation:
     object: docs.change_plans.overview
-    text: Change-plan docs describe required plan structure and validation before intentional large changes can bend review-size budgets.
+    text: Change-plan docs describe required plan structure and validation, active scoped plans, and completed historical plans before intentional large changes can bend review-size budgets.
     severity: high
     evidence:
       - evidence.change_plans.validation_tests
@@ -862,7 +862,7 @@ claims:
       - evidence.cohesive_change_overrides.tests
   claim.docs.cohesive_change_plans_checked:
     object: docs.cohesive_change_plans.overview
-    text: Cohesive change plan docs describe checked, mechanically constrained large-change plans rather than casual budget bypasses.
+    text: Cohesive change plan docs describe checked, mechanically constrained active large-change plans and completed historical plans rather than casual budget bypasses.
     severity: high
     evidence:
       - evidence.change_plans.validation_tests

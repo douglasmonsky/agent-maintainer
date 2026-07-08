@@ -6,7 +6,9 @@ base_ref = "origin/main"
 expires = 2026-07-21
 allowed_paths = [
   ".agent-maintainer/change-plans/**",
+  ".docsync/trace.yml",
   "docs/change-plans.md",
+  "docs/cohesive-change-plans.md",
   "src/agent_maintainer/change_plan/**",
   "src/agent_maintainer/doctor/setup.py",
   "tests/change_plan/**",
