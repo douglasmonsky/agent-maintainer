@@ -22,6 +22,7 @@ MEASUREMENT_LIMITATIONS = (
 GENERATED_DIR_NAMES = frozenset(("__pycache__", "mutants", ".semgrep"))
 GENERATED_SUFFIXES = (".pyc",)
 DUPLICATE_NAME_MARKERS = (" 2", " copy")
+GENERATED_CLEANUP_HINT = "inspect listed paths; remove only verified generated/cache files"
 
 
 def _empty_rows() -> list[dict[str, object]]:
@@ -180,13 +181,14 @@ def _generated_artifact_signals(repo_root: Path) -> list[dict[str, object]]:
             "signal": "generated-artifact-debris",
             "severity": "warning",
             "count": len(paths),
-            "message": (
-                "generated/cache artifacts found; clean them instead of letting "
-                "agents read or commit them"
-            ),
-            "paths": [path.as_posix() for path in paths[:GENERATED_SIGNAL_LIMIT]],
-        },
-    ]
+                "message": (
+                    "generated/cache artifacts found; clean them instead of letting "
+                    "agents read or commit them"
+                ),
+                "paths": [path.as_posix() for path in paths[:GENERATED_SIGNAL_LIMIT]],
+                "cleanup_hint": GENERATED_CLEANUP_HINT,
+            },
+        ]
 
 
 def _generated_artifact_paths(repo_root: Path) -> list[Path]:
@@ -247,8 +249,17 @@ def _signal_text(signal: dict[str, object]) -> str:
         _optional_part("command", signal.get("command")),
         _optional_part("count", signal.get("count")),
         str(signal.get("message", "")),
+        _paths_part(signal.get("paths")),
+        _optional_part("cleanup", signal.get("cleanup_hint")),
     ]
     return " ".join(part for part in parts if part)
+
+
+def _paths_part(value: object) -> str:
+    if not isinstance(value, list) or not value:
+        return ""
+    paths = ", ".join(str(path) for path in value[:GENERATED_SIGNAL_LIMIT])
+    return f"paths={paths}"
 
 
 def _optional_part(label: str, value: object) -> str:

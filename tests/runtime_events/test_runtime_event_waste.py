@@ -90,4 +90,8 @@ def test_waste_summary_detects_generated_artifact_debris(tmp_path: Path) -> None
     assert signal["count"] == GENERATED_ARTIFACT_COUNT
     assert "src/__pycache__" in paths
     assert "docs/Guide 2.md" in paths
-    assert "binary cache" not in render_waste_text(report)
+    text = render_waste_text(report)
+    assert "src/__pycache__" in text
+    assert "docs/Guide 2.md" in text
+    assert "inspect listed paths" in text
+    assert "binary cache" not in text
