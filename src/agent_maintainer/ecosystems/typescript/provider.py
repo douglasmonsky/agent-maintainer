@@ -12,18 +12,44 @@ from agent_maintainer.models import Check
 class _TypeScriptProfileConfig(Protocol):
     """TypeScript profile fields needed by workspace check construction."""
 
-    typescript_lint_profiles: Iterable[str]
-    typescript_typecheck_profiles: Iterable[str]
-    typescript_test_profiles: Iterable[str]
+    @property
+    def typescript_lint_profiles(self) -> Iterable[str]:
+        """Return profiles for TypeScript lint checks."""
+        ...
+
+    @property
+    def typescript_typecheck_profiles(self) -> Iterable[str]:
+        """Return profiles for TypeScript typecheck checks."""
+        ...
+
+    @property
+    def typescript_test_profiles(self) -> Iterable[str]:
+        """Return profiles for TypeScript test checks."""
+        ...
 
 
 class _TypeScriptWorkspaceConfig(Protocol):
     """Workspace TypeScript command fields needed by check construction."""
 
-    name: str
-    typescript_lint_command: tuple[str, ...]
-    typescript_typecheck_command: tuple[str, ...]
-    typescript_test_command: tuple[str, ...]
+    @property
+    def name(self) -> str:
+        """Return the workspace name used in check names."""
+        ...
+
+    @property
+    def typescript_lint_command(self) -> tuple[str, ...]:
+        """Return the explicit workspace TypeScript lint command."""
+        ...
+
+    @property
+    def typescript_typecheck_command(self) -> tuple[str, ...]:
+        """Return the explicit workspace TypeScript typecheck command."""
+        ...
+
+    @property
+    def typescript_test_command(self) -> tuple[str, ...]:
+        """Return the explicit workspace TypeScript test command."""
+        ...
 
 
 # docsync:evidence.start evidence.typescript.provider_commands
