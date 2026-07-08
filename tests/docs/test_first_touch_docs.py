@@ -102,9 +102,11 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "workspace layouts are not inferred into framework specific "
             "default checks, generated-file rules, coverage commands, "
             "or dependency policies.",
-            "Workspace command ownership is manual.",
+            "Workspace command ownership is explicit.",
             "Configure root TypeScript commands only when they intentionally "
             "cover packages you want Agent Maintainer to verify.",
+            "Agent Maintainer will run only the workspace TypeScript commands "
+            "you configure and will not infer nested package commands.",
             "Coverage summaries and LCOV files can improve `typescript-test` repair facts",
             "TypeScript coverage enforcement, dependency/security, "
             "mutation, and blocking reviewability adapters are not "

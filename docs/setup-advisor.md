@@ -88,9 +88,12 @@ scripts such as `eslint`, `tsc`, and `vitest`, and Next.js/Jest scripts such
 as `lint`, `type-check`, and `test:unit`. The advisor records script names
 only from the root `package.json`; nested workspace packages are not scanned
 yet. Keep the real command arrays explicit in config. Workspace command
-ownership stays manual: configure root commands only when they cover intended
-packages, or document package-specific follow-up checks outside setup advisor
-until workspace ownership semantics are designed.
+ownership stays explicit: configure root commands only when they cover intended
+packages, or add package-owned commands under
+`[tool.agent_maintainer.workspaces.<name>]` with
+`typescript_lint_command`, `typescript_typecheck_command`, and
+`typescript_test_command`. Setup advisor still does not infer nested package
+commands or workspace managers.
 
 Keep TypeScript reviewability policy advisory until fixture or real-repo
 evidence proves low-noise thresholds.

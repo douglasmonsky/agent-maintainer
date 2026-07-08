@@ -23,7 +23,7 @@ class TypeScriptProvider:
         config = context.config
         if not config.enable_typescript:
             return []
-        return [
+        checks = [
             _configured_check(
                 "typescript-lint",
                 config.typescript_lint_command,
@@ -43,6 +43,38 @@ class TypeScriptProvider:
                 "typescript_test_command",
             ),
         ]
+        for workspace in config.workspaces:
+            workspace_specs = (
+                (
+                    "typescript-lint",
+                    workspace.typescript_lint_command,
+                    config.typescript_lint_profiles,
+                    f"workspaces.{workspace.name}.typescript_lint_command",
+                ),
+                (
+                    "typescript-typecheck",
+                    workspace.typescript_typecheck_command,
+                    config.typescript_typecheck_profiles,
+                    f"workspaces.{workspace.name}.typescript_typecheck_command",
+                ),
+                (
+                    "typescript-test",
+                    workspace.typescript_test_command,
+                    config.typescript_test_profiles,
+                    f"workspaces.{workspace.name}.typescript_test_command",
+                ),
+            )
+            checks.extend(
+                _configured_check(
+                    f"{check_name}:{workspace.name}",
+                    command,
+                    profiles,
+                    config_field,
+                )
+                for check_name, command, profiles, config_field in workspace_specs
+                if command
+            )
+        return checks
 
 
 def _configured_check(
