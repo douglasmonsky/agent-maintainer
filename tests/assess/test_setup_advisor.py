@@ -90,11 +90,16 @@ def test_setup_advisor_recommends_ts_scripts(tmp_path: Path) -> None:
     write_package_scripts(tmp_path, ("lint", "typecheck", "test"))
 
     report = build_setup_report(collect_evidence(tmp_path))
-    gate_names = {gate.name for gate in report.optional_gates}
+    gates = {gate.name: gate for gate in report.optional_gates}
 
-    assert "osv-scanner" in gate_names
-    assert "typescript-provider" in gate_names
+    assert "osv-scanner" in gates
+    assert "typescript-provider" in gates
+    assert "ESLint JSON" in gates["typescript-provider"].reason
+    assert "tsc --pretty false" in gates["typescript-provider"].reason
+    assert "Jest/Vitest JSON" in gates["typescript-provider"].reason
+    assert "coverage-summary.json or lcov.info" in gates["typescript-provider"].reason
     assert any("explicit TypeScript provider" in prompt for prompt in report.agent_prompts)
+    assert any("repair facts" in prompt for prompt in report.agent_prompts)
 
 
 def test_setup_advisor_ignores_irrelevant_scripts(tmp_path: Path) -> None:

@@ -70,7 +70,9 @@ tightening thresholds on a mature repo.
 When a repository has `package.json` scripts such as `lint`, `typecheck`, or
 `test`, the advisor may recommend enabling the experimental TypeScript provider.
 That recommendation does not guess the package manager or invent commands.
-Map existing scripts into explicit config, for example:
+Map existing scripts into explicit config and prefer parser-friendly outputs:
+ESLint JSON, `tsc --pretty false`, Jest/Vitest JSON, and existing
+`coverage-summary.json` or `lcov.info` artifacts. Example:
 
 ```toml
 [tool.agent_maintainer]

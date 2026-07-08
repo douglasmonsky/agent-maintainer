@@ -157,3 +157,4 @@ Overview links: [Mission, baseline, architecture target, execution rules](overvi
 | 167 | [React/Vite/Next Structured Test And Coverage Facts](phases/phase-167-react-vite-next-structured-test-and-coverage-facts.md) |
 | 168 | [TypeScript/React Doctor And Setup Guidance](phases/phase-168-typescript-react-doctor-and-setup-guidance.md) |
 | 169 | [TypeScript Repair-Fact Output Guidance](phases/phase-169-typescript-repair-fact-output-guidance.md) |
+| 170 | [TypeScript Setup Advisor Output Guidance](phases/phase-170-typescript-setup-advisor-output-guidance.md) |
