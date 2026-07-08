@@ -86,7 +86,8 @@ Common script shapes that should keep explicit command mapping include pnpm
 Vite/Vitest scripts such as `lint`, `typecheck`, and `test`, Vite/Vitest
 scripts such as `eslint`, `tsc`, and `vitest`, and Next.js/Jest scripts such
 as `lint`, `type-check`, and `test:unit`. The advisor records script names
-only; keep the real command arrays explicit in config.
+only from the root `package.json`; nested workspace packages are not scanned
+yet. Keep the real command arrays explicit in config.
 
 Keep TypeScript reviewability policy advisory until fixture or real-repo
 evidence proves low-noise thresholds.

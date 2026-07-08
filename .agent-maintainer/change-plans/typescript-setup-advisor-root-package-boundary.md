@@ -1,7 +1,7 @@
 +++
-id = "typescript-setup-advisor-script-fixtures"
+id = "typescript-setup-advisor-root-package-boundary"
 kind = "test"
-status = "complete"
+status = "active"
 base_ref = "origin/main"
 expires = 2026-07-22
 allowed_paths = [
@@ -9,42 +9,42 @@ allowed_paths = [
     ".docsync/attestations/**",
     ".docsync/trace.yml",
     "docs/roadmap/full-roadmap-blueprint.md",
-    "docs/roadmap/phases/phase-170-typescript-setup-advisor-output-guidance.md",
     "docs/roadmap/phases/phase-171-typescript-setup-advisor-script-fixtures.md",
+    "docs/roadmap/phases/phase-172-typescript-setup-advisor-root-package-boundary.md",
     "docs/setup-advisor.md",
     "tests/assess/test_setup_advisor.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 10
-max_changed_lines = 230
+max_changed_lines = 210
 allow_source_without_test_change = true
 requires_tests = true
 requires_full_verify = true
 ratchet_targets = []
 +++
 
-# Cohesive Change Plan: typescript-setup-advisor-script-fixtures
+# Cohesive Change Plan: typescript-setup-advisor-root-package-boundary
 
 ## Why this change intentionally large
 
-Phase 171 adds fixture-backed setup-advisor TypeScript examples, docs, roadmap,
-and DocSync trace in one small advisory evidence slice.
+Phase 172 codifies setup-advisor's current root-package TypeScript boundary
+with focused tests, docs, roadmap, and DocSync trace in one advisory slice.
 
 ## Why this should not be split smaller
 
-The tests and docs describe the same boundary: common script shapes should
-trigger advice, but command bodies remain explicit user configuration.
+The test and docs need to land together so users do not infer monorepo package
+ownership support from the Phase 171 script-shape examples.
 
 ## What allowed to change
 
-Only setup-advisor tests, setup-advisor docs, Phase 170/171 roadmap docs,
+Only setup-advisor tests, setup-advisor docs, Phase 171/172 roadmap docs,
 DocSync trace or required attestations, and change-plan records may change.
 
 ## What must not change
 
-Do not parse package script command bodies, infer package managers, add
-TypeScript starter files, change setup-advisor runtime behavior, or make
-TypeScript gates blocking.
+Do not recursively scan nested package files, infer workspace managers, inspect
+command bodies, introduce a command ownership model, or make TypeScript gates
+blocking.
 
 ## Verification plan
 
@@ -54,10 +54,10 @@ verifier before opening PR.
 
 ## Rollback plan
 
-Revert branch remove fixture examples, docs wording, roadmap Phase 171, and
-DocSync wording.
+Revert branch remove root-package boundary tests, docs wording, roadmap Phase
+172, and DocSync wording.
 
 ## Follow-up ratchet work
 
-Later TypeScript/React slices can add setup-advisor examples for monorepo
-package boundaries once command ownership semantics are designed.
+Design workspace command ownership before adding recursive package discovery or
+workspace-aware recommendations.

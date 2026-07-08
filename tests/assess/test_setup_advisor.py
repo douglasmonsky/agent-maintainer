@@ -143,6 +143,28 @@ def test_setup_advisor_recommends_ts_script_fixtures(
     )
 
 
+def test_setup_advisor_ignores_nested_package_scripts(tmp_path: Path) -> None:
+    """Nested package scripts do not imply root command ownership."""
+    write_repo(tmp_path)
+    nested = tmp_path / "packages" / "web"
+    nested.mkdir(parents=True)
+    write_package_script_commands(
+        nested,
+        {
+            "lint": "pnpm exec eslint . --format json",
+            "typecheck": "pnpm exec tsc --pretty false --noEmit",
+            "test": "pnpm exec vitest run --reporter=json --coverage",
+        },
+    )
+
+    evidence = collect_evidence(tmp_path)
+    report = build_setup_report(evidence)
+    gate_names = {gate.name for gate in report.optional_gates}
+
+    assert evidence.package_scripts == ()
+    assert "typescript-provider" not in gate_names
+
+
 def test_setup_advisor_ignores_irrelevant_scripts(tmp_path: Path) -> None:
     """Package scripts alone do not imply TypeScript provider setup."""
     write_repo(tmp_path)
