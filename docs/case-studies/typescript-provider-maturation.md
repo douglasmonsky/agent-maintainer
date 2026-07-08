@@ -127,6 +127,7 @@ TypeScript/JavaScript should not move toward supported status until it has:
 - at least one external real-repo comparison pass with acceptable noise;
 - broader external comparisons across more framework and workspace shapes;
 - stable explicit-command behavior;
+- workspace command ownership semantics before recursive package discovery;
 - clear doctor messages for missing commands and executables;
 - structured repair facts only for stable test and coverage outputs;
 - documented unsupported package managers, runners, and frameworks;

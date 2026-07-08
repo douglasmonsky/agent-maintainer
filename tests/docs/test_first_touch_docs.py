@@ -102,6 +102,9 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "workspace layouts are not inferred into framework specific "
             "default checks, generated-file rules, coverage commands, "
             "or dependency policies.",
+            "Workspace command ownership is manual.",
+            "Configure root TypeScript commands only when they intentionally "
+            "cover packages you want Agent Maintainer to verify.",
             "Coverage summaries and LCOV files can improve `typescript-test` repair facts",
             "TypeScript coverage enforcement, dependency/security, "
             "mutation, and blocking reviewability adapters are not "
@@ -127,6 +130,7 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "`vitest-dev/eslint-plugin-vitest`",
             "Phase 140 added a second external comparison from "
             "`jsynowiec/node-typescript-boilerplate`",
+            "workspace command ownership semantics before recursive package discovery",
             "broader repository samples are still needed before TypeScript "
             "reviewability becomes blocking or supported.",
         ),

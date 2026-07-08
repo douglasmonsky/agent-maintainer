@@ -87,7 +87,10 @@ Vite/Vitest scripts such as `lint`, `typecheck`, and `test`, Vite/Vitest
 scripts such as `eslint`, `tsc`, and `vitest`, and Next.js/Jest scripts such
 as `lint`, `type-check`, and `test:unit`. The advisor records script names
 only from the root `package.json`; nested workspace packages are not scanned
-yet. Keep the real command arrays explicit in config.
+yet. Keep the real command arrays explicit in config. Workspace command
+ownership stays manual: configure root commands only when they cover intended
+packages, or document package-specific follow-up checks outside setup advisor
+until workspace ownership semantics are designed.
 
 Keep TypeScript reviewability policy advisory until fixture or real-repo
 evidence proves low-noise thresholds.
