@@ -1,0 +1,32 @@
+version: 1
+documents:
+  docs.readme:
+    path: README.md
+    title: Demo Service
+    audience: users
+objects:
+  docs.readme.tax_total:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.tax_total
+    heading:
+      level: 2
+      text: Demo Service
+claims:
+  claim.readme.tax_total:
+    object: docs.readme.tax_total
+    text: README explains the supported tax total behavior.
+    severity: high
+    evidence:
+      - evidence.tax_total
+    review:
+      acceptable_attestation_reasons:
+        - implementation_rate_reviewed
+evidence:
+  evidence.tax_total:
+    type: code
+    description: Tax total implementation.
+    anchors:
+      - path: src/service.py
+        mode: explicit_region

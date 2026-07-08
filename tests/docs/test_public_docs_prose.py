@@ -80,6 +80,25 @@ def test_docsync_roadmap_names_usefulness_tracks() -> None:
     assert not missing, missing
 
 
+def test_docsync_onboarding_records_loop() -> None:
+    """DocSync onboarding docs preserve tutorial and fixture references."""
+    onboarding = normalized_text("docs/docsync-onboarding.md")
+    standalone = normalized_text("docs/docsync-standalone-readme.md")
+
+    expected = (
+        "uses `docsync trace ...` commands to add reviewable claims",
+        "python -m docsync doctor --fix",
+        ".docsync/out/review-packet.json",
+        "examples/docsync-first-run/",
+        "tests/docsync/test_docsync_onboarding_flow.py",
+        "`docsync trace ...` authors documents, objects, evidence, and claims.",
+    )
+    combined = f"{onboarding} {standalone}"
+    missing = [phrase for phrase in expected if phrase not in combined]
+
+    assert not missing, missing
+
+
 def test_important_public_docs_avoid_known_compressed_fragments() -> None:
     """Guard against compressed note fragments found during documentation audit."""
     text = "\n".join(
