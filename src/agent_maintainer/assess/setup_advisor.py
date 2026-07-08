@@ -17,6 +17,10 @@ TYPESCRIPT_TYPECHECK_SCRIPT_NAMES = frozenset(
     ("check:types", "tsc", "type-check", "typecheck"),
 )
 TYPESCRIPT_TEST_SCRIPT_NAMES = frozenset(("jest", "test", "test:unit", "vitest"))
+TYPESCRIPT_REPAIR_FACT_OUTPUT_GUIDANCE = (
+    "prefer ESLint JSON, tsc --pretty false, Jest/Vitest JSON, and existing "
+    "coverage-summary.json or lcov.info artifacts for repair facts"
+)
 
 
 def build_setup_report(evidence: RepoEvidence) -> SetupAdvisorReport:
@@ -149,7 +153,8 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
                 recommendation="consider",
                 reason=(
                     "package.json exposes lint/typecheck/test scripts that can be "
-                    "mapped to explicit TypeScript provider commands."
+                    "mapped to explicit TypeScript provider commands; "
+                    f"{TYPESCRIPT_REPAIR_FACT_OUTPUT_GUIDANCE}."
                 ),
                 config_key="enable_typescript",
                 profiles=("precommit", "full", "ci"),
@@ -211,6 +216,9 @@ def _agent_prompts(evidence: RepoEvidence) -> tuple[str, ...]:
         prompts.append(
             "Map existing package.json scripts to explicit TypeScript provider "
             "commands; do not guess package manager.",
+        )
+        prompts.append(
+            f"When mapping TypeScript scripts, {TYPESCRIPT_REPAIR_FACT_OUTPUT_GUIDANCE}.",
         )
     return tuple(prompts)
 

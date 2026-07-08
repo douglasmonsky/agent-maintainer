@@ -812,7 +812,7 @@ claims:
       - evidence.agent_guidance.compact_sidecar_tests
   claim.docs.setup_advisor_recommendations:
     object: docs.setup_advisor.overview
-    text: Setup advisor docs describe advisory local recommendations, TypeScript command mapping from existing scripts, and dry-run first adoption flow.
+    text: "Setup advisor docs describe advisory local recommendations, TypeScript command mapping from existing scripts, parser-friendly repair-fact outputs, and dry-run first adoption flow."
     severity: medium
     evidence:
       - evidence.setup_advisor.recommendation_tests
@@ -1181,7 +1181,7 @@ evidence:
         mode: explicit_region
   evidence.setup_advisor.recommendation_tests:
     type: test
-    description: Setup advisor tests assert advisory TypeScript script recommendations and avoid false-positive TypeScript provider advice.
+    description: "Setup advisor tests assert advisory TypeScript script recommendations, repair-fact output guidance, and false-positive TypeScript provider avoidance."
     anchors:
       - path: tests/assess/test_setup_advisor.py
         mode: explicit_region
