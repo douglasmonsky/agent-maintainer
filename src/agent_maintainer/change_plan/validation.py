@@ -7,6 +7,7 @@ from datetime import date
 from agent_maintainer.change_plan.models import (
     ACTIVE_STATUS,
     REQUIRED_SECTIONS,
+    VALID_STATUSES,
     ChangePlan,
     ValidationIssue,
 )
@@ -22,6 +23,8 @@ def validate_plan(plan: ChangePlan, *, today: date | None = None) -> tuple[Valid
     current_date = today or date.today()
     issues: list[ValidationIssue] = []
     issues.extend(metadata_issues(plan, current_date))
+    if plan.metadata.status in VALID_STATUSES and plan.metadata.status != ACTIVE_STATUS:
+        return tuple(issues)
     issues.extend(section_issues(plan))
     return tuple(issues)
 
@@ -31,8 +34,11 @@ def metadata_issues(plan: ChangePlan, today: date) -> tuple[ValidationIssue, ...
 
     metadata = plan.metadata
     issues: list[ValidationIssue] = []
-    if metadata.status != ACTIVE_STATUS:
-        issues.append(issue(plan, f"status must be {ACTIVE_STATUS!r}"))
+    if metadata.status not in VALID_STATUSES:
+        choices = ", ".join(repr(status) for status in VALID_STATUSES)
+        issues.append(issue(plan, f"status must be one of: {choices}"))
+    if metadata.status in VALID_STATUSES and metadata.status != ACTIVE_STATUS:
+        return tuple(issues)
     if metadata.expires < today:
         expiry = metadata.expires.isoformat()
         issues.append(issue(plan, f"plan expired on {expiry}"))

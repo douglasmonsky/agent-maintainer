@@ -1,7 +1,7 @@
 +++
 id = "docsync-standalone-readiness"
 kind = "migration"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-21
 allowed_paths = ["src/docsync/**", "tests/docsync/**", "tests/docs/**", "docs/docsync*.md", "examples/docsync/**", ".docsync/trace.yml", ".agent-maintainer/change-plans/**", "pyproject.toml", "docs/architecture/decisions/**", "src/archguard/decision_notes.py", "tests/archguard/test_decision_notes.py"]

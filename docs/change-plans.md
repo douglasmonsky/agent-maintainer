@@ -22,6 +22,10 @@ Validate plans and current diff scope:
 python -m agent_maintainer change-plan check
 ```
 
+Use `status = "active"` for the single plan that should constrain and bend the
+current branch diff. Use `status = "complete"` to retain historical plans in the
+repository without participating in current diff-scope validation.
+
 Plans use TOML front matter between `+++` delimiters, followed by required
 markdown sections that explain why the work is intentionally large, why it
 should not split smaller, what may change, what must not change, how it will be
