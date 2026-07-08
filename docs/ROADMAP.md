@@ -96,6 +96,21 @@ Track work:
 - [x] Phase 163: Attention Ledger Performance Guards
 - [x] Phase 164: Agent Efficacy Metrics
 
+## Planned: TypeScript/React Provider Maturation
+
+Return to polyglot work through the existing TypeScript/JavaScript provider
+track. Focus first on TypeScript and React repositories, not new ecosystems.
+Keep the provider experimental until evidence satisfies the promotion bar in
+[`docs/case-studies/typescript-provider-maturation.md`](case-studies/typescript-provider-maturation.md).
+
+Track work:
+
+- [ ] Phase 165: React Fixture Corpus And Reviewability Baseline
+- [ ] Phase 166: TypeScript Package-Manager And Workspace Evidence
+- [ ] Phase 167: React/Vite/Next Structured Test And Coverage Facts
+- [ ] Phase 168: TypeScript/React Doctor And Setup Guidance
+- [ ] Phase 169: TypeScript/React Blocking-Gate Promotion Assessment
+
 ## Future Work
 
 - Keep agent orchestration framework work behind replaceable adapter contracts:
