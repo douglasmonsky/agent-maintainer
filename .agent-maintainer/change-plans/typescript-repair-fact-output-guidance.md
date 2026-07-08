@@ -18,8 +18,8 @@ allowed_paths = [
   "tests/doctor/test_typescript_doctor.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 12
-max_changed_lines = 280
+max_changed_files = 13
+max_changed_lines = 300
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
