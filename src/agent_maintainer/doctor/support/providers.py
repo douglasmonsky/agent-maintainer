@@ -23,23 +23,26 @@ from agent_maintainer.ecosystems.registry import (
 
 ConfiguredCommand = tuple[str, str, tuple[str, ...]]
 ConfiguredCommands = tuple[ConfiguredCommand, ...]
-TypeScriptRepairFactPattern = tuple[str, tuple[str, ...]]
+TypeScriptRepairFactPattern = tuple[str, str, tuple[str, ...]]
 
-TYPESCRIPT_REPAIR_FACT_PATTERNS: dict[str, TypeScriptRepairFactPattern] = {
-    "typescript_lint_command": (
+TYPESCRIPT_REPAIR_FACT_PATTERNS: tuple[TypeScriptRepairFactPattern, ...] = (
+    (
+        "typescript_lint_command",
         "emit ESLint JSON from typescript_lint_command",
         ("--format=json", "--format json", "-f json"),
     ),
-    "typescript_typecheck_command": (
+    (
+        "typescript_typecheck_command",
         "run tsc with --pretty false from typescript_typecheck_command",
         ("--pretty=false", "--pretty false"),
     ),
-    "typescript_test_command": (
+    (
+        "typescript_test_command",
         "emit Jest/Vitest JSON and existing coverage-summary.json or lcov.info artifacts "
         "from typescript_test_command",
         ("--json", " json", "coverage-summary.json", "lcov.info", "lcov"),
     ),
-}
+)
 
 
 def check_provider_status(config: MaintainerConfig) -> DoctorResult:
@@ -181,10 +184,13 @@ def typescript_repair_fact_recommendations(commands: ConfiguredCommands) -> tupl
     """Return parser-friendly output recommendations for configured commands."""
     recommendations: list[str] = []
     for _check_name, field_name, command in commands:
-        pattern = TYPESCRIPT_REPAIR_FACT_PATTERNS.get(field_name)
+        pattern = next(
+            (item for item in TYPESCRIPT_REPAIR_FACT_PATTERNS if item[0] == field_name),
+            None,
+        )
         if pattern is None:
             continue
-        recommendation, markers = pattern
+        _field_name, recommendation, markers = pattern
         text = command_text(command)
         if not any(marker in text for marker in markers):
             recommendations.append(recommendation)
