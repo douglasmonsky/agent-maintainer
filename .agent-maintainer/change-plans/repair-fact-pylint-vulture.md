@@ -9,6 +9,7 @@ allowed_paths = [
   "src/agent_repair_facts/parsers/logs.py",
   "src/agent_repair_facts/registry.py",
   "tests/context/test_exact_facts.py",
+  "tests/context/test_log_exact_facts.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 6
