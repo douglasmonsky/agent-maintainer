@@ -1,7 +1,7 @@
 +++
 id = "typescript-setup-advisor-output-guidance"
 kind = "feat"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-22
 allowed_paths = [
