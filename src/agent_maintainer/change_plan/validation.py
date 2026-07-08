@@ -23,7 +23,7 @@ def validate_plan(plan: ChangePlan, *, today: date | None = None) -> tuple[Valid
     current_date = today or date.today()
     issues: list[ValidationIssue] = []
     issues.extend(metadata_issues(plan, current_date))
-    if plan.metadata.status in VALID_STATUSES and plan.metadata.status != ACTIVE_STATUS:
+    if _is_complete_status(plan.metadata.status):
         return tuple(issues)
     issues.extend(section_issues(plan))
     return tuple(issues)
@@ -31,14 +31,10 @@ def validate_plan(plan: ChangePlan, *, today: date | None = None) -> tuple[Valid
 
 def metadata_issues(plan: ChangePlan, today: date) -> tuple[ValidationIssue, ...]:
     """Return metadata validation issues."""
-
-    metadata = plan.metadata
-    issues: list[ValidationIssue] = []
-    if metadata.status not in VALID_STATUSES:
-        choices = ", ".join(repr(status) for status in VALID_STATUSES)
-        issues.append(issue(plan, f"status must be one of: {choices}"))
-    if metadata.status in VALID_STATUSES and metadata.status != ACTIVE_STATUS:
+    issues = list(status_issues(plan))
+    if _is_complete_status(plan.metadata.status):
         return tuple(issues)
+    metadata = plan.metadata
     if metadata.expires < today:
         expiry = metadata.expires.isoformat()
         issues.append(issue(plan, f"plan expired on {expiry}"))
@@ -54,6 +50,14 @@ def metadata_issues(plan: ChangePlan, today: date) -> tuple[ValidationIssue, ...
         issues.append(issue(plan, "ratchet_targets must point to Python files"))
     issues.extend(integration_branch_issues(plan))
     return tuple(issues)
+
+
+def status_issues(plan: ChangePlan) -> tuple[ValidationIssue, ...]:
+    """Return change-plan status validation issues."""
+    if plan.metadata.status in VALID_STATUSES:
+        return ()
+    choices = ", ".join(repr(status) for status in VALID_STATUSES)
+    return (issue(plan, f"status must be one of: {choices}"),)
 
 
 def integration_branch_issues(plan: ChangePlan) -> tuple[ValidationIssue, ...]:
@@ -118,6 +122,10 @@ def section_issues(plan: ChangePlan) -> tuple[ValidationIssue, ...]:
         if len(body.strip()) < MIN_SECTION_LENGTH:
             issues.append(issue(plan, f"missing required section: {section}"))
     return tuple(issues)
+
+
+def _is_complete_status(status: str) -> bool:
+    return status in VALID_STATUSES and status != ACTIVE_STATUS
 
 
 def issue(plan: ChangePlan, message: str) -> ValidationIssue:
