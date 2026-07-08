@@ -1,7 +1,6 @@
 # Agent Maintainer Roadmap Blueprint
-This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as the recovery checklist. Do not re-expand index into monolithic blueprint.
 
-## Overview
+This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as the recovery checklist. Do not re-expand index into monolithic blueprint.
 
 Overview links: [Mission, baseline, architecture target, execution rules](overview.md), [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md), [Future-Call ROI Acceleration Track](future-call-roi-acceleration.md), [Final Definition Done](final-definition-of-done.md).
 
