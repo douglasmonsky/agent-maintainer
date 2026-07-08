@@ -11,6 +11,13 @@ careful expansion. Experimental providers are not feature parity.
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security and dependency checks, doctor support, repair facts, and starter templates. | External plugin API. |
 | TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, and Istanbul/LCOV repair facts; format-aware doctor setup and repair-fact output guidance rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters, and blocking reviewability gates. |
 
+The next TypeScript/React parity track is planned in
+[`docs/roadmap/typescript-react-parity-roadmap.md`](roadmap/typescript-react-parity-roadmap.md).
+It keeps the provider advisory-only while implementation PRs add evidence for
+package detection, Knip, OSV, dependency boundaries, LCOV changed-line
+coverage, React lint rulepacks, generated-file policy, StrykerJS, and a final
+blocking-gate promotion assessment.
+
 There is no active Go provider on `main`. Go remains archived historical work
 until TypeScript/JavaScript has stronger evidence and the provider seam has
 settled.
