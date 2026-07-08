@@ -15,6 +15,7 @@ ARTIFACT_FACT_PARSERS: tuple[FactParserEntry, ...] = (
     ("pyright", lint.pyright_facts),
     ("bandit", lint.bandit_facts),
     ("pytest-coverage", pytest.pytest_artifact_facts),
+    ("typescript-test", typescript.typescript_test_artifact_facts),
     ("docsync", docsync.docsync_report_facts),
 )
 

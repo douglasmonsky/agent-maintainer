@@ -5,6 +5,10 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
+from agent_repair_facts.parsers.typescript_coverage import (
+    parse_coverage_summary_json,
+    parse_lcov_info,
+)
 from agent_repair_facts.parsers.typescript_diagnostics import (
     TypeScriptDiagnostic,
     parse_eslint_json,
@@ -25,8 +29,17 @@ def typescript_typecheck_facts(path: Path, check: str) -> list[dict[str, object]
 
 
 def typescript_test_facts(path: Path, check: str) -> list[dict[str, object]]:
-    """Return exact facts from Jest-compatible JSON test output."""
+    """Return exact facts from TypeScript test JSON log output."""
     return diagnostic_facts(read_diagnostics(path, parse_jest_json), check)
+
+
+def typescript_test_artifact_facts(path: Path, check: str) -> list[dict[str, object]]:
+    """Return exact facts from TypeScript test artifacts."""
+    if path.name == "coverage-summary.json":
+        return diagnostic_facts(read_diagnostics(path, parse_coverage_summary_json), check)
+    if path.name == "lcov.info" or path.suffix == ".lcov":
+        return diagnostic_facts(read_diagnostics(path, parse_lcov_info), check)
+    return []
 
 
 def read_diagnostics(

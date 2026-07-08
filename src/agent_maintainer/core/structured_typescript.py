@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from agent_repair_facts.parsers.typescript_coverage import (
+    parse_coverage_summary_json,
+    parse_lcov_info,
+)
 from agent_repair_facts.parsers.typescript_diagnostics import (
     TypeScriptDiagnostic,
     format_diagnostic,
@@ -24,8 +28,12 @@ def summarize_typescript_typecheck(raw_output: str) -> str | None:
 
 
 def summarize_typescript_test(raw_output: str) -> str | None:
-    """Return compact summary for Jest-compatible JSON test output."""
-    return summarize_diagnostics(parse_jest_json(raw_output))
+    """Return compact summary for TypeScript test or coverage output."""
+    return summarize_diagnostics(
+        parse_jest_json(raw_output)
+        or parse_coverage_summary_json(raw_output)
+        or parse_lcov_info(raw_output)
+    )
 
 
 def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:

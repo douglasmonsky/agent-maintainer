@@ -79,7 +79,8 @@ configured-command output:
   `src/app.ts(4,9): error TS2322: ...`;
 - `typescript-lint`: ESLint JSON formatter output;
 - `typescript-test`: Jest-compatible JSON output with `testResults` and
-  `assertionResults`, including Vitest/Jest JSON reporter shapes.
+  `assertionResults`, Vitest task-style JSON fixtures, Istanbul
+  `coverage-summary.json`, and LCOV `lcov.info` artifacts.
 
 These parsers are repair-loop helpers. They do not require new config fields,
 and malformed output falls back to the normal bounded raw-log summary.
@@ -110,27 +111,31 @@ Agent Maintainer does not infer package manager behavior from lockfiles,
 
 Test runners are not auto-detected. `Jest`, `Vitest`, `Playwright`, `Cypress`,
 `Mocha`, and other runners must be wired through `typescript_test_command`.
-Structured repair facts currently expect stable JSON or TypeScript
-compiler-style output; arbitrary human-oriented transcripts stay bounded raw
-logs.
+Structured repair facts currently expect stable JSON, TypeScript
+compiler-style output, stable Jest/Vitest test JSON, or explicit
+Istanbul/LCOV coverage artifacts; arbitrary human-oriented transcripts stay
+bounded raw logs.
 
 Frameworks are classified conservatively. `Next.js`, `Vite`, `Astro`,
 `SvelteKit`, and monorepo workspace layouts are not inferred into framework
-specific default checks, generated-file rules, coverage adapters, or dependency
+specific default checks, generated-file rules, coverage commands, or dependency
 policies. Configure the repository's own scripts first, then use
 `assess reviewability` to inspect advisory changed-file evidence.
 
-Coverage, dependency/security, mutation, and blocking reviewability adapters are
-not implemented for TypeScript/JavaScript yet. The provider should remain
-experimental until these surfaces have fixture and real-repo evidence.
+Coverage summaries and LCOV files can improve `typescript-test` repair facts
+when a repository already produces those artifacts, but TypeScript coverage
+enforcement, dependency/security, mutation, and blocking reviewability adapters
+are not implemented yet. The provider should remain experimental until these
+surfaces have fixture and real-repo evidence.
 
 ## Limitations
 
 - No package-manager autodetection.
 - No generated starter files yet.
-- No structured parser for coverage output or arbitrary non-JSON test
+- No structured parser for arbitrary human-oriented test or coverage
   transcripts.
-- No TypeScript coverage, mutation, dependency, or security adapter.
+- No TypeScript coverage command adapter, mutation, dependency, or security
+  adapter.
 - No public plugin API.
 - No TypeScript reviewability gate is blocking by default.
 

@@ -66,8 +66,17 @@ depends_on = [
 
 path = "parsers.typescript"
 depends_on = [
+  "parsers.typescript_coverage",
   "parsers.typescript_diagnostics",
   "payloads",
+]
+
+
+[[modules]]
+
+path = "parsers.typescript_coverage"
+depends_on = [
+  "parsers.typescript_diagnostics",
 ]
 
 

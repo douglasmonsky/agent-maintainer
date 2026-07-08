@@ -77,6 +77,74 @@ def test_typescript_test_output_summarizes_jest_json() -> None:
     assert reporting.summarize_check("typescript-test", raw_output, 5, 500) == summary
 
 
+def test_typescript_test_output_summarizes_vitest_task_json() -> None:
+    """Vitest task-style JSON output produces compact summaries."""
+    raw_output = json.dumps(
+        {
+            "files": [
+                {
+                    "filepath": "apps/web/src/App.test.tsx",
+                    "tasks": [
+                        {
+                            "name": "renders marketing headline",
+                            "result": {
+                                "state": "fail",
+                                "errors": [
+                                    {
+                                        "message": "expected title to include Welcome",
+                                        "location": {"line": 14, "column": 5},
+                                    }
+                                ],
+                            },
+                        }
+                    ],
+                }
+            ]
+        }
+    )
+
+    summary = structured_typescript.summarize_typescript_test(raw_output)
+
+    assert summary == (
+        "apps/web/src/App.test.tsx:14:5: error: typescript-test: "
+        "renders marketing headline: expected title to include Welcome"
+    )
+
+
+def test_typescript_test_output_summarizes_istanbul_coverage_summary() -> None:
+    """Istanbul coverage-summary JSON output produces compact summaries."""
+    raw_output = json.dumps(
+        {
+            "total": {"lines": {"total": 20, "covered": 19, "pct": 95}},
+            "apps/web/src/App.tsx": {
+                "lines": {"total": 8, "covered": 6, "pct": 75},
+                "statements": {"total": 10, "covered": 8, "pct": 80},
+                "branches": {"total": 2, "covered": 1, "pct": 50},
+                "functions": {"total": 2, "covered": 2, "pct": 100},
+            },
+        }
+    )
+
+    summary = structured_typescript.summarize_typescript_test(raw_output)
+
+    assert summary == (
+        "apps/web/src/App.tsx:1:1: error: typescript-coverage: "
+        "Coverage below 100%: lines 75.00% (6/8), "
+        "statements 80.00% (8/10), branches 50.00% (1/2)"
+    )
+
+
+def test_typescript_test_output_summarizes_lcov() -> None:
+    """LCOV output produces compact TypeScript coverage summaries."""
+    raw_output = "SF:apps/web/src/App.tsx\nDA:3,1\nDA:8,0\nDA:9,0\nend_of_record\n"
+
+    summary = structured_typescript.summarize_typescript_test(raw_output)
+
+    assert summary == (
+        "apps/web/src/App.tsx:8:1: error: typescript-coverage: 2 uncovered line(s) in file."
+    )
+
+
 def test_typescript_test_parser_ignores_non_failure_payloads() -> None:
     """Jest-compatible parser ignores unsupported and passing payloads."""
     raw_output = json.dumps(

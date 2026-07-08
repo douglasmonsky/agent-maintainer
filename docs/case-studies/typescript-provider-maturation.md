@@ -53,8 +53,13 @@ output. Phase 165 added a React app-shaped temporary Git repository fixture
 covering React dependencies, TSX source, TSX tests, and a React entrypoint
 while staying advisory-clean. Phase 166 added pnpm workspace-shaped evidence
 for root package metadata, workspace metadata, lockfile metadata, package
-metadata, workspace TSX source, and workspace TSX tests. Broader external
-framework samples remain needed before promotion beyond advisory output.
+metadata, workspace TSX source, and workspace TSX tests. Phase 167 added
+structured `typescript-test` repair-fact coverage for React/Vite/Next-adjacent
+outputs: Vitest task-style JSON, Istanbul `coverage-summary.json`, and LCOV
+`lcov.info` artifacts. This improves failed-check repair context when
+repositories already produce stable artifacts; it does not add TypeScript
+coverage enforcement or default framework commands. Broader external framework
+samples remain needed before promotion beyond advisory output.
 
 Phase 139 added one external public-repository comparison against
 `vitest-dev/eslint-plugin-vitest` commit
@@ -106,7 +111,8 @@ Use this page as an implementation notebook while TypeScript matures. Track:
 
 - which repository shapes stay low-noise;
 - where package-manager assumptions stay provider-specific;
-- which output formats are stable enough for exact repair facts;
+- which output formats are stable enough for exact repair facts, including test
+  and coverage artifacts;
 - whether suppressions should remain advisory;
 - which advisory threshold values stay low-noise across real repositories;
 - which signals are too framework-specific for defaults;
@@ -122,7 +128,7 @@ TypeScript/JavaScript should not move toward supported status until it has:
 - broader external comparisons across more framework and workspace shapes;
 - stable explicit-command behavior;
 - clear doctor messages for missing commands and executables;
-- structured repair facts only for stable outputs;
+- structured repair facts only for stable test and coverage outputs;
 - documented unsupported package managers, runners, and frameworks;
 - no blocking gates enabled by default.
 

@@ -107,7 +107,7 @@ Track work:
 
 - [x] Phase 165: React Fixture Corpus And Reviewability Baseline
 - [x] Phase 166: TypeScript Package-Manager And Workspace Evidence
-- [ ] Phase 167: React/Vite/Next Structured Test And Coverage Facts
+- [x] Phase 167: React/Vite/Next Structured Test And Coverage Facts
 - [ ] Phase 168: TypeScript/React Doctor And Setup Guidance
 - [ ] Phase 169: TypeScript/React Blocking-Gate Promotion Assessment
 
