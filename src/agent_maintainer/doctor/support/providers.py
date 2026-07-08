@@ -164,39 +164,24 @@ def typescript_repair_fact_recommendations(commands: ConfiguredCommands) -> tupl
     """Return parser-friendly output recommendations for configured commands."""
     recommendations: list[str] = []
     for _check_name, field_name, command in commands:
-        if field_name == "typescript_lint_command" and not command_mentions_eslint_json(command):
+        text = command_text(command)
+        if field_name == "typescript_lint_command" and not (
+            "--format=json" in text or "--format json" in text or "-f json" in text
+        ):
             recommendations.append("emit ESLint JSON from typescript_lint_command")
-        if field_name == "typescript_typecheck_command" and not command_mentions_pretty_false(
-            command
+        if field_name == "typescript_typecheck_command" and not (
+            "--pretty=false" in text or "--pretty false" in text
         ):
             recommendations.append("run tsc with --pretty false from typescript_typecheck_command")
-        if field_name == "typescript_test_command" and not command_mentions_test_artifacts(command):
+        if field_name == "typescript_test_command" and not any(
+            marker in text
+            for marker in ("--json", " json", "coverage-summary.json", "lcov.info", "lcov")
+        ):
             recommendations.append(
                 "emit Jest/Vitest JSON and existing coverage-summary.json or lcov.info artifacts "
                 "from typescript_test_command",
             )
     return tuple(recommendations)
-
-
-def command_mentions_eslint_json(command: tuple[str, ...]) -> bool:
-    """Return whether command tokens visibly request ESLint JSON output."""
-    text = command_text(command)
-    return "--format=json" in text or "--format json" in text or "-f json" in text
-
-
-def command_mentions_pretty_false(command: tuple[str, ...]) -> bool:
-    """Return whether command tokens visibly request tsc non-pretty output."""
-    text = command_text(command)
-    return "--pretty=false" in text or "--pretty false" in text
-
-
-def command_mentions_test_artifacts(command: tuple[str, ...]) -> bool:
-    """Return whether command tokens visibly mention parser-friendly test artifacts."""
-    text = command_text(command)
-    return any(
-        marker in text
-        for marker in ("--json", " json", "coverage-summary.json", "lcov.info", "lcov")
-    )
 
 
 def command_text(command: tuple[str, ...]) -> str:
