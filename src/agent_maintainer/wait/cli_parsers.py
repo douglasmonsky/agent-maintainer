@@ -192,6 +192,7 @@ def _add_sweep_parser(subparsers: Any) -> None:
     sweep = subparsers.add_parser("sweep", help="Sweep registered waits.")
     mode = sweep.add_mutually_exclusive_group(required=True)
     mode.add_argument("--once", action="store_true")
+    mode.add_argument("--one")
     mode.add_argument("--watch")
     sweep.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
     sweep.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
