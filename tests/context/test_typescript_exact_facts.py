@@ -233,6 +233,31 @@ def test_typescript_test_lcov_artifact_extracts_missing_line_fact(
     ]
 
 
+def test_typescript_test_unknown_artifact_falls_back_to_generic_fact(
+    tmp_path: Path,
+) -> None:
+    """Unsupported TypeScript test artifacts keep generic failure facts."""
+    artifact_path = tmp_path / "coverage.xml"
+    artifact_path.write_text("<coverage />", encoding="utf-8")
+
+    facts = exact_facts.repair_facts(
+        tmp_path,
+        (record_with_artifact("typescript-test", artifact_path),),
+    )
+
+    assert facts == [
+        {
+            "check": "typescript-test",
+            "path": None,
+            "line": None,
+            "column": None,
+            "symbol": None,
+            "message": "typescript-test failed with exit code 1",
+            "severity": "error",
+        },
+    ]
+
+
 def test_typescript_malformed_logs_fall_back_to_generic_fact(tmp_path: Path) -> None:
     """Malformed TypeScript output still yields generic failure facts."""
     log_path = tmp_path / "typescript-lint.log"

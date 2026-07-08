@@ -15,6 +15,7 @@ from agent_repair_facts.parsers.typescript_diagnostics import (
     parse_jest_json,
     parse_tsc_output,
 )
+from agent_repair_facts.parsers.typescript_tests import parse_vitest_json
 from agent_repair_facts.payloads import fact_payload
 
 
@@ -30,7 +31,12 @@ def typescript_typecheck_facts(path: Path, check: str) -> list[dict[str, object]
 
 def typescript_test_facts(path: Path, check: str) -> list[dict[str, object]]:
     """Return exact facts from TypeScript test JSON log output."""
-    return diagnostic_facts(read_diagnostics(path, parse_jest_json), check)
+    return diagnostic_facts(read_diagnostics(path, parse_typescript_test_json), check)
+
+
+def parse_typescript_test_json(raw_output: str) -> list[TypeScriptDiagnostic]:
+    """Parse supported TypeScript test JSON outputs."""
+    return parse_jest_json(raw_output) or parse_vitest_json(raw_output)
 
 
 def typescript_test_artifact_facts(path: Path, check: str) -> list[dict[str, object]]:

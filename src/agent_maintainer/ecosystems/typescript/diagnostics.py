@@ -1,6 +1,10 @@
 """Compatibility shim for TypeScript diagnostic parsers."""
 
-from agent_repair_facts.parsers import typescript_coverage, typescript_diagnostics
+from agent_repair_facts.parsers import (
+    typescript_coverage,
+    typescript_diagnostics,
+    typescript_tests,
+)
 
 TSC_DIAGNOSTIC_RE = typescript_diagnostics.TSC_DIAGNOSTIC_RE
 LCOV_LINE_RE = typescript_coverage.LCOV_LINE_RE
@@ -23,7 +27,7 @@ jest_suite_diagnostics = typescript_diagnostics.jest_suite_diagnostics
 jest_test_name = typescript_diagnostics.jest_test_name
 lcov_record_diagnostics = typescript_coverage.lcov_record_diagnostics
 metric_message = typescript_coverage.metric_message
-first_error_object = typescript_diagnostics.first_error_object
+first_error_object = typescript_tests.first_error_object
 optional_int = typescript_diagnostics.optional_int
 optional_float = typescript_coverage.optional_float
 optional_text = typescript_diagnostics.optional_text
@@ -32,8 +36,9 @@ parse_eslint_json = typescript_diagnostics.parse_eslint_json
 parse_jest_json = typescript_diagnostics.parse_jest_json
 parse_lcov_info = typescript_coverage.parse_lcov_info
 parse_tsc_output = typescript_diagnostics.parse_tsc_output
+parse_vitest_json = typescript_tests.parse_vitest_json
 tsc_diagnostic = typescript_diagnostics.tsc_diagnostic
-vitest_failure_message = typescript_diagnostics.vitest_failure_message
-vitest_payload_diagnostics = typescript_diagnostics.vitest_payload_diagnostics
-vitest_task_diagnostic = typescript_diagnostics.vitest_task_diagnostic
-vitest_task_diagnostics = typescript_diagnostics.vitest_task_diagnostics
+vitest_failure_message = typescript_tests.vitest_failure_message
+vitest_payload_diagnostics = typescript_tests.vitest_payload_diagnostics
+vitest_task_diagnostic = typescript_tests.vitest_task_diagnostic
+vitest_task_diagnostics = typescript_tests.vitest_task_diagnostics

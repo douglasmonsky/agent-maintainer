@@ -15,10 +15,11 @@ source-line limit.
 ## Decision
 
 Move TypeScript coverage artifact parsing into
-`agent_repair_facts.parsers.typescript_coverage`. Keep
-`typescript_diagnostics` focused on compiler, ESLint, Jest, and Vitest
-diagnostics. The Agent Maintainer compact-summary and ecosystem compatibility
-shims may depend on both reusable parser modules explicitly.
+`agent_repair_facts.parsers.typescript_coverage` and Vitest task-style parsing
+into `agent_repair_facts.parsers.typescript_tests`. Keep
+`typescript_diagnostics` focused on compiler, ESLint, and Jest diagnostics.
+The Agent Maintainer compact-summary and ecosystem compatibility shims may
+depend on these reusable parser modules explicitly.
 
 ## Why This Is Not Architecture Drift
 

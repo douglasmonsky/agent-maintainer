@@ -81,12 +81,13 @@ def coverage_summary_diagnostic(
     visible_messages = [message for message in metric_messages if message]
     if not visible_messages:
         return None
+    coverage_details = ", ".join(visible_messages)
     return TypeScriptDiagnostic(
         path=file_path,
         line=None,
         column=None,
         code="typescript-coverage",
-        message="Coverage below 100%: " + ", ".join(visible_messages),
+        message=f"Coverage below 100%: {coverage_details}",
         severity="error",
     )
 

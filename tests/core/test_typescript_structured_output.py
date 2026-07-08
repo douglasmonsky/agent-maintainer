@@ -8,6 +8,8 @@ from agent_maintainer.core import reporting, structured_typescript
 from agent_maintainer.ecosystems.typescript import diagnostics
 
 APP_PATH = "src/app.ts"
+EXPECTED_VITEST_FAILURES = 2
+EXPECTED_FLOAT_VALUE = 75.5
 
 
 # docsync:evidence.start evidence.typescript.structured_output_tests
@@ -143,6 +145,82 @@ def test_typescript_test_output_summarizes_lcov() -> None:
     assert summary == (
         "apps/web/src/App.tsx:8:1: error: typescript-coverage: 2 uncovered line(s) in file."
     )
+
+
+def test_vitest_parser_handles_error_fallbacks_and_invalid_payloads() -> None:
+    """Vitest parser keeps useful failures while ignoring unsupported tasks."""
+    raw_output = json.dumps(
+        {
+            "files": [
+                None,
+                {"filepath": "tests/bad.test.ts", "tasks": "bad"},
+                {
+                    "file": "tests/fallback.test.ts",
+                    "tasks": [
+                        None,
+                        {"name": "passes", "result": {"state": "pass"}},
+                        {
+                            "name": "uses stack",
+                            "result": {
+                                "state": "failed",
+                                "errors": [
+                                    {
+                                        "stack": (
+                                            "AssertionError: stack fallback\n"
+                                            "    at tests/fallback.test.ts:4:2"
+                                        )
+                                    }
+                                ],
+                            },
+                        },
+                        {
+                            "name": "no error details",
+                            "result": {"state": "fail", "errors": []},
+                        },
+                        {"name": "missing result"},
+                    ],
+                },
+            ]
+        }
+    )
+
+    diagnostics_payload = diagnostics.parse_vitest_json(raw_output)
+
+    assert diagnostics.parse_vitest_json("[]") == []
+    assert len(diagnostics_payload) == EXPECTED_VITEST_FAILURES
+    assert diagnostics_payload[0].path == "tests/fallback.test.ts"
+    assert diagnostics_payload[0].message == ("uses stack: AssertionError: stack fallback")
+    assert diagnostics_payload[1].message == "no error details"
+
+
+def test_coverage_parsers_handle_edge_cases() -> None:
+    """Coverage parsers ignore complete files and compute missing percentages."""
+    summary = json.dumps(
+        {
+            "apps/web/src/Complete.tsx": {"lines": {"total": 2, "covered": 2, "pct": 100}},
+            "apps/web/src/Partial.tsx": {
+                "lines": {"total": 4, "covered": 2},
+                "statements": "bad",
+            },
+        }
+    )
+    lcov_without_terminal_record = (
+        "SF:apps/web/src/First.tsx\nDA:2,0\nSF:apps/web/src/Second.tsx\nDA:3,0\n"
+    )
+
+    summary_diagnostics = diagnostics.parse_coverage_summary_json(summary)
+    lcov_diagnostics = diagnostics.parse_lcov_info(lcov_without_terminal_record)
+
+    assert diagnostics.parse_coverage_summary_json("[]") == []
+    assert diagnostics.parse_lcov_info("SF:apps/web/src/Clean.tsx\nDA:1,1\n") == []
+    assert summary_diagnostics[0].message == ("Coverage below 100%: lines 50.00% (2/4)")
+    assert [item.path for item in lcov_diagnostics] == [
+        "apps/web/src/First.tsx",
+        "apps/web/src/Second.tsx",
+    ]
+    assert diagnostics.optional_float(True) is None
+    assert diagnostics.optional_float("bad") is None
+    assert diagnostics.optional_float("75.5") == EXPECTED_FLOAT_VALUE
 
 
 def test_typescript_test_parser_ignores_non_failure_payloads() -> None:

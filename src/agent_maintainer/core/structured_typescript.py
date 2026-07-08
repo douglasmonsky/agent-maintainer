@@ -13,6 +13,7 @@ from agent_repair_facts.parsers.typescript_diagnostics import (
     parse_jest_json,
     parse_tsc_output,
 )
+from agent_repair_facts.parsers.typescript_tests import parse_vitest_json
 
 TYPESCRIPT_DIAGNOSTIC_LIMIT = 50
 
@@ -31,6 +32,7 @@ def summarize_typescript_test(raw_output: str) -> str | None:
     """Return compact summary for TypeScript test or coverage output."""
     return summarize_diagnostics(
         parse_jest_json(raw_output)
+        or parse_vitest_json(raw_output)
         or parse_coverage_summary_json(raw_output)
         or parse_lcov_info(raw_output)
     )

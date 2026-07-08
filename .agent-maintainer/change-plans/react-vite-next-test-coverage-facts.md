@@ -8,6 +8,7 @@ allowed_paths = [
   ".agent-maintainer/change-plans/**",
   "src/agent_repair_facts/parsers/typescript_diagnostics.py",
   "src/agent_repair_facts/parsers/typescript_coverage.py",
+  "src/agent_repair_facts/parsers/typescript_tests.py",
   "src/agent_repair_facts/parsers/typescript.py",
   "src/agent_repair_facts/registry.py",
   "src/agent_repair_facts/tach.domain.toml",
