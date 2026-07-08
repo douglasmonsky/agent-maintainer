@@ -1,0 +1,21 @@
+version: 1
+attestations:
+- id: attest.20260708T081616Z.claim.docs.troubleshooting_repair_surfaces.adc649a
+  claim: claim.docs.troubleshooting_repair_surfaces
+  doc_object: docs.troubleshooting.overview
+  evidence:
+  - evidence.setup_advisor.recommendation_tests
+  reason: Reviewed Phase 172 setup-advisor root package boundary test; troubleshooting
+    repair-surface docs remain accurate because the new evidence clarifies setup-advisor
+    adoption scope only.
+  reviewer: agent
+  reviewed_at: '2026-07-08T08:16:16Z'
+  base: HEAD
+  head: adc649a
+  evidence_fingerprints:
+    evidence.setup_advisor.recommendation_tests: sha256:8df72c56eb24acd9f093e5794ff01a3ef637075df3f57572a4744fdb884dfb82
+  evidence_anchor_fingerprints:
+    evidence.setup_advisor.recommendation_tests:
+    - sha256:39cb67c0c0afff0023e862094c9318855adb2d8571640460bfad802dd638c52e
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
