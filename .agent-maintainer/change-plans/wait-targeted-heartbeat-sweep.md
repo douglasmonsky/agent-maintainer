@@ -9,6 +9,7 @@ allowed_paths = [
   "src/agent_maintainer/wait/cli.py",
   "src/agent_maintainer/wait/cli_parsers.py",
   "tests/wait/test_wait_cli_background.py",
+  "tests/wait/test_wait_cli_targeted_sweep.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 6
