@@ -84,6 +84,7 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "If a provider abstraction makes an existing Python feature harder "
             "to express, the abstraction is wrong.",
             "Current reviewability gates are globally scheduled but Python-backed.",
+            "format-aware doctor setup and repair-fact output guidance rows.",
             "TypeScript/JavaScript changed files are advisory, but blocking "
             "reviewability policy is not fully multi-ecosystem yet.",
         ),
@@ -91,17 +92,25 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "It is disabled by default and only runs commands that the repository "
             "configures explicitly.",
             "Agent Maintainer will not guess the package manager or invent a command.",
+            "Empty-command doctor hints point to stable output formats",
+            "may emit a non-blocking `PASS` advisory row",
             "`npm`, `pnpm`, `yarn`, and `bun` are supported only when "
             "the repository supplies exact command arrays.",
             "`Jest`, `Vitest`, `Playwright`, `Cypress`, `Mocha`, and "
             "other runners must be wired through `typescript_test_command`.",
             "`Next.js`, `Vite`, `Astro`, `SvelteKit`, and monorepo "
             "workspace layouts are not inferred into framework specific "
-            "default checks, generated-file rules, coverage adapters, "
+            "default checks, generated-file rules, coverage commands, "
             "or dependency policies.",
-            "Coverage, dependency/security, mutation, and blocking "
-            "reviewability adapters are not implemented for "
-            "TypeScript/JavaScript yet.",
+            "Workspace command ownership is explicit.",
+            "Configure root TypeScript commands only when they intentionally "
+            "cover packages you want Agent Maintainer to verify.",
+            "Agent Maintainer will run only the workspace TypeScript commands "
+            "you configure and will not infer nested package commands.",
+            "Coverage summaries and LCOV files can improve `typescript-test` repair facts",
+            "TypeScript coverage enforcement, dependency/security, "
+            "mutation, and blocking reviewability adapters are not "
+            "implemented yet.",
             "No TypeScript reviewability gate is blocking by default.",
         ),
         "docs/multi-ecosystem-reviewability-policy.md": (
@@ -123,6 +132,7 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "`vitest-dev/eslint-plugin-vitest`",
             "Phase 140 added a second external comparison from "
             "`jsynowiec/node-typescript-boilerplate`",
+            "workspace command ownership semantics before recursive package discovery",
             "broader repository samples are still needed before TypeScript "
             "reviewability becomes blocking or supported.",
         ),

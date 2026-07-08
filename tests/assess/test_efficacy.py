@@ -17,6 +17,7 @@ EXPECTED_TOKEN_SAVINGS = 200
 EXPECTED_DUPLICATE_RATE = 50.0
 EXPECTED_FULL_RATE = 100.0
 EXPECTED_FAILURE_TO_PASS_MS = 30_000
+EXPECTED_BACKGROUND_WAIT_RATE = 50.0
 
 
 def test_efficacy_rates_from_events(tmp_path: Path) -> None:
@@ -38,6 +39,14 @@ def test_efficacy_rates_from_events(tmp_path: Path) -> None:
     assert metrics["wait_helper_success_rate"].value == pytest.approx(
         EXPECTED_FULL_RATE,
     )
+    assert metrics["background_wait_registration_rate"].value == pytest.approx(
+        EXPECTED_BACKGROUND_WAIT_RATE,
+    )
+    assert metrics["foreground_wait_blocked_count"].value == 1
+    assert metrics["wait_heartbeat_noop_count"].value == 1
+    assert metrics["wait_terminal_claim_rate"].value == pytest.approx(
+        EXPECTED_FULL_RATE,
+    )
 
 
 def test_efficacy_kinds_and_savings(tmp_path: Path) -> None:
@@ -50,7 +59,26 @@ def test_efficacy_kinds_and_savings(tmp_path: Path) -> None:
     assert metrics["pointer_follow_through_rate"].kind == "estimated"
     assert metrics["manual_escalation_rate"].kind == "measured"
     assert metrics["manual_escalation_rate"].value == pytest.approx(0)
+    assert metrics["background_wait_registration_rate"].kind == "measured"
+    assert metrics["wait_terminal_claim_rate"].kind == "measured"
     assert metrics["repair_capsule_token_savings_proxy"].value == (EXPECTED_TOKEN_SAVINGS)
+
+
+def test_wait_metrics_unknown_without_runtime_wait_events(tmp_path: Path) -> None:
+    """Report unknown wait rates when runtime wait lifecycle events are absent."""
+
+    report = efficacy.summarize_efficacy(
+        RuntimeEventReadResult(records=[], files_read=0),
+        log_dir=tmp_path,
+    )
+    metrics = _metrics_by_name(report.metrics)
+
+    assert metrics["background_wait_registration_rate"].value == "unknown"
+    assert metrics["background_wait_registration_rate"].kind == "unknown"
+    assert metrics["foreground_wait_blocked_count"].value == 0
+    assert metrics["wait_heartbeat_noop_count"].value == 0
+    assert metrics["wait_terminal_claim_rate"].value == "unknown"
+    assert metrics["wait_terminal_claim_rate"].kind == "unknown"
 
 
 def test_efficacy_text_stays_compact(tmp_path: Path) -> None:
@@ -139,6 +167,67 @@ def _event_records() -> list[dict[str, object]]:
             "timestamp": "2026-07-06T20:00:30Z",
         },
         {"event_name": "command.finished", "command": "wait", "status": "pass"},
+        {
+            "event_name": "wait.registered",
+            "command": "wait",
+            "status": "background",
+            "attributes": {
+                "background": True,
+                "target_id": "321",
+                "target_kind": "github-pr",
+                "wait_id": "github-pr-321-example",
+            },
+        },
+        {
+            "event_name": "wait.registered",
+            "command": "wait",
+            "status": "foreground",
+            "attributes": {
+                "background": False,
+                "target_id": "legacy",
+                "target_kind": "github-pr",
+                "wait_id": "github-pr-legacy-example",
+            },
+        },
+        {
+            "event_name": "wait.foreground_blocked",
+            "command": "wait",
+            "status": "blocked",
+            "attributes": {
+                "target_id": "321",
+                "target_kind": "github-pr",
+                "wait_id": "github-pr-321-example",
+            },
+        },
+        {
+            "event_name": "wait.heartbeat_noop",
+            "command": "wait",
+            "status": "pending",
+            "attributes": {
+                "target_id": "321",
+                "target_kind": "github-pr",
+            },
+        },
+        {
+            "event_name": "wait.ready",
+            "command": "wait",
+            "status": "pass",
+            "attributes": {
+                "target_id": "321",
+                "target_kind": "github-pr",
+                "wait_id": "github-pr-321-example",
+            },
+        },
+        {
+            "event_name": "wait.terminal_claimed",
+            "command": "wait",
+            "status": "pass",
+            "attributes": {
+                "target_id": "321",
+                "target_kind": "github-pr",
+                "wait_id": "github-pr-321-example",
+            },
+        },
     ]
 
 

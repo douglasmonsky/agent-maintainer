@@ -102,6 +102,9 @@ WORKSPACE_FIELD_PARSERS = (
     ("test_roots", as_tuple),
     ("package_paths", as_tuple),
     ("coverage_source", as_tuple),
+    ("typescript_lint_command", as_tuple),
+    ("typescript_typecheck_command", as_tuple),
+    ("typescript_test_command", as_tuple),
 )
 
 

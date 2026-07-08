@@ -23,6 +23,26 @@ from agent_maintainer.ecosystems.registry import (
 
 ConfiguredCommand = tuple[str, str, tuple[str, ...]]
 ConfiguredCommands = tuple[ConfiguredCommand, ...]
+TypeScriptRepairFactPattern = tuple[str, str, tuple[str, ...]]
+
+TYPESCRIPT_REPAIR_FACT_PATTERNS: tuple[TypeScriptRepairFactPattern, ...] = (
+    (
+        "typescript_lint_command",
+        "emit ESLint JSON from typescript_lint_command",
+        ("--format=json", "--format json", "-f json"),
+    ),
+    (
+        "typescript_typecheck_command",
+        "run tsc with --pretty false from typescript_typecheck_command",
+        ("--pretty=false", "--pretty false"),
+    ),
+    (
+        "typescript_test_command",
+        "emit Jest/Vitest JSON and existing coverage-summary.json or lcov.info artifacts "
+        "from typescript_test_command",
+        ("--json", " json", "coverage-summary.json", "lcov.info", "lcov"),
+    ),
+)
 
 
 def check_provider_status(config: MaintainerConfig) -> DoctorResult:
@@ -72,12 +92,12 @@ def check_configured_command_provider(
                 WARNING,
                 f"Missing {metadata.display_name} command executable(s): {missing_names}.",
                 state=MISSING,
-                hint=f"Install missing tools or update {metadata.display_name} command fields.",
+                hint=missing_command_hint(metadata),
             ),
         )
 
     names = ", ".join(check_name for check_name, _field_name, _command in commands)
-    return (
+    results = (
         DoctorResult(
             provider_row_name(metadata),
             OK,
@@ -85,6 +105,9 @@ def check_configured_command_provider(
             state=ACTIVE,
         ),
     )
+    if metadata.name != TYPESCRIPT_PROVIDER.name:
+        return results
+    return (*results, *typescript_repair_fact_guidance(commands))
 
 
 def provider_status(metadata: ProviderMetadata, config: MaintainerConfig) -> str:
@@ -111,10 +134,85 @@ def empty_command_hint(metadata: ProviderMetadata) -> str:
     field_names = [spec.config_field for spec in metadata.command_specs]
     if not field_names:
         return "No provider command fields are available."
-    fields = ", ".join(field_names[:-1])
-    fields = ", or ".join((fields, field_names[-1])) if fields else field_names[-1]
-    disable_hint = "." if metadata.enabled_field is None else f"; disable {metadata.enabled_field}."
+    fields = joined_field_names(field_names)
+    if metadata.name == TYPESCRIPT_PROVIDER.name:
+        return typescript_empty_command_hint(fields, metadata.enabled_field)
+    disable_hint = provider_disable_hint(metadata.enabled_field)
     return f"Set {fields}{disable_hint}"
+
+
+def typescript_empty_command_hint(fields: str, enabled_field: str | None) -> str:
+    """Return TypeScript setup hint grounded in stable output formats."""
+    return (
+        f"Map existing package scripts to {fields}; prefer ESLint JSON, "
+        "tsc --pretty false, Jest/Vitest JSON, and existing coverage-summary.json "
+        f"or lcov.info artifacts{provider_disable_hint(enabled_field)}"
+    )
+
+
+def missing_command_hint(metadata: ProviderMetadata) -> str:
+    """Return repair hint for configured provider commands with missing tools."""
+    if metadata.name == TYPESCRIPT_PROVIDER.name:
+        return (
+            "Install missing tools, use local node_modules/.bin executables, "
+            "or update explicit TypeScript command fields; no package manager "
+            "is inferred."
+        )
+    return f"Install missing tools or update {metadata.display_name} command fields."
+
+
+def typescript_repair_fact_guidance(commands: ConfiguredCommands) -> tuple[DoctorResult, ...]:
+    """Return advisory TypeScript repair-fact setup guidance rows."""
+    recommendations = typescript_repair_fact_recommendations(commands)
+    if not recommendations:
+        return ()
+    configured = ", ".join(check_name for check_name, _field, _command in commands)
+    return (
+        DoctorResult(
+            "typescript-repair-fact-output",
+            OK,
+            f"Configured TypeScript command checks can provide richer repair facts: {configured}.",
+            state=ACTIVE,
+            hint="; ".join(
+                (*recommendations, "keep commands explicit; no package manager is inferred.")
+            ),
+        ),
+    )
+
+
+def typescript_repair_fact_recommendations(commands: ConfiguredCommands) -> tuple[str, ...]:
+    """Return parser-friendly output recommendations for configured commands."""
+    recommendations: list[str] = []
+    for _check_name, field_name, command in commands:
+        pattern = next(
+            (item for item in TYPESCRIPT_REPAIR_FACT_PATTERNS if item[0] == field_name),
+            None,
+        )
+        if pattern is None:
+            continue
+        _field_name, recommendation, markers = pattern
+        text = command_text(command)
+        if not any(marker in text for marker in markers):
+            recommendations.append(recommendation)
+    return tuple(recommendations)
+
+
+def command_text(command: tuple[str, ...]) -> str:
+    """Return lower-cased command text for advisory pattern checks."""
+    return " ".join(command).lower()
+
+
+def joined_field_names(field_names: list[str]) -> str:
+    """Return compact English list of provider command fields."""
+    fields = ", ".join(field_names[:-1])
+    return ", or ".join((fields, field_names[-1])) if fields else field_names[-1]
+
+
+def provider_disable_hint(enabled_field: str | None) -> str:
+    """Return compact provider-disable hint."""
+    if enabled_field is None:
+        return "."
+    return f"; disable {enabled_field}."
 
 
 def configured_commands(

@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.catalogs import catalog as maintainer_catalog
-from agent_maintainer.config import loader
+from agent_maintainer.config import loader, schema
 from agent_maintainer.core.config import MaintainerConfig
 
 
@@ -39,6 +39,44 @@ def test_typescript_checks_are_included_when_enabled() -> None:
     assert by_name["typescript-lint"].command == ["npm", "run", "lint"]
     assert by_name["typescript-typecheck"].command == ["npm", "run", "typecheck"]
     assert by_name["typescript-test"].command == ["npm", "test"]
+
+
+def test_workspace_typescript_commands_emit_owned_checks() -> None:
+    """Workspace TypeScript commands create explicit package-owned checks."""
+    config = replace(
+        MaintainerConfig(),
+        enable_typescript=True,
+        workspaces=(
+            schema.WorkspaceConfig(
+                name="api",
+                typescript_lint_command=("pnpm", "--filter", "api", "lint"),
+                typescript_typecheck_command=(
+                    "pnpm",
+                    "--filter",
+                    "api",
+                    "typecheck",
+                ),
+            ),
+        ),
+    )
+
+    checks = {
+        check.name: check for check in maintainer_catalog.make_checks(config, "HEAD", "origin/main")
+    }
+
+    assert checks["typescript-lint:api"].command == [
+        "pnpm",
+        "--filter",
+        "api",
+        "lint",
+    ]
+    assert checks["typescript-typecheck:api"].command == [
+        "pnpm",
+        "--filter",
+        "api",
+        "typecheck",
+    ]
+    assert "typescript-test:api" not in checks
 
 
 def test_typescript_fixture_config_smoke(

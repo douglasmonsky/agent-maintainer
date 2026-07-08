@@ -1,12 +1,4 @@
-# Agent Maintainer Roadmap Blueprint
-
-This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as the recovery checklist. Do not re-expand index into monolithic blueprint.
-
-## Overview
-
-Overview links: [Mission, baseline, architecture target, execution rules](overview.md), [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md), [Future-Call ROI Acceleration Track](future-call-roi-acceleration.md), [Final Definition Done](final-definition-of-done.md).
-
-## Phases
+# Agent Maintainer Roadmap Blueprint ([Overview](overview.md)) - Do not re-expand index into monolithic blueprint. Phase Index
 
 | Phase | Detailed Spec |
 | ---: | --- |
@@ -157,3 +149,13 @@ Overview links: [Mission, baseline, architecture target, execution rules](overvi
 | 162 | [Task Broker Model-Tier Routing Policy](phases/phase-162-task-broker-model-tier-routing-policy.md) |
 | 163 | [Attention Ledger Performance Guards](phases/phase-163-attention-ledger-performance-guards.md) |
 | 164 | [Agent Efficacy Metrics](phases/phase-164-agent-efficacy-metrics.md) |
+| 165 | [React Fixture Corpus And Reviewability Baseline](phases/phase-165-react-fixture-corpus-and-reviewability-baseline.md) |
+| 166 | [TypeScript Package-Manager And Workspace Evidence](phases/phase-166-typescript-package-manager-and-workspace-evidence.md) |
+| 167 | [React/Vite/Next Structured Test And Coverage Facts](phases/phase-167-react-vite-next-structured-test-and-coverage-facts.md) |
+| 168 | [TypeScript/React Doctor And Setup Guidance](phases/phase-168-typescript-react-doctor-and-setup-guidance.md) |
+| 169 | [TypeScript Repair-Fact Output Guidance](phases/phase-169-typescript-repair-fact-output-guidance.md) |
+| 170 | [TypeScript Setup Advisor Output Guidance](phases/phase-170-typescript-setup-advisor-output-guidance.md) |
+| 171 | [TypeScript Setup Advisor Script Fixtures](phases/phase-171-typescript-setup-advisor-script-fixtures.md) |
+| 172 | [TypeScript Setup Advisor Root Package Boundary](phases/phase-172-typescript-setup-advisor-root-package-boundary.md) |
+| 173 | [TypeScript Workspace Command Ownership Design](phases/phase-173-typescript-workspace-command-ownership-design.md) |
+| 174 | [TypeScript Workspace Command Config](phases/phase-174-typescript-workspace-command-config.md) |

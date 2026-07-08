@@ -10,6 +10,8 @@ PLAN_DIR = Path(".agent-maintainer/change-plans")
 PLAN_SUFFIX = ".md"
 FRONT_MATTER_DELIMITER = "+++"
 ACTIVE_STATUS = "active"
+COMPLETE_STATUS = "complete"
+VALID_STATUSES = (ACTIVE_STATUS, COMPLETE_STATUS)
 REQUIRED_SECTIONS = (
     "Why this change intentionally large",
     "Why this should not be split smaller",

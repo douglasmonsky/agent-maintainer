@@ -104,6 +104,14 @@ TypeScriptProvider.capabilities = {
 }
 ```
 
+The next provider-maturation pass should use TypeScript and React as the primary
+evidence target. React should be treated as a framework-heavy
+TypeScript/JavaScript repository shape, not as a separate ecosystem provider:
+fixture and external-repository evidence should cover React components, TSX
+tests, Vite, Next.js, workspace package managers, generated build outputs,
+coverage artifacts, and structured test facts before any blocking gate is
+promoted.
+
 The provider API should not require symmetry between providers. Missing capabilities should produce clear not-applicable or disabled states, not fake checks.
 
 ## Proposed Provider Shape

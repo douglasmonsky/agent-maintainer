@@ -14,6 +14,23 @@ from agent_maintainer.assess.setup_advisor import build_setup_report
 MANY_SOURCE_FILES = 45
 AGENT_HEAVY_FILES = 25
 TEXT_ENCODING = "utf-8"
+TYPESCRIPT_SETUP_SCRIPT_FIXTURES = (
+    {
+        "lint": "pnpm exec eslint . --format json",
+        "typecheck": "pnpm exec tsc --pretty false --noEmit",
+        "test": "pnpm exec vitest run --reporter=json --coverage",
+    },
+    {
+        "eslint": "eslint . --format json",
+        "tsc": "tsc --pretty false --noEmit",
+        "vitest": "vitest run --reporter=json --coverage",
+    },
+    {
+        "lint": "next lint",
+        "type-check": "tsc --pretty false --noEmit",
+        "test:unit": "jest --json --coverage",
+    },
+)
 
 
 def test_setup_advisor_recommends_agent_track(tmp_path: Path) -> None:
@@ -90,11 +107,62 @@ def test_setup_advisor_recommends_ts_scripts(tmp_path: Path) -> None:
     write_package_scripts(tmp_path, ("lint", "typecheck", "test"))
 
     report = build_setup_report(collect_evidence(tmp_path))
+    gates = {gate.name: gate for gate in report.optional_gates}
+
+    assert "osv-scanner" in gates
+    assert "typescript-provider" in gates
+    assert "ESLint JSON" in gates["typescript-provider"].reason
+    assert "tsc --pretty false" in gates["typescript-provider"].reason
+    assert "Jest/Vitest JSON" in gates["typescript-provider"].reason
+    assert "coverage-summary.json or lcov.info" in gates["typescript-provider"].reason
+    assert any("explicit TypeScript provider" in prompt for prompt in report.agent_prompts)
+    assert any("repair facts" in prompt for prompt in report.agent_prompts)
+
+
+@pytest.mark.parametrize(
+    "scripts",
+    TYPESCRIPT_SETUP_SCRIPT_FIXTURES,
+    ids=("pnpm-vite", "vite-vitest", "next-jest"),
+)
+def test_setup_advisor_recommends_ts_script_fixtures(
+    tmp_path: Path,
+    scripts: dict[str, str],
+) -> None:
+    """Common TypeScript app script shapes stay advisory and explicit."""
+    write_repo(tmp_path)
+    write_package_script_commands(tmp_path, scripts)
+
+    evidence = collect_evidence(tmp_path)
+    report = build_setup_report(evidence)
+    gates = {gate.name: gate for gate in report.optional_gates}
+
+    assert evidence.package_scripts == tuple(sorted(scripts))
+    assert "typescript-provider" in gates
+    assert "mapped to explicit TypeScript provider commands" in (
+        gates["typescript-provider"].reason
+    )
+
+
+def test_setup_advisor_ignores_nested_package_scripts(tmp_path: Path) -> None:
+    """Nested package scripts do not imply root command ownership."""
+    write_repo(tmp_path)
+    nested = tmp_path / "packages" / "web"
+    nested.mkdir(parents=True)
+    write_package_script_commands(
+        nested,
+        {
+            "lint": "pnpm exec eslint . --format json",
+            "typecheck": "pnpm exec tsc --pretty false --noEmit",
+            "test": "pnpm exec vitest run --reporter=json --coverage",
+        },
+    )
+
+    evidence = collect_evidence(tmp_path)
+    report = build_setup_report(evidence)
     gate_names = {gate.name for gate in report.optional_gates}
 
-    assert "osv-scanner" in gate_names
-    assert "typescript-provider" in gate_names
-    assert any("explicit TypeScript provider" in prompt for prompt in report.agent_prompts)
+    assert evidence.package_scripts == ()
+    assert "typescript-provider" not in gate_names
 
 
 def test_setup_advisor_ignores_irrelevant_scripts(tmp_path: Path) -> None:
@@ -174,7 +242,11 @@ mode = "custom"
 
 def write_package_scripts(root: Path, script_names: tuple[str, ...]) -> None:
     """Write a package.json with named scripts."""
-    scripts = {name: f"echo {name}" for name in script_names}
+    write_package_script_commands(root, {name: f"echo {name}" for name in script_names})
+
+
+def write_package_script_commands(root: Path, scripts: dict[str, str]) -> None:
+    """Write package.json script commands."""
     (root / "package.json").write_text(
         json.dumps({"scripts": scripts}),
         encoding=TEXT_ENCODING,

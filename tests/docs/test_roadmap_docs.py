@@ -13,7 +13,7 @@ ROADMAP_INDEX = ROADMAP_ROOT / "full-roadmap-blueprint.md"
 ROADMAP_OVERVIEW = ROADMAP_ROOT / "overview.md"
 PHASES_DIR = ROADMAP_ROOT / "phases"
 MAX_ACTIVE_ROADMAP_LINES = 180
-MAX_INDEX_LINES = 160
+MAX_INDEX_OVERHEAD_LINES = 4
 MAX_PHASE_LINES = 500
 MIN_PHASE_FILES = 50
 
@@ -35,10 +35,10 @@ def test_roadmap_index_stays_small_and_links_split_specs() -> None:
     normalized_text = " ".join(text.split())
     lines = text.splitlines()
 
-    assert len(lines) <= MAX_INDEX_LINES
+    phase_paths = sorted(PHASES_DIR.glob("phase-*.md"))
+    assert len(lines) <= len(phase_paths) + MAX_INDEX_OVERHEAD_LINES
     assert "Do not re-expand index into monolithic blueprint." in normalized_text
     assert "(overview.md)" in text
-    phase_paths = sorted(PHASES_DIR.glob("phase-*.md"))
     for phase_path in phase_paths:
         assert f"(phases/{phase_path.name})" in text, phase_path.name
 

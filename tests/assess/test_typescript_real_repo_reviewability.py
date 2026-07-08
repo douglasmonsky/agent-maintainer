@@ -13,6 +13,11 @@ import pytest
 from agent_maintainer.assess import cli
 
 LOW_NOISE_CHANGED_FILES = 2
+REACT_TOTAL_CHANGED_FILES = 4
+REACT_PROVIDER_CHANGED_FILES = 3
+REACT_SOURCE_FILES = 2
+WORKSPACE_TOTAL_CHANGED_FILES = 6
+WORKSPACE_PROVIDER_CHANGED_FILES = 3
 HEAVY_SOURCE_FILES = 4
 HEAVY_SOURCE_LINES = 200
 ONE_BROAD_SUPPRESSION = 1
@@ -149,6 +154,91 @@ def test_typescript_real_repo_npm_vite_vitest_shape_stays_low_noise(
     assert summary["changed_files"] == LOW_NOISE_CHANGED_FILES
 
 
+def test_typescript_real_repo_react_app_shape_stays_low_noise(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A React app-shaped diff reports source/test evidence without advisories."""
+
+    repo = _typescript_repo(tmp_path)
+    _write(
+        repo / "package.json",
+        "\n".join(
+            (
+                '{"scripts":{"lint":"eslint .","typecheck":"tsc --noEmit",',
+                '"test":"vitest run"},"dependencies":{"@vitejs/plugin-react":"latest",',
+                '"@testing-library/react":"latest","react":"latest","react-dom":"latest"},',
+                '"devDependencies":{"vite":"latest","vitest":"latest"}}',
+            ),
+        )
+        + "\n",
+    )
+    _write(
+        repo / "src/App.tsx",
+        "\n".join(
+            (
+                "import { useMemo, useState } from 'react';",
+                "",
+                "export function App() {",
+                "  const [count, setCount] = useState(0);",
+                "  const label = useMemo(() => `Count ${count}`, [count]);",
+                "  return <button onClick={() => setCount(count + 1)}>{label}</button>;",
+                "}",
+            ),
+        )
+        + "\n",
+    )
+    _write(
+        repo / "src/App.test.tsx",
+        "\n".join(
+            (
+                "import { render, screen } from '@testing-library/react';",
+                "import { App } from './App';",
+                "",
+                "test('renders the counter button', () => {",
+                "  render(<App />);",
+                "  expect(screen.getByRole('button', { name: /count 0/i })).toBeTruthy();",
+                "});",
+            ),
+        )
+        + "\n",
+    )
+    _write(
+        repo / "src/main.tsx",
+        "\n".join(
+            (
+                "import { createRoot } from 'react-dom/client';",
+                "import { App } from './App';",
+                "",
+                "createRoot(document.getElementById('root')!).render(<App />);",
+            ),
+        )
+        + "\n",
+    )
+    _git(
+        repo,
+        "add",
+        "package.json",
+        "src/App.tsx",
+        "src/App.test.tsx",
+        "src/main.tsx",
+    )
+
+    payload = _run_reviewability_json(repo, capsys)
+
+    assert payload["total_changed_files"] == REACT_TOTAL_CHANGED_FILES
+    assert payload["advisory_findings"] == []
+    assert _role_counts(payload) == {
+        "config": 1,
+        "source": REACT_SOURCE_FILES,
+        "test": 1,
+    }
+    summary = _summary(payload, "typescript")
+    assert summary["source_files"] == REACT_SOURCE_FILES
+    assert summary["test_files"] == 1
+    assert summary["changed_files"] == REACT_PROVIDER_CHANGED_FILES
+
+
 def test_typescript_real_repo_pnpm_config_lockfile_shape_stays_low_noise(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
@@ -172,6 +262,76 @@ def test_typescript_real_repo_pnpm_config_lockfile_shape_stays_low_noise(
     assert summary["changed_files"] == 1
     assert summary["source_files"] == 0
     assert summary["test_files"] == 0
+
+
+def test_typescript_real_repo_pnpm_workspace_shape_stays_low_noise(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A pnpm workspace package diff classifies workspace metadata cleanly."""
+
+    repo = _typescript_repo(tmp_path)
+    _write(
+        repo / "package.json",
+        '{"private":true,"packageManager":"pnpm@9.0.0","workspaces":["packages/*"]}\n',
+    )
+    _write(repo / "pnpm-workspace.yaml", "packages:\n  - packages/*\n")
+    _write(repo / "pnpm-lock.yaml", "lockfileVersion: '9.0'\n")
+    _write(
+        repo / "packages/web/package.json",
+        '{"scripts":{"test":"vitest run"},"dependencies":{"react":"latest"}}\n',
+    )
+    _write(
+        repo / "packages/web/src/Widget.tsx",
+        "\n".join(
+            (
+                "export function Widget() {",
+                "  return <section>Workspace ready</section>;",
+                "}",
+            ),
+        )
+        + "\n",
+    )
+    _write(
+        repo / "packages/web/src/Widget.test.tsx",
+        "\n".join(
+            (
+                "import { Widget } from './Widget';",
+                "",
+                "test('exports widget', () => {",
+                "  expect(Widget).toBeDefined();",
+                "});",
+            ),
+        )
+        + "\n",
+    )
+    _git(
+        repo,
+        "add",
+        "package.json",
+        "pnpm-workspace.yaml",
+        "pnpm-lock.yaml",
+        "packages/web/package.json",
+        "packages/web/src/Widget.tsx",
+        "packages/web/src/Widget.test.tsx",
+    )
+
+    payload = _run_reviewability_json(repo, capsys)
+
+    assert payload["total_changed_files"] == WORKSPACE_TOTAL_CHANGED_FILES
+    assert payload["classified_files"] == WORKSPACE_TOTAL_CHANGED_FILES
+    assert payload["unclassified_files"] == 0
+    assert payload["advisory_findings"] == []
+    assert _role_counts(payload) == {
+        "config": 3,
+        "dependency": 1,
+        "source": 1,
+        "test": 1,
+    }
+    summary = _summary(payload, "typescript")
+    assert summary["changed_files"] == WORKSPACE_PROVIDER_CHANGED_FILES
+    assert summary["source_files"] == 1
+    assert summary["test_files"] == 1
 
 
 # docsync:evidence.end evidence.typescript.real_repo_reviewability_tests

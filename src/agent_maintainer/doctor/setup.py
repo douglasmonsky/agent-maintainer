@@ -128,7 +128,7 @@ def duplicate_artifacts_in_root(repo_root: Path, root: Path) -> list[str]:
 def git_duplicate_artifact_paths(repo_root: Path) -> list[str]:
     """Return suspicious duplicate Git metadata files without scanning Git internals."""
     git_root = repo_root / GIT_DUPLICATE_ARTIFACT_ROOT
-    if not git_root.exists():
+    if not git_root.exists() or not git_root.is_dir():
         return []
     return [
         path.relative_to(repo_root).as_posix()

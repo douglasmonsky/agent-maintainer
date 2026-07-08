@@ -17,6 +17,14 @@ ARCHITECTURE_DECISION_RE = re.compile(
     r"^architecture policy changed without decision note:\s*(?P<path>.+)$",
 )
 RUFF_FORMAT_RE = re.compile(r"^Would reformat:\s*(?P<path>.+)$")
+PYLINT_RE = re.compile(
+    r"^(?P<path>[^:\n]+\.py):(?P<line>\d+):(?P<column>\d+):\s*"
+    r"(?P<symbol>[A-Z]\d{4}):\s*(?P<message>.+)$",
+)
+VULTURE_RE = re.compile(
+    r"^(?P<path>[^:\n]+\.py):(?P<line>\d+):\s*"
+    r"(?P<message>unused .+? \(\d+% confidence\))$",
+)
 WEMAKE_RE = re.compile(
     r"^(?P<path>[^:\n]+\.py):(?P<line>\d+):(?P<column>\d+):\s*"
     r"(?P<symbol>WPS\d+)\s*(?P<message>.+)$",
@@ -100,6 +108,41 @@ def ruff_format_facts(path: Path, check: str) -> list[dict[str, object]]:
             },
         )
         for match in log_matches(path, RUFF_FORMAT_RE)
+    ]
+
+
+def pylint_facts(path: Path, check: str) -> list[dict[str, object]]:
+    """Return exact facts from Pylint text output."""
+
+    return [
+        log_fact(
+            check,
+            {
+                PATH_FIELD: match.group(PATH_FIELD),
+                LINE_FIELD: int(match.group(LINE_FIELD)),
+                "column": int(match.group("column")),
+                SYMBOL_FIELD: match.group(SYMBOL_FIELD),
+                MESSAGE_FIELD: match.group(MESSAGE_FIELD),
+            },
+        )
+        for match in log_matches(path, PYLINT_RE)
+    ]
+
+
+def vulture_facts(path: Path, check: str) -> list[dict[str, object]]:
+    """Return exact facts from Vulture text output."""
+
+    return [
+        log_fact(
+            check,
+            {
+                PATH_FIELD: match.group(PATH_FIELD),
+                LINE_FIELD: int(match.group(LINE_FIELD)),
+                SYMBOL_FIELD: "unused-code",
+                MESSAGE_FIELD: match.group(MESSAGE_FIELD),
+            },
+        )
+        for match in log_matches(path, VULTURE_RE)
     ]
 
 

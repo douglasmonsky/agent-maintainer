@@ -742,17 +742,19 @@ claims:
   claim.docs.typescript_provider_explicit_commands:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe disabled-by-default explicit
-      configured command checks and profile configuration without package-manager
+      configured command checks, profile configuration, doctor setup hints, and
+      non-blocking repair-fact output guidance without package-manager
       autodetection.
     severity: high
     evidence:
       - evidence.typescript.provider_commands
       - evidence.typescript.provider_command_tests
+      - evidence.typescript.doctor_setup_tests
   claim.docs.typescript_provider_repair_facts:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe structured summaries and exact repair
-      facts for tsc, ESLint JSON, and Jest-compatible JSON outputs with malformed
-      output fallback.
+      facts for tsc, ESLint JSON, Jest/Vitest JSON, Istanbul coverage summary,
+      and LCOV outputs with malformed output fallback.
     severity: medium
     evidence:
       - evidence.typescript.structured_output_tests
@@ -760,8 +762,8 @@ claims:
   claim.docs.typescript_provider_unsupported_surface:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs document unsupported package managers,
-      test runners, frameworks, coverage, dependency, security, mutation,
-      and blocking reviewability surfaces.
+      test runners, frameworks, explicit workspace command ownership, coverage,
+      dependency, security, mutation, and blocking reviewability surfaces.
     severity: medium
     evidence:
       - evidence.typescript.provider_docs_maturity_tests
@@ -783,9 +785,10 @@ claims:
       - evidence.typescript.advisory_threshold_config_tests
   claim.docs.typescript_maturation_real_repo_evidence:
     object: docs.typescript_maturation.overview
-    text: TypeScript maturation notes describe temporary and external real Git repository reviewability
-      evidence for low-noise source-plus-test and source-heavy source-only
-      advisory scenarios.
+    text: TypeScript maturation notes describe temporary and external real Git
+      repository reviewability evidence for low-noise source-plus-test,
+      source-heavy source-only, package-shape, React app, pnpm workspace advisory
+      scenarios.
     severity: high
     evidence:
       - evidence.typescript.real_repo_reviewability_tests
@@ -827,7 +830,7 @@ claims:
       - evidence.agent_guidance.compact_sidecar_tests
   claim.docs.setup_advisor_recommendations:
     object: docs.setup_advisor.overview
-    text: Setup advisor docs describe advisory local recommendations, TypeScript command mapping from existing scripts, and dry-run first adoption flow.
+    text: "Setup advisor docs describe advisory local recommendations, root package TypeScript command mapping from existing scripts, parser-friendly repair-fact outputs, common pnpm/Vite/Next.js script shapes, nested workspace package limitations, explicit workspace command ownership, and dry-run first adoption flow."
     severity: medium
     evidence:
       - evidence.setup_advisor.recommendation_tests
@@ -860,7 +863,7 @@ claims:
       - evidence.typescript.advisory_threshold_config_tests
   claim.docs.change_plans_validation:
     object: docs.change_plans.overview
-    text: Change-plan docs describe required plan structure and validation before intentional large changes can bend review-size budgets.
+    text: Change-plan docs describe required plan structure and validation, active scoped plans, and completed historical plans before intentional large changes can bend review-size budgets.
     severity: high
     evidence:
       - evidence.change_plans.validation_tests
@@ -880,7 +883,7 @@ claims:
       - evidence.cohesive_change_overrides.tests
   claim.docs.cohesive_change_plans_checked:
     object: docs.cohesive_change_plans.overview
-    text: Cohesive change plan docs describe checked, mechanically constrained large-change plans rather than casual budget bypasses.
+    text: Cohesive change plan docs describe checked, mechanically constrained active large-change plans and completed historical plans rather than casual budget bypasses.
     severity: high
     evidence:
       - evidence.change_plans.validation_tests
@@ -1120,6 +1123,14 @@ evidence:
     anchors:
       - path: tests/ecosystems/test_typescript_provider.py
         mode: explicit_region
+  evidence.typescript.doctor_setup_tests:
+    type: test
+    description: TypeScript doctor tests cover disabled default behavior,
+      empty-command setup hints, missing executable hints, enabled provider rows,
+      and non-blocking repair-fact output guidance.
+    anchors:
+      - path: tests/doctor/test_typescript_doctor.py
+        mode: explicit_region
   evidence.typescript.provider_docs_maturity_tests:
     type: test
     description: First-touch docs tests pin TypeScript provider maturity,
@@ -1159,7 +1170,8 @@ evidence:
     type: test
     description: TypeScript real-repo reviewability tests run the public CLI
       against temporary Git repositories and verify low-noise source/test,
-      source-heavy, suppression, npm/Vite/Vitest, and pnpm config/lock shapes.
+      source-heavy, suppression, npm/Vite/Vitest, React app, pnpm config/lock,
+      and pnpm workspace shapes.
     anchors:
       - path: tests/assess/test_typescript_real_repo_reviewability.py
         mode: explicit_region
@@ -1193,7 +1205,7 @@ evidence:
         mode: explicit_region
   evidence.setup_advisor.recommendation_tests:
     type: test
-    description: Setup advisor tests assert advisory TypeScript script recommendations and avoid false-positive TypeScript provider advice.
+    description: "Setup advisor tests assert advisory TypeScript script recommendations, fixture-backed pnpm/Vite/Next.js script shapes, root-only package script evidence, repair-fact output guidance, and false-positive TypeScript provider avoidance."
     anchors:
       - path: tests/assess/test_setup_advisor.py
         mode: explicit_region

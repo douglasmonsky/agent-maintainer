@@ -46,6 +46,7 @@ CONFIG_NAMES = frozenset(
         "next.config.js",
         "next.config.mjs",
         "package.json",
+        "pnpm-workspace.yaml",
         "prettier.config.js",
         "tsconfig.json",
         "vite.config.js",

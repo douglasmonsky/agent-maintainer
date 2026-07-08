@@ -70,7 +70,9 @@ tightening thresholds on a mature repo.
 When a repository has `package.json` scripts such as `lint`, `typecheck`, or
 `test`, the advisor may recommend enabling the experimental TypeScript provider.
 That recommendation does not guess the package manager or invent commands.
-Map existing scripts into explicit config, for example:
+Map existing scripts into explicit config and prefer parser-friendly outputs:
+ESLint JSON, `tsc --pretty false`, Jest/Vitest JSON, and existing
+`coverage-summary.json` or `lcov.info` artifacts. Example:
 
 ```toml
 [tool.agent_maintainer]
@@ -79,6 +81,19 @@ typescript_lint_command = ["npm", "run", "lint"]
 typescript_typecheck_command = ["npm", "run", "typecheck"]
 typescript_test_command = ["npm", "test"]
 ```
+
+Common script shapes that should keep explicit command mapping include pnpm
+Vite/Vitest scripts such as `lint`, `typecheck`, and `test`, Vite/Vitest
+scripts such as `eslint`, `tsc`, and `vitest`, and Next.js/Jest scripts such
+as `lint`, `type-check`, and `test:unit`. The advisor records script names
+only from the root `package.json`; nested workspace packages are not scanned
+yet. Keep the real command arrays explicit in config. Workspace command
+ownership stays explicit: configure root commands only when they cover intended
+packages, or add package-owned commands under
+`[tool.agent_maintainer.workspaces.<name>]` with
+`typescript_lint_command`, `typescript_typecheck_command`, and
+`typescript_test_command`. Setup advisor still does not infer nested package
+commands or workspace managers.
 
 Keep TypeScript reviewability policy advisory until fixture or real-repo
 evidence proves low-noise thresholds.

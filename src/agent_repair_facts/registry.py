@@ -15,6 +15,7 @@ ARTIFACT_FACT_PARSERS: tuple[FactParserEntry, ...] = (
     ("pyright", lint.pyright_facts),
     ("bandit", lint.bandit_facts),
     ("pytest-coverage", pytest.pytest_artifact_facts),
+    ("typescript-test", typescript.typescript_test_artifact_facts),
     ("docsync", docsync.docsync_report_facts),
 )
 
@@ -23,9 +24,11 @@ LOG_FACT_PARSERS: tuple[FactParserEntry, ...] = (
     ("file-length", logs.file_length_facts),
     ("change-budget", logs.change_budget_facts),
     ("ruff-format", logs.ruff_format_facts),
+    ("pylint", logs.pylint_facts),
     ("typescript-lint", typescript.typescript_lint_facts),
     ("typescript-typecheck", typescript.typescript_typecheck_facts),
     ("typescript-test", typescript.typescript_test_facts),
+    ("vulture", logs.vulture_facts),
     ("wemake", logs.wemake_facts),
     ("xenon-complexity-gate", logs.xenon_complexity_facts),
 )

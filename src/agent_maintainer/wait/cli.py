@@ -32,13 +32,14 @@ from agent_maintainer.wait.github_pr import (
     render_github_pr_wait_text,
     wait_for_github_pr_checks,
 )
-from agent_maintainer.wait.registry import WaitRegistry, wait_record_json
+from agent_maintainer.wait.registry import WaitRecord, WaitRegistry, wait_record_json
 from agent_maintainer.wait.sweeper import (
     CleanupSummary,
     SweepSummary,
     cleanup_waits,
     sweep_once,
     sweep_ready_notifications,
+    sweep_record,
     watch_wait,
 )
 from agent_maintainer.wait.sweeper_rendering import render_sweep_json, render_sweep_text
@@ -129,11 +130,36 @@ def _sweep(args: argparse.Namespace) -> int:
         cli_background.emit_swept(summary)
         print(_render_sweep(args.format, summary))
         return 0
+    if args.one:
+        record = sweep_record(registry, registry.read(args.one))
+        return _render_sweep_record(
+            registry,
+            args.format,
+            record,
+            pending_is_silent=True,
+        )
     record = watch_wait(registry, args.watch)
-    cli_background.emit_ready(record)
-    if args.format == cli_parsers.JSON_FORMAT:
+    return _render_sweep_record(
+        registry,
+        args.format,
+        record,
+        pending_is_silent=False,
+    )
+
+
+def _render_sweep_record(
+    registry: WaitRegistry,
+    output_format: str,
+    record: WaitRecord,
+    *,
+    pending_is_silent: bool,
+) -> int:
+    if output_format == cli_parsers.JSON_FORMAT:
         print(wait_record_json(record))
         return 0
+    if pending_is_silent and not record.ready:
+        return 0
+    cli_background.emit_ready(record)
     rewake = CodexRewakeBackend(registry).resume_if_available(record)
     if codex_rewake_resumed(rewake):
         cli_background.emit_resumed(record)

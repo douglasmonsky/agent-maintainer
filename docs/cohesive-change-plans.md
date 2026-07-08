@@ -9,6 +9,10 @@ cannot fit normal change budgets. A plan should explain why a larger change is
 cohesive, which files are in scope, how the work will be reviewed, and what
 evidence proves the change stayed disciplined.
 
+Active plans constrain the current branch diff and can bend change-budget
+limits. Completed plans remain historical records without participating in
+current diff-scope validation.
+
 Planned capabilities include structured plan files, required override
 explanations, plan-to-diff validation, and integration with change-budget
 checks.

@@ -290,12 +290,14 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     assert "heartbeat request:" in text
     assert heartbeat_prompt(record) in text
     request = json.loads(heartbeat_request_json(record, root=tmp_path))
-    assert request["scope"] == "repo"
+    assert request["scope"] == "wait"
     assert request["on_pending"] == "silent"
     assert request["on_terminal"] == "resume_and_review"
     assert request["merge_policy"] == "merge_only_if_satisfactory"
-    assert request["sweep_command"].endswith("wait heartbeat --root " + str(tmp_path))
-    assert "repo wait heartbeat sweep command" in request["prompt"]
+    assert request["sweep_command"].endswith(
+        f"wait sweep --one {record.wait_id} --root {tmp_path}",
+    )
+    assert "targeted wait sweep command" in request["prompt"]
     assert record.wait_id not in request["prompt"]
 
 

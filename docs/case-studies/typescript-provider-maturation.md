@@ -49,7 +49,17 @@ and Vitest. These tests prove npm/Vite/Vitest source-plus-test changes stay
 low-noise, and pnpm config/lockfile changes report config and dependency roles
 without source-heavy or source-without-test findings. At least one external
 real-repo comparison is still needed before any promotion beyond advisory
-output.
+output. Phase 165 added a React app-shaped temporary Git repository fixture
+covering React dependencies, TSX source, TSX tests, and a React entrypoint
+while staying advisory-clean. Phase 166 added pnpm workspace-shaped evidence
+for root package metadata, workspace metadata, lockfile metadata, package
+metadata, workspace TSX source, and workspace TSX tests. Phase 167 added
+structured `typescript-test` repair-fact coverage for React/Vite/Next-adjacent
+outputs: Vitest task-style JSON, Istanbul `coverage-summary.json`, and LCOV
+`lcov.info` artifacts. This improves failed-check repair context when
+repositories already produce stable artifacts; it does not add TypeScript
+coverage enforcement or default framework commands. Broader external framework
+samples remain needed before promotion beyond advisory output.
 
 Phase 139 added one external public-repository comparison against
 `vitest-dev/eslint-plugin-vitest` commit
@@ -101,7 +111,8 @@ Use this page as an implementation notebook while TypeScript matures. Track:
 
 - which repository shapes stay low-noise;
 - where package-manager assumptions stay provider-specific;
-- which output formats are stable enough for exact repair facts;
+- which output formats are stable enough for exact repair facts, including test
+  and coverage artifacts;
 - whether suppressions should remain advisory;
 - which advisory threshold values stay low-noise across real repositories;
 - which signals are too framework-specific for defaults;
@@ -116,8 +127,9 @@ TypeScript/JavaScript should not move toward supported status until it has:
 - at least one external real-repo comparison pass with acceptable noise;
 - broader external comparisons across more framework and workspace shapes;
 - stable explicit-command behavior;
+- workspace command ownership semantics before recursive package discovery;
 - clear doctor messages for missing commands and executables;
-- structured repair facts only for stable outputs;
+- structured repair facts only for stable test and coverage outputs;
 - documented unsupported package managers, runners, and frameworks;
 - no blocking gates enabled by default.
 

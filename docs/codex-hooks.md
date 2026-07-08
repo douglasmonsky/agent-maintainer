@@ -85,13 +85,13 @@ set. Direct Codex verifier commands such as `python -m agent_maintainer verify -
 and repo `just v` / `just vc` wrappers start an async verifier and emit the
 same background wait heartbeat handoff by default.
 
-Codex heartbeat requests are repo-scoped. When the Codex app
+Codex heartbeat requests are wait-scoped. When the Codex app
 `automation_update` tool is available, create one current-thread heartbeat
-that runs `python -m agent_maintainer wait heartbeat --root <repo>`. The
-heartbeat request includes `on_pending: silent`, `on_terminal:
+that runs `python -m agent_maintainer wait sweep --one <wait-id> --root
+<repo>`. The heartbeat request includes `on_pending: silent`, `on_terminal:
 resume_and_review`, and `merge_policy: merge_only_if_satisfactory`. The
-heartbeat command sweeps all known waits once, prints nothing while they are
-pending, and prints each terminal resume capsule once. Use `python -m
+targeted sweep command polls only that wait once, prints nothing while the
+wait is pending, and prints its terminal resume capsule once. Use `python -m
 agent_maintainer wait cleanup --root <repo>` to expire stale ready records
 after a terminal wait is no longer useful.
 

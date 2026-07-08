@@ -39,6 +39,9 @@ def test_workspace_config_loads_named_tables(tmp_path: Path) -> None:
         test_roots = ["services/api/tests"]
         package_paths = ["services/api/src"]
         coverage_source = ["services/api/src"]
+        typescript_lint_command = ["pnpm", "--filter", "api", "lint"]
+        typescript_typecheck_command = ["pnpm", "--filter", "api", "typecheck"]
+        typescript_test_command = ["pnpm", "--filter", "api", "test"]
         """,
         encoding="utf-8",
     )
@@ -57,6 +60,9 @@ def test_workspace_config_loads_named_tables(tmp_path: Path) -> None:
             test_roots=("services/api/tests",),
             package_paths=("services/api/src",),
             coverage_source=("services/api/src",),
+            typescript_lint_command=("pnpm", "--filter", "api", "lint"),
+            typescript_typecheck_command=("pnpm", "--filter", "api", "typecheck"),
+            typescript_test_command=("pnpm", "--filter", "api", "test"),
         ),
         schema.WorkspaceConfig(
             name="worker",
@@ -75,6 +81,7 @@ def test_coerce_updates_reads_workspace_tables() -> None:
                 "api": {
                     "source_roots": ["services/api/src"],
                     "test_roots": ["services/api/tests"],
+                    "typescript_lint_command": ["pnpm", "--filter", "api", "lint"],
                 },
             },
         }
@@ -85,6 +92,7 @@ def test_coerce_updates_reads_workspace_tables() -> None:
             name="api",
             source_roots=("services/api/src",),
             test_roots=("services/api/tests",),
+            typescript_lint_command=("pnpm", "--filter", "api", "lint"),
         ),
     )
     with pytest.raises(TypeError, match=r"workspaces\.api\.source_roots"):
