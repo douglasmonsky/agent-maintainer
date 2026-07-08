@@ -71,13 +71,13 @@ def render_background_registration_text(
 
 
 def heartbeat_prompt(_record: WaitRecord) -> str:
-    """Return Codex heartbeat prompt for a repo-scoped wait sweep."""
+    """Return Codex heartbeat prompt for a targeted wait sweep."""
 
     return (
-        "Run the repo wait heartbeat sweep command from this request. "
+        "Run the targeted wait sweep command from this request. "
         "If it prints nothing, stay silent and let the next heartbeat continue "
-        "polling. If it prints one or more terminal resume capsules, inspect "
-        "failures if any, merge only if satisfactory, then continue the prior task."
+        "polling. If it prints a terminal resume capsule, inspect failures if "
+        "any, merge only if satisfactory, then continue prior task."
     )
 
 
@@ -89,7 +89,7 @@ def heartbeat_request(
     """Return machine-readable Codex heartbeat creation request."""
 
     root_text = str(root)
-    sweep_command = "python -m agent_maintainer wait heartbeat"
+    sweep_command = f"python -m agent_maintainer wait sweep --one {record.wait_id}"
     resume_command = record.resume_instruction
     if root_text:
         sweep_command = f"{sweep_command} --root {root_text}"
@@ -98,7 +98,7 @@ def heartbeat_request(
         "type": HEARTBEAT_REQUEST_TYPE,
         "wait_id": record.wait_id,
         "wait_kind": record.kind,
-        "scope": "repo",
+        "scope": "wait",
         "target_id": record.target_id,
         "repo": record.repo,
         "root": root_text,
