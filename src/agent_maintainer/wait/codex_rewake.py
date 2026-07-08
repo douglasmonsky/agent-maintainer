@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-import json
 import os
-import selectors
-import subprocess
-import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from importlib import import_module
 from shutil import which
 from types import ModuleType
-from typing import Any, Final, Protocol
+from typing import Any, Final
 
+from agent_maintainer.wait.codex_app_server import (
+    CodexAppServerClient,
+    CodexContinuationClient,
+)
 from agent_maintainer.wait.handlers import continuation_prompt as handler_prompt
 from agent_maintainer.wait.registry import WaitRecord, WaitRegistry
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
@@ -31,19 +31,9 @@ REWAKE_STATUS_MANUAL: Final = "ready_for_manual_resume"
 REWAKE_STATUS_RESUMED: Final = "resumed"
 REWAKE_STATUS_SKIPPED: Final = "skipped"
 SDK_RESUME_METHODS: Final = ("thread_resume", "resume_thread")
-APP_SERVER_COMPLETED_METHOD: Final = "turn/completed"
-APP_SERVER_TURN_START_REQUEST_ID: Final = 3
 APP_SERVER_DEFAULT_TIMEOUT_SECONDS: Final = 3600.0
 
 ImportModule = Callable[[str], ModuleType]
-PopenFactory = Callable[..., subprocess.Popen[str]]
-
-
-class CodexContinuationClient(Protocol):
-    """Client capable of continuing a Codex thread."""
-
-    def resume_thread(self, thread_id: str, prompt: str) -> None:
-        """Resume thread with prompt."""
 
 
 @dataclass(frozen=True)
@@ -62,94 +52,6 @@ class _AppServerContext:
     thread_id: str
     codex_bin: str
     timeout_seconds: float
-
-
-@dataclass(frozen=True)
-class _JsonRpcResponse:
-    """Observed app-server JSON-RPC response."""
-
-    request_id: int
-    error: str = ""
-
-
-@dataclass
-class _AppServerWaitState:
-    """Mutable app-server turn wait state."""
-
-    turn_accepted: bool = False
-    completed: bool = False
-
-
-class CodexAppServerClient:
-    """Minimal Codex app-server JSON-RPC rewake client."""
-
-    def __init__(
-        self,
-        *,
-        codex_bin: str,
-        timeout_seconds: float,
-        popen_factory: PopenFactory = subprocess.Popen,
-    ) -> None:
-        self._codex_bin = codex_bin
-        self._timeout_seconds = timeout_seconds
-        self._popen_factory = popen_factory
-
-    def resume_thread(self, thread_id: str, prompt: str) -> None:
-        """Resume thread, start one turn, and wait for its completion."""
-
-        process = self._start_process()
-        try:
-            self._send_start_turn(process, thread_id, prompt)
-            self._wait_for_completion(process)
-        finally:
-            _stop_process(process)
-
-    def _start_process(self) -> subprocess.Popen[str]:
-        return self._popen_factory(
-            [self._codex_bin, "app-server", "--listen", "stdio://"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-
-    def _send_start_turn(
-        self,
-        process: subprocess.Popen[str],
-        thread_id: str,
-        prompt: str,
-    ) -> None:
-        if process.stdin is None:
-            raise RuntimeError("Codex app-server stdin unavailable")
-        for message in _app_server_messages(thread_id, prompt):
-            process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
-        process.stdin.flush()
-
-    def _wait_for_completion(self, process: subprocess.Popen[str]) -> None:
-        if process.stdout is None:
-            raise RuntimeError("Codex app-server stdout unavailable")
-        selector = selectors.DefaultSelector()
-        selector.register(process.stdout, selectors.EVENT_READ)
-        deadline = time.monotonic() + self._timeout_seconds
-        state = _AppServerWaitState()
-        try:
-            while True:
-                remaining = deadline - time.monotonic()
-                if remaining <= 0:
-                    raise TimeoutError("Codex app-server rewake timed out")
-                if selector.select(timeout=min(remaining, 1.0)):
-                    line = process.stdout.readline()
-                    if not line:
-                        continue
-                    _consume_app_server_line(line, state)
-                    if state.completed:
-                        return
-                    continue
-                if process.poll() is not None:
-                    stderr = _bounded_stderr(process)
-                    raise RuntimeError(f"Codex app-server exited early{stderr}")
-        finally:
-            selector.close()
 
 
 class CodexRewakeBackend:
@@ -330,93 +232,6 @@ def _manual_result(record: WaitRecord, detail: str) -> CodexRewakeResult:
         f"{detail}; manual resume: {record.resume_instruction}",
         prompt=continuation_prompt(record),
     )
-
-
-def _app_server_messages(thread_id: str, prompt: str) -> tuple[dict[str, object], ...]:
-    return (
-        {
-            "id": 1,
-            "method": "initialize",
-            "params": {
-                "clientInfo": {
-                    "name": "agent_maintainer",
-                    "title": "Agent Maintainer",
-                    "version": "0.0.0",
-                },
-            },
-        },
-        {"method": "initialized", "params": {}},
-        {"id": 2, "method": "thread/resume", "params": {"threadId": thread_id}},
-        {
-            "id": 3,
-            "method": "turn/start",
-            "params": {
-                "threadId": thread_id,
-                "input": [{"type": "text", "text": prompt}],
-            },
-        },
-    )
-
-
-def _consume_app_server_line(line: str, state: _AppServerWaitState) -> None:
-    response = _parse_app_server_line(line)
-    if response is not None:
-        if response.error:
-            raise RuntimeError(response.error)
-        state.turn_accepted = (
-            state.turn_accepted or response.request_id == APP_SERVER_TURN_START_REQUEST_ID
-        )
-        return
-    if not _app_server_turn_completed(line):
-        return
-    if not state.turn_accepted:
-        raise RuntimeError("Codex app-server completed unaccepted turn")
-    state.completed = True
-
-
-def _parse_app_server_line(line: str) -> _JsonRpcResponse | None:
-    payload = _json_object(line)
-    request_id = payload.get("id")
-    if not isinstance(request_id, int):
-        return None
-    error = payload.get("error")
-    if isinstance(error, Mapping):
-        message = error.get("message")
-        return _JsonRpcResponse(request_id, str(message or "Codex app-server error"))
-    return _JsonRpcResponse(request_id)
-
-
-def _app_server_turn_completed(line: str) -> bool:
-    payload = _json_object(line)
-    return payload.get("method") == APP_SERVER_COMPLETED_METHOD
-
-
-def _json_object(line: str) -> dict[str, object]:
-    try:
-        payload = json.loads(line)
-    except json.JSONDecodeError:
-        return {}
-    return payload if isinstance(payload, dict) else {}
-
-
-def _bounded_stderr(process: subprocess.Popen[str]) -> str:
-    if process.stderr is None:
-        return ""
-    stderr = process.stderr.read(2000).strip()
-    if not stderr:
-        return ""
-    return f": {stderr}"
-
-
-def _stop_process(process: subprocess.Popen[str]) -> None:
-    if process.poll() is not None:
-        return
-    process.terminate()
-    try:
-        process.wait(timeout=2)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait(timeout=2)
 
 
 def _resume_thread(codex: Any, thread_id: str) -> Any:

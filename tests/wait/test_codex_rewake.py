@@ -9,13 +9,20 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, ClassVar
 
+import pytest
+
+from agent_maintainer.wait.codex_app_server import (
+    CodexAppServerClient,
+    _app_server_turn_completed,
+    _AppServerWaitState,
+    _consume_app_server_line,
+)
 from agent_maintainer.wait.codex_rewake import (
     CODEX_BIN_ENV,
     CODEX_REWAKE_ENV,
     CODEX_THREAD_ID_ENV,
     REWAKE_STATUS_DISABLED,
     REWAKE_STATUS_MANUAL,
-    CodexAppServerClient,
     CodexRewakeBackend,
     CodexRewakeResult,
     codex_rewake_resumed,
@@ -160,6 +167,7 @@ with log_path.open("w", encoding="utf-8") as log:
         codex_bin="codex-test",
         timeout_seconds=5,
         popen_factory=popen_factory,
+        thread_read_poll_seconds=0.01,
     )
 
     client.resume_thread(THREAD_ID, "continue now")
@@ -171,6 +179,113 @@ with log_path.open("w", encoding="utf-8") as log:
         )
     ]
     assert messages == ["initialize", "initialized", "thread/resume", "turn/start"]
+
+
+def test_app_server_client_polls_thread_read_when_completion_not_streamed(
+    tmp_path: Path,
+) -> None:
+    """App-server client falls back to thread/read turn status polling."""
+
+    script = tmp_path / "fake_app_server_poll.py"
+    log_path = tmp_path / "poll-messages.jsonl"
+    script.write_text(
+        """
+import json
+import pathlib
+import sys
+
+log_path = pathlib.Path(sys.argv[1])
+with log_path.open("w", encoding="utf-8") as log:
+    for line in sys.stdin:
+        message = json.loads(line)
+        log.write(json.dumps(message, sort_keys=True) + "\\n")
+        log.flush()
+        request_id = message.get("id")
+        method = message.get("method")
+        if method == "turn/start":
+            print(
+                json.dumps(
+                    {
+                        "id": request_id,
+                        "result": {"turn": {"id": "turn-1", "status": "inProgress"}},
+                    }
+                ),
+                flush=True,
+            )
+            continue
+        if method == "thread/read":
+            print(
+                json.dumps(
+                    {
+                        "id": request_id,
+                        "result": {
+                            "thread": {
+                                "turns": [
+                                    {"id": "turn-1", "status": "completed"}
+                                ]
+                            }
+                        },
+                    }
+                ),
+                flush=True,
+            )
+            break
+        if request_id is not None:
+            print(json.dumps({"id": request_id, "result": {}}), flush=True)
+""",
+        encoding="utf-8",
+    )
+
+    def popen_factory(
+        _command: list[str],
+        **kwargs: Any,
+    ) -> subprocess.Popen[str]:
+        return subprocess.Popen(
+            [sys.executable, str(script), str(log_path)],
+            **kwargs,
+        )
+
+    client = CodexAppServerClient(
+        codex_bin="codex-test",
+        timeout_seconds=5,
+        popen_factory=popen_factory,
+        thread_read_poll_seconds=0.01,
+    )
+
+    client.resume_thread(THREAD_ID, "continue now")
+
+    methods = [
+        message["method"]
+        for message in (
+            json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines()
+        )
+    ]
+    assert methods == [
+        "initialize",
+        "initialized",
+        "thread/resume",
+        "turn/start",
+        "thread/read",
+    ]
+
+
+def test_app_server_completion_accepts_known_event_spellings() -> None:
+    """Completion parsing accepts canonical and compatibility event names."""
+
+    assert _app_server_turn_completed(json.dumps({"method": "turn/completed"}))
+    assert _app_server_turn_completed(json.dumps({"method": "turn.completed"}))
+    assert _app_server_turn_completed(json.dumps({"type": "turn/completed"}))
+    assert not _app_server_turn_completed(json.dumps({"method": "turn/started"}))
+
+
+def test_app_server_completion_requires_accepted_turn() -> None:
+    """Completion events before turn acceptance fail closed."""
+
+    with pytest.raises(RuntimeError, match="completed unaccepted turn"):
+        _consume_app_server_line(
+            json.dumps({"method": "turn/completed"}),
+            _AppServerWaitState(),
+        )
 
 
 def test_backend_runs_sdk_and_marks_resumed(tmp_path: Path) -> None:

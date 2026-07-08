@@ -21,8 +21,9 @@ The preferred local backend is therefore app-server JSON-RPC over the bundled
 
 1. App-server rewake backend:
    - Add a small JSON-RPC client for `codex app-server --listen stdio://`.
-   - Resume the current thread id, start one continuation turn, and wait for
-     `turn/completed`.
+   - Resume the current thread id, start one continuation turn, and detect
+     terminal state from either the app-server completion event or a quiet
+     `thread/read` status poll.
    - Keep all behavior behind `AGENT_MAINTAINER_CODEX_REWAKE=1`.
    - Do not persist thread ids, prompts, hook stdin, environment dumps, or auth
      material in wait records.

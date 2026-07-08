@@ -71,10 +71,15 @@ depends_on = [
 [[modules]]
 path = "codex_rewake"
 depends_on = [
+  "codex_app_server",
   "handlers",
   "registry",
   "//agent_waits.models",
 ]
+
+[[modules]]
+path = "codex_app_server"
+depends_on = []
 
 [[modules]]
 path = "handlers"
