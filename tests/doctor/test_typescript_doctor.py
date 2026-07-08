@@ -68,10 +68,54 @@ def test_typescript_doctor_passes_when_command_executable_exists() -> None:
         typescript_lint_command=(sys.executable, "--version"),
     )
 
-    (result,) = doctor_providers.check_typescript_provider(config)
+    result, guidance = doctor_providers.check_typescript_provider(config)
 
     assert result.status == OK
     assert "typescript-lint" in result.message
+    assert guidance.name == "typescript-repair-fact-output"
+    assert guidance.status == OK
+    assert "ESLint JSON" in guidance.hint
+    assert "no package manager is inferred" in guidance.hint
+
+
+def test_typescript_doctor_recommends_stable_repair_fact_outputs() -> None:
+    """Human-oriented TypeScript commands receive parser-friendly output guidance."""
+    config = replace(
+        MaintainerConfig(),
+        enable_typescript=True,
+        typescript_lint_command=(sys.executable, "lint"),
+        typescript_typecheck_command=(sys.executable, "typecheck"),
+        typescript_test_command=(sys.executable, "test"),
+    )
+
+    provider, guidance = doctor_providers.check_typescript_provider(config)
+
+    assert provider.status == OK
+    assert guidance.name == "typescript-repair-fact-output"
+    assert guidance.status == OK
+    assert "typescript_lint_command" in guidance.hint
+    assert "typescript_typecheck_command" in guidance.hint
+    assert "typescript_test_command" in guidance.hint
+    assert "ESLint JSON" in guidance.hint
+    assert "tsc with --pretty false" in guidance.hint
+    assert "Jest/Vitest JSON" in guidance.hint
+    assert "coverage-summary.json or lcov.info" in guidance.hint
+
+
+def test_typescript_doctor_skips_repair_fact_guidance_when_outputs_are_stable() -> None:
+    """Parser-friendly command tokens avoid extra TypeScript doctor guidance."""
+    config = replace(
+        MaintainerConfig(),
+        enable_typescript=True,
+        typescript_lint_command=(sys.executable, "eslint", "--format=json"),
+        typescript_typecheck_command=(sys.executable, "tsc", "--pretty=false"),
+        typescript_test_command=(sys.executable, "vitest", "--json", "lcov.info"),
+    )
+
+    (provider,) = doctor_providers.check_typescript_provider(config)
+
+    assert provider.status == OK
+    assert provider.name == "typescript-provider"
 
 
 def test_configured_command_provider_uses_generic_missing_tool_hint() -> None:

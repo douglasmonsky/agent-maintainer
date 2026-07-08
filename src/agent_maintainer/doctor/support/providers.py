@@ -77,7 +77,7 @@ def check_configured_command_provider(
         )
 
     names = ", ".join(check_name for check_name, _field_name, _command in commands)
-    return (
+    results = (
         DoctorResult(
             provider_row_name(metadata),
             OK,
@@ -85,6 +85,9 @@ def check_configured_command_provider(
             state=ACTIVE,
         ),
     )
+    if metadata.name != TYPESCRIPT_PROVIDER.name:
+        return results
+    return (*results, *typescript_repair_fact_guidance(commands))
 
 
 def provider_status(metadata: ProviderMetadata, config: MaintainerConfig) -> str:
@@ -136,6 +139,69 @@ def missing_command_hint(metadata: ProviderMetadata) -> str:
             "is inferred."
         )
     return f"Install missing tools or update {metadata.display_name} command fields."
+
+
+def typescript_repair_fact_guidance(commands: ConfiguredCommands) -> tuple[DoctorResult, ...]:
+    """Return advisory TypeScript repair-fact setup guidance rows."""
+    recommendations = typescript_repair_fact_recommendations(commands)
+    if not recommendations:
+        return ()
+    configured = ", ".join(check_name for check_name, _field, _command in commands)
+    return (
+        DoctorResult(
+            "typescript-repair-fact-output",
+            OK,
+            f"Configured TypeScript command checks can provide richer repair facts: {configured}.",
+            state=ACTIVE,
+            hint="; ".join(
+                (*recommendations, "keep commands explicit; no package manager is inferred.")
+            ),
+        ),
+    )
+
+
+def typescript_repair_fact_recommendations(commands: ConfiguredCommands) -> tuple[str, ...]:
+    """Return parser-friendly output recommendations for configured commands."""
+    recommendations: list[str] = []
+    for _check_name, field_name, command in commands:
+        if field_name == "typescript_lint_command" and not command_mentions_eslint_json(command):
+            recommendations.append("emit ESLint JSON from typescript_lint_command")
+        if field_name == "typescript_typecheck_command" and not command_mentions_pretty_false(
+            command
+        ):
+            recommendations.append("run tsc with --pretty false from typescript_typecheck_command")
+        if field_name == "typescript_test_command" and not command_mentions_test_artifacts(command):
+            recommendations.append(
+                "emit Jest/Vitest JSON and existing coverage-summary.json or lcov.info artifacts "
+                "from typescript_test_command",
+            )
+    return tuple(recommendations)
+
+
+def command_mentions_eslint_json(command: tuple[str, ...]) -> bool:
+    """Return whether command tokens visibly request ESLint JSON output."""
+    text = command_text(command)
+    return "--format=json" in text or "--format json" in text or "-f json" in text
+
+
+def command_mentions_pretty_false(command: tuple[str, ...]) -> bool:
+    """Return whether command tokens visibly request tsc non-pretty output."""
+    text = command_text(command)
+    return "--pretty=false" in text or "--pretty false" in text
+
+
+def command_mentions_test_artifacts(command: tuple[str, ...]) -> bool:
+    """Return whether command tokens visibly mention parser-friendly test artifacts."""
+    text = command_text(command)
+    return any(
+        marker in text
+        for marker in ("--json", " json", "coverage-summary.json", "lcov.info", "lcov")
+    )
+
+
+def command_text(command: tuple[str, ...]) -> str:
+    """Return lower-cased command text for advisory pattern checks."""
+    return " ".join(command).lower()
 
 
 def joined_field_names(field_names: list[str]) -> str:
