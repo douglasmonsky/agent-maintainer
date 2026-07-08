@@ -113,6 +113,27 @@ def test_change_plan_check_validates_without_git_scope(
     assert "PASS change plans" in capsys.readouterr().out
 
 
+def test_change_plan_check_accepts_completed_historical_plan(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Completed plans stay readable without blocking check output."""
+    monkeypatch.chdir(tmp_path)
+    assert change_plan_cli.main(["new", "package-migration"]) == 0
+    plan_path = tmp_path / ".agent-maintainer/change-plans/package-migration.md"
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8").replace(
+            'status = "active"',
+            'status = "complete"',
+        ),
+        encoding="utf-8",
+    )
+
+    assert change_plan_cli.main(["check", "--no-git-scope"]) == 0
+    assert "PASS change plans" in capsys.readouterr().out
+
+
 def test_top_level_routes_change_plan_explain(capsys: pytest.CaptureFixture[str]) -> None:
     """Top-level CLI routes the change-plan command."""
 

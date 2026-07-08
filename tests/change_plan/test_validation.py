@@ -29,6 +29,17 @@ def test_expired_plan_fails_validation(tmp_path: Path) -> None:
     assert any("expired" in issue.message for issue in issues)
 
 
+def test_complete_plan_skips_current_policy_validation(tmp_path: Path) -> None:
+    """Completed plans remain historical records without blocking new diffs."""
+    text = valid_plan_text(expires="2026-06-01").replace(
+        'status = "active"',
+        'status = "complete"',
+    )
+    plan = parser.parse_plan_text(text, path=tmp_path / "plan.md")
+
+    assert validation.validate_plan(plan, today=date(2026, 6, 29)) == ()
+
+
 def test_missing_required_section_fails_validation(tmp_path: Path) -> None:
     """Plans must explain every required review field."""
 
@@ -166,7 +177,7 @@ def test_metadata_validation_reports_all_policy_failures(tmp_path: Path) -> None
     issues = validation.validate_plan(plan, today=date(2026, 6, 29))
     messages = {issue.message for issue in issues}
 
-    assert "status must be 'active'" in messages
+    assert "status must be one of: 'active', 'complete'" in messages
     assert "allowed_paths must contain at least one pattern" in messages
     assert "max_changed_files must be positive" in messages
     assert "max_changed_lines must be positive" in messages

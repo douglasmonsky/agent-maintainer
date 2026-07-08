@@ -39,6 +39,33 @@ def test_change_budget_active_plan_bends_size_and_test_budget(tmp_path: Path) ->
     assert not any("Source changed without" in warning for warning in warnings)
 
 
+def test_change_budget_ignores_completed_historical_plans(tmp_path: Path) -> None:
+    """Completed plans do not participate in current diff scope validation."""
+    write_change_plan(tmp_path, allow_source_without_test_change=True)
+    historical = valid_plan_text().replace(
+        'status = "active"',
+        'status = "complete"',
+    )
+    plan_dir = tmp_path / ".agent-maintainer" / "change-plans"
+    (plan_dir / "historical.md").write_text(historical, encoding="utf-8")
+    args = check_change_budget.parse_args(["--block-lines", "2"])
+    changes = [check_change_budget.FileChange("src/package/a.py", 10, 0)]
+
+    failures, warnings = check_change_budget.budget_messages(
+        args,
+        MaintainerConfig(source_roots=("src",), test_roots=("tests",), require_tests=True),
+        changes,
+        [],
+        context=check_change_budget.BudgetContext(
+            repo_root=tmp_path,
+            all_changes=tuple(changes),
+        ),
+    )
+
+    assert failures == []
+    assert any("CHANGE PLAN ACTIVE" in warning for warning in warnings)
+
+
 def test_change_budget_active_plan_rejects_out_of_scope_path(tmp_path: Path) -> None:
     """Active plan fails when current diff exceeds declared scope."""
 
