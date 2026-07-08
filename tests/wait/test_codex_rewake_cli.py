@@ -66,7 +66,7 @@ class SuccessfulRewakeBackend:
         self.seen_count()
         return CodexRewakeResult(
             REWAKE_STATUS_RESUMED,
-            "Codex SDK continuation started",
+            "Codex continuation completed",
         )
 
     def seen_count(self) -> int:

@@ -58,7 +58,7 @@ def test_runtime_reports_pending_same_state_verifier(
     assert "already running" in payload["reason"]
     context = payload["hookSpecificOutput"]["additionalContext"]
     assert "verifier wait registered" in context
-    assert "heartbeat request:" in context
+    assert "fallback heartbeat request:" in context
     assert '"wait_kind": "verifier"' in context
 
 

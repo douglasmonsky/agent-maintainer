@@ -111,6 +111,20 @@ Track work:
 - [ ] Phase 168: TypeScript/React Doctor And Setup Guidance
 - [ ] Phase 169: TypeScript/React Blocking-Gate Promotion Assessment
 
+## Planned: Codex Wait And Rewake Hardening
+
+This is separate from TypeScript/React provider maturation. The goal is to make
+known waits act like real suspension primitives: local watchers own pending
+polling, and Codex receives exactly one terminal continuation when a supported
+local rewake backend is available.
+
+Detailed scope:
+[`docs/roadmap/phases/phase-176-codex-terminal-rewake-hardening.md`](roadmap/phases/phase-176-codex-terminal-rewake-hardening.md).
+
+Track work:
+
+- [ ] Phase 176: Codex Terminal Rewake Hardening
+
 ## Future Work
 
 - Keep agent orchestration framework work behind replaceable adapter contracts:

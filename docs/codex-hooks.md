@@ -96,11 +96,28 @@ agent_maintainer wait cleanup --root <repo>` to expire stale ready records
 after a terminal wait is no longer useful.
 
 Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let terminal background watchers try
-automatic Codex SDK continuation. Rewake requires Codex thread metadata
-`CODEX_THREAD_ID` or `AGENT_MAINTAINER_CODEX_THREAD_ID`, plus the optional
-`openai-codex` SDK. If either is unavailable or SDK resume fails, the wait
-stays ready for the manual `wait resume <id>` command. No thread id or prompt
-is stored in the wait record.
+automatic Codex continuation. The preferred backend is the local Codex CLI app-server
+`codex app-server --listen stdio://` with Codex thread metadata from
+`CODEX_THREAD_ID` or `AGENT_MAINTAINER_CODEX_THREAD_ID`; optional
+`openai-codex` SDK remains fallback backend. If app-server, SDK, auth, or
+thread metadata is unavailable, the wait stays ready for the manual
+`wait resume <id>` command. No thread id or prompt is stored in the wait record.
+
+Terminal-only watcher wake is the preferred path when all prerequisites are
+present: `AGENT_MAINTAINER_CODEX_REWAKE=1`, `CODEX_THREAD_ID` or
+`AGENT_MAINTAINER_CODEX_THREAD_ID`, and either a usable `codex` binary or an
+importable optional `openai-codex` SDK in the watcher Python environment. In
+that mode, the handoff does not ask Codex to create a heartbeat. The detached
+watcher polls locally, pending state stays outside model turns, and the watcher
+attempts one Codex continuation when the wait reaches terminal state.
+
+If terminal rewake is unavailable, the handoff keeps a fallback heartbeat
+request. That request is marked `fallback_only: true` and includes
+`preferred_monitor_model: gpt-5.3-codex-spark` and
+`preferred_monitor_reasoning: minimal`. Heartbeat fallback still wakes a model
+each interval, so use it only when terminal watcher rewake is not available.
+If SDK import, auth, thread metadata, or resume fails, the wait remains ready
+for manual `wait resume <id>` recovery.
 
 ## Audit Trail
 

@@ -71,15 +71,14 @@ def wait_for_verifier_run(
 ) -> VerifierWaitResult:
     """Wait quietly until a verifier manifest exists or timeout expires."""
     started = monotonic()
-    manifest_path = verifier_manifest_path(config)
     attempt = 0
     while True:
         attempt += 1
-        manifest_exists = manifest_path.exists()
+        result = query_verifier_run_once(config)
         if poll_observer is not None:
-            poll_observer(attempt, manifest_exists)
-        if manifest_exists:
-            return _read_manifest(config.run_id, manifest_path)
+            poll_observer(attempt, result is not None)
+        if result is not None:
+            return result
         if monotonic() - started >= config.timeout_seconds:
             return VerifierWaitResult(
                 run_id=config.run_id,
@@ -92,6 +91,15 @@ def wait_for_verifier_run(
 def verifier_manifest_path(config: VerifierWaitConfig) -> Path:
     """Return manifest path for one verifier run id."""
     return config.log_dir / "runs" / config.run_id / "manifest.json"
+
+
+def query_verifier_run_once(config: VerifierWaitConfig) -> VerifierWaitResult | None:
+    """Return terminal verifier result, otherwise pending."""
+
+    manifest_path = verifier_manifest_path(config)
+    if manifest_path.exists():
+        return _read_manifest(config.run_id, manifest_path)
+    return _read_job_result(config)
 
 
 def render_verifier_wait_text(result: VerifierWaitResult) -> str:
@@ -133,6 +141,42 @@ def _read_manifest(run_id: str, manifest_path: Path) -> VerifierWaitResult:
         )
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         return VerifierWaitResult(run_id=run_id, manifest=None, error=str(exc))
+
+
+def _read_job_result(config: VerifierWaitConfig) -> VerifierWaitResult | None:
+    jobs_dir = config.log_dir / "jobs"
+    stdout_path = jobs_dir / f"{config.run_id}.stdout.log"
+    try:
+        outcome = stdout_path.read_text(encoding="utf-8").strip().upper()
+    except FileNotFoundError:
+        return None
+    except OSError as exc:
+        return VerifierWaitResult(run_id=config.run_id, manifest=None, error=str(exc))
+    if outcome not in {"FAIL", "PASS"}:
+        return None
+    profile = ""
+    try:
+        payload = json.loads((jobs_dir / f"{config.run_id}.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        payload = {}
+    if isinstance(payload, dict):
+        profile = str(payload.get("profile", ""))
+    status = "passed" if outcome == "PASS" else "failed"
+    return VerifierWaitResult(
+        run_id=config.run_id,
+        manifest=VerifierManifest(
+            run_id=config.run_id,
+            profile=profile,
+            checks=(
+                VerifierCheck(
+                    name="verifier",
+                    status=status,
+                    log_path=str(stdout_path),
+                ),
+            ),
+            expected_duration_hint="cached verifier result",
+        ),
+    )
 
 
 def _render_success(manifest: VerifierManifest) -> str:

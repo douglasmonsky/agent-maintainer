@@ -18,24 +18,31 @@ state. The adapter is inactive unless `AGENT_MAINTAINER_CODEX_REWAKE=1` is set.
 
 ## Boundary
 
-The rewake adapter may inspect Codex thread metadata from process environment and
-dynamically import the optional `openai-codex` SDK. It must not persist thread
-ids, SDK prompts, hook stdin, API keys, or other private payloads in wait
-records. If SDK import, auth, thread metadata, or resume fails, the wait stays
+The rewake adapter may inspect Codex thread metadata from process environment,
+start local `codex app-server --listen stdio://`, and dynamically import the
+optional `openai-codex` SDK fallback. It must not persist thread ids, Codex
+prompts, hook stdin, API keys, or other private payloads in wait records. If
+app-server, SDK import, auth, thread metadata, or resume fails, the wait stays
 `ready_for_manual_resume` and the existing `wait resume <id>` command remains the
 recovery path.
 
 ## Alternatives Considered
 
 - Add a hard `openai-codex` dependency. Rejected because background waits should
-  remain installable without Codex SDK users pulling beta SDK/runtime packages.
-- Put SDK rewake in the hook. Rejected because terminal state belongs to the
-  watcher path, not the PR-create lifecycle hook.
-- Persist the Codex thread id in wait records. Rejected to keep durable wait
-  records free of client-session metadata.
+  remain installable without SDK users pulling beta SDK/runtime packages.
+- Put app-server/SDK rewake in the hook. Rejected because terminal state belongs
+  to the watcher path, not the PR-create lifecycle hook.
+- Persist Codex thread id in wait records. Rejected to keep durable wait records
+  free of client-session metadata.
 
 ## Consequences
 
-Codex can opt into automatic continuation when the SDK and thread metadata are
-available, while existing manual resume behavior remains the default and fallback
-for every environment.
+Codex can opt into automatic continuation when local app-server or SDK backend
+metadata are available, while existing manual resume behavior remains the default
+fallback for every environment.
+
+Background wait handoffs may suppress heartbeat guidance only when a detached
+watcher is started, Codex rewake is explicitly enabled, thread metadata is
+available in process environment, and either Codex CLI app-server or optional SDK
+fallback is available. Otherwise heartbeat remains a fallback and is marked as
+such so pending polling does not masquerade as a no-token suspension primitive.

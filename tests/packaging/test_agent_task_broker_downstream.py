@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from agent_waits.broker import CHEAP_MONITOR_MODEL, codex_terminal_rewake_available
+
 ROOT = Path(__file__).resolve().parents[2]
 EXPERIMENT_TEST = (
     ROOT / "experiments" / "agent-task-broker" / "tests" / "test_downstream_install_contract.py"
@@ -24,3 +26,10 @@ def test_agent_task_broker_downstream_install_contract() -> None:
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_agent_waits_exports_terminal_rewake_contract() -> None:
+    """Reusable wait broker exposes terminal-rewake handoff primitives."""
+
+    assert CHEAP_MONITOR_MODEL == "gpt-5.3-codex-spark"
+    assert callable(codex_terminal_rewake_available)

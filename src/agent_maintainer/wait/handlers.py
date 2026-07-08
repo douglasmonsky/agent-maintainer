@@ -24,9 +24,8 @@ from agent_maintainer.wait.github_pr import (
 from agent_maintainer.wait.verifier import (
     VerifierWaitConfig,
     VerifierWaitResult,
-    verifier_manifest_path,
+    query_verifier_run_once,
 )
-from agent_maintainer.wait.verifier_manifest import parse_verifier_manifest
 
 VerifierQuery = Callable[[VerifierWaitConfig], VerifierWaitResult | None]
 
@@ -341,18 +340,9 @@ def continuation_prompt(record: wait_registry.WaitRecord) -> str:
 
 
 def query_verifier_once(config: VerifierWaitConfig) -> VerifierWaitResult | None:
-    """Return terminal verifier result if manifest exists, otherwise pending."""
+    """Return terminal verifier result, otherwise pending."""
 
-    manifest_path = verifier_manifest_path(config)
-    if not manifest_path.exists():
-        return None
-    try:
-        return VerifierWaitResult(
-            run_id=config.run_id,
-            manifest=parse_verifier_manifest(manifest_path),
-        )
-    except (OSError, ValueError) as exc:
-        return VerifierWaitResult(run_id=config.run_id, manifest=None, error=str(exc))
+    return query_verifier_run_once(config)
 
 
 def _github_pr_config(record: wait_registry.WaitRecord) -> GitHubPrWaitConfig:

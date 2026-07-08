@@ -10,6 +10,7 @@ from agent_maintainer.wait.verifier import (
     VerifierWaitConfig,
     VerifierWaitResult,
     parse_verifier_manifest,
+    query_verifier_run_once,
     render_verifier_wait_json,
     render_verifier_wait_text,
     wait_for_verifier_run,
@@ -115,6 +116,33 @@ def test_verifier_wait_times_out_without_manifest(tmp_path: Path) -> None:
     assert "Result: TIMEOUT" in render_verifier_wait_text(result)
 
 
+def test_verifier_wait_reads_cached_pass_job(tmp_path: Path) -> None:
+    """Cached verifier pass stdout is terminal without run manifest."""
+
+    write_cached_job(tmp_path, "cached-pass", profile="ci", outcome="PASS")
+
+    result = wait_for_verifier_run(VerifierWaitConfig(run_id="cached-pass", log_dir=tmp_path))
+    payload = json.loads(render_verifier_wait_json(result))
+
+    assert result.exit_code == 0
+    assert payload["status"] == "passed"
+    assert "Expected duration: cached verifier result" in render_verifier_wait_text(result)
+
+
+def test_verifier_query_once_reads_cached_fail_job(tmp_path: Path) -> None:
+    """Background sweeps treat cached verifier failures as terminal."""
+
+    write_cached_job(tmp_path, "cached-fail", profile="ci", outcome="FAIL")
+
+    result = query_verifier_run_once(
+        VerifierWaitConfig(run_id="cached-fail", log_dir=tmp_path),
+    )
+
+    assert result is not None
+    assert result.exit_code == 1
+    assert "Result: FAIL" in render_verifier_wait_text(result)
+
+
 def test_verifier_wait_json_lists_failed_checks(tmp_path: Path) -> None:
     """JSON output exposes machine-readable failed check names."""
     write_manifest(
@@ -192,6 +220,24 @@ def test_verifier_duration_renders_minutes(tmp_path: Path) -> None:
     result = wait_for_verifier_run(VerifierWaitConfig(run_id="run-4", log_dir=tmp_path))
 
     assert "Duration: 1m 5s" in render_verifier_wait_text(result)
+
+
+def write_cached_job(
+    log_dir: Path,
+    run_id: str,
+    *,
+    profile: str,
+    outcome: str,
+) -> None:
+    """Write cached verifier job output."""
+
+    jobs_dir = log_dir / "jobs"
+    jobs_dir.mkdir(parents=True)
+    (jobs_dir / f"{run_id}.json").write_text(
+        json.dumps({"profile": profile, "run_id": run_id}),
+        encoding="utf-8",
+    )
+    (jobs_dir / f"{run_id}.stdout.log").write_text(outcome, encoding="utf-8")
 
 
 def write_manifest(

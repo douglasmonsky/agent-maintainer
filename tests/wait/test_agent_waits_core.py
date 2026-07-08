@@ -7,10 +7,15 @@ from datetime import datetime
 from pathlib import Path
 
 from agent_waits.broker import (
+    CODEX_PLATFORM,
+    CODEX_REWAKE_ENV,
+    CODEX_THREAD_ID_ENV,
+    CODEX_THREAD_ID_OVERRIDE_ENV,
     BackgroundWaitRegistration,
     heartbeat_prompt,
     heartbeat_request_json,
     render_background_registration_text,
+    running_in_codex,
 )
 from agent_waits.constants import (
     RESULT_PASS,
@@ -31,6 +36,14 @@ from agent_waits.registry import (
 from agent_waits.rendering import render_wait_record_text
 
 NOW = datetime.fromisoformat("2026-07-07T02:00:00+00:00")
+FALLBACK_MONITOR_INTERVAL_SECONDS = 120
+
+
+def test_running_in_codex_accepts_thread_override() -> None:
+    """Explicit thread override marks Codex environment."""
+
+    assert running_in_codex({CODEX_THREAD_ID_ENV: ""}) is False
+    assert running_in_codex({CODEX_THREAD_ID_OVERRIDE_ENV: "thread-1"})
 
 
 def test_generic_wait_registry_writes_target_id(tmp_path: Path) -> None:
@@ -287,18 +300,75 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     assert f"Result: {RESULT_PENDING}" in text
     assert "verifier wait registered for run-123" in text
     assert "watcher: started" in text
-    assert "heartbeat request:" in text
+    assert "fallback heartbeat request:" in text
     assert heartbeat_prompt(record) in text
     request = json.loads(heartbeat_request_json(record, root=tmp_path))
     assert request["scope"] == "wait"
     assert request["on_pending"] == "silent"
     assert request["on_terminal"] == "resume_and_review"
+    assert request["fallback_only"] is True
+    assert request["preferred_monitor_model"] == "gpt-5.3-codex-spark"
+    assert request["preferred_monitor_reasoning"] == "minimal"
+    assert request["preferred_interval_seconds"] == FALLBACK_MONITOR_INTERVAL_SECONDS
     assert request["merge_policy"] == "merge_only_if_satisfactory"
     assert request["sweep_command"].endswith(
         f"wait sweep --one {record.wait_id} --root {tmp_path}",
     )
     assert "targeted wait sweep command" in request["prompt"]
     assert record.wait_id not in request["prompt"]
+
+
+def test_background_registration_prefers_terminal_rewake_when_available(
+    tmp_path: Path,
+) -> None:
+    """Codex terminal-rewake handoffs avoid heartbeat model polling."""
+
+    record = WaitRegistry(tmp_path).register(
+        RegisterWait(
+            root=tmp_path,
+            kind="verifier",
+            target_id="run-123",
+            platform=CODEX_PLATFORM,
+            now=NOW,
+        ),
+    )
+    text = render_background_registration_text(
+        BackgroundWaitRegistration(record=record, watcher_started=True),
+        env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: "thread-1"},
+        sdk_available=True,
+    )
+
+    assert f"Result: {RESULT_PENDING}" in text
+    assert "pending polls stay outside model turns" in text
+    assert "terminal rewake: enabled" in text
+    assert "manual fallback resume:" in text
+    assert "codex_heartbeat_wait" not in text
+    assert "heartbeat request" not in text
+
+
+def test_background_registration_keeps_heartbeat_without_rewake_backend(
+    tmp_path: Path,
+) -> None:
+    """Codex env flags alone do not suppress the fallback heartbeat."""
+
+    record = WaitRegistry(tmp_path).register(
+        RegisterWait(
+            root=tmp_path,
+            kind="verifier",
+            target_id="run-123",
+            platform=CODEX_PLATFORM,
+            now=NOW,
+        ),
+    )
+    text = render_background_registration_text(
+        BackgroundWaitRegistration(record=record, watcher_started=True),
+        env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: "thread-1"},
+        sdk_available=False,
+    )
+
+    assert "fallback heartbeat request:" in text
+    assert "codex_heartbeat_wait" in text
+    assert "terminal rewake: enabled" not in text
 
 
 def test_background_registration_text_reflects_ready_result(tmp_path: Path) -> None:
