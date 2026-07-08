@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from importlib.util import find_spec
 from pathlib import Path
+from shutil import which
 from types import MappingProxyType
 from typing import Final
 
@@ -18,6 +19,7 @@ CODEX_PLATFORM: Final = "codex"
 CODEX_ALLOW_FOREGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT"
 CODEX_BACKGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_BACKGROUND_WAIT"
 CODEX_REWAKE_ENV: Final = "AGENT_MAINTAINER_CODEX_REWAKE"
+CODEX_BIN_ENV: Final = "AGENT_MAINTAINER_CODEX_BIN"
 CODEX_THREAD_ID_ENV: Final = "CODEX_THREAD_ID"
 CODEX_THREAD_ID_OVERRIDE_ENV: Final = "AGENT_MAINTAINER_CODEX_THREAD_ID"
 CODEX_ENV_MARKERS: Final = (
@@ -28,6 +30,7 @@ CODEX_ENV_MARKERS: Final = (
 CHEAP_MONITOR_MODEL: Final = "gpt-5.3-codex-spark"
 HEARTBEAT_REQUEST_TYPE: Final = "codex_heartbeat_wait"
 OPENAI_CODEX_PACKAGE: Final = "openai_codex"
+CODEX_CLI_NAME: Final = "codex"
 BACKGROUND_WAIT_FLAGS: Final[Mapping[str | None, bool]] = MappingProxyType({"0": False})
 
 
@@ -74,7 +77,7 @@ def codex_terminal_rewake_available(
         and record.platform == CODEX_PLATFORM
         and current.get(CODEX_REWAKE_ENV) == "1"
         and _codex_thread_id(current) != ""
-        and _codex_rewake_backend_available(sdk_available)
+        and _codex_rewake_backend_available(sdk_available, current)
     )
 
 
@@ -203,7 +206,10 @@ def _codex_thread_id(env: Mapping[str, str]) -> str:
     return env.get(CODEX_THREAD_ID_OVERRIDE_ENV) or env.get(CODEX_THREAD_ID_ENV, "")
 
 
-def _codex_rewake_backend_available(sdk_available: bool | None) -> bool:
+def _codex_rewake_backend_available(
+    sdk_available: bool | None,
+    env: Mapping[str, str],
+) -> bool:
     if sdk_available is not None:
         return sdk_available
-    return find_spec(OPENAI_CODEX_PACKAGE) is not None
+    return bool(env.get(CODEX_BIN_ENV) or which(CODEX_CLI_NAME) or find_spec(OPENAI_CODEX_PACKAGE))

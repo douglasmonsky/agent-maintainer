@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 from pathlib import Path
 from types import ModuleType
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from agent_maintainer.wait.codex_rewake import (
+    CODEX_BIN_ENV,
     CODEX_REWAKE_ENV,
     CODEX_THREAD_ID_ENV,
     REWAKE_STATUS_DISABLED,
     REWAKE_STATUS_MANUAL,
+    CodexAppServerClient,
     CodexRewakeBackend,
     CodexRewakeResult,
     codex_rewake_resumed,
@@ -69,7 +74,7 @@ def test_backend_stays_manual_without_thread(tmp_path: Path) -> None:
     assert registry.read(record.wait_id).status == WAIT_STATUS_READY
 
 
-def test_backend_stays_manual_without_sdk(tmp_path: Path) -> None:
+def test_backend_stays_manual_without_backend(tmp_path: Path) -> None:
     """Enabled rewake leaves manual resume ready without SDK import."""
 
     registry = WaitRegistry(tmp_path)
@@ -77,13 +82,95 @@ def test_backend_stays_manual_without_sdk(tmp_path: Path) -> None:
 
     result = CodexRewakeBackend(
         registry,
-        env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: THREAD_ID},
+        env={
+            CODEX_REWAKE_ENV: "1",
+            CODEX_THREAD_ID_ENV: THREAD_ID,
+            CODEX_BIN_ENV: "/missing/codex",
+        },
         importer=missing_importer,
     ).resume_if_available(record)
 
     assert result.status == REWAKE_STATUS_MANUAL
-    assert "openai-codex SDK is unavailable" in result.detail
+    assert "Codex app-server rewake failed" in result.detail
     assert registry.read(record.wait_id).status == WAIT_STATUS_READY
+
+
+def test_backend_runs_app_server_and_marks_resumed(tmp_path: Path) -> None:
+    """Enabled rewake uses app-server before SDK."""
+
+    FakeCodex.calls = []
+    app_server = FakeAppServerClient()
+    registry = WaitRegistry(tmp_path)
+    record = completed_wait(registry, tmp_path)
+
+    result = CodexRewakeBackend(
+        registry,
+        env={
+            CODEX_REWAKE_ENV: "1",
+            CODEX_THREAD_ID_ENV: THREAD_ID,
+            CODEX_BIN_ENV: "codex-test",
+        },
+        importer=fake_importer,
+        app_server_client=app_server,
+    ).resume_if_available(record)
+
+    assert_backend_success(result, registry, record)
+    assert app_server.calls == [(THREAD_ID, continuation_prompt(record))]
+    assert not FakeCodex.calls
+    assert_private_data_not_persisted(tmp_path, record)
+
+
+def test_app_server_client_runs_json_rpc_turn(tmp_path: Path) -> None:
+    """App-server client sends resume/start messages and waits for completion."""
+
+    script = tmp_path / "fake_app_server.py"
+    log_path = tmp_path / "messages.jsonl"
+    script.write_text(
+        """
+import json
+import pathlib
+import sys
+
+log_path = pathlib.Path(sys.argv[1])
+with log_path.open("w", encoding="utf-8") as log:
+    for line in sys.stdin:
+        message = json.loads(line)
+        log.write(json.dumps(message, sort_keys=True) + "\\n")
+        log.flush()
+        request_id = message.get("id")
+        if request_id is not None:
+            print(json.dumps({"id": request_id, "result": {}}), flush=True)
+        if message.get("method") == "turn/start":
+            print(json.dumps({"method": "turn/completed", "params": {}}), flush=True)
+            break
+""",
+        encoding="utf-8",
+    )
+
+    def popen_factory(
+        _command: list[str],
+        **kwargs: Any,
+    ) -> subprocess.Popen[str]:
+        return subprocess.Popen(
+            [sys.executable, str(script), str(log_path)],
+            **kwargs,
+        )
+
+    client = CodexAppServerClient(
+        codex_bin="codex-test",
+        timeout_seconds=5,
+        popen_factory=popen_factory,
+    )
+
+    client.resume_thread(THREAD_ID, "continue now")
+
+    messages = [
+        message["method"]
+        for message in (
+            json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines()
+        )
+    ]
+    assert messages == ["initialize", "initialized", "thread/resume", "turn/start"]
 
 
 def test_backend_runs_sdk_and_marks_resumed(tmp_path: Path) -> None:
@@ -95,7 +182,11 @@ def test_backend_runs_sdk_and_marks_resumed(tmp_path: Path) -> None:
 
     result = CodexRewakeBackend(
         registry,
-        env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: THREAD_ID},
+        env={
+            CODEX_REWAKE_ENV: "1",
+            CODEX_THREAD_ID_ENV: THREAD_ID,
+            CODEX_BIN_ENV: "/missing/codex",
+        },
         importer=fake_importer,
     ).resume_if_available(record)
 
@@ -170,6 +261,18 @@ def missing_importer(_name: str) -> ModuleType:
     """Raise the optional SDK import error."""
 
     raise ImportError("missing")
+
+
+class FakeAppServerClient:
+    """Fake app-server client recording resume prompt calls."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, str]] = []
+
+    def resume_thread(self, thread_id: str, prompt: str) -> None:
+        """Record app-server resume request."""
+
+        self.calls.append((thread_id, prompt))
 
 
 class FakeCodex:

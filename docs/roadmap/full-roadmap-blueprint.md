@@ -160,3 +160,4 @@
 | 173 | [TypeScript Workspace Command Ownership Design](phases/phase-173-typescript-workspace-command-ownership-design.md) |
 | 174 | [TypeScript Workspace Command Config](phases/phase-174-typescript-workspace-command-config.md) |
 | 175 | [Setup Advisor Workspace Command Example](phases/phase-175-setup-advisor-workspace-command-example.md) |
+| 176 | [Codex Terminal Rewake Hardening](phases/phase-176-codex-terminal-rewake-hardening.md) |
