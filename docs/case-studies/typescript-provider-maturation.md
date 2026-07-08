@@ -51,8 +51,10 @@ without source-heavy or source-without-test findings. At least one external
 real-repo comparison is still needed before any promotion beyond advisory
 output. Phase 165 added a React app-shaped temporary Git repository fixture
 covering React dependencies, TSX source, TSX tests, and a React entrypoint
-while staying advisory-clean. Broader workspace and framework samples remain
-needed before promotion beyond advisory output.
+while staying advisory-clean. Phase 166 added pnpm workspace-shaped evidence
+for root package metadata, workspace metadata, lockfile metadata, package
+metadata, workspace TSX source, and workspace TSX tests. Broader external
+framework samples remain needed before promotion beyond advisory output.
 
 Phase 139 added one external public-repository comparison against
 `vitest-dev/eslint-plugin-vitest` commit

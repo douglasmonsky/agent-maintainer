@@ -106,7 +106,7 @@ Keep the provider experimental until evidence satisfies the promotion bar in
 Track work:
 
 - [x] Phase 165: React Fixture Corpus And Reviewability Baseline
-- [ ] Phase 166: TypeScript Package-Manager And Workspace Evidence
+- [x] Phase 166: TypeScript Package-Manager And Workspace Evidence
 - [ ] Phase 167: React/Vite/Next Structured Test And Coverage Facts
 - [ ] Phase 168: TypeScript/React Doctor And Setup Guidance
 - [ ] Phase 169: TypeScript/React Blocking-Gate Promotion Assessment
