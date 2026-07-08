@@ -181,14 +181,14 @@ def _generated_artifact_signals(repo_root: Path) -> list[dict[str, object]]:
             "signal": "generated-artifact-debris",
             "severity": "warning",
             "count": len(paths),
-                "message": (
-                    "generated/cache artifacts found; clean them instead of letting "
-                    "agents read or commit them"
-                ),
-                "paths": [path.as_posix() for path in paths[:GENERATED_SIGNAL_LIMIT]],
-                "cleanup_hint": GENERATED_CLEANUP_HINT,
-            },
-        ]
+            "message": (
+                "generated/cache artifacts found; clean them instead of letting "
+                "agents read or commit them"
+            ),
+            "paths": [path.as_posix() for path in paths[:GENERATED_SIGNAL_LIMIT]],
+            "cleanup_hint": GENERATED_CLEANUP_HINT,
+        },
+    ]
 
 
 def _generated_artifact_paths(repo_root: Path) -> list[Path]:
