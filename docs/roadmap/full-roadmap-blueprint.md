@@ -1,5 +1,4 @@
 # Agent Maintainer Roadmap Blueprint
-
 This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as the recovery checklist. Do not re-expand index into monolithic blueprint.
 
 ## Overview
