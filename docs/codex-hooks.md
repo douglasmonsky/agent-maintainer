@@ -102,6 +102,22 @@ automatic Codex SDK continuation. Rewake requires Codex thread metadata
 stays ready for the manual `wait resume <id>` command. No thread id or prompt
 is stored in the wait record.
 
+Terminal-only watcher wake is the preferred path when all prerequisites are
+present: `AGENT_MAINTAINER_CODEX_REWAKE=1`, `CODEX_THREAD_ID` or
+`AGENT_MAINTAINER_CODEX_THREAD_ID`, and an importable optional `openai-codex`
+SDK in the watcher Python environment. In that mode, the handoff does not ask
+Codex to create a heartbeat. The detached watcher polls locally, pending state
+stays outside model turns, and the watcher attempts one Codex SDK continuation
+when the wait reaches terminal state.
+
+If terminal rewake is unavailable, the handoff keeps a fallback heartbeat
+request. That request is marked `fallback_only: true` and includes
+`preferred_monitor_model: gpt-5.3-codex-spark` and
+`preferred_monitor_reasoning: minimal`. Heartbeat fallback still wakes a model
+each interval, so use it only when terminal watcher rewake is not available.
+If SDK import, auth, thread metadata, or resume fails, the wait remains ready
+for manual `wait resume <id>` recovery.
+
 ## Audit Trail
 
 Successful Codex hook passes are not guaranteed to appear in Codex session JSONL.

@@ -109,6 +109,13 @@ silent while that wait is pending, and print its terminal resume capsule once.
 Structured heartbeat requests include `on_pending: silent`, `on_terminal:
 resume_and_review`, and `merge_policy: merge_only_if_satisfactory`; stale ready
 records can be expired with `python -m agent_maintainer wait cleanup --root <repo>`.
+Terminal-only watcher wake is preferred when `AGENT_MAINTAINER_CODEX_REWAKE=1`,
+Codex thread metadata is present, and the optional `openai-codex` SDK is
+importable in the watcher Python environment. In that mode, pending polling
+stays outside model turns and the handoff does not request a heartbeat. If
+terminal rewake is unavailable, the fallback heartbeat request is marked
+`fallback_only: true` with `preferred_monitor_model: gpt-5.3-codex-spark` and
+`preferred_monitor_reasoning: minimal`.
 Repo-local wrappers use the checked-out source tree:
 
 ```bash

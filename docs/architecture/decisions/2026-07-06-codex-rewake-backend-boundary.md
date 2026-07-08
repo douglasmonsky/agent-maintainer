@@ -39,3 +39,9 @@ recovery path.
 Codex can opt into automatic continuation when the SDK and thread metadata are
 available, while existing manual resume behavior remains the default and fallback
 for every environment.
+
+Background wait handoffs may suppress heartbeat guidance only when a detached
+watcher is started, Codex rewake is explicitly enabled, thread metadata is
+available from the process environment, and the watcher Python environment can
+import the optional SDK. Otherwise heartbeat remains a fallback and is marked as
+such so pending polling does not masquerade as a no-token suspension primitive.
