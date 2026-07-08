@@ -23,7 +23,7 @@ allowed_paths = [
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 18
-max_changed_lines = 260
+max_changed_lines = 380
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
@@ -35,8 +35,8 @@ ratchet_targets = []
 ## Why this change intentionally large
 
 Phase 174 adds one public configuration surface for explicit workspace-owned
-TypeScript commands and keeps the implementation, tests, docs, roadmap, and
-change-plan state aligned.
+TypeScript commands and keeps the implementation, tests, docs, roadmap,
+DocSync attestations, and change-plan state aligned.
 
 ## Why this should not be split smaller
 

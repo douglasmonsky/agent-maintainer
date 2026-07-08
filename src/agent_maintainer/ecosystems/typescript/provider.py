@@ -3,53 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Protocol
 
 from agent_maintainer.ecosystems.models import EcosystemCheckContext
 from agent_maintainer.models import Check
-
-
-class _TypeScriptProfileConfig(Protocol):
-    """TypeScript profile fields needed by workspace check construction."""
-
-    @property
-    def typescript_lint_profiles(self) -> Iterable[str]:
-        """Return profiles for TypeScript lint checks."""
-        ...
-
-    @property
-    def typescript_typecheck_profiles(self) -> Iterable[str]:
-        """Return profiles for TypeScript typecheck checks."""
-        ...
-
-    @property
-    def typescript_test_profiles(self) -> Iterable[str]:
-        """Return profiles for TypeScript test checks."""
-        ...
-
-
-class _TypeScriptWorkspaceConfig(Protocol):
-    """Workspace TypeScript command fields needed by check construction."""
-
-    @property
-    def name(self) -> str:
-        """Return the workspace name used in check names."""
-        ...
-
-    @property
-    def typescript_lint_command(self) -> tuple[str, ...]:
-        """Return the explicit workspace TypeScript lint command."""
-        ...
-
-    @property
-    def typescript_typecheck_command(self) -> tuple[str, ...]:
-        """Return the explicit workspace TypeScript typecheck command."""
-        ...
-
-    @property
-    def typescript_test_command(self) -> tuple[str, ...]:
-        """Return the explicit workspace TypeScript test command."""
-        ...
 
 
 # docsync:evidence.start evidence.typescript.provider_commands
@@ -88,50 +44,37 @@ class TypeScriptProvider:
             ),
         ]
         for workspace in config.workspaces:
-            checks.extend(
-                _workspace_configured_checks(
-                    workspace,
-                    config,
+            workspace_specs = (
+                (
+                    "typescript-lint",
+                    workspace.typescript_lint_command,
+                    config.typescript_lint_profiles,
+                    f"workspaces.{workspace.name}.typescript_lint_command",
+                ),
+                (
+                    "typescript-typecheck",
+                    workspace.typescript_typecheck_command,
+                    config.typescript_typecheck_profiles,
+                    f"workspaces.{workspace.name}.typescript_typecheck_command",
+                ),
+                (
+                    "typescript-test",
+                    workspace.typescript_test_command,
+                    config.typescript_test_profiles,
+                    f"workspaces.{workspace.name}.typescript_test_command",
                 ),
             )
+            checks.extend(
+                _configured_check(
+                    f"{check_name}:{workspace.name}",
+                    command,
+                    profiles,
+                    config_field,
+                )
+                for check_name, command, profiles, config_field in workspace_specs
+                if command
+            )
         return checks
-
-
-def _workspace_configured_checks(
-    workspace: _TypeScriptWorkspaceConfig,
-    config: _TypeScriptProfileConfig,
-) -> list[Check]:
-    """Return explicitly owned TypeScript checks for one workspace."""
-    specs = (
-        (
-            "typescript-lint",
-            workspace.typescript_lint_command,
-            config.typescript_lint_profiles,
-            f"workspaces.{workspace.name}.typescript_lint_command",
-        ),
-        (
-            "typescript-typecheck",
-            workspace.typescript_typecheck_command,
-            config.typescript_typecheck_profiles,
-            f"workspaces.{workspace.name}.typescript_typecheck_command",
-        ),
-        (
-            "typescript-test",
-            workspace.typescript_test_command,
-            config.typescript_test_profiles,
-            f"workspaces.{workspace.name}.typescript_test_command",
-        ),
-    )
-    return [
-        _configured_check(
-            f"{check_name}:{workspace.name}",
-            command,
-            profiles,
-            config_field,
-        )
-        for check_name, command, profiles, config_field in specs
-        if command
-    ]
 
 
 def _configured_check(
