@@ -724,17 +724,18 @@ claims:
   claim.docs.typescript_provider_explicit_commands:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe disabled-by-default explicit
-      configured command checks and profile configuration without package-manager
-      autodetection.
+      configured command checks, profile configuration, and doctor setup hints
+      without package-manager autodetection.
     severity: high
     evidence:
       - evidence.typescript.provider_commands
       - evidence.typescript.provider_command_tests
+      - evidence.typescript.doctor_setup_tests
   claim.docs.typescript_provider_repair_facts:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe structured summaries and exact repair
-      facts for tsc, ESLint JSON, and Jest-compatible JSON outputs with malformed
-      output fallback.
+      facts for tsc, ESLint JSON, Jest/Vitest JSON, Istanbul coverage summary,
+      and LCOV outputs with malformed output fallback.
     severity: medium
     evidence:
       - evidence.typescript.structured_output_tests
@@ -1096,6 +1097,14 @@ evidence:
       explicit command checks, optional skips, and profile configuration.
     anchors:
       - path: tests/ecosystems/test_typescript_provider.py
+        mode: explicit_region
+  evidence.typescript.doctor_setup_tests:
+    type: test
+    description: TypeScript doctor tests cover disabled default behavior,
+      empty-command setup hints, missing executable hints, and enabled provider
+      rows.
+    anchors:
+      - path: tests/doctor/test_typescript_doctor.py
         mode: explicit_region
   evidence.typescript.provider_docs_maturity_tests:
     type: test

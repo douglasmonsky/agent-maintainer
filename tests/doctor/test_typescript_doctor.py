@@ -12,6 +12,7 @@ from agent_maintainer.doctor.support import providers as doctor_providers
 from agent_maintainer.doctor.support.models import MISSING, OK, UNSAFE_CONFIG, WARNING
 
 
+# docsync:evidence.start evidence.typescript.doctor_setup_tests
 def test_typescript_doctor_is_silent_when_provider_disabled() -> None:
     """Disabled TypeScript provider does not add doctor noise."""
     assert doctor_providers.check_typescript_provider(MaintainerConfig()) == ()
@@ -27,6 +28,12 @@ def test_typescript_doctor_warns_when_enabled_without_commands() -> None:
     assert result.state == UNSAFE_CONFIG
     assert "no commands" in result.message
     assert "typescript_lint_command" in result.hint
+    assert "ESLint JSON" in result.hint
+    assert "tsc --pretty false" in result.hint
+    assert "Jest/Vitest JSON" in result.hint
+    assert "coverage-summary.json" in result.hint
+    assert "lcov.info" in result.hint
+    assert "disable enable_typescript" in result.hint
 
 
 def test_typescript_doctor_warns_when_command_executable_missing() -> None:
@@ -43,6 +50,9 @@ def test_typescript_doctor_warns_when_command_executable_missing() -> None:
     assert result.state == MISSING
     assert "typescript-lint" in result.message
     assert "definitely-missing-agent-maintainer-ts" in result.message
+    assert "local node_modules/.bin" in result.hint
+    assert "explicit TypeScript command fields" in result.hint
+    assert "no package manager is inferred" in result.hint
 
 
 def test_typescript_doctor_passes_when_command_executable_exists() -> None:
@@ -73,3 +83,6 @@ def test_run_doctor_includes_typescript_row_only_when_enabled(tmp_path: Path) ->
 
     assert not [result for result in disabled_results if result.name == "typescript-provider"]
     assert [result for result in enabled_results if result.name == "typescript-provider"]
+
+
+# docsync:evidence.end evidence.typescript.doctor_setup_tests
