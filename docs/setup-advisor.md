@@ -80,6 +80,13 @@ enable_typescript = true
 typescript_lint_command = ["npm", "run", "lint"]
 typescript_typecheck_command = ["npm", "run", "typecheck"]
 typescript_test_command = ["npm", "test"]
+
+[tool.agent_maintainer.workspaces.web]
+source_roots = ["packages/web/src"]
+test_roots = ["packages/web/tests"]
+typescript_lint_command = ["pnpm", "--filter", "web", "lint"]
+typescript_typecheck_command = ["pnpm", "--filter", "web", "typecheck"]
+typescript_test_command = ["pnpm", "--filter", "web", "test"]
 ```
 
 Common script shapes that should keep explicit command mapping include pnpm

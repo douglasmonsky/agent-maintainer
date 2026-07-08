@@ -1,7 +1,7 @@
 +++
 id = "typescript-workspace-command-config"
 kind = "test"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-22
 allowed_paths = [

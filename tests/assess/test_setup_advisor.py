@@ -115,6 +115,8 @@ def test_setup_advisor_recommends_ts_scripts(tmp_path: Path) -> None:
     assert "tsc --pretty false" in gates["typescript-provider"].reason
     assert "Jest/Vitest JSON" in gates["typescript-provider"].reason
     assert "coverage-summary.json or lcov.info" in gates["typescript-provider"].reason
+    assert "[tool.agent_maintainer.workspaces.<name>]" in (gates["typescript-provider"].reason)
+    assert "package-specific checks" in gates["typescript-provider"].reason
     assert any("explicit TypeScript provider" in prompt for prompt in report.agent_prompts)
     assert any("repair facts" in prompt for prompt in report.agent_prompts)
 
@@ -141,6 +143,7 @@ def test_setup_advisor_recommends_ts_script_fixtures(
     assert "mapped to explicit TypeScript provider commands" in (
         gates["typescript-provider"].reason
     )
+    assert "[tool.agent_maintainer.workspaces.<name>]" in (gates["typescript-provider"].reason)
 
 
 def test_setup_advisor_ignores_nested_package_scripts(tmp_path: Path) -> None:
