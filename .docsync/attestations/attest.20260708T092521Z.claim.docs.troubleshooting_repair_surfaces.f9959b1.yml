@@ -1,0 +1,21 @@
+version: 1
+attestations:
+- id: attest.20260708T092521Z.claim.docs.troubleshooting_repair_surfaces.f9959b1
+  claim: claim.docs.troubleshooting_repair_surfaces
+  doc_object: docs.troubleshooting.overview
+  evidence:
+  - evidence.setup_advisor.recommendation_tests
+  reason: Reviewed Phase 175 setup-advisor workspace command guidance; troubleshooting
+    repair-surface docs remain accurate because setup-advisor recommendations still
+    point users toward explicit local configuration.
+  reviewer: agent
+  reviewed_at: '2026-07-08T09:25:21Z'
+  base: HEAD
+  head: f9959b1
+  evidence_fingerprints:
+    evidence.setup_advisor.recommendation_tests: sha256:ffc59544b39a7f6b5e247712e63f066533d1415d8eb8856ab7a20d92906ae5fd
+  evidence_anchor_fingerprints:
+    evidence.setup_advisor.recommendation_tests:
+    - sha256:db571885e27f0bc13650650a875fef343e342260ff4e07803c10715131fc9154
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

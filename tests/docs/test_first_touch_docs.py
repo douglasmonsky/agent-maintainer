@@ -143,6 +143,20 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
 # docsync:evidence.end evidence.typescript.provider_docs_maturity_tests
 
 
+def test_setup_advisor_docs_include_workspace_command_example() -> None:
+    """Setup advisor docs keep explicit workspace command ownership concrete."""
+    phrases = {
+        "docs/setup-advisor.md": (
+            "[tool.agent_maintainer.workspaces.web]",
+            'typescript_lint_command = ["pnpm", "--filter", "web", "lint"]',
+            'typescript_typecheck_command = ["pnpm", "--filter", "web", "typecheck"]',
+            'typescript_test_command = ["pnpm", "--filter", "web", "test"]',
+            "Setup advisor still does not infer nested package commands or workspace managers.",
+        ),
+    }
+    _assert_phrases_present(phrases)
+
+
 def test_known_compressed_prose_fragments_do_not_reappear() -> None:
     """Guard against specific note-fragment regressions found during audit."""
     forbidden_fragments = (

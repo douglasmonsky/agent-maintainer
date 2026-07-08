@@ -21,6 +21,9 @@ TYPESCRIPT_REPAIR_FACT_OUTPUT_GUIDANCE = (
     "prefer ESLint JSON, tsc --pretty false, Jest/Vitest JSON, and existing "
     "coverage-summary.json or lcov.info artifacts for repair facts"
 )
+TYPESCRIPT_WORKSPACE_COMMAND_GUIDANCE = (
+    "use [tool.agent_maintainer.workspaces.<name>] TypeScript commands for package-specific checks"
+)
 
 
 def build_setup_report(evidence: RepoEvidence) -> SetupAdvisorReport:
@@ -154,7 +157,8 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
                 reason=(
                     "package.json exposes lint/typecheck/test scripts that can be "
                     "mapped to explicit TypeScript provider commands; "
-                    f"{TYPESCRIPT_REPAIR_FACT_OUTPUT_GUIDANCE}."
+                    f"{TYPESCRIPT_REPAIR_FACT_OUTPUT_GUIDANCE}; "
+                    f"{TYPESCRIPT_WORKSPACE_COMMAND_GUIDANCE}."
                 ),
                 config_key="enable_typescript",
                 profiles=("precommit", "full", "ci"),
