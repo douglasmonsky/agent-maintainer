@@ -23,6 +23,26 @@ from agent_maintainer.ecosystems.registry import (
 
 ConfiguredCommand = tuple[str, str, tuple[str, ...]]
 ConfiguredCommands = tuple[ConfiguredCommand, ...]
+TypeScriptRepairFactPattern = tuple[str, str, tuple[str, ...]]
+
+TYPESCRIPT_REPAIR_FACT_PATTERNS: tuple[TypeScriptRepairFactPattern, ...] = (
+    (
+        "typescript_lint_command",
+        "emit ESLint JSON from typescript_lint_command",
+        ("--format=json", "--format json", "-f json"),
+    ),
+    (
+        "typescript_typecheck_command",
+        "run tsc with --pretty false from typescript_typecheck_command",
+        ("--pretty=false", "--pretty false"),
+    ),
+    (
+        "typescript_test_command",
+        "emit Jest/Vitest JSON and existing coverage-summary.json or lcov.info artifacts "
+        "from typescript_test_command",
+        ("--json", " json", "coverage-summary.json", "lcov.info", "lcov"),
+    ),
+)
 
 
 def check_provider_status(config: MaintainerConfig) -> DoctorResult:
@@ -77,7 +97,7 @@ def check_configured_command_provider(
         )
 
     names = ", ".join(check_name for check_name, _field_name, _command in commands)
-    return (
+    results = (
         DoctorResult(
             provider_row_name(metadata),
             OK,
@@ -85,6 +105,9 @@ def check_configured_command_provider(
             state=ACTIVE,
         ),
     )
+    if metadata.name != TYPESCRIPT_PROVIDER.name:
+        return results
+    return (*results, *typescript_repair_fact_guidance(commands))
 
 
 def provider_status(metadata: ProviderMetadata, config: MaintainerConfig) -> str:
@@ -136,6 +159,47 @@ def missing_command_hint(metadata: ProviderMetadata) -> str:
             "is inferred."
         )
     return f"Install missing tools or update {metadata.display_name} command fields."
+
+
+def typescript_repair_fact_guidance(commands: ConfiguredCommands) -> tuple[DoctorResult, ...]:
+    """Return advisory TypeScript repair-fact setup guidance rows."""
+    recommendations = typescript_repair_fact_recommendations(commands)
+    if not recommendations:
+        return ()
+    configured = ", ".join(check_name for check_name, _field, _command in commands)
+    return (
+        DoctorResult(
+            "typescript-repair-fact-output",
+            OK,
+            f"Configured TypeScript command checks can provide richer repair facts: {configured}.",
+            state=ACTIVE,
+            hint="; ".join(
+                (*recommendations, "keep commands explicit; no package manager is inferred.")
+            ),
+        ),
+    )
+
+
+def typescript_repair_fact_recommendations(commands: ConfiguredCommands) -> tuple[str, ...]:
+    """Return parser-friendly output recommendations for configured commands."""
+    recommendations: list[str] = []
+    for _check_name, field_name, command in commands:
+        pattern = next(
+            (item for item in TYPESCRIPT_REPAIR_FACT_PATTERNS if item[0] == field_name),
+            None,
+        )
+        if pattern is None:
+            continue
+        _field_name, recommendation, markers = pattern
+        text = command_text(command)
+        if not any(marker in text for marker in markers):
+            recommendations.append(recommendation)
+    return tuple(recommendations)
+
+
+def command_text(command: tuple[str, ...]) -> str:
+    """Return lower-cased command text for advisory pattern checks."""
+    return " ".join(command).lower()
 
 
 def joined_field_names(field_names: list[str]) -> str:

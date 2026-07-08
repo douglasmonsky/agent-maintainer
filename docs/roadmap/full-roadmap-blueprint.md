@@ -3,8 +3,6 @@
 This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as the recovery checklist. Do not re-expand index into monolithic blueprint.
 Overview links: [Mission, baseline, architecture target, execution rules](overview.md), [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md), [Future-Call ROI Acceleration Track](future-call-roi-acceleration.md), [Final Definition Done](final-definition-of-done.md).
 
-## Phases
-
 | Phase | Detailed Spec |
 | ---: | --- |
 | 1 | [ADR for Context-Safe Legacy Ratchets](phases/phase-01-adr-for-context-safe-legacy-ratchets.md) |
@@ -158,3 +156,4 @@ Overview links: [Mission, baseline, architecture target, execution rules](overvi
 | 166 | [TypeScript Package-Manager And Workspace Evidence](phases/phase-166-typescript-package-manager-and-workspace-evidence.md) |
 | 167 | [React/Vite/Next Structured Test And Coverage Facts](phases/phase-167-react-vite-next-structured-test-and-coverage-facts.md) |
 | 168 | [TypeScript/React Doctor And Setup Guidance](phases/phase-168-typescript-react-doctor-and-setup-guidance.md) |
+| 169 | [TypeScript Repair-Fact Output Guidance](phases/phase-169-typescript-repair-fact-output-guidance.md) |

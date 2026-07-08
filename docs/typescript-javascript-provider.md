@@ -70,7 +70,10 @@ enabled, `doctor` reports whether TypeScript commands are configured and whether
 configured command executables are available on `PATH`, including repo-local
 `node_modules/.bin`. Empty-command doctor hints point to stable output formats
 that improve repair facts: ESLint JSON, `tsc --pretty false`, Jest/Vitest JSON,
-and existing `coverage-summary.json` or `lcov.info` artifacts.
+and existing `coverage-summary.json` or `lcov.info` artifacts. After commands
+are configured, `doctor` may emit a non-blocking `PASS` advisory row when command
+text does not visibly mention those parser-friendly outputs; the row is guidance
+only and still does not infer package managers or invent commands.
 
 ## Structured Output
 
