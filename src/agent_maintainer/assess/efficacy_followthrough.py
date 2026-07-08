@@ -11,6 +11,7 @@ from agent_maintainer.assess.efficacy_models import (
 
 PASS_STATUSES = frozenset(("pass", "passed", "success"))
 POINTER_COMMANDS = frozenset(("context", "repair-plan"))
+WAIT_BACKGROUND_STATUSES = frozenset(("background",))
 
 
 def metrics(records: list[dict[str, Any]]) -> list[EfficacyMetric]:
@@ -28,6 +29,7 @@ def metrics(records: list[dict[str, Any]]) -> list[EfficacyMetric]:
         ),
         _repair_success_metric(records, failure_count),
         _wait_metric(records),
+        *_background_wait_metrics(records),
         _manual_escalation_metric(records, failure_count),
     ]
 
@@ -91,6 +93,51 @@ def _wait_metric(records: list[dict[str, Any]]) -> EfficacyMetric:
     )
 
 
+def _background_wait_metrics(records: list[dict[str, Any]]) -> list[EfficacyMetric]:
+    registrations = _events(records, "wait.registered")
+    registration_count = len(registrations)
+    background_count = sum(
+        1 for record in registrations if _is_background_wait_registration(record)
+    )
+    ready_count = _event_count(records, "wait.ready")
+    claimed_count = _event_count(records, "wait.terminal_claimed")
+
+    return [
+        EfficacyMetric(
+            name="background_wait_registration_rate",
+            value=_percentage(background_count, registration_count),
+            unit="percent",
+            kind="measured" if registration_count else UNKNOWN,
+            detail="background wait.registered events divided by wait.registered events",
+            numerator=background_count if registration_count else None,
+            denominator=registration_count if registration_count else None,
+        ),
+        EfficacyMetric(
+            name="foreground_wait_blocked_count",
+            value=_event_count(records, "wait.foreground_blocked"),
+            unit="events",
+            kind="measured",
+            detail="foreground wait commands converted to background handoffs",
+        ),
+        EfficacyMetric(
+            name="wait_heartbeat_noop_count",
+            value=_event_count(records, "wait.heartbeat_noop"),
+            unit="events",
+            kind="measured",
+            detail="heartbeat sweeps that found no terminal wait output",
+        ),
+        EfficacyMetric(
+            name="wait_terminal_claim_rate",
+            value=_percentage(claimed_count, ready_count),
+            unit="percent",
+            kind="measured" if ready_count else UNKNOWN,
+            detail="terminal wait claims divided by wait.ready events",
+            numerator=claimed_count if ready_count else None,
+            denominator=ready_count if ready_count else None,
+        ),
+    ]
+
+
 def _manual_escalation_metric(
     records: list[dict[str, Any]],
     failure_count: int,
@@ -107,6 +154,18 @@ def _manual_escalation_metric(
         numerator=escalation_count if failure_count else None,
         denominator=failure_count if failure_count else None,
     )
+
+
+def _events(records: list[dict[str, Any]], event_name: str) -> list[dict[str, Any]]:
+    return [record for record in records if record.get("event_name") == event_name]
+
+
+def _is_background_wait_registration(record: dict[str, Any]) -> bool:
+    if record.get("status") in WAIT_BACKGROUND_STATUSES:
+        return True
+
+    attributes = record.get("attributes")
+    return isinstance(attributes, dict) and attributes.get("background") is True
 
 
 def _is_command(record: dict[str, Any], command: str, *, status: str | None) -> bool:
