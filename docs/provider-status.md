@@ -9,7 +9,7 @@ careful expansion. Experimental providers are not feature parity.
 | Ecosystem | Maturity | Current Support | Not Yet |
 |---|---|---|---|
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security and dependency checks, doctor support, repair facts, and starter templates. | External plugin API. |
-| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, and Jest-compatible JSON repair facts; doctor setup rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters, and blocking reviewability gates. |
+| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, and Istanbul/LCOV repair facts; format-aware doctor setup rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters, and blocking reviewability gates. |
 
 There is no active Go provider on `main`. Go remains archived historical work
 until TypeScript/JavaScript has stronger evidence and the provider seam has

@@ -72,7 +72,7 @@ def check_configured_command_provider(
                 WARNING,
                 f"Missing {metadata.display_name} command executable(s): {missing_names}.",
                 state=MISSING,
-                hint=f"Install missing tools or update {metadata.display_name} command fields.",
+                hint=missing_command_hint(metadata),
             ),
         )
 
@@ -111,10 +111,44 @@ def empty_command_hint(metadata: ProviderMetadata) -> str:
     field_names = [spec.config_field for spec in metadata.command_specs]
     if not field_names:
         return "No provider command fields are available."
-    fields = ", ".join(field_names[:-1])
-    fields = ", or ".join((fields, field_names[-1])) if fields else field_names[-1]
-    disable_hint = "." if metadata.enabled_field is None else f"; disable {metadata.enabled_field}."
+    fields = joined_field_names(field_names)
+    if metadata.name == TYPESCRIPT_PROVIDER.name:
+        return typescript_empty_command_hint(fields, metadata.enabled_field)
+    disable_hint = provider_disable_hint(metadata.enabled_field)
     return f"Set {fields}{disable_hint}"
+
+
+def typescript_empty_command_hint(fields: str, enabled_field: str | None) -> str:
+    """Return TypeScript setup hint grounded in stable output formats."""
+    return (
+        f"Map existing package scripts to {fields}; prefer ESLint JSON, "
+        "tsc --pretty false, Jest/Vitest JSON, and existing coverage-summary.json "
+        f"or lcov.info artifacts{provider_disable_hint(enabled_field)}"
+    )
+
+
+def missing_command_hint(metadata: ProviderMetadata) -> str:
+    """Return repair hint for configured provider commands with missing tools."""
+    if metadata.name == TYPESCRIPT_PROVIDER.name:
+        return (
+            "Install missing tools, use local node_modules/.bin executables, "
+            "or update explicit TypeScript command fields; no package manager "
+            "is inferred."
+        )
+    return f"Install missing tools or update {metadata.display_name} command fields."
+
+
+def joined_field_names(field_names: list[str]) -> str:
+    """Return compact English list of provider command fields."""
+    fields = ", ".join(field_names[:-1])
+    return ", or ".join((fields, field_names[-1])) if fields else field_names[-1]
+
+
+def provider_disable_hint(enabled_field: str | None) -> str:
+    """Return compact provider-disable hint."""
+    if enabled_field is None:
+        return "."
+    return f"; disable {enabled_field}."
 
 
 def configured_commands(

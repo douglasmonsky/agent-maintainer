@@ -84,6 +84,7 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "If a provider abstraction makes an existing Python feature harder "
             "to express, the abstraction is wrong.",
             "Current reviewability gates are globally scheduled but Python-backed.",
+            "format-aware doctor setup rows.",
             "TypeScript/JavaScript changed files are advisory, but blocking "
             "reviewability policy is not fully multi-ecosystem yet.",
         ),
@@ -91,6 +92,7 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "It is disabled by default and only runs commands that the repository "
             "configures explicitly.",
             "Agent Maintainer will not guess the package manager or invent a command.",
+            "Empty-command doctor hints point to stable output formats",
             "`npm`, `pnpm`, `yarn`, and `bun` are supported only when "
             "the repository supplies exact command arrays.",
             "`Jest`, `Vitest`, `Playwright`, `Cypress`, `Mocha`, and "

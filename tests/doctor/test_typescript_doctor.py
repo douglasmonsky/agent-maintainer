@@ -10,8 +10,14 @@ from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.doctor import cli as maintainer_doctor
 from agent_maintainer.doctor.support import providers as doctor_providers
 from agent_maintainer.doctor.support.models import MISSING, OK, UNSAFE_CONFIG, WARNING
+from agent_maintainer.ecosystems.models import (
+    ProviderCommandSpec,
+    ProviderMaturity,
+    ProviderMetadata,
+)
 
 
+# docsync:evidence.start evidence.typescript.doctor_setup_tests
 def test_typescript_doctor_is_silent_when_provider_disabled() -> None:
     """Disabled TypeScript provider does not add doctor noise."""
     assert doctor_providers.check_typescript_provider(MaintainerConfig()) == ()
@@ -27,6 +33,12 @@ def test_typescript_doctor_warns_when_enabled_without_commands() -> None:
     assert result.state == UNSAFE_CONFIG
     assert "no commands" in result.message
     assert "typescript_lint_command" in result.hint
+    assert "ESLint JSON" in result.hint
+    assert "tsc --pretty false" in result.hint
+    assert "Jest/Vitest JSON" in result.hint
+    assert "coverage-summary.json" in result.hint
+    assert "lcov.info" in result.hint
+    assert "disable enable_typescript" in result.hint
 
 
 def test_typescript_doctor_warns_when_command_executable_missing() -> None:
@@ -43,6 +55,9 @@ def test_typescript_doctor_warns_when_command_executable_missing() -> None:
     assert result.state == MISSING
     assert "typescript-lint" in result.message
     assert "definitely-missing-agent-maintainer-ts" in result.message
+    assert "local node_modules/.bin" in result.hint
+    assert "explicit TypeScript command fields" in result.hint
+    assert "no package manager is inferred" in result.hint
 
 
 def test_typescript_doctor_passes_when_command_executable_exists() -> None:
@@ -59,6 +74,51 @@ def test_typescript_doctor_passes_when_command_executable_exists() -> None:
     assert "typescript-lint" in result.message
 
 
+def test_configured_command_provider_uses_generic_missing_tool_hint() -> None:
+    """Non-TypeScript providers keep generic missing-tool hint text."""
+    result = doctor_providers.missing_command_hint(
+        doctor_providers.builtin_provider_metadata()[0],
+    )
+
+    assert result == "Install missing tools or update Python command fields."
+
+
+def test_empty_command_hint_handles_generic_provider_metadata() -> None:
+    """Generic provider metadata keeps compact command-field hints."""
+    metadata = ProviderMetadata(
+        name="example",
+        display_name="Example",
+        maturity=ProviderMaturity.EXPERIMENTAL,
+        docs_path="docs/example.md",
+        capabilities=(),
+        enabled_field="enable_example",
+        command_specs=(
+            ProviderCommandSpec("example-lint", "example_lint_command"),
+            ProviderCommandSpec("example-test", "example_test_command"),
+        ),
+    )
+
+    assert doctor_providers.empty_command_hint(metadata) == (
+        "Set example_lint_command, or example_test_command; disable enable_example."
+    )
+
+
+def test_empty_command_hint_handles_metadata_without_commands_or_enabled_field() -> None:
+    """Provider metadata without command fields receives fallback hint."""
+    metadata = ProviderMetadata(
+        name="example",
+        display_name="Example",
+        maturity=ProviderMaturity.EXPERIMENTAL,
+        docs_path="docs/example.md",
+        capabilities=(),
+    )
+
+    assert doctor_providers.empty_command_hint(metadata) == (
+        "No provider command fields are available."
+    )
+    assert doctor_providers.provider_disable_hint(None) == "."
+
+
 def test_run_doctor_includes_typescript_row_only_when_enabled(tmp_path: Path) -> None:
     """Full doctor result list includes TypeScript row only after opt-in."""
     disabled_results = maintainer_doctor.run_doctor(tmp_path, MaintainerConfig())
@@ -73,3 +133,6 @@ def test_run_doctor_includes_typescript_row_only_when_enabled(tmp_path: Path) ->
 
     assert not [result for result in disabled_results if result.name == "typescript-provider"]
     assert [result for result in enabled_results if result.name == "typescript-provider"]
+
+
+# docsync:evidence.end evidence.typescript.doctor_setup_tests
