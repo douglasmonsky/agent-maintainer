@@ -1,7 +1,6 @@
 # Agent Maintainer Roadmap Blueprint
 
-This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as the recovery checklist. Do not re-expand index into monolithic blueprint.
-Overview links: [Mission, baseline, architecture target, execution rules](overview.md), [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md), [Future-Call ROI Acceleration Track](future-call-roi-acceleration.md), [Final Definition Done](final-definition-of-done.md).
+This compact roadmap index points to split specs under `docs/roadmap`; use `docs/ROADMAP.md` as the recovery checklist. Do not re-expand index into monolithic blueprint. Overview links: [Mission, baseline, architecture target, execution rules](overview.md), [Polyglot Ecosystem Provider Roadmap](polyglot-ecosystem-providers.md), [Future-Call ROI Acceleration Track](future-call-roi-acceleration.md), [Final Definition Done](final-definition-of-done.md).
 
 | Phase | Detailed Spec |
 | ---: | --- |
@@ -158,3 +157,4 @@ Overview links: [Mission, baseline, architecture target, execution rules](overvi
 | 168 | [TypeScript/React Doctor And Setup Guidance](phases/phase-168-typescript-react-doctor-and-setup-guidance.md) |
 | 169 | [TypeScript Repair-Fact Output Guidance](phases/phase-169-typescript-repair-fact-output-guidance.md) |
 | 170 | [TypeScript Setup Advisor Output Guidance](phases/phase-170-typescript-setup-advisor-output-guidance.md) |
+| 171 | [TypeScript Setup Advisor Script Fixtures](phases/phase-171-typescript-setup-advisor-script-fixtures.md) |
