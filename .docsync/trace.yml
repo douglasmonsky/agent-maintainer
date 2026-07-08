@@ -765,9 +765,9 @@ claims:
       - evidence.typescript.advisory_threshold_config_tests
   claim.docs.typescript_maturation_real_repo_evidence:
     object: docs.typescript_maturation.overview
-    text: TypeScript maturation notes describe temporary and external real Git repository reviewability
-      evidence for low-noise source-plus-test and source-heavy source-only
-      advisory scenarios.
+    text: TypeScript maturation notes describe temporary and external real Git
+      repository reviewability evidence for low-noise source-plus-test,
+      source-heavy source-only, package-shape, and React app advisory scenarios.
     severity: high
     evidence:
       - evidence.typescript.real_repo_reviewability_tests
@@ -1135,7 +1135,8 @@ evidence:
     type: test
     description: TypeScript real-repo reviewability tests run the public CLI
       against temporary Git repositories and verify low-noise source/test,
-      source-heavy, suppression, npm/Vite/Vitest, and pnpm config/lock shapes.
+      source-heavy, suppression, npm/Vite/Vitest, React app, and pnpm
+      config/lock shapes.
     anchors:
       - path: tests/assess/test_typescript_real_repo_reviewability.py
         mode: explicit_region
