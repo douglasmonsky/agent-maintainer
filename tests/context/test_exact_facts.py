@@ -27,6 +27,9 @@ PYRIGHT_COLUMN = 9
 BANDIT_LINE = 12
 JUNIT_LINE = 21
 COVERAGE_MISSING_LINE = 44
+PYLINT_LINE = 79
+PYLINT_COLUMN = 15
+VULTURE_LINE = 42
 PACK_BUDGET = 4_000
 APP_PATH = "src/pkg/app.py"
 ENCODING = "utf-8"
@@ -347,6 +350,50 @@ def test_change_budget_log_extracts_blocking_fact(tmp_path: Path) -> None:
     assert fact["path"] is None
     assert fact["symbol"] == "change-budget"
     assert "Python source diff too large" in str(fact["message"])
+
+
+def test_pylint_log_extracts_symbol_fact(tmp_path: Path) -> None:
+    """Pylint default text logs produce exact lint repair facts."""
+
+    log_path = tmp_path / "pylint.log"
+    log_path.write_text(
+        (
+            "************* Module agent_maintainer.wait.codex_rewake\n"
+            f"{APP_PATH}:{PYLINT_LINE}:{PYLINT_COLUMN}: W0718: "
+            "Catching too general exception "
+            "Exception (broad-exception-caught)\n"
+        ),
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record_with_log("pylint", log_path),))
+    fact = first_fact(facts)
+
+    assert fact["check"] == "pylint"
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == PYLINT_LINE
+    assert fact["column"] == PYLINT_COLUMN
+    assert fact["symbol"] == "W0718"
+    assert "broad-exception-caught" in str(fact["message"])
+
+
+def test_vulture_log_extracts_unused_code_fact(tmp_path: Path) -> None:
+    """Vulture text logs produce exact unused-code repair facts."""
+
+    log_path = tmp_path / "vulture.log"
+    log_path.write_text(
+        f"{APP_PATH}:{VULTURE_LINE}: unused function 'stale_helper' (60% confidence)\n",
+        encoding=ENCODING,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record_with_log("vulture", log_path),))
+    fact = first_fact(facts)
+
+    assert fact["check"] == "vulture"
+    assert fact["path"] == APP_PATH
+    assert fact["line"] == VULTURE_LINE
+    assert fact["symbol"] == "unused-code"
+    assert "stale_helper" in str(fact["message"])
 
 
 def test_pack_uses_structured_fact(tmp_path: Path) -> None:
