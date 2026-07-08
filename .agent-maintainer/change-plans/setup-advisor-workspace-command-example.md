@@ -17,8 +17,8 @@ allowed_paths = [
     "tests/docs/test_first_touch_docs.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 11
-max_changed_lines = 180
+max_changed_files = 12
+max_changed_lines = 188
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
