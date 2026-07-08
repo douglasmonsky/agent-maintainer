@@ -1,7 +1,7 @@
 +++
 id = "wait-heartbeat-one-shot-prompts"
 kind = "fix"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-21
 allowed_paths = [
