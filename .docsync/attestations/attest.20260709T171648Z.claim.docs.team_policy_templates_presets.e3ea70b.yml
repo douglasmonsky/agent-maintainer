@@ -1,6 +1,6 @@
 version: 1
 attestations:
-- id: attest.20260709T170151Z.claim.docs.team_policy_templates_presets.b4c0505
+- id: attest.20260709T171648Z.claim.docs.team_policy_templates_presets.e3ea70b
   claim: claim.docs.team_policy_templates_presets
   doc_object: docs.team_policy_templates.overview
   evidence:
@@ -8,13 +8,13 @@ attestations:
   reason: Updated initializer tests for ci-only setup; team preset docs now clarify
     ci-only skips preset policy config.
   reviewer: agent
-  reviewed_at: '2026-07-09T17:01:51Z'
+  reviewed_at: '2026-07-09T17:16:48Z'
   base: HEAD
-  head: b4c0505
+  head: e3ea70b
   evidence_fingerprints:
-    evidence.readme.initializer_tests: sha256:a7c8f8d84982e1f67860cfe89dc1221eb043f252dd299701de8f36149defe607
+    evidence.readme.initializer_tests: sha256:55f4be79be21bd7469ded80e38e33bbe677e8bf2620797be5bb792d4ead5cf0e
   evidence_anchor_fingerprints:
     evidence.readme.initializer_tests:
-    - sha256:bc82045984a8e99286432c67a48ce9df8f359883be489bfc50f5a8d5c941c6f6
+    - sha256:df8cded66db7459da895cfe81b5d393efe35512a64d66d532e36d88840cee0be
   expires_at: null
   statement: Reviewed changed evidence region. Documentation remains accurate.

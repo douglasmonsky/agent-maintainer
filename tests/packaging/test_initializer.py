@@ -9,7 +9,7 @@ from pathlib import Path
 from yamllint import linter
 from yamllint.config import YamlLintConfig
 
-from agent_maintainer.core.scaffold import initializer, template_config
+from agent_maintainer.core.scaffold import initializer, template_config, templates
 from tests.support.paths import REPO_ROOT
 
 STARTER_CONFIG = Path("config") / "pyproject.agent-maintainer.toml"
@@ -73,6 +73,15 @@ def test_ci_only_init_writes_workflow_adoption_files(tmp_path: Path) -> None:
     workflow = (tmp_path / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
     assert "python -m pip install -r config/dev-dependencies.txt" in workflow
     assert "python -m pip install -e ." not in workflow
+
+
+def test_ci_only_starter_files_are_minimal() -> None:
+    """CI-only starter files stay limited to workflow dependencies."""
+
+    assert {starter.path for starter in templates.ci_starter_files()} == {
+        ".github/workflows/verify.yml",
+        "config/dev-dependencies.txt",
+    }
 
 
 def test_agent_init_includes_codex_hooks_and_agent_guidance(tmp_path: Path) -> None:

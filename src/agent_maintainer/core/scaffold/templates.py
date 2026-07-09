@@ -16,10 +16,10 @@ HARDENING_TRACK = "hardening"
 TRACKS = (CORE_TRACK, AGENT_TRACK, HARDENING_TRACK)
 AGENT_HOOK_TRACKS = (AGENT_TRACK, HARDENING_TRACK)
 CI_ONLY_STARTER_PATHS = frozenset(
-    {
+    (
         "config/dev-dependencies.txt",
         ".github/workflows/verify.yml",
-    }
+    )
 )
 
 DEV_DEPENDENCIES = "agent-maintainer[core]\n"
