@@ -36,7 +36,11 @@ class DoctorRunRecorder:
 def test_main_emits_json_with_state_and_hint(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", MaintainerConfig)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        lambda _repo_root=None: MaintainerConfig(),
+    )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
@@ -67,7 +71,11 @@ def test_main_emits_json_with_state_and_hint(
 def test_main_emits_json_with_format_flag(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", MaintainerConfig)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        lambda _repo_root=None: MaintainerConfig(),
+    )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
@@ -118,8 +126,8 @@ def test_main_loads_config_from_explicit_root(
     )
     loaded_from: list[Path] = []
 
-    def fake_load_config() -> MaintainerConfig:
-        loaded_from.append(Path.cwd())
+    def fake_load_config(repo_root: Path | None = None) -> MaintainerConfig:
+        loaded_from.append(repo_root or Path.cwd())
         return MaintainerConfig()
 
     monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", fake_load_config)
@@ -136,7 +144,11 @@ def test_main_loads_config_from_explicit_root(
 def test_main_emits_text_with_state_and_hint(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", MaintainerConfig)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        lambda _repo_root=None: MaintainerConfig(),
+    )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
@@ -160,7 +172,11 @@ def test_main_strict_returns_nonzero_for_warning(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", MaintainerConfig)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        lambda _repo_root=None: MaintainerConfig(),
+    )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
@@ -191,7 +207,9 @@ def test_main_uses_cwd_and_config(
         "cwd",
         classmethod(lambda _path_type: tmp_path),
     )
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", lambda: config)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config, "load_config", lambda _repo_root=None: config
+    )
     monkeypatch.setattr(maintainer_doctor, "run_doctor", recorder)
 
     assert maintainer_doctor.main([]) == 0

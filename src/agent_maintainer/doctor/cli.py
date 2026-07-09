@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 from pathlib import Path
 
 from agent_maintainer.core import config as maintainer_config
@@ -78,24 +77,13 @@ def main(argv: list[str]) -> int:
 
     args = parse_args(argv)
     repo_root = args.root.resolve()
-    config = load_config_for_root(repo_root)
+    config = maintainer_config.load_config(repo_root)
     results = run_doctor(repo_root, config)
     if args.json or args.format == "json":
         print(maintainer_doctor_output.json_text(results))
     else:
         print_text(results)
     return status_code(results, strict=args.strict)
-
-
-def load_config_for_root(repo_root: Path) -> maintainer_config.MaintainerConfig:
-    """Load CWD-based config for an explicit repository root."""
-
-    previous_cwd = Path(os.getcwd())
-    try:
-        os.chdir(repo_root)
-        return maintainer_config.load_config()
-    finally:
-        os.chdir(previous_cwd)
 
 
 def run_doctor(

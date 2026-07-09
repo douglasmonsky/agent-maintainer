@@ -8,8 +8,11 @@ allowed_paths = [
   ".agent-maintainer/change-plans/codex-terminal-rewake-hardening.md",
   ".agent-maintainer/change-plans/doctor-consumer-repo-root.md",
   "docs/tool-map.md",
+  "src/agent_maintainer/config/loader.py",
   "src/agent_maintainer/core/bootstrap.py",
   "src/agent_maintainer/doctor/cli.py",
+  "tests/config/test_config_loader_roots.py",
+  "tests/config/test_config_loading.py",
   "src/agent_maintainer/doctor/support/environment.py",
   "tests/doctor/test_doctor.py",
   "tests/doctor/test_doctor_cli_output.py",
@@ -18,8 +21,8 @@ allowed_paths = [
   "tests/packaging/test_bootstrap_paths.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 10
-max_changed_lines = 300
+max_changed_files = 12
+max_changed_lines = 360
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true

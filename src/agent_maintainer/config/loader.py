@@ -207,12 +207,15 @@ def read_neutral_config(
     return {}
 
 
-def read_config() -> dict[str, Any]:
-    """Read file-based config using explicit precedence."""
-    pyproject = read_pyproject()
+def read_config(repo_root: Path | None = None) -> dict[str, Any]:
+    """Read file-based config with precedence."""
+    pyproject_path = None if repo_root is None else repo_root / "pyproject.toml"
+    pyproject = read_pyproject(pyproject_path)
     if pyproject:
         return pyproject
-    return read_neutral_config()
+    if repo_root is None:
+        return read_neutral_config()
+    return read_neutral_config(tuple(repo_root / path for path in NEUTRAL_CONFIG_PATHS))
 
 
 def apply_pyproject(
@@ -300,9 +303,9 @@ def apply_special_envs(updates: dict[str, object]) -> None:
         )
 
 
-def load_config() -> schema.MaintainerConfig:
+def load_config(repo_root: Path | None = None) -> schema.MaintainerConfig:
     """Load Agent Maintainer configuration from pyproject and environment overrides."""
 
     config = schema.MaintainerConfig()
-    config = apply_pyproject(config, read_config())
+    config = apply_pyproject(config, read_config(repo_root))
     return apply_env(config)
