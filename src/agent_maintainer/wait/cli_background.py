@@ -9,7 +9,7 @@ from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import broker
 from agent_maintainer.wait.handlers import handler_for
 from agent_maintainer.wait.registry import WaitRecord, wait_record_json
-from agent_maintainer.wait.sweeper import SweepSummary, start_wait_watcher
+from agent_maintainer.wait.sweeper import SweepSummary
 
 JSON_FORMAT = "json"
 
@@ -100,20 +100,7 @@ def maybe_start_registered_watcher(
 
     if not start_watcher:
         return None
-    try:
-        start_wait_watcher(root, record.wait_id)
-    except OSError as exc:
-        return broker.BackgroundWaitRegistration(
-            record=record,
-            watcher_started=False,
-            watcher_error=str(exc),
-            root=str(root),
-        )
-    return broker.BackgroundWaitRegistration(
-        record=record,
-        watcher_started=True,
-        root=str(root),
-    )
+    return broker.start_registered_watcher(root, record)
 
 
 def emit_registered(record: WaitRecord, *, background: bool) -> None:

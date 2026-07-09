@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.wait import cli
+from agent_maintainer.wait import cli, daemon_launchd
 from agent_maintainer.wait.github import GitHubRunState, GitHubWaitResult
 from agent_maintainer.wait.github_pr import (
     GitHubPrCheck,
@@ -62,6 +62,51 @@ def test_codex_pr_cli_backgrounds_wait(
     assert "manual resume:" in output
     assert "heartbeat request:" in output
     assert '"type": "codex_heartbeat_wait"' in output
+    assert len(calls) == 1
+
+
+def test_codex_rewake_pr_background_uses_launchd_daemon(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Codex rewake background waits prefer launchd daemon when available."""
+
+    calls: list[tuple[Path, str]] = []
+    monkeypatch.delenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", raising=False)
+    monkeypatch.setenv("CODEX_SHELL", "1")
+    monkeypatch.setattr(
+        "agent_maintainer.wait.broker.ensure_wait_daemon",
+        lambda root, wait_id: (
+            calls.append((root, wait_id))
+            or daemon_launchd.DaemonLaunch(
+                started=True,
+                label="com.agent-maintainer.wait.test",
+                log_path=tmp_path / "daemon.log",
+            )
+        ),
+    )
+
+    status = cli.main(
+        [
+            "github-pr",
+            PR_NUMBER,
+            "--repo",
+            "douglasmonsky/agent-maintainer",
+            "--root",
+            str(tmp_path),
+            "--interval",
+            "1",
+            "--timeout-seconds",
+            "2",
+        ],
+    )
+
+    output = capsys.readouterr().out
+    assert_success(status)
+    assert "watcher: started via launchd" in output
+    assert "com.agent-maintainer.wait.test" in output
+    assert str(tmp_path / "daemon.log") in output
     assert len(calls) == 1
 
 
@@ -239,7 +284,7 @@ def test_register_cli_can_start_watcher(
 
     calls: list[tuple[Path, str]] = []
     monkeypatch.setattr(
-        "agent_maintainer.wait.cli_background.start_wait_watcher",
+        "agent_maintainer.wait.broker.start_wait_watcher",
         lambda root, wait_id: calls.append((root, wait_id)),
     )
 
