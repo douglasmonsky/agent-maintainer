@@ -17,11 +17,7 @@ ERROR = doctor_models.ERROR
 def check_repo_root(repo_root: Path) -> DoctorResult:
     """Check files that identify a usable Agent Maintainer repository root."""
 
-    missing = [
-        path
-        for path in (".git", "src/agent_maintainer/__main__.py")
-        if not (repo_root / path).exists()
-    ]
+    missing = [path for path in (".git",) if not (repo_root / path).exists()]
     if missing:
         missing_paths = ", ".join(missing)
         return DoctorResult(

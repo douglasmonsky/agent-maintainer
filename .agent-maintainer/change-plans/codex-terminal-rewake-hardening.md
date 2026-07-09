@@ -1,7 +1,7 @@
 +++
 id = "codex-terminal-rewake-hardening"
 kind = "mechanical-migration"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-22
 allowed_paths = [".agent-maintainer/change-plans/**", "src/agent_maintainer/wait/**", "src/agent_waits/**", "tests/wait/**", "tests/hooks/**", "tests/packaging/**", "docs/**"]
