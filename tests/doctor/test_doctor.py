@@ -16,9 +16,6 @@ from agent_maintainer.models import FULL_PROFILES, Check
 
 def write_repo_root(tmp_path: Path) -> Path:
     (tmp_path / ".git" / "hooks").mkdir(parents=True)
-    package_path = tmp_path / "src" / "agent_maintainer"
-    package_path.mkdir(parents=True)
-    (package_path / "__main__.py").write_text("", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_text("[tool.agent_maintainer]\n", encoding="utf-8")
     return tmp_path
 

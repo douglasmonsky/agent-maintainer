@@ -19,7 +19,21 @@ def test_repo_root_missing_paths(tmp_path: Path) -> None:
     assert result.status == doctor_models.ERROR
     assert result.state == doctor_models.MISSING
     assert ".git" in result.message
-    assert "src/agent_maintainer/__main__.py" in result.message
+    assert "src/agent_maintainer/__main__.py" not in result.message
+
+
+def test_repo_root_accepts_configured_consumer_repo(tmp_path: Path) -> None:
+    """Doctor supports repos that consume agent-maintainer as tooling."""
+
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "pyproject.toml").write_text(
+        "[tool.agent_maintainer]\n",
+        encoding="utf-8",
+    )
+
+    result = doctor_environment.check_repo_root(tmp_path)
+
+    assert result.status == doctor_models.OK
 
 
 def test_repo_root_missing_pyproject(tmp_path: Path) -> None:
