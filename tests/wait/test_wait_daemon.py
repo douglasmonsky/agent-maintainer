@@ -205,7 +205,9 @@ def test_ensure_wait_daemon_unsupported(tmp_path: Path) -> None:
     assert result.error == "unsupported"
 
 
-def test_ensure_wait_daemon_success_and_failure(tmp_path: Path) -> None:
+def test_ensure_wait_daemon_success_and_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Daemon ensure writes envelope and reports launchd failures compactly."""
 
     calls: list[Sequence[str]] = []
@@ -219,6 +221,11 @@ def test_ensure_wait_daemon_success_and_failure(tmp_path: Path) -> None:
         CODEX_THREAD_ID_ENV: THREAD_ID,
         CODEX_BIN_ENV: "/bin/echo",
     }
+    monkeypatch.setattr(
+        daemon_launchd,
+        "launchd_rewake_supported",
+        lambda current: True,
+    )
     success = daemon_launchd.ensure_wait_daemon(
         tmp_path,
         "wait-ok",
