@@ -5,6 +5,9 @@ from __future__ import annotations
 import plistlib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Final
+
+DAEMON_PATH: Final = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 
 @dataclass(frozen=True)
@@ -43,6 +46,7 @@ def write_launch_agent_plist(config: LaunchAgentPlist) -> None:
         "StandardOutPath": str(config.log_path),
         "StandardErrorPath": str(config.log_path),
         "EnvironmentVariables": {
+            "PATH": DAEMON_PATH,
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTHONPATH": str(config.root / "src"),
         },

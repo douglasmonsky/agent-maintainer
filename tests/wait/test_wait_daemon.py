@@ -72,9 +72,11 @@ def test_launchd_label_stable_and_plist_safe(tmp_path: Path) -> None:
     ]
     assert payload["ProgramArguments"][5] == "run"
     assert payload["EnvironmentVariables"] == {
+        "PATH": daemon_plist.DAEMON_PATH,
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONPATH": str(root / "src"),
     }
+    assert "/opt/homebrew/bin" in payload["EnvironmentVariables"]["PATH"]
 
 
 def test_rewake_envelope_is_private_minimal_and_read_once(tmp_path: Path) -> None:
