@@ -7,12 +7,18 @@ expires = 2026-07-23
 allowed_paths = [
   ".agent-maintainer/change-plans/codex-terminal-rewake-hardening.md",
   ".agent-maintainer/change-plans/doctor-consumer-repo-root.md",
+  "docs/tool-map.md",
+  "src/agent_maintainer/core/bootstrap.py",
+  "src/agent_maintainer/doctor/cli.py",
   "src/agent_maintainer/doctor/support/environment.py",
   "tests/doctor/test_doctor.py",
+  "tests/doctor/test_doctor_cli_output.py",
   "tests/doctor/test_doctor_support_environment.py",
+  "tests/packaging/test_bootstrap_install.py",
+  "tests/packaging/test_bootstrap_paths.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 5
+max_changed_files = 10
 max_changed_lines = 300
 allow_source_without_test_change = false
 requires_tests = true
