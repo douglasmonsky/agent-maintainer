@@ -54,11 +54,13 @@ class CodexAppServerClient:
         timeout_seconds: float,
         popen_factory: PopenFactory = Popen,
         thread_read_poll_seconds: float = APP_SERVER_THREAD_READ_POLL_SECONDS,
+        return_after_turn_acceptance: bool = False,
     ) -> None:
         self._codex_bin = codex_bin
         self._timeout_seconds = timeout_seconds
         self._popen_factory = popen_factory
         self._thread_read_poll_seconds = thread_read_poll_seconds
+        self._return_after_turn_acceptance = return_after_turn_acceptance
 
     def resume_thread(self, thread_id: str, prompt: str) -> None:
         """Resume thread, start one turn, and wait for completion."""
@@ -69,7 +71,10 @@ class CodexAppServerClient:
         except (OSError, RuntimeError, TimeoutError):
             _stop_process(process)
             raise
-        _stop_process(process)
+        if self._return_after_turn_acceptance:
+            _detach_process(process)
+        else:
+            _stop_process(process)
 
     def command(self) -> tuple[str, str, str, str]:
         """Return Codex app-server command."""
@@ -134,8 +139,11 @@ class CodexAppServerClient:
             )
             line = _get_app_server_line(lines, timeout=min(remaining, 1.0))
             if line is not None:
-                _consume_app_server_line(line, state)
-                if state.completed:
+                if _consume_app_server_wait_line(
+                    line,
+                    state,
+                    return_after_turn_acceptance=self._return_after_turn_acceptance,
+                ):
                     return
                 continue
             if process.poll() is not None:
@@ -183,6 +191,27 @@ def _get_app_server_line(lines: LineQueue, *, timeout: float) -> str | None:
         return lines.get(timeout=timeout)
     except queue.Empty:
         return None
+
+
+def _consume_app_server_wait_line(
+    line: str,
+    state: _AppServerWaitState,
+    *,
+    return_after_turn_acceptance: bool,
+) -> bool:
+    _consume_app_server_line(line, state)
+    return _app_server_wait_satisfied(
+        state,
+        return_after_turn_acceptance=return_after_turn_acceptance,
+    )
+
+
+def _app_server_wait_satisfied(
+    state: _AppServerWaitState,
+    *,
+    return_after_turn_acceptance: bool,
+) -> bool:
+    return state.completed or (state.turn_accepted and return_after_turn_acceptance)
 
 
 def _consume_app_server_line(line: str, state: _AppServerWaitState) -> None:
@@ -331,3 +360,19 @@ def _stop_process(process: Popen[str]) -> None:
     except TimeoutExpired:
         process.kill()
         process.wait(timeout=2)
+
+
+def _detach_process(process: Popen[str]) -> None:
+    if process.stdin is not None:
+        process.stdin.close()
+    threading.Thread(
+        target=_drain_detached_process,
+        args=(process,),
+        daemon=True,
+    ).start()
+
+
+def _drain_detached_process(process: Popen[str]) -> None:
+    if process.stderr is not None:
+        process.stderr.read()
+    process.wait(timeout=None)

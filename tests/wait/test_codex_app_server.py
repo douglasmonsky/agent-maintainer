@@ -84,6 +84,69 @@ with log_path.open("w", encoding="utf-8") as log:
     assert messages == ["initialize", "initialized", "thread/resume", "turn/start"]
 
 
+def test_app_server_client_can_return_after_turn_acceptance(tmp_path: Path) -> None:
+    """App-server client can stop after turn/start is accepted."""
+
+    script = tmp_path / "fake_app_server_accept.py"
+    log_path = tmp_path / "accept-messages.jsonl"
+    script.write_text(
+        """
+import json
+import pathlib
+import sys
+
+log_path = pathlib.Path(sys.argv[1])
+with log_path.open("w", encoding="utf-8") as log:
+    for line in sys.stdin:
+        message = json.loads(line)
+        log.write(json.dumps(message, sort_keys=True) + "\\n")
+        log.flush()
+        request_id = message.get("id")
+        method = message.get("method")
+        if method == "turn/start":
+            print(
+                json.dumps(
+                    {
+                        "id": request_id,
+                        "result": {"turn": {"id": "turn-1", "status": "inProgress"}},
+                    }
+                ),
+                flush=True,
+            )
+        elif request_id is not None:
+            print(json.dumps({"id": request_id, "result": {}}), flush=True)
+""",
+        encoding="utf-8",
+    )
+
+    def popen_factory(
+        _command: list[str],
+        **kwargs: Any,
+    ) -> subprocess.Popen[str]:
+        return subprocess.Popen(
+            [sys.executable, str(script), str(log_path)],
+            **kwargs,
+        )
+
+    client = CodexAppServerClient(
+        codex_bin="codex-test",
+        timeout_seconds=5,
+        popen_factory=popen_factory,
+        thread_read_poll_seconds=0.01,
+        return_after_turn_acceptance=True,
+    )
+
+    client.resume_thread(THREAD_ID, "continue now")
+
+    methods = [
+        message["method"]
+        for message in (
+            json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines()
+        )
+    ]
+    assert methods == ["initialize", "initialized", "thread/resume", "turn/start"]
+
+
 def test_app_server_client_polls_thread_read_when_completion_not_streamed(
     tmp_path: Path,
 ) -> None:

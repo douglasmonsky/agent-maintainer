@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass
-from importlib import import_module
 from shutil import which
-from types import ModuleType
 from typing import Any, Final
 
 from agent_maintainer.wait.codex_app_server import CodexAppServerClient
@@ -22,15 +20,11 @@ CODEX_THREAD_ID_OVERRIDE_ENV: Final = "AGENT_MAINTAINER_CODEX_THREAD_ID"
 CODEX_BIN_ENV: Final = "AGENT_MAINTAINER_CODEX_BIN"
 CODEX_APP_SERVER_TIMEOUT_ENV: Final = "AGENT_MAINTAINER_CODEX_APP_SERVER_TIMEOUT_SECONDS"
 CODEX_CLI_NAME: Final = "codex"
-OPENAI_CODEX_PACKAGE: Final = "openai_codex"
 REWAKE_STATUS_DISABLED: Final = "disabled"
 REWAKE_STATUS_MANUAL: Final = "ready_for_manual_resume"
 REWAKE_STATUS_RESUMED: Final = "resumed"
 REWAKE_STATUS_SKIPPED: Final = "skipped"
-SDK_RESUME_METHODS: Final = ("thread_resume", "resume_thread")
 APP_SERVER_DEFAULT_TIMEOUT_SECONDS: Final = 3600.0
-
-ImportModule = Callable[[str], ModuleType]
 
 
 @dataclass(frozen=True)
@@ -59,12 +53,10 @@ class CodexRewakeBackend:
         registry: WaitRegistry,
         *,
         env: Mapping[str, str] | None = None,
-        importer: ImportModule = import_module,
         app_server_client: Any | None = None,
     ) -> None:
         self._registry = registry
         self._env = os.environ if env is None else env
-        self._importer = importer
         self._app_server_client = app_server_client
 
     def enabled(self) -> bool:
@@ -82,19 +74,14 @@ class CodexRewakeBackend:
         try:
             self._resume_with_app_server(resume_target, prompt)
         except (OSError, RuntimeError, TimeoutError) as app_server_exc:
-            fallback_result = self._resume_with_sdk_fallback(
+            return _manual_result(
                 record,
-                resume_target,
-                prompt,
-                app_server_exc,
+                f"Codex app-server rewake failed: {app_server_exc}",
             )
-            if fallback_result is not None:
-                return fallback_result
-        self._registry.mark_resumed(record)
-        return CodexRewakeResult(
-            REWAKE_STATUS_RESUMED,
-            "Codex continuation completed",
-            prompt=prompt,
+        return _manual_result(
+            record,
+            "Codex app-server accepted continuation, but visible thread wake "
+            "is not confirmed; manual resume required",
         )
 
     def _resume_context(
@@ -111,8 +98,8 @@ class CodexRewakeBackend:
         if not thread_id:
             return _manual_result(record, "Codex thread id unavailable")
         codex_bin = codex_binary(self._env)
-        if not codex_bin and _sdk_module(self._importer) is None:
-            return _manual_result(record, "Codex app-server and SDK unavailable")
+        if not codex_bin:
+            return _manual_result(record, "Codex app-server unavailable")
         return _AppServerContext(
             thread_id=thread_id,
             codex_bin=codex_bin,
@@ -129,49 +116,9 @@ class CodexRewakeBackend:
         client = self._app_server_client or CodexAppServerClient(
             codex_bin=context.codex_bin,
             timeout_seconds=context.timeout_seconds,
+            return_after_turn_acceptance=True,
         )
         client.resume_thread(context.thread_id, prompt)
-
-    def _resume_with_thread(
-        self,
-        sdk_module: ModuleType,
-        thread_id: str,
-        prompt: str,
-    ) -> None:
-        codex_factory = sdk_module.Codex
-        with codex_factory() as codex:
-            thread = _resume_thread(codex, thread_id)
-            thread.run(prompt)
-
-    def _resume_with_sdk_fallback(
-        self,
-        record: WaitRecord,
-        resume_target: _AppServerContext,
-        prompt: str,
-        app_server_exc: BaseException,
-    ) -> CodexRewakeResult | None:
-        sdk_module = _sdk_module(self._importer)
-        if sdk_module is None:
-            return _manual_result(
-                record,
-                f"Codex app-server rewake failed: {app_server_exc}",
-            )
-        try:
-            self._resume_with_thread(sdk_module, resume_target.thread_id, prompt)
-        except (AttributeError, RuntimeError, TypeError) as sdk_exc:
-            return _manual_result(
-                record,
-                f"Codex app-server rewake failed: {app_server_exc}; "
-                f"Codex SDK rewake failed: {sdk_exc}",
-            )
-        return None
-
-
-def _sdk_module(importer: ImportModule) -> ModuleType | None:
-    try:
-        return importer(OPENAI_CODEX_PACKAGE)
-    except ImportError:
-        return None
 
 
 def codex_rewake_enabled(env: Mapping[str, str]) -> bool:
@@ -247,13 +194,3 @@ def _manual_result(record: WaitRecord, detail: str) -> CodexRewakeResult:
         f"{detail}; manual resume: {record.resume_instruction}",
         prompt=continuation_prompt(record),
     )
-
-
-def _resume_thread(codex: Any, thread_id: str) -> Any:
-    for method_name in SDK_RESUME_METHODS:
-        try:
-            method = getattr(codex, method_name)
-        except AttributeError:
-            continue
-        return method(thread_id)
-    raise RuntimeError("Codex SDK thread resume method unavailable")

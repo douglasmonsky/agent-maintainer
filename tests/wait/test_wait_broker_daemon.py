@@ -20,7 +20,7 @@ def test_start_registered_watcher_reports_launchd_fallback(
 
     registry = WaitRegistry(tmp_path)
     record = registry.register_github_pr(
-        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER),
+        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER, platform="claude"),
     )
     monkeypatch.setattr(
         broker,
@@ -41,6 +41,34 @@ def test_start_registered_watcher_reports_launchd_fallback(
     assert registration.watcher_error == "launchd fallback: launchd failed"
 
 
+def test_codex_rewake_requires_launchd(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Codex rewake does not silently downgrade to popen."""
+
+    registry = WaitRegistry(tmp_path)
+    record = registry.register_github_pr(
+        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER, platform="codex"),
+    )
+    monkeypatch.setattr(
+        broker,
+        "ensure_wait_daemon",
+        lambda root, wait_id: daemon_launchd.DaemonLaunch(
+            started=False,
+            label="com.agent-maintainer.wait.test",
+            log_path=tmp_path / "daemon.log",
+            error="launchd failed",
+        ),
+    )
+
+    registration = broker.start_registered_watcher(tmp_path, record)
+
+    assert not registration.watcher_started
+    assert registration.watcher_strategy == ""
+    assert registration.watcher_error == "launchd required for Codex rewake: launchd failed"
+
+
 def test_start_registered_watcher_reports_both_failures(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -49,7 +77,7 @@ def test_start_registered_watcher_reports_both_failures(
 
     registry = WaitRegistry(tmp_path)
     record = registry.register_github_pr(
-        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER),
+        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER, platform="claude"),
     )
     monkeypatch.setattr(
         broker,

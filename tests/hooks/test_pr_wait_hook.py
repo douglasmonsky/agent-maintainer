@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.hooks import pr_wait
+from agent_maintainer.wait import daemon_launchd
 from agent_maintainer.wait.github_pr import GitHubPrCheck, GitHubPrChecksState, GitHubPrWaitResult
 
 
@@ -134,8 +135,15 @@ def test_codex_background_wait_registers_wait(
     calls: list[tuple[Path, str]] = []
     monkeypatch.setattr(sys, "stdin", StringIO(json.dumps(pr_create_payload())))
     monkeypatch.setattr(
-        "agent_maintainer.wait.broker.start_wait_watcher",
-        lambda root, wait_id: calls.append((root, wait_id)),
+        "agent_maintainer.wait.broker.ensure_wait_daemon",
+        lambda root, wait_id: (
+            calls.append((root, wait_id))
+            or daemon_launchd.DaemonLaunch(
+                started=True,
+                label="com.agent-maintainer.wait.test",
+                log_path=tmp_path / "daemon.log",
+            )
+        ),
     )
 
     status = pr_wait.run_hook(
@@ -150,6 +158,7 @@ def test_codex_background_wait_registers_wait(
     assert status == 0
     assert len(calls) == 1
     assert len(wait_files) == 1
+    assert "watcher: started via launchd" in payload["reason"]
     assert "wait resume" in payload["reason"]
     assert "fallback heartbeat request:" in payload["reason"]
     assert '"wait_kind": "github-pr"' in payload["reason"]

@@ -123,6 +123,14 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
             watcher_label=daemon_launch.label,
             watcher_log=str(daemon_launch.log_path),
         )
+    if _strict_codex_rewake(record):
+        return BackgroundWaitRegistration(
+            record=record,
+            watcher_started=False,
+            watcher_error=f"launchd required for Codex rewake: {daemon_launch.error}",
+            root=str(root),
+            watcher_strategy="",
+        )
 
     try:
         start_wait_watcher(root, record.wait_id)
@@ -147,6 +155,10 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
         root=str(root),
         watcher_strategy="popen",
     )
+
+
+def _strict_codex_rewake(record: WaitRecord) -> bool:
+    return record.platform == CODEX_PLATFORM
 
 
 def register_background_github_pr(

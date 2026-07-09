@@ -68,11 +68,13 @@ until a user explicitly approves spending a Codex model turn.
 
 ## Acceptance Criteria
 
-- Terminal rewake uses app-server JSON-RPC before the optional Python SDK.
-- SDK fallback still works in unit tests.
-- Missing app-server and missing SDK leave the wait ready for manual resume.
-- Handoff rendering treats Codex CLI or SDK availability as terminal rewake
-  capable only when rewake is enabled and thread metadata is present.
+- Codex background waits do not silently downgrade to detached `popen` when
+  launchd cannot start.
+- App-server acceptance leaves waits ready for manual resume instead of marking
+  them `resumed`.
+- Missing app-server support leaves waits ready for manual resume.
+- Handoff rendering treats heartbeat fallback as explicit model-turn fallback,
+  not as no-cost automatic wake.
 - Docs clearly state heartbeat fallback still costs model turns.
 - Roadmap tracker links this phase for follow-up hardening work.
 

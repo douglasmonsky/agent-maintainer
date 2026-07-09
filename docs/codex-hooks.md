@@ -76,14 +76,12 @@ command and a structured heartbeat request for thread automation. Pending
 checks must not produce repeated chat updates.
 
 Codex PR, GitHub run, and verifier waits use background ownership by default.
-On macOS with `AGENT_MAINTAINER_CODEX_REWAKE=1`, Codex thread metadata,
-and a usable Codex CLI, registration first ensures a repo-scoped user
-LaunchAgent with label `com.agent-maintainer.wait.<stable-root-hash>`.
-The plist excludes thread ids, prompts, API keys, hook stdin, and private
-payloads; transient thread metadata is written only to
-`.verify-logs/watchers/<wait-id>/rewake-env.json` with mode `0600` and is
-deleted after the daemon reads it. Other environments, or launchd failure,
-fall back to the detached watcher and heartbeat request path. Manage the
+On macOS Codex, registration first ensures a repo-scoped user LaunchAgent with
+label `com.agent-maintainer.wait.<stable-root-hash>`. The plist excludes thread
+ids, prompts, API keys, hook stdin, and private payloads. Codex waits do not
+silently fall back to a detached `popen` watcher when launchd cannot start;
+registration reports the launchd failure and leaves the wait recoverable by
+`wait sweep` / `wait resume`. Manage the
 daemon with `python -m agent_maintainer wait daemon install|status|uninstall
 --root <repo>`.
 Set `AGENT_MAINTAINER_BACKGROUND_PR_WAIT=0` only when debugging the old PR
@@ -113,22 +111,14 @@ automatic Codex continuation. The preferred backend is the local Codex CLI app-s
 thread metadata is unavailable, the wait stays ready for the manual
 `wait resume <id>` command. No thread id or prompt is stored in the wait record.
 
-Terminal-only watcher wake is the preferred path when all prerequisites are
-present: `AGENT_MAINTAINER_CODEX_REWAKE=1`, `CODEX_THREAD_ID` or
-`AGENT_MAINTAINER_CODEX_THREAD_ID`, and either a usable `codex` binary or an
-importable optional `openai-codex` SDK in the watcher Python environment. In
-that mode, the handoff does not ask Codex to create a heartbeat. The launchd
-daemon or detached watcher polls locally, pending state stays outside model
-turns, and the watcher attempts one Codex continuation when the wait reaches
-terminal state.
-
-If terminal rewake is unavailable, the handoff keeps a fallback heartbeat
-request. That request is marked `fallback_only: true` and includes
-`preferred_monitor_model: gpt-5.3-codex-spark` and
-`preferred_monitor_reasoning: minimal`. Heartbeat fallback still wakes a model
-each interval, so use it only when terminal watcher rewake is not available.
-If SDK import, auth, thread metadata, or resume fails, the wait remains ready
-for manual `wait resume <id>` recovery.
+Terminal-only local polling is the preferred path; automatic visible Codex
+thread rewake is not treated as proven today.
+`AGENT_MAINTAINER_CODEX_REWAKE=1` may attempt app-server handoff, but app-server
+turn acceptance does not mark a wait `resumed` because it has not proven visible
+desktop wake. Terminal waits therefore remain ready for manual
+`wait resume <id>` recovery until Codex exposes a supported visible-thread
+resume surface. Heartbeat fallback still wakes a model each interval; use it
+only when explicit manual monitoring is acceptable.
 
 ## Audit Trail
 
