@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260709T165911Z.claim.readme.adoption_tracks.b4c0505
+  claim: claim.readme.adoption_tracks
+  doc_object: docs.readme.adoption_tracks
+  evidence:
+  - evidence.readme.adoption_track_templates
+  reason: Updated README adoption tracks for ci-only initializer output; core, agent,
+    and hardening track descriptions remain accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-09T16:59:11Z'
+  base: HEAD
+  head: b4c0505
+  evidence_fingerprints:
+    evidence.readme.adoption_track_templates: sha256:61d3f3ded3f6be687ca5b2132696bfb761e698df76a5c4b7e1583313518eca7a
+  evidence_anchor_fingerprints:
+    evidence.readme.adoption_track_templates:
+    - sha256:85cee29e75bca8cf799790fa5397e707712ab312bd4ff449fbd122ad0646abf9
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

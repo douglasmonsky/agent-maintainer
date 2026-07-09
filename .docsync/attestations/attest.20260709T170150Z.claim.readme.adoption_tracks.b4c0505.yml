@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260709T170150Z.claim.readme.adoption_tracks.b4c0505
+  claim: claim.readme.adoption_tracks
+  doc_object: docs.readme.adoption_tracks
+  evidence:
+  - evidence.readme.initializer_tests
+  reason: Updated initializer tests for ci-only setup; README adoption track documentation
+    now names the CI-only workflow/dependency output.
+  reviewer: agent
+  reviewed_at: '2026-07-09T17:01:50Z'
+  base: HEAD
+  head: b4c0505
+  evidence_fingerprints:
+    evidence.readme.initializer_tests: sha256:a7c8f8d84982e1f67860cfe89dc1221eb043f252dd299701de8f36149defe607
+  evidence_anchor_fingerprints:
+    evidence.readme.initializer_tests:
+    - sha256:bc82045984a8e99286432c67a48ce9df8f359883be489bfc50f5a8d5c941c6f6
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

@@ -25,6 +25,9 @@ ai-agent-heavy`, `--preset legacy-ratchet`, `--preset strict-new-repo`, or a
 team preset such as `--preset team-agent-heavy` to tune starter policy without
 changing which files the track writes.
 
+Use `python3 -m agent_maintainer init --ci-only` when only the GitHub Actions
+verification workflow and its Agent Maintainer dependency file are needed.
+
 Use `python3 -m agent_maintainer assess setup` before first adoption to
 recommend a track, preset, optional gates, and AI follow-up prompts. Use
 `python3 -m agent_maintainer assess debt` to write an advisory lower-is-better
