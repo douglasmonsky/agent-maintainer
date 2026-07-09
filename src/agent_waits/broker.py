@@ -43,6 +43,9 @@ class BackgroundWaitRegistration:
     watcher_started: bool
     watcher_error: str = ""
     root: str = ""
+    watcher_strategy: str = "popen"
+    watcher_label: str = ""
+    watcher_log: str = ""
 
 
 def codex_foreground_wait_allowed(env: Mapping[str, str] | None = None) -> bool:
@@ -98,7 +101,7 @@ def render_background_registration_text(
                 run_id=record.wait_id,
                 details=(
                     _wait_detail(record),
-                    "watcher: started; pending polls stay outside model turns",
+                    _watcher_detail(registration),
                     "terminal rewake: enabled for this Codex thread",
                     f"manual fallback resume: {record.resume_instruction}",
                 ),
@@ -184,7 +187,12 @@ def _wait_detail(record: WaitRecord) -> str:
 
 def _watcher_detail(registration: BackgroundWaitRegistration) -> str:
     if registration.watcher_started:
-        return "watcher: started"
+        detail = f"watcher: started via {registration.watcher_strategy}"
+        if registration.watcher_label:
+            detail = f"{detail} ({registration.watcher_label})"
+        if registration.watcher_log:
+            detail = f"{detail}; log: {registration.watcher_log}"
+        return f"{detail}; pending polls stay outside model turns"
     if registration.watcher_error:
         return f"watcher: not started ({registration.watcher_error})"
     return "watcher: not started"

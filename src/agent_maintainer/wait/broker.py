@@ -9,11 +9,13 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Final
 
+from agent_maintainer.wait.daemon_launchd import ensure_wait_daemon
 from agent_maintainer.wait.handlers import WaitRegistration, handler_for
 from agent_maintainer.wait.registry import (
     WAIT_KIND_GITHUB_PR,
     WAIT_KIND_GITHUB_RUN,
     WAIT_KIND_VERIFIER,
+    WaitRecord,
     WaitRegistry,
 )
 from agent_maintainer.wait.sweeper import start_wait_watcher
@@ -105,16 +107,46 @@ def register_background_wait(wait: BackgroundKnownWait) -> BackgroundWaitRegistr
             log_dir=wait.log_dir,
         ),
     )
+    return start_registered_watcher(wait.root, record)
+
+
+def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRegistration:
+    """Start the strongest available watcher for an existing wait record."""
+
+    daemon_launch = ensure_wait_daemon(root, record.wait_id)
+    if daemon_launch.started:
+        return BackgroundWaitRegistration(
+            record=record,
+            watcher_started=True,
+            root=str(root),
+            watcher_strategy="launchd",
+            watcher_label=daemon_launch.label,
+            watcher_log=str(daemon_launch.log_path),
+        )
+
     try:
-        start_wait_watcher(wait.root, record.wait_id)
+        start_wait_watcher(root, record.wait_id)
     except OSError as exc:
+        watcher_error = str(exc)
+        if daemon_launch.error and daemon_launch.error != "unsupported":
+            watcher_error = f"launchd: {daemon_launch.error}; popen: {watcher_error}"
         return BackgroundWaitRegistration(
             record=record,
             watcher_started=False,
-            watcher_error=str(exc),
-            root=str(wait.root),
+            watcher_error=watcher_error,
+            root=str(root),
         )
-    return BackgroundWaitRegistration(record=record, watcher_started=True, root=str(wait.root))
+
+    watcher_error = ""
+    if daemon_launch.error and daemon_launch.error != "unsupported":
+        watcher_error = f"launchd fallback: {daemon_launch.error}"
+    return BackgroundWaitRegistration(
+        record=record,
+        watcher_started=True,
+        watcher_error=watcher_error,
+        root=str(root),
+        watcher_strategy="popen",
+    )
 
 
 def register_background_github_pr(

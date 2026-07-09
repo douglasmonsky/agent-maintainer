@@ -76,6 +76,16 @@ command and a structured heartbeat request for thread automation. Pending
 checks must not produce repeated chat updates.
 
 Codex PR, GitHub run, and verifier waits use background ownership by default.
+On macOS with `AGENT_MAINTAINER_CODEX_REWAKE=1`, Codex thread metadata,
+and a usable Codex CLI, registration first ensures a repo-scoped user
+LaunchAgent with label `com.agent-maintainer.wait.<stable-root-hash>`.
+The plist excludes thread ids, prompts, API keys, hook stdin, and private
+payloads; transient thread metadata is written only to
+`.verify-logs/watchers/<wait-id>/rewake-env.json` with mode `0600` and is
+deleted after the daemon reads it. Other environments, or launchd failure,
+fall back to the detached watcher and heartbeat request path. Manage the
+daemon with `python -m agent_maintainer wait daemon install|status|uninstall
+--root <repo>`.
 Set `AGENT_MAINTAINER_BACKGROUND_PR_WAIT=0` only when debugging the old PR
 foreground handoff path, or `AGENT_MAINTAINER_BACKGROUND_WAIT=0` to debug all
 known wait foreground paths. Direct foreground `wait github-pr`,
@@ -107,9 +117,10 @@ Terminal-only watcher wake is the preferred path when all prerequisites are
 present: `AGENT_MAINTAINER_CODEX_REWAKE=1`, `CODEX_THREAD_ID` or
 `AGENT_MAINTAINER_CODEX_THREAD_ID`, and either a usable `codex` binary or an
 importable optional `openai-codex` SDK in the watcher Python environment. In
-that mode, the handoff does not ask Codex to create a heartbeat. The detached
-watcher polls locally, pending state stays outside model turns, and the watcher
-attempts one Codex continuation when the wait reaches terminal state.
+that mode, the handoff does not ask Codex to create a heartbeat. The launchd
+daemon or detached watcher polls locally, pending state stays outside model
+turns, and the watcher attempts one Codex continuation when the wait reaches
+terminal state.
 
 If terminal rewake is unavailable, the handoff keeps a fallback heartbeat
 request. That request is marked `fallback_only: true` and includes

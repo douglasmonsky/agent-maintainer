@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 
 from agent_maintainer.runtime_events.waiting import (
     WaitRuntimeEvents,
@@ -10,7 +11,7 @@ from agent_maintainer.runtime_events.waiting import (
     emit_heartbeat_noop,
     emit_terminal_claimed,
 )
-from agent_maintainer.wait import cli_background, cli_parsers, cli_register
+from agent_maintainer.wait import cli_background, cli_parsers, cli_register, daemon, daemon_launchd
 from agent_maintainer.wait.codex_rewake import (
     CodexRewakeBackend,
     codex_rewake_resumed,
@@ -67,6 +68,7 @@ def main(argv: list[str] | None = None) -> int:
         "sweep": _sweep,
         "heartbeat": _heartbeat,
         "cleanup": _cleanup,
+        "daemon": _daemon,
     }
     handler = handlers.get(args.command)
     if handler is not None:
@@ -198,6 +200,34 @@ def _cleanup(args: argparse.Namespace) -> int:
     return 0
 
 
+def _daemon(args: argparse.Namespace) -> int:
+    if args.daemon_command == "run":
+        return daemon.run_daemon(
+            args.root,
+            interval_seconds=args.interval,
+            idle_timeout_seconds=args.idle_timeout,
+        )
+    if args.daemon_command == "install":
+        result = daemon_launchd.install_launch_agent(
+            args.root,
+            options=daemon_launchd.LaunchAgentInstallOptions(
+                interval_seconds=args.interval,
+                idle_timeout_seconds=args.idle_timeout,
+            ),
+        )
+        print(_render_daemon_launch(args.format, result))
+        return 0 if result.started else 1
+    if args.daemon_command == "uninstall":
+        status = daemon_launchd.uninstall_launch_agent(args.root)
+        print(_render_daemon_status(args.format, status))
+        return 0
+    if args.daemon_command == "status":
+        status = daemon_launchd.daemon_status(args.root)
+        print(_render_daemon_status(args.format, status))
+        return 0 if status.loaded else 1
+    return 2
+
+
 def _wait_github_run(args: argparse.Namespace) -> GitHubWaitResult:
     config = GitHubWaitConfig(
         run_id=args.run_id,
@@ -281,6 +311,40 @@ def _render_cleanup(output_format: str, summary: CleanupSummary) -> str:
     if output_format == cli_parsers.JSON_FORMAT:
         return f'{{"expired_ready": {summary.expired_ready}}}'
     return f"expired ready waits: {summary.expired_ready}"
+
+
+def _render_daemon_launch(output_format: str, result: daemon_launchd.DaemonLaunch) -> str:
+    if output_format == cli_parsers.JSON_FORMAT:
+        return json.dumps(
+            {
+                "started": result.started,
+                "label": result.label,
+                "log_path": str(result.log_path),
+                "error": result.error,
+            },
+            sort_keys=True,
+        )
+    if result.started:
+        return f"daemon installed: {result.label}\nlog: {result.log_path}"
+    return f"daemon not started: {result.error}"
+
+
+def _render_daemon_status(output_format: str, status: daemon_launchd.DaemonStatus) -> str:
+    if output_format == cli_parsers.JSON_FORMAT:
+        return json.dumps(
+            {
+                "label": status.label,
+                "plist_path": str(status.plist_path),
+                "log_path": str(status.log_path),
+                "loaded": status.loaded,
+                "pid": status.pid,
+                "last_heartbeat": status.last_heartbeat,
+                "error": status.error,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    return daemon_launchd.status_text(status)
 
 
 def _observe_github_run(

@@ -10,6 +10,8 @@ depends_on = [
   "cli_parsers",
   "cli_register",
   "codex_rewake",
+  "daemon",
+  "daemon_launchd",
   "github",
     "github_pr",
     "registry",
@@ -63,6 +65,7 @@ depends_on = []
 path = "broker"
 depends_on = [
   "handlers",
+  "daemon_launchd",
   "registry",
   "sweeper",
   "//agent_waits.broker",
@@ -80,6 +83,34 @@ depends_on = [
 [[modules]]
 path = "codex_app_server"
 depends_on = []
+
+[[modules]]
+path = "daemon"
+depends_on = [
+  "codex_rewake",
+  "daemon_launchd",
+  "daemon_state",
+  "registry",
+  "sweeper",
+]
+
+[[modules]]
+path = "daemon_launchd"
+depends_on = [
+  "codex_rewake",
+  "daemon_plist",
+  "daemon_state",
+]
+
+[[modules]]
+path = "daemon_plist"
+depends_on = []
+
+[[modules]]
+path = "daemon_state"
+depends_on = [
+  "codex_rewake",
+]
 
 [[modules]]
 path = "handlers"

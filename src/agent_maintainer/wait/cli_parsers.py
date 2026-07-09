@@ -18,6 +18,8 @@ DEFAULT_GITHUB_TIMEOUT_SECONDS = 3600
 DEFAULT_VERIFIER_INTERVAL_SECONDS = 5
 DEFAULT_VERIFIER_TIMEOUT_SECONDS = 3600
 DEFAULT_READY_CLEANUP_SECONDS = 7 * 24 * 60 * 60
+DEFAULT_DAEMON_INTERVAL_SECONDS = 5
+DEFAULT_DAEMON_IDLE_TIMEOUT_SECONDS = 1800
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -33,6 +35,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     _add_sweep_parser(subparsers)
     _add_heartbeat_parser(subparsers)
     _add_cleanup_parser(subparsers)
+    _add_daemon_parser(subparsers)
     return parser.parse_args(argv)
 
 
@@ -222,3 +225,39 @@ def _add_cleanup_parser(subparsers: Any) -> None:
         default=DEFAULT_READY_CLEANUP_SECONDS,
     )
     cleanup.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_daemon_parser(subparsers: Any) -> None:
+    """Add repo-scoped wait daemon parser."""
+
+    daemon = subparsers.add_parser("daemon", help="Manage repo wait daemon.")
+    daemon_subparsers = daemon.add_subparsers(dest="daemon_command", required=True)
+
+    install = daemon_subparsers.add_parser("install", help="Install LaunchAgent.")
+    _add_common_daemon_args(install)
+    install.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+    uninstall = daemon_subparsers.add_parser("uninstall", help="Remove LaunchAgent.")
+    uninstall.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
+    uninstall.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+    status = daemon_subparsers.add_parser("status", help="Inspect LaunchAgent.")
+    status.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
+    status.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+    run = daemon_subparsers.add_parser("run", help="Run daemon loop.")
+    _add_common_daemon_args(run)
+
+
+def _add_common_daemon_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=DEFAULT_DAEMON_INTERVAL_SECONDS,
+    )
+    parser.add_argument(
+        "--idle-timeout",
+        type=int,
+        default=DEFAULT_DAEMON_IDLE_TIMEOUT_SECONDS,
+    )
