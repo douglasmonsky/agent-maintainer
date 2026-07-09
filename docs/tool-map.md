@@ -32,6 +32,7 @@ Technical Debt Score under `.verify-logs`; the static HTML report includes that
 score when the artifact exists.
 
 Use `python3 -m agent_maintainer bootstrap` for one-command local setup,
+For package consumers, `bootstrap` operates on the current repository tree; it no longer falls back to the installed Agent Maintainer source checkout. When `config/dev-lock.txt` and `config/dev-dependencies.txt` are absent and the repository does not contain local `src/agent_maintainer`, bootstrap skips package dependency installation and leaves the consumer project package untouched. Use `python3 -m agent_maintainer doctor --root <repo> --format json` for scriptable setup checks outside the target repo CWD.
 `python3 -m agent_maintainer doctor` for setup health, `python3 -m
 agent_maintainer guidance` for generated agent-facing guidance, `python3 -m
 agent_maintainer verify --profile precommit` for local completion checks,

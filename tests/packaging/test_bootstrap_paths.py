@@ -25,9 +25,8 @@ def test_maintainer_project_root_prefers_working_tree(
     assert maintainer_bootstrap.project_root() == repo_root
 
 
-def test_maintainer_project_root_falls_back_to_package_tree(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
+def test_maintainer_project_root_does_not_fall_back_to_package_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     cwd = tmp_path / "outside"
     package_root = tmp_path / "package-root"
@@ -36,11 +35,10 @@ def test_maintainer_project_root_falls_back_to_package_tree(
     module_path.parent.mkdir(parents=True)
     module_path.write_text("", encoding="utf-8")
     (package_root / "pyproject.toml").write_text("[project]\nname = 'example'\n", encoding="utf-8")
-
     monkeypatch.chdir(cwd)
     monkeypatch.setattr(maintainer_bootstrap, "__file__", str(module_path))
 
-    assert maintainer_bootstrap.project_root() == package_root
+    assert maintainer_bootstrap.project_root() == cwd
 
 
 def test_maintainer_project_root_falls_back_to_cwd(

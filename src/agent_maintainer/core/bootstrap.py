@@ -54,15 +54,10 @@ def install() -> int:
 
 
 def project_root() -> Path:
-    """Find the repository root command should operate on."""
+    """Return repository root to operate on."""
 
     cwd = Path.cwd().resolve()
     for candidate in (cwd, *cwd.parents):
-        if is_project_root(candidate):
-            return candidate
-
-    package_path = Path(__file__).resolve()
-    for candidate in package_path.parents:
         if is_project_root(candidate):
             return candidate
     return cwd
@@ -100,10 +95,17 @@ def ensure_virtualenv(repo_root: Path) -> Path | None:
 
 
 def install_dependencies(repo_root: Path, python_path: Path) -> int:
-    """Install development dependencies from the preferred manifest."""
+    """Install development dependencies from preferred manifest."""
 
     dependency_file = preferred_dependency_file(repo_root)
     if not dependency_file.exists():
+        if not has_local_agent_maintainer_source(repo_root):
+            print(
+                "SKIP bootstrap: config/dev-lock.txt or config/dev-dependencies.txt "
+                "not present; leaving consumer repository dependencies unchanged.",
+                flush=True,
+            )
+            return install_editable_package(repo_root, python_path)
         print(
             "FAIL bootstrap: config/dev-lock.txt or config/dev-dependencies.txt not present.",
             file=sys.stderr,
@@ -129,9 +131,9 @@ def install_dependencies(repo_root: Path, python_path: Path) -> int:
 
 
 def install_editable_package(repo_root: Path, python_path: Path) -> int:
-    """Install this project editable when package metadata exists."""
+    """Install local Agent Maintainer source checkout when present."""
 
-    if not (repo_root / "pyproject.toml").exists():
+    if not has_local_agent_maintainer_source(repo_root):
         return 0
     print("Installing agent_maintainer package editable.", flush=True)
     result = subprocess.run(  # nosec B603
@@ -145,6 +147,12 @@ def install_editable_package(repo_root: Path, python_path: Path) -> int:
         repair_pth_visibility(repo_root, python_path)
         ensure_editable_package_link(repo_root, python_path)
     return result.returncode
+
+
+def has_local_agent_maintainer_source(repo_root: Path) -> bool:
+    """Return whether repo root contains this package source checkout."""
+
+    return (repo_root / "src" / "agent_maintainer" / "__init__.py").exists()
 
 
 def repair_pth_visibility(repo_root: Path, python_path: Path) -> None:

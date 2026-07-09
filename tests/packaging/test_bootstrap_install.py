@@ -21,6 +21,8 @@ def test_maintainer_install_helpers(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert maintainer_bootstrap.install_pre_commit(tmp_path) == 1
 
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "example"\n', encoding="utf-8")
+    (tmp_path / "src" / "agent_maintainer").mkdir(parents=True)
+    (tmp_path / "src" / "agent_maintainer" / "__init__.py").write_text("", encoding="utf-8")
     dependency_file = tmp_path / "config" / "dev-dependencies.txt"
     dependency_file.parent.mkdir()
     dependency_file.write_text("pytest\n", encoding="utf-8")
@@ -147,13 +149,46 @@ def test_maintainer_virtualenv_failure_branches(
     assert maintainer_bootstrap.ensure_virtualenv(failed_venv_root) is None
 
 
-def test_maintainer_dependency_install_requires_manifest(
+def test_maintainer_source_checkout_dependency_install_requires_manifest(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (tmp_path / "src" / "agent_maintainer").mkdir(parents=True)
+    (tmp_path / "src" / "agent_maintainer" / "__init__.py").write_text("", encoding="utf-8")
+    python_path = tmp_path / ".venv" / "bin" / "python"
+
+    assert maintainer_bootstrap.install_dependencies(tmp_path, python_path) == 1
+
+    assert "dev-lock.txt or config/dev-dependencies.txt" in capsys.readouterr().err
+
+
+def test_maintainer_consumer_dependency_install_skips_missing_manifest(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     python_path = tmp_path / ".venv" / "bin" / "python"
 
-    assert maintainer_bootstrap.install_dependencies(tmp_path, python_path) == 1
-    assert "dev-lock.txt or config/dev-dependencies.txt" in capsys.readouterr().err
+    assert maintainer_bootstrap.install_dependencies(tmp_path, python_path) == 0
+
+    output = capsys.readouterr().out
+    assert "leaving consumer repository dependencies unchanged" in output
+
+
+def test_maintainer_consumer_editable_install_does_not_install_project(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "consumer"\n', encoding="utf-8")
+    python_path = tmp_path / ".venv" / "bin" / "python"
+    calls: list[list[str]] = []
+    monkeypatch.setattr(
+        maintainer_bootstrap.subprocess,
+        "run",
+        lambda command, **_kwargs: (
+            calls.append(command) or subprocess.CompletedProcess(command, 0, "", "")
+        ),
+    )
+
+    assert maintainer_bootstrap.install_editable_package(tmp_path, python_path) == 0
+
+    assert calls == []
 
 
 def test_maintainer_install_pre_commit_success_and_path_fallback(
@@ -185,6 +220,8 @@ def test_maintainer_dependency_install_explains_python_package_scope(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    (tmp_path / "src" / "agent_maintainer").mkdir(parents=True)
+    (tmp_path / "src" / "agent_maintainer" / "__init__.py").write_text("", encoding="utf-8")
     dependency_file = tmp_path / "config" / "dev-lock.txt"
     dependency_file.parent.mkdir()
     dependency_file.write_text("pytest==9.1.1\n", encoding="utf-8")

@@ -57,6 +57,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="Emit machine-readable diagnostic results.",
     )
+    parser.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format. Defaults to text.",
+    )
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository root to inspect. Defaults to current directory.",
+    )
     return parser.parse_args(argv)
 
 
@@ -64,8 +76,10 @@ def main(argv: list[str]) -> int:
     """Run setup diagnostics and emit text or JSON output."""
 
     args = parse_args(argv)
-    results = run_doctor(Path.cwd(), maintainer_config.load_config())
-    if args.json:
+    repo_root = args.root.resolve()
+    config = maintainer_config.load_config(repo_root)
+    results = run_doctor(repo_root, config)
+    if args.json or args.format == "json":
         print(maintainer_doctor_output.json_text(results))
     else:
         print_text(results)

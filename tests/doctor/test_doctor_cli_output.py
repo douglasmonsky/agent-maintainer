@@ -36,7 +36,11 @@ class DoctorRunRecorder:
 def test_main_emits_json_with_state_and_hint(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", MaintainerConfig)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        lambda _repo_root=None: MaintainerConfig(),
+    )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
@@ -64,30 +68,87 @@ def test_main_emits_json_with_state_and_hint(
     ]
 
 
+def test_main_emits_json_with_format_flag(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        lambda _repo_root=None: MaintainerConfig(),
+    )
+    monkeypatch.setattr(
+        maintainer_doctor,
+        "run_doctor",
+        lambda repo_root, config: [
+            maintainer_doctor.DoctorResult("repo-root", maintainer_doctor.OK, "ok")
+        ],
+    )
+
+    assert maintainer_doctor.main(["--format", "json"]) == 0
+
+    assert json.loads(capsys.readouterr().out)[0]["name"] == "repo-root"
+
+
 def test_parse_args_defaults_and_flags() -> None:
     defaults = maintainer_doctor.parse_args([])
-    explicit = maintainer_doctor.parse_args(["--strict", "--json"])
-
+    explicit = maintainer_doctor.parse_args(["--strict", "--json", "--format", "json"])
     assert defaults.strict is False
     assert defaults.json is False
+    assert defaults.format == "text"
     assert explicit.strict is True
     assert explicit.json is True
+    assert explicit.format == "json"
 
 
 def test_parse_args_help_lists_json_and_strict(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as error:
         maintainer_doctor.parse_args(["--help"])
-
     assert error.value.code == 0
     output = capsys.readouterr().out
     assert "--strict" in output
     assert "--json" in output
+    assert "--format" in output
+    assert "--root" in output
+
+
+def test_main_loads_config_from_explicit_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    outside = tmp_path / "outside"
+    repo_root = tmp_path / "repo"
+    outside.mkdir()
+    repo_root.mkdir()
+    monkeypatch.chdir(outside)
+    recorder = DoctorRunRecorder(
+        maintainer_doctor.DoctorResult("repo-root", maintainer_doctor.OK, "ok")
+    )
+    loaded_from: list[Path] = []
+
+    def fake_load_config(repo_root: Path | None = None) -> MaintainerConfig:
+        loaded_from.append(repo_root or Path.cwd())
+        return MaintainerConfig()
+
+    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", fake_load_config)
+    monkeypatch.setattr(maintainer_doctor, "run_doctor", recorder)
+
+    assert maintainer_doctor.main(["--root", str(repo_root)]) == 0
+
+    assert loaded_from == [repo_root]
+    assert Path.cwd() == outside
+    assert recorder.repo_root == repo_root
+    assert "PASS repo-root" in capsys.readouterr().out
 
 
 def test_main_emits_text_with_state_and_hint(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", MaintainerConfig)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        lambda _repo_root=None: MaintainerConfig(),
+    )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
@@ -111,7 +172,11 @@ def test_main_strict_returns_nonzero_for_warning(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", MaintainerConfig)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        lambda _repo_root=None: MaintainerConfig(),
+    )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
@@ -142,7 +207,9 @@ def test_main_uses_cwd_and_config(
         "cwd",
         classmethod(lambda _path_type: tmp_path),
     )
-    monkeypatch.setattr(maintainer_doctor.maintainer_config, "load_config", lambda: config)
+    monkeypatch.setattr(
+        maintainer_doctor.maintainer_config, "load_config", lambda _repo_root=None: config
+    )
     monkeypatch.setattr(maintainer_doctor, "run_doctor", recorder)
 
     assert maintainer_doctor.main([]) == 0
