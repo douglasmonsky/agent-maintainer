@@ -6,6 +6,9 @@ from pathlib import Path
 from types import ModuleType
 from typing import ClassVar
 
+import pytest
+
+from agent_maintainer.wait import codex_rewake as codex_rewake_module
 from agent_maintainer.wait.codex_rewake import (
     CODEX_BIN_ENV,
     CODEX_REWAKE_ENV,
@@ -116,6 +119,39 @@ def test_backend_runs_app_server_and_marks_resumed(tmp_path: Path) -> None:
     assert_private_data_not_persisted(tmp_path, record)
 
 
+def test_backend_app_server_returns_after_turn_acceptance(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Daemon rewake marks resumed after Codex accepts continuation turn."""
+
+    clients: list[CapturingAppServerClient] = []
+
+    def client_factory(**kwargs: object) -> CapturingAppServerClient:
+        client = CapturingAppServerClient(**kwargs)
+        clients.append(client)
+        return client
+
+    monkeypatch.setattr(codex_rewake_module, "CodexAppServerClient", client_factory)
+    registry = WaitRegistry(tmp_path)
+    record = completed_wait(registry, tmp_path)
+
+    result = CodexRewakeBackend(
+        registry,
+        env={
+            CODEX_REWAKE_ENV: "1",
+            CODEX_THREAD_ID_ENV: THREAD_ID,
+            CODEX_BIN_ENV: "codex-test",
+        },
+        importer=fake_importer,
+    ).resume_if_available(record)
+
+    assert_backend_success(result, registry, record)
+    assert len(clients) == 1
+    assert clients[0].return_after_turn_acceptance is True
+    assert clients[0].calls == [(THREAD_ID, continuation_prompt(record))]
+
+
 def test_backend_runs_sdk_and_marks_resumed(tmp_path: Path) -> None:
     """Enabled rewake sends continuation prompt and consumes wait record."""
 
@@ -210,6 +246,19 @@ class FakeAppServerClient:
     """Fake app-server client recording resume prompt calls."""
 
     def __init__(self) -> None:
+        self.calls: list[tuple[str, str]] = []
+
+    def resume_thread(self, thread_id: str, prompt: str) -> None:
+        """Record app-server resume request."""
+
+        self.calls.append((thread_id, prompt))
+
+
+class CapturingAppServerClient:
+    """Fake constructed app-server client recording constructor options."""
+
+    def __init__(self, **kwargs: object) -> None:
+        self.return_after_turn_acceptance = kwargs.get("return_after_turn_acceptance")
         self.calls: list[tuple[str, str]] = []
 
     def resume_thread(self, thread_id: str, prompt: str) -> None:

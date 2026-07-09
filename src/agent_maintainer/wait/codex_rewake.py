@@ -129,6 +129,7 @@ class CodexRewakeBackend:
         client = self._app_server_client or CodexAppServerClient(
             codex_bin=context.codex_bin,
             timeout_seconds=context.timeout_seconds,
+            return_after_turn_acceptance=True,
         )
         client.resume_thread(context.thread_id, prompt)
 

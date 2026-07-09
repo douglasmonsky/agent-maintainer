@@ -54,11 +54,13 @@ class CodexAppServerClient:
         timeout_seconds: float,
         popen_factory: PopenFactory = Popen,
         thread_read_poll_seconds: float = APP_SERVER_THREAD_READ_POLL_SECONDS,
+        return_after_turn_acceptance: bool = False,
     ) -> None:
         self._codex_bin = codex_bin
         self._timeout_seconds = timeout_seconds
         self._popen_factory = popen_factory
         self._thread_read_poll_seconds = thread_read_poll_seconds
+        self._return_after_turn_acceptance = return_after_turn_acceptance
 
     def resume_thread(self, thread_id: str, prompt: str) -> None:
         """Resume thread, start one turn, and wait for completion."""
@@ -135,6 +137,8 @@ class CodexAppServerClient:
             line = _get_app_server_line(lines, timeout=min(remaining, 1.0))
             if line is not None:
                 _consume_app_server_line(line, state)
+                if state.turn_accepted and self._return_after_turn_acceptance:
+                    return
                 if state.completed:
                     return
                 continue
