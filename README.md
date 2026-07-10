@@ -132,6 +132,11 @@ Preview before writing:
 agent-maintainer init --track agent --preset ai-agent-heavy --dry-run
 ```
 
+The preview classifies each destination as add, unchanged, merge, conflict, or
+skip without requiring force. Apply refuses the whole plan while an unresolved
+conflict remains, preserves user-owned `AGENTS.md`, backs up explicit forced
+replacements, and rolls back earlier writes if a later destination fails.
+
 Presets tune policy:
 
 | Preset | Use When |

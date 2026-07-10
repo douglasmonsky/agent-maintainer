@@ -10,6 +10,10 @@ initializer uses the shared managed-hook inventory, including both configured
 PR-wait wrappers. Presets change policy values, not the selected hook lifecycle
 records.
 
+Existing repositories receive the same side-effect-free classified preview and
+transactional apply regardless of preset. A preset never grants permission to
+overwrite a conflict or user-owned guidance.
+
 Use them with any track:
 
 ```bash

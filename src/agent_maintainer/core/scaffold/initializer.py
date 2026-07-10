@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from agent_maintainer.core.scaffold import planning, transaction
 from agent_maintainer.core.scaffold.presets import DEFAULT_PRESET, PRESETS
 from agent_maintainer.core.scaffold.templates import (
     CORE_TRACK,
@@ -49,23 +50,33 @@ def main(argv: list[str]) -> int:
     args = parse_args(argv)
     target = args.target.resolve()
     files = files_for_track(args.track, args.preset)
-    conflicts = [
-        starter.path for starter in files if (target / starter.path).exists() and not args.force
-    ]
-    if conflicts:
-        print("Refusing to overwrite existing files without --force:")
-        for conflict in conflicts:
-            print(f"  {conflict}")
+    plan = planning.build_plan(target, files)
+    print(planning.render_plan(plan))
+    if args.dry_run:
+        print("dry-run: no files written")
+        return 0
+    if planning.has_conflicts(plan) and not args.force:
+        print("Refusing CONFLICT items without --force; no files were written.")
         return 1
-    for starter in files:
-        destination = target / starter.path
-        if args.dry_run:
-            print(f"would write {destination}")
-            continue
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text(starter.content, encoding="utf-8")
-        print(f"wrote {destination}")
+    selected = planning.writable_items(plan, force=args.force)
+    try:
+        result = transaction.apply_transaction(selected, target=target)
+    except transaction.InitTransactionError as exc:
+        print(f"FAIL init: {exc}")
+        return 1
+    _print_result(result)
     return 0
+
+
+def _print_result(result: transaction.InitTransactionResult) -> None:
+    """Print applied destinations and local recovery pointers."""
+
+    for backup in result.backups:
+        print("backed up", backup.original, "->", backup.backup)
+    for path in result.written:
+        print("wrote", path)
+    if result.rollback_manifest is not None:
+        print("rollback manifest:", result.rollback_manifest)
 
 
 def files_for_track(track: str, preset: str = DEFAULT_PRESET) -> tuple[StarterFile, ...]:

@@ -87,9 +87,23 @@ depends_on = [
 [[modules]]
 path = "scaffold.initializer"
 depends_on = [
+  "scaffold.planning",
   "scaffold.presets",
   "scaffold.templates",
+  "scaffold.transaction",
 ]
+
+[[modules]]
+path = "scaffold.planning"
+depends_on = [
+  "//agent_client_hooks.merge",
+  "//agent_client_hooks.templates",
+  "scaffold.templates",
+]
+
+[[modules]]
+path = "scaffold.transaction"
+depends_on = ["scaffold.planning"]
 
 [[modules]]
 path = "layout"

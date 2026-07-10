@@ -17,6 +17,8 @@
   missing, and intentionally unmanaged files.
 - Bootstrap is dependency-only, while explicit hook/pre-commit installation
   has strict argument parsing and side-effect-free preview.
+- Initializer preview classifies additions, unchanged files, supported merges,
+  conflicts, and user-owned skips before transactional apply.
 
 ### Fixed Since 0.1.0b5
 
@@ -26,6 +28,9 @@
 - Claude hook merging preserves unrelated entries and ordering. Changed hook
   files are always backed up in ignored collision-proof transactions, including
   with `--force`, and interrupted multi-file writes roll back.
+- Initializer force no longer overwrites user guidance silently: supported files
+  merge, conflicts are backed up, and interrupted multi-file onboarding rolls
+  back to the pre-run state.
 
 ## 0.1.0b5 - 2026-07-03
 
