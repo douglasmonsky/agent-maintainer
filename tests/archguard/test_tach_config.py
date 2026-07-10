@@ -238,6 +238,70 @@ modules = "not-a-list"
     ]
 
 
+def test_tach_domain_root_owns_descendant_source_modules(tmp_path: Path) -> None:
+    """Treat a domain root as explicit ownership of its package descendants."""
+    package_path = tmp_path / "src" / "package"
+    package_path.mkdir(parents=True)
+    (package_path / "__init__.py").write_text("", encoding="utf-8")
+    (package_path / "service.py").write_text("", encoding="utf-8")
+    (package_path / "nested").mkdir()
+    (package_path / "nested" / "worker.py").write_text("", encoding="utf-8")
+    (tmp_path / "src" / "unowned.py").write_text("", encoding="utf-8")
+    (tmp_path / "tach.toml").write_text(
+        """
+source_roots = ["src"]
+root_module = "ignore"
+
+[[modules]]
+path = "unowned"
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+    (package_path / "tach.domain.toml").write_text(
+        """
+[root]
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=False)
+
+    assert issues == []
+
+
+def test_tach_domain_root_does_not_own_sibling_modules(tmp_path: Path) -> None:
+    """Continue reporting source modules outside every explicit domain root."""
+    package_path = tmp_path / "src" / "package"
+    package_path.mkdir(parents=True)
+    (package_path / "service.py").write_text("", encoding="utf-8")
+    (tmp_path / "src" / "entrypoint.py").write_text("", encoding="utf-8")
+    (tmp_path / "src" / "unowned.py").write_text("", encoding="utf-8")
+    (tmp_path / "tach.toml").write_text(
+        """
+source_roots = ["src"]
+root_module = "ignore"
+
+[[modules]]
+path = "entrypoint"
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+    (package_path / "tach.domain.toml").write_text(
+        """
+[root]
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=False)
+
+    assert issues == ["tach.toml must explicitly list source modules: unowned"]
+
+
 def test_tach_config_issues_validates_domain_module_contracts(
     tmp_path: Path,
 ) -> None:
