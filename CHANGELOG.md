@@ -43,6 +43,10 @@
 - Unknown, mistyped, out-of-range, contradictory, path-escaping, and
   type-confused configuration now fails with source-aware diagnostics before a
   known root command can run behavior.
+- Detached verifier and wait-watcher processes now own all standard streams,
+  close inherited descriptors, persist explicit launch/running/terminal state,
+  and distinguish quality failures from spawn errors and cancellation after the
+  launching terminal closes.
 
 ## 0.1.0b5 - 2026-07-03
 

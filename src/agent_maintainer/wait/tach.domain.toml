@@ -158,6 +158,15 @@ depends_on = [
 [[modules]]
 path = "verifier"
 depends_on = [
+  "verifier_rendering",
+  "verifier_manifest",
+  "//agent_maintainer.verify.async_state",
+  "//agent_waits.models",
+]
+
+[[modules]]
+path = "verifier_rendering"
+depends_on = [
   "verifier_manifest",
   "//agent_waits.models",
 ]

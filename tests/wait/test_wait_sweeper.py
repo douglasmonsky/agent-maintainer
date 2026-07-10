@@ -2,21 +2,26 @@
 
 from __future__ import annotations
 
+import subprocess
+import time
 from datetime import datetime
 from pathlib import Path
 
 import pytest
 
+from agent_maintainer.verify import async_state
 from agent_maintainer.wait.github_pr import (
     GitHubPrCheck,
     GitHubPrChecksState,
     GitHubPrWaitConfig,
 )
 from agent_maintainer.wait.registry import (
+    RESULT_CANCELLED,
     RESULT_TIMEOUT,
     WAIT_STATUS_PENDING,
     WAIT_STATUS_READY,
     RegisterGitHubPrWait,
+    RegisterVerifierWait,
     WaitRecord,
     WaitRegistry,
 )
@@ -25,6 +30,7 @@ from agent_maintainer.wait.sweeper import (
     start_wait_watcher,
     sweep_once,
     sweep_ready_notifications,
+    sweep_record,
     watch_wait,
 )
 from agent_maintainer.wait.sweeper_rendering import render_sweep_json, render_sweep_text
@@ -34,6 +40,8 @@ LATER = datetime.fromisoformat("2026-07-06T22:01:00+00:00")
 EXPIRED = datetime.fromisoformat("2026-07-06T23:01:00+00:00")
 SWEEP_INTERVAL_SECONDS = 1
 SWEEP_TIMEOUT_SECONDS = 3600
+CANCELLED_PROCESS_STATUS = 143
+FAKE_PROCESS_ID = 123
 
 
 def test_sweep_once_completes_terminal_pr_wait(tmp_path: Path) -> None:
@@ -129,6 +137,25 @@ def test_watch_wait_returns_after_terminal_poll(tmp_path: Path) -> None:
     assert sleeps == [record.interval_seconds]
 
 
+def test_sweep_persists_cancelled_verifier_terminal_state(tmp_path: Path) -> None:
+    """Cancelled children complete their wait record without timing out."""
+
+    log_dir = tmp_path / ".verify-logs"
+    registry = WaitRegistry(tmp_path)
+    record = registry.register_verifier(
+        RegisterVerifierWait(root=tmp_path, run_id="cancelled", log_dir=log_dir, now=NOW),
+    )
+    write_cancelled_job(log_dir)
+
+    completed = sweep_record(registry, record, now=LATER)
+
+    assert completed.status == WAIT_STATUS_READY
+    assert completed.terminal_result == RESULT_CANCELLED
+    assert "Result: CANCELLED" in completed.resume_message
+    assert completed.last_observed_state is not None
+    assert completed.last_observed_state["cancelled"] is True
+
+
 def test_start_wait_watcher_uses_quiet_command(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -143,6 +170,10 @@ def test_start_wait_watcher_uses_quiet_command(
     assert watcher.command[:4] == ("python", "-m", "agent_maintainer", "wait")
     assert "--watch" in watcher.command
     assert popen_spy.calls[0]["cwd"] == tmp_path
+    assert popen_spy.calls[0]["stdin"] == subprocess.DEVNULL
+    assert popen_spy.calls[0]["stdout"] == subprocess.DEVNULL
+    assert popen_spy.calls[0]["stderr"] == subprocess.DEVNULL
+    assert popen_spy.calls[0]["close_fds"] is True
     assert popen_spy.calls[0]["start_new_session"] is True
 
 
@@ -186,6 +217,30 @@ def register_wait(registry: WaitRegistry, root: Path) -> WaitRecord:
             interval_seconds=SWEEP_INTERVAL_SECONDS,
             timeout_seconds=SWEEP_TIMEOUT_SECONDS,
             now=NOW,
+        ),
+    )
+
+
+def write_cancelled_job(log_dir: Path) -> None:
+    """Write one signal-cancelled verifier job state."""
+
+    now = time.time()
+    jobs_dir = log_dir / "jobs"
+    async_state.write_async_state(
+        jobs_dir / "cancelled.json",
+        async_state.AsyncVerifierState(
+            run_id="cancelled",
+            profile="full",
+            status=async_state.JOB_STATUS_CANCELLED,
+            process_id=FAKE_PROCESS_ID,
+            command=("python", "-m", "agent_maintainer.verify.async_child"),
+            fingerprint={},
+            stdout_path=str(jobs_dir / "cancelled.stdout.log"),
+            stderr_path=str(jobs_dir / "cancelled.stderr.log"),
+            started_at=now,
+            updated_at=now,
+            exit_code=CANCELLED_PROCESS_STATUS,
+            error="received signal SIGTERM",
         ),
     )
 

@@ -35,7 +35,19 @@ depends_on = [
 [[modules]]
 path = "async_jobs"
 depends_on = [
+  "async_state",
   "//agent_waits.models",
+]
+
+[[modules]]
+path = "async_state"
+depends_on = []
+
+[[modules]]
+path = "async_child"
+depends_on = [
+  "async_state",
+  "quiet",
 ]
 
 [[modules]]

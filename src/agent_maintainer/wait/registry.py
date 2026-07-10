@@ -35,6 +35,7 @@ RESULT_FAIL = wait_constants.RESULT_FAIL
 RESULT_PASS = wait_constants.RESULT_PASS
 RESULT_PENDING = wait_constants.RESULT_PENDING
 RESULT_TIMEOUT = wait_constants.RESULT_TIMEOUT
+RESULT_CANCELLED: Final = "CANCELLED"
 RESULT_UNKNOWN: Final = "UNKNOWN"
 SCHEMA_VERSION: Final = 1
 WAIT_STATUS_PENDING = wait_constants.WAIT_STATUS_PENDING
@@ -203,7 +204,7 @@ class WaitRegistry(BaseWaitRegistry):
             record,
             terminal_result=_verifier_terminal_result(result),
             resume_message=render_verifier_wait_text(result),
-            state_data=_verifier_state_data(result.manifest),
+            state_data=_verifier_state_data(result),
             now=now,
         )
 
@@ -241,7 +242,8 @@ def observe_verifier(
 ) -> WaitRecord:
     """Persist last observed non-terminal verifier state."""
 
-    return registry.observe(record, _verifier_state_data(manifest), now=now)
+    result = VerifierWaitResult(run_id=record.target_id, manifest=manifest)
+    return registry.observe(record, _verifier_state_data(result), now=now)
 
 
 def _github_pr_terminal_result(result: GitHubPrWaitResult) -> str:
@@ -269,13 +271,21 @@ def _github_run_terminal_result(result: GitHubWaitResult) -> str:
 
 
 def _verifier_terminal_result(result: VerifierWaitResult) -> str:
-    if result.error:
-        return RESULT_ERROR
-    if result.timed_out:
-        return RESULT_TIMEOUT
-    if result.manifest is None:
+    if result.cancelled:
+        terminal_result = RESULT_CANCELLED
+    elif result.error:
+        terminal_result = RESULT_ERROR
+    elif result.timed_out:
+        terminal_result = RESULT_TIMEOUT
+    else:
+        terminal_result = _verifier_manifest_result(result.manifest)
+    return terminal_result
+
+
+def _verifier_manifest_result(manifest: VerifierManifest | None) -> str:
+    if manifest is None:
         return RESULT_UNKNOWN
-    if result.manifest.succeeded:
+    if manifest.succeeded:
         return RESULT_PASS
     return RESULT_FAIL
 
@@ -304,9 +314,15 @@ def _github_run_state_data(state: GitHubRunState | None) -> dict[str, object] | 
     }
 
 
-def _verifier_state_data(manifest: VerifierManifest | None) -> dict[str, object] | None:
+def _verifier_state_data(result: VerifierWaitResult) -> dict[str, object] | None:
+    manifest = result.manifest
     if manifest is None:
-        return {"manifest_found": False}
+        return {
+            "manifest_found": False,
+            "cancelled": result.cancelled,
+            "error": result.error,
+            "process_exit_code": result.process_exit_code,
+        }
     return {
         "manifest_found": True,
         "run_id": manifest.run_id,

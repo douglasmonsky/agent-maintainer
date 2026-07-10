@@ -54,8 +54,11 @@ def test_start_wait_watcher_uses_quiet_sweep_command(
     assert started is True
     assert error == ""
     assert popen_spy.calls[0]["cwd"] == tmp_path
+    assert popen_spy.calls[0]["stdin"] == background_wait.subprocess.DEVNULL
     assert popen_spy.calls[0]["stdout"] == background_wait.subprocess.DEVNULL
     assert popen_spy.calls[0]["stderr"] == background_wait.subprocess.DEVNULL
+    assert popen_spy.calls[0]["close_fds"] is True
+    assert popen_spy.calls[0]["start_new_session"] is True
     command = cast("list[str]", popen_spy.calls[0]["command"])
     assert "--watch" in command
 
