@@ -81,7 +81,10 @@ Its `release-evidence` job reruns full, CI, security, manual, and release checks
 from one clean checkout, embeds all five manifests in an exact-commit aggregate,
 and gives the aggregate a maximum 24-hour lifetime. Every downstream build,
 attachment, TestPyPI, and PyPI job validates that aggregate against its own
-clean checkout before acting.
+clean checkout before acting. Every remote workflow action is pinned to a full
+commit SHA with updater metadata, and strict workflow validation covers verify,
+deep-verify, and publish. Superseded validation runs may cancel, while deep
+verification and publishing runs are non-canceling.
 
 ## Publishing
 
@@ -91,6 +94,8 @@ clean checkout before acting.
   security, manual, and release manifests for the workflow SHA.
 - [ ] Confirm the build job and selected publish job both report
   `release evidence valid` before building or publishing.
+- [ ] Confirm Actionlint, workflow schema validation, and strict Zizmor pass for
+  `verify.yml`, `deep-verify.yml`, and `publish.yml`.
 - [ ] Install from TestPyPI in a clean environment.
 - [ ] Run `agent-maintainer --help`.
 - [ ] Run `archguard --help`.

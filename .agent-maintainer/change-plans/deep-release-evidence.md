@@ -1,7 +1,7 @@
 +++
 id = "deep-release-evidence"
 kind = "release-hardening"
-status = "active"
+status = "complete"
 base_ref = "7733599"
 expires = 2026-08-31
 allowed_paths = [

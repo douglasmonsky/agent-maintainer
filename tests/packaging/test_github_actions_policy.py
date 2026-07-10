@@ -2,10 +2,26 @@
 
 from __future__ import annotations
 
+import re
+import tomllib
+
 from tests.support.paths import REPO_ROOT
 
 DEEP_VERIFY_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "deep-verify.yml"
 VERIFY_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "verify.yml"
+PUBLISH_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "publish.yml"
+WORKFLOWS = (VERIFY_WORKFLOW, DEEP_VERIFY_WORKFLOW, PUBLISH_WORKFLOW)
+FULL_SHA = re.compile(r"[0-9a-f]{40}\Z")
+ACTION_PINS = {
+    "actions/checkout": ("9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", "v7"),
+    "actions/download-artifact": ("3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c", "v8"),
+    "actions/setup-python": ("ece7cb06caefa5fff74198d8649806c4678c61a1", "v6.3.0"),
+    "actions/upload-artifact": ("043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", "v7"),
+    "pypa/gh-action-pypi-publish": (
+        "cef221092ed1bacb1cc03d23a2d87d1d172e277b",
+        "release/v1",
+    ),
+}
 
 
 def test_verify_workflow_declares_read_only_contents_permission() -> None:
@@ -69,7 +85,7 @@ def test_deep_verify_workflow_installs_required_external_tools() -> None:
     assert "python -m pip install -e ." in workflow
 
 
-def test_dependabot_updates_tag_pinned_github_actions() -> None:
+def test_dependabot_updates_hash_pinned_github_actions() -> None:
     dependabot = (REPO_ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
 
     assert 'package-ecosystem: "github-actions"' in dependabot
@@ -78,8 +94,56 @@ def test_dependabot_updates_tag_pinned_github_actions() -> None:
     assert "default-days: 7" in dependabot
 
 
-def test_zizmor_config_matches_tag_pinning_policy() -> None:
+def test_every_workflow_action_is_hash_pinned_with_update_comment() -> None:
+    """Every remote action has immutable code identity and updater metadata."""
+
+    for workflow in WORKFLOWS:
+        uses_lines = [
+            line.strip()
+            for line in workflow.read_text(encoding="utf-8").splitlines()
+            if line.strip().startswith("uses:")
+        ]
+        assert uses_lines
+        for line in uses_lines:
+            target, separator, comment = line.removeprefix("uses:").partition(" # ")
+            action, at, reference = target.strip().rpartition("@")
+            assert at == "@", line
+            assert FULL_SHA.fullmatch(reference), line
+            assert separator == " # ", line
+            assert (reference, comment.strip()) == ACTION_PINS[action], line
+
+
+def test_zizmor_config_requires_hash_pinning_for_every_namespace() -> None:
     config = (REPO_ROOT / "zizmor.yml").read_text(encoding="utf-8")
 
     assert "unpinned-uses:" in config
-    assert "actions/*: ref-pin" in config
+    assert '"*": hash-pin' in config
+    assert "ref-pin" not in config
+
+
+def test_every_workflow_is_schema_validated() -> None:
+    """The configured schema gate cannot omit the scheduled deep workflow."""
+
+    pyproject = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    args = pyproject["tool"]["agent_maintainer"]["check_jsonschema_args"]
+    justfile = (REPO_ROOT / "justfile").read_text(encoding="utf-8")
+
+    for workflow in WORKFLOWS:
+        relative = workflow.relative_to(REPO_ROOT).as_posix()
+        assert relative in args
+        assert relative in justfile
+
+
+def test_workflow_concurrency_cancels_only_replaceable_validation() -> None:
+    """Release and deep evidence runs finish; superseded PR CI may cancel."""
+
+    verify = VERIFY_WORKFLOW.read_text(encoding="utf-8")
+    deep = DEEP_VERIFY_WORKFLOW.read_text(encoding="utf-8")
+    publish = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+
+    assert "group: verify-${{ github.workflow }}-${{ github.ref }}" in verify
+    assert "cancel-in-progress: true" in verify
+    assert "group: deep-verify-${{ github.workflow }}-${{ github.ref }}" in deep
+    assert "cancel-in-progress: false" in deep
+    assert "group: publish-${{ github.workflow }}-${{ github.ref }}" in publish
+    assert "cancel-in-progress: false" in publish

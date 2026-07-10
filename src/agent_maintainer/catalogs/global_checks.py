@@ -142,7 +142,15 @@ def workflow_checks() -> list[models.Check]:
         ),
         models.Check(
             "zizmor",
-            ["zizmor", "--offline", "--no-progress", ".github/workflows", ".github/dependabot.yml"],
+            [
+                "zizmor",
+                "--offline",
+                "--no-progress",
+                "--strict-collection",
+                "--persona=pedantic",
+                ".github/workflows",
+                ".github/dependabot.yml",
+            ],
             models.FULL_PROFILES,
             required_executable="zizmor",
             optional_skip_reason=skip_reason,

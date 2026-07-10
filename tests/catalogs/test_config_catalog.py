@@ -124,6 +124,8 @@ def test_workflow_checks_are_configured_for_github_actions() -> None:
         "zizmor",
         "--offline",
         "--no-progress",
+        "--strict-collection",
+        "--persona=pedantic",
         ".github/workflows",
         ".github/dependabot.yml",
     ]
