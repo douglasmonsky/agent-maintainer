@@ -211,6 +211,7 @@ def test_python_tool_commands_and_artifacts_are_characterized() -> None:
         "check",
         "--base",
         "HEAD",
+        "--write-reports",
     ]
     assert checks["docsync"].artifact_paths == (".docsync/out/report.json",)
 

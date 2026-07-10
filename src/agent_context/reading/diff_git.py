@@ -43,21 +43,21 @@ class FileChange:
 def changed_paths(request: DiffRequest) -> tuple[str, ...]:
     """Return changed paths."""
 
-    output = run_git(diff_args(request, "--name-only"))
+    output = run_git([*diff_args(request, "--name-only"), "--"])
     return tuple(line for line in output.splitlines() if line)
 
 
 def file_changes(request: DiffRequest) -> tuple[FileChange, ...]:
     """Return changed line counts by file."""
 
-    output = run_git(diff_args(request, "--numstat"))
+    output = run_git([*diff_args(request, "--numstat"), "--"])
     return tuple(parse_numstat_line(line) for line in output.splitlines() if line)
 
 
 def name_status_lines(request: DiffRequest) -> tuple[str, ...]:
     """Return Git name-status output lines."""
 
-    return tuple(run_git(diff_args(request, "--name-status")).splitlines())
+    return tuple(run_git([*diff_args(request, "--name-status"), "--"]).splitlines())
 
 
 def parse_numstat_line(line: str) -> FileChange:
@@ -77,21 +77,34 @@ def git_diff(request: DiffRequest, *, path: str | None = None) -> str:
     """Return git patch output."""
 
     args = diff_args(request, f"--unified={DEFAULT_DIFF_CONTEXT_LINES}")
+    args.append("--")
     if path:
-        args.extend(("--", path))
+        args.append(path)
     return run_git(args)
 
 
 def diff_args(request: DiffRequest, mode: str) -> list[str]:
     """Return Git diff command arguments."""
 
-    args = ["git", "-C", str(request.repo), "diff"]
+    args = ["git", "-C", str(request.repo), "diff", mode]
     if request.staged:
         args.append("--cached")
     else:
-        args.append(request.base_ref)
-    args.append(mode)
+        args.append(validated_git_revision(request.base_ref))
     return args
+
+
+def validated_git_revision(value: str) -> str:
+    """Reject revision text that Git could interpret as an option."""
+
+    if (
+        not value
+        or value.strip() != value
+        or value.startswith("-")
+        or any(character.isspace() or not character.isprintable() for character in value)
+    ):
+        raise ValueError("base ref must be a non-option Git revision without whitespace")
+    return value
 
 
 def run_git(args: list[str]) -> str:

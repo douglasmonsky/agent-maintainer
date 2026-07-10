@@ -6,6 +6,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from docsync.config.io import read_bounded_text
+from docsync.config.paths import resolve_input_within
 from docsync.core.fingerprints import sha256_text
 from docsync.core.models import DocObject, Finding, LineSpan
 from docsync.markdown.object_regions import collect_markers, explicit_object_regions
@@ -56,11 +58,16 @@ def parse_markdown_file(
     require_object_end_markers: bool = False,
 ) -> MarkdownParseResult:
     """Parse one Markdown file for hidden DocSync object markers."""
-    full_path = repo_root / path
+    full_path = resolve_input_within(
+        repo_root,
+        path,
+        label="DocSync Markdown input",
+        allow_missing=True,
+    )
     if not full_path.exists():
         return MarkdownParseResult(objects={}, findings=())
 
-    lines = full_path.read_text(encoding="utf-8").splitlines()
+    lines = read_bounded_text(full_path, label="DocSync Markdown input").splitlines()
     end_marker = object_end_marker or f"{object_marker}.end"
     opening_markers = collect_markers(lines, object_marker)
     end_markers = collect_markers(lines, end_marker)

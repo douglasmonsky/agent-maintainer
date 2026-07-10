@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -26,6 +27,11 @@ def test_attention_update_top_explain_and_changed(tmp_path: Path, capsys) -> Non
     output = capsys.readouterr().out
     assert "Attention Ledger" in output
     assert "src/app.py" in output
+
+    assert cli.main(["--target", str(tmp_path), "top", "--limit", "1", "--format", "json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["returned_file_count"] == 1
+    assert len(payload["files"]) == 1
 
     assert cli.main(["--target", str(tmp_path), "explain", "src/app.py"]) == 0
     output = capsys.readouterr().out

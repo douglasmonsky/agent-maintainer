@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 from agent_repair_facts.payloads import (
+    FactSource,
     fact_payload,
     python_location_from_text,
 )
@@ -39,7 +39,7 @@ MESSAGE_FIELD = "message"
 SYMBOL_FIELD = "symbol"
 
 
-def file_length_facts(path: Path, check: str) -> list[dict[str, object]]:
+def file_length_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from file-length log output."""
 
     return [
@@ -55,7 +55,7 @@ def file_length_facts(path: Path, check: str) -> list[dict[str, object]]:
     ]
 
 
-def change_budget_facts(path: Path, check: str) -> list[dict[str, object]]:
+def change_budget_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from change-budget log output."""
 
     return [
@@ -79,7 +79,7 @@ def change_budget_fact(check: str, message: str) -> dict[str, object]:
     )
 
 
-def architecture_decision_facts(path: Path, check: str) -> list[dict[str, object]]:
+def architecture_decision_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from architecture decision-note log output."""
 
     return [
@@ -95,7 +95,7 @@ def architecture_decision_facts(path: Path, check: str) -> list[dict[str, object
     ]
 
 
-def ruff_format_facts(path: Path, check: str) -> list[dict[str, object]]:
+def ruff_format_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from ruff format check output."""
 
     return [
@@ -111,7 +111,7 @@ def ruff_format_facts(path: Path, check: str) -> list[dict[str, object]]:
     ]
 
 
-def pylint_facts(path: Path, check: str) -> list[dict[str, object]]:
+def pylint_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from Pylint text output."""
 
     return [
@@ -129,7 +129,7 @@ def pylint_facts(path: Path, check: str) -> list[dict[str, object]]:
     ]
 
 
-def vulture_facts(path: Path, check: str) -> list[dict[str, object]]:
+def vulture_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from Vulture text output."""
 
     return [
@@ -146,7 +146,7 @@ def vulture_facts(path: Path, check: str) -> list[dict[str, object]]:
     ]
 
 
-def wemake_facts(path: Path, check: str) -> list[dict[str, object]]:
+def wemake_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from wemake flake8 log output."""
 
     return [
@@ -164,7 +164,7 @@ def wemake_facts(path: Path, check: str) -> list[dict[str, object]]:
     ]
 
 
-def xenon_complexity_facts(path: Path, check: str) -> list[dict[str, object]]:
+def xenon_complexity_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from xenon complexity gate output."""
 
     return [
@@ -197,7 +197,7 @@ def log_fact(check: str, values: dict[str, object]) -> dict[str, object]:
     return fact_payload(payload)
 
 
-def log_matches(path: Path, pattern: re.Pattern[str]) -> list[re.Match[str]]:
+def log_matches(path: FactSource, pattern: re.Pattern[str]) -> list[re.Match[str]]:
     """Return regex matches for stripped log lines."""
 
     try:

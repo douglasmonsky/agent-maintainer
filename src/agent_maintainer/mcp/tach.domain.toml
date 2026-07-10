@@ -5,17 +5,36 @@
 depends_on = []
 
 [[modules]]
+path = "execution"
+depends_on = [
+  "models",
+  "path_safety",
+  "process",
+]
+
+[[modules]]
 path = "models"
+depends_on = []
+
+[[modules]]
+path = "path_safety"
+depends_on = ["//agent_context.reading.file_safety"]
+
+[[modules]]
+path = "process"
 depends_on = []
 
 [[modules]]
 path = "tools"
 depends_on = [
+  "execution",
   "models",
+  "path_safety",
 ]
 
 [[modules]]
 path = "server"
 depends_on = [
+  "path_safety",
   "tools",
 ]

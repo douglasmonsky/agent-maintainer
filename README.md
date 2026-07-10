@@ -211,6 +211,10 @@ context.
 | Mutation testing | Mutmut target ratchet, result ratchets, advisory deep sweep executor. |
 | Agent repair loop | `.verify-logs`, context commands, repair plans, PR summaries, static HTML reports. |
 
+The verifier invokes DocSync with `--write-reports` so JSON/SARIF repair
+artifacts are an explicit integration output. A standalone `docsync check`
+remains read-only.
+
 Read more:
 [optional gates](docs/optional-gates.md),
 [supported scans and agent use](docs/supported-scans-and-agent-use.md),

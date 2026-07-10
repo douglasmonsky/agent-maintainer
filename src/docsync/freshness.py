@@ -10,12 +10,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
+from docsync.config.defaults import DEFAULT_FRESHNESS_FILENAME
+from docsync.config.io import write_text_file
 from docsync.core.models import DocObject, DocSyncIndex, EvidenceAnchor
 
 FreshnessStatus = Literal["current", "missing"]
 
 FRESHNESS_VERSION = 1
-DEFAULT_FRESHNESS_FILENAME = "freshness.json"
 GIT_TIMEOUT_SECONDS = 5
 
 
@@ -116,9 +117,10 @@ def build_freshness_report(
 def write_freshness_report(report: FreshnessReport, output_path: Path) -> None:
     """Write freshness report JSON to generated output path."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
+    write_text_file(
+        output_path,
         f"{json.dumps(report.to_json(), indent=2, sort_keys=True)}\n",
-        encoding="utf-8",
+        label="DocSync freshness output",
     )
 
 

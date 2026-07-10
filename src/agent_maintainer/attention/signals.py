@@ -2,18 +2,13 @@
 
 from __future__ import annotations
 
-import json
 import os
-import subprocess  # nosec B404
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any
 
-from agent_maintainer.attention.signal_context import (
-    DEFAULT_ARTIFACT_READ_LIMIT_BYTES,
-    AttentionSignalContext,
-)
+from agent_maintainer.attention import git_output, signal_artifacts, signal_context
 from agent_maintainer.runtime_events.read import read_runtime_events
 
 IGNORED_PARTS = frozenset(
@@ -51,6 +46,8 @@ PATH_KEYS = frozenset(
 
 DEFAULT_PATH_SCORE = 0.15
 HIGH_PRIORITY_PATH_SCORE = 0.75
+DEFAULT_SIGNAL_ARTIFACT_FILE_LIMIT = signal_artifacts.DEFAULT_SIGNAL_ARTIFACT_FILE_LIMIT
+DEFAULT_TRACKED_DISCOVERY_LIMIT = git_output.DEFAULT_GIT_OUTPUT_LINES
 
 
 def tracked_files(repo_root: Path) -> tuple[str, ...]:
@@ -58,26 +55,34 @@ def tracked_files(repo_root: Path) -> tuple[str, ...]:
     git_files = _git_lines(repo_root, ("ls-files",))
     if git_files:
         untracked = _git_lines(repo_root, ("ls-files", "--others", "--exclude-standard"))
-        return tuple(
-            sorted({path for path in (*git_files, *untracked) if _is_attention_path(path)})
+        return _bounded_sorted_paths(
+            path for path in (*git_files, *untracked) if _is_attention_path(path)
         )
+    return _walked_files(repo_root)
+
+
+def _walked_files(repo_root: Path) -> tuple[str, ...]:
+    """Return a deterministic bounded fallback file walk."""
+
     paths: list[str] = []
     for current, dirs, files in os.walk(repo_root):
-        allowed_dirs = [name for name in dirs if name not in IGNORED_PARTS]
+        allowed_dirs = sorted(name for name in dirs if name not in IGNORED_PARTS)
         dirs.clear()
         dirs.extend(allowed_dirs)
         current_path = Path(current)
-        for filename in files:
+        for filename in sorted(files):
             path = current_path / filename
             relative = path.relative_to(repo_root).as_posix()
             if _is_attention_path(relative):
                 paths.append(relative)
-    return tuple(sorted(paths))
+                if len(paths) >= DEFAULT_TRACKED_DISCOVERY_LIMIT:
+                    return tuple(paths)
+    return tuple(paths)
 
 
 def _tracked_paths(
     repo_root: Path,
-    context: AttentionSignalContext | None,
+    context: signal_context.AttentionSignalContext | None,
 ) -> tuple[str, ...]:
     """Return tracked paths from shared context or fallback collection."""
 
@@ -88,7 +93,7 @@ def _tracked_paths(
 
 def _known_paths(
     repo_root: Path,
-    context: AttentionSignalContext | None,
+    context: signal_context.AttentionSignalContext | None,
 ) -> set[str]:
     """Return tracked paths as a set."""
 
@@ -124,10 +129,14 @@ def runtime_event_counts(
     repo_root: Path,
     *,
     events_dir: Path,
-    context: AttentionSignalContext | None = None,
+    context: signal_context.AttentionSignalContext | None = None,
 ) -> Counter[str]:
     """Return file mentions from runtime event artifacts."""
-    result = read_runtime_events(events_dir)
+    result = read_runtime_events(
+        events_dir,
+        workspace_root=repo_root,
+        max_file_bytes=signal_artifacts.artifact_limit(context),
+    )
     known = _known_paths(repo_root, context)
     counts: Counter[str] = Counter()
     for record in result.records:
@@ -140,16 +149,17 @@ def verifier_artifact_counts(
     repo_root: Path,
     *,
     log_dir: Path,
-    context: AttentionSignalContext | None = None,
+    context: signal_context.AttentionSignalContext | None = None,
 ) -> Counter[str]:
     """Return file mentions from verifier manifests."""
     known = _known_paths(repo_root, context)
     counts: Counter[str] = Counter()
-    runs_dir = log_dir / "runs"
-    if not runs_dir.exists():
-        return counts
-    for manifest_path in sorted(runs_dir.glob("*/manifest.json")):
-        payload = _read_json(manifest_path, context=context)
+    for manifest_path in signal_artifacts.manifest_paths(repo_root, log_dir=log_dir):
+        payload = signal_artifacts.read_json(
+            manifest_path,
+            repo_root=repo_root,
+            context=context,
+        )
         if payload is None:
             continue
         for path in _payload_paths(payload, repo_root=repo_root, known_paths=known):
@@ -160,7 +170,7 @@ def verifier_artifact_counts(
 def docsync_counts(
     repo_root: Path,
     *,
-    context: AttentionSignalContext | None = None,
+    context: signal_context.AttentionSignalContext | None = None,
 ) -> Counter[str]:
     """Return file mentions from DocSync trace and report artifacts."""
     paths = _tracked_paths(repo_root, context)
@@ -169,11 +179,12 @@ def docsync_counts(
         repo_root / ".docsync" / "trace.yml",
         repo_root / ".docsync" / "out" / "report.json",
     ):
-        if not artifact.exists():
-            continue
-        try:
-            text = _read_text(artifact, context=context)
-        except OSError:
+        text = signal_artifacts.read_text(
+            artifact,
+            repo_root=repo_root,
+            context=context,
+        )
+        if text is None:
             continue
         for path in paths:
             if path in text:
@@ -185,7 +196,7 @@ def file_baseline_counts(
     repo_root: Path,
     *,
     log_dir: Path,
-    context: AttentionSignalContext | None = None,
+    context: signal_context.AttentionSignalContext | None = None,
 ) -> Counter[str]:
     """Return file mentions from file-baseline artifacts when present."""
     known = _known_paths(repo_root, context)
@@ -195,7 +206,11 @@ def file_baseline_counts(
         log_dir / "file-baseline.json",
         log_dir / "file-baselines" / "report.json",
     ):
-        payload = _read_json(artifact, context=context)
+        payload = signal_artifacts.read_json(
+            artifact,
+            repo_root=repo_root,
+            context=context,
+        )
         if payload is None:
             continue
         for path in _payload_paths(payload, repo_root=repo_root, known_paths=known):
@@ -223,20 +238,14 @@ def path_heuristic_score(path: str) -> float:
 
 def _git_lines(repo_root: Path, args: tuple[str, ...]) -> tuple[str, ...]:
     """Run git and return non-empty stdout lines."""
-    try:
-        result = subprocess.run(  # nosec B603 - fixed git executable with bounded args.
-            ("git", *args),
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return ()
-    if result.returncode != 0:
-        return ()
-    return tuple(line.strip() for line in result.stdout.splitlines() if line.strip())
+
+    return git_output.git_lines(repo_root, args).lines
+
+
+def _bounded_sorted_paths(paths: Iterable[str]) -> tuple[str, ...]:
+    """Return at most the configured deterministic discovery limit."""
+
+    return tuple(sorted(set(paths))[:DEFAULT_TRACKED_DISCOVERY_LIMIT])
 
 
 def _increment(counts: Counter[str], path: str, *, count: int = 1) -> None:
@@ -324,36 +333,3 @@ def _relative_text(value: str, *, repo_root: Path) -> str:
         return path.relative_to(repo_root).as_posix()
     except ValueError:
         return value
-
-
-def _read_text(
-    path: Path,
-    *,
-    context: AttentionSignalContext | None,
-) -> str:
-    """Read bounded text artifact."""
-
-    limit = DEFAULT_ARTIFACT_READ_LIMIT_BYTES
-    if context:
-        limit = context.artifact_read_limit_bytes
-    with path.open("rb") as handle:
-        data = handle.read(limit + 1)
-    if len(data) > limit:
-        if context:
-            context.performance_notes.append(f"artifact read capped {path.name} at {limit} bytes")
-        data = data[:limit]
-    return data.decode("utf-8", errors="replace")
-
-
-def _read_json(
-    path: Path,
-    *,
-    context: AttentionSignalContext | None = None,
-) -> object | None:
-    """Read JSON artifact if present and valid."""
-    if not path.exists():
-        return None
-    try:
-        return json.loads(_read_text(path, context=context))
-    except (OSError, json.JSONDecodeError):
-        return None

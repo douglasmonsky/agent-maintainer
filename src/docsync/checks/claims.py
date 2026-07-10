@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from docsync.attestations.load import AttestationSet
 from docsync.core.fingerprints import sha256_text
-from docsync.core.models import DocSyncIndex, Finding, LineSpan
+from docsync.core.models import Claim, DocSyncIndex, Finding, LineSpan
 
 
 def changed_claim_findings(
@@ -73,13 +73,31 @@ def _changed_claims(
 ) -> set[str]:
     changed: set[str] = set()
     for claim in index.trace.claims.values():
-        if claim.trace_span is not None and _any_overlap(claim.trace_span, changed_spans):
-            changed.add(claim.claim_id)
-            continue
-        claim_span = index.claim_spans.get(claim.claim_id)
-        if claim_span is not None and _any_overlap(claim_span, changed_spans):
+        if _claim_changed(index, claim, changed_spans):
             changed.add(claim.claim_id)
     return changed
+
+
+def _claim_changed(
+    index: DocSyncIndex,
+    claim: Claim,
+    changed_spans: tuple[LineSpan, ...],
+) -> bool:
+    if _optional_span_changed(claim.trace_span, changed_spans):
+        return True
+    if _optional_span_changed(index.claim_spans.get(claim.claim_id), changed_spans):
+        return True
+    if claim.marker is not None:
+        return False
+    doc_object = index.doc_objects.get(claim.object_id)
+    return doc_object is not None and _any_overlap(doc_object.span, changed_spans)
+
+
+def _optional_span_changed(
+    span: LineSpan | None,
+    changed_spans: tuple[LineSpan, ...],
+) -> bool:
+    return span is not None and _any_overlap(span, changed_spans)
 
 
 def _claim_locations(

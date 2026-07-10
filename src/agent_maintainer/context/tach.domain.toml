@@ -72,17 +72,18 @@ depends_on = [
   "pack.attention",
   "pack.compression",
   "pack.exact_facts",
+  "pack.input_safety",
   "pack.ratchet",
+  "pack.supporting_context",
+  "pack.write_safety",
   "//agent_context.failures",
   "//agent_context.pack_rendering",
-  "//agent_context.reading.files",
-  "//agent_context.reading.logs",
-  "//agent_context.sanitize",
 ]
 
 [[modules]]
 path = "pack.attention"
 depends_on = [
+  "//agent_context.reading.file_safety",
   "//agent_maintainer.attention.builder",
   "//agent_maintainer.attention.models",
 ]
@@ -109,8 +110,16 @@ depends_on = [
 path = "pack.exact_facts"
 depends_on = [
   "//agent_context.failures",
+  "//agent_context.reading.file_safety",
   "//agent_repair_facts.payloads",
   "//agent_repair_facts.registry",
+]
+
+[[modules]]
+path = "pack.input_safety"
+depends_on = [
+  "//agent_context.failures",
+  "//agent_context.reading.file_safety",
 ]
 
 [[modules]]
@@ -144,6 +153,19 @@ depends_on = [
   "//agent_maintainer.ratchet.ranking",
   "//agent_maintainer.ratchet.status",
 ]
+
+[[modules]]
+path = "pack.supporting_context"
+depends_on = [
+  "//agent_context.failures",
+  "//agent_context.reading.files",
+  "//agent_context.reading.logs",
+  "//agent_context.sanitize",
+]
+
+[[modules]]
+path = "pack.write_safety"
+depends_on = ["//agent_context.reading.file_safety"]
 
 [[modules]]
 path = "pack.rendering"

@@ -35,6 +35,7 @@ depends_on = []
 path = "estimate"
 depends_on = [
   "failures",
+  "reading.file_safety",
   "reading.logs",
 ]
 
@@ -43,6 +44,7 @@ path = "failures"
 depends_on = [
   "budget",
   "models",
+  "reading.file_safety",
 ]
 
 [[modules]]
@@ -108,7 +110,10 @@ depends_on = [
 
 [[modules]]
 path = "reading.logs"
-depends_on = ["failures"]
+depends_on = [
+  "failures",
+  "reading.file_safety",
+]
 
 [[modules]]
 path = "reading.python_outline"

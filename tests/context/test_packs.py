@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
@@ -84,6 +85,40 @@ def test_context_pack_writes_markdown_and_json(
     assert payload["outputs"]["markdown"].endswith(".verify-logs/context/PACK.md")
 
 
+def test_context_pack_writer_rejects_symlinked_output_directory(tmp_path: Path) -> None:
+    """A direct pack write cannot redirect artifacts through a symlink parent."""
+
+    log_dir = tmp_path / ".verify-logs"
+    outside = tmp_path / "outside"
+    log_dir.mkdir()
+    outside.mkdir()
+    canary = outside / "PACK.md"
+    canary.write_text("unchanged\n", encoding="utf-8")
+    (log_dir / "context").symlink_to(outside, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="real directory"):
+        write_context_pack(ContextPackRequest(log_dir=log_dir))
+
+    assert canary.read_text(encoding="utf-8") == "unchanged\n"
+
+
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFO support is POSIX-only")
+def test_context_pack_preflights_both_outputs_before_first_write(tmp_path: Path) -> None:
+    """An unsafe JSON target leaves the earlier Markdown target untouched."""
+
+    log_dir = tmp_path / ".verify-logs"
+    context_dir = log_dir / "context"
+    context_dir.mkdir(parents=True)
+    markdown = context_dir / "PACK.md"
+    markdown.write_text("unchanged\n", encoding="utf-8")
+    os.mkfifo(context_dir / "PACK.json")
+
+    with pytest.raises(ValueError, match="regular file"):
+        write_context_pack(ContextPackRequest(log_dir=log_dir))
+
+    assert markdown.read_text(encoding="utf-8") == "unchanged\n"
+
+
 def test_context_pack_markdown_is_bounded(tmp_path: Path) -> None:
     """Context pack honors requested Markdown budget."""
 
@@ -104,6 +139,131 @@ def test_context_pack_markdown_is_bounded(tmp_path: Path) -> None:
     assert omitted_counts["pack_markdown_omitted_chars"] > 0
     assert "## Omitted Counts" in pack.markdown
     assert "## Expansion Commands" in pack.markdown
+
+
+def test_context_pack_refuses_file_outside_workspace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Explicit pack file paths cannot escape the process workspace root."""
+
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    outside = tmp_path / "outside.py"
+    secret = "PACK-OUTSIDE-CANARY"
+    outside.write_text(secret, encoding="utf-8")
+    monkeypatch.chdir(workspace)
+
+    pack = build_context_pack(
+        ContextPackRequest(
+            log_dir=Path(".verify-logs"),
+            files=(Path("../outside.py"),),
+        ),
+    )
+
+    selected = cast(list[dict[str, object]], pack.payload["selected_file_outlines"])
+    assert selected[0]["refused"] is True
+    assert selected[0]["reason"] == "path escapes workspace root"
+    assert secret not in str(selected[0])
+
+
+def test_context_pack_refuses_manifest_outside_log_and_artifact_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Manifest metadata cannot redirect pack readers outside the workspace."""
+
+    workspace = tmp_path / "workspace"
+    log_dir = workspace / ".verify-logs"
+    outside_log = tmp_path / "outside.log"
+    outside_artifact = tmp_path / "outside.json"
+    log_secret = "OUTSIDE-LOG-CANARY"
+    artifact_secret = "OUTSIDE-ARTIFACT-CANARY"
+    outside_log.write_text(log_secret, encoding="utf-8")
+    outside_artifact.write_text(artifact_secret, encoding="utf-8")
+    log_dir.mkdir(parents=True)
+    (log_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "checks": [
+                    {
+                        "name": "ruff",
+                        "status": "failed",
+                        "exit_code": 1,
+                        "log_path": str(outside_log),
+                        "log_bytes": outside_log.stat().st_size,
+                        "artifacts": [str(outside_artifact)],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(workspace)
+
+    pack = build_context_pack(ContextPackRequest(log_dir=Path(".verify-logs")))
+
+    rendered = json.dumps(pack.payload)
+    assert log_secret not in rendered
+    assert artifact_secret not in rendered
+    selected_logs = cast(list[dict[str, object]], pack.payload["selected_logs"])
+    assert selected_logs[0]["refused"] is True
+    assert "workspace-relative" in str(selected_logs[0]["text"])
+
+
+def test_context_pack_checks_the_exact_manifest_artifact_before_parsing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A safe basename fallback cannot mask a symlinked manifest artifact."""
+
+    workspace = tmp_path / "workspace"
+    log_dir = workspace / ".verify-logs"
+    outside_dir = tmp_path / "outside"
+    other_cwd = tmp_path / "other"
+    log_dir.mkdir(parents=True)
+    outside_dir.mkdir()
+    other_cwd.mkdir()
+    (workspace / "linked").symlink_to(outside_dir, target_is_directory=True)
+    outside_secret = "SYMLINKED-ARTIFACT-CANARY"
+    (outside_dir / "ruff.json").write_text(
+        json.dumps(
+            [
+                {
+                    "filename": "src/escaped.py",
+                    "location": {"row": 1, "column": 1},
+                    "code": "F401",
+                    "message": outside_secret,
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (log_dir / "ruff.json").write_text("[]\n", encoding="utf-8")
+    (log_dir / "ruff.log").write_text("ruff failed\n", encoding="utf-8")
+    (log_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "checks": [
+                    {
+                        "name": "ruff",
+                        "status": "failed",
+                        "exit_code": 1,
+                        "log_path": ".verify-logs/ruff.log",
+                        "artifacts": ["linked/ruff.json"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(other_cwd)
+
+    pack = build_context_pack(ContextPackRequest(log_dir=log_dir))
+
+    assert outside_secret not in json.dumps(pack.payload)
+    facts = cast(list[dict[str, object]], pack.payload["exact_repair_facts"])
+    assert facts[0]["path"] is None
 
 
 def test_context_pack_cli_outputs_json_and_writes_artifacts(
@@ -249,7 +409,7 @@ def write_manifest(log_dir: Path, check_name: str) -> None:
                 "name": check_name,
                 "status": "failed",
                 "exit_code": 1,
-                "log_path": str(log_dir / f"{check_name}.log"),
+                "log_path": str(Path(log_dir.name) / f"{check_name}.log"),
             },
         ],
     }

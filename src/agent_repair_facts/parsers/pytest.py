@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import importlib
-from pathlib import Path
 from typing import Any
 
 from agent_repair_facts.payloads import (
+    FactSource,
     fact_payload,
     first_int,
     optional_int,
@@ -16,7 +16,7 @@ from agent_repair_facts.payloads import (
 )
 
 
-def pytest_artifact_facts(path: Path, check: str) -> list[dict[str, object]]:
+def pytest_artifact_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return pytest facts from JUnit XML or coverage JSON artifacts."""
 
     if path.name.endswith("pytest-junit.xml"):
@@ -26,7 +26,7 @@ def pytest_artifact_facts(path: Path, check: str) -> list[dict[str, object]]:
     return []
 
 
-def junit_facts(path: Path, check: str) -> list[dict[str, object]]:
+def junit_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from pytest JUnit XML output."""
 
     root = parse_junit_root(path)
@@ -39,7 +39,7 @@ def junit_facts(path: Path, check: str) -> list[dict[str, object]]:
     ]
 
 
-def parse_junit_root(path: Path) -> Any | None:
+def parse_junit_root(path: FactSource) -> Any | None:
     """Return safely parsed JUnit XML root when defusedxml is available."""
 
     try:
@@ -48,8 +48,8 @@ def parse_junit_root(path: Path) -> Any | None:
         return None
     parse_error = getattr(safe_element_tree, "ParseError", ValueError)
     try:
-        return safe_element_tree.parse(path).getroot()
-    except (OSError, parse_error):
+        return safe_element_tree.fromstring(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, parse_error):
         return None
 
 
@@ -74,7 +74,7 @@ def junit_fact(
     )
 
 
-def coverage_facts(path: Path, check: str) -> list[dict[str, object]]:
+def coverage_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from coverage.py JSON output."""
 
     payload = read_json(path)

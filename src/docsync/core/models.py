@@ -65,6 +65,7 @@ class DocSyncConfig:
     config_path: Path
     trace_path: Path
     attestations_dir: Path
+    output_dir: Path
     index_json: Path
     report_json: Path
     review_packet_json: Path
@@ -317,6 +318,7 @@ class CheckResult:
     findings: tuple[Finding, ...]
     base_ref: str | None = None
     index: DocSyncIndex | None = None
+    inputs_valid: bool = True
 
     @property
     def ok(self) -> bool:

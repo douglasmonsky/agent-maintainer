@@ -43,7 +43,9 @@ def test_file_estimate_counts_chars_and_tokens(tmp_path: Path) -> None:
     path = tmp_path / "sample.py"
     path.write_text("abcd", encoding="utf-8")
 
-    estimate = estimate_context(EstimateRequest(log_dir=tmp_path, file_path=path))
+    estimate = estimate_context(
+        EstimateRequest(log_dir=tmp_path, file_path=path, workspace_root=tmp_path),
+    )
 
     assert estimate.label == f"file {path}"
     assert estimate.chars == FOUR_CHARS
@@ -61,11 +63,49 @@ def test_log_estimate_uses_requested_tail(tmp_path: Path) -> None:
             log_dir=tmp_path,
             log_check="pyright",
             log_request=LogRequest(tail=TWO_LINES),
+            workspace_root=tmp_path,
         ),
     )
 
     assert estimate.label == "log pyright"
     assert estimate.chars == len(expected)
+
+
+def test_log_estimate_resolves_manifest_from_explicit_workspace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Manifest paths do not inherit an unrelated process working directory."""
+
+    workspace = tmp_path / "workspace"
+    log_dir = workspace / ".verify-logs"
+    other = tmp_path / "other"
+    other.mkdir()
+    write_log(log_dir, "pyright", line_count=TWO_LINES)
+    (log_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "checks": [
+                    {
+                        "name": "pyright",
+                        "log_path": ".verify-logs/pyright.log",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(other)
+
+    estimate = estimate_context(
+        EstimateRequest(
+            log_dir=log_dir,
+            log_check="pyright",
+            workspace_root=workspace,
+        ),
+    )
+
+    assert estimate.chars > 0
 
 
 def test_diff_summary_estimate_uses_git_diff_summary(
@@ -91,7 +131,9 @@ def test_estimate_text_reports_recommendation(tmp_path: Path) -> None:
     path.write_text("abcd", encoding="utf-8")
 
     output = render_estimate_text(
-        estimate_context(EstimateRequest(log_dir=tmp_path, file_path=path)),
+        estimate_context(
+            EstimateRequest(log_dir=tmp_path, file_path=path, workspace_root=tmp_path),
+        ),
     )
 
     assert "Estimated output: file" in output
@@ -99,11 +141,36 @@ def test_estimate_text_reports_recommendation(tmp_path: Path) -> None:
     assert "Recommended:" in output
 
 
-def test_estimate_cli_outputs_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_file_estimate_refuses_outside_workspace_content(tmp_path: Path) -> None:
+    """File size estimates cannot disclose or size an outside file."""
+
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    outside = tmp_path / "outside.txt"
+    outside.write_text("ESTIMATE-OUTSIDE-CANARY", encoding="utf-8")
+
+    estimate = estimate_context(
+        EstimateRequest(
+            log_dir=workspace,
+            file_path=Path("../outside.txt"),
+            workspace_root=workspace,
+        ),
+    )
+
+    assert estimate.chars == 0
+    assert estimate.tokens == 0
+
+
+def test_estimate_cli_outputs_json(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """Estimate subcommand emits stable JSON."""
 
     path = tmp_path / "sample.py"
     path.write_text("abcd", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
 
     assert (
         context_cli.main(

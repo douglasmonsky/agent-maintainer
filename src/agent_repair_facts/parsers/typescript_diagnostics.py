@@ -39,7 +39,7 @@ def parse_eslint_json(raw_output: str) -> list[TypeScriptDiagnostic]:
     """Parse ESLint JSON formatter output."""
     try:
         payload = json.loads(raw_output)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, RecursionError):
         return []
     return eslint_payload_diagnostics(payload)
 
@@ -48,7 +48,7 @@ def parse_jest_json(raw_output: str) -> list[TypeScriptDiagnostic]:
     """Parse Jest-compatible JSON test output."""
     try:
         payload = json.loads(raw_output)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, RecursionError):
         return []
     return jest_payload_diagnostics(payload)
 

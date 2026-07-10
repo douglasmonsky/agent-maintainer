@@ -32,7 +32,7 @@ def run_doctor(
             base_ref,
         )
     try:
-        trace = load_trace(resolved_root, trace_path or config.trace_path)
+        trace = load_trace(resolved_root, trace_path)
     except TraceError as exc:
         return _error_result(
             command,
@@ -185,6 +185,7 @@ def _error_result(
         config=config,
         findings=(finding,),
         base_ref=base_ref,
+        inputs_valid=False,
     )
 
 
@@ -196,6 +197,7 @@ def _fallback_config(repo_root: Path, config_path: Path | None) -> DocSyncConfig
         config_path=config,
         trace_path=repo_root / ".docsync" / "trace.yml",
         attestations_dir=repo_root / ".docsync" / "attestations",
+        output_dir=docsync_out,
         index_json=docsync_out / "index.json",
         report_json=docsync_out / "report.json",
         review_packet_json=docsync_out / "review-packet.json",

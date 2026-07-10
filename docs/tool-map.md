@@ -43,9 +43,10 @@ reinstalling dependencies. Use `python3 -m agent_maintainer hooks install all`
 to install managed agent-client hooks directly.
 
 When `.docsync/trace.yml` exists, Agent Maintainer adds a `docsync`
-verification check to local profiles. The check runs `docsync check`,
-captures `.docsync/out/report.json`, and turns DocSync findings into
-exact repair facts for context packs and repair capsules.
+verification check to local profiles. The check runs `docsync check
+--write-reports`, captures `.docsync/out/report.json`, and turns DocSync
+findings into exact repair facts for context packs and repair capsules. Plain
+standalone `docsync check` remains read-only.
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state. In an Agent Maintainer source checkout, doctor verifies imports resolve local `src/agent_maintainer` and warns if the interactive `agent-maintainer` console script points at stale installed code; repair with `python -m pip install -e .`.
 

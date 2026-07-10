@@ -115,6 +115,11 @@ def _add_check_command(subparsers: Any) -> None:
     parser.add_argument("--base", default="origin/main")
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--trace", type=Path, default=None)
+    parser.add_argument(
+        "--write-reports",
+        action="store_true",
+        help="Write JSON and SARIF reports under the configured output root.",
+    )
     parser.set_defaults(handler=core_commands.check_main_from_args)
 
 

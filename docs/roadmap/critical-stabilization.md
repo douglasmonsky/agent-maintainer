@@ -197,6 +197,20 @@ Checks:
 Exit criterion: no untrusted path is opened until its root, kind, sensitivity,
 and size have been approved.
 
+Implementation status (2026-07-10): complete on
+`codex/critical-stabilization`. CS-01 and CS-02 now have repository-confined,
+bounded read/write policies; MCP child import and process-output isolation;
+read-only default DocSync checks; atomic explicit outputs; and malicious
+checkout coverage for traversal, symlinks, sensitive/special/oversized inputs,
+output collisions, Git option injection, module shadowing, output floods, and
+timeouts. Verification evidence:
+
+- focused Unit 1 suite: 499 passed;
+- MCP and path-boundary regression suite: 155 passed;
+- precommit: `20260710T045535732412Z-precommit-efb217b867e9`;
+- full: `20260710T050217032265Z-full-12c03f81b8b5`; and
+- security: `20260710T050342782829Z-security-31caaa63de5c`.
+
 ### Unit 2 — Unify managed hooks and make mutation safe
 
 Deliverables:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 from typing import cast
@@ -123,6 +124,85 @@ def test_attention_ledger_reports_tracked_file_cap(tmp_path: Path) -> None:
     assert guards["all_tracked_file_count"] == TRACKED_FILE_CAP_TEST_TOTAL
     assert guards["scored_file_count"] == TRACKED_FILE_CAP_TEST_LIMIT
     assert guards["notes"] == ["tracked file set capped 2/5 using deterministic sampling"]
+
+
+def test_read_attention_ledger_round_trips_inside_repository(tmp_path: Path) -> None:
+    """A regular bounded ledger inside its repository remains readable."""
+    _write(tmp_path / "src" / "app.py", "VALUE = 1\n")
+    ledger = builder.build_attention_ledger(tmp_path)
+    ledger_path = builder.write_attention_ledger(
+        ledger,
+        tmp_path / ".verify-logs" / "attention" / "files.json",
+    )
+
+    loaded = builder.read_attention_ledger(ledger_path, workspace_root=tmp_path)
+
+    assert loaded == ledger
+
+
+def test_read_attention_ledger_refuses_outside_canary(tmp_path: Path) -> None:
+    """A caller cannot select a valid ledger outside the repository root."""
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    outside = tmp_path / "outside.json"
+    _write(outside, json.dumps(_ledger_payload(target="outside-secret")))
+
+    loaded = builder.read_attention_ledger(outside, workspace_root=repo_root)
+
+    assert loaded is None
+
+
+def test_read_attention_ledger_refuses_symlink_leaf(tmp_path: Path) -> None:
+    """An in-repository ledger symlink cannot expose an outside canary."""
+    repo_root = tmp_path / "repo"
+    ledger_path = repo_root / ".verify-logs" / "attention" / "files.json"
+    ledger_path.parent.mkdir(parents=True)
+    outside = tmp_path / "outside.json"
+    _write(outside, json.dumps(_ledger_payload(target="outside-secret")))
+    ledger_path.symlink_to(outside)
+
+    loaded = builder.read_attention_ledger(ledger_path, workspace_root=repo_root)
+
+    assert loaded is None
+
+
+def test_read_attention_ledger_refuses_fifo_without_blocking(tmp_path: Path) -> None:
+    """A FIFO ledger is rejected before opening its content stream."""
+    ledger_path = tmp_path / "files.json"
+    os.mkfifo(ledger_path)
+
+    loaded = builder.read_attention_ledger(ledger_path, workspace_root=tmp_path)
+
+    assert loaded is None
+
+
+def test_read_attention_ledger_refuses_oversized_and_non_utf8_files(tmp_path: Path) -> None:
+    """Oversized and non-UTF-8 ledgers fail closed without tracebacks."""
+    oversized = tmp_path / "oversized.json"
+    _write(oversized, json.dumps(_ledger_payload(target="x")))
+    non_utf8 = tmp_path / "non-utf8.json"
+    non_utf8.write_bytes(b"{\xff}")
+
+    assert (
+        builder.read_attention_ledger(
+            oversized,
+            workspace_root=tmp_path,
+            max_bytes=8,
+        )
+        is None
+    )
+    assert builder.read_attention_ledger(non_utf8, workspace_root=tmp_path) is None
+
+
+def _ledger_payload(*, target: str) -> dict[str, object]:
+    """Return one minimal valid attention ledger payload."""
+    return {
+        "schema_version": 1,
+        "target": target,
+        "file_count": 0,
+        "inputs": {},
+        "files": [],
+    }
 
 
 def _init_repo(path: Path) -> None:

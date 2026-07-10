@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 from agent_repair_facts.payloads import (
+    FactSource,
     fact_payload,
     location_value,
     lower_text,
@@ -15,7 +15,7 @@ from agent_repair_facts.payloads import (
 )
 
 
-def ruff_facts(path: Path, check: str) -> list[dict[str, object]]:
+def ruff_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from Ruff JSON output."""
 
     payload = read_json(path)
@@ -41,7 +41,7 @@ def ruff_fact(check: str, item: dict[str, Any]) -> dict[str, object]:
     )
 
 
-def pyright_facts(path: Path, check: str) -> list[dict[str, object]]:
+def pyright_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from Pyright JSON output."""
 
     payload = read_json(path)
@@ -70,7 +70,7 @@ def pyright_fact(check: str, item: dict[str, Any]) -> dict[str, object]:
     )
 
 
-def bandit_facts(path: Path, check: str) -> list[dict[str, object]]:
+def bandit_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from Bandit JSON output."""
 
     payload = read_json(path)

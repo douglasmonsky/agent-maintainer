@@ -64,7 +64,15 @@ def docsync_checks(base_ref: str) -> list[models.Check]:
     return [
         models.Check(
             "docsync",
-            [sys.executable, "-m", "docsync", "check", "--base", base_ref],
+            [
+                sys.executable,
+                "-m",
+                "docsync",
+                "check",
+                "--base",
+                base_ref,
+                "--write-reports",
+            ],
             models.LOCAL_GATE_PROFILES,
             required_paths=(DOCSYNC_TRACE_PATH,),
             artifact_paths=(DOCSYNC_REPORT_PATH,),

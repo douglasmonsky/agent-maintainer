@@ -6,6 +6,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from agent_context.reading import file_safety
 from agent_maintainer.attention import signal_context, signals
 from agent_maintainer.attention.models import (
     SCHEMA_VERSION,
@@ -14,6 +15,7 @@ from agent_maintainer.attention.models import (
 )
 
 DEFAULT_OUTPUT_PATH = Path(".verify-logs/attention/files.json")
+MAX_ATTENTION_LEDGER_BYTES = file_safety.MAX_FILE_BYTES
 
 WEIGHT_ITEMS = (
     ("git_changed", 0.24),
@@ -104,24 +106,77 @@ def write_attention_ledger(ledger: AttentionLedger, output_path: Path) -> Path:
     return output_path
 
 
-def read_attention_ledger(path: Path) -> AttentionLedger:
-    """Read attention ledger JSON."""
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    files = tuple(
-        AttentionFileScore(
-            path=str(item["path"]),
-            score=float(item["score"]),
-            components={str(key): float(value) for key, value in item["components"].items()},
-            reasons=tuple(str(reason) for reason in item["reasons"]),
-        )
-        for item in payload.get("files", ())
+def read_attention_ledger(
+    path: Path,
+    *,
+    workspace_root: Path,
+    max_bytes: int = MAX_ATTENTION_LEDGER_BYTES,
+) -> AttentionLedger | None:
+    """Read one safe repository-confined attention ledger, when valid."""
+    safe_read = file_safety.read_bounded_utf8_file(
+        path,
+        workspace_root=workspace_root,
+        max_bytes=max_bytes,
     )
+    if not safe_read.safety.allowed or safe_read.text is None:
+        return None
+    payload = _decode_ledger(safe_read.text)
+    if payload is None:
+        return None
+    return _validated_ledger(payload)
+
+
+def _decode_ledger(text: str) -> object | None:
+    """Decode ledger JSON without propagating malformed input failures."""
+
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, RecursionError):
+        return None
+
+
+def _validated_ledger(payload: object) -> AttentionLedger | None:
+    """Return a schema-compatible ledger without propagating input failures."""
+
+    try:
+        return _attention_ledger(payload)
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def _attention_ledger(payload: object) -> AttentionLedger:
+    """Return a typed ledger from one decoded JSON object."""
+
+    if not isinstance(payload, dict):
+        raise TypeError("attention ledger must be an object")
+    raw_files = payload.get("files", ())
+    raw_inputs = payload.get("inputs", {})
+    if not isinstance(raw_files, list | tuple) or not isinstance(raw_inputs, dict):
+        raise TypeError("attention ledger collections have invalid types")
+    files = tuple(_attention_file_score(item) for item in raw_files)
     return AttentionLedger(
         schema_version=int(payload["schema_version"]),
         target=str(payload["target"]),
         file_count=int(payload["file_count"]),
-        inputs=dict(payload.get("inputs", {})),
+        inputs={str(key): value for key, value in raw_inputs.items()},
         files=files,
+    )
+
+
+def _attention_file_score(item: object) -> AttentionFileScore:
+    """Return one typed attention file score from decoded JSON."""
+
+    if not isinstance(item, dict):
+        raise TypeError("attention file score must be an object")
+    components = item["components"]
+    reasons = item["reasons"]
+    if not isinstance(components, dict) or not isinstance(reasons, list | tuple):
+        raise TypeError("attention file score collections have invalid types")
+    return AttentionFileScore(
+        path=str(item["path"]),
+        score=float(item["score"]),
+        components={str(key): float(value) for key, value in components.items()},
+        reasons=tuple(str(reason) for reason in reasons),
     )
 
 

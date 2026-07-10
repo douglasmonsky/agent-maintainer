@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from docsync.config.io import read_bounded_text
+from docsync.config.paths import resolve_input_within
 from docsync.core.fingerprints import sha256_text
 from docsync.core.models import EvidenceAnchor, Finding, LineSpan
 
@@ -55,7 +57,12 @@ def scan_evidence_file(
     """Scan one file for explicit DocSync evidence regions."""
 
     relative_path = path
-    full_path = repo_root / relative_path
+    full_path = resolve_input_within(
+        repo_root,
+        relative_path,
+        label="DocSync evidence input",
+        allow_missing=True,
+    )
     if not full_path.exists():
         return EvidenceScanResult(
             anchors=(),
@@ -68,7 +75,7 @@ def scan_evidence_file(
                 ),
             ),
         )
-    lines = full_path.read_text(encoding="utf-8").splitlines()
+    lines = read_bounded_text(full_path, label="DocSync evidence input").splitlines()
     context = ScanContext(
         path=relative_path,
         lines=lines,

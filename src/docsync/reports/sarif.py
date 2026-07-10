@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from docsync.config.io import write_text_file
 from docsync.core.models import CheckResult, Finding
 
 SARIF_VERSION = "2.1.0"
@@ -34,9 +35,10 @@ def write_sarif(result: CheckResult) -> None:
     """Write a SARIF file beside the configured JSON report."""
     path = result.config.report_json.with_suffix(".sarif.json")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
+    write_text_file(
+        path,
         f"{json.dumps(sarif_payload(result), indent=2, sort_keys=True)}\n",
-        encoding="utf-8",
+        label="DocSync SARIF report output",
     )
 
 

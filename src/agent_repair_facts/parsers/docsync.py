@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from agent_repair_facts.payloads import fact_payload, read_json
+from agent_repair_facts.payloads import FactSource, fact_payload, read_json
 
 
-def docsync_report_facts(path: Path, check: str) -> list[dict[str, object]]:
+def docsync_report_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from a DocSync JSON report."""
 
     payload = read_json(path)

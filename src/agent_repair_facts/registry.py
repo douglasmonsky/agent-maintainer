@@ -6,8 +6,9 @@ from collections.abc import Callable
 from pathlib import Path
 
 from agent_repair_facts.parsers import docsync, lint, logs, pytest, typescript
+from agent_repair_facts.payloads import FactSource, MemoryFactSource
 
-FactParser = Callable[[Path, str], list[dict[str, object]]]
+FactParser = Callable[[FactSource, str], list[dict[str, object]]]
 FactParserEntry = tuple[str, FactParser]
 
 ARTIFACT_FACT_PARSERS: tuple[FactParserEntry, ...] = (
@@ -37,15 +38,37 @@ LOG_FACT_PARSERS: tuple[FactParserEntry, ...] = (
 def artifact_facts(check: str, path: Path) -> list[dict[str, object]]:
     """Return exact facts extracted from one structured artifact."""
 
-    parser = find_parser(check, ARTIFACT_FACT_PARSERS)
-    return parser(path, check) if parser else []
+    return _source_facts(check, path, ARTIFACT_FACT_PARSERS)
+
+
+def artifact_facts_from_text(
+    check: str,
+    path: Path,
+    text: str,
+) -> list[dict[str, object]]:
+    """Return artifact facts without reopening an already-read path."""
+
+    return _source_facts(
+        check,
+        MemoryFactSource(path, text),
+        ARTIFACT_FACT_PARSERS,
+    )
 
 
 def log_facts(check: str, path: Path) -> list[dict[str, object]]:
     """Return exact facts extracted from one check log."""
 
-    parser = find_parser(check, LOG_FACT_PARSERS)
-    return parser(path, check) if parser else []
+    return _source_facts(check, path, LOG_FACT_PARSERS)
+
+
+def log_facts_from_text(
+    check: str,
+    path: Path,
+    text: str,
+) -> list[dict[str, object]]:
+    """Return log facts without reopening an already-read path."""
+
+    return _source_facts(check, MemoryFactSource(path, text), LOG_FACT_PARSERS)
 
 
 def find_parser(check: str, parsers: tuple[FactParserEntry, ...]) -> FactParser | None:
@@ -54,3 +77,14 @@ def find_parser(check: str, parsers: tuple[FactParserEntry, ...]) -> FactParser 
         if check == name:
             return parser
     return None
+
+
+def _source_facts(
+    check: str,
+    source: FactSource,
+    parsers: tuple[FactParserEntry, ...],
+) -> list[dict[str, object]]:
+    """Return facts from one path-backed or in-memory source."""
+
+    parser = find_parser(check, parsers)
+    return parser(source, check) if parser else []

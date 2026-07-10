@@ -31,7 +31,7 @@ def main(argv: list[str] | None = None) -> int:
     ledger = _load_or_build(args, target=target, output=output)
     if args.command == "top":
         if args.format == JSON_FORMAT:
-            print(rendering.render_ledger_json(ledger))
+            print(rendering.render_top_json(ledger, limit=args.limit))
         else:
             print(rendering.render_top_text(ledger, limit=args.limit))
         return 0
@@ -100,6 +100,7 @@ def _add_common_options(parser: argparse.ArgumentParser, *, suppress_defaults: b
 
 def _load_or_build(args: argparse.Namespace, *, target: Path, output: Path):
     """Load existing ledger, or build in memory when absent."""
-    if output.exists():
-        return builder.read_attention_ledger(output)
+    existing = builder.read_attention_ledger(output, workspace_root=target)
+    if existing is not None:
+        return existing
     return builder.build_attention_ledger(target, log_dir=args.log_dir, events_dir=args.events_dir)

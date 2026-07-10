@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from docsync.comments.scanner import scan_evidence_file
+from docsync.config.io import read_bounded_text
 from docsync.config.load import load_config
+from docsync.config.paths import resolve_input_within
 from docsync.core.models import (
     DocObject,
     DocSyncConfig,
@@ -30,7 +32,7 @@ def build_docsync_index(
 ) -> DocSyncIndex:
     """Build a resolved DocSync index from repository files."""
     config = load_config(repo_root, config_path)
-    trace = load_trace(repo_root, trace_path or config.trace_path)
+    trace = load_trace(repo_root, trace_path)
     return resolve_index(config, trace)
 
 
@@ -56,7 +58,11 @@ def _resolve_doc_objects(
 ) -> tuple[dict[str, DocObject], list[Finding]]:
     parsed: dict[str, DocObject] = {}
     findings: list[Finding] = []
+    parsed_paths: set[Path] = set()
     for document in trace.documents.values():
+        if document.path in parsed_paths:
+            continue
+        parsed_paths.add(document.path)
         result = parse_markdown_file(
             config.repo_root,
             document.path,
@@ -183,13 +189,19 @@ def _resolve_claim_spans(
 ) -> tuple[dict[str, LineSpan], list[Finding]]:
     spans: dict[str, LineSpan] = {}
     findings: list[Finding] = []
+    lines_by_path: dict[Path, list[str] | None] = {}
     for claim in trace.claims.values():
         if claim.marker is None:
             continue
         doc_object = doc_objects.get(claim.object_id)
         if doc_object is None:
             continue
-        span = _claim_span(config.repo_root, doc_object.path, claim.marker)
+        if doc_object.path not in lines_by_path:
+            lines_by_path[doc_object.path] = _claim_source_lines(
+                config.repo_root,
+                doc_object.path,
+            )
+        span = _claim_span(doc_object.path, claim.marker, lines_by_path[doc_object.path])
         if span is None:
             findings.append(
                 Finding(
@@ -205,14 +217,27 @@ def _resolve_claim_spans(
     return spans, findings
 
 
-def _claim_span(repo_root: Path, path: Path, marker: str) -> LineSpan | None:
-    full_path = repo_root / path
+def _claim_source_lines(repo_root: Path, path: Path) -> list[str] | None:
+    """Return one bounded claim source, cached by the caller."""
+
+    full_path = resolve_input_within(
+        repo_root,
+        path,
+        label="DocSync claim source",
+        allow_missing=True,
+    )
     if not full_path.exists():
+        return None
+    return read_bounded_text(full_path, label="DocSync claim source").splitlines()
+
+
+def _claim_span(path: Path, marker: str, lines: list[str] | None) -> LineSpan | None:
+    if lines is None:
         return None
     start = f"<!-- docsync:claim {marker} -->"
     end = f"<!-- docsync:claim.end {marker} -->"
     start_line: int | None = None
-    for line_number, line in enumerate(full_path.read_text(encoding="utf-8").splitlines(), start=1):
+    for line_number, line in enumerate(lines, start=1):
         stripped = line.strip()
         if stripped == start:
             start_line = line_number

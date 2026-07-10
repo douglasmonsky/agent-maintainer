@@ -17,6 +17,7 @@ from agent_context.reading.diff import DiffRequest, render_diff
 from agent_maintainer.context import cli as context_cli
 
 LIMIT_ONE_PATH = 1
+CLI_USAGE_ERROR = 2
 
 
 def test_old_context_diff_imports_delegate_to_agent_context() -> None:
@@ -118,6 +119,21 @@ def test_diff_cli_summary_uses_current_directory(
     assert context_cli.main(["diff", "--summary"]) == 0
 
     assert "Diff summary" in capsys.readouterr().out
+
+
+def test_diff_cli_rejects_git_option_before_outside_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An option-like base ref cannot become a Git output destination."""
+
+    repo = init_repo(tmp_path)
+    outside = tmp_path / "outside.diff"
+    outside.write_text("unchanged\n", encoding="utf-8")
+    monkeypatch.chdir(repo)
+
+    assert context_cli.main(["diff", f"--base-ref=--output={outside}"]) == CLI_USAGE_ERROR
+    assert outside.read_text(encoding="utf-8") == "unchanged\n"
 
 
 def init_repo(tmp_path: Path) -> Path:

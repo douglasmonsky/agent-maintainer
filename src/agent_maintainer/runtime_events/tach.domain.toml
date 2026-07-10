@@ -42,7 +42,7 @@ depends_on = []
 [[modules]]
 
 path = "read"
-depends_on = []
+depends_on = ["//agent_context.reading.file_safety"]
 
 
 [[modules]]

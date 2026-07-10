@@ -29,6 +29,11 @@ def add_pack_parser(
     parser.add_argument("--file", action="append", type=Path, default=[])
     parser.add_argument("--base-ref", default="HEAD")
     parser.add_argument(
+        "--no-live-ratchet",
+        action=STORE_TRUE,
+        help="Skip repository-wide live ratchet recomputation for a bounded request.",
+    )
+    parser.add_argument(
         "--compress",
         choices=(
             compression_backends.BACKEND_NONE,
@@ -68,6 +73,7 @@ def run_pack(args: argparse.Namespace) -> int:
                     args.require_compression
                     or getattr(config, "context_compression_require_backend", False)
                 ),
+                live_ratchet=not args.no_live_ratchet,
             ),
         )
     except (

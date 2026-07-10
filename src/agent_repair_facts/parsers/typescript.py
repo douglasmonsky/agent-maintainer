@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from pathlib import Path
 
 from agent_repair_facts.parsers.typescript_coverage import (
     parse_coverage_summary_json,
@@ -16,20 +15,20 @@ from agent_repair_facts.parsers.typescript_diagnostics import (
     parse_tsc_output,
 )
 from agent_repair_facts.parsers.typescript_tests import parse_vitest_json
-from agent_repair_facts.payloads import fact_payload
+from agent_repair_facts.payloads import FactSource, fact_payload
 
 
-def typescript_lint_facts(path: Path, check: str) -> list[dict[str, object]]:
+def typescript_lint_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from ESLint JSON log output."""
     return diagnostic_facts(read_diagnostics(path, parse_eslint_json), check)
 
 
-def typescript_typecheck_facts(path: Path, check: str) -> list[dict[str, object]]:
+def typescript_typecheck_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from TypeScript compiler log output."""
     return diagnostic_facts(read_diagnostics(path, parse_tsc_output), check)
 
 
-def typescript_test_facts(path: Path, check: str) -> list[dict[str, object]]:
+def typescript_test_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from TypeScript test JSON log output."""
     return diagnostic_facts(read_diagnostics(path, parse_typescript_test_json), check)
 
@@ -39,7 +38,10 @@ def parse_typescript_test_json(raw_output: str) -> list[TypeScriptDiagnostic]:
     return parse_jest_json(raw_output) or parse_vitest_json(raw_output)
 
 
-def typescript_test_artifact_facts(path: Path, check: str) -> list[dict[str, object]]:
+def typescript_test_artifact_facts(
+    path: FactSource,
+    check: str,
+) -> list[dict[str, object]]:
     """Return exact facts from TypeScript test artifacts."""
     if path.name == "coverage-summary.json":
         return diagnostic_facts(read_diagnostics(path, parse_coverage_summary_json), check)
@@ -49,7 +51,7 @@ def typescript_test_artifact_facts(path: Path, check: str) -> list[dict[str, obj
 
 
 def read_diagnostics(
-    path: Path,
+    path: FactSource,
     parser: Callable[[str], list[TypeScriptDiagnostic]],
 ) -> list[TypeScriptDiagnostic]:
     """Read and parse a TypeScript diagnostic log."""

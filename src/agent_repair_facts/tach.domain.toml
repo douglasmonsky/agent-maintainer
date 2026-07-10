@@ -21,6 +21,7 @@ depends_on = [
   "parsers.logs",
   "parsers.pytest",
   "parsers.typescript",
+  "payloads",
 ]
 
 

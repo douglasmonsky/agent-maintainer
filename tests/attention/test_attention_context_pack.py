@@ -111,7 +111,7 @@ def write_ruff_manifest(log_dir: Path, path: str) -> None:
         encoding="utf-8",
     )
     write_log(log_dir, "ruff", "ruff failed\n")
-    write_manifest(log_dir, "ruff", artifacts=(artifact,))
+    write_manifest(log_dir, "ruff", artifacts=(Path(artifact.name),))
 
 
 def write_manifest(
