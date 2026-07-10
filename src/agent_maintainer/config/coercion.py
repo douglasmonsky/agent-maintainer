@@ -7,6 +7,8 @@ from typing import Any
 
 from agent_maintainer.config import registry, schema, validation
 
+DEFAULT_CONFIG_SOURCE = "configuration"
+
 
 def as_tuple(value: object, field_name: str) -> tuple[str, ...]:
     """Coerce a string or list-like value into a tuple of normalized paths."""
@@ -109,7 +111,7 @@ def coerce_file_baseline_group(
     name: str,
     raw_value: object,
     *,
-    source: str = "configuration",
+    source: str = DEFAULT_CONFIG_SOURCE,
 ) -> schema.FileBaselineGroupConfig:
     """Coerce one named provider-neutral file baseline group."""
     if not name.strip():
@@ -152,7 +154,7 @@ def coerce_file_baseline_group(
 def coerce_file_baselines(
     raw_value: object,
     *,
-    source: str = "configuration",
+    source: str = DEFAULT_CONFIG_SOURCE,
 ) -> dict[str, object]:
     """Coerce nested provider-neutral file baseline config."""
     if not isinstance(raw_value, dict):
@@ -189,7 +191,7 @@ def coerce_workspace(
     name: str,
     raw_value: object,
     *,
-    source: str = "configuration",
+    source: str = DEFAULT_CONFIG_SOURCE,
 ) -> schema.WorkspaceConfig:
     """Coerce one named workspace config table."""
     if not name.strip():
@@ -210,7 +212,7 @@ def coerce_workspace(
 def coerce_workspaces(
     raw_value: object,
     *,
-    source: str = "configuration",
+    source: str = DEFAULT_CONFIG_SOURCE,
 ) -> tuple[schema.WorkspaceConfig, ...]:
     """Coerce nested workspace config tables."""
     if not isinstance(raw_value, dict):
@@ -224,7 +226,7 @@ def coerce_workspaces(
 def coerce_diagnostics(
     raw_value: object,
     *,
-    source: str = "configuration",
+    source: str = DEFAULT_CONFIG_SOURCE,
 ) -> dict[str, object]:
     """Coerce the nested diagnostics config table."""
 
@@ -253,7 +255,7 @@ def coerce_field_value(
     value: object,
     field_name: str,
     *,
-    source: str = "configuration",
+    source: str = DEFAULT_CONFIG_SOURCE,
 ) -> object:
     """Coerce and validate one value from its registry specification."""
 
@@ -267,8 +269,8 @@ def coerce_field_value(
     }
     if spec.value_kind == "choice":
         parsed = as_choice(value, field_name, spec.choices)
-    elif spec.value_kind == "str" and spec.allow_empty and isinstance(value, str):
-        parsed = value
+    elif spec.value_kind == "str":
+        parsed = value if spec.allow_empty and isinstance(value, str) else as_str(value, field_name)
     else:
         parser = parsers.get(spec.value_kind)
         if parser is None:
@@ -280,7 +282,7 @@ def coerce_field_value(
 def coerce_updates(
     raw: dict[str, Any],
     *,
-    source: str = "configuration",
+    source: str = DEFAULT_CONFIG_SOURCE,
     prefix: str = validation.TOOL_TABLE,
 ) -> dict[str, object]:
     """Coerce raw pyproject config values into dataclass update values."""
@@ -315,10 +317,14 @@ def _raw_scalar_item(
     raw: dict[str, Any],
     spec: registry.ConfigFieldSpec,
 ) -> tuple[str, object] | None:
-    if spec.value_kind in {"workspaces", "file-baseline-groups"}:
+    if spec.field_name in registry.NESTED_FIELD_KINDS:
         return None
-    raw_keys = (spec.toml_key, *spec.toml_aliases)
+    raw_keys = (
+        spec.toml_aliases
+        if spec.field_name in registry.NESTED_TOML_KEYS
+        else (spec.toml_key, *spec.toml_aliases)
+    )
     return next(
-        ((key, raw[key]) for key in raw_keys if "." not in key and key in raw),
+        ((key, raw[key]) for key in raw_keys if key in raw),
         None,
     )
