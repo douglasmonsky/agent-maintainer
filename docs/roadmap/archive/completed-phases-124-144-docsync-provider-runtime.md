@@ -10,7 +10,7 @@ instead of an old planned execution list.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-124-docsync-foundation-roadmap-closure.md`](roadmap/phases/phase-124-docsync-foundation-roadmap-closure.md)
+[`docs/roadmap/phases/phase-124-docsync-foundation-roadmap-closure.md`](../phases/phase-124-docsync-foundation-roadmap-closure.md)
 
 Completed work:
 
@@ -23,7 +23,7 @@ add a test guard that fails when future phase files are omitted from the index.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-125-roadmap-blueprint-index-repair.md`](roadmap/phases/phase-125-roadmap-blueprint-index-repair.md)
+[`docs/roadmap/phases/phase-125-roadmap-blueprint-index-repair.md`](../phases/phase-125-roadmap-blueprint-index-repair.md)
 
 Completed work:
 
@@ -38,7 +38,7 @@ prompt.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-126-roadmap-overview-current-state.md`](roadmap/phases/phase-126-roadmap-overview-current-state.md)
+[`docs/roadmap/phases/phase-126-roadmap-overview-current-state.md`](../phases/phase-126-roadmap-overview-current-state.md)
 
 Completed work:
 
@@ -52,7 +52,7 @@ warning-only.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-127-git-metadata-duplicate-artifact-warning.md`](roadmap/phases/phase-127-git-metadata-duplicate-artifact-warning.md)
+[`docs/roadmap/phases/phase-127-git-metadata-duplicate-artifact-warning.md`](../phases/phase-127-git-metadata-duplicate-artifact-warning.md)
 
 Completed work:
 
@@ -65,7 +65,7 @@ requiring active docs to have trace document entries and live overview markers.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-128-active-docsync-coverage-ratchet.md`](roadmap/phases/phase-128-active-docsync-coverage-ratchet.md)
+[`docs/roadmap/phases/phase-128-active-docsync-coverage-ratchet.md`](../phases/phase-128-active-docsync-coverage-ratchet.md)
 
 Completed work:
 
@@ -78,7 +78,7 @@ cleaned by falling back to retained run and mutation-sweep diagnostics.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-129-mutation-results-artifact-fallback.md`](roadmap/phases/phase-129-mutation-results-artifact-fallback.md)
+[`docs/roadmap/phases/phase-129-mutation-results-artifact-fallback.md`](../phases/phase-129-mutation-results-artifact-fallback.md)
 
 Completed work:
 
@@ -92,7 +92,7 @@ examples.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-130-public-first-touch-docs-prose-polish.md`](roadmap/phases/phase-130-public-first-touch-docs-prose-polish.md)
+[`docs/roadmap/phases/phase-130-public-first-touch-docs-prose-polish.md`](../phases/phase-130-public-first-touch-docs-prose-polish.md)
 
 Completed work:
 
@@ -106,7 +106,7 @@ reader fixtures.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-131-typescript-real-repo-reviewability-evidence.md`](roadmap/phases/phase-131-typescript-real-repo-reviewability-evidence.md)
+[`docs/roadmap/phases/phase-131-typescript-real-repo-reviewability-evidence.md`](../phases/phase-131-typescript-real-repo-reviewability-evidence.md)
 
 Completed work:
 
@@ -120,7 +120,7 @@ compressed prose or overclaiming provider maturity.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-132-provider-maturation-docs-prose-polish.md`](roadmap/phases/phase-132-provider-maturation-docs-prose-polish.md)
+[`docs/roadmap/phases/phase-132-provider-maturation-docs-prose-polish.md`](../phases/phase-132-provider-maturation-docs-prose-polish.md)
 
 Completed work:
 
@@ -133,7 +133,7 @@ provider-status claims to durable source and test evidence.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-133-provider-docsync-evidence-ratchet.md`](roadmap/phases/phase-133-provider-docsync-evidence-ratchet.md)
+[`docs/roadmap/phases/phase-133-provider-docsync-evidence-ratchet.md`](../phases/phase-133-provider-docsync-evidence-ratchet.md)
 
 Completed work:
 
@@ -148,7 +148,7 @@ multi-ecosystem reviewability.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-134-critical-active-docsync-coverage.md`](roadmap/phases/phase-134-critical-active-docsync-coverage.md)
+[`docs/roadmap/phases/phase-134-critical-active-docsync-coverage.md`](../phases/phase-134-critical-active-docsync-coverage.md)
 
 Completed work:
 
@@ -162,7 +162,7 @@ active docs cannot ship with only object markers.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-135-remaining-active-docsync-coverage.md`](roadmap/phases/phase-135-remaining-active-docsync-coverage.md)
+[`docs/roadmap/phases/phase-135-remaining-active-docsync-coverage.md`](../phases/phase-135-remaining-active-docsync-coverage.md)
 
 Completed work:
 
@@ -176,7 +176,7 @@ and non-blocking.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-136-typescript-advisory-threshold-config.md`](roadmap/phases/phase-136-typescript-advisory-threshold-config.md)
+[`docs/roadmap/phases/phase-136-typescript-advisory-threshold-config.md`](../phases/phase-136-typescript-advisory-threshold-config.md)
 
 Completed work:
 
@@ -190,7 +190,7 @@ explicit so users do not mistake experimental support for feature parity.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-137-typescript-unsupported-surface-docs.md`](roadmap/phases/phase-137-typescript-unsupported-surface-docs.md)
+[`docs/roadmap/phases/phase-137-typescript-unsupported-surface-docs.md`](../phases/phase-137-typescript-unsupported-surface-docs.md)
 
 Completed work:
 
@@ -204,7 +204,7 @@ or making TypeScript reviewability blocking.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-138-typescript-package-shape-evidence.md`](roadmap/phases/phase-138-typescript-package-shape-evidence.md)
+[`docs/roadmap/phases/phase-138-typescript-package-shape-evidence.md`](../phases/phase-138-typescript-package-shape-evidence.md)
 
 Completed work:
 
@@ -218,7 +218,7 @@ synthetic fixture repositories.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-139-typescript-external-real-repo-comparison.md`](roadmap/phases/phase-139-typescript-external-real-repo-comparison.md)
+[`docs/roadmap/phases/phase-139-typescript-external-real-repo-comparison.md`](../phases/phase-139-typescript-external-real-repo-comparison.md)
 
 Completed work:
 
@@ -232,7 +232,7 @@ Vitest.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-140-typescript-node-boilerplate-external-comparison.md`](roadmap/phases/phase-140-typescript-node-boilerplate-external-comparison.md)
+[`docs/roadmap/phases/phase-140-typescript-node-boilerplate-external-comparison.md`](../phases/phase-140-typescript-node-boilerplate-external-comparison.md)
 
 Completed work:
 
@@ -248,11 +248,11 @@ not use Tach as the language-neutral architecture answer.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-141-provider-neutral-file-baseline-controls.md`](roadmap/phases/phase-141-provider-neutral-file-baseline-controls.md)
+[`docs/roadmap/phases/phase-141-provider-neutral-file-baseline-controls.md`](../phases/phase-141-provider-neutral-file-baseline-controls.md)
 
 Detailed spec:
 
-[`docs/roadmap/provider-neutral-file-baselines.md`](roadmap/provider-neutral-file-baselines.md)
+[`docs/roadmap/provider-neutral-file-baselines.md`](../provider-neutral-file-baselines.md)
 
 Completed work:
 
@@ -265,11 +265,11 @@ debug dogfooding quality without making normal agent output noisier.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-142-runtime-telemetry-dogfood-logging.md`](roadmap/phases/phase-142-runtime-telemetry-dogfood-logging.md)
+[`docs/roadmap/phases/phase-142-runtime-telemetry-dogfood-logging.md`](../phases/phase-142-runtime-telemetry-dogfood-logging.md)
 
 Detailed spec:
 
-[`docs/roadmap/runtime-telemetry-dogfood-logging.md`](roadmap/runtime-telemetry-dogfood-logging.md)
+[`docs/roadmap/runtime-telemetry-dogfood-logging.md`](../runtime-telemetry-dogfood-logging.md)
 
 Completed work:
 
@@ -282,7 +282,7 @@ that mirror the existing evidence start/end marker discipline.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-143-docsync-explicit-object-end-markers.md`](roadmap/phases/phase-143-docsync-explicit-object-end-markers.md)
+[`docs/roadmap/phases/phase-143-docsync-explicit-object-end-markers.md`](../phases/phase-143-docsync-explicit-object-end-markers.md)
 
 Completed work:
 
@@ -294,7 +294,7 @@ Implement first local structured runtime event foundation without adding OpenTel
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-144-runtime-event-foundation.md`](roadmap/phases/phase-144-runtime-event-foundation.md)
+[`docs/roadmap/phases/phase-144-runtime-event-foundation.md`](../phases/phase-144-runtime-event-foundation.md)
 
 Completed work:
 

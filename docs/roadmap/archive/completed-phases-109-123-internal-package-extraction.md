@@ -11,15 +11,15 @@ handoff without moving runtime code.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-109-internal-package-boundary-roadmap.md`](roadmap/phases/phase-109-internal-package-boundary-roadmap.md)
+[`docs/roadmap/phases/phase-109-internal-package-boundary-roadmap.md`](../phases/phase-109-internal-package-boundary-roadmap.md)
 
 Detailed roadmap:
 
-[`docs/roadmap/internal-package-boundaries.md`](roadmap/internal-package-boundaries.md)
+[`docs/roadmap/internal-package-boundaries.md`](../internal-package-boundaries.md)
 
 Exact instructions:
 
-[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
+[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](../internal-package-boundaries-implementation-guide.txt)
 
 Completed work:
 
@@ -34,11 +34,11 @@ called `docs_evidence`.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-110-internal-package-baseline-and-ownership.md`](roadmap/phases/phase-110-internal-package-baseline-and-ownership.md)
+[`docs/roadmap/phases/phase-110-internal-package-baseline-and-ownership.md`](../phases/phase-110-internal-package-baseline-and-ownership.md)
 
 Architecture decision:
 
-[`docs/architecture/decisions/2026-07-02-internal-package-ownership.md`](architecture/decisions/2026-07-02-internal-package-ownership.md)
+[`docs/architecture/decisions/2026-07-02-internal-package-ownership.md`](../../architecture/decisions/2026-07-02-internal-package-ownership.md)
 
 Completed work:
 
@@ -53,15 +53,15 @@ import paths through compatibility shims.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-111-agent-repair-facts-package.md`](roadmap/phases/phase-111-agent-repair-facts-package.md)
+[`docs/roadmap/phases/phase-111-agent-repair-facts-package.md`](../phases/phase-111-agent-repair-facts-package.md)
 
 Internal package roadmap:
 
-[`docs/roadmap/internal-package-boundaries.md`](roadmap/internal-package-boundaries.md)
+[`docs/roadmap/internal-package-boundaries.md`](../internal-package-boundaries.md)
 
 Implementation guide:
 
-[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
+[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](../internal-package-boundaries-implementation-guide.txt)
 
 Completed work:
 
@@ -75,15 +75,15 @@ context-pack CLI, ratchet, and verifier-artifact adapter work for follow-up.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-112-agent-context-primitives.md`](roadmap/phases/phase-112-agent-context-primitives.md)
+[`docs/roadmap/phases/phase-112-agent-context-primitives.md`](../phases/phase-112-agent-context-primitives.md)
 
 Internal package roadmap:
 
-[`docs/roadmap/internal-package-boundaries.md`](roadmap/internal-package-boundaries.md)
+[`docs/roadmap/internal-package-boundaries.md`](../internal-package-boundaries.md)
 
 Implementation guide:
 
-[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
+[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](../internal-package-boundaries-implementation-guide.txt)
 
 Completed work:
 
@@ -98,15 +98,15 @@ diagnostic layout.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-113-agent-run-artifacts-package.md`](roadmap/phases/phase-113-agent-run-artifacts-package.md)
+[`docs/roadmap/phases/phase-113-agent-run-artifacts-package.md`](../phases/phase-113-agent-run-artifacts-package.md)
 
 Internal package roadmap:
 
-[`docs/roadmap/internal-package-boundaries.md`](roadmap/internal-package-boundaries.md)
+[`docs/roadmap/internal-package-boundaries.md`](../internal-package-boundaries.md)
 
 Implementation guide:
 
-[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](roadmap/internal-package-boundaries-implementation-guide.txt)
+[`docs/roadmap/internal-package-boundaries-implementation-guide.txt`](../internal-package-boundaries-implementation-guide.txt)
 
 Completed work:
 
@@ -120,7 +120,7 @@ package-extraction refactor is still moving.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-114-docsync-dogfood-ratchet.md`](roadmap/phases/phase-114-docsync-dogfood-ratchet.md)
+[`docs/roadmap/phases/phase-114-docsync-dogfood-ratchet.md`](../phases/phase-114-docsync-dogfood-ratchet.md)
 
 Completed work:
 
@@ -134,7 +134,7 @@ verification product-owned under `agent_maintainer.hooks`.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-115-agent-client-hooks-package.md`](roadmap/phases/phase-115-agent-client-hooks-package.md)
+[`docs/roadmap/phases/phase-115-agent-client-hooks-package.md`](../phases/phase-115-agent-client-hooks-package.md)
 
 Completed work:
 
@@ -148,7 +148,7 @@ quietly importing product orchestration back into reusable packages.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-116-internal-package-boundary-tests.md`](roadmap/phases/phase-116-internal-package-boundary-tests.md)
+[`docs/roadmap/phases/phase-116-internal-package-boundary-tests.md`](../phases/phase-116-internal-package-boundary-tests.md)
 
 Completed work:
 
@@ -162,7 +162,7 @@ loops.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-117-readme-docsync-evidence.md`](roadmap/phases/phase-117-readme-docsync-evidence.md)
+[`docs/roadmap/phases/phase-117-readme-docsync-evidence.md`](../phases/phase-117-readme-docsync-evidence.md)
 
 Completed work:
 
@@ -176,7 +176,7 @@ builder, compression, ratchet, and CLI orchestration product-owned.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-118-agent-context-pack-rendering.md`](roadmap/phases/phase-118-agent-context-pack-rendering.md)
+[`docs/roadmap/phases/phase-118-agent-context-pack-rendering.md`](../phases/phase-118-agent-context-pack-rendering.md)
 
 Completed work:
 
@@ -190,7 +190,7 @@ generation product-owned.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-119-agent-context-compression.md`](roadmap/phases/phase-119-agent-context-compression.md)
+[`docs/roadmap/phases/phase-119-agent-context-compression.md`](../phases/phase-119-agent-context-compression.md)
 
 Completed work:
 
@@ -204,7 +204,7 @@ scan selection, and provider-status review.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-120-docsync-public-docs-ratchet.md`](roadmap/phases/phase-120-docsync-public-docs-ratchet.md)
+[`docs/roadmap/phases/phase-120-docsync-public-docs-ratchet.md`](../phases/phase-120-docsync-public-docs-ratchet.md)
 
 Completed work:
 
@@ -217,7 +217,7 @@ hooks, context compression, release checklist, and architecture policy docs.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-121-operational-docsync-trace-closure.md`](roadmap/phases/phase-121-operational-docsync-trace-closure.md)
+[`docs/roadmap/phases/phase-121-operational-docsync-trace-closure.md`](../phases/phase-121-operational-docsync-trace-closure.md)
 
 Completed work:
 
@@ -229,7 +229,7 @@ Extend DocSync dogfooding into provider-specific public docs for the active
 TypeScript/JavaScript maturation track. This keeps provider docs tied to source
 and test evidence while avoiding new ecosystem scope. Detailed scope:
 
-[`docs/roadmap/phases/phase-122-provider-specific-docsync-evidence.md`](roadmap/phases/phase-122-provider-specific-docsync-evidence.md)
+[`docs/roadmap/phases/phase-122-provider-specific-docsync-evidence.md`](../phases/phase-122-provider-specific-docsync-evidence.md)
 
 Completed work:
 
@@ -243,7 +243,7 @@ invariants instead of instructions implying Phase 0 still needs to start.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-123-internal-package-refactor-docs-closure.md`](roadmap/phases/phase-123-internal-package-refactor-docs-closure.md)
+[`docs/roadmap/phases/phase-123-internal-package-refactor-docs-closure.md`](../phases/phase-123-internal-package-refactor-docs-closure.md)
 
 Completed work:
 

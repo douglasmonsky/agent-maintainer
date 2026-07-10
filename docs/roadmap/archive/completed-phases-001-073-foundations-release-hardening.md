@@ -238,7 +238,7 @@ agents choose setup and prioritize hardening work.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md`](roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md)
+[`docs/roadmap/phases/phase-67-public-docs-onboarding-and-debt-score.md`](../phases/phase-67-public-docs-onboarding-and-debt-score.md)
 
 Completed work:
 
@@ -269,7 +269,7 @@ Completed work:
 Continue release polish without adding new scanners or public profile
 semantics. Detailed scope:
 
-[`docs/roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md`](roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md)
+[`docs/roadmap/phases/phase-73-release-polish-debt-mutation-and-cohesion.md`](../phases/phase-73-release-polish-debt-mutation-and-cohesion.md)
 
 Completed work:
 
