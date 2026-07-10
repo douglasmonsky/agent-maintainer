@@ -6,6 +6,7 @@ import argparse
 import os
 from dataclasses import replace
 
+from agent_maintainer.config import validation
 from agent_maintainer.config.modes import apply_mode
 from agent_maintainer.config.schema import (
     VALID_ARCHITECTURE_TOOLS,
@@ -258,4 +259,5 @@ def apply_cli_overrides(config: MaintainerConfig, args: argparse.Namespace) -> M
     updates.update({field: value for field, value in tuple_overrides.items() if value is not None})
     updates.update({field: value for field, value in scalar_overrides.items() if value is not None})
 
-    return replace(config, **updates)
+    resolved = replace(config, **updates)
+    return validation.validate_config(resolved, source="command line")

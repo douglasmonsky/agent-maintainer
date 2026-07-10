@@ -1,205 +1,91 @@
-"""Load Agent Maintainer configuration from pyproject and environment variables."""
+"""Load and validate Agent Maintainer configuration from every public source."""
 
 from __future__ import annotations
 
 import os
 import shlex
 import tomllib
-from collections.abc import Callable
-from dataclasses import replace
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
-from agent_maintainer.config import coercion, modes, schema
+from agent_maintainer.config import coercion, modes, registry, schema, validation
 
 NEUTRAL_CONFIG_PATHS = (
     Path(".agent-maintainer/config.toml"),
     Path("agent-maintainer.toml"),
 )
+NEUTRAL_PREFIX = "agent_maintainer"
 
-TUPLE_ENVS = (
-    ("source_roots", "AGENT_MAINTAINER_SOURCE_ROOTS"),
-    ("test_roots", "AGENT_MAINTAINER_TEST_ROOTS"),
-    ("package_paths", "AGENT_MAINTAINER_PACKAGE_PATHS"),
-    ("coverage_source", "AGENT_MAINTAINER_COVERAGE_SOURCE"),
-    ("file_length_paths", "AGENT_MAINTAINER_FILE_LENGTH_PATHS"),
-    ("structure_paths", "AGENT_MAINTAINER_STRUCTURE_PATHS"),
-    ("structure_ignore_paths", "AGENT_MAINTAINER_STRUCTURE_IGNORE_PATHS"),
-    ("structure_hint_patterns", "AGENT_MAINTAINER_STRUCTURE_HINT_PATTERNS"),
-    ("vulture_paths", "AGENT_MAINTAINER_VULTURE_PATHS"),
-    ("mutmut_args", "AGENT_MAINTAINER_MUTMUT_ARGS"),
-    ("pyright_strict_profiles", "AGENT_MAINTAINER_PYRIGHT_STRICT_PROFILES"),
-    ("semgrep_args", "AGENT_MAINTAINER_SEMGREP_ARGS"),
-    ("semgrep_profiles", "AGENT_MAINTAINER_SEMGREP_PROFILES"),
-    ("osv_scanner_args", "AGENT_MAINTAINER_OSV_SCANNER_ARGS"),
-    ("osv_scanner_profiles", "AGENT_MAINTAINER_OSV_SCANNER_PROFILES"),
-    ("trivy_args", "AGENT_MAINTAINER_TRIVY_ARGS"),
-    ("trivy_profiles", "AGENT_MAINTAINER_TRIVY_PROFILES"),
-    ("typescript_lint_command", "AGENT_MAINTAINER_TYPESCRIPT_LINT_COMMAND"),
-    ("typescript_lint_profiles", "AGENT_MAINTAINER_TYPESCRIPT_LINT_PROFILES"),
-    (
-        "typescript_typecheck_command",
-        "AGENT_MAINTAINER_TYPESCRIPT_TYPECHECK_COMMAND",
-    ),
-    (
-        "typescript_typecheck_profiles",
-        "AGENT_MAINTAINER_TYPESCRIPT_TYPECHECK_PROFILES",
-    ),
-    ("typescript_test_command", "AGENT_MAINTAINER_TYPESCRIPT_TEST_COMMAND"),
-    ("typescript_test_profiles", "AGENT_MAINTAINER_TYPESCRIPT_TEST_PROFILES"),
-    ("sbom_args", "AGENT_MAINTAINER_SBOM_ARGS"),
-    ("sbom_profiles", "AGENT_MAINTAINER_SBOM_PROFILES"),
-    ("license_check_args", "AGENT_MAINTAINER_LICENSE_CHECK_ARGS"),
-    ("license_check_profiles", "AGENT_MAINTAINER_LICENSE_CHECK_PROFILES"),
-    ("secret_scan_profiles", "AGENT_MAINTAINER_SECRET_SCAN_PROFILES"),
-    ("secret_scan_history_profiles", "AGENT_MAINTAINER_SECRET_SCAN_HISTORY_PROFILES"),
-    ("markdownlint_paths", "AGENT_MAINTAINER_MARKDOWNLINT_PATHS"),
-    ("yamllint_paths", "AGENT_MAINTAINER_YAMLLINT_PATHS"),
-    ("taplo_paths", "AGENT_MAINTAINER_TAPLO_PATHS"),
-    ("check_jsonschema_args", "AGENT_MAINTAINER_CHECK_JSONSCHEMA_ARGS"),
-    (
-        "cohesive_change_override_paths",
-        "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_PATHS",
-    ),
-    (
-        "source_without_test_change_error_profiles",
-        "AGENT_MAINTAINER_SOURCE_WITHOUT_TEST_CHANGE_ERROR_PROFILES",
-    ),
-    ("large_change_plan_dirs", "AGENT_MAINTAINER_LARGE_CHANGE_PLAN_DIRS"),
-)
-BOOL_ENVS = (
-    ("require_tests", "AGENT_MAINTAINER_REQUIRE_TESTS"),
-    ("enable_pip_audit", "AGENT_MAINTAINER_ENABLE_PIP_AUDIT"),
-    ("enable_mutmut", "AGENT_MAINTAINER_ENABLE_MUTMUT"),
-    ("mutmut_result_ratchet_enabled", "AGENT_MAINTAINER_MUTMUT_RESULT_RATCHET_ENABLED"),
-    (
-        "pyright_strict_ratchet_enabled",
-        "AGENT_MAINTAINER_PYRIGHT_STRICT_RATCHET_ENABLED",
-    ),
-    ("enable_semgrep", "AGENT_MAINTAINER_ENABLE_SEMGREP"),
-    ("enable_osv_scanner", "AGENT_MAINTAINER_ENABLE_OSV_SCANNER"),
-    ("enable_trivy", "AGENT_MAINTAINER_ENABLE_TRIVY"),
-    ("enable_typescript", "AGENT_MAINTAINER_ENABLE_TYPESCRIPT"),
-    ("enable_sbom", "AGENT_MAINTAINER_ENABLE_SBOM"),
-    ("enable_license_check", "AGENT_MAINTAINER_ENABLE_LICENSE_CHECK"),
-    ("enable_secret_scanning", "AGENT_MAINTAINER_ENABLE_SECRET_SCANNING"),
-    ("enable_wemake", "AGENT_MAINTAINER_ENABLE_WEMAKE"),
-    ("enable_interrogate", "AGENT_MAINTAINER_ENABLE_INTERROGATE"),
-    ("enable_markdownlint", "AGENT_MAINTAINER_ENABLE_MARKDOWNLINT"),
-    ("enable_yamllint", "AGENT_MAINTAINER_ENABLE_YAMLLINT"),
-    ("enable_taplo", "AGENT_MAINTAINER_ENABLE_TAPLO"),
-    ("enable_check_jsonschema", "AGENT_MAINTAINER_ENABLE_CHECK_JSONSCHEMA"),
-    ("allow_source_without_test_change", "AGENT_MAINTAINER_ALLOW_SOURCE_WITHOUT_TEST_CHANGE"),
-    (
-        "cohesive_change_override_enabled",
-        "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_ENABLED",
-    ),
-    ("diagnostic_artifacts_enabled", "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED"),
-    ("runtime_events_enabled", "AGENT_MAINTAINER_RUNTIME_EVENTS_ENABLED"),
-    ("runtime_events_include_debug", "AGENT_MAINTAINER_RUNTIME_EVENTS_INCLUDE_DEBUG"),
-    ("context_write_context_packs", "AGENT_MAINTAINER_CONTEXT_WRITE_CONTEXT_PACKS"),
-    ("context_packs_local_only", "AGENT_MAINTAINER_CONTEXT_PACKS_LOCAL_ONLY"),
-    ("context_pack_contains_source", "AGENT_MAINTAINER_CONTEXT_PACK_CONTAINS_SOURCE"),
-    (
-        "context_require_outline_for_large_files",
-        "AGENT_MAINTAINER_CONTEXT_REQUIRE_OUTLINE_FOR_LARGE_FILES",
-    ),
-    ("context_compression_enabled", "AGENT_MAINTAINER_CONTEXT_COMPRESSION_ENABLED"),
-    (
-        "context_compression_require_backend",
-        "AGENT_MAINTAINER_CONTEXT_COMPRESSION_REQUIRE_BACKEND",
-    ),
-    ("ratchet_enabled", "AGENT_MAINTAINER_RATCHET_ENABLED"),
-    ("large_changes_enabled", "AGENT_MAINTAINER_LARGE_CHANGES_ENABLED"),
-    (
-        "large_change_allow_expired_plans",
-        "AGENT_MAINTAINER_LARGE_CHANGE_ALLOW_EXPIRED_PLANS",
-    ),
-    (
-        "large_change_require_required_sections",
-        "AGENT_MAINTAINER_LARGE_CHANGE_REQUIRE_REQUIRED_SECTIONS",
-    ),
-    (
-        "large_change_fail_out_of_plan_paths",
-        "AGENT_MAINTAINER_LARGE_CHANGE_FAIL_OUT_OF_PLAN_PATHS",
-    ),
-)
-NON_NEGATIVE_INT_ENVS = tuple(
-    (field_name, f"AGENT_MAINTAINER_{field_name.upper()}")
-    for field_name in sorted(schema.NON_NEGATIVE_INT_FIELDS)
-)
-FLOAT_ENVS = tuple(
-    (field_name, f"AGENT_MAINTAINER_{field_name.upper()}")
-    for field_name in sorted(schema.FLOAT_FIELDS)
-)
 
-COVERAGE_ENVS = (
-    ("coverage_fail_under", "AGENT_MAINTAINER_COVERAGE_FAIL_UNDER"),
-    ("diff_cover_fail_under", "AGENT_MAINTAINER_DIFF_COVER_FAIL_UNDER"),
+def _env_pairs(fields: frozenset[str]) -> tuple[tuple[str, str], ...]:
+    return tuple(
+        (field_name, registry.FIELD_SPECS[field_name].env_var) for field_name in sorted(fields)
+    )
+
+
+TUPLE_ENVS = _env_pairs(registry.TUPLE_ENV_FIELDS)
+BOOL_ENVS = _env_pairs(registry.BOOL_ENV_FIELDS)
+NON_NEGATIVE_INT_ENVS = _env_pairs(registry.NON_NEGATIVE_INT_FIELDS)
+FLOAT_ENVS = _env_pairs(registry.FLOAT_FIELDS)
+COVERAGE_ENVS = _env_pairs(frozenset(("coverage_fail_under", "diff_cover_fail_under")))
+THRESHOLD_ENVS = _env_pairs(
+    registry.INT_ENV_FIELDS - frozenset(("coverage_fail_under", "diff_cover_fail_under"))
 )
-THRESHOLD_ENVS = (
-    ("file_length_max_physical", "AGENT_MAINTAINER_FILE_LENGTH_MAX_PHYSICAL"),
-    ("file_length_max_source", "AGENT_MAINTAINER_FILE_LENGTH_MAX_SOURCE"),
-    ("change_warn_lines", "AGENT_MAINTAINER_CHANGE_WARN_LINES"),
-    ("change_block_lines", "AGENT_MAINTAINER_CHANGE_BLOCK_LINES"),
-    ("change_warn_files", "AGENT_MAINTAINER_CHANGE_WARN_FILES"),
-    ("change_block_files", "AGENT_MAINTAINER_CHANGE_BLOCK_FILES"),
-    ("suppression_max_new", "AGENT_MAINTAINER_SUPPRESSION_MAX_NEW"),
-    ("folder_file_warn", "AGENT_MAINTAINER_FOLDER_FILE_WARN"),
-    ("folder_file_block", "AGENT_MAINTAINER_FOLDER_FILE_BLOCK"),
-    ("structure_cluster_min", "AGENT_MAINTAINER_STRUCTURE_CLUSTER_MIN"),
-    (
-        "cohesive_change_override_max_lines",
-        "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_LINES",
-    ),
-    (
-        "cohesive_change_override_max_files",
-        "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_FILES",
-    ),
-    ("interrogate_fail_under", "AGENT_MAINTAINER_INTERROGATE_FAIL_UNDER"),
-)
-STRING_ENVS = (
-    ("file_length_baseline", "AGENT_MAINTAINER_FILE_LENGTH_BASELINE"),
-    ("pyright_type_checking_mode", "AGENT_MAINTAINER_PYRIGHT_TYPE_CHECKING_MODE"),
-    ("pyright_strict_baseline", "AGENT_MAINTAINER_PYRIGHT_STRICT_BASELINE"),
-    ("xenon_max_absolute", "AGENT_MAINTAINER_XENON_MAX_ABSOLUTE"),
-    ("xenon_max_modules", "AGENT_MAINTAINER_XENON_MAX_MODULES"),
-    ("xenon_max_average", "AGENT_MAINTAINER_XENON_MAX_AVERAGE"),
-    ("diagnostic_artifacts_dir", "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"),
-    ("runtime_events_dir", "AGENT_MAINTAINER_RUNTIME_EVENTS_DIR"),
-    ("runtime_event_level", "AGENT_MAINTAINER_RUNTIME_EVENT_LEVEL"),
-    ("secret_scanner", "AGENT_MAINTAINER_SECRET_SCANNER"),
-    ("ratchet_baseline_path", "AGENT_MAINTAINER_RATCHET_BASELINE_PATH"),
-    ("ratchet_guidance_path", "AGENT_MAINTAINER_RATCHET_GUIDANCE_PATH"),
-)
+STRING_ENVS = _env_pairs(registry.STRING_ENV_FIELDS)
+SHELL_ENVS = _env_pairs(registry.SHELL_ENV_FIELDS)
+SPECIAL_ENVS = _env_pairs(registry.SPECIAL_ENV_FIELDS)
+
+
+@dataclass(frozen=True)
+class ConfigDocument:
+    """One located raw configuration document and its public key prefix."""
+
+    raw: dict[str, Any]
+    source: str
+    prefix: str
 
 
 def _read_toml(path: Path) -> dict[str, Any]:
-    """Read a TOML file into a dictionary."""
+    """Read one TOML document with source-aware parse failures."""
+
     if not path.exists():
         return {}
-    with path.open("rb") as handle:
-        return tomllib.load(handle)
+    try:
+        with path.open("rb") as handle:
+            return tomllib.load(handle)
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        issue = validation.ConfigIssue(str(path), "<document>", f"invalid TOML: {exc}")
+        raise validation.ConfigValidationError((issue,)) from exc
 
 
 def read_pyproject(path: Path | None = None) -> dict[str, Any]:
     """Read `[tool.agent_maintainer]` from pyproject.toml."""
 
-    payload = _read_toml(path or Path("pyproject.toml"))
-    raw_tool = payload.get("tool", {})
+    selected = path or Path("pyproject.toml")
+    return _pyproject_config(_read_toml(selected), source=str(selected))
+
+
+def _pyproject_config(payload: dict[str, Any], *, source: str) -> dict[str, Any]:
+    raw_tool = payload.get("tool")
+    if raw_tool is None:
+        return {}
     if not isinstance(raw_tool, dict):
+        raise _shape_error(source, "tool", "must be a table")
+    raw_config = raw_tool.get("agent_maintainer")
+    if raw_config is None:
         return {}
-    tool = cast(dict[str, Any], raw_tool)
-    raw_config = tool.get("agent_maintainer", {})
     if not isinstance(raw_config, dict):
-        return {}
-    return cast(dict[str, Any], raw_config)
+        raise _shape_error(source, validation.TOOL_TABLE, "must be a table")
+    return raw_config
 
 
 def read_neutral_config(
     paths: tuple[Path, ...] = NEUTRAL_CONFIG_PATHS,
 ) -> dict[str, Any]:
     """Read the first present neutral Agent Maintainer config file."""
+
     for path in paths:
         payload = _read_toml(path)
         if payload:
@@ -207,105 +93,171 @@ def read_neutral_config(
     return {}
 
 
-def read_config(repo_root: Path | None = None) -> dict[str, Any]:
-    """Read file-based config with precedence."""
-    pyproject_path = None if repo_root is None else repo_root / "pyproject.toml"
+def read_config_document(repo_root: Path | None = None) -> ConfigDocument:
+    """Locate the winning file-based configuration and retain its source."""
+
+    root = Path.cwd() if repo_root is None else repo_root
+    pyproject_path = root / "pyproject.toml"
     pyproject = read_pyproject(pyproject_path)
     if pyproject:
-        return pyproject
-    if repo_root is None:
-        return read_neutral_config()
-    return read_neutral_config(tuple(repo_root / path for path in NEUTRAL_CONFIG_PATHS))
+        return ConfigDocument(
+            pyproject,
+            f"{pyproject_path}:[tool.agent_maintainer]",
+            validation.TOOL_TABLE,
+        )
+    for relative in NEUTRAL_CONFIG_PATHS:
+        path = root / relative
+        payload = _read_toml(path)
+        if payload:
+            return ConfigDocument(payload, str(path), NEUTRAL_PREFIX)
+    return ConfigDocument({}, "defaults", validation.TOOL_TABLE)
+
+
+def read_config(repo_root: Path | None = None) -> dict[str, Any]:
+    """Read file-based config with deterministic source precedence."""
+
+    return read_config_document(repo_root).raw
 
 
 def apply_pyproject(
     config: schema.MaintainerConfig,
     raw: dict[str, Any],
+    *,
+    source: str = "configuration",
+    prefix: str = validation.TOOL_TABLE,
 ) -> schema.MaintainerConfig:
-    """Apply raw pyproject settings after resolving any mode preset."""
+    """Apply one raw document after validating all keys and values."""
 
+    try:
+        resolved = _apply_raw_document(config, raw, source=source, prefix=prefix)
+    except validation.ConfigValidationError:
+        raise
+    except TypeError as exc:
+        raise _coercion_error(source, exc) from exc
+    return validation.validate_config(resolved, source=source)
+
+
+def _apply_raw_document(
+    config: schema.MaintainerConfig,
+    raw: dict[str, Any],
+    *,
+    source: str,
+    prefix: str,
+) -> schema.MaintainerConfig:
+    validation.validate_raw_config(raw, source=source, prefix=prefix)
     mode_value = raw.get("mode")
     if mode_value is not None:
-        mode = coercion.as_choice(mode_value, "mode", schema.VALID_MODES)
-        config = modes.apply_mode(config, mode)
-    return replace(config, **coercion.coerce_updates(raw))
+        mode_spec = registry.FIELD_SPECS["mode"]
+        mode = coercion.coerce_field_value(
+            mode_spec,
+            mode_value,
+            mode_spec.toml_key,
+            source=source,
+        )
+        config = modes.apply_mode(config, str(mode))
+    updates = coercion.coerce_updates(raw, source=source, prefix=prefix)
+    return replace(config, **updates)
 
 
 def env_value(
     env_name: str,
     parser: Callable[[object, str], object],
+    *,
+    environment: Mapping[str, str] | None = None,
 ) -> object | None:
-    """Return a parsed environment value when present."""
+    """Return one parsed environment value when present."""
 
-    if env_name not in os.environ:
+    current = os.environ if environment is None else environment
+    if env_name not in current:
         return None
-    return parser(os.environ[env_name], env_name)
+    return parser(current[env_name], env_name)
 
 
 def merge_env_values(
     updates: dict[str, object],
     envs: tuple[tuple[str, str], ...],
     parser: Callable[[object, str], object],
+    *,
+    environment: Mapping[str, str] | None = None,
 ) -> None:
-    """Merge environment overrides of a common value type."""
+    """Compatibility helper for merging a homogeneous environment group."""
 
     for field_name, env_name in envs:
-        parsed_value = env_value(env_name, parser)
+        parsed_value = env_value(env_name, parser, environment=environment)
         if parsed_value is not None:
             updates[field_name] = parsed_value
 
 
-def apply_env(config: schema.MaintainerConfig) -> schema.MaintainerConfig:
-    """Apply AGENT_MAINTAINER_* environment overrides."""
+def apply_env(
+    config: schema.MaintainerConfig,
+    *,
+    environment: Mapping[str, str] | None = None,
+) -> schema.MaintainerConfig:
+    """Apply every registered environment override and validate the result."""
 
-    mode = os.getenv("AGENT_MAINTAINER_MODE")
-    if mode is not None:
-        selected = coercion.as_choice(mode, "AGENT_MAINTAINER_MODE", schema.VALID_MODES)
-        config = modes.apply_mode(config, selected)
+    current = os.environ if environment is None else environment
+    validation.validate_environment_names(current)
+    mode_spec = registry.FIELD_SPECS["mode"]
+    mode_raw = current.get(mode_spec.env_var)
+    if mode_raw is not None:
+        mode = _coerce_env_value(mode_spec, mode_raw)
+        config = modes.apply_mode(config, str(mode))
+    updates = {
+        spec.field_name: _coerce_env_value(spec, current[spec.env_var])
+        for spec in registry.env_specs()
+        if spec.field_name != "mode" and spec.env_var in current
+    }
+    resolved = replace(config, **updates)
+    return validation.validate_config(resolved, source="merged file/environment configuration")
 
-    updates: dict[str, object] = {}
-    merge_env_values(updates, TUPLE_ENVS, coercion.as_tuple)
-    merge_env_values(updates, BOOL_ENVS, coercion.as_bool)
-    merge_env_values(updates, NON_NEGATIVE_INT_ENVS, coercion.as_non_negative_int)
-    merge_env_values(updates, COVERAGE_ENVS, coercion.as_int)
-    merge_env_values(updates, THRESHOLD_ENVS, coercion.as_int)
-    merge_env_values(updates, FLOAT_ENVS, coercion.as_float)
-    merge_env_values(updates, STRING_ENVS, coercion.as_str)
-    apply_special_envs(updates)
-    return replace(config, **updates)
 
-
-def apply_special_envs(updates: dict[str, object]) -> None:
-    """Apply env overrides that need shell parsing or choice validation."""
-
-    pip_audit_args = os.getenv("AGENT_MAINTAINER_PIP_AUDIT_ARGS")
-    if pip_audit_args is not None:
-        updates["pip_audit_args"] = tuple(shlex.split(pip_audit_args))
-    osv_scanner_args = os.getenv("AGENT_MAINTAINER_OSV_SCANNER_ARGS")
-    if osv_scanner_args is not None:
-        updates["osv_scanner_args"] = tuple(shlex.split(osv_scanner_args))
-    trivy_args = os.getenv("AGENT_MAINTAINER_TRIVY_ARGS")
-    if trivy_args is not None:
-        updates["trivy_args"] = tuple(shlex.split(trivy_args))
-    architecture_tool = os.getenv("AGENT_MAINTAINER_ARCHITECTURE_TOOL")
-    if architecture_tool is not None:
-        updates["architecture_tool"] = coercion.as_choice(
-            architecture_tool,
-            "AGENT_MAINTAINER_ARCHITECTURE_TOOL",
-            schema.VALID_ARCHITECTURE_TOOLS,
+def _coerce_env_value(spec: registry.ConfigFieldSpec, raw_value: str) -> object:
+    try:
+        return _parse_env_value(spec, raw_value)
+    except validation.ConfigValidationError:
+        raise
+    except ValueError as exc:
+        issue = validation.ConfigIssue(
+            "environment",
+            spec.env_var,
+            f"invalid shell syntax: {exc}",
         )
-    compression_backend = os.getenv("AGENT_MAINTAINER_CONTEXT_COMPRESSION_BACKEND")
-    if compression_backend is not None:
-        updates["context_compression_backend"] = coercion.as_choice(
-            compression_backend,
-            "AGENT_MAINTAINER_CONTEXT_COMPRESSION_BACKEND",
-            schema.VALID_CONTEXT_COMPRESSION_BACKENDS,
-        )
+        raise validation.ConfigValidationError((issue,)) from exc
+    except TypeError as exc:
+        raise _coercion_error("environment", exc) from exc
+
+
+def _parse_env_value(spec: registry.ConfigFieldSpec, raw_value: str) -> object:
+    if spec.env_style == "shell":
+        value: object = tuple(shlex.split(raw_value))
+        return validation.validate_field_value(value, spec, source="environment")
+    return coercion.coerce_field_value(
+        spec,
+        raw_value,
+        spec.env_var,
+        source="environment",
+    )
 
 
 def load_config(repo_root: Path | None = None) -> schema.MaintainerConfig:
-    """Load Agent Maintainer configuration from pyproject and environment overrides."""
+    """Load one complete fail-closed configuration from all sources."""
 
-    config = schema.MaintainerConfig()
-    config = apply_pyproject(config, read_config(repo_root))
+    document = read_config_document(repo_root)
+    config = apply_pyproject(
+        schema.MaintainerConfig(),
+        document.raw,
+        source=document.source,
+        prefix=document.prefix,
+    )
     return apply_env(config)
+
+
+def _shape_error(source: str, key: str, message: str) -> validation.ConfigValidationError:
+    return validation.ConfigValidationError((validation.ConfigIssue(source, key, message),))
+
+
+def _coercion_error(source: str, exc: TypeError) -> validation.ConfigValidationError:
+    text = str(exc)
+    key = text.split(" must", 1)[0]
+    message = text.removeprefix(key).lstrip(": ") or "invalid value"
+    return validation.ConfigValidationError((validation.ConfigIssue(source, key, message),))

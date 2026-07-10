@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from agent_maintainer.config import schema_fields
+from agent_maintainer.config import registry, schema_fields
 from agent_maintainer.config.structure_defaults import (
     DEFAULT_STRUCTURE_HINT_PATTERNS,
     DEFAULT_STRUCTURE_IGNORE_PATHS,
@@ -65,24 +65,13 @@ DEFAULT_CHECK_JSONSCHEMA_ARGS = ()
 CUSTOM_MODE = "custom"
 LEGACY_RATCHET_MODE = "legacy-ratchet"
 FRESH_STRICT_MODE = "fresh-strict"
-VALID_MODES = frozenset((CUSTOM_MODE, LEGACY_RATCHET_MODE, FRESH_STRICT_MODE))
 IMPORT_LINTER_TOOL = "import-linter"
 TACH_TOOL = "tach"
-VALID_ARCHITECTURE_TOOLS = frozenset((IMPORT_LINTER_TOOL, TACH_TOOL))
 GITLEAKS_SCANNER = "gitleaks"
-SUPPORTED_SECRET_SCANNERS = frozenset((GITLEAKS_SCANNER,))
 NONE_COMPRESSION_BACKEND = "none"
 TRUNCATE_COMPRESSION_BACKEND = "truncate"
 EXTRACTIVE_COMPRESSION_BACKEND = "extractive"
 HEADROOM_COMPRESSION_BACKEND = "headroom"
-VALID_CONTEXT_COMPRESSION_BACKENDS = frozenset(
-    (
-        NONE_COMPRESSION_BACKEND,
-        TRUNCATE_COMPRESSION_BACKEND,
-        EXTRACTIVE_COMPRESSION_BACKEND,
-        HEADROOM_COMPRESSION_BACKEND,
-    )
-)
 
 BOOL_FIELDS = schema_fields.BOOL_FIELDS
 FLOAT_FIELDS = schema_fields.FLOAT_FIELDS
@@ -91,7 +80,11 @@ NON_NEGATIVE_INT_FIELDS = schema_fields.NON_NEGATIVE_INT_FIELDS
 STR_FIELDS = schema_fields.STR_FIELDS
 TUPLE_FIELDS = schema_fields.TUPLE_FIELDS
 
-VALID_FILE_BASELINE_MODES = frozenset(("advisory", "blocking"))
+VALID_MODES = registry.VALID_MODES
+VALID_ARCHITECTURE_TOOLS = registry.VALID_ARCHITECTURE_TOOLS
+SUPPORTED_SECRET_SCANNERS = registry.SUPPORTED_SECRET_SCANNERS
+VALID_CONTEXT_COMPRESSION_BACKENDS = registry.VALID_CONTEXT_COMPRESSION_BACKENDS
+VALID_FILE_BASELINE_MODES = registry.VALID_FILE_BASELINE_MODES
 
 
 @dataclass(frozen=True)

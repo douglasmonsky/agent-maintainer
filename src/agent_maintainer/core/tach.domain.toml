@@ -9,6 +9,7 @@ path = "args"
 depends_on = [
   "//agent_maintainer.config.modes",
   "//agent_maintainer.config.schema",
+  "//agent_maintainer.config.validation",
   "//agent_maintainer.models",
 ]
 
