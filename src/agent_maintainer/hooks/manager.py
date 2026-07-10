@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import shutil
-from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_client_hooks import adapters as hook_adapters
 from agent_client_hooks import merge
+from agent_maintainer.hooks import mutations
 
 ALL_CLIENTS = hook_adapters.ALL_CLIENTS
 CLIENTS = hook_adapters.CLIENTS
@@ -35,6 +34,11 @@ def install_hooks(options: InstallOptions) -> int:
     if not plans:
         print("No hook files selected.")
         return 0
+    try:
+        prepared = prepare_writes(plans, force=options.force)
+    except (OSError, UnicodeError, ValueError) as exc:
+        print(f"FAIL hook install: cannot prepare writes: {exc}")
+        return 1
     print_plan(plans, options)
     if (
         options.scope == USER_SCOPE
@@ -44,9 +48,7 @@ def install_hooks(options: InstallOptions) -> int:
     ):
         print("Aborted without user-level configuration.")
         return 1
-    for plan in plans:
-        write_plan(plan, options)
-    return 0
+    return apply_prepared_writes(prepared, options)
 
 
 def planned_writes(client: str, options: InstallOptions) -> tuple[PlannedWrite, ...]:
@@ -63,41 +65,106 @@ def planned_writes(client: str, options: InstallOptions) -> tuple[PlannedWrite, 
 
 def write_plan(plan: PlannedWrite, options: InstallOptions) -> None:
     """Write one planned hook file."""
-    content = rendered_content(plan)
-    if plan.path.exists() and plan.path.read_text(encoding="utf-8") == content:
+    prepared = mutations.prepare_write(
+        plan,
+        rendered_content(plan, force=options.force),
+    )
+    if not prepared.changed:
         print(f"unchanged {plan.path}")
         return
     if options.dry_run:
         print(f"would write {plan.path}")
         return
-    if plan.path.exists() and not options.force:
-        backup_path = backup_existing(plan.path)
-        print(f"backed up {plan.path} -> {backup_path}")
-    plan.path.parent.mkdir(parents=True, exist_ok=True)
-    plan.path.write_text(content, encoding="utf-8")
-    print(f"wrote {plan.path}")
+    apply_prepared_writes((prepared,), options)
 
 
-def rendered_content(plan: PlannedWrite) -> str:
+def rendered_content(plan: PlannedWrite, *, force: bool = False) -> str:
     """Return merged content for one write plan."""
+    try:
+        return _merged_or_direct_content(plan)
+    except (OSError, UnicodeError, ValueError):
+        if force:
+            return plan.content
+        raise
+
+
+def _merged_or_direct_content(plan: PlannedWrite) -> str:
+    """Return merged content without conflict recovery."""
+
     if plan.merge_json and plan.path.exists():
         return merge.merge_claude_settings(plan.path, plan.content)
     if plan.merge_codex and plan.path.exists():
-        return merge.merge_codex_config(
-            plan.path.read_text(encoding="utf-8"),
-            plan.content,
-        )
+        existing = plan.path.read_text(encoding="utf-8")
+        return merge.merge_codex_config(existing, plan.content)
     if plan.merge_codex:
         return merge.merge_codex_config("", plan.content)
     return plan.content
 
 
-def backup_existing(path: Path) -> Path:
-    """Back up existing file and return backup path."""
-    timestamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
-    backup_path = path.with_name(f"{path.name}.agent-maintainer-backup-{timestamp}")
-    shutil.copy2(path, backup_path)
-    return backup_path
+def prepare_writes(
+    plans: tuple[PlannedWrite, ...],
+    *,
+    force: bool,
+) -> tuple[mutations.PreparedHookWrite, ...]:
+    """Render and inspect every plan before the first mutation."""
+
+    return tuple(
+        mutations.prepare_write(plan, rendered_content(plan, force=force)) for plan in plans
+    )
+
+
+def apply_prepared_writes(
+    prepared: tuple[mutations.PreparedHookWrite, ...],
+    options: InstallOptions,
+) -> int:
+    """Preview or transactionally apply prepared hook writes."""
+
+    if options.dry_run:
+        _print_prepared(prepared, dry_run=True)
+        return 0
+    try:
+        result = mutations.apply_transaction(
+            prepared,
+            ownership_root=_ownership_root(options),
+        )
+    except mutations.HookMutationError as exc:
+        print(f"FAIL hook install: {exc}")
+        return 1
+    for backup in result.backups:
+        print(f"backed up {backup.original} -> {backup.backup}")
+    _print_prepared(prepared, dry_run=False)
+    if result.rollback_manifest is not None:
+        print(f"rollback manifest: {result.rollback_manifest}")
+    return 0
+
+
+def _print_prepared(
+    prepared: tuple[mutations.PreparedHookWrite, ...],
+    *,
+    dry_run: bool,
+) -> None:
+    """Print one action line for each prepared destination."""
+
+    for item in prepared:
+        path = item.plan.path
+        action = _prepared_action(item.changed, dry_run=dry_run)
+        print(action, path)
+
+
+def _prepared_action(changed: bool, *, dry_run: bool) -> str:
+    """Return the visible action for one prepared destination."""
+
+    if changed:
+        return "would write" if dry_run else "wrote"
+    return "unchanged"
+
+
+def _ownership_root(options: InstallOptions) -> Path:
+    """Return the root that owns destinations and rollback data."""
+
+    if options.scope == USER_SCOPE:
+        return hook_adapters.home()
+    return options.target.resolve()
 
 
 def print_plan(plans: tuple[PlannedWrite, ...], options: InstallOptions) -> None:

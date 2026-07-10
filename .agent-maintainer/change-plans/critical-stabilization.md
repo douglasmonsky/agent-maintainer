@@ -36,6 +36,7 @@ allowed_paths = [
   "pyproject.toml",
   "scripts/**",
   "src/**",
+  "tach.toml",
   "tests/**",
   "uv.lock",
   "zizmor.yml",

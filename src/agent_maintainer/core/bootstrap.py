@@ -7,6 +7,7 @@ import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
+from agent_maintainer.core import setup_plans
 from agent_maintainer.core.runtime import hardened_subprocess_env
 from agent_maintainer.core.tooling.capabilities import bootstrap_scope_note
 from agent_maintainer.hooks.manager import (
@@ -20,34 +21,47 @@ from agent_maintainer.hooks.manager import (
 MACOS_HIDDEN_FILE_FLAG = 0x8000
 
 
-def bootstrap() -> int:
-    """Bootstrap local tooling, install dependencies, install hooks."""
+def bootstrap(*, target: Path | None = None, dry_run: bool = False) -> int:
+    """Bootstrap local tooling and dependencies without installing hooks."""
 
-    repo_root = project_root()
+    repo_root = setup_plans.selected_root(target, discovered=project_root())
+    if dry_run:
+        setup_plans.print_bootstrap_plan(
+            repo_root,
+            preferred_dependency_file(repo_root),
+            local_source=has_local_agent_maintainer_source(repo_root),
+        )
+        return 0
     python_path = ensure_virtualenv(repo_root)
     if python_path is None:
         return 1
 
-    dependency_status = install_dependencies(repo_root, python_path)
-    if dependency_status != 0:
-        return dependency_status
-
-    return install()
+    return install_dependencies(repo_root, python_path)
 
 
-def install() -> int:
+def install(
+    *,
+    target: Path | None = None,
+    dry_run: bool = False,
+    force: bool = False,
+) -> int:
     """Install local hooks without reinstalling dependencies."""
 
-    repo_root = project_root()
-    pre_commit_status = install_pre_commit(repo_root)
+    repo_root = setup_plans.selected_root(target, discovered=project_root())
+    pre_commit_status = (
+        setup_plans.preview_pre_commit(repo_root) if dry_run else install_pre_commit(repo_root)
+    )
     hooks_status = install_hooks(
         InstallOptions(
             target=repo_root,
             client=ALL_CLIENTS,
             scope=REPO_SCOPE,
+            dry_run=dry_run,
+            force=force,
         )
     )
-    report_agent_hooks(repo_root)
+    if not dry_run:
+        report_agent_hooks(repo_root)
     if pre_commit_status != 0:
         return pre_commit_status
     return hooks_status

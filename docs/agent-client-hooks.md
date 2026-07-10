@@ -70,8 +70,14 @@ Use `--yes` only in deliberate automation:
 python3 -m agent_maintainer hooks install claude-code --scope user --yes
 ```
 
-Existing files are backed up before managed writes unless `--force` is passed.
-Dry-run mode never prompts for user-level permission and never creates backups.
+Changed existing files are always backed up, including when `--force` resolves
+an invalid managed config. Repo backups live under the ignored
+`.agent-maintainer/backups/hooks/<transaction>/` directory with a
+`rollback.json` restore/remove manifest. Writes are applied atomically as one
+transaction and earlier destinations are restored if a later write fails.
+Dry-run mode never prompts for user-level permission, writes files, or creates
+backups. A second current install is a byte-for-byte no-op and creates no new
+transaction.
 
 User-level hooks are repo opt-in. When a global hook fires outside a Git
 repository, or inside a repository without `[tool.agent_maintainer]` in

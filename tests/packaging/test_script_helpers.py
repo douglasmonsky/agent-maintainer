@@ -48,11 +48,11 @@ def test_scripted_entrypoints_disable_python_bytecode_writes() -> None:
 
 
 def test_maintainer_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(maintainer_cli, "bootstrap", lambda: BOOTSTRAP_STATUS)
+    monkeypatch.setattr(maintainer_cli, "bootstrap_command", lambda args: BOOTSTRAP_STATUS)
     monkeypatch.setattr(maintainer_cli, "doctor_main", lambda args: DOCTOR_STATUS)
     monkeypatch.setattr(maintainer_cli, "guidance_main", lambda args: GUIDANCE_STATUS)
     monkeypatch.setattr(maintainer_cli, "init_main", lambda args: INIT_STATUS)
-    monkeypatch.setattr(maintainer_cli, "install", lambda: INSTALL_STATUS)
+    monkeypatch.setattr(maintainer_cli, "install_command", lambda args: INSTALL_STATUS)
     monkeypatch.setattr(maintainer_cli, "ratchet_command", lambda args: RATCHET_STATUS)
     monkeypatch.setattr(maintainer_cli, "verify_main", lambda args: VERIFY_STATUS)
 

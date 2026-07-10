@@ -42,7 +42,12 @@ path = "manager"
 depends_on = [
   "//agent_client_hooks.adapters",
   "//agent_client_hooks.merge",
+  "mutations",
 ]
+
+[[modules]]
+path = "mutations"
+depends_on = ["//agent_client_hooks.adapters"]
 
 [[modules]]
 path = "merge"

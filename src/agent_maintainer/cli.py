@@ -6,7 +6,6 @@ import sys
 from collections.abc import Callable
 
 from agent_maintainer.context.cli import main as context_main
-from agent_maintainer.core.bootstrap import bootstrap, install
 from agent_maintainer.core.guidance import main as guidance_main
 from agent_maintainer.core.runtime import disable_bytecode_writes
 from agent_maintainer.core.scaffold.initializer import main as init_main
@@ -143,9 +142,9 @@ def attention_command(command_args: list[str]) -> int:
     return _run_module_main("agent_maintainer.attention.cli", command_args)
 
 
-def bootstrap_command(_command_args: list[str]) -> int:
+def bootstrap_command(command_args: list[str]) -> int:
     """Adapt bootstrap shared command handler signature."""
-    return bootstrap()
+    return _run_module_main("agent_maintainer.core.setup_cli", ["bootstrap", *command_args])
 
 
 def change_plan_command(command_args: list[str]) -> int:
@@ -158,9 +157,9 @@ def events_command(command_args: list[str]) -> int:
     return _run_module_main("agent_maintainer.runtime_events.cli", command_args)
 
 
-def install_command(_command_args: list[str]) -> int:
+def install_command(command_args: list[str]) -> int:
     """Adapt install shared command handler signature."""
-    return install()
+    return _run_module_main("agent_maintainer.core.setup_cli", ["install", *command_args])
 
 
 def mcp_command(command_args: list[str]) -> int:

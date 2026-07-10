@@ -24,8 +24,10 @@ Install Codex hooks with:
 python3 -m agent_maintainer hooks install codex
 ```
 
-`python3 -m agent_maintainer install` also installs managed agent-client hooks
-and local pre-commit setup. It does not approve Codex hooks for you.
+`python3 -m agent_maintainer install` explicitly installs managed agent-client
+hooks and local pre-commit setup; add `--dry-run` to preview without mutation.
+Dependency-only `bootstrap` no longer installs hooks implicitly. Neither command
+approves Codex hooks for you.
 
 ## Trust Review
 

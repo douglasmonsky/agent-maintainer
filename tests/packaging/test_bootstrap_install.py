@@ -106,7 +106,6 @@ def test_maintainer_bootstrap_and_virtualenv_helpers(
 
     monkeypatch.setattr(maintainer_bootstrap, "ensure_virtualenv", lambda repo_root: python_path)
     monkeypatch.setattr(maintainer_bootstrap, "install_dependencies", lambda repo_root, path: 0)
-    monkeypatch.setattr(maintainer_bootstrap, "install", lambda: 0)
     assert maintainer_bootstrap.bootstrap() == 0
 
 

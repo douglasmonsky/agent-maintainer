@@ -471,10 +471,15 @@ reconstruct long environment-prefixed commands:
 
 ```bash
 just bootstrap
+python3 -m agent_maintainer install --dry-run
+python3 -m agent_maintainer install
 just doctor
 just verify-precommit
 just verify
 ```
+
+`bootstrap` installs development dependencies only. Hook and pre-commit setup
+is an explicit, previewable `install` action.
 
 Refresh the pinned dev lock after changing `config/dev-dependencies.txt`:
 

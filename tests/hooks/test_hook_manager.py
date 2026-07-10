@@ -323,19 +323,24 @@ def test_write_plan_skips_unchanged_file(
     assert "unchanged" in capsys.readouterr().out
 
 
-def test_write_plan_backs_up_existing_file(tmp_path: Path) -> None:
-    """Existing unmanaged files are backed up before replacement."""
+@pytest.mark.parametrize("force", (False, True))
+def test_write_plan_backs_up_existing_file(tmp_path: Path, force: bool) -> None:
+    """Existing files are backed up even when force resolves a conflict."""
 
     hook_file = tmp_path / "hook.py"
     hook_file.write_text("old", encoding="utf-8")
 
     manager.write_plan(
         manager.PlannedWrite(hook_file, "new", "hook"),
-        manager.InstallOptions(target=tmp_path, client=manager.CODEX_CLIENT),
+        manager.InstallOptions(
+            target=tmp_path,
+            client=manager.CODEX_CLIENT,
+            force=force,
+        ),
     )
 
     assert hook_file.read_text(encoding="utf-8") == "new"
-    backups = list(tmp_path.glob("hook.py.agent-maintainer-backup-*"))
+    backups = list((tmp_path / ".agent-maintainer/backups/hooks").glob("*/files/hook.py"))
     assert len(backups) == 1
     assert backups[0].read_text(encoding="utf-8") == "old"
 

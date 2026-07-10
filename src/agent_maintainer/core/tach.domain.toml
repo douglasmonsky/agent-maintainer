@@ -16,9 +16,18 @@ depends_on = [
 path = "bootstrap"
 depends_on = [
   "runtime",
+  "setup_plans",
   "tooling.capabilities",
   "//agent_maintainer.hooks.manager",
 ]
+
+[[modules]]
+path = "setup_cli"
+depends_on = ["bootstrap"]
+
+[[modules]]
+path = "setup_plans"
+depends_on = []
 
 [[modules]]
 path = "artifact_environment"

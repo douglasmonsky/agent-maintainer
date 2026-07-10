@@ -31,16 +31,18 @@ recommend a track, preset, optional gates, and AI follow-up prompts. Use
 Technical Debt Score under `.verify-logs`; the static HTML report includes that
 score when the artifact exists.
 
-Use `python3 -m agent_maintainer bootstrap` for one-command local setup,
+Use `python3 -m agent_maintainer bootstrap` for dependency-only local setup,
 For package consumers, `bootstrap` operates on the current repository tree; it no longer falls back to the installed Agent Maintainer source checkout. When `config/dev-lock.txt` and `config/dev-dependencies.txt` are absent and the repository does not contain local `src/agent_maintainer`, bootstrap skips package dependency installation and leaves the consumer project package untouched. Use `python3 -m agent_maintainer doctor --root <repo> --format json` for scriptable setup checks outside the target repo CWD.
 `python3 -m agent_maintainer doctor` for setup health, `python3 -m
 agent_maintainer guidance` for generated agent-facing guidance, `python3 -m
 agent_maintainer verify --profile precommit` for local completion checks,
 `python3 -m agent_maintainer verify --profile full` for deeper review,
 `python3 -m agent_maintainer verify --profile manual` for slow opt-in checks,
-and `python3 -m agent_maintainer install` to install local hooks without
-reinstalling dependencies. Use `python3 -m agent_maintainer hooks install all`
-to install managed agent-client hooks directly.
+and `python3 -m agent_maintainer install` to explicitly install local pre-commit
+and managed hooks without reinstalling dependencies. Both commands accept
+`--dry-run`; bootstrap never installs hooks implicitly. Use `python3 -m
+agent_maintainer hooks install all` to select managed agent-client hooks
+directly.
 
 When `.docsync/trace.yml` exists, Agent Maintainer adds a `docsync`
 verification check to local profiles. The check runs `docsync check

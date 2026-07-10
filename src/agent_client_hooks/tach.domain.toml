@@ -42,5 +42,7 @@ depends_on = [
 [[modules]]
 path = "merge"
 depends_on = [
+  "constants",
+  "manifest",
   "templates",
 ]
