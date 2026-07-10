@@ -16,6 +16,12 @@ repositories.
 > Agent Maintainer is in beta. The core workflow is usable today, but starter
 > files and defaults may change as it is tested across more Python repository
 > layouts.
+>
+> Latest published package: `agent-maintainer==0.1.0b5`, with immutable
+> [release evidence](docs/releases/0.1.0b5.md). This checkout and its
+> documentation target the unpublished `0.1.0b6` release candidate; see the
+> [candidate notes](docs/releases/0.1.0b6.md) and
+> [upgrade guide](docs/upgrading-to-0.1.0b6.md).
 
 Agent Maintainer helps coding agents make smaller, safer, more reviewable code
 changes. It wraps your existing quality tools in low-noise profiles, adds
@@ -48,8 +54,12 @@ raw evidence stays in run-scoped artifacts.
 Install the core toolset:
 
 ```bash
-python -m pip install "agent-maintainer[core]"
+python -m pip install "agent-maintainer[core]==0.1.0b5"
 ```
+
+That pin installs the latest published beta. To evaluate the unpublished b6
+candidate from a trusted checkout, use `python -m pip install -e ".[core]"`
+from the repository root and follow the candidate upgrade guide.
 
 Initialize a repo:
 
@@ -339,7 +349,10 @@ Agent Maintainer is designed to be safe to try:
 Read more:
 [Release checklist](docs/release-checklist.md),
 [troubleshooting](docs/troubleshooting.md),
-[0.1.0b5 release notes](docs/releases/0.1.0b5.md).
+[release index](docs/releases/README.md),
+[0.1.0b5 release evidence](docs/releases/0.1.0b5.md),
+[0.1.0b6 candidate notes](docs/releases/0.1.0b6.md),
+[0.1.0b6 upgrade guide](docs/upgrading-to-0.1.0b6.md).
 
 ## Configuration
 

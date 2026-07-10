@@ -1,66 +1,112 @@
 # Changelog
 
-## Unreleased
+## Unreleased (target: 0.1.0b6)
+
+`0.1.0b6` is an unpublished release candidate. `0.1.0b5` remains the latest
+published package and its release-evidence record remains authoritative until
+the candidate passes the complete exact-commit release matrix.
+
+### Security Since 0.1.0b5
+
+- All repository-controlled filesystem access is confined to approved roots.
+  MCP and DocSync reads reject escapes, special files, oversized inputs, and
+  unsafe write destinations before opening or replacing data.
+- GitHub Actions use full-SHA-pinned implementations, explicit concurrency, and
+  strict unfiltered workflow security checks instead of mutable action tags.
+- Publishing requires fresh full, CI, security, manual, and release manifests
+  from one clean commit. Every consumer revalidates the exact-commit evidence
+  aggregate before using it.
+- Wheel and source-distribution transfers carry a deterministic manifest with
+  the exact inventory, byte sizes, and SHA-256 digests. Release jobs bind that
+  manifest to a separately carried digest and verify it immediately before
+  attachment or Trusted Publishing.
 
 ### Added Since 0.1.0b5
 
-- Release evidence for `0.1.0b5`, including TestPyPI/PyPI workflow links,
-  artifact hashes, and clean-install smoke commands.
-- Public documentation drift tests that keep README and roadmap current-release
-  references aligned with recorded release evidence.
-- Registry-generated configuration reference documentation and versioned JSON
-  capability metadata with a checked-in currentness test.
+- Structured runtime events now cover checks, hooks, commands, verifier
+  artifacts, waits, and efficacy outcomes. New summary, waste, JSONL, and
+  OpenTelemetry-compatible export commands make local behavior inspectable
+  without uploading raw logs.
+- Background-safe durable waits now cover GitHub runs, PR checks, and local
+  verifiers with a persistent registry, targeted sweeps, background workers,
+  heartbeat handoffs, terminal and app-server rewake backends, and manually
+  recoverable state.
+- The attention ledger, attention-weighted context packs, recall ledger, and
+  surgical next-action ranking retain high-value repair context while reducing
+  repeated broad reads.
+- Optional MCP commands expose bounded Agent Maintainer operations through
+  static, capability-aware handlers while keeping MCP dependencies opt-in.
+- Agent-task-broker experiments add handoff results, lock/worktree planning,
+  adapter contracts, model-tier routing, and a Codex SDK plan backend under an
+  explicitly incubating surface.
+- TypeScript/React advisory support now records package/workspace shape,
+  configured command ownership, React/Vite/Next fixtures, test and coverage
+  repair facts, suppression facts, reviewability thresholds, and doctor/setup
+  guidance without claiming Python gate parity.
+- Provider-neutral file baselines report matched and changed files, changed
+  lines, and compact next actions across configured documentation, config,
+  test, and frontend file groups.
+- DocSync gained explicit object-end markers, freshness metadata, verifier
+  repair facts, extraction review tooling, a standalone README, and an
+  onboarding fixture for the supported public boundary.
+- Registry-generated configuration reference documentation, versioned
+  capability metadata, repair-fact coverage assessment, scoring example
+  datasets, and agent efficacy assessment are now available.
 
 ### Changed Since 0.1.0b5
 
-- README and roadmap current-release links now point at `0.1.0b5`.
-- Agent-client installation, scaffolding, status, and uninstall selection now
-  share one managed-file manifest, and status distinguishes current, stale,
-  missing, and intentionally unmanaged files.
-- Bootstrap is dependency-only, while explicit hook/pre-commit installation
-  has strict argument parsing and side-effect-free preview.
+- Agent-client installation, scaffolding, status, update, and uninstall now use
+  one managed hook inventory. Status distinguishes current, stale, missing, and
+  intentionally unmanaged files.
+- Bootstrap is dependency-only. Hook and pre-commit mutation is an explicit,
+  strictly parsed action with side-effect-free preview, conflict classification,
+  collision-proof backup, transactional apply, and rollback.
 - Initializer preview classifies additions, unchanged files, supported merges,
-  conflicts, and user-owned skips before transactional apply.
-- Managed hooks now expose explicit update and uninstall lifecycles driven by
-  the same manifest, preflight, merge, backup, and rollback contract.
-- Configuration files, environment overrides, and verifier flags now converge
-  on one field registry and complete resolved-policy validator.
-- Strict Pyright debt now ratchets independently by file/rule pair under a
-  versioned, tool-and-scope-bound baseline instead of an aggregate error budget.
-- Publishing now requires fresh full, CI, security, manual, and release
-  manifests from one clean commit; build and publish jobs revalidate the
-  self-contained exact-commit aggregate before acting.
-- GitHub Actions now use full-SHA-pinned action implementations, explicit
-  concurrency policy, and strict unfiltered workflow security validation.
-- Built wheels and source distributions now travel in an exact-commit manifest
-  with byte sizes and SHA-256 digests that every release consumer revalidates
-  against the build job's separately carried manifest digest immediately before
-  attachment or Trusted Publishing.
+  conflicts, and user-owned skips. Force no longer means silently replacing
+  guidance or unrelated client configuration.
+- Complete configuration preflight now resolves file settings, environment
+  overrides, and CLI flags through one registry. Unknown, mistyped,
+  contradictory, type-confused, out-of-range, or path-escaping policy fails
+  closed before behavior begins.
+- Detached verifier and wait processes own their terminal lifecycle, persist
+  launch/running/terminal state, and separate quality failures from spawn,
+  cancellation, and transport failures.
+- Strict Pyright debt ratchets by file/rule pair under a versioned,
+  tool-and-scope-bound baseline rather than an aggregate error allowance.
+- Public documentation now distinguishes published release evidence from
+  candidate intent, validates repository-local links, and provides a
+  version-matched candidate guide and release index.
+- Consumer-repository doctor and bootstrap flows now honor the requested root,
+  linked-worktree metadata, and package-first execution instead of assuming the
+  Agent Maintainer source repository.
 
 ### Fixed Since 0.1.0b5
 
-- Agent and hardening scaffolds now include the configured Codex and Claude Code
-  PR-wait wrappers, and Codex hook-audit status/uninstall inventory no longer
-  disagrees with installation.
-- Claude hook merging preserves unrelated entries and ordering. Changed hook
-  files are always backed up in ignored collision-proof transactions, including
-  with `--force`, and interrupted multi-file writes roll back.
-- Initializer force no longer overwrites user guidance silently: supported files
-  merge, conflicts are backed up, and interrupted multi-file onboarding rolls
-  back to the pre-run state.
-- Hook and initializer recovery data is Git-private in repositories. Uninstall
-  removes only managed identities, preserves co-located third-party commands,
-  refuses unowned files, and rolls prior deletions back after later failures.
-- Unknown, mistyped, out-of-range, contradictory, path-escaping, and
-  type-confused configuration now fails with source-aware diagnostics before a
-  known root command can run behavior.
-- Detached verifier and wait-watcher processes now own all standard streams,
-  close inherited descriptors, persist explicit launch/running/terminal state,
-  and distinguish quality failures from spawn errors and cancellation after the
-  launching terminal closes.
-- Strict Pyright now rejects schema drift, inconsistent diagnostic totals,
-  out-of-scope paths, tool/scope changes, new pair substitutions, and nonzero
-  global error budgets while emitting an ignored candidate for explicit review.
+- Claude and Codex hook merges preserve unrelated commands and ordering.
+  Uninstall removes only managed identities, refuses unowned files, and rolls
+  prior removals back if a later operation fails.
+- Agent and hardening scaffolds include every configured PR-wait and audit
+  wrapper; install, status, update, and uninstall no longer disagree about the
+  managed inventory.
+- Async verifier readiness, PR wait handoff, heartbeat scoping, local-HEAD wait
+  identity, warning handling, targeted sweeps, launchd tool paths, and terminal
+  completion detection now remain correct across terminal closure and restart.
+- Runtime-event waste, attention scanning, efficacy metrics, retained mutation
+  results, duplicate artifact warnings, and Pylint, Vulture, DocSync,
+  TypeScript, pytest, coverage, and change-budget repair facts now handle their
+  defensive and fallback paths consistently.
+- The mutation quality gate and strict typing baseline are restored without
+  lowering thresholds, and repository Markdown links resolve after roadmap
+  archival moves.
+
+### Experimental and Advisory
+
+- Task-broker, model-tier routing, Codex SDK planning, optional MCP, and
+  TypeScript/React provider work remain opt-in or advisory. They do not expand
+  the stable Python blocking contract for this beta.
+- Review [the b6 candidate notes](docs/releases/0.1.0b6.md) and
+  [the upgrade guide](docs/upgrading-to-0.1.0b6.md) before evaluating the
+  candidate in an existing application.
 
 ## 0.1.0b5 - 2026-07-03
 

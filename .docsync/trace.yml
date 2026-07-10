@@ -172,6 +172,18 @@ documents:
     path: docs/releases/0.1.0b5.md
     title: Agent Maintainer 0.1.0b5 Release Evidence
     audience: maintainers
+  docs.release_index:
+    path: docs/releases/README.md
+    title: Release Index
+    audience: public
+  docs.release_0_1_0b6_candidate:
+    path: docs/releases/0.1.0b6.md
+    title: Agent Maintainer 0.1.0b6 Candidate Notes
+    audience: public
+  docs.upgrade_0_1_0b6:
+    path: docs/upgrading-to-0.1.0b6.md
+    title: Upgrading from 0.1.0b5 to 0.1.0b6
+    audience: public
 
   docs.future_call_roi_acceleration:
     path: docs/roadmap/future-call-roi-acceleration.md
@@ -570,6 +582,30 @@ objects:
     heading:
       level: 1
       text: Agent Maintainer 0.1.0b5 Release Evidence
+  docs.release_index.overview:
+    document: docs.release_index
+    kind: heading_section
+    path: docs/releases/README.md
+    marker: docs.release_index.overview
+    heading:
+      level: 1
+      text: Release Index
+  docs.release_0_1_0b6_candidate.overview:
+    document: docs.release_0_1_0b6_candidate
+    kind: heading_section
+    path: docs/releases/0.1.0b6.md
+    marker: docs.release_0_1_0b6_candidate.overview
+    heading:
+      level: 1
+      text: Agent Maintainer 0.1.0b6 Candidate Notes
+  docs.upgrade_0_1_0b6.overview:
+    document: docs.upgrade_0_1_0b6
+    kind: heading_section
+    path: docs/upgrading-to-0.1.0b6.md
+    marker: docs.upgrade_0_1_0b6.overview
+    heading:
+      level: 1
+      text: Upgrading from 0.1.0b5 to 0.1.0b6
 
   docs.future_call_roi_acceleration.overview:
     document: docs.future_call_roi_acceleration
@@ -1004,6 +1040,24 @@ claims:
     evidence:
       - evidence.release.packaging_tests
       - evidence.release.publish_workflow
+  claim.docs.release_index_state:
+    object: docs.release_index.overview
+    text: Release index distinguishes immutable published evidence from unpublished candidate intent.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
+  claim.docs.release_0_1_0b6_candidate_truth:
+    object: docs.release_0_1_0b6_candidate.overview
+    text: Candidate notes identify 0.1.0b6 as unpublished and do not invent publication evidence.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
+  claim.docs.upgrade_0_1_0b6_safe_adoption:
+    object: docs.upgrade_0_1_0b6.overview
+    text: Upgrade guidance covers mutation preview, verification, and rollback to the published beta.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
 evidence:
   evidence.docsync.domain_contract:
     type: code
@@ -1280,6 +1334,12 @@ evidence:
     description: Publish workflow builds distributions, uploads GitHub release artifacts, and uses TestPyPI/PyPI Trusted Publisher environments.
     anchors:
       - path: .github/workflows/publish.yml
+        mode: explicit_region
+  evidence.release.public_contract_tests:
+    type: test
+    description: Public release contract tests enforce truthful candidate labeling, published-version pointers, and safe upgrade guidance.
+    anchors:
+      - path: tests/packaging/test_public_docs.py
         mode: explicit_region
   evidence.release.packaging_tests:
     type: test

@@ -7,6 +7,7 @@ expires = 2026-08-31
 allowed_paths = [
   ".agent-maintainer/change-plans/version-matched-release-contract.md",
   ".docsync/attestations/**",
+  ".docsync/trace.yml",
   ".github/CODEOWNERS",
   ".github/ISSUE_TEMPLATE/**",
   ".serena/**",

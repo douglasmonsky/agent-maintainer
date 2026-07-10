@@ -27,7 +27,7 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
         metadata = tomllib.load(handle)
 
     assert metadata["project"]["name"] == "agent-maintainer"
-    assert metadata["project"]["version"] == "0.1.0b5"
+    assert metadata["project"]["version"] == "0.1.0b6"
     assert metadata["project"]["description"] == (
         "Repository maintenance checks and diagnostics for AI-assisted Python development."
     )
@@ -42,6 +42,9 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     assert metadata["project"]["authors"] == [{"name": "Doug Monsky"}]
     assert metadata["project"]["urls"]["Repository"] == (
         "https://github.com/douglasmonsky/agent-maintainer"
+    )
+    assert metadata["project"]["urls"]["Documentation"] == (
+        "https://github.com/douglasmonsky/agent-maintainer#readme"
     )
     assert "License :: OSI Approved :: MIT License" not in metadata["project"]["classifiers"]
     assert "Programming Language :: Python :: 3.14" in metadata["project"]["classifiers"]

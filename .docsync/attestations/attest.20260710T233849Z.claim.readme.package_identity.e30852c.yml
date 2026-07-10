@@ -1,0 +1,19 @@
+version: 1
+attestations:
+- id: attest.20260710T233849Z.claim.readme.package_identity.e30852c
+  claim: claim.readme.package_identity
+  doc_object: docs.readme.overview
+  evidence:
+  - evidence.readme.package_metadata
+  reason: release_candidate_version_bump_reviewed
+  reviewer: agent
+  reviewed_at: '2026-07-10T23:38:49Z'
+  base: HEAD
+  head: e30852c
+  evidence_fingerprints:
+    evidence.readme.package_metadata: sha256:022e5dec51b14bef5a947576bbbebaf351ef9c98f8774fe72bcaea15eb779511
+  evidence_anchor_fingerprints:
+    evidence.readme.package_metadata:
+    - sha256:c0e0371e965e0605e10db3bebcdff2a3394a5e04efaaf34beda928b8023839f9
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
