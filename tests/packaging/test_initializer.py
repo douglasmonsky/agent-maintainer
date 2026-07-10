@@ -69,18 +69,24 @@ def test_agent_init_includes_codex_hooks_and_agent_guidance(tmp_path: Path) -> N
     assert (tmp_path / ".claude" / "settings.json").exists()
 
     post_hook = tmp_path / ".codex" / "hooks" / "post_edit_fast_gate.py"
+    pr_wait_hook = tmp_path / ".codex" / "hooks" / "post_pr_wait.py"
     stop_hook = tmp_path / ".codex" / "hooks" / "stop_full_verify.py"
     claude_post_hook = tmp_path / ".claude" / "hooks" / "post_tool_use.py"
+    claude_pr_wait_hook = tmp_path / ".claude" / "hooks" / "post_pr_wait.py"
     claude_stop_hook = tmp_path / ".claude" / "hooks" / "stop.py"
     claude_subagent_hook = tmp_path / ".claude" / "hooks" / "subagent_stop.py"
     assert post_hook.exists()
+    assert pr_wait_hook.exists()
     assert stop_hook.exists()
     assert claude_post_hook.exists()
+    assert claude_pr_wait_hook.exists()
     assert claude_stop_hook.exists()
     assert claude_subagent_hook.exists()
     py_compile.compile(str(post_hook), doraise=True)
+    py_compile.compile(str(pr_wait_hook), doraise=True)
     py_compile.compile(str(stop_hook), doraise=True)
     py_compile.compile(str(claude_post_hook), doraise=True)
+    py_compile.compile(str(claude_pr_wait_hook), doraise=True)
     py_compile.compile(str(claude_stop_hook), doraise=True)
     py_compile.compile(str(claude_subagent_hook), doraise=True)
 

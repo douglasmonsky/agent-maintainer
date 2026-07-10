@@ -12,6 +12,15 @@
 ### Changed Since 0.1.0b5
 
 - README and roadmap current-release links now point at `0.1.0b5`.
+- Agent-client installation, scaffolding, status, and uninstall selection now
+  share one managed-file manifest, and status distinguishes current, stale,
+  missing, and intentionally unmanaged files.
+
+### Fixed Since 0.1.0b5
+
+- Agent and hardening scaffolds now include the configured Codex and Claude Code
+  PR-wait wrappers, and Codex hook-audit status/uninstall inventory no longer
+  disagrees with installation.
 
 ## 0.1.0b5 - 2026-07-03
 

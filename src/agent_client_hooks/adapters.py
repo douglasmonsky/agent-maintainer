@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from agent_client_hooks import constants, templates
+from agent_client_hooks import constants, manifest
+from agent_client_hooks import status as hook_statuses
 
 ALL_CLIENTS = constants.ALL_CLIENTS
 CLAUDE_CODE_CLIENT = constants.CLAUDE_CODE_CLIENT
@@ -41,13 +42,7 @@ class InstallOptions:
     async_rewake_stop: bool = False
 
 
-@dataclass(frozen=True)
-class HookClientStatus:
-    """Computed status for one managed agent client."""
-
-    name: str
-    config_present: bool
-    scripts_present: bool
+HookClientStatus = hook_statuses.HookClientStatus
 
 
 class AgentClientAdapter(Protocol):
@@ -90,12 +85,18 @@ class CodexAdapter:
     """Managed hook adapter for Codex."""
 
     name: str = CODEX_CLIENT
-    config_paths: tuple[str, ...] = (".codex/config.toml",)
-    hook_paths: tuple[str, ...] = (
-        templates.CODEX_POST_HOOK,
-        templates.CODEX_PR_WAIT_HOOK,
-        templates.CODEX_STOP_HOOK,
-    )
+
+    @property
+    def config_paths(self) -> tuple[str, ...]:
+        """Return manifest-owned Codex configuration paths."""
+
+        return _manifest_paths(self.name, kind="config")
+
+    @property
+    def hook_paths(self) -> tuple[str, ...]:
+        """Return manifest-owned Codex hook paths."""
+
+        return _manifest_paths(self.name, kind="script")
 
     def status(self, target: Path, scope: str) -> HookClientStatus:
         """Return Codex hook install status."""
@@ -107,46 +108,16 @@ class CodexAdapter:
         scope: str,
     ) -> tuple[PlannedWrite, ...]:
         """Return Codex hook installation writes."""
-        root = target.resolve()
-        plans = (
-            PlannedWrite(
-                scoped_path(root, scope, self.config_paths[0]),
-                templates.codex_config_block(user_scope=scope == USER_SCOPE),
-                "Codex hook config",
-                merge_codex=True,
-            ),
-        )
-        if scope == USER_SCOPE:
-            return plans
-        return (
-            *plans,
-            PlannedWrite(
-                root / templates.CODEX_POST_HOOK,
-                templates.codex_post_hook(),
-                "Codex post-edit hook",
-            ),
-            PlannedWrite(
-                root / templates.CODEX_PR_WAIT_HOOK,
-                templates.codex_pr_wait_hook(),
-                "Codex PR wait hook",
-            ),
-            PlannedWrite(
-                root / templates.CODEX_STOP_HOOK, templates.codex_stop_hook(), "Codex stop hook"
-            ),
-            PlannedWrite(
-                root / ".codex/hooks/hook_audit.py",
-                templates.hook_audit_shim(),
-                "Codex hook-audit compatibility shim",
-            ),
+        return _install_plans(
+            self.name,
+            target,
+            scope,
+            options=manifest.RenderOptions(user_scope=scope == USER_SCOPE),
         )
 
     def uninstall(self, target: Path, scope: str) -> tuple[Path, ...]:
         """Return Codex hook files managed by Agent Maintainer."""
-        root = target.resolve()
-        return (
-            scoped_path(root, scope, self.config_paths[0]),
-            *(scoped_path(root, scope, hook_path) for hook_path in self.hook_paths),
-        )
+        return _uninstall_paths(self.name, target, scope)
 
 
 @dataclass(frozen=True)
@@ -154,13 +125,18 @@ class ClaudeCodeAdapter:
     """Managed hook adapter for Claude Code."""
 
     name: str = CLAUDE_CODE_CLIENT
-    config_paths: tuple[str, ...] = (".claude/settings.json",)
-    hook_paths: tuple[str, ...] = (
-        templates.CLAUDE_POST_HOOK,
-        templates.CLAUDE_PR_WAIT_HOOK,
-        templates.CLAUDE_STOP_HOOK,
-        templates.CLAUDE_SUBAGENT_STOP_HOOK,
-    )
+
+    @property
+    def config_paths(self) -> tuple[str, ...]:
+        """Return manifest-owned Claude Code configuration paths."""
+
+        return _manifest_paths(self.name, kind="config")
+
+    @property
+    def hook_paths(self) -> tuple[str, ...]:
+        """Return manifest-owned Claude Code hook paths."""
+
+        return _manifest_paths(self.name, kind="script")
 
     def status(self, target: Path, scope: str) -> HookClientStatus:
         """Return Claude Code hook install status."""
@@ -174,54 +150,15 @@ class ClaudeCodeAdapter:
         async_rewake_stop: bool = False,
     ) -> tuple[PlannedWrite, ...]:
         """Return Claude Code hook installation writes."""
-        root = target.resolve()
-        settings_description = "Claude Code hook settings"
-        if async_rewake_stop:
-            settings_description = "Claude Code hook settings (async rewake Stop/SubagentStop)"
-        plans = (
-            PlannedWrite(
-                scoped_path(root, scope, self.config_paths[0]),
-                templates.claude_settings(
-                    user_scope=scope == USER_SCOPE,
-                    async_rewake_stop=async_rewake_stop,
-                ),
-                settings_description,
-                merge_json=True,
-            ),
+        options = manifest.RenderOptions(
+            user_scope=scope == USER_SCOPE,
+            async_rewake_stop=async_rewake_stop,
         )
-        if scope == USER_SCOPE:
-            return plans
-        return (
-            *plans,
-            PlannedWrite(
-                root / templates.CLAUDE_POST_HOOK,
-                templates.claude_post_hook(),
-                "Claude Code post-edit hook",
-            ),
-            PlannedWrite(
-                root / templates.CLAUDE_PR_WAIT_HOOK,
-                templates.claude_pr_wait_hook(),
-                "Claude Code PR wait hook",
-            ),
-            PlannedWrite(
-                root / templates.CLAUDE_STOP_HOOK,
-                templates.claude_stop_hook(async_rewake=async_rewake_stop),
-                "Claude Code stop hook",
-            ),
-            PlannedWrite(
-                root / templates.CLAUDE_SUBAGENT_STOP_HOOK,
-                templates.claude_subagent_stop_hook(async_rewake=async_rewake_stop),
-                "Claude Code subagent stop hook",
-            ),
-        )
+        return _install_plans(self.name, target, scope, options=options)
 
     def uninstall(self, target: Path, scope: str) -> tuple[Path, ...]:
         """Return Claude Code hook files managed by Agent Maintainer."""
-        root = target.resolve()
-        return (
-            scoped_path(root, scope, self.config_paths[0]),
-            *(scoped_path(root, scope, hook_path) for hook_path in self.hook_paths),
-        )
+        return _uninstall_paths(self.name, target, scope)
 
 
 def selected_clients(client: str) -> tuple[str, ...]:
@@ -260,14 +197,63 @@ def hook_script_paths(client: str, root: Path, scope: str) -> tuple[Path, ...]:
 
 def hook_status(adapter: AgentClientAdapter, target: Path, scope: str) -> HookClientStatus:
     """Return compact install status for adapter."""
+    return hook_statuses.client_status(
+        adapter.name,
+        target,
+        scope,
+        user_root=home(),
+    )
+
+
+def _manifest_paths(client: str, *, kind: manifest.FileKind) -> tuple[str, ...]:
+    """Return manifest paths of one kind for a client."""
+
+    return tuple(item.relative_path for item in manifest.managed_files(client) if item.kind == kind)
+
+
+def _install_plans(
+    client: str,
+    target: Path,
+    scope: str,
+    *,
+    options: manifest.RenderOptions,
+) -> tuple[PlannedWrite, ...]:
+    """Build install writes from the authoritative client manifest."""
+
     root = target.resolve()
-    config_present = all(
-        scoped_path(root, scope, config_path).exists() for config_path in adapter.config_paths
+    return tuple(
+        PlannedWrite(
+            path=scoped_path(root, scope, item.relative_path),
+            content=manifest.render(item, options=options),
+            description=_plan_description(item, options=options),
+            merge_json=item.merge_strategy == "claude-json",
+            merge_codex=item.merge_strategy == "codex-toml",
+        )
+        for item in manifest.managed_files(client, scope=scope)
     )
-    scripts_present = all(
-        scoped_path(root, scope, hook_path).exists() for hook_path in adapter.hook_paths
+
+
+def _plan_description(
+    item: manifest.ManagedHookFile,
+    *,
+    options: manifest.RenderOptions,
+) -> str:
+    """Return a variant-aware install description."""
+
+    if item.client == CLAUDE_CODE_CLIENT and item.kind == "config" and options.async_rewake_stop:
+        return f"{item.description} (async rewake Stop/SubagentStop)"
+    return item.description
+
+
+def _uninstall_paths(client: str, target: Path, scope: str) -> tuple[Path, ...]:
+    """Return only manifest files owned in the selected scope."""
+
+    root = target.resolve()
+    return tuple(
+        scoped_path(root, scope, item.relative_path)
+        for item in manifest.managed_files(client, scope=scope)
+        if item.uninstall
     )
-    return HookClientStatus(adapter.name, config_present, scripts_present)
 
 
 def scoped_path(root: Path, scope: str, relative_path: str) -> Path:

@@ -17,10 +17,26 @@ path = "templates"
 depends_on = ["constants"]
 
 [[modules]]
-path = "adapters"
+path = "manifest"
 depends_on = [
   "constants",
   "templates",
+]
+
+[[modules]]
+path = "status"
+depends_on = [
+  "constants",
+  "manifest",
+  "merge",
+]
+
+[[modules]]
+path = "adapters"
+depends_on = [
+  "constants",
+  "manifest",
+  "status",
 ]
 
 [[modules]]

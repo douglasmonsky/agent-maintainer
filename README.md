@@ -121,6 +121,11 @@ source.
 | `agent` | Repos where Codex, Claude Code, or other agents actively edit code. | Core plus `AGENTS.md`, generated guidance target, Codex hooks, Claude Code hooks. |
 | `hardening` | Repos that want docs/config hygiene and security-adjacent surfaces too. | Agent plus Node-backed tooling metadata. |
 
+Agent and hardening scaffolds render Codex and Claude Code configuration plus
+every referenced post-edit, PR-wait, stop, and audit wrapper from the same
+managed-file inventory used by installation, status, and uninstall. Generated
+wrappers are checked for byte-for-byte currentness rather than existence alone.
+
 Preview before writing:
 
 ```bash

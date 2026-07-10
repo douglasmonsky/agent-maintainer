@@ -70,7 +70,7 @@ depends_on = []
 [[modules]]
 path = "scaffold.templates"
 depends_on = [
-  "//agent_client_hooks.templates",
+  "//agent_client_hooks.manifest",
   "scaffold.presets",
   "scaffold.template_config",
 ]

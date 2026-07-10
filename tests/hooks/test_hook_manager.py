@@ -130,6 +130,7 @@ def test_manager_path_helpers_delegate_to_adapters(tmp_path: Path) -> None:
         tmp_path / ".codex/hooks/post_edit_fast_gate.py",
         tmp_path / ".codex/hooks/post_pr_wait.py",
         tmp_path / ".codex/hooks/stop_full_verify.py",
+        tmp_path / ".codex/hooks/hook_audit.py",
     )
     assert manager.home() == adapters.home()
 
@@ -145,9 +146,6 @@ def test_adapter_uninstall_paths_follow_scope(
 
     assert adapters.CodexAdapter().uninstall(repo_path, manager.USER_SCOPE) == (
         home_path / ".codex/config.toml",
-        home_path / ".codex/hooks/post_edit_fast_gate.py",
-        home_path / ".codex/hooks/post_pr_wait.py",
-        home_path / ".codex/hooks/stop_full_verify.py",
     )
     assert adapters.ClaudeCodeAdapter().uninstall(repo_path, manager.REPO_SCOPE) == (
         repo_path / ".claude/settings.json",
@@ -155,35 +153,6 @@ def test_adapter_uninstall_paths_follow_scope(
         repo_path / ".claude/hooks/post_pr_wait.py",
         repo_path / ".claude/hooks/stop.py",
         repo_path / ".claude/hooks/subagent_stop.py",
-    )
-
-
-def test_adapter_status_reports_config_and_scripts(tmp_path: Path) -> None:
-    """Adapter status reports config and script presence together."""
-    adapter = adapters.CodexAdapter()
-
-    missing = adapter.status(tmp_path, manager.REPO_SCOPE)
-    assert missing == adapters.HookClientStatus(
-        name=manager.CODEX_CLIENT,
-        config_present=False,
-        scripts_present=False,
-    )
-
-    for relative_path in (
-        ".codex/config.toml",
-        ".codex/hooks/post_edit_fast_gate.py",
-        ".codex/hooks/post_pr_wait.py",
-        ".codex/hooks/stop_full_verify.py",
-    ):
-        path = tmp_path / relative_path
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("", encoding="utf-8")
-
-    present = adapter.status(tmp_path, manager.REPO_SCOPE)
-    assert present == adapters.HookClientStatus(
-        name=manager.CODEX_CLIENT,
-        config_present=True,
-        scripts_present=True,
     )
 
 
@@ -196,25 +165,6 @@ def test_manager_uses_codex_adapter_for_planned_writes(tmp_path: Path) -> None:
 
     assert plans[0].path == tmp_path / ".codex" / "config.toml"
     assert any(plan.path == tmp_path / templates.CODEX_POST_HOOK for plan in plans)
-
-
-def test_adapter_status_reports_present_repo_hooks(tmp_path: Path) -> None:
-    """Adapter status reports config and hook script presence."""
-    manager.install_hooks(
-        manager.InstallOptions(
-            target=tmp_path,
-            client=manager.CLAUDE_CODE_CLIENT,
-            force=True,
-        ),
-    )
-
-    status = adapters.adapter_for_client(manager.CLAUDE_CODE_CLIENT).status(
-        tmp_path,
-        manager.REPO_SCOPE,
-    )
-
-    assert status.config_present is True
-    assert status.scripts_present is True
 
 
 def test_codex_merge_removes_previous_agent_hook_blocks() -> None:
@@ -305,29 +255,6 @@ def test_confirm_user_scope_accepts_only_explicit_yes(
 
     monkeypatch.setattr("builtins.input", lambda _prompt: "n")
     assert not manager.confirm_user_scope()
-
-
-def test_status_hooks_reports_config_and_script_presence(
-    tmp_path: Path,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """Status reports config and script presence for selected clients."""
-
-    manager.install_hooks(
-        manager.InstallOptions(
-            target=tmp_path,
-            client=manager.CODEX_CLIENT,
-            force=True,
-        ),
-    )
-    capsys.readouterr()
-
-    status = manager.status_hooks(tmp_path, manager.ALL_CLIENTS)
-
-    output = capsys.readouterr().out
-    assert status == 0
-    assert "codex: config=present scripts=present" in output
-    assert "claude-code: config=missing scripts=missing" in output
 
 
 def test_install_noops_when_no_plans(

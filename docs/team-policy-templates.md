@@ -5,6 +5,11 @@ Team policy templates are named initializer presets for common adoption
 contexts. They do not change which files an `init` track writes. They only
 tune the starter `pyproject.toml` policy values.
 
+When a team preset is paired with the `agent` or `hardening` track, the
+initializer uses the shared managed-hook inventory, including both configured
+PR-wait wrappers. Presets change policy values, not the selected hook lifecycle
+records.
+
 Use them with any track:
 
 ```bash

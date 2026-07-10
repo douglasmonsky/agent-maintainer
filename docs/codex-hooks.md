@@ -37,7 +37,9 @@ Re-review hooks after any change to:
 
 - `.codex/config.toml`
 - `.codex/hooks/post_edit_fast_gate.py`
+- `.codex/hooks/post_pr_wait.py`
 - `.codex/hooks/stop_full_verify.py`
+- `.codex/hooks/hook_audit.py`
 - the command each hook runs
 - repo path copied into hook source
 

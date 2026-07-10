@@ -10,12 +10,13 @@ Supported clients:
 
 | Client | Config | Hook wrappers |
 |---|---|---|
-| Codex | `.codex/config.toml` | `.codex/hooks/post_edit_fast_gate.py`, `.codex/hooks/stop_full_verify.py` |
-| Claude Code | `.claude/settings.json` | `.claude/hooks/post_tool_use.py`, `.claude/hooks/stop.py`, `.claude/hooks/subagent_stop.py` |
+| Codex | `.codex/config.toml` | `.codex/hooks/post_edit_fast_gate.py`, `.codex/hooks/post_pr_wait.py`, `.codex/hooks/stop_full_verify.py`, `.codex/hooks/hook_audit.py` |
+| Claude Code | `.claude/settings.json` | `.claude/hooks/post_tool_use.py`, `.claude/hooks/post_pr_wait.py`, `.claude/hooks/stop.py`, `.claude/hooks/subagent_stop.py` |
 
-Internally, each client is represented by an `AgentClientAdapter`. Adapters own
-client-specific config and hook paths. The shared hook manager still owns
-permission prompts, dry-run behavior, backups, merge policy, and file writes.
+One managed-file manifest owns each path, renderer, scope, merge strategy,
+ownership marker, status policy, scaffold inclusion, and uninstall behavior.
+Client adapters select from that manifest. The shared hook manager owns
+permission prompts, dry-run behavior, backups, and file writes.
 
 Install repo-local hook files:
 
@@ -136,9 +137,12 @@ hash. Re-review hooks after changing:
 
 - `.codex/config.toml`
 - `.codex/hooks/post_edit_fast_gate.py`
+- `.codex/hooks/post_pr_wait.py`
 - `.codex/hooks/stop_full_verify.py`
+- `.codex/hooks/hook_audit.py`
 - `.claude/settings.json`
 - `.claude/hooks/post_tool_use.py`
+- `.claude/hooks/post_pr_wait.py`
 - `.claude/hooks/stop.py`
 - `.claude/hooks/subagent_stop.py`
 - the command each hook runs

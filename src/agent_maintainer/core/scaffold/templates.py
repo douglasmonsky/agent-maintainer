@@ -5,7 +5,7 @@ from __future__ import annotations
 import textwrap
 from dataclasses import dataclass
 
-from agent_client_hooks import templates as hook_templates
+from agent_client_hooks import manifest as hook_manifest
 from agent_maintainer.core.scaffold.presets import apply_preset
 from agent_maintainer.core.scaffold.template_config import STARTER_PYPROJECT
 
@@ -133,45 +133,13 @@ STATIC_STARTER_FILES = (
     StarterFile(".pre-commit-config.yaml", PRE_COMMIT_CONFIG, TRACKS),
     StarterFile(".github/workflows/verify.yml", WORKFLOW, TRACKS),
     StarterFile("AGENTS.md", AGENTS, AGENT_HOOK_TRACKS),
-    StarterFile(
-        ".codex/config.toml",
-        hook_templates.codex_config_file(),
-        AGENT_HOOK_TRACKS,
-    ),
-    StarterFile(
-        ".codex/hooks/post_edit_fast_gate.py",
-        hook_templates.codex_post_hook(),
-        AGENT_HOOK_TRACKS,
-    ),
-    StarterFile(
-        ".codex/hooks/stop_full_verify.py",
-        hook_templates.codex_stop_hook(),
-        AGENT_HOOK_TRACKS,
-    ),
-    StarterFile(
-        ".codex/hooks/hook_audit.py",
-        hook_templates.hook_audit_shim(),
-        AGENT_HOOK_TRACKS,
-    ),
-    StarterFile(
-        ".claude/settings.json",
-        hook_templates.claude_settings(),
-        AGENT_HOOK_TRACKS,
-    ),
-    StarterFile(
-        ".claude/hooks/post_tool_use.py",
-        hook_templates.claude_post_hook(),
-        AGENT_HOOK_TRACKS,
-    ),
-    StarterFile(
-        ".claude/hooks/stop.py",
-        hook_templates.claude_stop_hook(),
-        AGENT_HOOK_TRACKS,
-    ),
-    StarterFile(
-        ".claude/hooks/subagent_stop.py",
-        hook_templates.claude_subagent_stop_hook(),
-        AGENT_HOOK_TRACKS,
+    *(
+        StarterFile(
+            managed_file.relative_path,
+            hook_manifest.render_scaffold(managed_file),
+            AGENT_HOOK_TRACKS,
+        )
+        for managed_file in hook_manifest.scaffold_files()
     ),
     StarterFile("package.json", PACKAGE_JSON, (HARDENING_TRACK,)),
 )

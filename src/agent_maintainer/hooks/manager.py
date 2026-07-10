@@ -121,10 +121,22 @@ def status_hooks(target: Path, client: str, scope: str = REPO_SCOPE) -> int:
     root = target.resolve()
     for selected in selected_clients(client):
         status = hook_adapters.adapter_for_client(selected).status(root, scope)
-        config_status = "present" if status.config_present else "missing"
-        scripts_status = "present" if status.scripts_present else "missing"
+        config_status = status_label(status.config_present, status.config_current)
+        scripts_status = (
+            status_label(status.scripts_present, status.scripts_current)
+            if status.scripts_expected
+            else "not-managed"
+        )
         print(f"{selected}: config={config_status} scripts={scripts_status}")
     return 0
+
+
+def status_label(present: bool, current: bool) -> str:
+    """Return a compact managed-file status label."""
+
+    if not present:
+        return "missing"
+    return "current" if current else "stale"
 
 
 def config_file(client: str, root: Path, scope: str) -> Path:
