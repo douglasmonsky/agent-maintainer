@@ -1,7 +1,7 @@
 +++
 id = "config-stabilization"
 kind = "architectural-refactor"
-status = "active"
+status = "complete"
 base_ref = "a7ce1bc"
 expires = 2026-08-31
 allowed_paths = [

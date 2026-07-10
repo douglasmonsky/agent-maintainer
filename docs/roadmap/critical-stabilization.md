@@ -274,6 +274,22 @@ Checks:
 Exit criterion: malformed configuration cannot silently weaken or bypass a
 guardrail.
 
+Implementation status (2026-07-10): complete on
+`codex/config-stabilization`. CS-05 now rejects unknown, mistyped,
+out-of-range, contradictory, and type-confused policy across neutral files,
+`pyproject.toml`, environment overrides, CLI overrides, workspaces, file
+baselines, and nested tables before command behavior. The authoritative
+registry also generates the public configuration reference and machine-readable
+capability metadata. Verification evidence:
+
+- focused configuration suite: 125 passed;
+- root command and runtime-boundary suite: 13 passed;
+- read-only reviewer closure audit: passed;
+- full after the registry/validation tranche:
+  `20260710T131140099901Z-full-35871050dcde`; and
+- full after command preflight, generated references, and the malformed-shell
+  regression: `20260710T133704134321Z-full-0bd07d81518e`.
+
 ### Unit 4 — Make background verification own its lifecycle
 
 Deliverables:
