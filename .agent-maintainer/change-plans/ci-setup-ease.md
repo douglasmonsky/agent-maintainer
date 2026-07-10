@@ -1,7 +1,7 @@
 +++
 id = "ci-setup-ease"
 kind = "feat"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-23
 allowed_paths = [
