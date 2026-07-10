@@ -9,6 +9,8 @@ allowed_paths = [
   ".docsync/attestations/**",
   ".github/CODEOWNERS",
   ".github/ISSUE_TEMPLATE/**",
+  ".serena/**",
+  "AGENTS.md",
   "CHANGELOG.md",
   "CODE_OF_CONDUCT.md",
   "CONTRIBUTING.md",
@@ -51,6 +53,10 @@ Change only the public release contract, its generated/currentness checks,
 realistic downstream fixtures, dependency-risk and governance records, and the
 tests needed to prove them. Mechanical link repairs may touch archived roadmap
 documents but must not rewrite their historical decisions.
+
+The user-authorized Serena setup detour may also add portable `.serena`
+configuration and memories plus conditional repository guidance in `AGENTS.md`.
+Machine-local JetBrains settings and backend selection must remain ignored.
 
 ## What must not change
 

@@ -14,6 +14,26 @@ configuration changes, regenerate with:
 just guidance
 ```
 
+## Serena
+
+When Serena tools are available, activate the current repository and read
+Serena's initial instructions before substantial code exploration or
+refactoring.
+
+Prefer Serena's symbol-aware tools for definitions, references,
+implementations, file and class structure, IDE inspections, debugging, and
+cross-file refactoring. Continue using `rg` for literal text, configuration,
+documentation, generated files, and non-symbol searches.
+
+Treat Serena memories as curated guidance rather than authoritative state.
+Verify claims against current code, configuration, Git history, and tests.
+Store only stable, reusable repository knowledge; never store secrets,
+credentials, private data, or temporary task progress.
+
+Inspect the resulting diff and run the repository's normal validation commands
+after Serena-assisted edits. If Serena is unavailable, continue with native
+repository tools rather than blocking the task.
+
 ## Verification Workflow
 
 Trusted agent hooks normally run fast checks after edits and the precommit
