@@ -14,6 +14,7 @@ from agent_maintainer.core.executor import command_env
 
 BANDIT_JSON_NAME = "bandit.json"
 BANDIT_FINDING_LIMIT = 50
+BANDIT_ROOT_CONFIG = Path(".bandit")
 
 
 def main() -> int:
@@ -29,7 +30,7 @@ def run_bandit(json_output_path: Path, *, package_paths: tuple[str, ...]) -> int
 
     clear_stale_artifact(json_output_path)
     bandit = shutil.which("bandit") or "bandit"
-    command = [bandit, "-q", "-f", "json", "-r", *package_paths]
+    command = bandit_command(bandit, package_paths=package_paths)
     result = subprocess.run(  # nosec B603
         command,
         text=True,
@@ -40,6 +41,15 @@ def run_bandit(json_output_path: Path, *, package_paths: tuple[str, ...]) -> int
     findings = write_json_output(json_output_path, result.stdout)
     forward_output(result.stdout, result.stderr, findings)
     return result.returncode
+
+
+def bandit_command(bandit: str, *, package_paths: tuple[str, ...]) -> list[str]:
+    """Build the Bandit command with the conventional root policy when present."""
+
+    command = [bandit, "-q", "-f", "json"]
+    if BANDIT_ROOT_CONFIG.is_file():
+        command.extend(("--ini", str(BANDIT_ROOT_CONFIG)))
+    return [*command, "-r", *package_paths]
 
 
 def clear_stale_artifact(path: Path) -> None:

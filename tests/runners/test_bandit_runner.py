@@ -14,6 +14,19 @@ from agent_maintainer.runners import bandit as run_bandit
 INVALID_CONFIG_EXIT_CODE = 2
 
 
+def test_bandit_command_uses_root_policy_when_present(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Pass the conventional root .bandit file even when source roots are narrower."""
+    (tmp_path / ".bandit").write_text("[bandit]\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    command = run_bandit.bandit_command("bandit", package_paths=("src",))
+
+    assert command == ["bandit", "-q", "-f", "json", "--ini", ".bandit", "-r", "src"]
+
+
 def test_run_bandit_writes_json_artifact_and_prints_compact_findings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
