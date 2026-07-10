@@ -1,0 +1,21 @@
+version: 1
+attestations:
+- id: attest.20260710T183230Z.claim.docs.release_0_1_0b4_evidence.96a4189
+  claim: claim.docs.release_0_1_0b4_evidence
+  doc_object: docs.release_0_1_0b4.overview
+  evidence:
+  - evidence.release.publish_workflow
+  reason: Exact-commit gating strengthens the current publish workflow; the historical
+    0.1.0b4 description of release checks, artifact attachment, and Trusted Publishing
+    remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-10T18:32:30Z'
+  base: HEAD
+  head: 96a4189
+  evidence_fingerprints:
+    evidence.release.publish_workflow: sha256:f59d9c3f9ab2cee8959793ad78f86495cb2fb71b553fb06bbb564882d8e47bb6
+  evidence_anchor_fingerprints:
+    evidence.release.publish_workflow:
+    - sha256:43b516d482264bdb415b60508810d5e00e44608440fd54bee3109eb033809953
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

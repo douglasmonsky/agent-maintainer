@@ -6,6 +6,9 @@ from pathlib import Path
 
 PUBLISH_WORKFLOW = Path(".github/workflows/publish.yml")
 RELEASE_CHECKLIST = Path("docs/release-checklist.md")
+EVIDENCE_CONSUMER_JOB_COUNT = 4
+EVIDENCE_BOUND_PUBLISH_JOB_COUNT = 3
+EVIDENCE_SHA_USE_COUNT = 5
 
 
 def test_publish_workflow_uses_trusted_publishing() -> None:
@@ -40,3 +43,42 @@ def test_release_checklist_documents_trusted_publisher_values() -> None:
     assert "workflow `publish.yml`" in normalized_text
     assert "environment `pypi`" in normalized_text
     assert "environment `testpypi`" in normalized_text
+
+
+def test_publish_workflow_requires_exact_commit_release_evidence() -> None:
+    """Publishing consumes all required profile evidence for the workflow SHA."""
+
+    text = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+
+    assert "release-evidence:" in text
+    for profile in ("full", "ci", "security", "manual"):
+        assert f"verify --profile {profile}" in text
+        assert f'--manifest "$PROFILE_DIR/{profile}.json"' in text
+    assert "release_evidence record" in text
+    assert '--manifest "$PROFILE_DIR/release.json"' in text
+    assert "release-evidence-${{ github.sha }}" in text
+    assert "release_evidence aggregate" in text
+    assert text.count("Validate exact-commit release evidence") == EVIDENCE_CONSUMER_JOB_COUNT
+    assert text.count("EXPECTED_SHA: ${{ github.sha }}") >= EVIDENCE_SHA_USE_COUNT
+
+
+def test_publish_jobs_depend_on_release_evidence() -> None:
+    """No build, attachment, or index publish job bypasses the evidence job."""
+
+    text = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+
+    assert "build:\n    name: build distributions\n    needs: release-evidence" in text
+    assert text.count("needs: [release-evidence, build]") == EVIDENCE_BOUND_PUBLISH_JOB_COUNT
+    for job_name in (
+        "attach-github-release-artifacts",
+        "publish-testpypi",
+        "publish-pypi",
+    ):
+        job_start = text.index(f"  {job_name}:")
+        validation = text.index("Validate exact-commit release evidence", job_start)
+        terminal_action = (
+            text.index("Attach distributions to GitHub release", job_start)
+            if job_name == "attach-github-release-artifacts"
+            else text.index("Publish to ", job_start)
+        )
+        assert validation < terminal_action

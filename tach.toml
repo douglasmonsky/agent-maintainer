@@ -74,5 +74,17 @@ path = "agent_maintainer.models"
 depends_on = []
 
 [[modules]]
+path = "agent_maintainer.release_evidence"
+depends_on = [
+  "agent_maintainer.release_evidence_io",
+  "agent_run_artifacts.git_state",
+  "agent_run_artifacts.release_evidence",
+]
+
+[[modules]]
+path = "agent_maintainer.release_evidence_io"
+depends_on = ["agent_run_artifacts.release_evidence"]
+
+[[modules]]
 path = "agent_maintainer.tach"
 depends_on = ["archguard.tach_config"]

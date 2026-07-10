@@ -27,6 +27,9 @@
   on one field registry and complete resolved-policy validator.
 - Strict Pyright debt now ratchets independently by file/rule pair under a
   versioned, tool-and-scope-bound baseline instead of an aggregate error budget.
+- Publishing now requires fresh full, CI, security, manual, and release
+  manifests from one clean commit; build and publish jobs revalidate the
+  self-contained exact-commit aggregate before acting.
 
 ### Fixed Since 0.1.0b5
 

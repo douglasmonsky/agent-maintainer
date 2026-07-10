@@ -42,6 +42,29 @@ depends_on = [
 ]
 
 [[modules]]
+path = "release_evidence"
+depends_on = [
+  "release_evidence_contract",
+  "release_evidence_validation",
+  "release_profile_evidence",
+]
+
+[[modules]]
+path = "release_evidence_contract"
+depends_on = []
+
+[[modules]]
+path = "release_evidence_validation"
+depends_on = [
+  "release_evidence_contract",
+  "release_profile_evidence",
+]
+
+[[modules]]
+path = "release_profile_evidence"
+depends_on = ["release_evidence_contract"]
+
+[[modules]]
 path = "timing"
 depends_on = [
   "models",

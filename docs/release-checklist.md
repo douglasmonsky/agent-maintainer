@@ -76,10 +76,21 @@ and check release-state drift such as version/changelog alignment, public
 metadata URLs, Trusted Publisher environment names, and existing release evidence
 when present.
 
+The `publish` workflow does not trust these local runs as publish authorization.
+Its `release-evidence` job reruns full, CI, security, manual, and release checks
+from one clean checkout, embeds all five manifests in an exact-commit aggregate,
+and gives the aggregate a maximum 24-hour lifetime. Every downstream build,
+attachment, TestPyPI, and PyPI job validates that aggregate against its own
+clean checkout before acting.
+
 ## Publishing
 
 - [ ] Build artifacts from a clean tree.
 - [ ] Run `publish` workflow manually with target `testpypi`.
+- [ ] Confirm the `release-evidence-<commit>` artifact contains full, CI,
+  security, manual, and release manifests for the workflow SHA.
+- [ ] Confirm the build job and selected publish job both report
+  `release evidence valid` before building or publishing.
 - [ ] Install from TestPyPI in a clean environment.
 - [ ] Run `agent-maintainer --help`.
 - [ ] Run `archguard --help`.

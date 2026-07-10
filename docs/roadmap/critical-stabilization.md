@@ -355,6 +355,26 @@ Checks:
 Exit criterion: publish cannot become eligible from partial, stale, mutable, or
 artifact-mismatched evidence.
 
+Implementation status (2026-07-10): CS-07 complete locally on
+`codex/deep-release-evidence`; CS-08 remains active. Strict Pyright now uses a
+reviewed tool-and-scope-bound per-file/per-rule baseline and rejects debt
+substitution. The publish workflow runs full, CI, security, manual, and release
+profiles on one clean SHA, embeds their manifests and canonical digests in a
+24-hour aggregate, and requires every build, attachment, TestPyPI, and PyPI job
+to revalidate that aggregate against its checkout. Verification evidence:
+
+- strict Pyright: 1,298 reviewed legacy diagnostics, delta `+0`, with no new
+  file/rule pair;
+- Mutmut: 274/276 killed, two reviewed survivors, 99.28%, with no untested
+  mutants;
+- focused release-evidence and publish-workflow suite: 29 passed;
+- tampered, missing, duplicate, dirty, failed, stale, malformed, and
+  wrong-commit evidence tests: passed; and
+- workflow schema and Tach architecture validation: passed.
+
+CS-08 still owns full-SHA action pinning, cross-job distribution digest
+verification, concurrency policy, and strict workflow security validation.
+
 ### Unit 6 — Reconcile the public release contract
 
 Deliverables:

@@ -6,6 +6,7 @@ base_ref = "7733599"
 expires = 2026-08-31
 allowed_paths = [
   ".agent-maintainer/change-plans/deep-release-evidence.md",
+  ".docsync/attestations/**",
   ".github/workflows/deep-verify.yml",
   ".github/workflows/publish.yml",
   ".github/workflows/verify.yml",
@@ -23,6 +24,7 @@ allowed_paths = [
   "src/agent_maintainer/config/coercion.py",
   "src/agent_maintainer/core/artifact_environment.py",
   "src/agent_maintainer/release_evidence.py",
+  "src/agent_maintainer/release_evidence_io.py",
   "src/agent_maintainer/runners/mutmut_lock.py",
   "src/agent_maintainer/runners/pyright.py",
   "src/agent_maintainer/runners/pyright_strict.py",
@@ -30,6 +32,9 @@ allowed_paths = [
   "src/agent_maintainer/runners/tach.domain.toml",
   "src/agent_maintainer/test_intel/coverage.py",
   "src/agent_run_artifacts/release_evidence.py",
+  "src/agent_run_artifacts/release_evidence_contract.py",
+  "src/agent_run_artifacts/release_evidence_validation.py",
+  "src/agent_run_artifacts/release_profile_evidence.py",
   "src/agent_run_artifacts/tach.domain.toml",
   "tach.toml",
   "tests/config/test_config_validation.py",
