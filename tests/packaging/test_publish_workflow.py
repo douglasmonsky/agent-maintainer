@@ -9,6 +9,10 @@ RELEASE_CHECKLIST = Path("docs/release-checklist.md")
 EVIDENCE_CONSUMER_JOB_COUNT = 4
 EVIDENCE_BOUND_PUBLISH_JOB_COUNT = 3
 EVIDENCE_SHA_USE_COUNT = 5
+DISTRIBUTION_CONSUMER_JOB_COUNT = 3
+DISTRIBUTION_PATH_COUNT = 4
+DISTRIBUTION_VERIFY_COUNT = 4
+INDEX_PUBLISH_JOB_COUNT = 2
 
 
 def test_publish_workflow_uses_trusted_publishing() -> None:
@@ -82,3 +86,48 @@ def test_publish_jobs_depend_on_release_evidence() -> None:
             else text.index("Publish to ", job_start)
         )
         assert validation < terminal_action
+
+
+def test_publish_workflow_verifies_exact_distribution_bytes() -> None:
+    """Every transfer and terminal release action consumes the verified bundle."""
+
+    text = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+    bundle = "$RUNNER_TEMP/python-distributions"
+
+    assert "release_artifacts create" in text
+    assert f'--bundle "{bundle}"' in text
+    assert text.count("release_artifacts verify") == DISTRIBUTION_VERIFY_COUNT
+    assert text.count("--expected-manifest-sha256") == DISTRIBUTION_VERIFY_COUNT
+    assert (
+        "distribution_manifest_sha256: ${{ steps.distribution_bundle.outputs.manifest_sha256 }}"
+    ) in text
+    assert (
+        text.count(
+            "EXPECTED_MANIFEST_SHA256: ${{ needs.build.outputs.distribution_manifest_sha256 }}"
+        )
+        == DISTRIBUTION_CONSUMER_JOB_COUNT
+    )
+    assert text.count("Download verified distribution bundle") == DISTRIBUTION_CONSUMER_JOB_COUNT
+    assert "path: ${{ runner.temp }}/python-distributions/" in text
+    assert text.count("path: ${{ runner.temp }}/python-distributions") >= DISTRIBUTION_PATH_COUNT
+    assert (
+        text.count("packages-dir: ${{ runner.temp }}/python-distributions/packages/")
+        == INDEX_PUBLISH_JOB_COUNT
+    )
+    assert '"$RUNNER_TEMP/python-distributions/packages/"*' in text
+    assert "packages-dir: dist/" not in text
+
+    for job_name in (
+        "attach-github-release-artifacts",
+        "publish-testpypi",
+        "publish-pypi",
+    ):
+        job_start = text.index(f"  {job_name}:")
+        download = text.index("Download verified distribution bundle", job_start)
+        verification = text.index("Verify distribution bundle", download)
+        terminal_action = (
+            text.index("Attach distributions to GitHub release", job_start)
+            if job_name == "attach-github-release-artifacts"
+            else text.index("Publish to ", job_start)
+        )
+        assert download < verification < terminal_action

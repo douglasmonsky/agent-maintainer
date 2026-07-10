@@ -355,25 +355,35 @@ Checks:
 Exit criterion: publish cannot become eligible from partial, stale, mutable, or
 artifact-mismatched evidence.
 
-Implementation status (2026-07-10): CS-07 complete locally on
-`codex/deep-release-evidence`; CS-08 remains active. Strict Pyright now uses a
-reviewed tool-and-scope-bound per-file/per-rule baseline and rejects debt
-substitution. The publish workflow runs full, CI, security, manual, and release
-profiles on one clean SHA, embeds their manifests and canonical digests in a
-24-hour aggregate, and requires every build, attachment, TestPyPI, and PyPI job
-to revalidate that aggregate against its checkout. Verification evidence:
+Implementation status (2026-07-10): CS-07 and CS-08 are complete locally on
+`codex/deep-release-evidence`. Strict Pyright uses a reviewed
+tool-and-scope-bound per-file/per-rule baseline and rejects debt substitution.
+The publish workflow runs full, CI, security, manual, and release profiles on
+one clean SHA, embeds their manifests and canonical digests in a 24-hour
+aggregate, and requires every build, attachment, TestPyPI, and PyPI job to
+revalidate that aggregate against its checkout.
+
+Every remote action is full-SHA pinned with version metadata. Verify runs are
+cancelable when superseded; deep and publish runs are not. Build creates a
+deterministic exact-commit wheel/sdist inventory with byte sizes and SHA-256
+digests. The manifest's own digest crosses the workflow control plane separately
+from the artifact, preventing joint package-and-manifest substitution. The
+bundle is verified before upload, after every transfer, and immediately before
+GitHub attachment, TestPyPI, or PyPI consumes its bytes.
+Verification evidence:
 
 - strict Pyright: 1,298 reviewed legacy diagnostics, delta `+0`, with no new
   file/rule pair;
 - Mutmut: 274/276 killed, two reviewed survivors, 99.28%, with no untested
   mutants;
 - focused release-evidence and publish-workflow suite: 29 passed;
+- focused immutable-workflow and distribution-bundle suite: 44 passed;
+- release-only build, verified-bundle install, and console-script smoke: passed
+  for both wheel and sdist;
 - tampered, missing, duplicate, dirty, failed, stale, malformed, and
-  wrong-commit evidence tests: passed; and
-- workflow schema and Tach architecture validation: passed.
-
-CS-08 still owns full-SHA action pinning, cross-job distribution digest
-verification, concurrency policy, and strict workflow security validation.
+  wrong-commit evidence and artifact tests: passed;
+- unfiltered strict/pedantic Zizmor: zero findings at any severity; and
+- Actionlint, workflow schema, and Tach architecture validation: passed.
 
 ### Unit 6 — Reconcile the public release contract
 
@@ -483,7 +493,7 @@ After this program:
       first and second run.
 - [ ] Full, CI, security, manual, and release profiles pass for one commit.
 - [ ] Strict typing debt is reviewed and monotonic by rule and file.
-- [ ] Workflow actions are immutable and artifact identity is verified.
+- [x] Workflow actions are immutable and artifact identity is verified.
 - [ ] Unreleased, public docs, upgrade guidance, and package behavior agree.
 - [ ] All repository-local Markdown links resolve.
 - [ ] Every advertised console script passes built-artifact smoke tests.

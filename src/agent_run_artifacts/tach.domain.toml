@@ -13,6 +13,10 @@ depends_on = [
 ]
 
 [[modules]]
+path = "distribution_bundle"
+depends_on = []
+
+[[modules]]
 path = "git_state"
 depends_on = []
 

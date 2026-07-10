@@ -133,6 +133,8 @@ jobs:
     name: build distributions
     needs: release-evidence
     runs-on: ubuntu-latest
+    outputs:
+      distribution_manifest_sha256: ${{ steps.distribution_bundle.outputs.manifest_sha256 }}
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONPATH: src
@@ -176,11 +178,28 @@ jobs:
           python -m build
           python -m twine check dist/*
 
-      - name: Upload distributions
+      - name: Create and verify distribution bundle
+        id: distribution_bundle
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          python -m agent_maintainer.release_artifacts create \
+            --source dist \
+            --bundle "$RUNNER_TEMP/python-distributions" \
+            --expected-sha "$EXPECTED_SHA"
+          MANIFEST_SHA256="$(sha256sum \
+            "$RUNNER_TEMP/python-distributions/manifest.json" | cut -d ' ' -f 1)"
+          python -m agent_maintainer.release_artifacts verify \
+            --bundle "$RUNNER_TEMP/python-distributions" \
+            --expected-sha "$EXPECTED_SHA" \
+            --expected-manifest-sha256 "$MANIFEST_SHA256"
+          printf 'manifest_sha256=%s\n' "$MANIFEST_SHA256" >> "$GITHUB_OUTPUT"
+
+      - name: Upload verified distribution bundle
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: python-distributions
-          path: dist/
+          path: ${{ runner.temp }}/python-distributions/
           if-no-files-found: error
 
   # docsync:evidence.start evidence.release.publish_workflow
@@ -218,17 +237,31 @@ jobs:
             --expected-sha "$EXPECTED_SHA" \
             --manifest "$RUNNER_TEMP/release-evidence/release-evidence.json"
 
-      - name: Download distributions
+      - name: Download verified distribution bundle
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: python-distributions
-          path: dist/
+          path: ${{ runner.temp }}/python-distributions
+
+      - name: Verify distribution bundle
+        env:
+          EXPECTED_MANIFEST_SHA256: ${{ needs.build.outputs.distribution_manifest_sha256 }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          python -m agent_maintainer.release_artifacts verify \
+            --bundle "$RUNNER_TEMP/python-distributions" \
+            --expected-sha "$EXPECTED_SHA" \
+            --expected-manifest-sha256 "$EXPECTED_MANIFEST_SHA256"
 
       - name: Attach distributions to GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$RELEASE_TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            "$RUNNER_TEMP/python-distributions/packages/"* \
+            --clobber \
+            --repo "$GITHUB_REPOSITORY"
 
   publish-testpypi:
     name: publish to TestPyPI
@@ -268,17 +301,27 @@ jobs:
             --expected-sha "$EXPECTED_SHA" \
             --manifest "$RUNNER_TEMP/release-evidence/release-evidence.json"
 
-      - name: Download distributions
+      - name: Download verified distribution bundle
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: python-distributions
-          path: dist/
+          path: ${{ runner.temp }}/python-distributions
+
+      - name: Verify distribution bundle
+        env:
+          EXPECTED_MANIFEST_SHA256: ${{ needs.build.outputs.distribution_manifest_sha256 }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          python -m agent_maintainer.release_artifacts verify \
+            --bundle "$RUNNER_TEMP/python-distributions" \
+            --expected-sha "$EXPECTED_SHA" \
+            --expected-manifest-sha256 "$EXPECTED_MANIFEST_SHA256"
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-          packages-dir: dist/
+          packages-dir: ${{ runner.temp }}/python-distributions/packages/
 
   publish-pypi:
     name: publish to PyPI
@@ -318,14 +361,24 @@ jobs:
             --expected-sha "$EXPECTED_SHA" \
             --manifest "$RUNNER_TEMP/release-evidence/release-evidence.json"
 
-      - name: Download distributions
+      - name: Download verified distribution bundle
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: python-distributions
-          path: dist/
+          path: ${{ runner.temp }}/python-distributions
+
+      - name: Verify distribution bundle
+        env:
+          EXPECTED_MANIFEST_SHA256: ${{ needs.build.outputs.distribution_manifest_sha256 }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          python -m agent_maintainer.release_artifacts verify \
+            --bundle "$RUNNER_TEMP/python-distributions" \
+            --expected-sha "$EXPECTED_SHA" \
+            --expected-manifest-sha256 "$EXPECTED_MANIFEST_SHA256"
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
         with:
-          packages-dir: dist/
+          packages-dir: ${{ runner.temp }}/python-distributions/packages/
   # docsync:evidence.end evidence.release.publish_workflow

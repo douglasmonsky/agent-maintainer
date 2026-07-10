@@ -74,6 +74,18 @@ path = "agent_maintainer.models"
 depends_on = []
 
 [[modules]]
+path = "agent_maintainer.release_artifacts"
+depends_on = [
+  "agent_maintainer.release_artifacts_io",
+  "agent_run_artifacts.distribution_bundle",
+  "agent_run_artifacts.git_state",
+]
+
+[[modules]]
+path = "agent_maintainer.release_artifacts_io"
+depends_on = ["agent_run_artifacts.distribution_bundle"]
+
+[[modules]]
 path = "agent_maintainer.release_evidence"
 depends_on = [
   "agent_maintainer.release_evidence_io",

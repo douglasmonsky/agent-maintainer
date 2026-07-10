@@ -84,7 +84,11 @@ attachment, TestPyPI, and PyPI job validates that aggregate against its own
 clean checkout before acting. Every remote workflow action is pinned to a full
 commit SHA with updater metadata, and strict workflow validation covers verify,
 deep-verify, and publish. Superseded validation runs may cancel, while deep
-verification and publishing runs are non-canceling.
+verification and publishing runs are non-canceling. The build job copies wheel
+and sdist files into an exact-commit distribution bundle with an exact inventory,
+sizes, and SHA-256 digests. Every attachment and index-publish job verifies that
+bundle after download against the manifest SHA-256 carried separately by the
+build job, then consumes only its verified `packages/` directory.
 
 ## Publishing
 
@@ -96,6 +100,12 @@ verification and publishing runs are non-canceling.
   `release evidence valid` before building or publishing.
 - [ ] Confirm Actionlint, workflow schema validation, and strict Zizmor pass for
   `verify.yml`, `deep-verify.yml`, and `publish.yml`.
+- [ ] Confirm the `python-distributions` artifact contains `manifest.json` and
+  only the manifest-listed wheel and sdist files under `packages/`.
+- [ ] Confirm every consumer matches the build job's
+  `distribution_manifest_sha256` output before trusting that manifest.
+- [ ] Confirm the build and selected consumer report `distribution bundle
+  verified` for the workflow SHA before attachment or publication.
 - [ ] Install from TestPyPI in a clean environment.
 - [ ] Run `agent-maintainer --help`.
 - [ ] Run `archguard --help`.

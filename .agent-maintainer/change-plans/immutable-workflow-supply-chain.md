@@ -1,7 +1,7 @@
 +++
 id = "immutable-workflow-supply-chain"
 kind = "release-hardening"
-status = "active"
+status = "complete"
 base_ref = "e3a7a23"
 expires = 2026-08-31
 allowed_paths = [

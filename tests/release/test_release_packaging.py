@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer import release_artifacts_io
 from tests.support.paths import REPO_ROOT
 
 RUN_RELEASE_TESTS = os.environ.get("AGENT_MAINTAINER_RUN_RELEASE_TESTS") == "1"
@@ -24,6 +25,8 @@ release_only = pytest.mark.skipif(
 EXTRAS = ("core", "agent", "hardening", "manual", "mcp", "all")
 SOURCE_METADATA = REPO_ROOT / "src" / "agent_maintainer.egg-info"
 BUILD_DIR = REPO_ROOT / "build"
+GIT_SHA_LENGTH = 40
+SYNTHETIC_RELEASE_SHA = "a" * GIT_SHA_LENGTH
 
 
 def run(command: list[str], *, cwd: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
@@ -111,9 +114,9 @@ def test_release_builds_artifacts_and_installs_console_script(
         cleanup_source_metadata()
     assert result.returncode == 0, result.stdout + result.stderr
 
-    wheel = next(dist_dir.glob("agent_maintainer-*.whl"))
-    sdist = next(dist_dir.glob("agent_maintainer-*.tar.gz"))
-    artifacts = (wheel, sdist)
+    built_wheel = next(dist_dir.glob("agent_maintainer-*.whl"))
+    built_sdist = next(dist_dir.glob("agent_maintainer-*.tar.gz"))
+    built_artifacts = (built_wheel, built_sdist)
 
     result = run(
         [
@@ -121,10 +124,23 @@ def test_release_builds_artifacts_and_installs_console_script(
             "-m",
             "twine",
             "check",
-            *(str(artifact) for artifact in artifacts),
+            *(str(artifact) for artifact in built_artifacts),
         ]
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+    bundle_dir = tmp_path / "python-distributions"
+    created = release_artifacts_io.create_distribution_bundle(
+        dist_dir,
+        bundle_dir,
+        expected_sha=SYNTHETIC_RELEASE_SHA,
+    )
+    verified = release_artifacts_io.verify_distribution_bundle(
+        bundle_dir,
+        expected_sha=SYNTHETIC_RELEASE_SHA,
+        expected_manifest_sha256=created.manifest_sha256,
+    )
+    artifacts = tuple(bundle_dir / artifact.path for artifact in verified.artifacts)
 
     for index, artifact in enumerate(artifacts, start=1):
         assert artifact_contains_license(artifact)

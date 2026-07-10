@@ -30,6 +30,12 @@
 - Publishing now requires fresh full, CI, security, manual, and release
   manifests from one clean commit; build and publish jobs revalidate the
   self-contained exact-commit aggregate before acting.
+- GitHub Actions now use full-SHA-pinned action implementations, explicit
+  concurrency policy, and strict unfiltered workflow security validation.
+- Built wheels and source distributions now travel in an exact-commit manifest
+  with byte sizes and SHA-256 digests that every release consumer revalidates
+  against the build job's separately carried manifest digest immediately before
+  attachment or Trusted Publishing.
 
 ### Fixed Since 0.1.0b5
 
