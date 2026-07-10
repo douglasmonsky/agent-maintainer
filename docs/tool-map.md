@@ -274,9 +274,9 @@ regularly. Revisit SHA pinning if the kit moves toward stricter supply-chain
 requirements.
 
 `actionlint` checks workflow syntax and common GitHub Actions mistakes when
-`.github/workflows` exists. `zizmor` runs offline against workflows and
-Dependabot config to catch risky CI/CD patterns. This repository enables both
-through the normal full/CI verifier profiles.
+`.github/workflows` exists. `zizmor` runs offline against workflow files to
+catch risky CI/CD patterns; Dependabot configuration is validated separately.
+This repository enables both through the normal full/CI verifier profiles.
 
 ## Configuration model
 

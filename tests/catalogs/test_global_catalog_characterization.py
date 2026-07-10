@@ -57,3 +57,4 @@ def test_global_architecture_and_workflow_checks_remain_separate() -> None:
     ]
     assert "--staged" in architecture[1].command
     assert [check.name for check in workflow] == ["actionlint", "zizmor"]
+    assert workflow[1].command[-1] == ".github/workflows"

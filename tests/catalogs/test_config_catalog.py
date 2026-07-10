@@ -125,7 +125,6 @@ def test_workflow_checks_are_configured_for_github_actions() -> None:
         "--offline",
         "--no-progress",
         ".github/workflows",
-        ".github/dependabot.yml",
     ]
     assert by_name["zizmor"].required_executable == "zizmor"
 
