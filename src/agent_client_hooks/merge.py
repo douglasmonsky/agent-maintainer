@@ -2,93 +2,29 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from agent_client_hooks import constants, manifest, templates
+from agent_client_hooks import claude_merge, templates
 
 CODEX_HOOK_FEATURE = "hooks = true"
 
 
 def merge_claude_settings(path: Path, managed_content: str) -> str:
-    """Merge managed hook settings into existing Claude settings JSON."""
+    """Retain the public Claude merge facade for compatibility."""
 
-    with path.open(encoding="utf-8") as stream:
-        current = json.load(stream)
-    managed = json.loads(managed_content)
-    if not isinstance(current, dict):
-        current = {}
-    hooks = current.setdefault("hooks", {})
-    if not isinstance(hooks, dict):
-        current["hooks"] = {}
-        hooks = current["hooks"]
-    for event, entries in managed["hooks"].items():
-        hooks[event] = merge_claude_event(hooks.get(event), entries)
-    return f"{json.dumps(current, indent=2, sort_keys=True)}\n"
+    return claude_merge.merge_claude_settings(path, managed_content)
 
 
 def merge_claude_event(current: object, managed: object) -> list[object]:
-    """Replace only Agent Maintainer entries while preserving user ordering."""
+    """Retain the public event merge facade for compatibility."""
 
-    managed_entries = list(managed) if isinstance(managed, list) else []
-    if not isinstance(current, list):
-        return managed_entries
-    preserved: list[object] = []
-    insertion_index: int | None = None
-    for entry in current:
-        if is_managed_claude_entry(entry):
-            if insertion_index is None:
-                insertion_index = len(preserved)
-            continue
-        preserved.append(entry)
-    insert_at = len(preserved) if insertion_index is None else insertion_index
-    return [*preserved[:insert_at], *managed_entries, *preserved[insert_at:]]
+    return claude_merge.merge_claude_event(current, managed)
 
 
-def is_managed_claude_entry(entry: object) -> bool:
-    """Return whether a Claude hook entry carries a stable managed command."""
+def strip_managed_claude_entry(entry: object) -> tuple[object | None, bool]:
+    """Retain the public narrow-removal facade for lifecycle callers."""
 
-    return any(is_managed_claude_command(command) for command in _entry_commands(entry))
-
-
-def is_managed_claude_command(command: str) -> bool:
-    """Return whether a command belongs to Agent Maintainer's Claude hooks."""
-
-    if command.startswith("agent-maintainer hooks "):
-        return True
-    return any(
-        item.relative_path in command for item in manifest.hook_files(constants.CLAUDE_CODE_CLIENT)
-    )
-
-
-def _entry_commands(value: object) -> tuple[str, ...]:
-    """Return command strings nested in one Claude hook entry."""
-
-    if isinstance(value, dict):
-        return _mapping_commands(value)
-    if isinstance(value, list):
-        return _sequence_commands(value)
-    return ()
-
-
-def _mapping_commands(value: dict[object, object]) -> tuple[str, ...]:
-    """Return direct and nested commands from one mapping."""
-
-    command = value.get("command")
-    nested = tuple(
-        command_text
-        for key, item in value.items()
-        if key != "command"
-        for command_text in _entry_commands(item)
-    )
-    direct = (command,) if isinstance(command, str) else ()
-    return direct + nested
-
-
-def _sequence_commands(value: list[object]) -> tuple[str, ...]:
-    """Return commands nested in a list-like hook value."""
-
-    return tuple(command for item in value for command in _entry_commands(item))
+    return claude_merge.strip_managed_claude_entry(entry)
 
 
 def merge_codex_config(existing: str, managed_block: str) -> str:

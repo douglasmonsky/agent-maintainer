@@ -232,8 +232,11 @@ def test_ensure_wait_daemon_success_and_failure(
         tmp_path,
         "wait-ok",
         env=env,
-        runner=runner,
-        python_executable="/usr/bin/python3",
+        options=daemon_launchd.LaunchAgentInstallOptions(
+            runner=runner,
+            python_executable="/usr/bin/python3",
+            home=tmp_path / "home",
+        ),
     )
 
     assert success.started
@@ -246,8 +249,11 @@ def test_ensure_wait_daemon_success_and_failure(
         tmp_path,
         "wait-fail",
         env=env,
-        runner=failing_runner,
-        python_executable="/usr/bin/python3",
+        options=daemon_launchd.LaunchAgentInstallOptions(
+            runner=failing_runner,
+            python_executable="/usr/bin/python3",
+            home=tmp_path / "home",
+        ),
     )
 
     assert not failed.started

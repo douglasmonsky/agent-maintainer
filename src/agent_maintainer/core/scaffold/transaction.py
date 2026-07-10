@@ -15,6 +15,7 @@ from pathlib import Path
 from agent_maintainer.core.scaffold.planning import InitPlanItem
 
 BACKUP_ROOT = Path(".agent-maintainer/backups/init")
+GIT_BACKUP_ROOT = Path("agent-maintainer/backups/init")
 DEFAULT_FILE_MODE = 0o644
 
 
@@ -209,7 +210,16 @@ def _replace_with_content(
 def _transaction_root(target: Path) -> Path:
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     unique_id = uuid.uuid4().hex
-    return target / BACKUP_ROOT / f"{timestamp}-{unique_id}"
+    return backup_root(target) / f"{timestamp}-{unique_id}"
+
+
+def backup_root(target: Path) -> Path:
+    """Return Git-private recovery storage with a non-repository fallback."""
+
+    git_directory = _git_directory(target)
+    if git_directory is not None:
+        return git_directory / GIT_BACKUP_ROOT
+    return target / BACKUP_ROOT
 
 
 def _failure_message(exc: Exception, rollback_errors: tuple[str, ...]) -> str:
@@ -225,3 +235,25 @@ def _target_mode(path: Path) -> int:
     except FileNotFoundError:
         return DEFAULT_FILE_MODE
     return stat.S_IMODE(metadata.st_mode)
+
+
+def _git_directory(root: Path) -> Path | None:
+    """Return the real Git directory for a repository or linked worktree."""
+
+    marker = root / ".git"
+    if marker.is_dir():
+        return marker
+    if not marker.is_file():
+        return None
+    try:
+        reference = marker.read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeError):
+        return None
+    prefix = "gitdir:"
+    if not reference.lower().startswith(prefix):
+        return None
+    candidate = Path(reference[len(prefix) :].strip())
+    if not candidate.is_absolute():
+        candidate = marker.parent / candidate
+    resolved = candidate.resolve()
+    return resolved if resolved.is_dir() else None

@@ -29,11 +29,12 @@ creating directories, backups, or generated files. Normal apply refuses the
 entire plan when any conflict exists. Force selects conflicts for explicit
 replacement but never converts `SKIP` into an overwrite.
 
-Apply backs up every changed existing destination under the ignored,
-collision-proof `.agent-maintainer/backups/init/<transaction>/` root. It writes
-a restore/remove manifest, uses same-directory atomic replacements, and restores
-or removes all earlier destinations when a later write fails. A second apply of
-the same desired state selects no writes and creates no transaction.
+Apply backs up every changed existing destination under collision-proof,
+Git-private `.git/agent-maintainer/backups/init/<transaction>/` storage. A
+non-Git target uses `.agent-maintainer/backups/init/` as a local fallback. It
+writes a restore/remove manifest, uses same-directory atomic replacements, and
+restores or removes all earlier destinations when a later write fails. A second
+apply of the same desired state selects no writes and creates no transaction.
 
 Planning and mutation are separate modules in the scaffold domain. Their edges
 are recorded in `src/agent_maintainer/core/tach.domain.toml`.

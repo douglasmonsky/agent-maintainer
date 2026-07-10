@@ -15,6 +15,7 @@ from pathlib import Path
 from agent_client_hooks.adapters import PlannedWrite
 
 BACKUP_ROOT = Path(".agent-maintainer/backups/hooks")
+GIT_BACKUP_ROOT = Path("agent-maintainer/backups/hooks")
 BACKUP_MANIFEST = "rollback.json"
 DEFAULT_FILE_MODE = 0o644
 
@@ -28,7 +29,7 @@ class PreparedHookWrite:
     """Rendered hook write with its pre-mutation state."""
 
     plan: PlannedWrite
-    content: str
+    content: str | None
     existed: bool
     changed: bool
 
@@ -67,17 +68,29 @@ def prepare_write(plan: PlannedWrite, content: str) -> PreparedHookWrite:
     return PreparedHookWrite(plan, content, existed=True, changed=current != content)
 
 
+def prepare_delete(plan: PlannedWrite) -> PreparedHookWrite:
+    """Prepare removal of one preflighted managed destination."""
+
+    return PreparedHookWrite(
+        plan,
+        None,
+        existed=plan.path.exists(),
+        changed=plan.path.exists(),
+    )
+
+
 def apply_transaction(
     prepared: tuple[PreparedHookWrite, ...],
     *,
     ownership_root: Path,
+    git_private: bool = False,
 ) -> HookMutationResult:
     """Back up, atomically apply, and roll back one complete write set."""
 
     changes = tuple(item for item in prepared if item.changed)
     if not changes:
         return HookMutationResult((), (), None)
-    transaction_root = _transaction_root(ownership_root)
+    transaction_root = _transaction_root(ownership_root, git_private=git_private)
     state = HookTransactionState()
     try:
         rollback_manifest = _apply_changes(
@@ -114,11 +127,20 @@ def atomic_write_text(path: Path, content: str) -> None:
         raise
 
 
-def _transaction_root(ownership_root: Path) -> Path:
+def backup_root(ownership_root: Path, *, git_private: bool) -> Path:
+    """Return Git-private recovery storage when the target is a repository."""
+
+    git_directory = _git_directory(ownership_root) if git_private else None
+    if git_directory is not None:
+        return git_directory / GIT_BACKUP_ROOT
+    return ownership_root / BACKUP_ROOT
+
+
+def _transaction_root(ownership_root: Path, *, git_private: bool) -> Path:
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     unique_id = uuid.uuid4().hex
     transaction_id = f"{timestamp}-{unique_id}"
-    return ownership_root / BACKUP_ROOT / transaction_id
+    return backup_root(ownership_root, git_private=git_private) / transaction_id
 
 
 def _apply_changes(
@@ -142,7 +164,10 @@ def _apply_changes(
         ownership_root=ownership_root,
     )
     for item in changes:
-        atomic_write_text(item.plan.path, item.content)
+        if item.content is None:
+            item.plan.path.unlink()
+        else:
+            atomic_write_text(item.plan.path, item.content)
         state.written.append(item.plan.path)
     return rollback_manifest
 
@@ -236,9 +261,31 @@ def _mutation_error(exc: Exception, rollback_errors: tuple[str, ...]) -> str:
     """Return a failure message that states whether rollback completed."""
 
     if not rollback_errors:
-        return f"hook installation failed and was rolled back: {exc}"
+        return f"hook mutation failed and was rolled back: {exc}"
     detail = "; ".join(rollback_errors)
-    return f"hook installation failed; rollback incomplete ({detail}): {exc}"
+    return f"hook mutation failed; rollback incomplete ({detail}): {exc}"
+
+
+def _git_directory(root: Path) -> Path | None:
+    """Return the real Git directory for a repository or linked worktree."""
+
+    marker = root / ".git"
+    if marker.is_dir():
+        return marker
+    if not marker.is_file():
+        return None
+    try:
+        reference = marker.read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeError):
+        return None
+    prefix = "gitdir:"
+    if not reference.lower().startswith(prefix):
+        return None
+    candidate = Path(reference[len(prefix) :].strip())
+    if not candidate.is_absolute():
+        candidate = marker.parent / candidate
+    resolved = candidate.resolve()
+    return resolved if resolved.is_dir() else None
 
 
 def _target_mode(path: Path) -> int:

@@ -40,9 +40,22 @@ depends_on = [
 ]
 
 [[modules]]
-path = "merge"
+path = "claude_merge"
 depends_on = [
   "constants",
   "manifest",
+]
+
+[[modules]]
+path = "merge"
+depends_on = [
+  "claude_merge",
+  "templates",
+]
+
+[[modules]]
+path = "removal"
+depends_on = [
+  "merge",
   "templates",
 ]

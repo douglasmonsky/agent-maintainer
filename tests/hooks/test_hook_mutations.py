@@ -94,6 +94,33 @@ def test_transaction_failure_restores_every_prior_destination(
     assert second.read_text(encoding="utf-8") == "second-old"
 
 
+def test_transaction_failure_restores_prior_deletion(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A later write failure restores an earlier transactionally removed file."""
+
+    removed = tmp_path / "removed.py"
+    failing = tmp_path / "failing.py"
+    removed.write_text("managed", encoding="utf-8")
+    failing.write_text("old", encoding="utf-8")
+    prepared = (
+        mutations.prepare_delete(manager.PlannedWrite(removed, "", "removed")),
+        mutations.prepare_write(manager.PlannedWrite(failing, "new", "failing"), "new"),
+    )
+    monkeypatch.setattr(
+        mutations,
+        "atomic_write_text",
+        lambda _path, _content: (_ for _ in ()).throw(OSError("synthetic interruption")),
+    )
+
+    with pytest.raises(mutations.HookMutationError, match="rolled back"):
+        mutations.apply_transaction(prepared, ownership_root=tmp_path)
+
+    assert removed.read_text(encoding="utf-8") == "managed"
+    assert failing.read_text(encoding="utf-8") == "old"
+
+
 def test_rollback_manifest_records_restore_and_remove_actions(tmp_path: Path) -> None:
     """Transaction metadata gives explicit recovery actions without file content."""
 
@@ -155,6 +182,20 @@ def test_force_replaces_invalid_config_after_backup(tmp_path: Path) -> None:
     backups = list((tmp_path / mutations.BACKUP_ROOT).glob("*/files/.claude/settings.json"))
     assert len(backups) == 1
     assert backups[0].read_text(encoding="utf-8") == "{"
+
+
+def test_git_private_backup_root_supports_linked_worktree_marker(tmp_path: Path) -> None:
+    """Repository recovery follows a linked worktree's real Git directory."""
+
+    repo = tmp_path / "repo"
+    git_directory = tmp_path / "git-data"
+    repo.mkdir()
+    git_directory.mkdir()
+    (repo / ".git").write_text("gitdir: ../git-data\n", encoding="utf-8")
+
+    assert mutations.backup_root(repo, git_private=True) == (
+        git_directory / mutations.GIT_BACKUP_ROOT
+    )
 
 
 def _transaction_roots(root: Path) -> tuple[str, ...]:

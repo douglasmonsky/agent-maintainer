@@ -30,6 +30,25 @@ Inspect hook status:
 python3 -m agent_maintainer hooks status all
 ```
 
+Update installed hooks through the same merge and backup contract:
+
+```bash
+python3 -m agent_maintainer hooks update all --dry-run
+python3 -m agent_maintainer hooks update all
+```
+
+Remove only manifest-owned entries and scripts:
+
+```bash
+python3 -m agent_maintainer hooks uninstall all --dry-run
+python3 -m agent_maintainer hooks uninstall all
+```
+
+Uninstall preserves unrelated Codex and Claude configuration, including a
+third-party command co-located inside a managed Claude matcher. Current managed
+scripts are removed directly. A stale script must retain its ownership marker
+and requires `--force`; an unowned file is refused even with force.
+
 Preview changes before writing files:
 
 ```bash
@@ -71,13 +90,16 @@ python3 -m agent_maintainer hooks install claude-code --scope user --yes
 ```
 
 Changed existing files are always backed up, including when `--force` resolves
-an invalid managed config. Repo backups live under the ignored
-`.agent-maintainer/backups/hooks/<transaction>/` directory with a
-`rollback.json` restore/remove manifest. Writes are applied atomically as one
-transaction and earlier destinations are restored if a later write fails.
-Dry-run mode never prompts for user-level permission, writes files, or creates
-backups. A second current install is a byte-for-byte no-op and creates no new
-transaction.
+an invalid managed config or a stale owned script. Repository recovery data
+lives under Git-private
+`.git/agent-maintainer/backups/hooks/<transaction>/` storage. User-scope and
+non-Git operations fall back to `.agent-maintainer/backups/hooks/` under their
+ownership root. Each transaction includes a `rollback.json` restore/remove
+manifest. Writes and removals are applied atomically as one transaction and
+earlier destinations are restored if a later operation fails. Dry-run mode
+never prompts for user-level permission, writes files, removes files, or creates
+backups. A second current install or update is a byte-for-byte no-op and creates
+no new transaction.
 
 User-level hooks are repo opt-in. When a global hook fires outside a Git
 repository, or inside a repository without `[tool.agent_maintainer]` in

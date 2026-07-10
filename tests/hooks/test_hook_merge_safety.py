@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from agent_client_hooks import merge, templates
+from agent_client_hooks import merge, removal, templates
 
 
 def test_claude_merge_preserves_third_party_hooks_and_order(tmp_path: Path) -> None:
@@ -56,7 +56,63 @@ def test_claude_merge_is_idempotent_with_coexisting_hooks(tmp_path: Path) -> Non
     assert merge.merge_claude_settings(settings, managed) == first
 
 
+def test_claude_merge_preserves_hook_sharing_managed_matcher(tmp_path: Path) -> None:
+    """A third-party command survives inside an otherwise managed matcher."""
+
+    settings = tmp_path / "settings.json"
+    mixed = {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+            {"type": "command", "command": ".claude/hooks/post_tool_use.py"},
+            {"type": "command", "command": "third-party"},
+        ],
+    }
+    settings.write_text(json.dumps({"hooks": {"PostToolUse": [mixed]}}), encoding="utf-8")
+
+    rendered = merge.merge_claude_settings(settings, templates.claude_settings())
+    entries = json.loads(rendered)["hooks"]["PostToolUse"]
+
+    assert any(_commands(entry) == ["third-party"] for entry in entries)
+
+
+def test_remove_claude_settings_preserves_unrelated_and_mixed_hooks() -> None:
+    """Uninstall removes managed commands at their narrowest object boundary."""
+
+    mixed = {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+            {"type": "command", "command": ".claude/hooks/post_tool_use.py"},
+            {"type": "command", "command": "third-party"},
+        ],
+    }
+    current = json.dumps(
+        {"theme": "dark", "hooks": {"PostToolUse": [mixed], "Notification": [_entry("notify")]}}
+    )
+
+    payload = json.loads(removal.remove_claude_settings(current))
+
+    assert payload["theme"] == "dark"
+    assert payload["hooks"]["Notification"] == [_entry("notify")]
+    assert _commands(payload["hooks"]["PostToolUse"][0]) == ["third-party"]
+
+
+def test_remove_codex_config_preserves_unrelated_sections() -> None:
+    """Uninstall strips only the marked Codex block."""
+
+    current = f"[other]\nvalue = true\n\n{templates.codex_config_block()}"
+
+    assert removal.remove_codex_config(current) == "[other]\nvalue = true\n"
+
+
 def _entry(command: str) -> dict[str, object]:
     """Return one synthetic Claude hook event entry."""
 
     return {"hooks": [{"type": "command", "command": command}]}
+
+
+def _commands(entry: dict[str, object]) -> list[object]:
+    """Return commands from one synthetic Claude event entry."""
+
+    hooks = entry["hooks"]
+    assert isinstance(hooks, list)
+    return [hook["command"] for hook in hooks if isinstance(hook, dict)]

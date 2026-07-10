@@ -25,11 +25,24 @@ event arrays, fields, and ordering are preserved.
 
 Hook installation renders and validates every plan before the first mutation.
 Changed existing files are always backed up, including with `--force`, under a
-collision-proof transaction directory at
-`.agent-maintainer/backups/hooks/<transaction>/`. The directory is ignored by
-Git. Each transaction records restore/remove actions in `rollback.json`, writes
-destinations with same-directory atomic replacement, and restores earlier
-destinations if a later write fails.
+collision-proof transaction directory. Repository-scope recovery data uses the
+real Git directory at `.git/agent-maintainer/backups/hooks/<transaction>/`,
+including linked worktrees. User-scope and non-Git operations use the local
+`.agent-maintainer/backups/hooks/` fallback. Each transaction records
+restore/remove actions in `rollback.json`, writes destinations with
+same-directory atomic replacement, and restores earlier writes or removals if a
+later operation fails.
+
+`hooks update` uses the same preflight, merge, backup, and no-op contract as
+install. `hooks uninstall` removes only manifest-owned configuration entries and
+scripts. Claude removal operates at the narrowest command owner so third-party
+commands survive even inside a managed matcher. Current scripts are removable;
+stale scripts require both a stable ownership marker and `--force`. Unowned
+files and malformed or unsafe config paths fail the whole preflight.
+
+Client-config removal is isolated in `agent_client_hooks.removal`; lifecycle
+preflight and confirmation live in `agent_maintainer.hooks.lifecycle`; the
+existing hook manager remains the shared install/update apply boundary.
 
 `--force` is limited to resolving a known invalid managed configuration by
 replacing it after backup. It does not disable merge, backup, preview, or
@@ -37,10 +50,11 @@ rollback promises.
 
 ## Consequences
 
-Repeated installation of current files is a byte-for-byte no-op and creates no
-new transaction. Users can review plans without prompts, package installation,
-pre-commit execution, hook writes, or backup creation. Recovery metadata stays
-local and ignored while preserving original file modes and contents.
+Repeated installation or update of current files is a byte-for-byte no-op and
+creates no new transaction. Users can review plans without prompts, package
+installation, pre-commit execution, hook writes/removals, or backup creation.
+Recovery metadata stays Git-private while preserving original file modes and
+contents.
 
 The new module edges are recorded in
 `src/agent_maintainer/core/tach.domain.toml`,
@@ -64,4 +78,7 @@ Tests cover help and typo behavior through the real package entrypoint, dry-run
 side effects, third-party hooks in every managed Claude event, repeated merge
 idempotency, forced and ordinary backups, rapid collision-proof transactions,
 second-run byte equality, rollback after an interrupted later write, and
-recovery-manifest contents.
+recovery-manifest contents. Lifecycle tests also cover mixed managed/third-party
+matchers, update/uninstall dispatch, unowned and stale scripts, deletion
+rollback, user-scope confirmation, Git-private storage, and two clean-clone
+no-op runs.

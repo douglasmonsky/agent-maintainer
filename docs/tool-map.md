@@ -42,7 +42,8 @@ and `python3 -m agent_maintainer install` to explicitly install local pre-commit
 and managed hooks without reinstalling dependencies. Both commands accept
 `--dry-run`; bootstrap never installs hooks implicitly. Use `python3 -m
 agent_maintainer hooks install all` to select managed agent-client hooks
-directly.
+directly. `hooks update` refreshes those files through the same lossless merge,
+and `hooks uninstall` removes only manifest-owned entries and scripts.
 
 When `.docsync/trace.yml` exists, Agent Maintainer adds a `docsync`
 verification check to local profiles. The check runs `docsync check
@@ -142,10 +143,11 @@ summaries intentionally omit raw secret values and point to run-scoped artifacts
 for details.
 Managed agent-client hooks append local execution evidence to
 `.verify-logs/hooks.jsonl`, and `doctor` reports latest audited hook status.
-Hook install/status behavior is routed through agent-client adapters. Current
+Hook install/update/status/uninstall behavior is routed through the shared
+managed-file manifest and agent-client adapters. Current
 adapters are Codex and Claude Code; they own client-specific config paths and
-hook script paths, while the hook manager owns prompts, backups, merges, and
-writes.
+hook script paths, while the hook manager owns prompts, Git-private backups,
+identity-aware merges/removals, and transactional writes/deletes.
 
 `repair-plan` prints a non-mutating repair sequence for the next agent loop.
 Use `python3 -m agent_maintainer repair-plan` for the latest failure,

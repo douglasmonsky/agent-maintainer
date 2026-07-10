@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import stat
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -137,6 +138,47 @@ def test_hardening_package_merge_preserves_existing_metadata(tmp_path: Path) -> 
     assert "markdownlint-cli2" in merged["devDependencies"]
 
 
+def test_clean_clone_initializer_twice_keeps_git_status_clean(tmp_path: Path) -> None:
+    """A generated adoption is unchanged on first and second clean-clone apply."""
+
+    seed = tmp_path / "seed"
+    clone = tmp_path / "clone"
+    seed.mkdir()
+    _git(seed, "init", "-b", "main")
+    assert initializer.main(["--target", str(seed), "--track", "agent"]) == 0
+    _git(seed, "add", "--all")
+    _git(
+        seed,
+        "-c",
+        "user.name=Agent Maintainer",
+        "-c",
+        "user.email=test@example.com",
+        "commit",
+        "-m",
+        "seed",
+    )
+    _git(tmp_path, "clone", str(seed), str(clone))
+    command = ["--target", str(clone), "--track", "agent"]
+
+    assert initializer.main(command) == 0
+    assert _git(clone, "status", "--porcelain").stdout == ""
+    assert initializer.main(command) == 0
+    assert _git(clone, "status", "--porcelain").stdout == ""
+    assert not transaction.backup_root(clone).exists()
+
+
+def test_initializer_backup_root_supports_linked_worktree_marker(tmp_path: Path) -> None:
+    """Initializer recovery follows a linked worktree's real Git directory."""
+
+    repo = tmp_path / "repo"
+    git_directory = tmp_path / "git-data"
+    repo.mkdir()
+    git_directory.mkdir()
+    (repo / ".git").write_text("gitdir: ../git-data\n", encoding="utf-8")
+
+    assert transaction.backup_root(repo) == git_directory / transaction.GIT_BACKUP_ROOT
+
+
 def _existing_agent_repo(root: Path) -> None:
     dependency = root / "config/dev-dependencies.txt"
     dependency.parent.mkdir(parents=True)
@@ -156,16 +198,26 @@ def _third_party_entry() -> dict[str, object]:
 
 
 def _transaction_names(root: Path) -> tuple[str, ...]:
-    backup_root = root / transaction.BACKUP_ROOT
+    backup_root = transaction.backup_root(root)
     return (
         tuple(sorted(path.name for path in backup_root.iterdir())) if backup_root.exists() else ()
     )
 
 
 def _tree_payloads(root: Path, *, include_backups: bool = True) -> dict[str, bytes]:
-    backup_root = root / transaction.BACKUP_ROOT
+    backup_root = transaction.backup_root(root)
     return {
         path.relative_to(root).as_posix(): path.read_bytes()
         for path in root.rglob("*")
         if path.is_file() and (include_backups or backup_root not in path.parents)
     }
+
+
+def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ("git", *args),
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )

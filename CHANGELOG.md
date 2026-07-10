@@ -19,6 +19,8 @@
   has strict argument parsing and side-effect-free preview.
 - Initializer preview classifies additions, unchanged files, supported merges,
   conflicts, and user-owned skips before transactional apply.
+- Managed hooks now expose explicit update and uninstall lifecycles driven by
+  the same manifest, preflight, merge, backup, and rollback contract.
 
 ### Fixed Since 0.1.0b5
 
@@ -31,6 +33,9 @@
 - Initializer force no longer overwrites user guidance silently: supported files
   merge, conflicts are backed up, and interrupted multi-file onboarding rolls
   back to the pre-run state.
+- Hook and initializer recovery data is Git-private in repositories. Uninstall
+  removes only managed identities, preserves co-located third-party commands,
+  refuses unowned files, and rolls prior deletions back after later failures.
 
 ## 0.1.0b5 - 2026-07-03
 

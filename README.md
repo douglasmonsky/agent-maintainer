@@ -123,7 +123,7 @@ source.
 
 Agent and hardening scaffolds render Codex and Claude Code configuration plus
 every referenced post-edit, PR-wait, stop, and audit wrapper from the same
-managed-file inventory used by installation, status, and uninstall. Generated
+managed-file inventory used by install, update, status, and uninstall. Generated
 wrappers are checked for byte-for-byte currentness rather than existence alone.
 
 Preview before writing:

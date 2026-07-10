@@ -81,8 +81,7 @@ def ensure_wait_daemon(
     wait_id: str,
     *,
     env: Mapping[str, str] | None = None,
-    runner: LaunchctlRunner | None = None,
-    python_executable: str = sys.executable,
+    options: LaunchAgentInstallOptions | None = None,
 ) -> DaemonLaunch:
     """Write rewake envelope and ensure launchd daemon is running."""
 
@@ -96,8 +95,7 @@ def ensure_wait_daemon(
             root,
             wait_id,
             current,
-            runner=runner,
-            python_executable=python_executable,
+            options=options,
         )
     except (OSError, RuntimeError) as exc:
         return DaemonLaunch(False, label=label, log_path=log_path, error=str(exc))
@@ -229,17 +227,10 @@ def _write_envelope_and_install(
     wait_id: str,
     env: Mapping[str, str],
     *,
-    runner: LaunchctlRunner | None,
-    python_executable: str,
+    options: LaunchAgentInstallOptions | None,
 ) -> None:
     write_rewake_envelope(root, wait_id, env)
-    install_launch_agent(
-        root,
-        options=LaunchAgentInstallOptions(
-            runner=runner,
-            python_executable=python_executable,
-        ),
-    )
+    install_launch_agent(root, options=options)
 
 
 def _bootstrap_launch_agent(

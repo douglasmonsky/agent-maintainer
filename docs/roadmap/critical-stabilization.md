@@ -239,6 +239,17 @@ Checks:
 Exit criterion: onboarding and installation are lossless, previewable, and
 idempotent in both empty and existing repositories.
 
+Implementation status (2026-07-10): complete on
+`codex/critical-stabilization`. CS-03 and CS-04 now use one executable manifest
+for scaffold/install/update/status/uninstall; preserve third-party config down
+to mixed Claude matcher commands; refuse unowned removals; store repository
+recovery data under the real Git directory; roll back writes and removals; and
+classify existing-repository initialization before apply. Verification evidence:
+
+- focused hook/initializer lifecycle suite: 79 passed;
+- clean-clone first-run and second-run Git-status tests: passed; and
+- full: `20260710T120658085479Z-full-66a069fe87cb`.
+
 ### Unit 3 — Validate configuration before behavior
 
 Deliverables:

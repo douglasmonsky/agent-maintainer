@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Protocol
 
 from agent_client_hooks import adapters as hook_adapters
 from agent_client_hooks import merge
@@ -19,13 +20,39 @@ SCOPES = hook_adapters.SCOPES
 USER_SCOPE = hook_adapters.USER_SCOPE
 
 
+class MutationOptions(Protocol):
+    """Common options required by the transactional mutation boundary."""
+
+    @property
+    def target(self) -> Path:
+        """Return the repository target."""
+        raise NotImplementedError
+
+    @property
+    def scope(self) -> str:
+        """Return repository or user mutation scope."""
+        raise NotImplementedError
+
+    @property
+    def dry_run(self) -> bool:
+        """Return whether the operation is preview-only."""
+        raise NotImplementedError
+
+
 def selected_clients(client: str) -> tuple[str, ...]:
     """Return concrete clients selected by CLI value."""
     return hook_adapters.selected_clients(client)
 
 
-def install_hooks(options: InstallOptions) -> int:
-    """Install managed hook clients."""
+def install_hooks(options: InstallOptions, *, operation: str = "install") -> int:
+    """Install or update managed hook clients through one mutation contract."""
+
+    return _install_or_update(options, operation=operation)
+
+
+def _install_or_update(options: InstallOptions, *, operation: str) -> int:
+    """Prepare and apply one install-like hook lifecycle operation."""
+
     plans = tuple(
         plan
         for client in selected_clients(options.client)
@@ -37,9 +64,9 @@ def install_hooks(options: InstallOptions) -> int:
     try:
         prepared = prepare_writes(plans, force=options.force)
     except (OSError, UnicodeError, ValueError) as exc:
-        print(f"FAIL hook install: cannot prepare writes: {exc}")
+        print(f"FAIL hook {operation}: cannot prepare writes: {exc}")
         return 1
-    print_plan(plans, options)
+    print_plan(plans, options, operation=operation)
     if (
         options.scope == USER_SCOPE
         and not options.dry_run
@@ -48,7 +75,7 @@ def install_hooks(options: InstallOptions) -> int:
     ):
         print("Aborted without user-level configuration.")
         return 1
-    return apply_prepared_writes(prepared, options)
+    return apply_prepared_writes(prepared, options, operation=operation)
 
 
 def planned_writes(client: str, options: InstallOptions) -> tuple[PlannedWrite, ...]:
@@ -115,7 +142,9 @@ def prepare_writes(
 
 def apply_prepared_writes(
     prepared: tuple[mutations.PreparedHookWrite, ...],
-    options: InstallOptions,
+    options: MutationOptions,
+    *,
+    operation: str = "install",
 ) -> int:
     """Preview or transactionally apply prepared hook writes."""
 
@@ -126,9 +155,10 @@ def apply_prepared_writes(
         result = mutations.apply_transaction(
             prepared,
             ownership_root=_ownership_root(options),
+            git_private=options.scope == REPO_SCOPE,
         )
     except mutations.HookMutationError as exc:
-        print(f"FAIL hook install: {exc}")
+        print(f"FAIL hook {operation}: {exc}")
         return 1
     for backup in result.backups:
         print(f"backed up {backup.original} -> {backup.backup}")
@@ -147,19 +177,21 @@ def _print_prepared(
 
     for item in prepared:
         path = item.plan.path
-        action = _prepared_action(item.changed, dry_run=dry_run)
+        action = _prepared_action(item, dry_run=dry_run)
         print(action, path)
 
 
-def _prepared_action(changed: bool, *, dry_run: bool) -> str:
+def _prepared_action(item: mutations.PreparedHookWrite, *, dry_run: bool) -> str:
     """Return the visible action for one prepared destination."""
 
-    if changed:
+    if item.changed and item.content is None:
+        return "would remove" if dry_run else "removed"
+    if item.changed:
         return "would write" if dry_run else "wrote"
     return "unchanged"
 
 
-def _ownership_root(options: InstallOptions) -> Path:
+def _ownership_root(options: MutationOptions) -> Path:
     """Return the root that owns destinations and rollback data."""
 
     if options.scope == USER_SCOPE:
@@ -167,19 +199,26 @@ def _ownership_root(options: InstallOptions) -> Path:
     return options.target.resolve()
 
 
-def print_plan(plans: tuple[PlannedWrite, ...], options: InstallOptions) -> None:
+def print_plan(
+    plans: tuple[PlannedWrite, ...],
+    options: InstallOptions,
+    *,
+    operation: str = "install",
+) -> None:
     """Print planned writes before installation."""
     scope_label = "user" if options.scope == USER_SCOPE else "repo"
-    print(f"Agent Maintainer hook install ({scope_label} scope):")
+    print(f"Agent Maintainer hook {operation} ({scope_label} scope):")
     for plan in plans:
         print(f"- {plan.description}: {plan.path}")
     if options.dry_run:
         print("dry-run: no files written")
 
 
-def confirm_user_scope() -> bool:
+def confirm_user_scope(operation: str = "write") -> bool:
     """Return whether user confirmed global user-scope hook writes."""
-    response = input("Write Agent Maintainer hooks to user-level agent config? [y/N] ")
+    response = input(
+        f"{operation.capitalize()} Agent Maintainer hooks in user-level agent config? [y/N] "
+    )
     return response.strip().lower() in {"y", "yes"}
 
 
