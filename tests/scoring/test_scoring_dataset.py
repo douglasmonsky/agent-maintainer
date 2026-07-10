@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from agent_maintainer.scoring import cli
 from agent_maintainer.scoring.dataset import list_examples
 
@@ -25,7 +27,7 @@ def test_scoring_examples_are_provider_neutral() -> None:
     }
 
 
-def test_scoring_examples_list_json(capsys) -> None:
+def test_scoring_examples_list_json(capsys: pytest.CaptureFixture[str]) -> None:
     """CLI lists schema-valid labeled examples."""
     status = cli.main(["examples", "list", "--format", "json"])
 
@@ -35,7 +37,10 @@ def test_scoring_examples_list_json(capsys) -> None:
     assert payload[0]["labels"] == ["low-risk", "docs", "focused-verification"]
 
 
-def test_scoring_examples_add_writes_jsonl(tmp_path: Path, capsys) -> None:
+def test_scoring_examples_add_writes_jsonl(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """CLI appends local examples to the configured JSONL dataset."""
     examples_file = tmp_path / "examples.jsonl"
 
@@ -71,7 +76,7 @@ def test_scoring_examples_add_writes_jsonl(tmp_path: Path, capsys) -> None:
 
 def test_scoring_examples_export_jsonl_includes_local_examples(
     tmp_path: Path,
-    capsys,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     """CLI exports bundled and local examples as JSONL."""
     examples_file = tmp_path / "examples.jsonl"

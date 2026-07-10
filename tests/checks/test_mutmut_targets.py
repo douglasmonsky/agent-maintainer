@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from agent_maintainer.checks import mutmut_targets
 
 
@@ -140,8 +142,8 @@ def test_mutmut_target_ratchet_ignores_non_path_patterns(tmp_path: Path) -> None
 
 def test_mutmut_target_ratchet_main_reports_issues(
     tmp_path: Path,
-    capsys,
-    monkeypatch,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """CLI prints ratchet issues and exits nonzero."""
 
@@ -163,8 +165,8 @@ def test_mutmut_target_ratchet_main_reports_issues(
 
 def test_mutmut_target_ratchet_main_reports_success(
     tmp_path: Path,
-    capsys,
-    monkeypatch,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """CLI prints a compact pass message."""
 

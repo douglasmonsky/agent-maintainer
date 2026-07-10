@@ -46,7 +46,7 @@ def test_status_categories_include_new_worsened_improved_resolved() -> None:
 
 def test_stale_reasons_include_deleted_dirty_mismatch_and_resolved(
     tmp_path: Path,
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Stale detection reports basic baseline drift."""
 

@@ -5,12 +5,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from agent_maintainer.runtime_events import cli
 
 
 def test_events_export_jsonl_preserves_source_location(
     tmp_path: Path,
-    capsys,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     """JSONL export includes source file and line for each event."""
     write_event(tmp_path, {"event_name": "check.finished", "status": "pass"})
@@ -26,7 +28,7 @@ def test_events_export_jsonl_preserves_source_location(
 
 def test_events_export_otel_json_is_local_shape(
     tmp_path: Path,
-    capsys,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     """OTel JSON export uses local OpenTelemetry-shaped JSON only."""
     write_event(tmp_path, {"event_name": "hook.finished", "status": "noop"})

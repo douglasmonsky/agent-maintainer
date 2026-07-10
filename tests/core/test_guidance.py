@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
+import pytest
+
 from agent_maintainer.config.modes import apply_mode
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.core import guidance as maintainer_guidance
@@ -179,7 +181,11 @@ def test_guidance_check_detects_current_missing_and_stale_files(tmp_path: Path) 
 # docsync:evidence.end evidence.agent_guidance.compact_sidecar_tests
 
 
-def test_guidance_main_writes_and_checks_file(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_guidance_main_writes_and_checks_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(maintainer_guidance, "load_config", strict_config)
 

@@ -1,18 +1,652 @@
 {
-  "version": 1,
-  "type_checking_mode": "strict",
-  "total_errors": 889,
   "by_rule": {
-    "reportUnknownArgumentType": 313,
-    "reportUnknownLambdaType": 252,
-    "reportUnknownMemberType": 148,
-    "reportUnknownVariableType": 130,
-    "reportPrivateUsage": 20,
-    "reportMissingParameterType": 10,
-    "reportUnknownParameterType": 10,
-    "reportDeprecated": 4,
-    "reportConstantRedefinition": 1,
-    "reportUnnecessaryIsInstance": 1
+    "reportPrivateUsage": 44,
+    "reportUnknownArgumentType": 479,
+    "reportUnknownLambdaType": 373,
+    "reportUnknownMemberType": 166,
+    "reportUnknownVariableType": 236
   },
-  "notes": "Initial strict Pyright baseline for ratcheting toward strict typing without making normal Pyright noisy."
+  "note": "Reviewed 2026-07-10 for CS-07 after repairing concrete strict defects; remaining allowances are legacy unknown-type and intentional private-API debt.",
+  "pairs": {
+    "src/agent_client_hooks/claude_merge.py": {
+      "reportUnknownArgumentType": 5,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 4
+    },
+    "src/agent_client_hooks/removal.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 2,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_context/attention_rendering.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownMemberType": 8,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_context/compression/headroom.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_context/compression/models.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_context/failures.py": {
+      "reportUnknownArgumentType": 9,
+      "reportUnknownMemberType": 7,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_context/next_actions.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_context/pack_rendering.py": {
+      "reportUnknownArgumentType": 12,
+      "reportUnknownMemberType": 24,
+      "reportUnknownVariableType": 15
+    },
+    "src/agent_context/reading/logs.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/assess/cli.py": {
+      "reportPrivateUsage": 1
+    },
+    "src/agent_maintainer/assess/debt_manifest.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/assess/efficacy.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/assess/efficacy_followthrough.py": {
+      "reportUnknownMemberType": 1
+    },
+    "src/agent_maintainer/assess/evidence.py": {
+      "reportUnknownMemberType": 1
+    },
+    "src/agent_maintainer/assess/repair_fact_coverage.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/assess/repair_fact_coverage_reporting.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/attention/builder.py": {
+      "reportUnknownArgumentType": 10,
+      "reportUnknownMemberType": 2,
+      "reportUnknownVariableType": 10
+    },
+    "src/agent_maintainer/attention/rendering.py": {
+      "reportUnknownArgumentType": 1
+    },
+    "src/agent_maintainer/attention/signal_context.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/attention/signals.py": {
+      "reportUnknownArgumentType": 3,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/change_plan/parser.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/checks/cohesive_override.py": {
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/checks/file_lengths.py": {
+      "reportUnknownArgumentType": 3,
+      "reportUnknownMemberType": 2,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/checks/mutmut_targets.py": {
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/config/coercion.py": {
+      "reportUnknownArgumentType": 6,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 9
+    },
+    "src/agent_maintainer/config/loader.py": {
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/config/reference.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/config/source_validation.py": {
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 9
+    },
+    "src/agent_maintainer/config/validation.py": {
+      "reportUnknownVariableType": 4
+    },
+    "src/agent_maintainer/config/value_types.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/context/cli.py": {
+      "reportPrivateUsage": 7
+    },
+    "src/agent_maintainer/context/pack/attention.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/context/pack/builder.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/context/pack/exact_facts.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/context/pack/ratchet.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/core/reporting.py": {
+      "reportUnknownArgumentType": 6,
+      "reportUnknownMemberType": 6,
+      "reportUnknownVariableType": 10
+    },
+    "src/agent_maintainer/core/scaffold/planning.py": {
+      "reportUnknownArgumentType": 5,
+      "reportUnknownMemberType": 5,
+      "reportUnknownVariableType": 5
+    },
+    "src/agent_maintainer/core/scaffold/transaction.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/core/structured_pytest.py": {
+      "reportUnknownArgumentType": 9,
+      "reportUnknownMemberType": 6,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/core/structured_security.py": {
+      "reportUnknownArgumentType": 19,
+      "reportUnknownMemberType": 11,
+      "reportUnknownVariableType": 17
+    },
+    "src/agent_maintainer/doctor/support/hook_audit.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/doctor/support/logs.py": {
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/hooks/mutations.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/hooks/pr_wait.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 4
+    },
+    "src/agent_maintainer/hooks/readiness.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/hooks/runtime.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/ratchet/cli.py": {
+      "reportPrivateUsage": 5
+    },
+    "src/agent_maintainer/report/html.py": {
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/report/sections.py": {
+      "reportUnknownArgumentType": 5,
+      "reportUnknownMemberType": 5,
+      "reportUnknownVariableType": 4
+    },
+    "src/agent_maintainer/report/tables.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/runners/bandit.py": {
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/runners/mutmut_stats.py": {
+      "reportUnknownArgumentType": 1
+    },
+    "src/agent_maintainer/runners/pyright.py": {
+      "reportUnknownMemberType": 2,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/runners/ruff.py": {
+      "reportUnknownMemberType": 2,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/runtime_events/read.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/runtime_events/waste.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/scoring/dataset.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/test_intel/coverage.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownMemberType": 5,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/test_intel/coverage_lines.py": {
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/test_intel/mutation/cli.py": {
+      "reportPrivateUsage": 3
+    },
+    "src/agent_maintainer/test_intel/mutation/sweep_cli.py": {
+      "reportPrivateUsage": 1
+    },
+    "src/agent_maintainer/test_intel/mutation/sweep_executor.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 1
+    },
+    "src/agent_maintainer/verify/async_state.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownVariableType": 2
+    },
+    "src/agent_maintainer/wait/codex_app_server.py": {
+      "reportUnknownArgumentType": 3,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 6
+    },
+    "src/agent_maintainer/wait/daemon_state.py": {
+      "reportUnknownArgumentType": 5,
+      "reportUnknownMemberType": 2,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_maintainer/wait/github.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/wait/github_pr.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_maintainer/wait/verifier.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownMemberType": 1
+    },
+    "src/agent_maintainer/wait/verifier_manifest.py": {
+      "reportUnknownArgumentType": 8,
+      "reportUnknownMemberType": 6,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_repair_facts/parsers/docsync.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_repair_facts/parsers/lint.py": {
+      "reportUnknownArgumentType": 3,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 7
+    },
+    "src/agent_repair_facts/parsers/pytest.py": {
+      "reportUnknownArgumentType": 6,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_repair_facts/parsers/typescript_tests.py": {
+      "reportUnknownVariableType": 3
+    },
+    "src/agent_repair_facts/payloads.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "src/agent_run_artifacts/pr_summary.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 6
+    },
+    "src/agent_waits/registry.py": {
+      "reportUnknownArgumentType": 3
+    },
+    "src/archguard/impact.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 2
+    },
+    "src/archguard/tach_config.py": {
+      "reportUnknownArgumentType": 10,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 3
+    },
+    "src/archguard/tach_config_domains.py": {
+      "reportUnknownArgumentType": 3,
+      "reportUnknownMemberType": 2,
+      "reportUnknownVariableType": 3
+    },
+    "src/archguard/tach_config_sources.py": {
+      "reportUnknownArgumentType": 6,
+      "reportUnknownMemberType": 4,
+      "reportUnknownVariableType": 4
+    },
+    "src/docsync/attestations/files.py": {
+      "reportUnknownVariableType": 3
+    },
+    "src/docsync/core/models.py": {
+      "reportUnknownVariableType": 2
+    },
+    "tests/archguard/test_cli.py": {
+      "reportUnknownArgumentType": 12,
+      "reportUnknownLambdaType": 22
+    },
+    "tests/archguard/test_git_diff.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/assess/test_debt_score.py": {
+      "reportPrivateUsage": 1
+    },
+    "tests/attention/test_attention_builder.py": {
+      "reportUnknownVariableType": 2
+    },
+    "tests/attention/test_attention_context_pack.py": {
+      "reportUnknownVariableType": 1
+    },
+    "tests/attention/test_attention_signals.py": {
+      "reportPrivateUsage": 1,
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/change_plan/test_cli.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/checks/test_change_budget.py": {
+      "reportUnknownArgumentType": 11,
+      "reportUnknownLambdaType": 14
+    },
+    "tests/checks/test_change_budget_relevance.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 4
+    },
+    "tests/checks/test_cohesive_override.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/checks/test_file_lengths.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 3
+    },
+    "tests/checks/test_suppression_budget.py": {
+      "reportUnknownArgumentType": 6,
+      "reportUnknownLambdaType": 11
+    },
+    "tests/config/test_config_reference.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownVariableType": 1
+    },
+    "tests/config/test_config_registry_validation.py": {
+      "reportUnknownArgumentType": 2
+    },
+    "tests/context/test_compression.py": {
+      "reportUnknownArgumentType": 3,
+      "reportUnknownLambdaType": 3
+    },
+    "tests/context/test_estimate.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/context/test_exact_facts.py": {
+      "reportUnknownArgumentType": 1
+    },
+    "tests/context/test_pack_compression.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/core/test_command_run.py": {
+      "reportPrivateUsage": 4
+    },
+    "tests/core/test_executor_reporting.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/core/test_structured_artifact_summaries.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownVariableType": 2
+    },
+    "tests/docsync/test_freshness.py": {
+      "reportPrivateUsage": 4,
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/docsync/test_path_helpers.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/doctor/test_context_health.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownLambdaType": 7
+    },
+    "tests/doctor/test_doctor_cli_output.py": {
+      "reportUnknownArgumentType": 10,
+      "reportUnknownLambdaType": 13
+    },
+    "tests/doctor/test_doctor_commands.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownLambdaType": 6
+    },
+    "tests/doctor/test_doctor_environment.py": {
+      "reportUnknownArgumentType": 9,
+      "reportUnknownLambdaType": 10
+    },
+    "tests/doctor/test_doctor_support_environment.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownLambdaType": 6
+    },
+    "tests/hooks/test_hook_cli.py": {
+      "reportUnknownArgumentType": 5,
+      "reportUnknownLambdaType": 3
+    },
+    "tests/hooks/test_hook_manager.py": {
+      "reportUnknownArgumentType": 3,
+      "reportUnknownLambdaType": 3
+    },
+    "tests/hooks/test_hook_merge_safety.py": {
+      "reportUnknownVariableType": 1
+    },
+    "tests/hooks/test_hook_mutations.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/hooks/test_hook_output_invariants.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/hooks/test_hook_runtime.py": {
+      "reportUnknownArgumentType": 5,
+      "reportUnknownLambdaType": 6
+    },
+    "tests/hooks/test_hook_runtime_readiness.py": {
+      "reportUnknownArgumentType": 10,
+      "reportUnknownLambdaType": 10
+    },
+    "tests/hooks/test_pr_wait_hook.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/mcp/test_mcp_numeric_validation.py": {
+      "reportUnknownArgumentType": 8,
+      "reportUnknownLambdaType": 7
+    },
+    "tests/mcp/test_mcp_path_safety.py": {
+      "reportUnknownArgumentType": 7,
+      "reportUnknownLambdaType": 6
+    },
+    "tests/packaging/test_bootstrap_hooks.py": {
+      "reportUnknownArgumentType": 6,
+      "reportUnknownLambdaType": 3,
+      "reportUnknownMemberType": 2
+    },
+    "tests/packaging/test_bootstrap_install.py": {
+      "reportUnknownArgumentType": 26,
+      "reportUnknownLambdaType": 27
+    },
+    "tests/packaging/test_bootstrap_paths.py": {
+      "reportUnknownArgumentType": 12,
+      "reportUnknownLambdaType": 16
+    },
+    "tests/packaging/test_initializer.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 1,
+      "reportUnknownVariableType": 2
+    },
+    "tests/packaging/test_script_helpers.py": {
+      "reportUnknownArgumentType": 11,
+      "reportUnknownLambdaType": 9
+    },
+    "tests/packaging/test_setup_cli.py": {
+      "reportUnknownArgumentType": 10,
+      "reportUnknownLambdaType": 8
+    },
+    "tests/ratchet/test_ranking.py": {
+      "reportUnknownArgumentType": 6,
+      "reportUnknownLambdaType": 10
+    },
+    "tests/ratchet/test_status.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/regression/test_phase10_error_paths.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownLambdaType": 8
+    },
+    "tests/release/test_release_state.py": {
+      "reportUnknownVariableType": 1
+    },
+    "tests/report/test_html_report.py": {
+      "reportUnknownVariableType": 1
+    },
+    "tests/runners/test_bandit_runner.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/runners/test_mutmut_runner.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/runners/test_pyright_runner.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/runners/test_ruff_runner.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/runners/test_secret_scan_runner.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownLambdaType": 4
+    },
+    "tests/test_intel/test_mutation_sweep.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2,
+      "reportUnknownMemberType": 1
+    },
+    "tests/test_intel/test_mutation_sweep_executor.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/test_intel/test_mutation_targets.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/verify/test_artifact_runtime_events.py": {
+      "reportUnknownVariableType": 3
+    },
+    "tests/verify/test_async_child.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/verify/test_background_wait.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/verify/test_git_refs.py": {
+      "reportUnknownArgumentType": 3,
+      "reportUnknownLambdaType": 3
+    },
+    "tests/verify/test_run_steps.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 5
+    },
+    "tests/verify/test_verify_background_wait.py": {
+      "reportUnknownArgumentType": 8,
+      "reportUnknownLambdaType": 13,
+      "reportUnknownMemberType": 1
+    },
+    "tests/verify/test_verify_quiet.py": {
+      "reportUnknownArgumentType": 14,
+      "reportUnknownLambdaType": 33,
+      "reportUnknownMemberType": 4
+    },
+    "tests/verify/test_verify_quiet_artifacts.py": {
+      "reportUnknownArgumentType": 16,
+      "reportUnknownLambdaType": 25,
+      "reportUnknownMemberType": 13,
+      "reportUnknownVariableType": 4
+    },
+    "tests/wait/test_codex_app_server.py": {
+      "reportPrivateUsage": 14
+    },
+    "tests/wait/test_codex_rewake.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 1
+    },
+    "tests/wait/test_codex_rewake_cli.py": {
+      "reportUnknownArgumentType": 1,
+      "reportUnknownLambdaType": 2
+    },
+    "tests/wait/test_wait_broker_daemon.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownLambdaType": 8
+    },
+    "tests/wait/test_wait_cli.py": {
+      "reportPrivateUsage": 2
+    },
+    "tests/wait/test_wait_cli_background.py": {
+      "reportUnknownArgumentType": 4,
+      "reportUnknownLambdaType": 5
+    },
+    "tests/wait/test_wait_cli_codex_background.py": {
+      "reportUnknownArgumentType": 8,
+      "reportUnknownLambdaType": 8
+    },
+    "tests/wait/test_wait_cli_register_identity.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 6
+    },
+    "tests/wait/test_wait_daemon.py": {
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 3
+    },
+    "tests/wait/test_wait_daemon_cli.py": {
+      "reportPrivateUsage": 1,
+      "reportUnknownArgumentType": 5,
+      "reportUnknownLambdaType": 8
+    }
+  },
+  "schema_version": 2,
+  "tool": {
+    "name": "pyright",
+    "scope_sha256": "3f9d653891689ef046ef15323d3eb2b830561d663c62d6f6a37d54187d2f717a",
+    "type_checking_mode": "strict",
+    "version": "1.1.410"
+  },
+  "total_errors": 1298
 }

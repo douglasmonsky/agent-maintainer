@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -146,7 +146,7 @@ def test_mutmut_run_holds_lock_through_cleanup(monkeypatch: pytest.MonkeyPatch) 
     events: list[str] = []
 
     @contextmanager
-    def fake_lock() -> Iterator[None]:
+    def fake_lock() -> Generator[None, None, None]:
         events.append("lock")
         yield
         events.append("unlock")

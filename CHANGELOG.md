@@ -25,6 +25,8 @@
   the same manifest, preflight, merge, backup, and rollback contract.
 - Configuration files, environment overrides, and verifier flags now converge
   on one field registry and complete resolved-policy validator.
+- Strict Pyright debt now ratchets independently by file/rule pair under a
+  versioned, tool-and-scope-bound baseline instead of an aggregate error budget.
 
 ### Fixed Since 0.1.0b5
 
@@ -47,6 +49,9 @@
   close inherited descriptors, persist explicit launch/running/terminal state,
   and distinguish quality failures from spawn errors and cancellation after the
   launching terminal closes.
+- Strict Pyright now rejects schema drift, inconsistent diagnostic totals,
+  out-of-scope paths, tool/scope changes, new pair substitutions, and nonzero
+  global error budgets while emitting an ignored candidate for explicit review.
 
 ## 0.1.0b5 - 2026-07-03
 

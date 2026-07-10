@@ -6,10 +6,15 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from agent_maintainer.attention import cli
 
 
-def test_attention_update_top_explain_and_changed(tmp_path: Path, capsys) -> None:
+def test_attention_update_top_explain_and_changed(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """CLI writes and reads the attention ledger."""
     _init_repo(tmp_path)
     _write(tmp_path / "src" / "app.py", "VALUE = 1\n")

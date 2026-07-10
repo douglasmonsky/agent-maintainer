@@ -10,13 +10,13 @@ import pytest
 
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.runners import pyright_strict
+from agent_maintainer.runners import pyright_strict_baseline as strict_baseline
 
-BASELINE_ERRORS = 10
-BUDGETED_ERRORS = 11
-REGRESSED_ERRORS = 12
 SAMPLE_ERRORS = 3
 SAMPLE_FILES = 2
 ZERO_ERRORS = 0
+PYRIGHT_VERSION = "1.1.410"
+SCOPE_SHA256 = "a" * 64
 
 
 def test_strict_pyright_config_forces_strict_mode() -> None:
@@ -30,11 +30,12 @@ def test_strict_pyright_config_forces_strict_mode() -> None:
     assert strict_config.pyright_type_checking_mode == "strict"
 
 
-def test_stats_from_payload_groups_strict_errors_by_rule_and_file() -> None:
+def test_stats_from_payload_groups_strict_errors_by_rule_and_file(tmp_path: Path) -> None:
     """Pyright JSON diagnostics are grouped for compact summaries."""
 
     stats = pyright_strict.stats_from_payload(
         {
+            "version": PYRIGHT_VERSION,
             "summary": {"errorCount": SAMPLE_ERRORS, "filesAnalyzed": SAMPLE_FILES},
             "generalDiagnostics": [
                 {
@@ -59,6 +60,7 @@ def test_stats_from_payload_groups_strict_errors_by_rule_and_file() -> None:
                 },
             ],
         },
+        scope=sample_scope(tmp_path),
     )
 
     assert stats.total_errors == SAMPLE_ERRORS
@@ -70,104 +72,13 @@ def test_stats_from_payload_groups_strict_errors_by_rule_and_file() -> None:
     assert stats.by_file == {"src/example.py": 2, "tests/test_example.py": 1}
 
 
-def test_compare_stats_allows_current_baseline() -> None:
-    """Strict ratchet passes when current error count stays within baseline."""
-
-    result = pyright_strict.compare_stats(
-        pyright_strict.StrictPyrightStats(
-            total_errors=BASELINE_ERRORS,
-            files_analyzed=2,
-            by_rule={"reportUnknownMemberType": BASELINE_ERRORS},
-            by_file={"src/example.py": BASELINE_ERRORS},
-        ),
-        pyright_strict.StrictBaseline(
-            total_errors=BASELINE_ERRORS,
-            by_rule={"reportUnknownMemberType": BASELINE_ERRORS},
-        ),
-        extra_error_budget=0,
-    )
-
-    assert result.passed is True
-    assert result.allowed_errors == BASELINE_ERRORS
-
-
-def test_compare_stats_fails_above_baseline_budget() -> None:
-    """Strict ratchet fails only when total diagnostics regress past budget."""
-
-    result = pyright_strict.compare_stats(
-        pyright_strict.StrictPyrightStats(
-            total_errors=REGRESSED_ERRORS,
-            files_analyzed=2,
-            by_rule={"reportUnknownMemberType": REGRESSED_ERRORS},
-            by_file={"src/example.py": REGRESSED_ERRORS},
-        ),
-        pyright_strict.StrictBaseline(
-            total_errors=BASELINE_ERRORS,
-            by_rule={"reportUnknownMemberType": BASELINE_ERRORS},
-        ),
-        extra_error_budget=1,
-    )
-
-    assert result.passed is False
-    assert result.allowed_errors == BUDGETED_ERRORS
-
-
-def test_load_baseline_reads_committed_shape(tmp_path: Path) -> None:
-    """Baseline JSON uses a small stable shape."""
-
-    baseline_path = tmp_path / "pyright-strict-baseline.json"
-    baseline_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "total_errors": SAMPLE_ERRORS,
-                "by_rule": {"reportUnknownMemberType": SAMPLE_ERRORS},
-            },
-        ),
-        encoding="utf-8",
-    )
-
-    baseline = pyright_strict.load_baseline(baseline_path)
-
-    assert baseline == pyright_strict.StrictBaseline(
-        total_errors=SAMPLE_ERRORS,
-        by_rule={"reportUnknownMemberType": SAMPLE_ERRORS},
-    )
-
-
-def test_format_result_is_summary_first() -> None:
-    """Strict result summary includes totals and grouped diagnostics."""
-
-    result = pyright_strict.StrictRatchetResult(
-        passed=False,
-        current=pyright_strict.StrictPyrightStats(
-            total_errors=REGRESSED_ERRORS,
-            files_analyzed=SAMPLE_FILES,
-            by_rule={"reportUnknownMemberType": REGRESSED_ERRORS},
-            by_file={"src/example.py": REGRESSED_ERRORS},
-        ),
-        baseline=pyright_strict.StrictBaseline(
-            total_errors=BASELINE_ERRORS,
-            by_rule={"reportUnknownMemberType": BASELINE_ERRORS},
-        ),
-        allowed_errors=BASELINE_ERRORS,
-    )
-
-    summary = pyright_strict.format_result(result)
-
-    assert f"pyright strict ratchet failed: {REGRESSED_ERRORS} errors" in summary
-    assert f"- reportUnknownMemberType: {REGRESSED_ERRORS}" in summary
-    assert f"- src/example.py: {REGRESSED_ERRORS}" in summary
-    assert "Repair:" in summary
-
-
 def test_main_skips_when_disabled(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Disabled strict ratchet exits successfully with compact message."""
 
-    monkeypatch.setattr(pyright_strict, "load_config", MaintainerConfig)
+    monkeypatch.setattr(pyright_strict.maintainer_config, "load_config", MaintainerConfig)
 
     assert pyright_strict.main() == 0
     assert "skipped: disabled" in capsys.readouterr().out
@@ -186,7 +97,8 @@ def test_run_strict_ratchet_passes_within_baseline(
         pyright_strict_ratchet_enabled=True,
     )
     monkeypatch.setattr(pyright_strict, "run_pyright_json", clean_pyright_payload)
-    monkeypatch.setattr(pyright_strict, "load_baseline", zero_baseline)
+    monkeypatch.setattr(pyright_strict.strict_baseline, "load_baseline", zero_baseline)
+    monkeypatch.setattr(pyright_strict, "scope_from_config", fixed_scope)
 
     assert pyright_strict.run_strict_ratchet(config) == 0
     assert "pyright strict ratchet passed" in capsys.readouterr().out
@@ -204,9 +116,26 @@ def test_run_strict_ratchet_fails_above_baseline(
         pyright_strict_ratchet_enabled=True,
     )
     monkeypatch.setattr(pyright_strict, "run_pyright_json", sample_pyright_payload)
-    monkeypatch.setattr(pyright_strict, "load_baseline", zero_baseline)
+    monkeypatch.setattr(pyright_strict.strict_baseline, "load_baseline", zero_baseline)
+    monkeypatch.setattr(pyright_strict, "scope_from_config", fixed_scope)
 
     assert pyright_strict.run_strict_ratchet(config) == 1
+
+
+def test_run_strict_ratchet_rejects_global_error_budget(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A global allowance cannot bypass the file/rule ratchet."""
+
+    config = MaintainerConfig(
+        diagnostic_artifacts_dir=str(tmp_path),
+        pyright_strict_ratchet_enabled=True,
+        pyright_strict_max_errors=1,
+    )
+
+    assert pyright_strict.run_strict_ratchet(config) == 1
+    assert "must be 0" in capsys.readouterr().out
 
 
 def test_run_strict_ratchet_fails_for_missing_payload(
@@ -236,7 +165,7 @@ def test_run_strict_ratchet_fails_for_zero_analyzed_files(
         pyright_strict_ratchet_enabled=True,
     )
     monkeypatch.setattr(pyright_strict, "run_pyright_json", zero_file_pyright_payload)
-    monkeypatch.setattr(pyright_strict, "load_baseline", zero_baseline)
+    monkeypatch.setattr(pyright_strict.strict_baseline, "load_baseline", zero_baseline)
 
     assert pyright_strict.run_strict_ratchet(config) == 1
 
@@ -247,7 +176,7 @@ def test_run_pyright_json_reports_invalid_json(
 ) -> None:
     """Invalid Pyright JSON returns no payload."""
 
-    monkeypatch.setattr(pyright_strict.shutil, "which", fake_which)
+    monkeypatch.setattr(pyright_strict.pyright, "pyright_executable", fake_executable)
     monkeypatch.setattr(
         pyright_strict.subprocess,
         "run",
@@ -263,7 +192,7 @@ def test_run_pyright_json_reports_runner_failure(
 ) -> None:
     """Unexpected Pyright exit code returns no payload."""
 
-    monkeypatch.setattr(pyright_strict.shutil, "which", fake_which)
+    monkeypatch.setattr(pyright_strict.pyright, "pyright_executable", fake_executable)
     monkeypatch.setattr(
         pyright_strict.subprocess,
         "run",
@@ -273,30 +202,78 @@ def test_run_pyright_json_reports_runner_failure(
     assert pyright_strict.run_pyright_json(tmp_path / "config.json", tmp_path / "out.json") is None
 
 
-def test_load_baseline_rejects_invalid_shapes(tmp_path: Path) -> None:
-    """Baseline loader rejects missing, malformed, and non-integer counts."""
+def test_stats_rejects_summary_diagnostic_mismatch(tmp_path: Path) -> None:
+    """The ratchet cannot compare a partial or inconsistent diagnostic list."""
 
-    assert pyright_strict.load_baseline(tmp_path / "missing.json") is None
-    malformed = tmp_path / "malformed.json"
-    malformed.write_text("{", encoding="utf-8")
-    assert pyright_strict.load_baseline(malformed) is None
-    invalid = tmp_path / "invalid.json"
-    invalid.write_text(
-        json.dumps({"total_errors": 1, "by_rule": {"rule": "many"}}),
-        encoding="utf-8",
-    )
-    assert pyright_strict.load_baseline(invalid) is None
+    with pytest.raises(pyright_strict.StrictPayloadError, match="does not match"):
+        pyright_strict.stats_from_payload(
+            {
+                "version": PYRIGHT_VERSION,
+                "summary": {"errorCount": 1, "filesAnalyzed": 1},
+                "generalDiagnostics": [],
+            },
+            scope=sample_scope(tmp_path),
+        )
 
 
-def test_json_helpers_handle_missing_shapes() -> None:
-    """JSON helper edge cases stay deterministic."""
+@pytest.mark.parametrize(
+    "diagnostics",
+    ({}, [None], [{"severity": "unexpected"}]),
+)
+def test_stats_rejects_malformed_diagnostic_collection(
+    tmp_path: Path,
+    diagnostics: object,
+) -> None:
+    """Malformed diagnostic collections cannot masquerade as zero errors."""
 
-    assert pyright_strict.diagnostic_errors({"generalDiagnostics": "bad"}) == []
-    assert pyright_strict.summary_payload({"summary": "bad"}) == {}
-    assert pyright_strict.normalize_file(None) == "<unknown>"
-    assert pyright_strict.signed_number(0) == "+0"
-    assert pyright_strict.signed_number(-1) == "-1"
-    assert pyright_strict.format_top_counts({}) == ["- none"]
+    with pytest.raises(pyright_strict.StrictPayloadError):
+        pyright_strict.stats_from_payload(
+            {
+                "version": PYRIGHT_VERSION,
+                "summary": {"errorCount": 0, "filesAnalyzed": 1},
+                "generalDiagnostics": diagnostics,
+            },
+            scope=sample_scope(tmp_path),
+        )
+
+
+def test_stats_rejects_out_of_scope_diagnostic(tmp_path: Path) -> None:
+    """A diagnostic outside the generated include roots fails closed."""
+
+    outside = tmp_path / "other" / "outside.py"
+    with pytest.raises(pyright_strict.StrictPayloadError, match="outside strict include scope"):
+        pyright_strict.stats_from_payload(
+            {
+                "version": PYRIGHT_VERSION,
+                "summary": {"errorCount": 1, "filesAnalyzed": 1},
+                "generalDiagnostics": [
+                    {
+                        "severity": "error",
+                        "file": str(outside),
+                        "rule": "reportUnknownMemberType",
+                    }
+                ],
+            },
+            scope=sample_scope(tmp_path),
+        )
+
+
+def test_scope_fingerprint_is_output_directory_independent(tmp_path: Path) -> None:
+    """Equivalent generated configs keep one normalized scope identity."""
+
+    (tmp_path / "src").mkdir()
+    first = tmp_path / "one" / "strict.json"
+    second = tmp_path / "nested" / "two" / "strict.json"
+    first.parent.mkdir()
+    second.parent.mkdir(parents=True)
+    write_scope_config(first, include="../src", root="..")
+    write_scope_config(second, include="../../src", root="../..")
+
+    first_scope = pyright_strict.scope_from_config(first, repo_root=tmp_path)
+    second_scope = pyright_strict.scope_from_config(second, repo_root=tmp_path)
+
+    assert first_scope.sha256 == second_scope.sha256
+    assert first_scope.include_roots == second_scope.include_roots
 
 
 def clean_pyright_payload(_config_path: Path, _output_path: Path) -> dict[str, object]:
@@ -323,16 +300,58 @@ def zero_file_pyright_payload(
 ) -> dict[str, object]:
     """Return payload showing no analyzed files."""
 
-    return {"summary": {"errorCount": ZERO_ERRORS, "filesAnalyzed": ZERO_ERRORS}}
+    return {
+        "version": PYRIGHT_VERSION,
+        "summary": {"errorCount": ZERO_ERRORS, "filesAnalyzed": ZERO_ERRORS},
+        "generalDiagnostics": [],
+    }
 
 
-def zero_baseline(_path: Path) -> pyright_strict.StrictBaseline:
+def zero_baseline(_path: Path) -> strict_baseline.StrictBaseline:
     """Return empty baseline for runner tests."""
 
-    return pyright_strict.StrictBaseline(total_errors=ZERO_ERRORS, by_rule={})
+    return strict_baseline.StrictBaseline(
+        pyright_version=PYRIGHT_VERSION,
+        scope_sha256=SCOPE_SHA256,
+        pairs={},
+    )
 
 
-def fake_which(_name: str) -> str:
+def sample_scope(repo_root: Path) -> pyright_strict.StrictScope:
+    """Return an in-repository test scope."""
+
+    root = repo_root.resolve()
+    return pyright_strict.StrictScope(
+        repo_root=root,
+        include_roots=(root / "src", root / "tests"),
+        sha256=SCOPE_SHA256,
+    )
+
+
+def fixed_scope(_config_path: Path, *, repo_root: Path) -> pyright_strict.StrictScope:
+    """Return a stable scope for runner orchestration tests."""
+
+    return sample_scope(repo_root)
+
+
+def write_scope_config(path: Path, *, include: str, root: str) -> None:
+    """Write one generated-config fixture with normalized equivalent paths."""
+
+    path.write_text(
+        json.dumps(
+            {
+                "include": [include],
+                "exclude": [f"{root}/build"],
+                "extraPaths": [root, f"{root}/src"],
+                "typeCheckingMode": "strict",
+                "reportMissingTypeStubs": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def fake_executable() -> str:
     """Return fake Pyright executable."""
 
     return "pyright"
@@ -363,14 +382,19 @@ def failed_pyright_run(*_args: object, **_kwargs: object) -> subprocess.Complete
 def clean_payload() -> dict[str, object]:
     """Return strict Pyright payload with no errors."""
 
-    return {"summary": {"errorCount": ZERO_ERRORS, "filesAnalyzed": SAMPLE_FILES}}
+    return {
+        "version": PYRIGHT_VERSION,
+        "summary": {"errorCount": ZERO_ERRORS, "filesAnalyzed": SAMPLE_FILES},
+        "generalDiagnostics": [],
+    }
 
 
 def sample_payload() -> dict[str, object]:
     """Return strict Pyright payload with sample errors."""
 
     return {
-        "summary": {"errorCount": SAMPLE_ERRORS, "filesAnalyzed": SAMPLE_FILES},
+        "version": PYRIGHT_VERSION,
+        "summary": {"errorCount": 1, "filesAnalyzed": SAMPLE_FILES},
         "generalDiagnostics": [
             {
                 "severity": "error",

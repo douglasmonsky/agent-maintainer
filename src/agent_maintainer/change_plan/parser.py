@@ -62,8 +62,6 @@ def parse_metadata(front_matter: str, *, path: Path) -> dict[str, Any]:
         data = tomllib.loads(front_matter)
     except tomllib.TOMLDecodeError as exc:
         raise PlanParseError(f"{path}: invalid TOML front matter: {exc}") from exc
-    if not isinstance(data, dict):
-        raise PlanParseError(f"{path}: front matter must be a TOML table")
     return data
 
 
