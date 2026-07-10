@@ -311,6 +311,23 @@ Checks:
 Exit criterion: terminal lifecycle cannot turn every Python check into a bad
 file-descriptor failure or a false result.
 
+Implementation status (2026-07-10): complete on
+`codex/background-lifecycle`. CS-06 now persists `starting` before spawn,
+records the PID-backed `running` transition, owns all three standard streams,
+closes inherited descriptors, and records `passed`, `failed`, `error`, or
+`cancelled` with the child process status. Current lifecycle state is
+authoritative over stale same-run manifests, while fresh agreeing manifests
+retain detailed check evidence. Verification evidence:
+
+- focused verify/wait suites: 210 passed;
+- real pseudo-terminal regression: parent fd 0 closed before launch, parent and
+  terminal closed after launch, detached fast verifier returned its true PASS
+  manifest without a bad-file-descriptor failure;
+- read-only lifecycle and stale-manifest reviewer audits: passed after fixing
+  the reviewer's stale same-run manifest finding;
+- precommit for implementation commit `ab2a551`: passed; and
+- full: `20260710T164501078723Z-full-551cc611be45`.
+
 ### Unit 5 — Restore deep and release trust
 
 Deliverables:

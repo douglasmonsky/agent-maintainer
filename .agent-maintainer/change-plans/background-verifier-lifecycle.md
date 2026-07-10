@@ -1,7 +1,7 @@
 +++
 id = "background-verifier-lifecycle"
 kind = "fix"
-status = "active"
+status = "complete"
 base_ref = "58b468e"
 expires = 2026-08-31
 allowed_paths = [
