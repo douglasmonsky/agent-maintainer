@@ -10,8 +10,10 @@ allowed_paths = [
   "README.md",
   "config/**",
   "docs/**",
+  "justfile",
   "pyproject.toml",
   "src/**",
+  "tach.toml",
   "tests/**",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]

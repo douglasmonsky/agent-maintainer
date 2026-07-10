@@ -34,6 +34,23 @@ integers and enforces numeric bounds, cross-field ordering, compression
 consistency, repository-scoped paths, and verification profile names before
 behavior continues.
 
+The root `agent-maintainer` command also performs this preflight before routing
+any known behavioral command. Root and subcommand help remain available so an
+invalid repository can still discover repair options; an unknown command still
+returns the normal usage error. Invalid policy exits with status 2 and prints
+source-aware diagnostics without invoking the selected handler.
+
+The registry also generates
+`docs/configuration-reference.md` and
+`config/agent-maintainer-capabilities.json`. The Markdown is the public field
+reference; the versioned JSON is machine-readable capability metadata for
+tooling. Regenerate or verify both with:
+
+```bash
+python -m agent_maintainer.config.reference
+python -m agent_maintainer.config.reference --check
+```
+
 Use `python3 -m agent_maintainer doctor --strict` after changing config policy,
 and use `python3 -m agent_maintainer guidance --check` when generated guidance
 may need to change.

@@ -17,8 +17,10 @@ cross-field policy before commands were constructed.
 
 `agent_maintainer.config.registry` is the authoritative field contract. Each
 resolved field declares its canonical TOML path, compatibility aliases, value
-kind, constraints, environment capability, CLI capability, documentation
-label, and stability. Nested-table keys are declared beside that registry.
+kind, resolved default, constraints, environment capability, CLI capability,
+documentation label, and stability. Nested-table keys are declared beside that
+registry. The schema owns low-level named constants and dataclass construction;
+the registry reads those defaults without creating a schema-to-registry cycle.
 
 Raw source names are checked by `config.source_validation` before coercion.
 Type-specific resolved checks live in `config.value_types`, source-aware issues
@@ -37,17 +39,21 @@ validation. The core argument domain may depend on config validation because
 CLI overrides are the final verifier-specific merge boundary. These edges are
 recorded explicitly in
 `src/agent_maintainer/config/tach.domain.toml` and
-`src/agent_maintainer/core/tach.domain.toml`. CLI and stability declarations
-live in `config.registry_capabilities` so the authoritative registry remains
-inside the repository's file-length ratchet.
+`src/agent_maintainer/core/tach.domain.toml`. The root command edge is recorded
+in `tach.toml`: `agent_maintainer.cli` may load configuration and handle its
+typed validation error through `config.preflight` before routing behavior. CLI
+and stability declarations live in `config.registry_capabilities` so the
+authoritative registry remains inside the repository's file-length ratchet.
 
 ## Consequences
 
 Adding a `MaintainerConfig` field without registering it fails drift tests.
 Typos and invalid policy stop with the physical source and dotted public key.
 All environment capabilities are derivable from the same data used for
-coercion and reference generation. Compatibility remains intentional and
-testable instead of relying on permissive key discovery.
+coercion and reference generation. `config.reference` renders the public
+Markdown inventory and versioned JSON capability payload, while a currentness
+test prevents either artifact from drifting. Compatibility remains intentional
+and testable instead of relying on permissive key discovery.
 
 Repository-scoped input paths must remain relative and may not traverse above
 the checkout. Diagnostic and runtime-event output directories retain absolute

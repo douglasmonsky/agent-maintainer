@@ -1,0 +1,3086 @@
+{
+  "fields": [
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure allow source without test change.",
+      "environment": "AGENT_MAINTAINER_ALLOW_SOURCE_WITHOUT_TEST_CHANGE",
+      "environment_style": "standard",
+      "label": "Allow Source Without Test Change",
+      "name": "allow_source_without_test_change",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "allow_source_without_test_change",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "import-linter",
+          "tach"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "import-linter",
+      "description": "Configure architecture tool.",
+      "environment": "AGENT_MAINTAINER_ARCHITECTURE_TOOL",
+      "environment_style": "standard",
+      "label": "Architecture Tool",
+      "name": "architecture_tool",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "architecture_tool",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 20,
+      "description": "Configure change block files.",
+      "environment": "AGENT_MAINTAINER_CHANGE_BLOCK_FILES",
+      "environment_style": "standard",
+      "label": "Change Block Files",
+      "name": "change_block_files",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "change_block_files",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 800,
+      "description": "Configure change block lines.",
+      "environment": "AGENT_MAINTAINER_CHANGE_BLOCK_LINES",
+      "environment_style": "standard",
+      "label": "Change Block Lines",
+      "name": "change_block_lines",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "change_block_lines",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 8,
+      "description": "Configure change warn files.",
+      "environment": "AGENT_MAINTAINER_CHANGE_WARN_FILES",
+      "environment_style": "standard",
+      "label": "Change Warn Files",
+      "name": "change_warn_files",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "change_warn_files",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 300,
+      "description": "Configure change warn lines.",
+      "environment": "AGENT_MAINTAINER_CHANGE_WARN_LINES",
+      "environment_style": "standard",
+      "label": "Change Warn Lines",
+      "name": "change_warn_lines",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "change_warn_lines",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure check jsonschema args.",
+      "environment": "AGENT_MAINTAINER_CHECK_JSONSCHEMA_ARGS",
+      "environment_style": "standard",
+      "label": "Check Jsonschema Args",
+      "name": "check_jsonschema_args",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "check_jsonschema_args",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure cohesive change override enabled.",
+      "environment": "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_ENABLED",
+      "environment_style": "standard",
+      "label": "Cohesive Change Override Enabled",
+      "name": "cohesive_change_override_enabled",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "cohesive_change_override_enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 40,
+      "description": "Configure cohesive change override max files.",
+      "environment": "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_FILES",
+      "environment_style": "standard",
+      "label": "Cohesive Change Override Max Files",
+      "name": "cohesive_change_override_max_files",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "cohesive_change_override_max_files",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 2000,
+      "description": "Configure cohesive change override max lines.",
+      "environment": "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_LINES",
+      "environment_style": "standard",
+      "label": "Cohesive Change Override Max Lines",
+      "name": "cohesive_change_override_max_lines",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "cohesive_change_override_max_lines",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure cohesive change override paths.",
+      "environment": "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_PATHS",
+      "environment_style": "standard",
+      "label": "Cohesive Change Override Paths",
+      "name": "cohesive_change_override_paths",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "cohesive_change_override_paths",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "extractive",
+          "headroom",
+          "none",
+          "truncate"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "extractive",
+      "description": "Configure context compression backend.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_COMPRESSION_BACKEND",
+      "environment_style": "standard",
+      "label": "Context Compression Backend",
+      "name": "context_compression_backend",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_compression_backend",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure context compression enabled.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_COMPRESSION_ENABLED",
+      "environment_style": "standard",
+      "label": "Context Compression Enabled",
+      "name": "context_compression_enabled",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_compression_enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure context compression require backend.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_COMPRESSION_REQUIRE_BACKEND",
+      "environment_style": "standard",
+      "label": "Context Compression Require Backend",
+      "name": "context_compression_require_backend",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_compression_require_backend",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": 1.0,
+        "minimum": 0.0,
+        "minimum_exclusive": true,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 0.5,
+      "description": "Configure context compression target ratio.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_COMPRESSION_TARGET_RATIO",
+      "environment_style": "standard",
+      "label": "Context Compression Target Ratio",
+      "name": "context_compression_target_ratio",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_compression_target_ratio",
+      "value_kind": "float"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 12000,
+      "description": "Configure context default budget chars.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_DEFAULT_BUDGET_CHARS",
+      "environment_style": "standard",
+      "label": "Context Default Budget Chars",
+      "name": "context_default_budget_chars",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_default_budget_chars",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 8000,
+      "description": "Configure context hook budget chars.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_HOOK_BUDGET_CHARS",
+      "environment_style": "standard",
+      "label": "Context Hook Budget Chars",
+      "name": "context_hook_budget_chars",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_hook_budget_chars",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 250000,
+      "description": "Configure context large file threshold bytes.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_LARGE_FILE_THRESHOLD_BYTES",
+      "environment_style": "standard",
+      "label": "Context Large File Threshold Bytes",
+      "name": "context_large_file_threshold_bytes",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_large_file_threshold_bytes",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 800,
+      "description": "Configure context large file threshold lines.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_LARGE_FILE_THRESHOLD_LINES",
+      "environment_style": "standard",
+      "label": "Context Large File Threshold Lines",
+      "name": "context_large_file_threshold_lines",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_large_file_threshold_lines",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 16000,
+      "description": "Configure context last failure budget chars.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_LAST_FAILURE_BUDGET_CHARS",
+      "environment_style": "standard",
+      "label": "Context Last Failure Budget Chars",
+      "name": "context_last_failure_budget_chars",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_last_failure_budget_chars",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 250,
+      "description": "Configure context max direct file read lines.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_MAX_DIRECT_FILE_READ_LINES",
+      "environment_style": "standard",
+      "label": "Context Max Direct File Read Lines",
+      "name": "context_max_direct_file_read_lines",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_max_direct_file_read_lines",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 200,
+      "description": "Configure context max direct log read lines.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_MAX_DIRECT_LOG_READ_LINES",
+      "environment_style": "standard",
+      "label": "Context Max Direct Log Read Lines",
+      "name": "context_max_direct_log_read_lines",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_max_direct_log_read_lines",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 10,
+      "description": "Configure context max failure items.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_MAX_FAILURE_ITEMS",
+      "environment_style": "standard",
+      "label": "Context Max Failure Items",
+      "name": "context_max_failure_items",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_max_failure_items",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 50,
+      "description": "Configure context max paths default.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_MAX_PATHS_DEFAULT",
+      "environment_style": "standard",
+      "label": "Context Max Paths Default",
+      "name": "context_max_paths_default",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_max_paths_default",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 24000,
+      "description": "Configure context pack budget chars.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_PACK_BUDGET_CHARS",
+      "environment_style": "standard",
+      "label": "Context Pack Budget Chars",
+      "name": "context_pack_budget_chars",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_pack_budget_chars",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": true,
+      "description": "Configure context pack contains source.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_PACK_CONTAINS_SOURCE",
+      "environment_style": "standard",
+      "label": "Context Pack Contains Source",
+      "name": "context_pack_contains_source",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_pack_contains_source",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": true,
+      "description": "Configure context packs local only.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_PACKS_LOCAL_ONLY",
+      "environment_style": "standard",
+      "label": "Context Packs Local Only",
+      "name": "context_packs_local_only",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_packs_local_only",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": true,
+      "description": "Configure context require outline for large files.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_REQUIRE_OUTLINE_FOR_LARGE_FILES",
+      "environment_style": "standard",
+      "label": "Context Require Outline For Large Files",
+      "name": "context_require_outline_for_large_files",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_require_outline_for_large_files",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": true,
+      "description": "Configure context write context packs.",
+      "environment": "AGENT_MAINTAINER_CONTEXT_WRITE_CONTEXT_PACKS",
+      "environment_style": "standard",
+      "label": "Context Write Context Packs",
+      "name": "context_write_context_packs",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "context_write_context_packs",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": 100.0,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 80,
+      "description": "Configure coverage fail under.",
+      "environment": "AGENT_MAINTAINER_COVERAGE_FAIL_UNDER",
+      "environment_style": "standard",
+      "label": "Coverage Fail Under",
+      "name": "coverage_fail_under",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "coverage_fail_under",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "src"
+      ],
+      "description": "Configure coverage source.",
+      "environment": "AGENT_MAINTAINER_COVERAGE_SOURCE",
+      "environment_style": "standard",
+      "label": "Coverage Source",
+      "name": "coverage_source",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "coverage_source",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": ".verify-logs",
+      "description": "Configure diagnostic artifacts dir.",
+      "environment": "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR",
+      "environment_style": "standard",
+      "label": "Diagnostic Artifacts Dir",
+      "name": "diagnostic_artifacts_dir",
+      "stability": "beta",
+      "toml_aliases": [
+        "diagnostic_artifacts_dir"
+      ],
+      "toml_key": "diagnostics.log_dir",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": true,
+      "description": "Configure diagnostic artifacts enabled.",
+      "environment": "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED",
+      "environment_style": "standard",
+      "label": "Diagnostic Artifacts Enabled",
+      "name": "diagnostic_artifacts_enabled",
+      "stability": "beta",
+      "toml_aliases": [
+        "diagnostic_artifacts_enabled"
+      ],
+      "toml_key": "diagnostics.enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 10,
+      "description": "Configure diagnostic run history limit.",
+      "environment": "AGENT_MAINTAINER_DIAGNOSTIC_RUN_HISTORY_LIMIT",
+      "environment_style": "standard",
+      "label": "Diagnostic Run History Limit",
+      "name": "diagnostic_run_history_limit",
+      "stability": "beta",
+      "toml_aliases": [
+        "diagnostic_run_history_limit"
+      ],
+      "toml_key": "diagnostics.run_history_limit",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": 100.0,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 90,
+      "description": "Configure diff cover fail under.",
+      "environment": "AGENT_MAINTAINER_DIFF_COVER_FAIL_UNDER",
+      "environment_style": "standard",
+      "label": "Diff Cover Fail Under",
+      "name": "diff_cover_fail_under",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "diff_cover_fail_under",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable check jsonschema.",
+      "environment": "AGENT_MAINTAINER_ENABLE_CHECK_JSONSCHEMA",
+      "environment_style": "standard",
+      "label": "Enable Check Jsonschema",
+      "name": "enable_check_jsonschema",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_check_jsonschema",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable interrogate.",
+      "environment": "AGENT_MAINTAINER_ENABLE_INTERROGATE",
+      "environment_style": "standard",
+      "label": "Enable Interrogate",
+      "name": "enable_interrogate",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_interrogate",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable license check.",
+      "environment": "AGENT_MAINTAINER_ENABLE_LICENSE_CHECK",
+      "environment_style": "standard",
+      "label": "Enable License Check",
+      "name": "enable_license_check",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_license_check",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable markdownlint.",
+      "environment": "AGENT_MAINTAINER_ENABLE_MARKDOWNLINT",
+      "environment_style": "standard",
+      "label": "Enable Markdownlint",
+      "name": "enable_markdownlint",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_markdownlint",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable mutmut.",
+      "environment": "AGENT_MAINTAINER_ENABLE_MUTMUT",
+      "environment_style": "standard",
+      "label": "Enable Mutmut",
+      "name": "enable_mutmut",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_mutmut",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable osv scanner.",
+      "environment": "AGENT_MAINTAINER_ENABLE_OSV_SCANNER",
+      "environment_style": "standard",
+      "label": "Enable Osv Scanner",
+      "name": "enable_osv_scanner",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_osv_scanner",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable pip audit.",
+      "environment": "AGENT_MAINTAINER_ENABLE_PIP_AUDIT",
+      "environment_style": "standard",
+      "label": "Enable Pip Audit",
+      "name": "enable_pip_audit",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_pip_audit",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable sbom.",
+      "environment": "AGENT_MAINTAINER_ENABLE_SBOM",
+      "environment_style": "standard",
+      "label": "Enable Sbom",
+      "name": "enable_sbom",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_sbom",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable secret scanning.",
+      "environment": "AGENT_MAINTAINER_ENABLE_SECRET_SCANNING",
+      "environment_style": "standard",
+      "label": "Enable Secret Scanning",
+      "name": "enable_secret_scanning",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_secret_scanning",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable semgrep.",
+      "environment": "AGENT_MAINTAINER_ENABLE_SEMGREP",
+      "environment_style": "standard",
+      "label": "Enable Semgrep",
+      "name": "enable_semgrep",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_semgrep",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable taplo.",
+      "environment": "AGENT_MAINTAINER_ENABLE_TAPLO",
+      "environment_style": "standard",
+      "label": "Enable Taplo",
+      "name": "enable_taplo",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_taplo",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable trivy.",
+      "environment": "AGENT_MAINTAINER_ENABLE_TRIVY",
+      "environment_style": "standard",
+      "label": "Enable Trivy",
+      "name": "enable_trivy",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_trivy",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable typescript.",
+      "environment": "AGENT_MAINTAINER_ENABLE_TYPESCRIPT",
+      "environment_style": "standard",
+      "label": "Enable Typescript",
+      "name": "enable_typescript",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_typescript",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable wemake.",
+      "environment": "AGENT_MAINTAINER_ENABLE_WEMAKE",
+      "environment_style": "standard",
+      "label": "Enable Wemake",
+      "name": "enable_wemake",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_wemake",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure enable yamllint.",
+      "environment": "AGENT_MAINTAINER_ENABLE_YAMLLINT",
+      "environment_style": "standard",
+      "label": "Enable Yamllint",
+      "name": "enable_yamllint",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "enable_yamllint",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure file baselines.",
+      "environment": null,
+      "environment_style": null,
+      "label": "File Baselines",
+      "name": "file_baselines",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "file_baselines.groups",
+      "value_kind": "file-baseline-groups"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure file baselines enabled.",
+      "environment": null,
+      "environment_style": null,
+      "label": "File Baselines Enabled",
+      "name": "file_baselines_enabled",
+      "stability": "beta",
+      "toml_aliases": [
+        "file_baselines_enabled"
+      ],
+      "toml_key": "file_baselines.enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "advisory",
+          "blocking"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "advisory",
+      "description": "Configure file baselines mode.",
+      "environment": null,
+      "environment_style": null,
+      "label": "File Baselines Mode",
+      "name": "file_baselines_mode",
+      "stability": "beta",
+      "toml_aliases": [
+        "file_baselines_mode"
+      ],
+      "toml_key": "file_baselines.mode",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": true,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": "",
+      "description": "Configure file length baseline.",
+      "environment": "AGENT_MAINTAINER_FILE_LENGTH_BASELINE",
+      "environment_style": "standard",
+      "label": "File Length Baseline",
+      "name": "file_length_baseline",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "file_length_baseline",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 600,
+      "description": "Configure file length max physical.",
+      "environment": "AGENT_MAINTAINER_FILE_LENGTH_MAX_PHYSICAL",
+      "environment_style": "standard",
+      "label": "File Length Max Physical",
+      "name": "file_length_max_physical",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "file_length_max_physical",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 450,
+      "description": "Configure file length max source.",
+      "environment": "AGENT_MAINTAINER_FILE_LENGTH_MAX_SOURCE",
+      "environment_style": "standard",
+      "label": "File Length Max Source",
+      "name": "file_length_max_source",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "file_length_max_source",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "src",
+        "tests",
+        ".codex/hooks",
+        ".claude/hooks"
+      ],
+      "description": "Configure file length paths.",
+      "environment": "AGENT_MAINTAINER_FILE_LENGTH_PATHS",
+      "environment_style": "standard",
+      "label": "File Length Paths",
+      "name": "file_length_paths",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "file_length_paths",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 40,
+      "description": "Configure folder file block.",
+      "environment": "AGENT_MAINTAINER_FOLDER_FILE_BLOCK",
+      "environment_style": "standard",
+      "label": "Folder File Block",
+      "name": "folder_file_block",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "folder_file_block",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 20,
+      "description": "Configure folder file warn.",
+      "environment": "AGENT_MAINTAINER_FOLDER_FILE_WARN",
+      "environment_style": "standard",
+      "label": "Folder File Warn",
+      "name": "folder_file_warn",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "folder_file_warn",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": 100.0,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 80,
+      "description": "Configure interrogate fail under.",
+      "environment": "AGENT_MAINTAINER_INTERROGATE_FAIL_UNDER",
+      "environment_style": "standard",
+      "label": "Interrogate Fail Under",
+      "name": "interrogate_fail_under",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "interrogate_fail_under",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure large change allow expired plans.",
+      "environment": "AGENT_MAINTAINER_LARGE_CHANGE_ALLOW_EXPIRED_PLANS",
+      "environment_style": "standard",
+      "label": "Large Change Allow Expired Plans",
+      "name": "large_change_allow_expired_plans",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "large_change_allow_expired_plans",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": true,
+      "description": "Configure large change fail out of plan paths.",
+      "environment": "AGENT_MAINTAINER_LARGE_CHANGE_FAIL_OUT_OF_PLAN_PATHS",
+      "environment_style": "standard",
+      "label": "Large Change Fail Out Of Plan Paths",
+      "name": "large_change_fail_out_of_plan_paths",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "large_change_fail_out_of_plan_paths",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 1,
+      "description": "Configure large change max active plans.",
+      "environment": "AGENT_MAINTAINER_LARGE_CHANGE_MAX_ACTIVE_PLANS",
+      "environment_style": "standard",
+      "label": "Large Change Max Active Plans",
+      "name": "large_change_max_active_plans",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "large_change_max_active_plans",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        ".agent-maintainer/change-plans"
+      ],
+      "description": "Configure large change plan dirs.",
+      "environment": "AGENT_MAINTAINER_LARGE_CHANGE_PLAN_DIRS",
+      "environment_style": "standard",
+      "label": "Large Change Plan Dirs",
+      "name": "large_change_plan_dirs",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "large_change_plan_dirs",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": true,
+      "description": "Configure large change require required sections.",
+      "environment": "AGENT_MAINTAINER_LARGE_CHANGE_REQUIRE_REQUIRED_SECTIONS",
+      "environment_style": "standard",
+      "label": "Large Change Require Required Sections",
+      "name": "large_change_require_required_sections",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "large_change_require_required_sections",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure large changes enabled.",
+      "environment": "AGENT_MAINTAINER_LARGE_CHANGES_ENABLED",
+      "environment_style": "standard",
+      "label": "Large Changes Enabled",
+      "name": "large_changes_enabled",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "large_changes_enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [
+        "--from=mixed",
+        "--format=json"
+      ],
+      "description": "Configure license check args.",
+      "environment": "AGENT_MAINTAINER_LICENSE_CHECK_ARGS",
+      "environment_style": "standard",
+      "label": "License Check Args",
+      "name": "license_check_args",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "license_check_args",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "manual"
+      ],
+      "description": "Configure license check profiles.",
+      "environment": "AGENT_MAINTAINER_LICENSE_CHECK_PROFILES",
+      "environment_style": "standard",
+      "label": "License Check Profiles",
+      "name": "license_check_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "license_check_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "**/*.md"
+      ],
+      "description": "Configure markdownlint paths.",
+      "environment": "AGENT_MAINTAINER_MARKDOWNLINT_PATHS",
+      "environment_style": "standard",
+      "label": "Markdownlint Paths",
+      "name": "markdownlint_paths",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "markdownlint_paths",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "custom",
+          "fresh-strict",
+          "legacy-ratchet"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "custom",
+      "description": "Configure mode.",
+      "environment": "AGENT_MAINTAINER_MODE",
+      "environment_style": "standard",
+      "label": "Mode",
+      "name": "mode",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "mode",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [
+        "run"
+      ],
+      "description": "Configure mutmut args.",
+      "environment": "AGENT_MAINTAINER_MUTMUT_ARGS",
+      "environment_style": "standard",
+      "label": "Mutmut Args",
+      "name": "mutmut_args",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "mutmut_args",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 0,
+      "description": "Configure mutmut max survivors.",
+      "environment": "AGENT_MAINTAINER_MUTMUT_MAX_SURVIVORS",
+      "environment_style": "standard",
+      "label": "Mutmut Max Survivors",
+      "name": "mutmut_max_survivors",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "mutmut_max_survivors",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 0,
+      "description": "Configure mutmut max suspicious.",
+      "environment": "AGENT_MAINTAINER_MUTMUT_MAX_SUSPICIOUS",
+      "environment_style": "standard",
+      "label": "Mutmut Max Suspicious",
+      "name": "mutmut_max_suspicious",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "mutmut_max_suspicious",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 0,
+      "description": "Configure mutmut max timeouts.",
+      "environment": "AGENT_MAINTAINER_MUTMUT_MAX_TIMEOUTS",
+      "environment_style": "standard",
+      "label": "Mutmut Max Timeouts",
+      "name": "mutmut_max_timeouts",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "mutmut_max_timeouts",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": 100.0,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 0,
+      "description": "Configure mutmut min score.",
+      "environment": "AGENT_MAINTAINER_MUTMUT_MIN_SCORE",
+      "environment_style": "standard",
+      "label": "Mutmut Min Score",
+      "name": "mutmut_min_score",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "mutmut_min_score",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure mutmut result ratchet enabled.",
+      "environment": "AGENT_MAINTAINER_MUTMUT_RESULT_RATCHET_ENABLED",
+      "environment_style": "standard",
+      "label": "Mutmut Result Ratchet Enabled",
+      "name": "mutmut_result_ratchet_enabled",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "mutmut_result_ratchet_enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 0,
+      "description": "Configure mutmut target min.",
+      "environment": "AGENT_MAINTAINER_MUTMUT_TARGET_MIN",
+      "environment_style": "standard",
+      "label": "Mutmut Target Min",
+      "name": "mutmut_target_min",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "mutmut_target_min",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [
+        "scan",
+        "source",
+        "-r",
+        "."
+      ],
+      "description": "Configure osv scanner args.",
+      "environment": "AGENT_MAINTAINER_OSV_SCANNER_ARGS",
+      "environment_style": "shell",
+      "label": "Osv Scanner Args",
+      "name": "osv_scanner_args",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "osv_scanner_args",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "manual"
+      ],
+      "description": "Configure osv scanner profiles.",
+      "environment": "AGENT_MAINTAINER_OSV_SCANNER_PROFILES",
+      "environment_style": "standard",
+      "label": "Osv Scanner Profiles",
+      "name": "osv_scanner_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "osv_scanner_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "src"
+      ],
+      "description": "Configure package paths.",
+      "environment": "AGENT_MAINTAINER_PACKAGE_PATHS",
+      "environment_style": "standard",
+      "label": "Package Paths",
+      "name": "package_paths",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "package_paths",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure pip audit args.",
+      "environment": "AGENT_MAINTAINER_PIP_AUDIT_ARGS",
+      "environment_style": "shell",
+      "label": "Pip Audit Args",
+      "name": "pip_audit_args",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "pip_audit_args",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": "config/pyright-strict-baseline.json",
+      "description": "Configure pyright strict baseline.",
+      "environment": "AGENT_MAINTAINER_PYRIGHT_STRICT_BASELINE",
+      "environment_style": "standard",
+      "label": "Pyright Strict Baseline",
+      "name": "pyright_strict_baseline",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "pyright_strict_baseline",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 0,
+      "description": "Configure pyright strict max errors.",
+      "environment": "AGENT_MAINTAINER_PYRIGHT_STRICT_MAX_ERRORS",
+      "environment_style": "standard",
+      "label": "Pyright Strict Max Errors",
+      "name": "pyright_strict_max_errors",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "pyright_strict_max_errors",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "manual"
+      ],
+      "description": "Configure pyright strict profiles.",
+      "environment": "AGENT_MAINTAINER_PYRIGHT_STRICT_PROFILES",
+      "environment_style": "standard",
+      "label": "Pyright Strict Profiles",
+      "name": "pyright_strict_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "pyright_strict_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure pyright strict ratchet enabled.",
+      "environment": "AGENT_MAINTAINER_PYRIGHT_STRICT_RATCHET_ENABLED",
+      "environment_style": "standard",
+      "label": "Pyright Strict Ratchet Enabled",
+      "name": "pyright_strict_ratchet_enabled",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "pyright_strict_ratchet_enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "basic",
+          "off",
+          "standard",
+          "strict"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "standard",
+      "description": "Configure pyright type checking mode.",
+      "environment": "AGENT_MAINTAINER_PYRIGHT_TYPE_CHECKING_MODE",
+      "environment_style": "standard",
+      "label": "Pyright Type Checking Mode",
+      "name": "pyright_type_checking_mode",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "pyright_type_checking_mode",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": ".agent-maintainer/ratchet-baseline.json",
+      "description": "Configure ratchet baseline path.",
+      "environment": "AGENT_MAINTAINER_RATCHET_BASELINE_PATH",
+      "environment_style": "standard",
+      "label": "Ratchet Baseline Path",
+      "name": "ratchet_baseline_path",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "ratchet_baseline_path",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure ratchet enabled.",
+      "environment": "AGENT_MAINTAINER_RATCHET_ENABLED",
+      "environment_style": "standard",
+      "label": "Ratchet Enabled",
+      "name": "ratchet_enabled",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "ratchet_enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": "AGENTS.ratchet.md",
+      "description": "Configure ratchet guidance path.",
+      "environment": "AGENT_MAINTAINER_RATCHET_GUIDANCE_PATH",
+      "environment_style": "standard",
+      "label": "Ratchet Guidance Path",
+      "name": "ratchet_guidance_path",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "ratchet_guidance_path",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 5,
+      "description": "Configure ratchet target limit.",
+      "environment": "AGENT_MAINTAINER_RATCHET_TARGET_LIMIT",
+      "environment_style": "standard",
+      "label": "Ratchet Target Limit",
+      "name": "ratchet_target_limit",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "ratchet_target_limit",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": true,
+      "description": "Configure require tests.",
+      "environment": "AGENT_MAINTAINER_REQUIRE_TESTS",
+      "environment_style": "standard",
+      "label": "Require Tests",
+      "name": "require_tests",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "require_tests",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 10,
+      "description": "Configure ruff max complexity.",
+      "environment": null,
+      "environment_style": null,
+      "label": "Ruff Max Complexity",
+      "name": "ruff_max_complexity",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "ruff_max_complexity",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 14,
+      "description": "Configure runtime event history limit.",
+      "environment": "AGENT_MAINTAINER_RUNTIME_EVENT_HISTORY_LIMIT",
+      "environment_style": "standard",
+      "label": "Runtime Event History Limit",
+      "name": "runtime_event_history_limit",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "runtime_event_history_limit",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "debug",
+          "error",
+          "info",
+          "warning"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "info",
+      "description": "Configure runtime event level.",
+      "environment": "AGENT_MAINTAINER_RUNTIME_EVENT_LEVEL",
+      "environment_style": "standard",
+      "label": "Runtime Event Level",
+      "name": "runtime_event_level",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "runtime_event_level",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": ".verify-logs/events",
+      "description": "Configure runtime events dir.",
+      "environment": "AGENT_MAINTAINER_RUNTIME_EVENTS_DIR",
+      "environment_style": "standard",
+      "label": "Runtime Events Dir",
+      "name": "runtime_events_dir",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "runtime_events_dir",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure runtime events enabled.",
+      "environment": "AGENT_MAINTAINER_RUNTIME_EVENTS_ENABLED",
+      "environment_style": "standard",
+      "label": "Runtime Events Enabled",
+      "name": "runtime_events_enabled",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "runtime_events_enabled",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": false,
+      "description": "Configure runtime events include debug.",
+      "environment": "AGENT_MAINTAINER_RUNTIME_EVENTS_INCLUDE_DEBUG",
+      "environment_style": "standard",
+      "label": "Runtime Events Include Debug",
+      "name": "runtime_events_include_debug",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "runtime_events_include_debug",
+      "value_kind": "bool"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [
+        "requirements",
+        "config/dev-lock.txt",
+        "--output-reproducible",
+        "--of",
+        "JSON"
+      ],
+      "description": "Configure sbom args.",
+      "environment": "AGENT_MAINTAINER_SBOM_ARGS",
+      "environment_style": "standard",
+      "label": "Sbom Args",
+      "name": "sbom_args",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "sbom_args",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "ci"
+      ],
+      "description": "Configure sbom profiles.",
+      "environment": "AGENT_MAINTAINER_SBOM_PROFILES",
+      "environment_style": "standard",
+      "label": "Sbom Profiles",
+      "name": "sbom_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "sbom_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "security"
+      ],
+      "description": "Configure secret scan history profiles.",
+      "environment": "AGENT_MAINTAINER_SECRET_SCAN_HISTORY_PROFILES",
+      "environment_style": "standard",
+      "label": "Secret Scan History Profiles",
+      "name": "secret_scan_history_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "secret_scan_history_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "full",
+        "ci"
+      ],
+      "description": "Configure secret scan profiles.",
+      "environment": "AGENT_MAINTAINER_SECRET_SCAN_PROFILES",
+      "environment_style": "standard",
+      "label": "Secret Scan Profiles",
+      "name": "secret_scan_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "secret_scan_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "gitleaks"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "gitleaks",
+      "description": "Configure secret scanner.",
+      "environment": "AGENT_MAINTAINER_SECRET_SCANNER",
+      "environment_style": "standard",
+      "label": "Secret Scanner",
+      "name": "secret_scanner",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "secret_scanner",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [
+        "scan",
+        "--config",
+        "semgrep.yml",
+        "--error",
+        "--metrics=off",
+        "."
+      ],
+      "description": "Configure semgrep args.",
+      "environment": "AGENT_MAINTAINER_SEMGREP_ARGS",
+      "environment_style": "standard",
+      "label": "Semgrep Args",
+      "name": "semgrep_args",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "semgrep_args",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "manual"
+      ],
+      "description": "Configure semgrep profiles.",
+      "environment": "AGENT_MAINTAINER_SEMGREP_PROFILES",
+      "environment_style": "standard",
+      "label": "Semgrep Profiles",
+      "name": "semgrep_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "semgrep_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "src"
+      ],
+      "description": "Configure source roots.",
+      "environment": "AGENT_MAINTAINER_SOURCE_ROOTS",
+      "environment_style": "standard",
+      "label": "Source Roots",
+      "name": "source_roots",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "source_roots",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [],
+      "description": "Configure source without test change error profiles.",
+      "environment": "AGENT_MAINTAINER_SOURCE_WITHOUT_TEST_CHANGE_ERROR_PROFILES",
+      "environment_style": "standard",
+      "label": "Source Without Test Change Error Profiles",
+      "name": "source_without_test_change_error_profiles",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "source_without_test_change_error_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 1.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 4,
+      "description": "Configure structure cluster min.",
+      "environment": "AGENT_MAINTAINER_STRUCTURE_CLUSTER_MIN",
+      "environment_style": "standard",
+      "label": "Structure Cluster Min",
+      "name": "structure_cluster_min",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "structure_cluster_min",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [
+        "^maintainer_",
+        "^check_",
+        "^user_",
+        "^course_",
+        "_model$",
+        "_service$",
+        "_repository$",
+        "_client$",
+        "_adapter$",
+        "_parser$",
+        "_loader$",
+        "_schema$",
+        "_executor$",
+        "_reporting$",
+        "^(cli|args|config|models|checks|doctor|executor|reporting)$"
+      ],
+      "description": "Configure structure hint patterns.",
+      "environment": "AGENT_MAINTAINER_STRUCTURE_HINT_PATTERNS",
+      "environment_style": "standard",
+      "label": "Structure Hint Patterns",
+      "name": "structure_hint_patterns",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "structure_hint_patterns",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "tests/**",
+        "migrations/**",
+        "generated/**",
+        ".venv/**",
+        "venv/**",
+        "**/__pycache__/**"
+      ],
+      "description": "Configure structure ignore paths.",
+      "environment": "AGENT_MAINTAINER_STRUCTURE_IGNORE_PATHS",
+      "environment_style": "standard",
+      "label": "Structure Ignore Paths",
+      "name": "structure_ignore_paths",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "structure_ignore_paths",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure structure paths.",
+      "environment": "AGENT_MAINTAINER_STRUCTURE_PATHS",
+      "environment_style": "standard",
+      "label": "Structure Paths",
+      "name": "structure_paths",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "structure_paths",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 3,
+      "description": "Configure suppression max new.",
+      "environment": "AGENT_MAINTAINER_SUPPRESSION_MAX_NEW",
+      "environment_style": "standard",
+      "label": "Suppression Max New",
+      "name": "suppression_max_new",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "suppression_max_new",
+      "value_kind": "int"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "*.toml",
+        "config/*.toml"
+      ],
+      "description": "Configure taplo paths.",
+      "environment": "AGENT_MAINTAINER_TAPLO_PATHS",
+      "environment_style": "standard",
+      "label": "Taplo Paths",
+      "name": "taplo_paths",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "taplo_paths",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "tests"
+      ],
+      "description": "Configure test roots.",
+      "environment": "AGENT_MAINTAINER_TEST_ROOTS",
+      "environment_style": "standard",
+      "label": "Test Roots",
+      "name": "test_roots",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "test_roots",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [
+        "fs",
+        "--scanners",
+        "vuln,misconfig",
+        "--format",
+        "json",
+        "--exit-code",
+        "1",
+        "."
+      ],
+      "description": "Configure trivy args.",
+      "environment": "AGENT_MAINTAINER_TRIVY_ARGS",
+      "environment_style": "shell",
+      "label": "Trivy Args",
+      "name": "trivy_args",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "trivy_args",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "manual"
+      ],
+      "description": "Configure trivy profiles.",
+      "environment": "AGENT_MAINTAINER_TRIVY_PROFILES",
+      "environment_style": "standard",
+      "label": "Trivy Profiles",
+      "name": "trivy_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "trivy_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 1,
+      "description": "Configure typescript advisory broad suppression warn.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_BROAD_SUPPRESSION_WARN",
+      "environment_style": "standard",
+      "label": "Typescript Advisory Broad Suppression Warn",
+      "name": "typescript_advisory_broad_suppression_warn",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_advisory_broad_suppression_warn",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 4,
+      "description": "Configure typescript advisory source warn files.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES",
+      "environment_style": "standard",
+      "label": "Typescript Advisory Source Warn Files",
+      "name": "typescript_advisory_source_warn_files",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_advisory_source_warn_files",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": 0.0,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": 200,
+      "description": "Configure typescript advisory source warn lines.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES",
+      "environment_style": "standard",
+      "label": "Typescript Advisory Source Warn Lines",
+      "name": "typescript_advisory_source_warn_lines",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_advisory_source_warn_lines",
+      "value_kind": "non-negative-int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure typescript lint command.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_LINT_COMMAND",
+      "environment_style": "standard",
+      "label": "Typescript Lint Command",
+      "name": "typescript_lint_command",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_lint_command",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "precommit",
+        "full",
+        "ci"
+      ],
+      "description": "Configure typescript lint profiles.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_LINT_PROFILES",
+      "environment_style": "standard",
+      "label": "Typescript Lint Profiles",
+      "name": "typescript_lint_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_lint_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure typescript test command.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_TEST_COMMAND",
+      "environment_style": "standard",
+      "label": "Typescript Test Command",
+      "name": "typescript_test_command",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_test_command",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "full",
+        "ci"
+      ],
+      "description": "Configure typescript test profiles.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_TEST_PROFILES",
+      "environment_style": "standard",
+      "label": "Typescript Test Profiles",
+      "name": "typescript_test_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_test_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure typescript typecheck command.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_TYPECHECK_COMMAND",
+      "environment_style": "standard",
+      "label": "Typescript Typecheck Command",
+      "name": "typescript_typecheck_command",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_typecheck_command",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "full",
+        "ci"
+      ],
+      "description": "Configure typescript typecheck profiles.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_TYPECHECK_PROFILES",
+      "environment_style": "standard",
+      "label": "Typescript Typecheck Profiles",
+      "name": "typescript_typecheck_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_typecheck_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        "src",
+        "tests",
+        ".codex/hooks",
+        ".claude/hooks"
+      ],
+      "description": "Configure vulture paths.",
+      "environment": "AGENT_MAINTAINER_VULTURE_PATHS",
+      "environment_style": "standard",
+      "label": "Vulture Paths",
+      "name": "vulture_paths",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "vulture_paths",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
+      "description": "Configure workspaces.",
+      "environment": null,
+      "environment_style": null,
+      "label": "Workspaces",
+      "name": "workspaces",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "workspaces",
+      "value_kind": "workspaces"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "B",
+      "description": "Configure xenon max absolute.",
+      "environment": "AGENT_MAINTAINER_XENON_MAX_ABSOLUTE",
+      "environment_style": "standard",
+      "label": "Xenon Max Absolute",
+      "name": "xenon_max_absolute",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "xenon_max_absolute",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "A",
+      "description": "Configure xenon max average.",
+      "environment": "AGENT_MAINTAINER_XENON_MAX_AVERAGE",
+      "environment_style": "standard",
+      "label": "Xenon Max Average",
+      "name": "xenon_max_average",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "xenon_max_average",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "A",
+      "description": "Configure xenon max modules.",
+      "environment": "AGENT_MAINTAINER_XENON_MAX_MODULES",
+      "environment_style": "standard",
+      "label": "Xenon Max Modules",
+      "name": "xenon_max_modules",
+      "stability": "stable",
+      "toml_aliases": [],
+      "toml_key": "xenon_max_modules",
+      "value_kind": "choice"
+    },
+    {
+      "cli_override": "verify",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": [
+        ".github/workflows",
+        ".github/dependabot.yml",
+        ".pre-commit-config.yaml",
+        "*.yml",
+        "*.yaml"
+      ],
+      "description": "Configure yamllint paths.",
+      "environment": "AGENT_MAINTAINER_YAMLLINT_PATHS",
+      "environment_style": "standard",
+      "label": "Yamllint Paths",
+      "name": "yamllint_paths",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "yamllint_paths",
+      "value_kind": "tuple"
+    }
+  ],
+  "nested_tables": {
+    "diagnostics": [
+      "enabled",
+      "log_dir",
+      "run_history_limit"
+    ],
+    "file_baselines": [
+      "enabled",
+      "groups",
+      "mode"
+    ],
+    "file_baselines.groups.*": [
+      "changed_file_warn",
+      "changed_line_warn",
+      "exclude",
+      "include",
+      "max_nonblank_lines",
+      "max_physical_lines",
+      "role"
+    ],
+    "workspaces.*": [
+      "coverage_source",
+      "package_paths",
+      "source_roots",
+      "test_roots",
+      "typescript_lint_command",
+      "typescript_test_command",
+      "typescript_typecheck_command"
+    ]
+  },
+  "precedence": [
+    "defaults",
+    "mode",
+    "file",
+    "environment",
+    "command_line"
+  ],
+  "runtime_environment": [
+    "AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT",
+    "AGENT_MAINTAINER_BACKGROUND_PR_WAIT",
+    "AGENT_MAINTAINER_BACKGROUND_WAIT",
+    "AGENT_MAINTAINER_CODEX_APP_SERVER_TIMEOUT_SECONDS",
+    "AGENT_MAINTAINER_CODEX_BIN",
+    "AGENT_MAINTAINER_CODEX_REWAKE",
+    "AGENT_MAINTAINER_CODEX_THREAD_ID",
+    "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_REQUESTED",
+    "AGENT_MAINTAINER_KEEP_MUTANTS",
+    "AGENT_MAINTAINER_RUN_RELEASE_TESTS",
+    "AGENT_MAINTAINER_WRITE_BYTECODE"
+  ],
+  "schema_version": 1
+}

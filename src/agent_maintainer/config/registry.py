@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Literal
 
-from agent_maintainer.config import registry_capabilities, schema_fields
+from agent_maintainer.config import registry_capabilities, schema, schema_fields
 
 ValueKind = Literal[
     "bool",
@@ -33,14 +33,14 @@ INT_FIELDS = schema_fields.INT_FIELDS
 FLOAT_FIELDS = schema_fields.FLOAT_FIELDS
 STR_FIELDS = schema_fields.STR_FIELDS
 
-VALID_MODES = frozenset(("custom", "legacy-ratchet", "fresh-strict"))
-VALID_ARCHITECTURE_TOOLS = frozenset(("import-linter", "tach"))
-VALID_CONTEXT_COMPRESSION_BACKENDS = frozenset(("none", "truncate", "extractive", "headroom"))
-VALID_FILE_BASELINE_MODES = frozenset(("advisory", "blocking"))
+VALID_MODES = schema.VALID_MODES
+VALID_ARCHITECTURE_TOOLS = schema.VALID_ARCHITECTURE_TOOLS
+VALID_CONTEXT_COMPRESSION_BACKENDS = schema.VALID_CONTEXT_COMPRESSION_BACKENDS
+VALID_FILE_BASELINE_MODES = schema.VALID_FILE_BASELINE_MODES
 VALID_PYRIGHT_MODES = frozenset(("off", "basic", "standard", "strict"))
 VALID_XENON_RANKS = frozenset(("A", "B", "C", "D", "E", "F"))
 VALID_RUNTIME_EVENT_LEVELS = frozenset(("debug", "info", "warning", "error"))
-SUPPORTED_SECRET_SCANNERS = frozenset(("gitleaks",))
+SUPPORTED_SECRET_SCANNERS = schema.SUPPORTED_SECRET_SCANNERS
 
 CHOICE_FIELDS = MappingProxyType(
     {
@@ -228,6 +228,7 @@ class ConfigFieldSpec:
     field_name: str
     toml_key: str
     value_kind: ValueKind
+    default_value: object
     toml_aliases: tuple[str, ...] = ()
     env_var: str = ""
     env_style: str = "standard"
@@ -310,6 +311,7 @@ def _build_spec(field_name: str) -> ConfigFieldSpec:
         field_name=field_name,
         toml_key=NESTED_TOML_KEYS.get(field_name, field_name),
         value_kind=_value_kind(field_name),
+        default_value=getattr(schema.MaintainerConfig(), field_name),
         toml_aliases=LEGACY_TOML_ALIASES.get(field_name, ()),
         env_var=_env_var(field_name),
         env_style="shell" if field_name in SHELL_ENV_FIELDS else "standard",

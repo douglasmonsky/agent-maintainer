@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.config import coercion, loader, registry, schema, validation
+from agent_maintainer.config import loader, registry, schema, validation
 from agent_maintainer.core import args as core_args
 
 EXPECTED_CONFIG_FIELD_COUNT = 130
@@ -55,6 +55,16 @@ def test_registry_covers_config_fields() -> None:
     assert len({spec.toml_key for spec in registry.FIELD_SPECS.values()}) == len(field_names)
 
 
+def test_registry_specs_include_defaults_and_docs() -> None:
+    """Each registered capability carries its resolved default and description."""
+
+    defaults = schema.MaintainerConfig()
+    for field_name, spec in registry.FIELD_SPECS.items():
+        assert spec.default_value == getattr(defaults, field_name)
+        assert spec.docs_label
+        assert spec.description
+
+
 def test_environment_defaults_round_trip() -> None:
     """Every declared environment capability parses its resolved default."""
 
@@ -65,29 +75,6 @@ def test_environment_defaults_round_trip() -> None:
     }
 
     assert loader.apply_env(expected, environment=environment) == expected
-
-
-def test_loader_compatibility_helpers(tmp_path: Path) -> None:
-    """Established loader helpers retain their provider-neutral behavior."""
-
-    (tmp_path / "agent-maintainer.toml").write_text('source_roots = ["lib"]\n', encoding="utf-8")
-    updates: dict[str, object] = {}
-    loader.merge_env_values(
-        updates,
-        (("change_warn_lines", "EXAMPLE_WARN_LINES"),),
-        coercion.as_int,
-        environment={"EXAMPLE_WARN_LINES": "42"},
-    )
-
-    assert loader.read_config(tmp_path) == {"source_roots": ["lib"]}
-    assert updates == {"change_warn_lines": 42}
-
-
-def test_compression_constants_are_public() -> None:
-    """Named backend constants remain members of the registered choice set."""
-
-    assert schema.NONE_COMPRESSION_BACKEND in schema.VALID_CONTEXT_COMPRESSION_BACKENDS
-    assert schema.TRUNCATE_COMPRESSION_BACKEND in schema.VALID_CONTEXT_COMPRESSION_BACKENDS
 
 
 def _environment_text(spec: registry.ConfigFieldSpec, value: object) -> str:

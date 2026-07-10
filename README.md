@@ -372,12 +372,17 @@ variables, then CLI flags. When multiple file configs exist,
 `.agent-maintainer/config.toml` wins over `agent-maintainer.toml`.
 Environment overrides use the `AGENT_MAINTAINER_*` prefix.
 
+Known commands validate the complete resolved policy before running behavior.
+Invalid configuration exits with status 2 and reports the source plus dotted
+key; help remains available for repair and discovery.
+
 ```bash
 AGENT_MAINTAINER_SOURCE_ROOTS=src,tests python3 -m agent_maintainer doctor
 ```
 
 Read more:
 [quick start](docs/quick-start.md),
+[configuration reference](docs/configuration-reference.md),
 [structure cohesion](docs/structure-cohesion.md),
 [tool map](docs/tool-map.md).
 

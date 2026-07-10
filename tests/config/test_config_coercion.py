@@ -7,6 +7,13 @@ import pytest
 from agent_maintainer.config import coercion, schema
 
 
+def test_compression_constants_are_public() -> None:
+    """Named backend constants remain members of the registered choice set."""
+
+    assert schema.NONE_COMPRESSION_BACKEND in schema.VALID_CONTEXT_COMPRESSION_BACKENDS
+    assert schema.TRUNCATE_COMPRESSION_BACKEND in schema.VALID_CONTEXT_COMPRESSION_BACKENDS
+
+
 @pytest.mark.parametrize("value", ("1", "true", "yes", "on", " YES ", "ON"))
 def test_as_bool_accepts_documented_true_spellings(value: str) -> None:
     """Bool coercion accepts every documented true spelling."""

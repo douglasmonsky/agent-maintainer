@@ -17,6 +17,12 @@ guidance-check:
 change-plan-check:
     python3 -m agent_maintainer change-plan check
 
+config-reference:
+    python3 -m agent_maintainer.config.reference
+
+config-reference-check:
+    python3 -m agent_maintainer.config.reference --check
+
 verify:
     python3 -m agent_maintainer verify --profile full
 

@@ -26,6 +26,7 @@ depends_on = ["agent_maintainer.cli"]
 [[modules]]
 path = "agent_maintainer.cli"
 depends_on = [
+  "agent_maintainer.config.preflight",
   "agent_maintainer.context.cli",
   "agent_maintainer.core.guidance",
   "agent_maintainer.core.scaffold.initializer",

@@ -8,6 +8,8 @@
   artifact hashes, and clean-install smoke commands.
 - Public documentation drift tests that keep README and roadmap current-release
   references aligned with recorded release evidence.
+- Registry-generated configuration reference documentation and versioned JSON
+  capability metadata with a checked-in currentness test.
 
 ### Changed Since 0.1.0b5
 
@@ -21,6 +23,8 @@
   conflicts, and user-owned skips before transactional apply.
 - Managed hooks now expose explicit update and uninstall lifecycles driven by
   the same manifest, preflight, merge, backup, and rollback contract.
+- Configuration files, environment overrides, and verifier flags now converge
+  on one field registry and complete resolved-policy validator.
 
 ### Fixed Since 0.1.0b5
 
@@ -36,6 +40,9 @@
 - Hook and initializer recovery data is Git-private in repositories. Uninstall
   removes only managed identities, preserves co-located third-party commands,
   refuses unowned files, and rolls prior deletions back after later failures.
+- Unknown, mistyped, out-of-range, contradictory, path-escaping, and
+  type-confused configuration now fails with source-aware diagnostics before a
+  known root command can run behavior.
 
 ## 0.1.0b5 - 2026-07-03
 
