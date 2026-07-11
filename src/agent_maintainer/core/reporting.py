@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from agent_context.budget import bound_text
 from agent_context.models import ContextBudget
@@ -15,6 +15,12 @@ from agent_maintainer.core.structured_artifacts import (
 )
 from agent_maintainer.core.structured_typescript import (
     summarize_typescript_check,
+)
+from agent_maintainer.core.structured_values import (
+    json_array,
+    json_object,
+    json_objects,
+    plain_int,
 )
 
 PYRIGHT_DIAGNOSTIC_LIMIT = 50
@@ -83,10 +89,10 @@ def format_diagnostic(diagnostic: dict[str, object]) -> str:
     """Format one Pyright diagnostic as a compact editor-style line."""
 
     file_name = diagnostic.get("file", "<unknown>")
-    range_info = _json_object(diagnostic.get("range", {})) or {}
-    start = _json_object(range_info.get("start", {})) or {}
-    line = _int_value(start.get("line")) + 1
-    character = _int_value(start.get("character")) + 1
+    range_info = json_object(diagnostic.get("range", {})) or {}
+    start = json_object(range_info.get("start", {})) or {}
+    line = plain_int(start.get("line")) + 1
+    character = plain_int(start.get("character")) + 1
     severity = diagnostic.get("severity", "error")
     message = diagnostic.get("message", "")
     rule = diagnostic.get("rule")
@@ -101,16 +107,14 @@ def summarize_pyright(raw: str) -> str | None:
         parsed = json.loads(raw)
     except json.JSONDecodeError:
         return None
-    payload = _json_object(parsed)
+    payload = json_object(parsed)
     if payload is None:
         return None
 
-    diagnostic_values = _json_array(payload.get("generalDiagnostics", []))
+    diagnostic_values = json_array(payload.get("generalDiagnostics", []))
     if diagnostic_values is None:
         return None
-    diagnostics = [
-        diagnostic for value in diagnostic_values if (diagnostic := _json_object(value)) is not None
-    ]
+    diagnostics = json_objects(diagnostic_values)
     if not diagnostics:
         return pyright_summary_payload(payload)
 
@@ -169,7 +173,7 @@ def summarize_json_artifact(
 def summarize_pyright_payload(payload: object) -> str | None:
     """Summarize Pyright JSON artifact payload."""
 
-    report = _json_object(payload)
+    report = json_object(payload)
     if report is None:
         return None
     return summarize_pyright(json.dumps(report))
@@ -178,10 +182,10 @@ def summarize_pyright_payload(payload: object) -> str | None:
 def summarize_ruff_payload(payload: object) -> str | None:
     """Summarize Ruff JSON artifact payload."""
 
-    values = _json_array(payload)
+    values = json_array(payload)
     if values is None:
         return None
-    diagnostics = [item for value in values if (item := _json_object(value)) is not None]
+    diagnostics = json_objects(values)
     lines = [format_ruff_diagnostic(item) for item in diagnostics[:STRUCTURED_DIAGNOSTIC_LIMIT]]
     omitted = len(diagnostics) - len(lines)
     if omitted > 0:
@@ -192,7 +196,7 @@ def summarize_ruff_payload(payload: object) -> str | None:
 def format_ruff_diagnostic(diagnostic: dict[str, object]) -> str:
     """Format one Ruff diagnostic compact editor-style line."""
 
-    location = _json_object(diagnostic.get("location", {})) or {}
+    location = json_object(diagnostic.get("location", {})) or {}
     row = location.get("row", 1)
     column = location.get("column", 1)
     filename = diagnostic.get("filename", "<unknown>")
@@ -204,13 +208,13 @@ def format_ruff_diagnostic(diagnostic: dict[str, object]) -> str:
 def summarize_bandit_payload(payload: object) -> str | None:
     """Summarize Bandit JSON artifact payload."""
 
-    report = _json_object(payload)
+    report = json_object(payload)
     if report is None:
         return None
-    raw_results = _json_array(report.get("results", []))
+    raw_results = json_array(report.get("results", []))
     if raw_results is None:
         return None
-    findings = [item for value in raw_results if (item := _json_object(value)) is not None]
+    findings = json_objects(raw_results)
     lines = [format_bandit_finding(item) for item in findings[:STRUCTURED_DIAGNOSTIC_LIMIT]]
     omitted = len(findings) - len(lines)
     if omitted > 0:
@@ -297,28 +301,3 @@ def print_failures(
         rerun_command=rerun_command,
     ):
         print(line)
-
-
-def _json_object(value: object) -> dict[str, object] | None:
-    """Return a JSON object with string keys, or ``None`` when malformed."""
-
-    if not isinstance(value, dict):
-        return None
-    raw = cast(dict[object, object], value)
-    if not all(isinstance(key, str) for key in raw):
-        return None
-    return {key: item for key, item in raw.items() if isinstance(key, str)}
-
-
-def _json_array(value: object) -> list[object] | None:
-    """Return a JSON array with an explicit element boundary."""
-
-    if not isinstance(value, list):
-        return None
-    return cast(list[object], value)
-
-
-def _int_value(value: object, *, default: int = 0) -> int:
-    """Return a non-boolean integer, or a safe fallback."""
-
-    return value if isinstance(value, int) and not isinstance(value, bool) else default

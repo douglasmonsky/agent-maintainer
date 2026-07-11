@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
+
+from agent_maintainer.core.structured_values import json_array, json_object
 
 DefusedElementTree: Any
 try:
@@ -133,11 +135,11 @@ def junit_issue_count(root: Any) -> int:
 def summarize_coverage_payload(payload: object) -> str | None:
     """Summarize coverage JSON totals and worst missing-line files."""
 
-    report = _json_object(payload)
+    report = json_object(payload)
     if report is None:
         return None
-    totals = _json_object(report.get("totals", {}))
-    files = _json_object(report.get("files", {}))
+    totals = json_object(report.get("totals", {}))
+    files = json_object(report.get("files", {}))
     if totals is None or files is None:
         return None
     covered = int_value(totals.get("covered_lines"))
@@ -155,9 +157,9 @@ def worst_coverage_file_lines(files: dict[str, object]) -> list[str]:
     entries = coverage_entries(files)
     lines: list[str] = []
     for missing_count, file_name, payload in entries[:COVERAGE_FILE_PREVIEW]:
-        summary = _json_object(payload.get("summary", {})) or {}
+        summary = json_object(payload.get("summary", {})) or {}
         percent = percent_value(summary)
-        missing_lines = _json_array(payload.get("missing_lines", [])) or []
+        missing_lines = json_array(payload.get("missing_lines", [])) or []
         preview = line_preview(missing_lines)
         lines.append(f"{file_name}: {percent}, {missing_count} missing ({preview})")
     if len(entries) > COVERAGE_FILE_PREVIEW:
@@ -171,10 +173,10 @@ def coverage_entries(files: dict[str, object]) -> list[CoverageEntry]:
 
     entries: list[CoverageEntry] = []
     for file_name, value in files.items():
-        payload = _json_object(value)
+        payload = json_object(value)
         if payload is None:
             continue
-        missing_lines = _json_array(payload.get("missing_lines", []))
+        missing_lines = json_array(payload.get("missing_lines", []))
         if missing_lines:
             entries.append((len(missing_lines), file_name, payload))
     return sorted(entries, reverse=True)
@@ -230,22 +232,3 @@ def first_nonblank(text: str) -> str:
         if stripped:
             return stripped
     return ""
-
-
-def _json_object(value: object) -> dict[str, object] | None:
-    """Return a JSON object with string keys, or ``None`` when malformed."""
-
-    if not isinstance(value, dict):
-        return None
-    raw = cast(dict[object, object], value)
-    if not all(isinstance(key, str) for key in raw):
-        return None
-    return {key: item for key, item in raw.items() if isinstance(key, str)}
-
-
-def _json_array(value: object) -> list[object] | None:
-    """Return a JSON array with an explicit element boundary."""
-
-    if not isinstance(value, list):
-        return None
-    return cast(list[object], value)
