@@ -105,3 +105,14 @@ def test_git_changes_uses_numstat_parser(
     assert git_scope.git_changes(tmp_path, base_ref="origin/main") == (
         ChangedPath(path="src/app.py", added=1, deleted=2),
     )
+
+
+def test_current_branch_uses_ci_head(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    result = SimpleNamespace(stdout="")
+    monkeypatch.setattr(git_scope.subprocess, "run", lambda *_args, **_kwargs: result)
+    monkeypatch.setattr(git_scope, "getenv", {"GITHUB_ACTIONS": "true", "GITHUB_HEAD_REF": "x"}.get)
+    assert git_scope.current_branch(tmp_path) == "x"
+    monkeypatch.setattr(git_scope, "getenv", {}.get)
+    assert git_scope.current_branch(tmp_path) == ""
+    result.stdout = "local"
+    assert git_scope.current_branch(tmp_path) == "local"

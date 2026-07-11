@@ -5,6 +5,7 @@ from __future__ import annotations
 import fnmatch
 import shutil
 import subprocess  # nosec B404
+from os import getenv
 from pathlib import Path
 
 from agent_maintainer.change_plan.models import ChangedPath, ChangePlan, ValidationIssue
@@ -44,7 +45,10 @@ def current_branch(repo_root: Path) -> str:
         capture_output=True,
         text=True,
     )
-    return result.stdout.strip()
+    branch = result.stdout.strip()
+    if branch or getenv("GITHUB_ACTIONS") != "true":
+        return branch
+    return getenv("GITHUB_HEAD_REF", "").strip()
 
 
 def parse_numstat(output: str) -> tuple[ChangedPath, ...]:

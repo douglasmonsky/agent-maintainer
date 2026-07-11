@@ -7,12 +7,8 @@ integration_branch = "codex/deep-release-evidence"
 target_branch = "main"
 merge_strategy = "merge-after-series"
 expected_units = [
-  "critical stabilization foundations",
-  "configuration and background-verifier hardening",
-  "exact-commit release evidence and workflow integrity",
-  "version-matched public release contract",
-  "dependency and public-governance remediation",
-  "remaining roadmap reconciliation and final evidence",
+  "critical stabilization foundations", "configuration and background-verifier hardening", "exact-commit release evidence and workflow integrity",
+  "version-matched public release contract", "dependency and public-governance remediation", "remaining roadmap reconciliation and final evidence",
 ]
 expires = 2026-08-31
 allowed_paths = [
