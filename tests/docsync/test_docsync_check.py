@@ -169,6 +169,7 @@ def test_attestation_loader_reports_invalid_and_semantic_findings(tmp_path: Path
         """
 attestations:
   - invalid
+  - 1: non-string-key
   - id: dup
     claim: missing.claim
     doc_object: docs.readme.demo
@@ -208,6 +209,10 @@ attestations:
     codes = [finding.code for finding in result.findings]
 
     assert result.records[0].to_json()["doc_object"] == "docs.readme.demo"
+    assert result.records[0].evidence_anchor_fingerprints == {}
+    assert any(
+        finding.message == "attestations[1] must be a mapping" for finding in result.findings
+    )
     assert "DS301" in codes
     assert "DS302" in codes
     assert "DS303" in codes

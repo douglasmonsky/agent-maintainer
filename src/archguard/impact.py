@@ -5,7 +5,8 @@ from __future__ import annotations
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+
+from archguard.structured_values import non_empty_strings, structured_object, structured_objects
 
 NO_OWNER = "<unassigned>"
 
@@ -52,11 +53,11 @@ def load_architecture(repo_root: Path) -> ArchitectureMap:
     """Load Tach architecture map from repository root."""
 
     config_path = repo_root / "tach.toml"
-    payload = tomllib.loads(config_path.read_text(encoding="utf-8"))
+    payload = structured_object(tomllib.loads(config_path.read_text(encoding="utf-8"))) or {}
     return ArchitectureMap(
-        source_roots=tuple(payload.get("source_roots", ())),
-        layers=tuple(payload.get("layers", ())),
-        modules=tuple(module_rules(payload.get("modules", ()))),
+        source_roots=non_empty_strings(payload.get("source_roots")),
+        layers=non_empty_strings(payload.get("layers")),
+        modules=module_rules(payload.get("modules")),
     )
 
 
@@ -64,27 +65,21 @@ def module_rules(modules: object) -> tuple[ModuleRule, ...]:
     """Return flattened module ownership rules."""
 
     rules: list[ModuleRule] = []
-    if not isinstance(modules, list):
-        return ()
-    for item in modules:
-        if not isinstance(item, dict):
-            continue
+    for item in structured_objects(modules):
         layer = string_value(item.get("layer"))
         paths = module_paths(item)
         rules.extend(ModuleRule(name=path, layer=layer) for path in paths)
     return tuple(sorted(rules, key=lambda rule: rule.name))
 
 
-def module_paths(item: dict[str, Any]) -> tuple[str, ...]:
+def module_paths(item: dict[str, object]) -> tuple[str, ...]:
     """Return module paths from one Tach module item."""
 
     path = item.get("path")
     paths = item.get("paths")
     if isinstance(path, str) and path:
         return (path,)
-    if isinstance(paths, list):
-        return tuple(value for value in paths if isinstance(value, str) and value)
-    return ()
+    return non_empty_strings(paths)
 
 
 def string_value(value: object) -> str:

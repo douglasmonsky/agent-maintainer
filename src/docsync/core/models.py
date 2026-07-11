@@ -225,7 +225,7 @@ class DocSyncIndex:
     trace: TraceGraph
     doc_objects: dict[str, DocObject]
     evidence_anchors: dict[str, tuple[EvidenceAnchor, ...]]
-    claim_spans: dict[str, LineSpan] = field(default_factory=dict)
+    claim_spans: dict[str, LineSpan] = field(default_factory=dict[str, LineSpan])
     findings: tuple[Finding, ...] = ()
 
     @property
@@ -284,7 +284,9 @@ class Attestation:
     head_ref: str | None = None
     expires_at: str | None = None
     statement: str | None = None
-    evidence_anchor_fingerprints: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    evidence_anchor_fingerprints: dict[str, tuple[str, ...]] = field(
+        default_factory=dict[str, tuple[str, ...]],
+    )
 
     def to_json(self) -> dict[str, Any]:
         """Return JSON-ready attestation metadata."""

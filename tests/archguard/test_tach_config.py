@@ -391,6 +391,10 @@ depends_on = []
 def test_tach_config_defensive_helpers_handle_invalid_inputs(tmp_path: Path) -> None:
     """Keep defensive helper branches stable for malformed TOML values."""
     assert tach_config_sources.source_module_names(tmp_path, "scripts", None) == ()
+    assert tach_config_sources.configured_module_paths(
+        [None, {1: "invalid"}, {"path": "package.good"}],
+    ) == frozenset(("package.good",))
+    assert not tach_config_sources.module_has_path({1: "invalid"})
     assert not tach_config_sources.matches_exclude("package/file.py", ("package",), " ")
 
 
