@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import py_compile
+import subprocess
+import sys
 import tomllib
 from pathlib import Path
-
-from yamllint import linter
-from yamllint.config import YamlLintConfig
 
 from agent_maintainer.core.scaffold import initializer, template_config, templates
 from tests.support.paths import REPO_ROOT
@@ -44,10 +43,14 @@ def test_core_init_writes_minimum_adoption_files(tmp_path: Path) -> None:
     assert "npm ci" in workflow
     assert "--no-deps" not in workflow
     assert "scripts" not in config
-    yaml_config = YamlLintConfig((REPO_ROOT / ".yamllint").read_text(encoding="utf-8"))
     workflow_path = tmp_path / ".github" / "workflows" / "verify.yml"
-    problems = list(linter.run(workflow, yaml_config, filepath=str(workflow_path)))
-    assert not problems, "\n".join(str(problem) for problem in problems)
+    yaml_lint = subprocess.run(  # nosec B603 - fixed lint executable and generated fixture.
+        [sys.executable, "-m", "yamllint", "-c", str(REPO_ROOT / ".yamllint"), str(workflow_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert yaml_lint.returncode == 0, yaml_lint.stdout
 
 
 def test_starter_config_template_matches_initializer() -> None:

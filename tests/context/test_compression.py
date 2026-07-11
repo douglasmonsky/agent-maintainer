@@ -28,6 +28,7 @@ from agent_maintainer.context.compression import headroom as compatibility_headr
 from agent_maintainer.context.compression.models import (
     CompressionRequest as CompatibilityCompressionRequest,
 )
+from tests.support.callbacks import constant_callback
 
 
 def test_context_compression_compatibility_shims() -> None:
@@ -119,7 +120,7 @@ def test_headroom_backend_uses_optional_compress_callable(
     monkeypatch.setattr(
         headroom_backend.importlib,
         "import_module",
-        lambda name: fake_module,
+        constant_callback(fake_module),
     )
 
     result = compress(request_for("content", preserve_terms=()), backend=BACKEND_HEADROOM)
@@ -152,7 +153,7 @@ def test_headroom_backend_reports_missing_compress_callable(
     monkeypatch.setattr(
         headroom_backend.importlib,
         "import_module",
-        lambda name: fake_module,
+        constant_callback(fake_module),
     )
 
     with pytest.raises(CompressionBackendUnavailable, match="does not expose compress"):
@@ -171,7 +172,7 @@ def test_headroom_backend_reports_provider_failure(
     monkeypatch.setattr(
         headroom_backend.importlib,
         "import_module",
-        lambda name: fake_module,
+        constant_callback(fake_module),
     )
 
     with pytest.raises(CompressionBackendError, match="Headroom compression failed"):

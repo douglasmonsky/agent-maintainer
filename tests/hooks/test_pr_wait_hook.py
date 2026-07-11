@@ -133,17 +133,19 @@ def test_codex_background_wait_registers_wait(
 ) -> None:
     """Codex background PR wait registers durable wait state."""
     calls: list[tuple[Path, str]] = []
+
+    def ensure_daemon(root: Path, wait_id: str) -> daemon_launchd.DaemonLaunch:
+        calls.append((root, wait_id))
+        return daemon_launchd.DaemonLaunch(
+            started=True,
+            label="com.agent-maintainer.wait.test",
+            log_path=tmp_path / "daemon.log",
+        )
+
     monkeypatch.setattr(sys, "stdin", StringIO(json.dumps(pr_create_payload())))
     monkeypatch.setattr(
         "agent_maintainer.wait.broker.ensure_wait_daemon",
-        lambda root, wait_id: (
-            calls.append((root, wait_id))
-            or daemon_launchd.DaemonLaunch(
-                started=True,
-                label="com.agent-maintainer.wait.test",
-                log_path=tmp_path / "daemon.log",
-            )
-        ),
+        ensure_daemon,
     )
 
     status = pr_wait.run_hook(

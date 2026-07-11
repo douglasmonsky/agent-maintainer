@@ -1,17 +1,13 @@
 {
   "by_rule": {
-    "reportPrivateUsage": 24,
-    "reportUnknownArgumentType": 52,
-    "reportUnknownLambdaType": 57,
-    "reportUnknownMemberType": 2,
-    "reportUnknownVariableType": 14
+    "reportPrivateUsage": 15,
+    "reportUnknownArgumentType": 25,
+    "reportUnknownLambdaType": 26,
+    "reportUnknownMemberType": 1,
+    "reportUnknownVariableType": 10
   },
-  "note": "Reviewed 2026-07-11 after test burndown batch 2 replaced untyped test callbacks across hooks, packaging, doctor, runners, and wait registration; 66 test diagnostics were removed without changing production code or adding suppressions, casts, or permissive types.",
+  "note": "Reviewed 2026-07-11 after test burndown batch 3 migrated callback-heavy test modules and replaced brittle private-helper tests with public behavior checks; 72 diagnostics were removed without changing production code or adding suppressions, casts, or permissive types.",
   "pairs": {
-    "tests/archguard/test_git_diff.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 2
-    },
     "tests/assess/test_debt_score.py": {
       "reportPrivateUsage": 1
     },
@@ -21,26 +17,13 @@
     "tests/attention/test_attention_context_pack.py": {
       "reportUnknownVariableType": 1
     },
-    "tests/attention/test_attention_signals.py": {
-      "reportPrivateUsage": 1,
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2
-    },
     "tests/change_plan/test_cli.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 2
     },
-    "tests/checks/test_change_budget_relevance.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 4
-    },
     "tests/checks/test_cohesive_override.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
-    },
-    "tests/checks/test_file_lengths.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 3
     },
     "tests/config/test_config_reference.py": {
       "reportUnknownArgumentType": 1,
@@ -49,10 +32,6 @@
     "tests/config/test_config_registry_validation.py": {
       "reportUnknownArgumentType": 2
     },
-    "tests/context/test_compression.py": {
-      "reportUnknownArgumentType": 3,
-      "reportUnknownLambdaType": 3
-    },
     "tests/context/test_estimate.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
@@ -60,33 +39,13 @@
     "tests/context/test_exact_facts.py": {
       "reportUnknownArgumentType": 1
     },
-    "tests/context/test_pack_compression.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/core/test_command_run.py": {
-      "reportPrivateUsage": 4
-    },
     "tests/core/test_executor_reporting.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/core/test_structured_artifact_summaries.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownVariableType": 2
-    },
-    "tests/docsync/test_freshness.py": {
-      "reportPrivateUsage": 4,
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 2
     },
     "tests/docsync/test_path_helpers.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
-    },
-    "tests/hooks/test_hook_manager.py": {
-      "reportUnknownArgumentType": 3,
-      "reportUnknownLambdaType": 3
     },
     "tests/hooks/test_hook_merge_safety.py": {
       "reportUnknownVariableType": 1
@@ -98,15 +57,6 @@
     "tests/hooks/test_hook_output_invariants.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
-    },
-    "tests/hooks/test_pr_wait_hook.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/packaging/test_initializer.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 2
     },
     "tests/packaging/test_setup_cli.py": {
       "reportUnknownArgumentType": 2,
@@ -162,14 +112,6 @@
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 2
     },
-    "tests/verify/test_git_refs.py": {
-      "reportUnknownArgumentType": 3,
-      "reportUnknownLambdaType": 3
-    },
-    "tests/verify/test_run_steps.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 5
-    },
     "tests/wait/test_codex_app_server.py": {
       "reportPrivateUsage": 12
     },
@@ -184,5 +126,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 149
+  "total_errors": 77
 }

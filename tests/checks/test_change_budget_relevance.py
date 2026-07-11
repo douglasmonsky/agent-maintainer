@@ -10,6 +10,7 @@ import pytest
 from agent_maintainer.checks import change_budget as check_change_budget
 from agent_maintainer.checks import test_relevance
 from agent_maintainer.core.config import MaintainerConfig
+from tests.support.callbacks import constant_callback
 
 
 def test_change_budget_allows_docsync_evidence_marker_only_source_changes(
@@ -32,7 +33,7 @@ def test_change_budget_allows_docsync_evidence_marker_only_source_changes(
         ),
         stderr="",
     )
-    monkeypatch.setattr(test_relevance.subprocess, "run", lambda *args, **_kwargs: completed)
+    monkeypatch.setattr(test_relevance.subprocess, "run", constant_callback(completed))
 
     warnings = test_relevance.warnings_for_changes(
         args,
@@ -64,7 +65,7 @@ def test_change_budget_keeps_warning_for_real_source_edits_near_docsync_markers(
         ),
         stderr="",
     )
-    monkeypatch.setattr(test_relevance.subprocess, "run", lambda *args, **_kwargs: completed)
+    monkeypatch.setattr(test_relevance.subprocess, "run", constant_callback(completed))
 
     warnings = test_relevance.warnings_for_changes(
         args,

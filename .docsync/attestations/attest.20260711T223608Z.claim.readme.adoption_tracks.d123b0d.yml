@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260711T223608Z.claim.readme.adoption_tracks.d123b0d
+  claim: claim.readme.adoption_tracks
+  doc_object: docs.readme.adoption_tracks
+  evidence:
+  - evidence.readme.initializer_tests
+  reason: Initializer validation still checks the generated workflow with the same
+    repository yamllint policy; only the typed test harness changed.
+  reviewer: agent
+  reviewed_at: '2026-07-11T22:36:08Z'
+  base: HEAD
+  head: d123b0d
+  evidence_fingerprints:
+    evidence.readme.initializer_tests: sha256:8ba52219aebb46a90f4c7453ad131de6d5611f02f47f1d310d583f27353ffe72
+  evidence_anchor_fingerprints:
+    evidence.readme.initializer_tests:
+    - sha256:4f6c7f3709fbd5b22bf35419f756bc5712972bb58e21979ddf3baa1159182467
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

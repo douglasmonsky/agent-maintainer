@@ -14,18 +14,22 @@ from agent_maintainer.attention import signal_context, signals
 
 def test_payload_paths_extracts_nested_known_paths(tmp_path: Path) -> None:
     """Nested JSON payloads mention known repo paths deterministically."""
-    known = {"src/app.py", "src/ignored.py", "tests/test_app.py"}
+    _write(tmp_path / "src" / "app.py", "VALUE = 1\n")
+    _write(tmp_path / "src" / "ignored.py", "VALUE = 2\n")
+    _write(tmp_path / "tests" / "test_app.py", "def test_app(): pass\n")
     payload = {
+        "event_name": "agent.check",
         "checks": [
             {"summary": "failure in tests/test_app.py"},
             {"attributes": {"path": "src/app.py"}},
-            {"attributes": {1: "src/ignored.py"}},
-        ]
+        ],
     }
+    events_dir = tmp_path / ".verify-logs" / "events"
+    _write(events_dir / "events.jsonl", f"{json.dumps(payload)}\n")
 
-    paths = signals._payload_paths(payload, repo_root=tmp_path, known_paths=known)
+    counts = signals.runtime_event_counts(tmp_path, events_dir=events_dir)
 
-    assert paths == {"src/app.py", "tests/test_app.py"}
+    assert counts == {"src/app.py": 1, "tests/test_app.py": 1}
 
 
 def test_tracked_file_provider_applies_discovery_cap(
@@ -35,12 +39,14 @@ def test_tracked_file_provider_applies_discovery_cap(
     """Tracked and untracked Git outputs are capped before context sampling."""
 
     monkeypatch.setattr(signals, "DEFAULT_TRACKED_DISCOVERY_LIMIT", 3)
+
+    def git_lines(_repo_root: Path, args: tuple[str, ...]) -> tuple[str, ...]:
+        return ("a.py", "b.py", "c.py") if "--others" not in args else ("d.py", "e.py", "f.py")
+
     monkeypatch.setattr(
         signals,
         "_git_lines",
-        lambda repo_root, args: (
-            ("a.py", "b.py", "c.py") if "--others" not in args else ("d.py", "e.py", "f.py")
-        ),
+        git_lines,
     )
 
     assert signals.tracked_files(tmp_path) == ("a.py", "b.py", "c.py")

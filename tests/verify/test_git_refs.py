@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.verify import git_refs
+from tests.support.callbacks import constant_callback
 
 
 def test_ref_failures_skips_non_git_directories(tmp_path: Path) -> None:
@@ -24,7 +25,7 @@ def test_ref_failures_skips_non_git_directories(tmp_path: Path) -> None:
 
 def test_ref_failures_reports_missing_git(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     (tmp_path / ".git").mkdir()
-    monkeypatch.setattr(git_refs.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(git_refs.shutil, "which", constant_callback(None))
 
     failures = git_refs.ref_failures(
         tmp_path,
@@ -47,7 +48,7 @@ def test_ref_failures_validates_base_ref_only_for_local_profiles(
         checked_refs.append(command[-1])
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-    monkeypatch.setattr(git_refs.shutil, "which", lambda _name: "/usr/bin/git")
+    monkeypatch.setattr(git_refs.shutil, "which", constant_callback("/usr/bin/git"))
     monkeypatch.setattr(git_refs.subprocess, "run", fake_run)
 
     failures = git_refs.ref_failures(
@@ -72,7 +73,7 @@ def test_ref_failures_validates_compare_ref_for_ci_profiles(
         checked_refs.append(command[-1])
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-    monkeypatch.setattr(git_refs.shutil, "which", lambda _name: "/usr/bin/git")
+    monkeypatch.setattr(git_refs.shutil, "which", constant_callback("/usr/bin/git"))
     monkeypatch.setattr(git_refs.subprocess, "run", fake_run)
 
     failures = git_refs.ref_failures(
