@@ -2,21 +2,22 @@
 
 from __future__ import annotations
 
+from agent_context.structured_values import json_array, json_objects
+
 
 def next_action_commands(facts: object, commands: object) -> list[str]:
     """Return surgical expansion commands before broader fallbacks."""
 
     ranked: list[str] = []
-    if isinstance(facts, list):
-        for fact in facts:
-            if isinstance(fact, dict):
-                ranked.extend(fact_expansion_commands(fact))
-    if isinstance(commands, list):
-        ranked.extend(str(command) for command in commands)
+    for fact in json_objects(facts):
+        ranked.extend(fact_expansion_commands(fact))
+    command_values = json_array(commands)
+    if command_values is not None:
+        ranked.extend(str(command) for command in command_values)
     return list(dict.fromkeys(ranked))
 
 
-def fact_expansion_commands(fact: dict[object, object]) -> list[str]:
+def fact_expansion_commands(fact: dict[str, object]) -> list[str]:
     """Return expansion commands implied by one exact repair fact."""
 
     path = fact.get("path")

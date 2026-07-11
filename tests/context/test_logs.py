@@ -35,6 +35,33 @@ def test_missing_log_is_graceful(tmp_path: Path) -> None:
     assert "No log found for pyright" in selection.text
 
 
+def test_manifest_log_selection_skips_malformed_checks(tmp_path: Path) -> None:
+    """Malformed manifest entries cannot obscure a valid bounded log path."""
+
+    log_dir = tmp_path / ".verify-logs"
+    log_dir.mkdir()
+    (log_dir / "pyright.log").write_text("strict output\n", encoding=ENCODING)
+    (log_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "checks": [
+                    None,
+                    {"name": "pyright", "log_path": ".verify-logs/pyright.log"},
+                ],
+            },
+        ),
+        encoding=ENCODING,
+    )
+
+    selection = select_log(
+        log_dir,
+        "pyright",
+        LogRequest(workspace_root=tmp_path),
+    )
+
+    assert selection.text == "strict output"
+
+
 def test_tail_slicing_selects_last_lines(tmp_path: Path) -> None:
     """Tail slicing selects the requested log suffix."""
     write_log(tmp_path, "pyright", line_count=FIVE_LINES)

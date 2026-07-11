@@ -184,7 +184,7 @@ def test_headroom_backend_normalizes_common_result_shapes() -> None:
     assert headroom_backend.normalized_headroom_content({"compressed": "dict text"})
     assert (
         headroom_backend.normalized_headroom_content(
-            {"messages": [{"content": "dict message"}]},
+            {"messages": [None, {"content": "dict message"}]},
         )
         == "dict message"
     )
@@ -214,6 +214,7 @@ def test_headroom_backend_normalizes_common_result_shapes() -> None:
 def test_request_rejects_invalid_values() -> None:
     """Request validation rejects invalid budgets and empty terms."""
 
+    assert request_for("content").metadata == {}
     with pytest.raises(ValueError, match="target_chars"):
         request_for("content", target_chars=-1)
     with pytest.raises(ValueError, match="content_kind"):

@@ -6,7 +6,7 @@ depends_on = []
 
 [[modules]]
 path = "attention_rendering"
-depends_on = []
+depends_on = ["structured_values"]
 
 [[modules]]
 path = "budget"
@@ -25,7 +25,10 @@ depends_on = [
 
 [[modules]]
 path = "compression.headroom"
-depends_on = ["compression.models"]
+depends_on = [
+  "compression.models",
+  "structured_values",
+]
 
 [[modules]]
 path = "compression.models"
@@ -45,6 +48,7 @@ depends_on = [
   "budget",
   "models",
   "reading.file_safety",
+  "structured_values",
 ]
 
 [[modules]]
@@ -63,7 +67,7 @@ depends_on = [
 
 [[modules]]
 path = "next_actions"
-depends_on = []
+depends_on = ["structured_values"]
 
 [[modules]]
 path = "sanitize"
@@ -113,7 +117,12 @@ path = "reading.logs"
 depends_on = [
   "failures",
   "reading.file_safety",
+  "structured_values",
 ]
+
+[[modules]]
+path = "structured_values"
+depends_on = []
 
 [[modules]]
 path = "reading.python_outline"

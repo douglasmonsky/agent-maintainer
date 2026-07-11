@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import importlib
 from collections.abc import Callable
-from typing import Any
 
 from agent_context.compression.models import CompressionRequest
+from agent_context.structured_values import json_array, json_object
 
 BACKEND_HEADROOM = "headroom"
 # docsync:evidence.start evidence.context_compression.headroom_boundary
@@ -31,7 +31,7 @@ def headroom_content(request: CompressionRequest) -> str:
     return run_headroom_compressor(compressor, request)
 
 
-def load_headroom_compressor() -> Callable[..., Any]:
+def load_headroom_compressor() -> Callable[..., object]:
     """Return the Headroom compression callable from the optional dependency."""
     try:
         module = importlib.import_module("headroom")
@@ -44,7 +44,7 @@ def load_headroom_compressor() -> Callable[..., Any]:
 
 
 def run_headroom_compressor(
-    compressor: Callable[..., Any],
+    compressor: Callable[..., object],
     request: CompressionRequest,
 ) -> str:
     """Run Headroom compressor and normalize common result shapes."""
@@ -72,8 +72,9 @@ def normalized_headroom_content(result: object) -> str:
     """Return compressed text from common Headroom result shapes."""
     if isinstance(result, str):
         return result
-    if isinstance(result, dict):
-        return dict_result_content(result)
+    result_object = json_object(result)
+    if result_object is not None:
+        return dict_result_content(result_object)
     messages_text = messages_content(getattr(result, "messages", None))
     if messages_text:
         return messages_text
@@ -86,7 +87,7 @@ def normalized_headroom_content(result: object) -> str:
     raise CompressionBackendError("Headroom compression returned unsupported result")
 
 
-def dict_result_content(result: dict[str, Any]) -> str:
+def dict_result_content(result: dict[str, object]) -> str:
     """Return compressed text from a dictionary result."""
     messages_text = messages_content(result.get("messages"))
     if messages_text:
@@ -100,10 +101,11 @@ def dict_result_content(result: dict[str, Any]) -> str:
 
 def messages_content(messages: object) -> str:
     """Return joined content from Headroom-style messages."""
-    if not isinstance(messages, list):
+    values = json_array(messages)
+    if values is None:
         return ""
     parts: list[str] = []
-    for message in messages:
+    for message in values:
         content = message_content(message)
         if content:
             parts.append(content)
@@ -112,10 +114,8 @@ def messages_content(messages: object) -> str:
 
 def message_content(message: object) -> str:
     """Return content from one Headroom-style message."""
-    if isinstance(message, dict):
-        content = message.get("content")
-    else:
-        content = getattr(message, "content", None)
+    payload = json_object(message)
+    content = getattr(message, "content", None) if payload is None else payload.get("content")
     if isinstance(content, str):
         return content
     return ""

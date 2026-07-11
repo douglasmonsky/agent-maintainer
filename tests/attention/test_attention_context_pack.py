@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any, cast
 
+from agent_context.attention_rendering import attention_lines, attention_pointer_lines
 from agent_context.pack_rendering import render_pack_pointer
 from agent_maintainer.context.pack.builder import ContextPackRequest, write_context_pack
 
@@ -30,6 +31,25 @@ def test_context_pack_works_without_attention_ledger(tmp_path: Path) -> None:
     }
     assert "## Attention" in pack.markdown
     assert "Attention ledger unavailable" in pack.markdown
+
+
+def test_attention_rendering_skips_malformed_list_entries() -> None:
+    """Malformed notes and entries cannot obscure valid attention context."""
+
+    attention: dict[str, object] = {
+        "available": True,
+        "ledger_path": ".verify-logs/attention/files.json",
+        "risk_notes": [None, "Review the authentication boundary."],
+        "entries": [False, {"path": APP_PATH, "score": PRIMARY_SCORE}],
+    }
+
+    markdown = "\n".join(attention_lines(attention))
+    pointer = "\n".join(attention_pointer_lines(attention))
+
+    assert "Review the authentication boundary." in markdown
+    assert f"{PRIMARY_SCORE}: {APP_PATH}" in markdown
+    assert "Review the authentication boundary." in pointer
+    assert "None" not in markdown
 
 
 def test_context_pack_attaches_attention_to_exact_file_fact(tmp_path: Path) -> None:
