@@ -266,3 +266,29 @@ def test_unsupported_secret_scanner_backend_fails(capsys: pytest.CaptureFixture[
     assert "Unsupported secret scanner backend" in output
     assert "Supported: gitleaks" in output
     assert untrusted_backend not in output
+
+
+def test_supported_but_unimplemented_secret_scanner_backend_is_not_logged(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    unimplemented_backend = "token=do-not-log-this"
+    monkeypatch.setattr(
+        run_secret_scan,
+        "SUPPORTED_SECRET_SCANNERS",
+        frozenset(("gitleaks", unimplemented_backend)),
+    )
+
+    status = run_secret_scan.main(
+        [
+            "--backend",
+            unimplemented_backend,
+            "--mode",
+            "current-tree",
+            "--report-path",
+            ".verify-logs/secret-scan.json",
+        ]
+    )
+
+    assert status == 1
+    assert capsys.readouterr().out == "Unsupported secret scanner backend.\n"
