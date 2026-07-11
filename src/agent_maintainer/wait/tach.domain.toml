@@ -101,11 +101,12 @@ depends_on = [
 path = "codex_app_server"
 depends_on = [
   "codex_app_server_protocol",
+  "//agent_maintainer.core.structured_values",
 ]
 
 [[modules]]
 path = "codex_app_server_protocol"
-depends_on = []
+depends_on = ["//agent_maintainer.core.structured_values"]
 
 [[modules]]
 path = "daemon"

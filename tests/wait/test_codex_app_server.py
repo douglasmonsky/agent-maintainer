@@ -288,6 +288,7 @@ def test_app_server_turn_state_handles_terminal_and_ignored_shapes() -> None:
 
     assert not state.completed
     assert _turn_from_result({"thread": {"turns": [object()]}}, "turn-1") is None
+    assert _turn_from_result({"turn": {1: "invalid-key"}}, "turn-1") is None
 
     _update_turn_state(
         {"thread": {"turns": [{"id": "turn-1", "status": "completed"}]}},
