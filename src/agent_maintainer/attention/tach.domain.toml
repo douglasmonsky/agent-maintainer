@@ -38,7 +38,10 @@ depends_on = []
 [[modules]]
 
 path = "rendering"
-depends_on = ["models"]
+depends_on = [
+  "models",
+  "//agent_maintainer.core.structured_values",
+]
 
 
 [[modules]]
@@ -64,5 +67,6 @@ depends_on = [
   "git_output",
   "signal_artifacts",
   "signal_context",
+  "//agent_maintainer.core.structured_values",
   "//agent_maintainer.runtime_events.read",
 ]

@@ -14,11 +14,12 @@ from agent_maintainer.attention import signal_context, signals
 
 def test_payload_paths_extracts_nested_known_paths(tmp_path: Path) -> None:
     """Nested JSON payloads mention known repo paths deterministically."""
-    known = {"src/app.py", "tests/test_app.py"}
+    known = {"src/app.py", "src/ignored.py", "tests/test_app.py"}
     payload = {
         "checks": [
             {"summary": "failure in tests/test_app.py"},
             {"attributes": {"path": "src/app.py"}},
+            {"attributes": {1: "src/ignored.py"}},
         ]
     }
 

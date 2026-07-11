@@ -1,23 +1,13 @@
 {
   "by_rule": {
     "reportPrivateUsage": 37,
-    "reportUnknownArgumentType": 137,
+    "reportUnknownArgumentType": 133,
     "reportUnknownLambdaType": 135,
     "reportUnknownMemberType": 15,
-    "reportUnknownVariableType": 51
+    "reportUnknownVariableType": 47
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 13 validated Codex app-server response and nested turn boundaries; the final 7 production diagnostics in agent_maintainer.wait were removed without suppressions or permissive types.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 14 validated attention ledger and recursive signal payload boundaries; all 8 production diagnostics in agent_maintainer.attention were removed without suppressions or permissive types.",
   "pairs": {
-    "src/agent_maintainer/attention/rendering.py": {
-      "reportUnknownArgumentType": 1
-    },
-    "src/agent_maintainer/attention/signal_context.py": {
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/attention/signals.py": {
-      "reportUnknownArgumentType": 3,
-      "reportUnknownVariableType": 3
-    },
     "src/agent_maintainer/change_plan/parser.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownVariableType": 1
@@ -331,5 +321,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 375
+  "total_errors": 367
 }
