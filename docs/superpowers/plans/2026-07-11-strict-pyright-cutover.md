@@ -20,10 +20,12 @@
 ### Task 1: Lock the dogfood policy with a failing test
 
 **Files:**
+
 - Create: `.agent-maintainer/change-plans/pyright-strict-cutover.md`
 - Modify: `tests/config/test_pyright_strict_config.py`
 
 **Interfaces:**
+
 - Consumes: `maintainer_config_loader.read_pyproject(path)` and `maintainer_config_loader.apply_pyproject(config, payload)`.
 - Produces: repository policy evidence that ordinary mode is `strict`, the ratchet is disabled, and `config/pyright-strict-baseline.json` is absent.
 
@@ -59,11 +61,13 @@ Expected: FAIL because the current repository uses `standard`, enables the ratch
 ### Task 2: Promote ordinary Pyright and retire the baseline
 
 **Files:**
+
 - Modify: `pyproject.toml`
 - Delete: `config/pyright-strict-baseline.json`
 - Modify: `docs/roadmap/phases/phase-75-below-10-debt-and-strict-typing-ratchets.md`
 
 **Interfaces:**
+
 - Consumes: the existing ordinary `pyright` verifier check.
 - Produces: strict zero-error enforcement in normal/full/hosted verification without a dogfood comparison artifact.
 
@@ -103,9 +107,11 @@ Expected: PASS with `pyright strict ratchet skipped: disabled`.
 ### Task 3: Verify, complete, and publish the cutover
 
 **Files:**
+
 - Modify: `.agent-maintainer/change-plans/pyright-strict-cutover.md`
 
 **Interfaces:**
+
 - Consumes: completed Tasks 1-2.
 - Produces: a merged, hosted-verified strict cutover and a complete change plan.
 
