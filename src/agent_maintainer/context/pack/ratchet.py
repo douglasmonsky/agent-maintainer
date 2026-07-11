@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from agent_maintainer.core.structured_values import json_array, json_object
 from agent_maintainer.ratchet.baseline import read_baseline
 from agent_maintainer.ratchet.ranking import changed_paths, ranked_targets
 from agent_maintainer.ratchet.status import status_report
@@ -45,8 +46,8 @@ def ratchet_payload(
 def target_commands(ratchet_state: dict[str, object]) -> tuple[str, ...]:
     """Return first expansion commands from ratchet target payload."""
 
-    targets = ratchet_state.get("top_targets", [])
-    if not isinstance(targets, list):
+    targets = json_array(ratchet_state.get("top_targets"))
+    if targets is None:
         return ()
     commands = (_target_command(target) for target in targets)
     return tuple(command for command in commands if command is not None)
@@ -72,6 +73,7 @@ def _unavailable_payload(
 def _target_command(target: object) -> str | None:
     """Return one target command when the payload item is valid."""
 
-    if not isinstance(target, dict) or not target.get("first_command"):
+    payload = json_object(target)
+    if payload is None or not payload.get("first_command"):
         return None
-    return str(target["first_command"])
+    return str(payload["first_command"])

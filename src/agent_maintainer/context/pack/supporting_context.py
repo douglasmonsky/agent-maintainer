@@ -9,10 +9,29 @@ from agent_context import failures as context_failures
 from agent_context import sanitize
 from agent_context.reading import files as file_reader
 from agent_context.reading import logs as log_reader
+from agent_maintainer.core.structured_values import json_array, json_object
 
 DEFAULT_PACK_LOG_TAIL = 120
 MIN_CONTEXT_ITEM_BUDGET = 800
 MAX_CONTEXT_ITEM_BUDGET = 4_000
+
+
+def payload_expansion_commands(payload: dict[str, object]) -> list[str]:
+    """Return payload expansion commands."""
+
+    commands = json_array(payload.get("expansion_commands"))
+    if commands is None:
+        return []
+    return [str(command) for command in commands]
+
+
+def payload_omitted_counts(payload: dict[str, object]) -> dict[str, int]:
+    """Return payload omitted counts."""
+
+    counts = json_object(payload.get("omitted_counts"))
+    if counts is None:
+        return {}
+    return {key: value for key, value in counts.items() if isinstance(value, int)}
 
 
 def log_payloads(

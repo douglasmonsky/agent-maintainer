@@ -8,11 +8,23 @@ from typing import Any, cast
 
 from agent_context.attention_rendering import attention_lines, attention_pointer_lines
 from agent_context.pack_rendering import render_pack_pointer
+from agent_maintainer.context.pack import attention as pack_attention
 from agent_maintainer.context.pack.builder import ContextPackRequest, write_context_pack
 
 APP_PATH = "src/pkg/app.py"
 OTHER_PATH = "docs/guide.md"
 PRIMARY_SCORE = 0.9
+
+
+def test_attention_attachment_rejects_non_json_entry() -> None:
+    """Attention entries must keep JSON-compatible string keys."""
+
+    facts: list[dict[str, object]] = [{"path": APP_PATH, "message": "failure"}]
+    attention: dict[str, object] = {
+        "entries": [{1: "invalid-key", "path": APP_PATH, "score": PRIMARY_SCORE}],
+    }
+
+    assert pack_attention.attach_attention_to_facts(facts, attention) == facts
 
 
 def test_context_pack_works_without_attention_ledger(tmp_path: Path) -> None:

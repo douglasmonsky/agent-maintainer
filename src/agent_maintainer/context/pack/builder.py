@@ -229,20 +229,8 @@ def repair_facts_with_attention(
     return pack_attention.attach_attention_to_facts(repair_facts, attention), attention
 
 
-def payload_expansion_commands(payload: PackPayload) -> list[str]:
-    """Return payload expansion commands."""
-    commands = payload.get("expansion_commands")
-    if not isinstance(commands, list):
-        return []
-    return [str(command) for command in commands]
-
-
-def payload_omitted_counts(payload: PackPayload) -> dict[str, int]:
-    """Return payload omitted counts."""
-    counts = payload.get("omitted_counts")
-    if not isinstance(counts, dict):
-        return {}
-    return {str(key): value for key, value in counts.items() if isinstance(value, int)}
+payload_expansion_commands = pack_supporting.payload_expansion_commands
+payload_omitted_counts = pack_supporting.payload_omitted_counts
 
 
 def selected_log_names(

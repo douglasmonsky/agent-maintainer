@@ -86,6 +86,7 @@ depends_on = [
   "//agent_context.reading.file_safety",
   "//agent_maintainer.attention.builder",
   "//agent_maintainer.attention.models",
+  "//agent_maintainer.core.structured_values",
 ]
 
 [[modules]]
@@ -149,6 +150,7 @@ depends_on = ["//agent_repair_facts.parsers.typescript"]
 [[modules]]
 path = "pack.ratchet"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "//agent_maintainer.ratchet.baseline",
   "//agent_maintainer.ratchet.ranking",
   "//agent_maintainer.ratchet.status",
@@ -161,6 +163,7 @@ depends_on = [
   "//agent_context.reading.files",
   "//agent_context.reading.logs",
   "//agent_context.sanitize",
+  "//agent_maintainer.core.structured_values",
 ]
 
 [[modules]]

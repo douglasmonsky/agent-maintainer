@@ -23,13 +23,17 @@ PYTEST_ARTIFACT_PRIORITY = MappingProxyType(
 )
 
 
+def _empty_seen_paths() -> set[Path]:
+    return set()
+
+
 @dataclass
 class ExactFactReadBudget:
     """Aggregate exact-fact parser budget for one context pack."""
 
     remaining_bytes: int = MAX_EXACT_FACT_TOTAL_BYTES
     remaining_files: int = MAX_EXACT_FACT_FILES
-    seen_paths: set[Path] = field(default_factory=set)
+    seen_paths: set[Path] = field(default_factory=_empty_seen_paths)
 
     def read_text(self, path: Path) -> str | None:
         """Read and charge one unique path through the bounded safe reader."""

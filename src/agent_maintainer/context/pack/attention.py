@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
 
 from agent_context.reading import file_safety
 from agent_maintainer.attention import builder as attention_builder
 from agent_maintainer.attention.models import AttentionFileScore
+from agent_maintainer.core.structured_values import json_array, json_objects
 
 ATTENTION_LEDGER_PATH = Path("attention/files.json")
 MAX_ATTENTION_ENTRIES = 5
@@ -78,14 +79,10 @@ def attach_attention_to_facts(
     attention: dict[str, object],
 ) -> list[dict[str, object]]:
     """Attach attention score metadata to facts mentioning files."""
-    entries = attention.get("entries")
-    if not isinstance(entries, list):
+    entries = json_array(attention.get("entries"))
+    if entries is None:
         return facts
-    by_path = {
-        str(entry["path"]): entry
-        for entry in entries
-        if isinstance(entry, dict) and entry.get("path")
-    }
+    by_path = {str(entry["path"]): entry for entry in json_objects(entries) if entry.get("path")}
     attached: list[dict[str, object]] = []
     for fact in facts:
         path = fact.get("path")
@@ -138,7 +135,7 @@ def _risk_notes(entries: list[AttentionFileScore]) -> list[str]:
     return notes
 
 
-def _entry_payload(entry: AttentionFileScore) -> dict[str, Any]:
+def _entry_payload(entry: AttentionFileScore) -> dict[str, object]:
     """Return JSON-safe attention entry."""
     return {
         "path": entry.path,
@@ -148,7 +145,7 @@ def _entry_payload(entry: AttentionFileScore) -> dict[str, Any]:
     }
 
 
-def _unique_paths(paths: Any) -> tuple[str, ...]:
+def _unique_paths(paths: Iterable[str]) -> tuple[str, ...]:
     """Return unique non-empty paths preserving order."""
     seen: set[str] = set()
     output: list[str] = []
