@@ -11,6 +11,7 @@ from typing import cast
 import pytest
 
 from agent_maintainer.attention import builder, signals
+from agent_maintainer.core.structured_values import json_array, json_object
 
 TRACKED_FILE_CAP_TEST_TOTAL = 5
 TRACKED_FILE_CAP_TEST_LIMIT = 2
@@ -27,8 +28,13 @@ def test_attention_ledger_is_deterministic_with_missing_inputs(tmp_path: Path) -
 
     assert first == second
     assert first["schema_version"] == 1
-    assert isinstance(first["files"], list)
-    paths = {item["path"] for item in first["files"]}
+    files = json_array(first["files"])
+    assert files is not None
+    paths: set[str] = set()
+    for raw_item in files:
+        item = json_object(raw_item)
+        if item is not None and isinstance(path := item.get("path"), str):
+            paths.add(path)
     assert {"README.md", "src/app.py"} <= paths
 
 

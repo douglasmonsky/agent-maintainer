@@ -21,6 +21,7 @@ from agent_maintainer.context import estimate as old_estimate
 from agent_maintainer.context import failures as old_failures
 from agent_maintainer.context.reading import files as old_files
 from agent_maintainer.context.reading import logs as old_logs
+from tests.support.callbacks import constant_callback
 
 FOUR_CHARS = 4
 ONE_TOKEN = 1
@@ -114,7 +115,7 @@ def test_diff_summary_estimate_uses_git_diff_summary(
 ) -> None:
     """Diff summary estimate uses stat output."""
 
-    monkeypatch.setattr(estimate_module, "run_git_diff", lambda _args: DIFF_TEXT)
+    monkeypatch.setattr(estimate_module, "run_git_diff", constant_callback(DIFF_TEXT))
 
     estimate = estimate_context(
         EstimateRequest(log_dir=tmp_path, diff=True, diff_summary=True),

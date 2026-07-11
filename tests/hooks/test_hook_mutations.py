@@ -108,10 +108,14 @@ def test_transaction_failure_restores_prior_deletion(
         mutations.prepare_delete(manager.PlannedWrite(removed, "", "removed")),
         mutations.prepare_write(manager.PlannedWrite(failing, "new", "failing"), "new"),
     )
+
+    def fail_write(_path: Path, _content: str) -> None:
+        raise OSError("synthetic interruption")
+
     monkeypatch.setattr(
         mutations,
         "atomic_write_text",
-        lambda _path, _content: (_ for _ in ()).throw(OSError("synthetic interruption")),
+        fail_write,
     )
 
     with pytest.raises(mutations.HookMutationError, match="rolled back"):

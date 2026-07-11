@@ -101,7 +101,7 @@ def test_context_pack_attention_falls_back_to_selected_log_paths(tmp_path: Path)
 
 def write_ledger(log_dir: Path, primary_path: str) -> None:
     """Write attention ledger fixture."""
-    ledger = {
+    ledger: dict[str, object] = {
         "schema_version": 1,
         "target": str(log_dir.parent),
         "file_count": 2,

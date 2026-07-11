@@ -19,6 +19,7 @@ from agent_maintainer.context.pack import (
     typescript_fact_parsers as old_typescript_parsers,
 )
 from agent_maintainer.context.pack.builder import ContextPackRequest, build_context_pack
+from agent_maintainer.core.structured_values import json_array, json_objects
 from agent_repair_facts import registry
 from agent_repair_facts.parsers import lint, logs, typescript
 from agent_repair_facts.parsers import pytest as pytest_parsers
@@ -384,9 +385,10 @@ def test_pack_uses_structured_fact(tmp_path: Path) -> None:
             baseline_path=tmp_path / "missing-baseline.json",
         ),
     )
-    facts = pack.payload["exact_repair_facts"]
+    raw_facts = json_array(pack.payload["exact_repair_facts"])
 
-    assert isinstance(facts, list)
+    assert raw_facts is not None
+    facts = json_objects(raw_facts)
     fact = first_fact(facts)
     assert fact["path"] == APP_PATH
     assert fact["line"] == RUFF_LINE

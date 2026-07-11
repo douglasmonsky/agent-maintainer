@@ -17,6 +17,7 @@ from docsync.config.paths import (
     resolve_input_within,
     sensitive_path,
 )
+from tests.support.callbacks import constant_callback
 
 PRIVATE_FILE_MODE = 0o600
 
@@ -114,7 +115,7 @@ def test_bounded_reader_catches_growth_after_descriptor_stat(
     monkeypatch.setattr(
         os,
         "fstat",
-        lambda _descriptor: SimpleNamespace(st_mode=stat.S_IFREG, st_size=0),
+        constant_callback(SimpleNamespace(st_mode=stat.S_IFREG, st_size=0)),
     )
 
     with pytest.raises(PathBoundaryError, match="exceeds"):

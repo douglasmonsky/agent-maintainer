@@ -7,6 +7,7 @@ import tomllib
 
 import pytest
 
+from agent_maintainer.core.structured_values import json_object
 from tests.support.paths import REPO_ROOT
 
 RUN_RELEASE_TESTS = os.environ.get("AGENT_MAINTAINER_RUN_RELEASE_TESTS") == "1"
@@ -19,9 +20,11 @@ release_only = pytest.mark.skipif(
 def project_metadata() -> dict[str, object]:
     """Return parsed project metadata."""
 
-    pyproject = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    project = pyproject.get("project", {})
-    assert isinstance(project, dict)
+    pyproject: dict[str, object] = tomllib.loads(
+        (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+    )
+    project = json_object(pyproject.get("project"))
+    assert project is not None
     return project
 
 

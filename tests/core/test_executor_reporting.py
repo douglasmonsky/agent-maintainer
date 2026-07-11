@@ -18,6 +18,7 @@ from agent_maintainer.models import (
     SKIP_STATUS_UNSAFE_CONFIG,
     Check,
 )
+from tests.support.callbacks import constant_callback
 
 
 def test_tool_search_path_prefers_local_virtualenv(
@@ -184,7 +185,7 @@ def test_missing_requirement_reports_required_path(tmp_path: Path) -> None:
 def test_missing_requirement_uses_capability_aware_executable_hint(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(maintainer_executor.shutil, "which", lambda *args, **_kwargs: None)
+    monkeypatch.setattr(maintainer_executor.shutil, "which", constant_callback(None))
     check = Check("missing", ["missing-tool"], frozenset(), required_executable="missing-tool")
 
     message = maintainer_executor.missing_requirement(check)

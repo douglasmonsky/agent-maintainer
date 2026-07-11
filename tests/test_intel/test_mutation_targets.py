@@ -16,6 +16,7 @@ from agent_maintainer.test_intel.cli import main as run_test_intel_cli
 from agent_maintainer.test_intel.mutation import cli as mutation_cli
 from agent_maintainer.test_intel.mutation import results_reporting as mutation_reporting
 from agent_maintainer.test_intel.mutation import targets as mutation_targets
+from tests.support.callbacks import constant_callback
 
 EXPECTED_FULL_SIGNAL_SCORE = 20
 
@@ -100,7 +101,7 @@ def test_mutation_targets_ratchet_boost(
     monkeypatch.setattr(
         mutation_targets,
         "ratchet_path_scores",
-        lambda *_args, **_kwargs: {"src/example_pkg/score.py": 6},
+        constant_callback({"src/example_pkg/score.py": 6}),
     )
 
     report = mutation_targets.build_mutation_target_report(

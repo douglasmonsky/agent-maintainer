@@ -12,13 +12,19 @@ from agent_maintainer.verify import artifact_adapters, artifacts
 ENCODING = "utf-8"
 
 
+def empty_event_records() -> list[dict[str, object]]:
+    """Return a typed empty runtime-event collection."""
+
+    return []
+
+
 @dataclass
 class RecordingArtifactEvents:
     """Runtime event recorder for artifact tests."""
 
-    written: list[dict[str, object]] = field(default_factory=list)
-    removed: list[dict[str, object]] = field(default_factory=list)
-    pruned: list[dict[str, object]] = field(default_factory=list)
+    written: list[dict[str, object]] = field(default_factory=empty_event_records)
+    removed: list[dict[str, object]] = field(default_factory=empty_event_records)
+    pruned: list[dict[str, object]] = field(default_factory=empty_event_records)
 
     def artifact_written(self, *, path: str, kind: str) -> None:
         """Record one artifact write."""

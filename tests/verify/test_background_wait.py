@@ -9,6 +9,7 @@ from typing import cast
 import pytest
 
 from agent_maintainer.verify import background_wait
+from tests.support.callbacks import constant_callback
 
 
 def test_register_background_verifier_wait_writes_record(
@@ -21,7 +22,7 @@ def test_register_background_verifier_wait_writes_record(
     monkeypatch.setattr(
         background_wait,
         "start_wait_watcher",
-        lambda root, wait_id: (True, ""),
+        constant_callback((True, "")),
     )
 
     registration = background_wait.register_background_verifier_wait(

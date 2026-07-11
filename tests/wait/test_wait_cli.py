@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import cast
 
 import pytest
 
+from agent_maintainer.core.structured_values import json_object
 from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
 from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import cli
 from agent_maintainer.wait.github import (
+    GitHubPollObserver,
     GitHubRunState,
     GitHubWaitConfig,
     GitHubWaitResult,
@@ -18,49 +19,17 @@ from agent_maintainer.wait.github import (
 from agent_maintainer.wait.github_pr import (
     GitHubPrCheck,
     GitHubPrChecksState,
+    GitHubPrPollObserver,
     GitHubPrWaitConfig,
     GitHubPrWaitResult,
 )
 from agent_maintainer.wait.registry import RegisterGitHubPrWait, WaitRegistry
 from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
+from tests.support.callbacks import constant_callback
 
 SUCCESS_TIMEOUT_SECONDS = 2
 ERROR_EXIT_CODE = 2
 PR_NUMBER = "291"
-
-
-def test_poll_observer_helpers_emit_events() -> None:
-    """Wait CLI observer helpers emit compact poll events."""
-
-    sink = InMemoryRuntimeEventSink()
-    runtime_events = WaitRuntimeEvents(
-        sink=sink,
-        target_kind="github-run",
-        target_id="123",
-    )
-
-    cli._observe_github_run(
-        runtime_events,
-        1,
-        GitHubRunState(status="completed", conclusion="success", url="https://run"),
-    )
-    cli._observe_github_pr(
-        runtime_events,
-        2,
-        GitHubPrChecksState(
-            pr_number="303",
-            checks=(GitHubPrCheck(name="verify", state="success"),),
-        ),
-    )
-
-    assert [record["event_name"] for record in sink.records] == [
-        "wait.poll",
-        "wait.poll",
-    ]
-    run_attributes = cast("dict[str, object]", sink.records[0]["attributes"])
-    pr_attributes = cast("dict[str, object]", sink.records[1]["attributes"])
-    assert run_attributes["conclusion"] == "success"
-    assert pr_attributes["check_count"] == 1
 
 
 def test_github_run_cli_prints_success(
@@ -70,8 +39,11 @@ def test_github_run_cli_prints_success(
     """GitHub run CLI prints only final success status."""
 
     fake_wait = SuccessWait()
+    sink = InMemoryRuntimeEventSink()
+    runtime_events = WaitRuntimeEvents(sink=sink, target_kind="github-run", target_id="123")
     monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_github_run", fake_wait)
+    monkeypatch.setattr(WaitRuntimeEvents, "create", constant_callback(runtime_events))
 
     status = cli.main(["github-run", "123", "--interval", "1", "--timeout-seconds", "2"])
 
@@ -84,6 +56,10 @@ def test_github_run_cli_prints_success(
     assert capsys.readouterr().out == (
         "Result: PASS\nRun ID: 123\n\nExpand only if needed:\nhttps://run\n"
     )
+    assert sink.records[0]["event_name"] == "wait.poll"
+    attributes = json_object(sink.records[0]["attributes"])
+    assert attributes is not None
+    assert attributes["conclusion"] == "success"
 
 
 def test_github_run_cli_json_reports_failure(
@@ -127,8 +103,11 @@ def test_github_pr_cli_prints_success(
     """GitHub PR CLI prints only final success status."""
 
     fake_wait = SuccessPrWait()
+    sink = InMemoryRuntimeEventSink()
+    runtime_events = WaitRuntimeEvents(sink=sink, target_kind="github-pr", target_id=PR_NUMBER)
     monkeypatch.setenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", "1")
     monkeypatch.setattr(cli, "wait_for_github_pr_checks", fake_wait)
+    monkeypatch.setattr(WaitRuntimeEvents, "create", constant_callback(runtime_events))
 
     status = cli.main(
         ["github-pr", PR_NUMBER, "--interval", "1", "--timeout-seconds", "2"],
@@ -141,6 +120,10 @@ def test_github_pr_cli_prints_success(
         timeout_seconds=SUCCESS_TIMEOUT_SECONDS,
     )
     assert capsys.readouterr().out == "Result: PASS\nRun ID: PR #291\n"
+    assert sink.records[0]["event_name"] == "wait.poll"
+    attributes = json_object(sink.records[0]["attributes"])
+    assert attributes is not None
+    assert attributes["check_count"] == 1
 
 
 def test_verifier_cli_prints_manifest_status(
@@ -230,15 +213,24 @@ class SuccessWait:
     def __init__(self) -> None:
         self.seen_config: GitHubWaitConfig | None = None
 
-    def __call__(self, config: GitHubWaitConfig, **_kwargs: object) -> GitHubWaitResult:
+    def __call__(
+        self,
+        config: GitHubWaitConfig,
+        *,
+        poll_observer: GitHubPollObserver | None = None,
+        **_kwargs: object,
+    ) -> GitHubWaitResult:
         self.seen_config = config
+        state = GitHubRunState(
+            status="completed",
+            conclusion="success",
+            url="https://run",
+        )
+        if poll_observer is not None:
+            poll_observer(1, state)
         return GitHubWaitResult(
             run_id=config.run_id,
-            state=GitHubRunState(
-                status="completed",
-                conclusion="success",
-                url="https://run",
-            ),
+            state=state,
         )
 
 
@@ -251,15 +243,20 @@ class SuccessPrWait:
     def __call__(
         self,
         config: GitHubPrWaitConfig,
+        *,
+        poll_observer: GitHubPrPollObserver | None = None,
         **_kwargs: object,
     ) -> GitHubPrWaitResult:
         self.seen_config = config
+        state = GitHubPrChecksState(
+            pr_number=config.pr_number,
+            checks=(GitHubPrCheck(name="verify", state="success"),),
+        )
+        if poll_observer is not None:
+            poll_observer(1, state)
         return GitHubPrWaitResult(
             pr_number=config.pr_number,
-            state=GitHubPrChecksState(
-                pr_number=config.pr_number,
-                checks=(GitHubPrCheck(name="verify", state="success"),),
-            ),
+            state=state,
         )
 
 

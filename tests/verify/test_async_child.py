@@ -29,10 +29,15 @@ def test_async_child_persists_quality_result(
 
     state_path = write_running_state(tmp_path)
     seen: list[list[str]] = []
+
+    def quiet_main(argv: list[str]) -> int:
+        seen.append(argv)
+        return exit_code
+
     monkeypatch.setattr(
         async_child.quiet,
         "main",
-        lambda argv: seen.append(argv) or exit_code,
+        quiet_main,
     )
 
     status = async_child.main(
