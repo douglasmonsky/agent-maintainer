@@ -109,10 +109,14 @@ def test_git_state_warns_for_dirty_ahead_branch(
         stdout="## main...origin/main [ahead 1]\n M README.md\n",
         stderr="",
     )
+
+    def run_git(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return completed
+
     monkeypatch.setattr(
         maintainer_doctor_environment.subprocess,
         "run",
-        lambda *args, **_kwargs: completed,
+        run_git,
     )
 
     result = maintainer_doctor.check_git_state(tmp_path)
@@ -125,7 +129,10 @@ def test_git_state_warns_for_dirty_ahead_branch(
 def test_git_state_warns_when_git_is_missing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(maintainer_doctor_environment.shutil, "which", lambda name: None)
+    def missing_git(_name: str) -> None:
+        return None
+
+    monkeypatch.setattr(maintainer_doctor_environment.shutil, "which", missing_git)
 
     result = maintainer_doctor.check_git_state(tmp_path)
 
@@ -135,15 +142,22 @@ def test_git_state_warns_when_git_is_missing(
 
 def test_git_state_passes_for_clean_branch(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     completed = subprocess.CompletedProcess(["git"], 0, stdout="## main...origin/main\n", stderr="")
+
+    def git_path(_name: str) -> str:
+        return "/usr/bin/git"
+
+    def run_git(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return completed
+
     monkeypatch.setattr(
         maintainer_doctor_environment.shutil,
         "which",
-        lambda name: "/usr/bin/git",
+        git_path,
     )
     monkeypatch.setattr(
         maintainer_doctor_environment.subprocess,
         "run",
-        lambda *args, **_kwargs: completed,
+        run_git,
     )
 
     result = maintainer_doctor.check_git_state(tmp_path)

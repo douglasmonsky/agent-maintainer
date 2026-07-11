@@ -16,6 +16,18 @@ GITLEAKS_FINDING_STATUS = 5
 GITLEAKS_DISPATCH_STATUS = 7
 
 
+def _git_command(_name: str) -> str:
+    return "git"
+
+
+def _git_path(_name: str) -> str:
+    return "/usr/bin/git"
+
+
+def _missing_command(_name: str) -> None:
+    return None
+
+
 def test_gitleaks_current_tree_command_uses_dir_scan() -> None:
     command = run_secret_scan.gitleaks_command(
         run_secret_scan.CURRENT_TREE_MODE,
@@ -130,7 +142,7 @@ def test_gitleaks_staged_scan_skips_empty_diff(monkeypatch: pytest.MonkeyPatch) 
         assert command == ["git", "diff", "--cached", "--patch"]
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-    monkeypatch.setattr(run_secret_scan.shutil, "which", lambda name: "git")
+    monkeypatch.setattr(run_secret_scan.shutil, "which", _git_command)
     monkeypatch.setattr(run_secret_scan.subprocess, "run", fake_run)
 
     assert run_secret_scan.run_gitleaks_staged(["gitleaks", "stdin"]) == 0
@@ -140,7 +152,7 @@ def test_gitleaks_staged_scan_requires_git(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    monkeypatch.setattr(run_secret_scan.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(run_secret_scan.shutil, "which", _missing_command)
 
     assert run_secret_scan.run_gitleaks_staged(["gitleaks", "stdin"]) == 1
     assert "git executable not found." in capsys.readouterr().out
@@ -159,7 +171,7 @@ def test_gitleaks_staged_scan_reports_git_diff_failure(
             stderr="diff stderr\n",
         )
 
-    monkeypatch.setattr(run_secret_scan.shutil, "which", lambda _name: "/usr/bin/git")
+    monkeypatch.setattr(run_secret_scan.shutil, "which", _git_path)
     monkeypatch.setattr(run_secret_scan.subprocess, "run", fake_run)
 
     assert run_secret_scan.run_gitleaks_staged(["gitleaks", "stdin"]) == GIT_DIFF_FAILURE_STATUS
@@ -210,7 +222,7 @@ def test_gitleaks_staged_scan_passes_diff_to_stdin(
             stderr="",
         )
 
-    monkeypatch.setattr(run_secret_scan.shutil, "which", lambda _name: "/usr/bin/git")
+    monkeypatch.setattr(run_secret_scan.shutil, "which", _git_path)
     monkeypatch.setattr(run_secret_scan.subprocess, "run", fake_run)
 
     assert run_secret_scan.run_gitleaks_staged(["gitleaks", "stdin"]) == GITLEAKS_FINDING_STATUS

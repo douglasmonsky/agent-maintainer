@@ -19,21 +19,36 @@ def test_maintainer_install_runs_hook_setup(
     """Install runs pre-commit setup and managed agent-hook setup."""
 
     calls: list[tuple[str, Path]] = []
-    monkeypatch.setattr(maintainer_bootstrap, "project_root", lambda: tmp_path)
+
+    def project_root() -> Path:
+        return tmp_path
+
+    def install_pre_commit(repo_root: Path) -> int:
+        calls.append(("pre-commit", repo_root))
+        return INSTALL_STATUS
+
+    def install_hooks(options: hook_manager.InstallOptions) -> int:
+        calls.append((options.client, options.target))
+        return 0
+
+    def report_hooks(repo_root: Path) -> None:
+        calls.append(("report", repo_root))
+
+    monkeypatch.setattr(maintainer_bootstrap, "project_root", project_root)
     monkeypatch.setattr(
         maintainer_bootstrap,
         "install_pre_commit",
-        lambda repo_root: calls.append(("pre-commit", repo_root)) or INSTALL_STATUS,
+        install_pre_commit,
     )
     monkeypatch.setattr(
         maintainer_bootstrap,
         "install_hooks",
-        lambda options: calls.append((options.client, options.target)) or 0,
+        install_hooks,
     )
     monkeypatch.setattr(
         maintainer_bootstrap,
         "report_agent_hooks",
-        lambda repo_root: calls.append(("report", repo_root)),
+        report_hooks,
     )
 
     assert maintainer_bootstrap.install() == INSTALL_STATUS

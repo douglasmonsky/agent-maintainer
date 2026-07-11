@@ -12,8 +12,13 @@ import pytest
 
 from agent_maintainer.hooks import audit, runtime
 from agent_maintainer.hooks import context as hook_context
+from tests.support.callbacks import constant_callback
 
 HOOK_STATUS = 23
+
+
+def _command_path(name: str) -> str:
+    return f"/bin/{name}"
 
 
 def configured_repo(tmp_path: Path) -> Path:
@@ -106,7 +111,7 @@ def test_discover_repo_root_falls_back_without_git(
 ) -> None:
     """Repo discovery falls back when git executable is unavailable."""
 
-    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", constant_callback(None))
 
     assert runtime.hook_discovery.discover_repo_root(tmp_path) == tmp_path
 
@@ -124,7 +129,7 @@ def test_discover_repo_root_uses_git_output(
         assert kwargs["cwd"] == tmp_path
         return subprocess.CompletedProcess(command, 0, f"{expected}\n", "")
 
-    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", lambda _name: "/usr/bin/git")
+    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", constant_callback("/usr/bin/git"))
     monkeypatch.setattr(runtime.hook_discovery.subprocess, "run", fake_run)
 
     assert runtime.hook_discovery.discover_repo_root(tmp_path) == expected
@@ -370,9 +375,15 @@ def test_hook_context_pack_pointer_respects_budget(
         return subprocess.CompletedProcess(command, 1, "failed", "")
 
     monkeypatch.setattr(runtime.hook_subprocess, "run_verifier_bounded", fake_verifier)
-    monkeypatch.setattr(hook_context.context_packs, "write_context_pack", lambda *_args: pack)
     monkeypatch.setattr(
-        hook_context.pack_rendering, "render_pack_pointer", lambda *_args, **_kwargs: "x" * 200
+        hook_context.context_packs,
+        "write_context_pack",
+        constant_callback(pack),
+    )
+    monkeypatch.setattr(
+        hook_context.pack_rendering,
+        "render_pack_pointer",
+        constant_callback("x" * 200),
     )
 
     assert (
@@ -406,7 +417,7 @@ def test_verifier_helpers_cover_virtualenv_and_global_command(
     python_path = tmp_path / ".venv" / "bin" / "python"
     python_path.parent.mkdir(parents=True)
     python_path.write_text("", encoding="utf-8")
-    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", lambda name: f"/bin/{name}")
+    monkeypatch.setattr(runtime.hook_discovery.shutil, "which", _command_path)
 
     assert runtime.verifier_python(tmp_path) == str(python_path)
     assert runtime.package_command_available()

@@ -73,8 +73,15 @@ def test_git_state_reports_command_failure(
         stdout="",
         stderr="fatal: not a git repository",
     )
-    monkeypatch.setattr(doctor_environment.shutil, "which", lambda name: "/usr/bin/git")
-    monkeypatch.setattr(doctor_environment.subprocess, "run", lambda *args, **kwargs: completed)
+
+    def git_path(_name: str) -> str:
+        return "/usr/bin/git"
+
+    def run_git(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return completed
+
+    monkeypatch.setattr(doctor_environment.shutil, "which", git_path)
+    monkeypatch.setattr(doctor_environment.subprocess, "run", run_git)
 
     result = doctor_environment.check_git_state(tmp_path)
 
@@ -92,8 +99,15 @@ def test_git_state_ahead_dirty(
         stdout="## main...origin/main [ahead 1]\n M README.md\n?? scratch.txt\n",
         stderr="",
     )
-    monkeypatch.setattr(doctor_environment.shutil, "which", lambda name: "/usr/bin/git")
-    monkeypatch.setattr(doctor_environment.subprocess, "run", lambda *args, **kwargs: completed)
+
+    def git_path(_name: str) -> str:
+        return "/usr/bin/git"
+
+    def run_git(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return completed
+
+    monkeypatch.setattr(doctor_environment.shutil, "which", git_path)
+    monkeypatch.setattr(doctor_environment.subprocess, "run", run_git)
 
     result = doctor_environment.check_git_state(tmp_path)
 

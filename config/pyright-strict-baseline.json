@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 24,
-    "reportUnknownArgumentType": 82,
-    "reportUnknownLambdaType": 91,
-    "reportUnknownMemberType": 4,
+    "reportUnknownArgumentType": 52,
+    "reportUnknownLambdaType": 57,
+    "reportUnknownMemberType": 2,
     "reportUnknownVariableType": 14
   },
-  "note": "Reviewed 2026-07-11 after test burndown batch 1 replaced untyped monkeypatch lambdas with typed test doubles across MCP, wait-daemon, regression, and doctor coverage; 77 test diagnostics were removed without changing production code or adding suppressions, casts, or permissive types.",
+  "note": "Reviewed 2026-07-11 after test burndown batch 2 replaced untyped test callbacks across hooks, packaging, doctor, runners, and wait registration; 66 test diagnostics were removed without changing production code or adding suppressions, casts, or permissive types.",
   "pairs": {
     "tests/archguard/test_git_diff.py": {
       "reportUnknownArgumentType": 2,
@@ -84,18 +84,6 @@
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
     },
-    "tests/doctor/test_doctor_commands.py": {
-      "reportUnknownArgumentType": 4,
-      "reportUnknownLambdaType": 6
-    },
-    "tests/doctor/test_doctor_support_environment.py": {
-      "reportUnknownArgumentType": 4,
-      "reportUnknownLambdaType": 6
-    },
-    "tests/hooks/test_hook_cli.py": {
-      "reportUnknownArgumentType": 5,
-      "reportUnknownLambdaType": 3
-    },
     "tests/hooks/test_hook_manager.py": {
       "reportUnknownArgumentType": 3,
       "reportUnknownLambdaType": 3
@@ -111,18 +99,9 @@
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
     },
-    "tests/hooks/test_hook_runtime.py": {
-      "reportUnknownArgumentType": 5,
-      "reportUnknownLambdaType": 6
-    },
     "tests/hooks/test_pr_wait_hook.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 2
-    },
-    "tests/packaging/test_bootstrap_hooks.py": {
-      "reportUnknownArgumentType": 6,
-      "reportUnknownLambdaType": 3,
-      "reportUnknownMemberType": 2
     },
     "tests/packaging/test_initializer.py": {
       "reportUnknownArgumentType": 2,
@@ -158,10 +137,6 @@
     "tests/runners/test_ruff_runner.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
-    },
-    "tests/runners/test_secret_scan_runner.py": {
-      "reportUnknownArgumentType": 4,
-      "reportUnknownLambdaType": 4
     },
     "tests/test_intel/test_mutation_sweep.py": {
       "reportUnknownArgumentType": 1,
@@ -200,10 +175,6 @@
     },
     "tests/wait/test_wait_cli.py": {
       "reportPrivateUsage": 2
-    },
-    "tests/wait/test_wait_cli_register_identity.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 6
     }
   },
   "schema_version": 2,
@@ -213,5 +184,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 215
+  "total_errors": 149
 }
