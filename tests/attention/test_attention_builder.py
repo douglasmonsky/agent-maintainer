@@ -194,6 +194,51 @@ def test_read_attention_ledger_refuses_oversized_and_non_utf8_files(tmp_path: Pa
     assert builder.read_attention_ledger(non_utf8, workspace_root=tmp_path) is None
 
 
+@pytest.mark.parametrize(
+    "invalid_case",
+    (
+        "schema_version",
+        "file_count",
+        "path",
+        "score",
+        "component",
+        "reason",
+    ),
+)
+def test_read_attention_ledger_rejects_invalid_contract_fields(
+    invalid_case: str,
+    tmp_path: Path,
+) -> None:
+    """Ledger schema, counts, paths, scores, and reasons fail closed."""
+
+    file_payload: dict[str, object] = {
+        "path": "src/app.py",
+        "score": 0.5,
+        "components": {"git_changed": 0.5},
+        "reasons": ["src/app.py: changed"],
+    }
+    payload = _ledger_payload(target=str(tmp_path))
+    payload["file_count"] = 1
+    payload["files"] = [file_payload]
+    if invalid_case == "schema_version":
+        payload["schema_version"] = 2
+    elif invalid_case == "file_count":
+        payload["file_count"] = 0
+    elif invalid_case == "path":
+        file_payload["path"] = "../secret"
+    elif invalid_case == "score":
+        file_payload["score"] = float("nan")
+    elif invalid_case == "component":
+        file_payload["components"] = {"git_changed": 1.1}
+    elif invalid_case == "reason":
+        file_payload["reasons"] = [1]
+
+    ledger_path = tmp_path / ".verify-logs" / "attention" / "files.json"
+    _write(ledger_path, json.dumps(payload))
+
+    assert builder.read_attention_ledger(ledger_path, workspace_root=tmp_path) is None
+
+
 def _ledger_payload(*, target: str) -> dict[str, object]:
     """Return one minimal valid attention ledger payload."""
     return {

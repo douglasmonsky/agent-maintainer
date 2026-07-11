@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+import math
 from collections import Counter
-from pathlib import Path
+from collections.abc import Sequence
+from pathlib import Path, PurePosixPath
+from typing import cast
 
 from agent_context.reading import file_safety
 from agent_maintainer.attention import signal_context, signals
@@ -147,18 +150,27 @@ def _validated_ledger(payload: object) -> AttentionLedger | None:
 def _attention_ledger(payload: object) -> AttentionLedger:
     """Return a typed ledger from one decoded JSON object."""
 
-    if not isinstance(payload, dict):
+    ledger = _json_object(payload)
+    if ledger is None:
         raise TypeError("attention ledger must be an object")
-    raw_files = payload.get("files", ())
-    raw_inputs = payload.get("inputs", {})
-    if not isinstance(raw_files, list | tuple) or not isinstance(raw_inputs, dict):
+    raw_files = _object_sequence(ledger.get("files", ()))
+    raw_inputs = _json_object(ledger.get("inputs", {}))
+    if raw_files is None or raw_inputs is None:
         raise TypeError("attention ledger collections have invalid types")
     files = tuple(_attention_file_score(item) for item in raw_files)
+    schema_version = _plain_int(ledger.get("schema_version"), "schema_version")
+    if schema_version != SCHEMA_VERSION:
+        raise ValueError(f"schema_version must be {SCHEMA_VERSION}")
+    file_count = _plain_int(ledger.get("file_count"), "file_count")
+    if file_count != len(files):
+        raise ValueError("file_count must match files")
+    if len({item.path for item in files}) != len(files):
+        raise ValueError("files must not contain duplicate paths")
     return AttentionLedger(
-        schema_version=int(payload["schema_version"]),
-        target=str(payload["target"]),
-        file_count=int(payload["file_count"]),
-        inputs={str(key): value for key, value in raw_inputs.items()},
+        schema_version=schema_version,
+        target=_nonempty_string(ledger.get("target"), "target"),
+        file_count=file_count,
+        inputs=raw_inputs,
         files=files,
     )
 
@@ -166,18 +178,87 @@ def _attention_ledger(payload: object) -> AttentionLedger:
 def _attention_file_score(item: object) -> AttentionFileScore:
     """Return one typed attention file score from decoded JSON."""
 
-    if not isinstance(item, dict):
+    score_payload = _json_object(item)
+    if score_payload is None:
         raise TypeError("attention file score must be an object")
-    components = item["components"]
-    reasons = item["reasons"]
-    if not isinstance(components, dict) or not isinstance(reasons, list | tuple):
+    components = _json_object(score_payload.get("components"))
+    reasons = _object_sequence(score_payload.get("reasons"))
+    if components is None or reasons is None:
         raise TypeError("attention file score collections have invalid types")
     return AttentionFileScore(
-        path=str(item["path"]),
-        score=float(item["score"]),
-        components={str(key): float(value) for key, value in components.items()},
-        reasons=tuple(str(reason) for reason in reasons),
+        path=_repo_relative_path(score_payload.get("path")),
+        score=_unit_interval(score_payload.get("score"), "score"),
+        components={
+            _nonempty_string(key, "component name"): _unit_interval(
+                value,
+                f"component {key}",
+            )
+            for key, value in components.items()
+        },
+        reasons=tuple(_nonempty_string(reason, "reason") for reason in reasons),
     )
+
+
+def _json_object(value: object) -> dict[str, object] | None:
+    """Return a JSON object with string keys, or ``None`` when malformed."""
+
+    if not isinstance(value, dict):
+        return None
+    raw = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in raw):
+        return None
+    return {key: item for key, item in raw.items() if isinstance(key, str)}
+
+
+def _object_sequence(value: object) -> Sequence[object] | None:
+    """Return a non-string sequence with an explicit element boundary."""
+
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        return None
+    return cast(Sequence[object], value)
+
+
+def _plain_int(value: object, label: str) -> int:
+    """Return a non-boolean integer."""
+
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{label} must be an integer")
+    return value
+
+
+def _nonempty_string(value: object, label: str) -> str:
+    """Return a non-empty string."""
+
+    if not isinstance(value, str) or not value:
+        raise TypeError(f"{label} must be a non-empty string")
+    return value
+
+
+def _repo_relative_path(value: object) -> str:
+    """Return one canonical repository-relative POSIX path."""
+
+    path_text = _nonempty_string(value, "path")
+    path = PurePosixPath(path_text)
+    if (
+        "\\" in path_text
+        or path.is_absolute()
+        or path.as_posix() != path_text
+        or path_text == "."
+        or ".." in path.parts
+    ):
+        raise ValueError(f"path is not canonical repository-relative: {path_text!r}")
+    return path_text
+
+
+def _unit_interval(value: object, label: str) -> float:
+    """Return one finite score in the closed interval 0..1."""
+
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"{label} must be a number")
+    score = float(value)
+    if not math.isfinite(score) or not 0.0 <= score <= 1.0:
+        raise ValueError(f"{label} must be finite and between 0 and 1")
+    return score
 
 
 def _score_file(
