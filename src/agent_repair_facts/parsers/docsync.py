@@ -2,21 +2,24 @@
 
 from __future__ import annotations
 
-from agent_repair_facts.payloads import FactSource, fact_payload, read_json
+from agent_repair_facts.payloads import (
+    FactSource,
+    fact_payload,
+    json_array,
+    json_object,
+    json_objects,
+    read_json,
+)
 
 
 def docsync_report_facts(path: FactSource, check: str) -> list[dict[str, object]]:
     """Return exact facts from a DocSync JSON report."""
 
-    payload = read_json(path)
-    if not isinstance(payload, dict):
+    payload = json_object(read_json(path))
+    if payload is None:
         return []
-    findings = payload.get("findings")
-    if not isinstance(findings, list):
-        return []
-    return [
-        docsync_finding_fact(finding, check) for finding in findings if isinstance(finding, dict)
-    ]
+    findings = json_objects(payload.get("findings"))
+    return [docsync_finding_fact(finding, check) for finding in findings]
 
 
 def docsync_finding_fact(
@@ -42,11 +45,11 @@ def docsync_finding_fact(
 def first_location(finding: dict[str, object]) -> dict[str, object]:
     """Return first DocSync finding location normalized for repair facts."""
 
-    locations = finding.get("locations")
-    if not isinstance(locations, list) or not locations:
+    locations = json_array(finding.get("locations"))
+    if not locations:
         return {}
-    location = locations[0]
-    if not isinstance(location, dict):
+    location = json_object(locations[0])
+    if location is None:
         return {}
     return {
         "path": location.get("path"),

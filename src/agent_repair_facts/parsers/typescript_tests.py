@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from typing import cast
 
 from agent_repair_facts.parsers.typescript_diagnostics import (
     JsonObject,
@@ -12,6 +11,7 @@ from agent_repair_facts.parsers.typescript_diagnostics import (
     jest_location,
     optional_text,
 )
+from agent_repair_facts.payloads import json_object, json_objects
 
 
 def parse_vitest_json(raw_output: str) -> list[TypeScriptDiagnostic]:
@@ -25,17 +25,14 @@ def parse_vitest_json(raw_output: str) -> list[TypeScriptDiagnostic]:
 
 def vitest_payload_diagnostics(payload: object) -> list[TypeScriptDiagnostic]:
     """Return diagnostics from Vitest task-style JSON payloads."""
-    if not isinstance(payload, dict):
+    payload_object = json_object(payload)
+    if payload_object is None:
         return []
-    files = cast(JsonObject, payload).get("files")
-    if not isinstance(files, list):
-        return []
+    files = json_objects(payload_object.get("files"))
 
     diagnostics: list[TypeScriptDiagnostic] = []
     for file_item in files:
-        if not isinstance(file_item, dict):
-            continue
-        diagnostics.extend(vitest_task_diagnostics(cast(JsonObject, file_item)))
+        diagnostics.extend(vitest_task_diagnostics(file_item))
     return diagnostics
 
 
@@ -46,15 +43,11 @@ def vitest_task_diagnostics(file_payload: JsonObject) -> list[TypeScriptDiagnost
         or optional_text(file_payload.get("file"))
         or optional_text(file_payload.get("name"))
     )
-    tasks = file_payload.get("tasks")
-    if not isinstance(tasks, list):
-        return []
+    tasks = json_objects(file_payload.get("tasks"))
 
     diagnostics: list[TypeScriptDiagnostic] = []
     for task_item in tasks:
-        if not isinstance(task_item, dict):
-            continue
-        diagnostic = vitest_task_diagnostic(file_path, cast(JsonObject, task_item))
+        diagnostic = vitest_task_diagnostic(file_path, task_item)
         if diagnostic is not None:
             diagnostics.append(diagnostic)
     return diagnostics
@@ -65,10 +58,9 @@ def vitest_task_diagnostic(
     task: JsonObject,
 ) -> TypeScriptDiagnostic | None:
     """Return one failed Vitest task diagnostic."""
-    result = task.get("result")
-    if not isinstance(result, dict):
+    result_object = json_object(task.get("result"))
+    if result_object is None:
         return None
-    result_object = cast(JsonObject, result)
     state = optional_text(result_object.get("state"))
     if state not in {"fail", "failed"}:
         return None
@@ -86,12 +78,8 @@ def vitest_task_diagnostic(
 
 def first_error_object(value: object) -> JsonObject | None:
     """Return first object from an errors list."""
-    if not isinstance(value, list):
-        return None
-    for item in value:
-        if isinstance(item, dict):
-            return cast(JsonObject, item)
-    return None
+    objects = json_objects(value)
+    return objects[0] if objects else None
 
 
 def vitest_failure_message(task: JsonObject, error: JsonObject | None) -> str:

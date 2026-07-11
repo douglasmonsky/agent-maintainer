@@ -6,7 +6,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, cast
 
 PYTHON_PATH_RE = re.compile(r"(?P<path>[\w./-]+\.py):(?P<line>\d+)")
 SUPPORTED_ENCODINGS = frozenset((None, "utf-8"))
@@ -80,6 +80,39 @@ def read_json(path: FactSource) -> object | None:
         return None
 
 
+def json_object(value: object) -> dict[str, object] | None:
+    """Return a decoded object only when every key is a string."""
+
+    if not isinstance(value, dict):
+        return None
+    raw = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in raw):
+        return None
+    return {key: item for key, item in raw.items() if isinstance(key, str)}
+
+
+def json_array(value: object) -> list[object] | None:
+    """Return a decoded array with an explicit element boundary."""
+
+    if not isinstance(value, list):
+        return None
+    return cast(list[object], value)
+
+
+def json_objects(value: object) -> list[dict[str, object]]:
+    """Return valid string-keyed objects from a decoded array."""
+
+    values = json_array(value)
+    if values is None:
+        return []
+    objects: list[dict[str, object]] = []
+    for item in values:
+        parsed = json_object(item)
+        if parsed is not None:
+            objects.append(parsed)
+    return objects
+
+
 def fact_payload(values: dict[str, object]) -> dict[str, object]:
     """Return normalized exact repair fact payload."""
 
@@ -132,17 +165,19 @@ def one_based(value: object) -> int | None:
 def first_int(value: object) -> int | None:
     """Return first integer from a list-like value."""
 
-    if not isinstance(value, list):
+    values = json_array(value)
+    if values is None:
         return None
-    return next((item for item in value if isinstance(item, int)), None)
+    return next((item for item in values if isinstance(item, int)), None)
 
 
 def location_value(location: object, key: str) -> int | None:
     """Return integer location value from mapping."""
 
-    if not isinstance(location, dict):
+    parsed = json_object(location)
+    if parsed is None:
         return None
-    return optional_int(location.get(key))
+    return optional_int(parsed.get(key))
 
 
 def python_location_from_text(text: object) -> dict[str, object]:

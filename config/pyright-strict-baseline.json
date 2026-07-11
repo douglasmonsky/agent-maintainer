@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 42,
-    "reportUnknownArgumentType": 207,
+    "reportUnknownArgumentType": 196,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 75,
-    "reportUnknownVariableType": 152
+    "reportUnknownMemberType": 67,
+    "reportUnknownVariableType": 135
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 2 typed test doubles and validated JSON, configuration, verifier, Tach, and attention-ledger boundaries; 320 diagnostics were removed and remaining allowances are legacy unknown-type and intentional private-API debt.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 3 validated exact repair-fact JSON and XML boundaries; all 36 production diagnostics in agent_repair_facts were removed without suppressions or Any substitutions.",
   "pairs": {
     "src/agent_client_hooks/claude_merge.py": {
       "reportUnknownArgumentType": 5,
@@ -244,29 +244,6 @@
     "src/agent_maintainer/wait/verifier.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownMemberType": 1
-    },
-    "src/agent_repair_facts/parsers/docsync.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_repair_facts/parsers/lint.py": {
-      "reportUnknownArgumentType": 3,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 7
-    },
-    "src/agent_repair_facts/parsers/pytest.py": {
-      "reportUnknownArgumentType": 6,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_repair_facts/parsers/typescript_tests.py": {
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_repair_facts/payloads.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 1
     },
     "src/agent_run_artifacts/pr_summary.py": {
       "reportUnknownArgumentType": 1,
@@ -522,5 +499,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 611
+  "total_errors": 575
 }
