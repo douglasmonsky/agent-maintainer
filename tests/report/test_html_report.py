@@ -104,6 +104,7 @@ def write_report_artifacts(log_dir: Path) -> None:
         "generated_at": "2026-06-30T00:00:00Z",
         "thresholds": {"coverage": 90},
         "checks": [
+            None,
             {
                 "name": "ruff",
                 "status": "failed",
@@ -117,7 +118,7 @@ def write_report_artifacts(log_dir: Path) -> None:
                 "name": "pytest-coverage",
                 "status": "passed",
                 "log_path": ".verify-logs/pytest-coverage.log",
-                "artifacts": ["coverage.xml"],
+                "artifacts": [None, "coverage.xml"],
                 "expansion_commands": [],
             },
             {
@@ -168,6 +169,7 @@ def write_report_artifacts(log_dir: Path) -> None:
                 "confidence": "high",
                 "interpretation": "Healthy overall; treat listed categories as watch items.",
                 "categories": [
+                    None,
                     {
                         "name": "Reviewability",
                         "score": 30,

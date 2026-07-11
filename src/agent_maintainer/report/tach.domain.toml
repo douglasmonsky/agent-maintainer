@@ -13,6 +13,7 @@ depends_on = [
 [[modules]]
 path = "html"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "sections",
   "styles",
   "types",
@@ -27,6 +28,7 @@ depends_on = []
 [[modules]]
 path = "sections"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "markdown",
   "tables",
   "types",
@@ -38,7 +40,7 @@ depends_on = []
 
 [[modules]]
 path = "tables"
-depends_on = []
+depends_on = ["//agent_maintainer.core.structured_values"]
 
 [[modules]]
 path = "types"
