@@ -5,17 +5,11 @@
 This file is only the implementation tracker for the Agent Maintainer roadmap.
 It is a recovery checklist, not the detailed implementation spec.
 
-The canonical detailed spec index is vendored into the repository here:
+Roadmap sources:
 
-[`docs/roadmap/full-roadmap-blueprint.md`](roadmap/full-roadmap-blueprint.md).
-
-The usage guide for the split specs is here:
-
-[`docs/roadmap/README.md`](roadmap/README.md).
-
-Experimental architecture track:
-
-[`docs/roadmap/polyglot-ecosystem-providers.md`](roadmap/polyglot-ecosystem-providers.md).
+- [Detailed spec index](roadmap/full-roadmap-blueprint.md)
+- [Split-spec usage guide](roadmap/README.md)
+- [Experimental architecture track](roadmap/polyglot-ecosystem-providers.md)
 
 Before implementing any phase:
 
@@ -103,21 +97,7 @@ Detailed scope: [`docs/roadmap/future-call-roi-acceleration.md`](roadmap/future-
 Track work:
 
 - [x] Phase 149: DocSync Verifier Integration Repair Facts
-- [x] Phase 150: Attention Ledger v0
-- [x] Phase 151: Attention-Weighted Context Packs
-- [x] Phase 152: Agent Task Broker Incubator Scaffold
-- [x] Phase 153: Task Broker Handoff Result Protocol
-- [x] Phase 154: Task Broker Locks And Worktree Planning
-- [x] Phase 155: Claude Async Rewake Hook Option
-- [x] Phase 156: Agent Maintainer MCP Surface v0
-- [x] Phase 157: Context Recall Compaction Ledger v0
-- [x] Phase 158: Local Observability Export Contract
-- [x] Phase 159: Scoring Dataset Optimization Prep
-- [x] Phase 160: ROI Loop Dogfood Case Study
-- [x] Phase 161: Task Broker Adapter Contracts
-- [x] Phase 162: Task Broker Model-Tier Routing Policy
-- [x] Phase 163: Attention Ledger Performance Guards
-- [x] Phase 164: Agent Efficacy Metrics
+- [x] Phases 150-164: remaining ROI acceleration work in the detailed scope
 
 ## Completed: TypeScript/React Provider Maturation
 
@@ -128,17 +108,7 @@ Keep the provider experimental until evidence satisfies the promotion bar in
 
 Track work:
 
-- [x] Phase 165: React Fixture Corpus And Reviewability Baseline
-- [x] Phase 166: TypeScript Package-Manager And Workspace Evidence
-- [x] Phase 167: React/Vite/Next Structured Test And Coverage Facts
-- [x] Phase 168: TypeScript/React Doctor And Setup Guidance
-- [x] Phase 169: TypeScript Repair-Fact Output Guidance
-- [x] Phase 170: TypeScript Setup Advisor Output Guidance
-- [x] Phase 171: TypeScript Setup Advisor Script Fixtures
-- [x] Phase 172: TypeScript Setup Advisor Root Package Boundary
-- [x] Phase 173: TypeScript Workspace Command Ownership Design
-- [x] Phase 174: TypeScript Workspace Command Config
-- [x] Phase 175: Setup Advisor Workspace Command Example
+- [x] Phases 165-175: TypeScript/React maturation work in the detailed scope
 
 ## Validation Pending: Codex Wait And Rewake Hardening
 
