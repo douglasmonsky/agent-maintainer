@@ -1,6 +1,6 @@
 # Critical Stabilization Roadmap
 
-- Status: implementation complete; final exact-commit verification pending
+- Status: local exact-commit verification complete; external publication pending
 - Target: release-ready `0.1.0b6`
 - Audit baseline: `b4c0505bdcc6bdfd7b4cd2cb65c52095c83ea862`
 - Started: 2026-07-09
