@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
 from agent_maintainer.report.sections import header_html, render_sections
 from agent_maintainer.report.styles import head_html
 from agent_maintainer.report.types import ReportPaths
@@ -67,16 +68,17 @@ def render_html_report(
     )
 
 
-def _read_manifest(manifest_path: Path) -> dict[str, Any]:
+def _read_manifest(manifest_path: Path) -> dict[str, object]:
     if not manifest_path.exists():
         msg = f"{manifest_path} does not exist; run verification first."
         raise FileNotFoundError(msg)
     with manifest_path.open(encoding="utf-8") as handle:
-        payload = json.load(handle)
-    if not isinstance(payload, dict):
+        payload: object = json.load(handle)
+    manifest = json_object(payload)
+    if manifest is None:
         msg = f"{manifest_path} is not a JSON object."
         raise ValueError(msg)
-    return payload
+    return manifest
 
 
 def _read_optional_text(path: Path) -> str:
@@ -85,8 +87,8 @@ def _read_optional_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _checks(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    checks = payload.get("checks", [])
-    if not isinstance(checks, list):
+def _checks(payload: dict[str, Any]) -> list[dict[str, object]]:
+    checks = json_array(payload.get("checks"))
+    if checks is None:
         return []
-    return [check for check in checks if isinstance(check, dict)]
+    return json_objects(checks)

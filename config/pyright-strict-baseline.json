@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 41,
-    "reportUnknownArgumentType": 159,
+    "reportUnknownArgumentType": 153,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 36,
-    "reportUnknownVariableType": 77
+    "reportUnknownMemberType": 31,
+    "reportUnknownVariableType": 70
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 8 validated TOML mappings and explicitly narrowed internal configuration tuples; all 23 production diagnostics in agent_maintainer.config were removed without suppressions or loosened types.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 9 validated report manifests, checks, debt categories, thresholds, and string arrays; all 18 production diagnostics in agent_maintainer.report were removed without suppressions or permissive types.",
   "pairs": {
     "src/agent_maintainer/attention/rendering.py": {
       "reportUnknownArgumentType": 1
@@ -85,18 +85,6 @@
     },
     "src/agent_maintainer/ratchet/cli.py": {
       "reportPrivateUsage": 5
-    },
-    "src/agent_maintainer/report/html.py": {
-      "reportUnknownVariableType": 2
-    },
-    "src/agent_maintainer/report/sections.py": {
-      "reportUnknownArgumentType": 5,
-      "reportUnknownMemberType": 5,
-      "reportUnknownVariableType": 4
-    },
-    "src/agent_maintainer/report/tables.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownVariableType": 1
     },
     "src/agent_maintainer/runners/bandit.py": {
       "reportUnknownMemberType": 1,
@@ -398,5 +386,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 448
+  "total_errors": 430
 }

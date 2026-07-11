@@ -7,6 +7,8 @@ from html import escape
 from pathlib import Path
 from typing import Any
 
+from agent_maintainer.core.structured_values import json_array
+
 
 def check_table(
     checks: list[dict[str, Any]],
@@ -34,10 +36,11 @@ def list_items(items: list[str], *, already_html: bool = False) -> str:
 
 def string_items(values: object) -> list[str]:
     """Coerce a JSON-ish value into a list of strings."""
-    if not isinstance(values, list):
+    items_raw = json_array(values)
+    if items_raw is None:
         return []
     items: list[str] = []
-    for value in values:
+    for value in items_raw:
         item = text(value, "")
         if item:
             items.append(item)

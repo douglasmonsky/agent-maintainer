@@ -7,6 +7,7 @@ from html import escape
 from pathlib import Path
 from typing import Any
 
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
 from agent_maintainer.report.markdown import summary_markdown_section
 from agent_maintainer.report.tables import check_table, list_items, local_href, text
 from agent_maintainer.report.types import NamedCheckSection, ReportPaths
@@ -119,17 +120,15 @@ def _debt_score_body(
 def _debt_category_items(payload: dict[str, Any]) -> list[str]:
     """Return Technical Debt Score category list items."""
 
-    categories = payload.get("categories", [])
-    category_items = []
-    if isinstance(categories, list):
-        for category in categories[:8]:
-            if isinstance(category, dict):
-                name = text(category.get("name"), UNKNOWN_TEXT)
-                value = text(category.get("score"), UNKNOWN_TEXT)
-                status = text(category.get("status"), UNKNOWN_TEXT)
-                interpretation = text(category.get("interpretation"), "")
-                suffix = f" - {interpretation}" if interpretation else ""
-                category_items.append(f"{name}: {value}/100 ({status}){suffix}")
+    categories = json_array(payload.get("categories")) or []
+    category_items: list[str] = []
+    for category in json_objects(categories)[:8]:
+        name = text(category.get("name"), UNKNOWN_TEXT)
+        value = text(category.get("score"), UNKNOWN_TEXT)
+        status = text(category.get("status"), UNKNOWN_TEXT)
+        interpretation = text(category.get("interpretation"), "")
+        suffix = f" - {interpretation}" if interpretation else ""
+        category_items.append(f"{name}: {value}/100 ({status}){suffix}")
     return category_items
 
 
@@ -252,8 +251,8 @@ def _metric_html(label: str, value: str) -> str:
 def _threshold_html(payload: dict[str, Any] | None) -> str:
     if payload is None:
         return ""
-    thresholds = payload.get("thresholds")
-    if not isinstance(thresholds, dict):
+    thresholds = json_object(payload.get("thresholds"))
+    if thresholds is None:
         return ""
     items = [f"{key}: {value}" for key, value in sorted(thresholds.items())]
     return f"<p><strong>Thresholds:</strong></p>{list_items(items)}"
