@@ -32,11 +32,11 @@ def main(argv: list[str]) -> int:
     args = parse_args(argv)
     if args.backend not in SUPPORTED_SECRET_SCANNERS:
         supported = ", ".join(sorted(SUPPORTED_SECRET_SCANNERS))
-        print(f"Unsupported secret scanner backend: {args.backend}. Supported: {supported}.")
+        print(f"Unsupported secret scanner backend. Supported: {supported}.")
         return 1
     if args.backend == GITLEAKS_SCANNER:
         return run_gitleaks(args)
-    print(f"Unsupported secret scanner backend: {args.backend}.")
+    print("Unsupported secret scanner backend.")
     return 1
 
 

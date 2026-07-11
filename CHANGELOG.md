@@ -108,9 +108,14 @@ the candidate passes the complete exact-commit release matrix.
 - Consumer-repository doctor and bootstrap flows now honor the requested root,
   linked-worktree metadata, and package-first execution instead of assuming the
   Agent Maintainer source repository.
+- Direct development tools are pinned in a human-owned input and compiled into
+  a provenance-annotated compatible graph. Dependabot groups direct patch and
+  minor updates instead of proposing isolated transitive-lock edits.
 
 ### Fixed Since 0.1.0b5
 
+- Invalid secret-scanner backend input is no longer echoed to logs or terminal
+  output; diagnostics report only the fixed allowlist of supported backends.
 - Claude and Codex hook merges preserve unrelated commands and ordering.
   Uninstall removes only managed identities, refuses unowned files, and rolls
   prior removals back if a later operation fails.
