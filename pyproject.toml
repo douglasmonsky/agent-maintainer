@@ -241,6 +241,7 @@ vulture_paths = [
   ".codex/hooks",
   ".claude/hooks",
   "tests",
+  "config/vulture-whitelist.py",
 ]
 require_tests = true
 coverage_fail_under = 90

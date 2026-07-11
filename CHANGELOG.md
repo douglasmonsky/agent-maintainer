@@ -101,6 +101,8 @@ the candidate passes the complete exact-commit release matrix.
 - The mutation quality gate and strict typing baseline are restored without
   lowering thresholds, and repository Markdown links resolve after roadmap
   archival moves.
+- Pytest now removes repository-local Git overrides inherited from hooks, so
+  synthetic repositories cannot replace a caller's staged or worktree index.
 
 ### Experimental and Advisory
 
