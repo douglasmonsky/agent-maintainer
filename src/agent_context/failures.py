@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import cast
 
 from agent_context.budget import bound_text
 from agent_context.models import ContextBudget
@@ -78,7 +78,7 @@ def manifest_path(log_dir: Path) -> Path:
     return log_dir / MANIFEST_NAME
 
 
-def load_manifest(log_dir: Path) -> dict[str, Any] | None:
+def load_manifest(log_dir: Path) -> dict[str, object] | None:
     """Load manifest JSON when present and valid."""
 
     path = manifest_path(log_dir)
@@ -94,7 +94,7 @@ def load_manifest(log_dir: Path) -> dict[str, Any] | None:
         payload = json.loads(safe_read.text)
     except (json.JSONDecodeError, RecursionError):
         return None
-    return payload if isinstance(payload, dict) else None
+    return _json_object(payload)
 
 
 def failure_records(
@@ -108,8 +108,8 @@ def failure_records(
     manifest = load_manifest(log_dir)
     if manifest is None:
         return ()
-    checks = manifest.get("checks", [])
-    if not isinstance(checks, list):
+    checks = _json_array(manifest.get("checks", []))
+    if checks is None:
         return ()
     records = [
         record
@@ -124,36 +124,57 @@ def failure_records(
 def record_from_payload(payload: object) -> FailureRecord | None:
     """Return failure record from manifest check payload."""
 
-    if not isinstance(payload, dict):
+    check = _json_object(payload)
+    if check is None:
         return None
-    name = str(payload.get("name", "unknown"))
-    status = str(payload.get("status", "unknown"))
+    name = str(check.get("name", "unknown"))
+    status = str(check.get("status", "unknown"))
     category, priority = failure_category(name)
     return FailureRecord(
         name=name,
         status=status,
         category=category,
         priority=priority,
-        exit_code=optional_int(payload.get("exit_code")),
-        log_path=str(payload.get("log_path", "")),
-        log_bytes=optional_int(payload.get("log_bytes")) or 0,
-        expansion_commands=string_tuple(payload.get("expansion_commands", [])),
-        artifact_paths=string_tuple(payload.get("artifacts", [])),
+        exit_code=optional_int(check.get("exit_code")),
+        log_path=str(check.get("log_path", "")),
+        log_bytes=optional_int(check.get("log_bytes")) or 0,
+        expansion_commands=string_tuple(check.get("expansion_commands", [])),
+        artifact_paths=string_tuple(check.get("artifacts", [])),
     )
 
 
 def optional_int(value: object) -> int | None:
     """Return int when value is integer-like."""
 
-    return value if isinstance(value, int) else None
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
 
 
 def string_tuple(value: object) -> tuple[str, ...]:
     """Return tuple of strings from JSON value."""
 
-    if not isinstance(value, list):
+    values = _json_array(value)
+    if values is None:
         return ()
-    return tuple(str(item) for item in value)
+    return tuple(item for item in values if isinstance(item, str))
+
+
+def _json_object(value: object) -> dict[str, object] | None:
+    """Return a JSON object with string keys, or ``None`` when malformed."""
+
+    if not isinstance(value, dict):
+        return None
+    raw = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in raw):
+        return None
+    return {key: item for key, item in raw.items() if isinstance(key, str)}
+
+
+def _json_array(value: object) -> list[object] | None:
+    """Return a JSON array with an explicit element boundary."""
+
+    if not isinstance(value, list):
+        return None
+    return cast(list[object], value)
 
 
 def failure_category(check_name: str) -> tuple[str, int]:
