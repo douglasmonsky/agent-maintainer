@@ -12,6 +12,7 @@ from agent_maintainer.models import Check, CheckResult
 from agent_maintainer.verify import quiet as verify_quiet
 from agent_maintainer.verify import run_steps as verify_run_steps
 from agent_maintainer.verify.async_jobs import AsyncVerifierLaunch, AsyncVerifierRequest
+from tests.support.callbacks import constant_callback, forbidden_callback
 
 
 def test_codex_main_registers_background_verifier_wait(
@@ -41,20 +42,25 @@ def test_codex_main_registers_background_verifier_wait(
         "launch_async_verifier",
         fake_async_launch,
     )
+
+    def register_wait(run_id: str, log_dir: Path) -> object:
+        seen_waits.append((run_id, log_dir))
+        return object()
+
     monkeypatch.setattr(
         verify_quiet.background_wait,
         "register_background_verifier_wait",
-        lambda run_id, log_dir: seen_waits.append((run_id, log_dir)) or object(),
+        register_wait,
     )
     monkeypatch.setattr(
         verify_quiet.background_wait,
         "render_background_registration_text",
-        lambda _registration: "background verifier handoff",
+        constant_callback("background verifier handoff"),
     )
     monkeypatch.setattr(
         verify_quiet,
         "make_checks",
-        lambda *_args, **_kwargs: pytest.fail("foreground checks should not run"),
+        forbidden_callback("foreground checks should not run"),
     )
 
     status = verify_quiet.main(["--profile", "fast"])
@@ -88,23 +94,26 @@ def test_codex_run_id_child_does_not_background_again(
     monkeypatch.setattr(
         verify_quiet.background_wait,
         "register_background_verifier_wait",
-        lambda *_args: pytest.fail("async child should not register background wait"),
+        forbidden_callback("async child should not register background wait"),
     )
     monkeypatch.setattr(
         verify_quiet,
         "make_checks",
-        lambda config, base_ref, compare_branch, staged=False: [
-            Check("custom", ["true"], frozenset(("fast",))),
-        ],
+        constant_callback([Check("custom", ["true"], frozenset(("fast",)))]),
     )
+
+    def successful_check(
+        check: Check,
+        _log_dir: Path,
+        _max_lines: int,
+        _max_chars: int,
+    ) -> CheckResult:
+        return CheckResult(check.name, passed=True, exit_code=0)
+
     monkeypatch.setattr(
         verify_run_steps,
         "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(
-            check.name,
-            passed=True,
-            exit_code=0,
-        ),
+        successful_check,
     )
 
     status = verify_quiet.main(["--profile", "fast", "--run-id", "child-run"])

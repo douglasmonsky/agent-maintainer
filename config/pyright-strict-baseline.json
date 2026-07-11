@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 42,
-    "reportUnknownArgumentType": 466,
-    "reportUnknownLambdaType": 362,
-    "reportUnknownMemberType": 163,
-    "reportUnknownVariableType": 232
+    "reportUnknownArgumentType": 336,
+    "reportUnknownLambdaType": 180,
+    "reportUnknownMemberType": 145,
+    "reportUnknownVariableType": 228
   },
-  "note": "Reviewed 2026-07-11 after upgrading Pyright to 1.1.411 and repairing all new strict diagnostics; remaining allowances are legacy unknown-type and intentional private-API debt.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 1 replaced untyped monkeypatch lambdas with typed test-double boundaries; 334 diagnostics were removed and remaining allowances are legacy unknown-type and intentional private-API debt.",
   "pairs": {
     "src/agent_client_hooks/claude_merge.py": {
       "reportUnknownArgumentType": 5,
@@ -342,10 +342,6 @@
     "src/docsync/core/models.py": {
       "reportUnknownVariableType": 2
     },
-    "tests/archguard/test_cli.py": {
-      "reportUnknownArgumentType": 12,
-      "reportUnknownLambdaType": 22
-    },
     "tests/archguard/test_git_diff.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 2
@@ -367,10 +363,6 @@
     "tests/change_plan/test_cli.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 2
-    },
-    "tests/checks/test_change_budget.py": {
-      "reportUnknownArgumentType": 11,
-      "reportUnknownLambdaType": 14
     },
     "tests/checks/test_change_budget_relevance.py": {
       "reportUnknownArgumentType": 2,
@@ -434,10 +426,6 @@
       "reportUnknownArgumentType": 4,
       "reportUnknownLambdaType": 7
     },
-    "tests/doctor/test_doctor_cli_output.py": {
-      "reportUnknownArgumentType": 10,
-      "reportUnknownLambdaType": 13
-    },
     "tests/doctor/test_doctor_commands.py": {
       "reportUnknownArgumentType": 4,
       "reportUnknownLambdaType": 6
@@ -473,10 +461,6 @@
       "reportUnknownArgumentType": 5,
       "reportUnknownLambdaType": 6
     },
-    "tests/hooks/test_hook_runtime_readiness.py": {
-      "reportUnknownArgumentType": 10,
-      "reportUnknownLambdaType": 10
-    },
     "tests/hooks/test_pr_wait_hook.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 2
@@ -494,22 +478,10 @@
       "reportUnknownLambdaType": 3,
       "reportUnknownMemberType": 2
     },
-    "tests/packaging/test_bootstrap_install.py": {
-      "reportUnknownArgumentType": 26,
-      "reportUnknownLambdaType": 27
-    },
-    "tests/packaging/test_bootstrap_paths.py": {
-      "reportUnknownArgumentType": 12,
-      "reportUnknownLambdaType": 16
-    },
     "tests/packaging/test_initializer.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownMemberType": 1,
       "reportUnknownVariableType": 2
-    },
-    "tests/packaging/test_script_helpers.py": {
-      "reportUnknownArgumentType": 11,
-      "reportUnknownLambdaType": 9
     },
     "tests/packaging/test_setup_cli.py": {
       "reportUnknownArgumentType": 10,
@@ -585,22 +557,6 @@
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 5
     },
-    "tests/verify/test_verify_background_wait.py": {
-      "reportUnknownArgumentType": 8,
-      "reportUnknownLambdaType": 13,
-      "reportUnknownMemberType": 1
-    },
-    "tests/verify/test_verify_quiet.py": {
-      "reportUnknownArgumentType": 14,
-      "reportUnknownLambdaType": 33,
-      "reportUnknownMemberType": 4
-    },
-    "tests/verify/test_verify_quiet_artifacts.py": {
-      "reportUnknownArgumentType": 16,
-      "reportUnknownLambdaType": 25,
-      "reportUnknownMemberType": 13,
-      "reportUnknownVariableType": 4
-    },
     "tests/wait/test_codex_app_server.py": {
       "reportPrivateUsage": 12
     },
@@ -632,5 +588,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 1265
+  "total_errors": 931
 }

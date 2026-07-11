@@ -12,6 +12,7 @@ from agent_maintainer.change_plan.models import ChangePlan, ValidationIssue
 from agent_maintainer.checks import change_budget as check_change_budget
 from agent_maintainer.checks import change_budget_args, change_budget_plans
 from agent_maintainer.core.config import MaintainerConfig
+from tests.support.callbacks import constant_callback
 
 
 def test_change_budget_classifies_python_source_and_tests() -> None:
@@ -140,7 +141,11 @@ def test_run_git_numstat_parses_output(monkeypatch: pytest.MonkeyPatch) -> None:
         stdout="2\t3\tscripts/tool.py\n-\t-\timage.png\n",
         stderr="",
     )
-    monkeypatch.setattr(check_change_budget.subprocess, "run", lambda *args, **_kwargs: completed)
+    monkeypatch.setattr(
+        check_change_budget.subprocess,
+        "run",
+        constant_callback(completed),
+    )
 
     changes = check_change_budget.run_git_numstat("HEAD", staged=False)
 
@@ -167,10 +172,16 @@ def test_run_git_numstat_does_not_double_count_copied_source(
     )
     calls = [numstat, name_status]
 
+    def next_completed_process(
+        *_args: object,
+        **_kwargs: object,
+    ) -> subprocess.CompletedProcess[str]:
+        return calls.pop(0)
+
     monkeypatch.setattr(
         check_change_budget.subprocess,
         "run",
-        lambda *args, **_kwargs: calls.pop(0),
+        next_completed_process,
     )
 
     changes = check_change_budget.run_git_numstat("HEAD", staged=False)
@@ -253,14 +264,12 @@ def test_change_budget_main_can_fail_warnings_as_errors(
     monkeypatch.setattr(
         check_change_budget,
         "evaluate_change_plan",
-        lambda _context: change_budget_plans.ChangePlanDecision(),
+        constant_callback(change_budget_plans.ChangePlanDecision()),
     )
     monkeypatch.setattr(
         check_change_budget,
         "run_git_numstat",
-        lambda base_ref, staged=False: [
-            check_change_budget.FileChange("src/app.py", 1, 0),
-        ],
+        constant_callback([check_change_budget.FileChange("src/app.py", 1, 0)]),
     )
     monkeypatch.setattr(
         check_change_budget,
@@ -278,9 +287,7 @@ def test_change_budget_main_reports_failures(
     monkeypatch.setattr(
         check_change_budget,
         "run_git_numstat",
-        lambda base_ref, staged=False: [
-            check_change_budget.FileChange("src/a.py", 4, 0),
-        ],
+        constant_callback([check_change_budget.FileChange("src/a.py", 4, 0)]),
     )
     monkeypatch.setattr(
         check_change_budget,
@@ -309,9 +316,7 @@ def test_change_budget_main_reports_requested_override_failures(
     monkeypatch.setattr(
         check_change_budget,
         "run_git_numstat",
-        lambda base_ref, staged=False: [
-            check_change_budget.FileChange("src/a.py", 4, 0),
-        ],
+        constant_callback([check_change_budget.FileChange("src/a.py", 4, 0)]),
     )
     monkeypatch.setattr(
         check_change_budget,
@@ -342,17 +347,17 @@ def test_change_plan_failure_survives_legacy_override(
     monkeypatch.setattr(
         check_change_budget,
         "evaluate_change_plan",
-        lambda _context: change_budget_plans.ChangePlanDecision(
-            plan=cast(ChangePlan, object()),
-            issues=(ValidationIssue(path="plan.md", message="path outside allowed scope"),),
+        constant_callback(
+            change_budget_plans.ChangePlanDecision(
+                plan=cast(ChangePlan, object()),
+                issues=(ValidationIssue(path="plan.md", message="path outside allowed scope"),),
+            )
         ),
     )
     monkeypatch.setattr(
         check_change_budget,
         "run_git_numstat",
-        lambda base_ref, staged=False: [
-            check_change_budget.FileChange("src/a.py", 4, 0),
-        ],
+        constant_callback([check_change_budget.FileChange("src/a.py", 4, 0)]),
     )
     monkeypatch.setattr(
         check_change_budget,
@@ -391,7 +396,11 @@ def test_change_budget_can_allow_source_changes_without_test_changes() -> None:
 
 
 def test_change_budget_main_passes_clean_diff(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(check_change_budget, "run_git_numstat", lambda base_ref, staged=False: [])
+    monkeypatch.setattr(
+        check_change_budget,
+        "run_git_numstat",
+        constant_callback(list[check_change_budget.FileChange]()),
+    )
     monkeypatch.setattr(check_change_budget, "load_config", MaintainerConfig)
 
     assert check_change_budget.main([]) == 0
@@ -424,9 +433,7 @@ def test_change_budget_respects_zero_cli_line_limit(
     monkeypatch.setattr(
         check_change_budget,
         "run_git_numstat",
-        lambda base_ref, staged=False: [
-            check_change_budget.FileChange("src/app.py", 1, 0),
-        ],
+        constant_callback([check_change_budget.FileChange("src/app.py", 1, 0)]),
     )
     monkeypatch.setattr(
         check_change_budget,
@@ -444,9 +451,7 @@ def test_change_budget_respects_zero_cli_file_limit(
     monkeypatch.setattr(
         check_change_budget,
         "run_git_numstat",
-        lambda base_ref, staged=False: [
-            check_change_budget.FileChange("src/app.py", 1, 0),
-        ],
+        constant_callback([check_change_budget.FileChange("src/app.py", 1, 0)]),
     )
     monkeypatch.setattr(
         check_change_budget,

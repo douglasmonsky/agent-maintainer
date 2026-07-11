@@ -9,6 +9,10 @@ from pathlib import Path
 import pytest
 
 from archguard import cli as archguard_cli
+from archguard.impact import ArchitectureMap
+from tests.support.callbacks import constant_callback
+
+EMPTY_ARCHITECTURE = ArchitectureMap(source_roots=(), layers=(), modules=())
 
 
 def test_main_dispatches_tach_config_success(
@@ -16,7 +20,11 @@ def test_main_dispatches_tach_config_success(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Run the Tach config subcommand through the top-level parser."""
-    monkeypatch.setattr(archguard_cli, "tach_config_issues", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        archguard_cli,
+        "tach_config_issues",
+        constant_callback(list[str]()),
+    )
 
     assert archguard_cli.main(["tach-config", "--strict-root-module"]) == 0
 
@@ -31,7 +39,7 @@ def test_main_dispatches_tach_config_failure(
     monkeypatch.setattr(
         archguard_cli,
         "tach_config_issues",
-        lambda *args, **kwargs: ["bad"],
+        constant_callback(["bad"]),
     )
 
     assert archguard_cli.main(["tach-config"]) == 1
@@ -93,7 +101,7 @@ def test_main_dispatches_decision_check_failure(
     monkeypatch.setattr(
         archguard_cli,
         "decision_check_failures",
-        lambda *args, **kwargs: ["missing decision"],
+        constant_callback(["missing decision"]),
     )
 
     assert archguard_cli.main(["decision-check"]) == 1
@@ -111,7 +119,7 @@ def test_main_dispatches_decision_new(
     monkeypatch.setattr(
         archguard_cli,
         "new_decision_note",
-        lambda *args, **kwargs: created_path,
+        constant_callback(created_path),
     )
 
     assert archguard_cli.main(["decision", "new", "Example", "--decision-root", "docs/adr"]) == 0
@@ -123,7 +131,7 @@ def test_console_main_exits_with_main_result(monkeypatch: pytest.MonkeyPatch) ->
     """Console entrypoint exits with the delegated result."""
     expected_code = 7
     monkeypatch.setattr(sys, "argv", ["archguard", "tach-config"])
-    monkeypatch.setattr(archguard_cli, "main", lambda argv: expected_code)
+    monkeypatch.setattr(archguard_cli, "main", constant_callback(expected_code))
 
     with pytest.raises(SystemExit) as exc_info:
         archguard_cli.console_main()
@@ -135,7 +143,7 @@ def test_module_entrypoint_exits_with_main_result(monkeypatch: pytest.MonkeyPatc
     """python -m archguard delegates to archguard.cli.main."""
     expected_code = 5
     monkeypatch.setattr(sys, "argv", ["python -m archguard", "tach-config"])
-    monkeypatch.setattr(archguard_cli, "main", lambda argv: expected_code)
+    monkeypatch.setattr(archguard_cli, "main", constant_callback(expected_code))
 
     with pytest.raises(SystemExit) as exc_info:
         runpy.run_module("archguard", run_name="__main__")
@@ -149,8 +157,12 @@ def test_main_dispatches_map(
 ) -> None:
     """Run architecture map command through top-level parser."""
 
-    monkeypatch.setattr(archguard_cli, "load_architecture", lambda repo_root: object())
-    monkeypatch.setattr(archguard_cli, "render_map", lambda architecture: "mapped")
+    monkeypatch.setattr(
+        archguard_cli,
+        "load_architecture",
+        constant_callback(EMPTY_ARCHITECTURE),
+    )
+    monkeypatch.setattr(archguard_cli, "render_map", constant_callback("mapped"))
 
     assert archguard_cli.main(["map"]) == 0
     assert "mapped" in capsys.readouterr().out
@@ -162,11 +174,22 @@ def test_main_dispatches_impact(
 ) -> None:
     """Run architecture impact command through top-level parser."""
 
-    monkeypatch.setattr(archguard_cli, "load_architecture", lambda repo_root: object())
+    def render_impact(
+        _repo_root: Path,
+        _architecture: ArchitectureMap,
+        path: Path,
+    ) -> str:
+        return f"impact {path}"
+
+    monkeypatch.setattr(
+        archguard_cli,
+        "load_architecture",
+        constant_callback(EMPTY_ARCHITECTURE),
+    )
     monkeypatch.setattr(
         archguard_cli,
         "render_impact",
-        lambda repo_root, architecture, path: f"impact {path}",
+        render_impact,
     )
 
     assert archguard_cli.main(["impact", "src/example.py"]) == 0
@@ -179,11 +202,23 @@ def test_main_dispatches_explain_boundary(
 ) -> None:
     """Run boundary explanation command through top-level parser."""
 
-    monkeypatch.setattr(archguard_cli, "load_architecture", lambda repo_root: object())
+    def render_boundary(
+        _repo_root: Path,
+        _architecture: ArchitectureMap,
+        source: Path,
+        target: Path,
+    ) -> str:
+        return f"boundary {source} {target}"
+
+    monkeypatch.setattr(
+        archguard_cli,
+        "load_architecture",
+        constant_callback(EMPTY_ARCHITECTURE),
+    )
     monkeypatch.setattr(
         archguard_cli,
         "render_boundary",
-        lambda repo_root, architecture, source, target: f"boundary {source} {target}",
+        render_boundary,
     )
 
     assert archguard_cli.main(["explain-boundary", "src/a.py", "src/b.py"]) == 0

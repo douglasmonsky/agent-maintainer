@@ -14,11 +14,23 @@ from agent_maintainer.verify import quiet as verify_quiet
 from agent_maintainer.verify import run_steps as verify_run_steps
 from agent_maintainer.verify.async_jobs import AsyncVerifierLaunch, AsyncVerifierRequest
 from agent_maintainer.verify.result_summary import apply_optional_skip_policy
+from tests.support.callbacks import constant_callback
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
 STRICT_COMPLEXITY = 8
 INFRASTRUCTURE_ERROR_STATUS = 2
+
+
+def passing_check_result(
+    check: Check,
+    _log_dir: Path,
+    _max_lines: int,
+    _max_chars: int,
+) -> CheckResult:
+    """Return a typed successful verifier result for orchestration tests."""
+
+    return CheckResult(check.name, passed=True, exit_code=0)
 
 
 def test_main_async_launches_background_verifier(
@@ -116,12 +128,12 @@ def test_collect_results_stops_on_invalid_git_refs(
     monkeypatch.setattr(
         verify_run_steps,
         "layout_failures",
-        lambda _config, _profile: [],
+        constant_callback(list[str]()),
     )
     monkeypatch.setattr(
         verify_run_steps,
         "ref_failures",
-        lambda *_args, **_kwargs: ("--base-ref 'missing' is not valid commit ref.",),
+        constant_callback(("--base-ref 'missing' is not valid commit ref.",)),
     )
 
     def fail_run_check(*_args: object, **_kwargs: object) -> CheckResult:
@@ -176,19 +188,26 @@ def test_main_prints_success_with_warning_results(
     monkeypatch.setattr(
         verify_quiet,
         "make_checks",
-        lambda config, base_ref, compare_branch, staged=False: [
-            Check("change-budget", ["true"], frozenset(("fast",)))
-        ],
+        constant_callback([Check("change-budget", ["true"], frozenset(("fast",)))]),
     )
-    monkeypatch.setattr(
-        verify_run_steps,
-        "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(
+
+    def warning_check_result(
+        check: Check,
+        _log_dir: Path,
+        _max_lines: int,
+        _max_chars: int,
+    ) -> CheckResult:
+        return CheckResult(
             check.name,
             passed=True,
             output="WARN: source changed without tests",
             warning=True,
-        ),
+        )
+
+    monkeypatch.setattr(
+        verify_run_steps,
+        "run_check",
+        warning_check_result,
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0
@@ -219,18 +238,12 @@ def test_main_prints_success_for_passing_selected_check(
     monkeypatch.setattr(
         verify_quiet,
         "make_checks",
-        lambda config, base_ref, compare_branch, staged=False: [
-            Check("custom", ["true"], frozenset(("fast",)))
-        ],
+        constant_callback([Check("custom", ["true"], frozenset(("fast",)))]),
     )
     monkeypatch.setattr(
         verify_run_steps,
         "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(
-            check.name,
-            passed=True,
-            exit_code=0,
-        ),
+        passing_check_result,
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0
@@ -268,18 +281,12 @@ def test_main_prints_profile_overlap_advisory(
     monkeypatch.setattr(
         verify_quiet,
         "make_checks",
-        lambda config, base_ref, compare_branch, staged=False: [
-            Check("custom", ["true"], frozenset(("ci",)))
-        ],
+        constant_callback([Check("custom", ["true"], frozenset(("ci",)))]),
     )
     monkeypatch.setattr(
         verify_run_steps,
         "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(
-            check.name,
-            passed=True,
-            exit_code=0,
-        ),
+        passing_check_result,
     )
 
     assert verify_quiet.main(["--profile", "ci"]) == 0
@@ -315,18 +322,12 @@ def test_main_writes_runtime_profile_events_when_enabled(
     monkeypatch.setattr(
         verify_quiet,
         "make_checks",
-        lambda config, base_ref, compare_branch, staged=False: [
-            Check("custom", ["true"], frozenset(("fast",)))
-        ],
+        constant_callback([Check("custom", ["true"], frozenset(("fast",)))]),
     )
     monkeypatch.setattr(
         verify_run_steps,
         "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(
-            check.name,
-            passed=True,
-            exit_code=0,
-        ),
+        passing_check_result,
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0

@@ -11,6 +11,7 @@ from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.doctor import cli as maintainer_doctor
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
 from agent_maintainer.doctor.support import output as maintainer_doctor_output
+from tests.support.callbacks import constant_callback
 
 
 class DoctorRunRecorder:
@@ -39,19 +40,21 @@ def test_main_emits_json_with_state_and_hint(
     monkeypatch.setattr(
         maintainer_doctor.maintainer_config,
         "load_config",
-        lambda _repo_root=None: MaintainerConfig(),
+        constant_callback(MaintainerConfig()),
     )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
-        lambda repo_root, config: [
-            maintainer_doctor.DoctorResult(
-                "python-version",
-                maintainer_doctor.OK,
-                "ok",
-                hint="already fine",
-            )
-        ],
+        constant_callback(
+            [
+                maintainer_doctor.DoctorResult(
+                    "python-version",
+                    maintainer_doctor.OK,
+                    "ok",
+                    hint="already fine",
+                )
+            ]
+        ),
     )
 
     assert maintainer_doctor.main(["--json"]) == 0
@@ -74,14 +77,14 @@ def test_main_emits_json_with_format_flag(
     monkeypatch.setattr(
         maintainer_doctor.maintainer_config,
         "load_config",
-        lambda _repo_root=None: MaintainerConfig(),
+        constant_callback(MaintainerConfig()),
     )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
-        lambda repo_root, config: [
-            maintainer_doctor.DoctorResult("repo-root", maintainer_doctor.OK, "ok")
-        ],
+        constant_callback(
+            [maintainer_doctor.DoctorResult("repo-root", maintainer_doctor.OK, "ok")]
+        ),
     )
 
     assert maintainer_doctor.main(["--format", "json"]) == 0
@@ -147,20 +150,22 @@ def test_main_emits_text_with_state_and_hint(
     monkeypatch.setattr(
         maintainer_doctor.maintainer_config,
         "load_config",
-        lambda _repo_root=None: MaintainerConfig(),
+        constant_callback(MaintainerConfig()),
     )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
-        lambda repo_root, config: [
-            maintainer_doctor.DoctorResult(
-                "virtualenv",
-                maintainer_doctor.WARNING,
-                "missing",
-                state=maintainer_doctor_models.MISSING,
-                hint="bootstrap",
-            )
-        ],
+        constant_callback(
+            [
+                maintainer_doctor.DoctorResult(
+                    "virtualenv",
+                    maintainer_doctor.WARNING,
+                    "missing",
+                    state=maintainer_doctor_models.MISSING,
+                    hint="bootstrap",
+                )
+            ]
+        ),
     )
 
     assert maintainer_doctor.main([]) == 0
@@ -175,18 +180,20 @@ def test_main_strict_returns_nonzero_for_warning(
     monkeypatch.setattr(
         maintainer_doctor.maintainer_config,
         "load_config",
-        lambda _repo_root=None: MaintainerConfig(),
+        constant_callback(MaintainerConfig()),
     )
     monkeypatch.setattr(
         maintainer_doctor,
         "run_doctor",
-        lambda repo_root, config: [
-            maintainer_doctor.DoctorResult(
-                "git-state",
-                maintainer_doctor.WARNING,
-                "ahead",
-            )
-        ],
+        constant_callback(
+            [
+                maintainer_doctor.DoctorResult(
+                    "git-state",
+                    maintainer_doctor.WARNING,
+                    "ahead",
+                )
+            ]
+        ),
     )
 
     assert maintainer_doctor.main(["--strict"]) == 1
@@ -202,13 +209,18 @@ def test_main_uses_cwd_and_config(
         maintainer_doctor.DoctorResult("python-version", maintainer_doctor.OK, "ok")
     )
 
+    def fake_cwd(_path_type: type[Path]) -> Path:
+        return tmp_path
+
     monkeypatch.setattr(
         maintainer_doctor.Path,
         "cwd",
-        classmethod(lambda _path_type: tmp_path),
+        classmethod(fake_cwd),
     )
     monkeypatch.setattr(
-        maintainer_doctor.maintainer_config, "load_config", lambda _repo_root=None: config
+        maintainer_doctor.maintainer_config,
+        "load_config",
+        constant_callback(config),
     )
     monkeypatch.setattr(maintainer_doctor, "run_doctor", recorder)
 
