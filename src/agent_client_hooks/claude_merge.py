@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from agent_client_hooks import constants, manifest
+from agent_client_hooks.structured_values import json_array, json_object
 
 
 def merge_claude_settings(path: Path, managed_content: str) -> str:
@@ -13,25 +14,26 @@ def merge_claude_settings(path: Path, managed_content: str) -> str:
 
     with path.open(encoding="utf-8") as stream:
         current = json.load(stream)
-    managed = json.loads(managed_content)
-    if not isinstance(current, dict):
-        current = {}
-    hooks = current.setdefault("hooks", {})
-    if not isinstance(hooks, dict):
-        current["hooks"] = {}
-        hooks = current["hooks"]
-    for event, entries in managed["hooks"].items():
+    current_payload = json_object(current) or {}
+    managed = json_object(json.loads(managed_content))
+    managed_hooks = None if managed is None else json_object(managed.get("hooks"))
+    if managed_hooks is None:
+        raise ValueError("managed Claude settings must contain a hooks object")
+    hooks = json_object(current_payload.get("hooks")) or {}
+    current_payload["hooks"] = hooks
+    for event, entries in managed_hooks.items():
         hooks[event] = merge_claude_event(hooks.get(event), entries)
-    return f"{json.dumps(current, indent=2, sort_keys=True)}\n"
+    return f"{json.dumps(current_payload, indent=2, sort_keys=True)}\n"
 
 
 def merge_claude_event(current: object, managed: object) -> list[object]:
     """Replace only Agent Maintainer entries while preserving user ordering."""
 
-    managed_entries = list(managed) if isinstance(managed, list) else []
-    if not isinstance(current, list):
+    managed_entries = json_array(managed) or []
+    current_entries = json_array(current)
+    if current_entries is None:
         return managed_entries
-    preserved, insertion_index = _preserved_entries(current)
+    preserved, insertion_index = _preserved_entries(current_entries)
     insert_at = len(preserved) if insertion_index is None else insertion_index
     return [*preserved[:insert_at], *managed_entries, *preserved[insert_at:]]
 
@@ -53,19 +55,20 @@ def _preserved_entries(current: list[object]) -> tuple[list[object], int | None]
 def strip_managed_claude_entry(entry: object) -> tuple[object | None, bool]:
     """Strip managed commands while preserving co-located third-party hooks."""
 
-    if not isinstance(entry, dict):
+    payload = json_object(entry)
+    if payload is None:
         return entry, False
-    command = entry.get("command")
+    command = payload.get("command")
     if isinstance(command, str) and is_managed_claude_command(command):
         return None, True
-    return _strip_nested_claude_hooks(entry)
+    return _strip_nested_claude_hooks(payload)
 
 
-def _strip_nested_claude_hooks(entry: dict[object, object]) -> tuple[object | None, bool]:
+def _strip_nested_claude_hooks(entry: dict[str, object]) -> tuple[object | None, bool]:
     """Remove managed hook objects nested under one event entry."""
 
-    hooks = entry.get("hooks")
-    if not isinstance(hooks, list):
+    hooks = json_array(entry.get("hooks"))
+    if hooks is None:
         return entry, False
     cleaned_hooks, removed = _clean_nested_hooks(hooks)
     return _retained_nested_entry(entry, cleaned_hooks, removed=removed)
@@ -85,7 +88,7 @@ def _clean_nested_hooks(hooks: list[object]) -> tuple[list[object], bool]:
 
 
 def _retained_nested_entry(
-    entry: dict[object, object],
+    entry: dict[str, object],
     cleaned_hooks: list[object],
     *,
     removed: bool,

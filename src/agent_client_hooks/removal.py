@@ -5,17 +5,19 @@ from __future__ import annotations
 import json
 
 from agent_client_hooks import merge, templates
+from agent_client_hooks.structured_values import json_array, json_object
 
 
 def remove_claude_settings(existing: str) -> str:
     """Remove only managed Claude hook commands from settings JSON text."""
 
-    payload = json.loads(existing)
-    if not isinstance(payload, dict):
+    payload = json_object(json.loads(existing))
+    if payload is None:
         raise ValueError("Claude settings must contain a JSON object")
-    hooks = payload.get("hooks")
-    if not isinstance(hooks, dict):
+    hooks = json_object(payload.get("hooks"))
+    if hooks is None:
         return existing
+    payload["hooks"] = hooks
     changed = _remove_managed_claude_events(hooks)
     if not changed:
         return existing
@@ -37,14 +39,15 @@ def remove_codex_config(existing: str) -> str:
     return f"{remaining}\n" if remaining else ""
 
 
-def _remove_managed_claude_events(hooks: dict[object, object]) -> bool:
+def _remove_managed_claude_events(hooks: dict[str, object]) -> bool:
     """Remove managed entries while retaining unrelated event content."""
 
     changed = False
     for event, entries in tuple(hooks.items()):
-        if not isinstance(entries, list):
+        parsed_entries = json_array(entries)
+        if parsed_entries is None:
             continue
-        cleaned_entries, removed = _clean_claude_entries(entries)
+        cleaned_entries, removed = _clean_claude_entries(parsed_entries)
         if not removed:
             continue
         changed = True

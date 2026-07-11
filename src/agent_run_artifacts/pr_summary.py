@@ -8,6 +8,7 @@ from pathlib import Path
 
 from agent_run_artifacts import pr_summary_support as summary_support
 from agent_run_artifacts.models import CheckResultLike, RunContextLike
+from agent_run_artifacts.structured_values import json_objects
 
 PR_SUMMARY_NAME = "pr-summary.md"
 DEBT_SCORE_NAME = "technical-debt-score.json"
@@ -105,12 +106,8 @@ def technical_debt_score_lines(log_dir: Path) -> list[str]:
 def _debt_category_summary_lines(payload: dict[str, object]) -> list[str]:
     """Return compact debt category driver lines."""
 
-    categories = payload.get("categories")
-    if not isinstance(categories, list):
-        return []
-
     drivers = sorted(
-        (category for category in categories if isinstance(category, dict)),
+        json_objects(payload.get("categories")),
         key=_debt_category_rank,
         reverse=True,
     )
@@ -126,7 +123,7 @@ def _debt_category_summary_lines(payload: dict[str, object]) -> list[str]:
     return lines
 
 
-def _debt_category_rank(category: dict[object, object]) -> tuple[int, int]:
+def _debt_category_rank(category: dict[str, object]) -> tuple[int, int]:
     """Return category sort key for debt driver summary."""
 
     score = category.get("score")
