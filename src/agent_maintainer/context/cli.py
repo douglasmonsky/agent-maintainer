@@ -26,21 +26,29 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="python -m agent_maintainer context")
     parser.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     subparsers = parser.add_subparsers(dest="command", required=True)
-    add_diff_parser(subparsers)
-    add_estimate_parser(subparsers)
-    add_file_parser(subparsers)
-    add_failures_parser(subparsers)
-    add_log_parser(subparsers)
-    add_ledger_parser(subparsers)
-    add_recall_parser(subparsers)
-    pack_cli.add_pack_parser(subparsers)
+    add_diff_parser(lambda: subparsers.add_parser("diff", help="Show bounded Git diff context."))
+    add_estimate_parser(
+        lambda: subparsers.add_parser("estimate", help="Estimate context expansion size.")
+    )
+    add_file_parser(lambda: subparsers.add_parser("file", help="Show safe bounded file context."))
+    add_failures_parser(
+        lambda: subparsers.add_parser("failures", help="Show bounded verifier failures.")
+    )
+    add_log_parser(lambda: subparsers.add_parser("log", help="Show bounded verifier log output."))
+    add_ledger_parser(lambda: subparsers.add_parser("ledger", help="Manage context recall ledger."))
+    add_recall_parser(
+        lambda: subparsers.add_parser("recall", help="Show context recall ledger items.")
+    )
+    pack_cli.add_pack_parser(
+        lambda: subparsers.add_parser("pack", help="Write bounded repair context pack.")
+    )
     return parser.parse_args(argv)
 
 
-def add_diff_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+def add_diff_parser(parser_factory: pack_cli.ParserFactory) -> None:
     """Register diff subcommand."""
 
-    parser = subparsers.add_parser("diff", help="Show bounded Git diff context.")
+    parser = parser_factory()
     parser.add_argument("--summary", action=STORE_TRUE)
     parser.add_argument("--name-only", action=STORE_TRUE)
     parser.add_argument("--path")
@@ -51,10 +59,10 @@ def add_diff_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
     parser.add_argument("--budget", type=int, default=context_failures.DEFAULT_CONTEXT_BUDGET)
 
 
-def add_estimate_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+def add_estimate_parser(parser_factory: pack_cli.ParserFactory) -> None:
     """Register estimate subcommand."""
 
-    parser = subparsers.add_parser("estimate", help="Estimate context expansion size.")
+    parser = parser_factory()
     parser.add_argument("--file", type=Path)
     parser.add_argument("--log")
     parser.add_argument("--diff", action=STORE_TRUE)
@@ -66,10 +74,10 @@ def add_estimate_parser(subparsers: argparse._SubParsersAction[argparse.Argument
     parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
 
 
-def add_file_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+def add_file_parser(parser_factory: pack_cli.ParserFactory) -> None:
     """Register file subcommand."""
 
-    parser = subparsers.add_parser("file", help="Show safe bounded file context.")
+    parser = parser_factory()
     parser.add_argument("path", type=Path)
     parser.add_argument("--outline", action=STORE_TRUE)
     parser.add_argument("--symbols", action=STORE_TRUE)
@@ -81,20 +89,20 @@ def add_file_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
     parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
 
 
-def add_failures_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+def add_failures_parser(parser_factory: pack_cli.ParserFactory) -> None:
     """Register failures subcommand."""
 
-    parser = subparsers.add_parser("failures", help="Show bounded verifier failures.")
+    parser = parser_factory()
     parser.add_argument("--check")
     parser.add_argument("--limit", type=int, default=context_failures.DEFAULT_FAILURE_LIMIT)
     parser.add_argument("--budget", type=int, default=context_failures.DEFAULT_CONTEXT_BUDGET)
     parser.add_argument("--format", choices=(FORMAT_TEXT, FORMAT_JSON), default=FORMAT_TEXT)
 
 
-def add_log_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+def add_log_parser(parser_factory: pack_cli.ParserFactory) -> None:
     """Register log subcommand."""
 
-    parser = subparsers.add_parser("log", help="Show bounded verifier log output.")
+    parser = parser_factory()
     parser.add_argument("check")
     parser.add_argument("--head", type=int)
     parser.add_argument("--tail", type=int)
@@ -105,10 +113,10 @@ def add_log_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParse
 
 
 def add_ledger_parser(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    parser_factory: pack_cli.ParserFactory,
 ) -> None:
     """Register recall ledger mutation subcommands."""
-    parser = subparsers.add_parser("ledger", help="Manage context recall ledger.")
+    parser = parser_factory()
     ledger_subparsers = parser.add_subparsers(dest="ledger_command", required=True)
     add_parser = ledger_subparsers.add_parser("add", help="Add a recall ledger item.")
     add_parser.add_argument("--kind", required=True, choices=sorted(recall.VALID_KINDS))
@@ -122,10 +130,10 @@ def add_ledger_parser(
 
 
 def add_recall_parser(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    parser_factory: pack_cli.ParserFactory,
 ) -> None:
     """Register recall lookup subcommand."""
-    parser = subparsers.add_parser("recall", help="Show context recall ledger items.")
+    parser = parser_factory()
     parser.add_argument("--kind", choices=sorted(recall.VALID_KINDS))
     parser.add_argument("--query")
     parser.add_argument("--limit", type=int, default=recall.DEFAULT_RECALL_LIMIT)

@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 import time
 from contextlib import suppress
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Final
 from uuid import uuid4
+
+from agent_maintainer.core.structured_values import json_array, json_object
 
 JOB_STATUS_STARTING: Final = "starting"
 JOB_STATUS_RUNNING: Final = "running"
@@ -58,12 +60,13 @@ def read_async_state(state_path: Path) -> AsyncVerifierState | None:
     """Read one async job state, returning ``None`` when it does not exist."""
 
     try:
-        payload = json.loads(state_path.read_text(encoding="utf-8"))
+        decoded: object = json.loads(state_path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return None
     except (OSError, json.JSONDecodeError) as exc:
         raise AsyncVerifierStateError(f"cannot read async state {state_path}: {exc}") from exc
-    if not isinstance(payload, dict):
+    payload = json_object(decoded)
+    if payload is None:
         raise AsyncVerifierStateError(f"async state is not an object: {state_path}")
     try:
         return _state_from_payload(payload)
@@ -71,12 +74,29 @@ def read_async_state(state_path: Path) -> AsyncVerifierState | None:
         raise AsyncVerifierStateError(f"invalid async state {state_path}: {exc}") from exc
 
 
+def _state_payload(state: AsyncVerifierState) -> dict[str, object]:
+    return {
+        "run_id": state.run_id,
+        "profile": state.profile,
+        "status": state.status,
+        "process_id": state.process_id,
+        "command": list(state.command),
+        "fingerprint": state.fingerprint,
+        "stdout_path": state.stdout_path,
+        "stderr_path": state.stderr_path,
+        "started_at": state.started_at,
+        "updated_at": state.updated_at,
+        "exit_code": state.exit_code,
+        "error": state.error,
+        "phase": state.phase,
+    }
+
+
 def write_async_state(state_path: Path, state: AsyncVerifierState) -> None:
     """Atomically persist one async verifier state."""
 
     state_path.parent.mkdir(parents=True, exist_ok=True)
-    payload = asdict(state)
-    payload["command"] = list(state.command)
+    payload = _state_payload(state)
     tmp_path = state_path.with_name(f".{state_path.name}.{uuid4().hex}.tmp")
     try:
         _replace_state(tmp_path, state_path, payload)
@@ -166,15 +186,17 @@ def _optional_exit_code(value: object) -> int | None:
 
 
 def _strict_mapping(value: object, field_name: str) -> dict[str, object]:
-    if not isinstance(value, dict):
+    mapping = json_object(value)
+    if mapping is None:
         raise TypeError(f"{field_name} must be an object")
-    return dict(value)
+    return mapping
 
 
 def _strict_command(value: object) -> list[str]:
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+    values = json_array(value)
+    if values is None or not all(isinstance(item, str) for item in values):
         raise TypeError("command must be an array of strings")
-    return value
+    return [item for item in values if isinstance(item, str)]
 
 
 def _strict_status(value: object) -> str:

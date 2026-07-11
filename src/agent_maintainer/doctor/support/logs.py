@@ -7,6 +7,7 @@ from pathlib import Path
 
 from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.core import config as maintainer_config
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
 from agent_maintainer.doctor.support.models import (
     DISABLED,
     MISSING,
@@ -107,10 +108,10 @@ def read_manifest(manifest: Path) -> dict[str, object] | None:
     """Read a verifier manifest, returning None when it is malformed."""
 
     try:
-        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload: object = json.loads(manifest.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return None
-    return payload if isinstance(payload, dict) else None
+    return json_object(payload)
 
 
 def manifest_issues(
@@ -181,17 +182,14 @@ def missing_manifest_path(repo_root: Path, value: object) -> bool:
 def manifest_artifact_paths(check: dict[str, object]) -> list[object]:
     """Return raw artifact path entries from a manifest check."""
 
-    raw_paths = check.get("artifacts", [])
-    return raw_paths if isinstance(raw_paths, list) else []
+    return json_array(check.get("artifacts")) or []
 
 
 def manifest_checks(payload: dict[str, object]) -> list[dict[str, object]]:
     """Return manifest check entries with a stable shape."""
 
-    raw_checks = payload.get("checks", [])
-    if not isinstance(raw_checks, list):
-        return []
-    return [item for item in raw_checks if isinstance(item, dict)]
+    raw_checks = json_array(payload.get("checks"))
+    return [] if raw_checks is None else json_objects(raw_checks)
 
 
 def resolve_path(repo_root: Path, value: str) -> Path:

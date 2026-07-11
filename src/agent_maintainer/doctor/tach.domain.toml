@@ -59,6 +59,7 @@ depends_on = [
 path = "support.hook_audit"
 depends_on = [
     "//agent_maintainer.core.config",
+    "//agent_maintainer.core.structured_values",
     "support.models",
 ]
 
@@ -86,6 +87,7 @@ path = "support.logs"
 depends_on = [
   "//agent_maintainer.catalogs.catalog",
   "//agent_maintainer.core.config",
+  "//agent_maintainer.core.structured_values",
   "support.models",
   "//agent_maintainer.verify.artifacts",
 ]

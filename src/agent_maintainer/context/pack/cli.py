@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any
 
 from agent_context import pack_rendering
 from agent_context.compression import backends as compression_backends
@@ -18,12 +18,15 @@ FORMAT_TEXT = "text"
 STORE_TRUE = "store_true"
 
 
+ParserFactory = Callable[[], argparse.ArgumentParser]
+
+
 def add_pack_parser(
-    subparsers: Any,
+    parser_factory: ParserFactory,
 ) -> None:
     """Register context pack subcommand."""
 
-    parser = subparsers.add_parser("pack", help="Write bounded repair context pack.")
+    parser = parser_factory()
     parser.add_argument("--budget", type=int)
     parser.add_argument("--check")
     parser.add_argument("--file", action="append", type=Path, default=[])

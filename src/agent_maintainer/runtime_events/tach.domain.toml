@@ -42,7 +42,10 @@ depends_on = []
 [[modules]]
 
 path = "read"
-depends_on = ["//agent_context.reading.file_safety"]
+depends_on = [
+  "//agent_context.reading.file_safety",
+  "//agent_maintainer.core.structured_values",
+]
 
 
 [[modules]]
@@ -60,4 +63,4 @@ depends_on = ["read"]
 [[modules]]
 
 path = "waste"
-depends_on = ["read"]
+depends_on = ["read", "//agent_maintainer.core.structured_values"]

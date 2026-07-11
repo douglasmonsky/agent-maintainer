@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from agent_maintainer.core import config as maintainer_config
+from agent_maintainer.core.structured_values import json_object
 from agent_maintainer.doctor.support.models import OK, WARNING, DoctorResult
 
 HOOK_AUDIT_NAME = "hooks.jsonl"
@@ -87,16 +88,17 @@ def parse_hook_event(line: str) -> HookEvent | None:
     """Parse one hook audit JSONL event when it has required fields."""
 
     try:
-        payload = json.loads(line)
+        payload: object = json.loads(line)
     except json.JSONDecodeError:
         return None
-    if not isinstance(payload, dict):
+    event = json_object(payload)
+    if event is None:
         return None
-    if missing_required_fields(payload):
+    if missing_required_fields(event):
         return None
-    if event_timestamp(payload) is None:
+    if event_timestamp(event) is None:
         return None
-    return payload
+    return event
 
 
 def missing_required_fields(event: HookEvent) -> list[str]:

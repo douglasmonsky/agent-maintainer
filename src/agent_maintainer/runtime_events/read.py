@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from agent_context.reading import file_safety
+from agent_maintainer.core.structured_values import json_object
 
 MAX_RUNTIME_EVENT_FILE_BYTES = file_safety.MAX_FILE_BYTES
 DEFAULT_RUNTIME_EVENT_FILE_LIMIT = 32
@@ -204,9 +205,7 @@ def _json_object(line: str) -> dict[str, Any] | None:
     if not line.strip():
         return None
     try:
-        payload = json.loads(line)
+        payload: object = json.loads(line)
     except (json.JSONDecodeError, RecursionError):
         return None
-    if isinstance(payload, dict):
-        return payload
-    return None
+    return json_object(payload)
