@@ -526,8 +526,13 @@ Refresh the pinned dev lock after changing `config/dev-dependencies.txt`:
 
 ```bash
 just bootstrap
-.venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
+just refresh-dev-lock
 ```
+
+The repository pins direct development tools in `config/dev-dependencies.txt`
+and uses `pip-compile` under Python 3.13 to resolve their compatible
+graph into `config/dev-lock.txt`. Dependabot groups compatible direct updates;
+it does not propose isolated transitive-lock edits.
 
 Read more:
 [Release checklist](docs/release-checklist.md),
