@@ -8,6 +8,7 @@ from pathlib import Path
 
 from agent_context.failures import DEFAULT_CONTEXT_BUDGET, load_manifest
 from agent_context.reading.file_safety import read_bounded_utf8_file
+from agent_context.structured_values import json_object, json_objects
 
 DEFAULT_TAIL_LINES = 120
 TOKEN_CHAR_RATIO = 4
@@ -76,12 +77,10 @@ def resolve_log_path(
 def _manifest_log_path(manifest: object, check_name: str) -> Path | None:
     """Return the first matching log path from a manifest payload."""
 
-    if not isinstance(manifest, dict):
+    payload = json_object(manifest)
+    if payload is None:
         return None
-    checks = manifest.get("checks", [])
-    if not isinstance(checks, list):
-        return None
-    for check in checks:
+    for check in json_objects(payload.get("checks")):
         path = log_path_from_check(check, check_name)
         if path is not None:
             return path
@@ -91,9 +90,10 @@ def _manifest_log_path(manifest: object, check_name: str) -> Path | None:
 def log_path_from_check(check: object, check_name: str) -> Path | None:
     """Return log path when manifest item matches check."""
 
-    if not isinstance(check, dict) or check.get("name") != check_name:
+    payload = json_object(check)
+    if payload is None or payload.get("name") != check_name:
         return None
-    log_path = check.get("log_path")
+    log_path = payload.get("log_path")
     return Path(str(log_path)) if log_path else None
 
 

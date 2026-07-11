@@ -14,7 +14,7 @@ class CompressionRequest:
     target_chars: int
     preserve_terms: tuple[str, ...]
     forbidden_terms: tuple[str, ...] = ()
-    metadata: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, str] = field(default_factory=dict[str, str])
 
     def __post_init__(self) -> None:
         """Reject invalid compression requests."""

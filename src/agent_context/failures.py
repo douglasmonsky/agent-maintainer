@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
 
 from agent_context.budget import bound_text
 from agent_context.models import ContextBudget
 from agent_context.reading.file_safety import read_bounded_utf8_file
+from agent_context.structured_values import json_array, json_object
 
 MANIFEST_NAME = "manifest.json"
 
@@ -94,7 +94,7 @@ def load_manifest(log_dir: Path) -> dict[str, object] | None:
         payload = json.loads(safe_read.text)
     except (json.JSONDecodeError, RecursionError):
         return None
-    return _json_object(payload)
+    return json_object(payload)
 
 
 def failure_records(
@@ -108,7 +108,7 @@ def failure_records(
     manifest = load_manifest(log_dir)
     if manifest is None:
         return ()
-    checks = _json_array(manifest.get("checks", []))
+    checks = json_array(manifest.get("checks", []))
     if checks is None:
         return ()
     records = [
@@ -124,7 +124,7 @@ def failure_records(
 def record_from_payload(payload: object) -> FailureRecord | None:
     """Return failure record from manifest check payload."""
 
-    check = _json_object(payload)
+    check = json_object(payload)
     if check is None:
         return None
     name = str(check.get("name", "unknown"))
@@ -152,29 +152,10 @@ def optional_int(value: object) -> int | None:
 def string_tuple(value: object) -> tuple[str, ...]:
     """Return tuple of strings from JSON value."""
 
-    values = _json_array(value)
+    values = json_array(value)
     if values is None:
         return ()
     return tuple(item for item in values if isinstance(item, str))
-
-
-def _json_object(value: object) -> dict[str, object] | None:
-    """Return a JSON object with string keys, or ``None`` when malformed."""
-
-    if not isinstance(value, dict):
-        return None
-    raw = cast(dict[object, object], value)
-    if not all(isinstance(key, str) for key in raw):
-        return None
-    return {key: item for key, item in raw.items() if isinstance(key, str)}
-
-
-def _json_array(value: object) -> list[object] | None:
-    """Return a JSON array with an explicit element boundary."""
-
-    if not isinstance(value, list):
-        return None
-    return cast(list[object], value)
 
 
 def failure_category(check_name: str) -> tuple[str, int]:

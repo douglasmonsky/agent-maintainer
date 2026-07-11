@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 42,
-    "reportUnknownArgumentType": 196,
+    "reportUnknownArgumentType": 186,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 67,
-    "reportUnknownVariableType": 135
+    "reportUnknownMemberType": 55,
+    "reportUnknownVariableType": 124
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 3 validated exact repair-fact JSON and XML boundaries; all 36 production diagnostics in agent_repair_facts were removed without suppressions or Any substitutions.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 4 centralized agent_context structured-value normalization; all 33 production diagnostics in the reusable context package were removed without suppressions or Any substitutions.",
   "pairs": {
     "src/agent_client_hooks/claude_merge.py": {
       "reportUnknownArgumentType": 5,
@@ -17,28 +17,6 @@
       "reportUnknownArgumentType": 2,
       "reportUnknownMemberType": 2,
       "reportUnknownVariableType": 1
-    },
-    "src/agent_context/attention_rendering.py": {
-      "reportUnknownArgumentType": 4,
-      "reportUnknownMemberType": 8,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_context/compression/headroom.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 2
-    },
-    "src/agent_context/compression/models.py": {
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_context/next_actions.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownVariableType": 2
-    },
-    "src/agent_context/reading/logs.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 3
     },
     "src/agent_maintainer/assess/cli.py": {
       "reportPrivateUsage": 1
@@ -499,5 +477,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 575
+  "total_errors": 542
 }

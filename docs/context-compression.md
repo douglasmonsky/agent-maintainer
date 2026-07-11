@@ -56,4 +56,10 @@ Optional providers receive only sanitized supporting context from selected logs
 and file outlines, passed as a single Headroom-compatible user message. They do
 not receive exact repair facts, structured manifests, ratchet fingerprints,
 change-plan scopes, or raw unredacted logs.
+
+Headroom results also cross a runtime-validated boundary before they enter a
+context pack. The adapter accepts plain text, string-keyed result objects, and
+message arrays with string content. Malformed neighboring messages are skipped;
+an unsupported result shape raises a compression-backend error and follows the
+configured required-compression or deterministic-fallback behavior.
 <!-- docsync:object.end docs.context_compression.overview -->
