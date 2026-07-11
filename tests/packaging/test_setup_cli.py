@@ -22,15 +22,34 @@ def test_setup_parsers_forward_explicit_options(
     """Parsed setup options reach the selected operation exactly once."""
 
     calls: list[tuple[str, dict[str, object]]] = []
+
+    def record_bootstrap(*, target: Path | None = None, dry_run: bool = False) -> int:
+        calls.append(("bootstrap", {"target": target, "dry_run": dry_run}))
+        return BOOTSTRAP_STATUS
+
+    def record_install(
+        *,
+        target: Path | None = None,
+        dry_run: bool = False,
+        force: bool = False,
+    ) -> int:
+        calls.append(
+            (
+                "install",
+                {"target": target, "dry_run": dry_run, "force": force},
+            )
+        )
+        return INSTALL_STATUS
+
     monkeypatch.setattr(
         setup_cli.setup,
         "bootstrap",
-        lambda **kwargs: calls.append(("bootstrap", kwargs)) or BOOTSTRAP_STATUS,
+        record_bootstrap,
     )
     monkeypatch.setattr(
         setup_cli.setup,
         "install",
-        lambda **kwargs: calls.append(("install", kwargs)) or INSTALL_STATUS,
+        record_install,
     )
 
     assert setup_cli.main(["bootstrap", "--target", str(tmp_path), "--dry-run"]) == (
@@ -55,8 +74,20 @@ def test_setup_help_never_mutates(
     """Every help spelling exits before calling a mutating operation."""
 
     calls: list[str] = []
-    monkeypatch.setattr(setup_cli.setup, "bootstrap", lambda **_kwargs: calls.append("bootstrap"))
-    monkeypatch.setattr(setup_cli.setup, "install", lambda **_kwargs: calls.append("install"))
+
+    def record_bootstrap(*, target: Path | None = None, dry_run: bool = False) -> None:
+        calls.append("bootstrap")
+
+    def record_install(
+        *,
+        target: Path | None = None,
+        dry_run: bool = False,
+        force: bool = False,
+    ) -> None:
+        calls.append("install")
+
+    monkeypatch.setattr(setup_cli.setup, "bootstrap", record_bootstrap)
+    monkeypatch.setattr(setup_cli.setup, "install", record_install)
 
     with pytest.raises(SystemExit) as raised:
         setup_cli.main([command, help_flag])
@@ -73,8 +104,20 @@ def test_setup_unknown_options_never_mutate(
     """Mistyped setup options fail parsing before behavior starts."""
 
     calls: list[str] = []
-    monkeypatch.setattr(setup_cli.setup, "bootstrap", lambda **_kwargs: calls.append("bootstrap"))
-    monkeypatch.setattr(setup_cli.setup, "install", lambda **_kwargs: calls.append("install"))
+
+    def record_bootstrap(*, target: Path | None = None, dry_run: bool = False) -> None:
+        calls.append("bootstrap")
+
+    def record_install(
+        *,
+        target: Path | None = None,
+        dry_run: bool = False,
+        force: bool = False,
+    ) -> None:
+        calls.append("install")
+
+    monkeypatch.setattr(setup_cli.setup, "bootstrap", record_bootstrap)
+    monkeypatch.setattr(setup_cli.setup, "install", record_install)
 
     with pytest.raises(SystemExit) as raised:
         setup_cli.main([command, "--dry-rnu"])

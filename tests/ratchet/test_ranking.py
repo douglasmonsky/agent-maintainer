@@ -19,6 +19,7 @@ from agent_maintainer.ratchet.models import (
     RatchetStatusReport,
 )
 from agent_maintainer.ratchet.ranking import ranked_targets
+from tests.support.callbacks import constant_callback
 
 
 def test_ranked_targets_explain_why_and_first_command() -> None:
@@ -88,8 +89,12 @@ def test_ratchet_next_outputs_text(
 
     baseline_path = tmp_path / "ratchet.json"
     write_baseline(baseline_path, baseline(), force=True)
-    monkeypatch.setattr(ratchet_cli, "changed_paths", lambda base_ref: {"src/current.py"})
-    monkeypatch.setattr(ratchet_cli, "status_report", lambda *_args, **_kwargs: report())
+    monkeypatch.setattr(
+        ratchet_cli,
+        "changed_paths",
+        constant_callback({"src/current.py"}),
+    )
+    monkeypatch.setattr(ratchet_cli, "status_report", constant_callback(report()))
 
     assert ratchet_cli.main(["next", "--baseline", str(baseline_path), "--limit", "1"]) == 0
 
@@ -108,8 +113,12 @@ def test_ratchet_next_outputs_json(
 
     baseline_path = tmp_path / "ratchet.json"
     write_baseline(baseline_path, baseline(), force=True)
-    monkeypatch.setattr(ratchet_cli, "changed_paths", lambda base_ref: {"src/current.py"})
-    monkeypatch.setattr(ratchet_cli, "status_report", lambda *_args, **_kwargs: report())
+    monkeypatch.setattr(
+        ratchet_cli,
+        "changed_paths",
+        constant_callback({"src/current.py"}),
+    )
+    monkeypatch.setattr(ratchet_cli, "status_report", constant_callback(report()))
 
     assert (
         ratchet_cli.main(
@@ -131,12 +140,20 @@ def test_ratchet_next_uses_configured_limit(
 
     baseline_path = tmp_path / "ratchet.json"
     write_baseline(baseline_path, baseline(), force=True)
-    monkeypatch.setattr(ratchet_cli, "changed_paths", lambda base_ref: set())
-    monkeypatch.setattr(ratchet_cli, "status_report", lambda *_args, **_kwargs: two_target_report())
+    monkeypatch.setattr(
+        ratchet_cli,
+        "changed_paths",
+        constant_callback(set[str]()),
+    )
+    monkeypatch.setattr(
+        ratchet_cli,
+        "status_report",
+        constant_callback(two_target_report()),
+    )
     monkeypatch.setattr(
         ratchet_cli,
         "load_config",
-        lambda: SimpleNamespace(ratchet_target_limit=1),
+        constant_callback(SimpleNamespace(ratchet_target_limit=1)),
     )
 
     assert ratchet_cli.main(["next", "--baseline", str(baseline_path), "--format", "json"]) == 0

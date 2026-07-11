@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,19 @@ import pytest
 from agent_maintainer.wait import cli, daemon_launchd
 
 PR_NUMBER = "291"
+
+
+def daemon_callback(
+    calls: list[tuple[Path, str]],
+    launch: daemon_launchd.DaemonLaunch,
+) -> Callable[..., daemon_launchd.DaemonLaunch]:
+    """Return a typed daemon test double that records the requested wait."""
+
+    def callback(root: Path, wait_id: str, **_kwargs: object) -> daemon_launchd.DaemonLaunch:
+        calls.append((root, wait_id))
+        return launch
+
+    return callback
 
 
 def test_codex_pr_cli_backgrounds_wait(
@@ -23,14 +37,14 @@ def test_codex_pr_cli_backgrounds_wait(
     monkeypatch.setenv("CODEX_SHELL", "1")
     monkeypatch.setattr(
         "agent_maintainer.wait.broker.ensure_wait_daemon",
-        lambda root, wait_id: (
-            calls.append((root, wait_id))
-            or daemon_launchd.DaemonLaunch(
+        daemon_callback(
+            calls,
+            daemon_launchd.DaemonLaunch(
                 started=False,
                 label="com.agent-maintainer.wait.test",
                 log_path=tmp_path / "daemon.log",
                 error="unsupported",
-            )
+            ),
         ),
     )
 
@@ -71,13 +85,13 @@ def test_codex_rewake_pr_background_uses_launchd_daemon(
     monkeypatch.setenv("CODEX_SHELL", "1")
     monkeypatch.setattr(
         "agent_maintainer.wait.broker.ensure_wait_daemon",
-        lambda root, wait_id: (
-            calls.append((root, wait_id))
-            or daemon_launchd.DaemonLaunch(
+        daemon_callback(
+            calls,
+            daemon_launchd.DaemonLaunch(
                 started=True,
                 label="com.agent-maintainer.wait.test",
                 log_path=tmp_path / "daemon.log",
-            )
+            ),
         ),
     )
 
@@ -116,14 +130,14 @@ def test_codex_github_run_cli_backgrounds_wait(
     monkeypatch.setenv("CODEX_SHELL", "1")
     monkeypatch.setattr(
         "agent_maintainer.wait.broker.ensure_wait_daemon",
-        lambda root, wait_id: (
-            calls.append((root, wait_id))
-            or daemon_launchd.DaemonLaunch(
+        daemon_callback(
+            calls,
+            daemon_launchd.DaemonLaunch(
                 started=False,
                 label="com.agent-maintainer.wait.test",
                 log_path=tmp_path / "daemon.log",
                 error="unsupported",
-            )
+            ),
         ),
     )
 
@@ -163,14 +177,14 @@ def test_codex_verifier_cli_backgrounds_wait(
     monkeypatch.setenv("CODEX_SHELL", "1")
     monkeypatch.setattr(
         "agent_maintainer.wait.broker.ensure_wait_daemon",
-        lambda root, wait_id: (
-            calls.append((root, wait_id))
-            or daemon_launchd.DaemonLaunch(
+        daemon_callback(
+            calls,
+            daemon_launchd.DaemonLaunch(
                 started=False,
                 label="com.agent-maintainer.wait.test",
                 log_path=tmp_path / "daemon.log",
                 error="unsupported",
-            )
+            ),
         ),
     )
 
