@@ -97,6 +97,10 @@ def test_coerce_updates_reads_workspace_tables() -> None:
     )
     with pytest.raises(TypeError, match=r"workspaces\.api\.source_roots"):
         coercion.coerce_updates({"workspaces": {"api": {"source_roots": 12}}})
+    with pytest.raises(TypeError, match=r"^workspaces\.api must be a table$"):
+        coercion.coerce_workspace("api", [])
+    with pytest.raises(TypeError, match=r"^workspaces must be a table$"):
+        coercion.coerce_workspaces([])
 
 
 def test_invalid_workspace_config_raises_clear_errors() -> None:

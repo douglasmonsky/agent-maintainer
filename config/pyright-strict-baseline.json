@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 42,
-    "reportUnknownArgumentType": 326,
-    "reportUnknownLambdaType": 180,
-    "reportUnknownMemberType": 143,
-    "reportUnknownVariableType": 218
+    "reportUnknownArgumentType": 207,
+    "reportUnknownLambdaType": 135,
+    "reportUnknownMemberType": 75,
+    "reportUnknownVariableType": 152
   },
-  "note": "Reviewed 2026-07-11 after attention-ledger contract validation added typed JSON boundaries, canonical paths, exact counts, and finite 0..1 scores; 22 diagnostics were removed and remaining allowances stay protected for subsequent burn-down work.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 2 typed test doubles and validated JSON, configuration, verifier, Tach, and attention-ledger boundaries; 320 diagnostics were removed and remaining allowances are legacy unknown-type and intentional private-API debt.",
   "pairs": {
     "src/agent_client_hooks/claude_merge.py": {
       "reportUnknownArgumentType": 5,
@@ -31,19 +31,9 @@
     "src/agent_context/compression/models.py": {
       "reportUnknownVariableType": 1
     },
-    "src/agent_context/failures.py": {
-      "reportUnknownArgumentType": 9,
-      "reportUnknownMemberType": 7,
-      "reportUnknownVariableType": 3
-    },
     "src/agent_context/next_actions.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownVariableType": 2
-    },
-    "src/agent_context/pack_rendering.py": {
-      "reportUnknownArgumentType": 12,
-      "reportUnknownMemberType": 24,
-      "reportUnknownVariableType": 15
     },
     "src/agent_context/reading/logs.py": {
       "reportUnknownArgumentType": 2,
@@ -103,11 +93,6 @@
     "src/agent_maintainer/checks/mutmut_targets.py": {
       "reportUnknownVariableType": 2
     },
-    "src/agent_maintainer/config/coercion.py": {
-      "reportUnknownArgumentType": 6,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 9
-    },
     "src/agent_maintainer/config/loader.py": {
       "reportUnknownMemberType": 1,
       "reportUnknownVariableType": 2
@@ -146,11 +131,6 @@
       "reportUnknownMemberType": 1,
       "reportUnknownVariableType": 1
     },
-    "src/agent_maintainer/core/reporting.py": {
-      "reportUnknownArgumentType": 6,
-      "reportUnknownMemberType": 6,
-      "reportUnknownVariableType": 10
-    },
     "src/agent_maintainer/core/scaffold/planning.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownMemberType": 3,
@@ -158,16 +138,6 @@
     },
     "src/agent_maintainer/core/scaffold/transaction.py": {
       "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/core/structured_pytest.py": {
-      "reportUnknownArgumentType": 9,
-      "reportUnknownMemberType": 6,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_maintainer/core/structured_security.py": {
-      "reportUnknownArgumentType": 19,
-      "reportUnknownMemberType": 11,
-      "reportUnknownVariableType": 17
     },
     "src/agent_maintainer/doctor/support/hook_audit.py": {
       "reportUnknownArgumentType": 2,
@@ -275,11 +245,6 @@
       "reportUnknownArgumentType": 1,
       "reportUnknownMemberType": 1
     },
-    "src/agent_maintainer/wait/verifier_manifest.py": {
-      "reportUnknownArgumentType": 8,
-      "reportUnknownMemberType": 6,
-      "reportUnknownVariableType": 3
-    },
     "src/agent_repair_facts/parsers/docsync.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownMemberType": 3,
@@ -315,16 +280,6 @@
       "reportUnknownArgumentType": 2,
       "reportUnknownMemberType": 1,
       "reportUnknownVariableType": 2
-    },
-    "src/archguard/tach_config.py": {
-      "reportUnknownArgumentType": 10,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 3
-    },
-    "src/archguard/tach_config_domains.py": {
-      "reportUnknownArgumentType": 3,
-      "reportUnknownMemberType": 2,
-      "reportUnknownVariableType": 3
     },
     "src/archguard/tach_config_sources.py": {
       "reportUnknownArgumentType": 6,
@@ -370,10 +325,6 @@
     "tests/checks/test_file_lengths.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 3
-    },
-    "tests/checks/test_suppression_budget.py": {
-      "reportUnknownArgumentType": 6,
-      "reportUnknownLambdaType": 11
     },
     "tests/config/test_config_reference.py": {
       "reportUnknownArgumentType": 1,
@@ -425,10 +376,6 @@
       "reportUnknownArgumentType": 4,
       "reportUnknownLambdaType": 6
     },
-    "tests/doctor/test_doctor_environment.py": {
-      "reportUnknownArgumentType": 9,
-      "reportUnknownLambdaType": 10
-    },
     "tests/doctor/test_doctor_support_environment.py": {
       "reportUnknownArgumentType": 4,
       "reportUnknownLambdaType": 6
@@ -479,12 +426,8 @@
       "reportUnknownVariableType": 2
     },
     "tests/packaging/test_setup_cli.py": {
-      "reportUnknownArgumentType": 10,
-      "reportUnknownLambdaType": 8
-    },
-    "tests/ratchet/test_ranking.py": {
-      "reportUnknownArgumentType": 6,
-      "reportUnknownLambdaType": 10
+      "reportUnknownArgumentType": 2,
+      "reportUnknownLambdaType": 2
     },
     "tests/ratchet/test_status.py": {
       "reportUnknownArgumentType": 1,
@@ -562,10 +505,6 @@
     "tests/wait/test_wait_cli.py": {
       "reportPrivateUsage": 2
     },
-    "tests/wait/test_wait_cli_codex_background.py": {
-      "reportUnknownArgumentType": 8,
-      "reportUnknownLambdaType": 8
-    },
     "tests/wait/test_wait_cli_register_identity.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 6
@@ -583,5 +522,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 909
+  "total_errors": 611
 }

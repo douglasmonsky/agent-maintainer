@@ -121,6 +121,7 @@ depends_on = [
     "repair_capsule",
     "structured_artifacts",
     "structured_typescript",
+    "structured_values",
 ]
 
 [[modules]]
@@ -142,10 +143,14 @@ depends_on = [
 
 [[modules]]
 path = "structured_pytest"
-depends_on = []
+depends_on = ["structured_values"]
 
 [[modules]]
 path = "structured_security"
+depends_on = ["structured_values"]
+
+[[modules]]
+path = "structured_values"
 depends_on = []
 
 [[modules]]

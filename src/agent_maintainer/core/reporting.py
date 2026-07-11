@@ -16,6 +16,12 @@ from agent_maintainer.core.structured_artifacts import (
 from agent_maintainer.core.structured_typescript import (
     summarize_typescript_check,
 )
+from agent_maintainer.core.structured_values import (
+    json_array,
+    json_object,
+    json_objects,
+    plain_int,
+)
 
 PYRIGHT_DIAGNOSTIC_LIMIT = 50
 STRUCTURED_DIAGNOSTIC_LIMIT = 50
@@ -83,10 +89,10 @@ def format_diagnostic(diagnostic: dict[str, object]) -> str:
     """Format one Pyright diagnostic as a compact editor-style line."""
 
     file_name = diagnostic.get("file", "<unknown>")
-    range_info = diagnostic.get("range", {})
-    start = range_info.get("start", {}) if isinstance(range_info, dict) else {}
-    line = int(start.get("line", 0)) + 1 if isinstance(start, dict) else 1
-    character = int(start.get("character", 0)) + 1 if isinstance(start, dict) else 1
+    range_info = json_object(diagnostic.get("range", {})) or {}
+    start = json_object(range_info.get("start", {})) or {}
+    line = plain_int(start.get("line")) + 1
+    character = plain_int(start.get("character")) + 1
     severity = diagnostic.get("severity", "error")
     message = diagnostic.get("message", "")
     rule = diagnostic.get("rule")
@@ -98,11 +104,17 @@ def summarize_pyright(raw: str) -> str | None:
     """Summarize Pyright JSON output, falling back when parsing fails."""
 
     try:
-        payload = json.loads(raw)
+        parsed = json.loads(raw)
     except json.JSONDecodeError:
         return None
+    payload = json_object(parsed)
+    if payload is None:
+        return None
 
-    diagnostics = payload.get("generalDiagnostics", [])
+    diagnostic_values = json_array(payload.get("generalDiagnostics", []))
+    if diagnostic_values is None:
+        return None
+    diagnostics = json_objects(diagnostic_values)
     if not diagnostics:
         return pyright_summary_payload(payload)
 
@@ -161,17 +173,19 @@ def summarize_json_artifact(
 def summarize_pyright_payload(payload: object) -> str | None:
     """Summarize Pyright JSON artifact payload."""
 
-    if not isinstance(payload, dict):
+    report = json_object(payload)
+    if report is None:
         return None
-    return summarize_pyright(json.dumps(payload))
+    return summarize_pyright(json.dumps(report))
 
 
 def summarize_ruff_payload(payload: object) -> str | None:
     """Summarize Ruff JSON artifact payload."""
 
-    if not isinstance(payload, list):
+    values = json_array(payload)
+    if values is None:
         return None
-    diagnostics = [item for item in payload if isinstance(item, dict)]
+    diagnostics = json_objects(values)
     lines = [format_ruff_diagnostic(item) for item in diagnostics[:STRUCTURED_DIAGNOSTIC_LIMIT]]
     omitted = len(diagnostics) - len(lines)
     if omitted > 0:
@@ -182,9 +196,9 @@ def summarize_ruff_payload(payload: object) -> str | None:
 def format_ruff_diagnostic(diagnostic: dict[str, object]) -> str:
     """Format one Ruff diagnostic compact editor-style line."""
 
-    location = diagnostic.get("location", {})
-    row = location.get("row", 1) if isinstance(location, dict) else 1
-    column = location.get("column", 1) if isinstance(location, dict) else 1
+    location = json_object(diagnostic.get("location", {})) or {}
+    row = location.get("row", 1)
+    column = location.get("column", 1)
     filename = diagnostic.get("filename", "<unknown>")
     code = diagnostic.get("code", "ruff")
     message = diagnostic.get("message", "")
@@ -194,12 +208,13 @@ def format_ruff_diagnostic(diagnostic: dict[str, object]) -> str:
 def summarize_bandit_payload(payload: object) -> str | None:
     """Summarize Bandit JSON artifact payload."""
 
-    if not isinstance(payload, dict):
+    report = json_object(payload)
+    if report is None:
         return None
-    raw_results = payload.get("results", [])
-    if not isinstance(raw_results, list):
+    raw_results = json_array(report.get("results", []))
+    if raw_results is None:
         return None
-    findings = [item for item in raw_results if isinstance(item, dict)]
+    findings = json_objects(raw_results)
     lines = [format_bandit_finding(item) for item in findings[:STRUCTURED_DIAGNOSTIC_LIMIT]]
     omitted = len(findings) - len(lines)
     if omitted > 0:

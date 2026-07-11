@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, TypeGuard
 
 from agent_maintainer.config import registry, schema, validation
 
@@ -22,8 +22,8 @@ def _tuple_items(value: object, field_name: str) -> tuple[str, ...]:
         return ()
     if isinstance(value, str):
         return tuple(part.strip() for part in value.split(","))
-    if isinstance(value, (list, tuple)) and all(isinstance(part, str) for part in value):
-        return tuple(part.strip() for part in value)
+    if _is_object_sequence(value) and all(isinstance(part, str) for part in value):
+        return tuple(part.strip() for part in value if isinstance(part, str))
     raise TypeError(f"{field_name} must be a string or list of strings")
 
 
@@ -116,9 +116,10 @@ def coerce_file_baseline_group(
     """Coerce one named provider-neutral file baseline group."""
     if not name.strip():
         raise TypeError("file_baselines.groups name must not be empty")
-    if not isinstance(raw_value, dict):
-        raise TypeError(f"file_baselines.groups.{name} must be a table")
-    raw_group: dict[str, object] = raw_value
+    raw_group = _config_table(
+        raw_value,
+        f"file_baselines.groups.{name}",
+    )
     validation.validate_raw_config(
         {"file_baselines": {"groups": {name: raw_group}}},
         source=source,
@@ -157,9 +158,7 @@ def coerce_file_baselines(
     source: str = DEFAULT_CONFIG_SOURCE,
 ) -> dict[str, object]:
     """Coerce nested provider-neutral file baseline config."""
-    if not isinstance(raw_value, dict):
-        raise TypeError("file_baselines must be a table")
-    raw_table: dict[str, object] = raw_value
+    raw_table = _config_table(raw_value, "file_baselines")
     validation.validate_raw_config(
         {"file_baselines": raw_table},
         source=source,
@@ -177,9 +176,7 @@ def coerce_file_baselines(
         )
     groups = raw_table.get("groups")
     if groups is not None:
-        if not isinstance(groups, dict):
-            raise TypeError("file_baselines.groups must be a table")
-        group_table: dict[str, object] = groups
+        group_table = _config_table(groups, "file_baselines.groups")
         updates["file_baselines"] = tuple(
             coerce_file_baseline_group(name, group, source=source)
             for name, group in sorted(group_table.items())
@@ -196,14 +193,13 @@ def coerce_workspace(
     """Coerce one named workspace config table."""
     if not name.strip():
         raise TypeError("workspace name must not be empty")
-    if not isinstance(raw_value, dict):
-        raise TypeError(f"workspaces.{name} must be a table")
+    workspace = _config_table(raw_value, f"workspaces.{name}")
     validation.validate_raw_config(
-        {"workspaces": {name: raw_value}},
+        {"workspaces": {name: workspace}},
         source=source,
     )
     updates = {
-        field_name: parser(raw_value.get(field_name), f"workspaces.{name}.{field_name}")
+        field_name: parser(workspace.get(field_name), f"workspaces.{name}.{field_name}")
         for field_name, parser in WORKSPACE_FIELD_PARSERS
     }
     return schema.WorkspaceConfig(name=name, **updates)
@@ -215,11 +211,10 @@ def coerce_workspaces(
     source: str = DEFAULT_CONFIG_SOURCE,
 ) -> tuple[schema.WorkspaceConfig, ...]:
     """Coerce nested workspace config tables."""
-    if not isinstance(raw_value, dict):
-        raise TypeError("workspaces must be a table")
+    workspaces = _config_table(raw_value, "workspaces")
     return tuple(
         coerce_workspace(name, payload, source=source)
-        for name, payload in sorted(raw_value.items())
+        for name, payload in sorted(workspaces.items())
     )
 
 
@@ -230,15 +225,14 @@ def coerce_diagnostics(
 ) -> dict[str, object]:
     """Coerce the nested diagnostics config table."""
 
-    if not isinstance(raw_value, dict):
-        raise TypeError("diagnostics must be a table")
+    diagnostics = _config_table(raw_value, "diagnostics")
     validation.validate_raw_config(
-        {"diagnostics": raw_value},
+        {"diagnostics": diagnostics},
         source=source,
     )
     updates: dict[str, object] = {}
     for raw_name, field_name in registry.DIAGNOSTIC_FIELD_MAP.items():
-        value = raw_value.get(raw_name)
+        value = diagnostics.get(raw_name)
         if value is not None:
             spec = registry.FIELD_SPECS[field_name]
             updates[field_name] = coerce_field_value(
@@ -327,3 +321,25 @@ def _raw_scalar_item(
         ((key, raw[key]) for key in raw_keys if key in raw),
         None,
     )
+
+
+def _config_table(value: object, label: str) -> dict[str, object]:
+    """Return a string-keyed configuration table or fail with field context."""
+
+    if not _is_object_table(value):
+        raise TypeError(f"{label} must be a table")
+    if not all(isinstance(key, str) for key in value):
+        raise TypeError(f"{label} keys must be strings")
+    return {key: item for key, item in value.items() if isinstance(key, str)}
+
+
+def _is_object_sequence(value: object) -> TypeGuard[list[object] | tuple[object, ...]]:
+    """Return whether value is a list or tuple with explicit element boundaries."""
+
+    return isinstance(value, (list, tuple))
+
+
+def _is_object_table(value: object) -> TypeGuard[dict[object, object]]:
+    """Return whether value is a dictionary with explicit object boundaries."""
+
+    return isinstance(value, dict)

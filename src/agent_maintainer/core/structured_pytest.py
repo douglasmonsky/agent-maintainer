@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from agent_maintainer.core.structured_values import json_array, json_object
+
 DefusedElementTree: Any
 try:
     from defusedxml import ElementTree as DefusedElementTree
@@ -133,11 +135,12 @@ def junit_issue_count(root: Any) -> int:
 def summarize_coverage_payload(payload: object) -> str | None:
     """Summarize coverage JSON totals and worst missing-line files."""
 
-    if not isinstance(payload, dict):
+    report = json_object(payload)
+    if report is None:
         return None
-    totals = payload.get("totals", {})
-    files = payload.get("files", {})
-    if not isinstance(totals, dict) or not isinstance(files, dict):
+    totals = json_object(report.get("totals", {}))
+    files = json_object(report.get("files", {}))
+    if totals is None or files is None:
         return None
     covered = int_value(totals.get("covered_lines"))
     statements = int_value(totals.get("num_statements"))
@@ -154,10 +157,10 @@ def worst_coverage_file_lines(files: dict[str, object]) -> list[str]:
     entries = coverage_entries(files)
     lines: list[str] = []
     for missing_count, file_name, payload in entries[:COVERAGE_FILE_PREVIEW]:
-        summary = payload.get("summary", {})
-        percent = percent_value(summary if isinstance(summary, dict) else {})
-        missing_lines = payload.get("missing_lines", [])
-        preview = line_preview(missing_lines if isinstance(missing_lines, list) else [])
+        summary = json_object(payload.get("summary", {})) or {}
+        percent = percent_value(summary)
+        missing_lines = json_array(payload.get("missing_lines", [])) or []
+        preview = line_preview(missing_lines)
         lines.append(f"{file_name}: {percent}, {missing_count} missing ({preview})")
     if len(entries) > COVERAGE_FILE_PREVIEW:
         hidden = len(entries) - COVERAGE_FILE_PREVIEW
@@ -169,11 +172,12 @@ def coverage_entries(files: dict[str, object]) -> list[CoverageEntry]:
     """Return coverage entries sorted by missing-line count."""
 
     entries: list[CoverageEntry] = []
-    for file_name, payload in files.items():
-        if not isinstance(payload, dict):
+    for file_name, value in files.items():
+        payload = json_object(value)
+        if payload is None:
             continue
-        missing_lines = payload.get("missing_lines", [])
-        if isinstance(missing_lines, list) and missing_lines:
+        missing_lines = json_array(payload.get("missing_lines", []))
+        if missing_lines:
             entries.append((len(missing_lines), file_name, payload))
     return sorted(entries, reverse=True)
 

@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.config import loader, registry, schema, validation
+from agent_maintainer.config import coercion, loader, registry, schema, validation
 from agent_maintainer.core import args as core_args
 
 EXPECTED_CONFIG_FIELD_COUNT = 130
@@ -120,6 +120,10 @@ def test_unknown_keys_fail_at_every_nesting(
         key=expected_key,
         message="unknown configuration key",
     )
+    with pytest.raises(TypeError, match=r"^file_baselines must be a table$"):
+        coercion.coerce_file_baselines([])
+    with pytest.raises(TypeError, match=r"^file_baselines\.groups must be a table$"):
+        coercion.coerce_file_baselines({"groups": []})
 
 
 def test_neutral_error_has_source_and_prefix(tmp_path: Path) -> None:

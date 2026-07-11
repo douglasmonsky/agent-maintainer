@@ -12,6 +12,7 @@ from agent_maintainer.doctor import cli as maintainer_doctor
 from agent_maintainer.doctor import setup as maintainer_doctor_setup
 from agent_maintainer.doctor.support import dogfood as maintainer_doctor_dogfood
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
+from tests.support.callbacks import completed_process_callback, constant_callback
 
 ENCODING = "utf-8"
 
@@ -45,7 +46,7 @@ def test_source_dogfood_passes_local_package(
     monkeypatch.setattr(
         maintainer_doctor_setup.importlib_util,
         "find_spec",
-        lambda _name: SimpleNamespace(origin=str(package_init)),
+        constant_callback(SimpleNamespace(origin=str(package_init))),
     )
 
     result = maintainer_doctor_setup.check_source_checkout_dogfood(tmp_path)
@@ -62,7 +63,7 @@ def test_source_dogfood_warns_stale_import(tmp_path: Path, monkeypatch: pytest.M
     monkeypatch.setattr(
         maintainer_doctor_setup.importlib_util,
         "find_spec",
-        lambda _name: SimpleNamespace(origin=str(stale_path)),
+        constant_callback(SimpleNamespace(origin=str(stale_path))),
     )
 
     result = maintainer_doctor_setup.check_source_checkout_dogfood(tmp_path)
@@ -88,7 +89,7 @@ def test_console_dogfood_skips_without_script(
     monkeypatch.setattr(
         maintainer_doctor_dogfood.shutil,
         "which",
-        lambda _name: None,
+        constant_callback(None),
     )
     result = maintainer_doctor_setup.check_console_script_dogfood(tmp_path)
     assert result.status == maintainer_doctor.OK
@@ -108,12 +109,12 @@ def test_console_dogfood_warns_uninspectable(
     monkeypatch.setattr(
         maintainer_doctor_dogfood.shutil,
         "which",
-        lambda _name: str(script_path),
+        constant_callback(str(script_path)),
     )
     monkeypatch.setattr(
         maintainer_doctor_dogfood,
         "console_script_import_path",
-        lambda _script_path: None,
+        constant_callback(None),
     )
     result = maintainer_doctor_setup.check_console_script_dogfood(tmp_path)
     assert result.status == maintainer_doctor.WARNING
@@ -133,7 +134,7 @@ def test_console_dogfood_passes_local_import(
     monkeypatch.setattr(
         maintainer_doctor_dogfood.shutil,
         "which",
-        lambda _name: str(script_path),
+        constant_callback(str(script_path)),
     )
     result = maintainer_doctor_setup.check_console_script_dogfood(tmp_path)
     assert result.status == maintainer_doctor.OK
@@ -155,12 +156,12 @@ def test_console_dogfood_warns_stale_import(
     monkeypatch.setattr(
         maintainer_doctor_dogfood.shutil,
         "which",
-        lambda _name: str(script_path),
+        constant_callback(str(script_path)),
     )
     monkeypatch.setattr(
         maintainer_doctor_dogfood,
         "console_script_import_path",
-        lambda _script_path: stale_path,
+        constant_callback(stale_path),
     )
     result = maintainer_doctor_setup.check_console_script_dogfood(tmp_path)
     assert result.status == maintainer_doctor.WARNING
@@ -177,7 +178,7 @@ def test_console_helpers_handle_failed_probe(
     monkeypatch.setattr(
         maintainer_doctor_dogfood.subprocess,
         "run",
-        lambda *_args, **_kwargs: SimpleNamespace(returncode=1, stdout=""),
+        completed_process_callback(1),
     )
     no_shebang = tmp_path / "plain-script"
     no_shebang.write_text("python\n", encoding=ENCODING)

@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
+from functools import partial
 from pathlib import Path
-from typing import Any
+from typing import cast
 
 from agent_context.attention_rendering import attention_lines, attention_pointer_lines
 from agent_context.budget import bound_text
@@ -17,7 +18,7 @@ HOOK_COMMAND_LIMIT = 3
 
 
 def render_pack_markdown(
-    payload: dict[str, Any],
+    payload: dict[str, object],
     *,
     log_dir: Path,
     budget: int,
@@ -59,11 +60,15 @@ def render_pack_markdown(
         supporting_item_lines(payload["selected_logs"], "check", "No logs selected."),
     )
     add_section(lines, "Omitted Counts", omitted_count_lines(payload["omitted_counts"]))
-    add_section(lines, "Expansion Commands", command_lines(payload["expansion_commands"]))
+    add_section(
+        lines,
+        "Expansion Commands",
+        bullet_lines(payload["expansion_commands"], code=True),
+    )
     return "\n".join(lines).rstrip()
 
 
-def render_pack_json(payload: dict[str, Any]) -> str:
+def render_pack_json(payload: dict[str, object]) -> str:
     """Return stable JSON context pack."""
 
     return f"{json.dumps(payload, indent=2, sort_keys=True)}\n"
@@ -107,16 +112,17 @@ def render_pack_pointer(
 def fact_pointer_lines(facts: object, limit: int) -> list[str]:
     """Return top exact fact lines for hook output."""
 
-    if not isinstance(facts, list):
+    fact_values = _json_array(facts)
+    if fact_values is None:
         return []
     return [
         f"{index}. {fact_summary(fact)}"
-        for index, fact in enumerate(facts[:limit], start=1)
-        if isinstance(fact, dict)
+        for index, value in enumerate(fact_values[:limit], start=1)
+        if (fact := _json_object(value)) is not None
     ]
 
 
-def fact_summary(fact: dict[object, object]) -> str:
+def fact_summary(fact: dict[str, object]) -> str:
     """Return compact exact-fact summary."""
 
     check = str(fact.get("check", "unknown"))
@@ -138,19 +144,21 @@ def fact_location(path: object, line: object) -> str:
 def next_action_line(commands: object) -> str:
     """Return one likely next action from expansion commands."""
 
-    if isinstance(commands, list) and commands:
-        return str(commands[0])
+    command_values = _json_array(commands)
+    if command_values:
+        return str(command_values[0])
     return "Inspect the first failed check summary."
 
 
 def command_pointer_lines(commands: object, limit: int) -> list[str]:
     """Return expansion command lines for hook output."""
 
-    if not isinstance(commands, list):
+    command_values = _json_array(commands)
+    if command_values is None:
         return []
-    if not commands:
+    if not command_values:
         return ["python -m agent_maintainer context failures --limit 20"]
-    return [str(command) for command in commands[:limit]]
+    return [str(command) for command in command_values[:limit]]
 
 
 def enforce_pack_budget(
@@ -185,11 +193,13 @@ def add_section(lines: list[str], title: str, body: list[str]) -> None:
 def exact_fact_lines(facts: object) -> list[str]:
     """Return exact repair fact lines."""
 
-    if not isinstance(facts, list) or not facts:
+    fact_values = _json_array(facts)
+    if not fact_values:
         return ["- No failed checks found in the selected verifier manifest."]
     lines: list[str] = []
-    for fact in facts:
-        if not isinstance(fact, dict):
+    for value in fact_values:
+        fact = _json_object(value)
+        if fact is None:
             lines.append("- Unknown failure fact.")
             continue
         location = fact_location(fact.get("path"), fact.get("line")).strip()
@@ -209,27 +219,29 @@ def exact_fact_lines(facts: object) -> list[str]:
 def supporting_context_lines(context: object) -> list[str]:
     """Return supporting context lines."""
 
-    if not isinstance(context, dict):
+    context_payload = _json_object(context)
+    if context_payload is None:
         return ["- No supporting context selected."]
     return [
-        str(context.get("summary", "")),
+        str(context_payload.get("summary", "")),
         "",
-        f"- Selected logs: `{context.get('log_count', 0)}`",
-        f"- Selected file outlines: `{context.get('file_outline_count', 0)}`",
+        f"- Selected logs: `{context_payload.get('log_count', 0)}`",
+        f"- Selected file outlines: `{context_payload.get('file_outline_count', 0)}`",
     ]
 
 
 def ratchet_lines(state: object) -> list[str]:
     """Return ratchet state lines."""
 
-    if not isinstance(state, dict) or not state.get("available"):
-        reason = state.get("reason", "unknown") if isinstance(state, dict) else "unknown"
+    state_payload = _json_object(state)
+    if state_payload is None or not state_payload.get("available"):
+        reason = state_payload.get("reason", "unknown") if state_payload else "unknown"
         return [f"- Ratchet state unavailable: {reason}"]
     lines = [
-        f"- Baseline: `{state.get('baseline_path')}`",
-        f"- Counts: `{json.dumps(state.get('counts', {}), sort_keys=True)}`",
+        f"- Baseline: `{state_payload.get('baseline_path')}`",
+        f"- Counts: `{json.dumps(state_payload.get('counts', {}), sort_keys=True)}`",
     ]
-    stale = state.get("stale_reasons", [])
+    stale = _json_array(state_payload.get("stale_reasons", []))
     if stale:
         lines.append("- Stale reasons:")
         lines.extend(f"  - {reason}" for reason in stale)
@@ -239,11 +251,13 @@ def ratchet_lines(state: object) -> list[str]:
 def top_target_lines(targets: object) -> list[str]:
     """Return top ratchet target lines."""
 
-    if not isinstance(targets, list) or not targets:
+    target_values = _json_array(targets)
+    if not target_values:
         return ["- No ratchet targets selected."]
     lines: list[str] = []
-    for target in targets:
-        if not isinstance(target, dict):
+    for value in target_values:
+        target = _json_object(value)
+        if target is None:
             lines.append("- Unknown target.")
             continue
         lines.extend(
@@ -260,11 +274,13 @@ def top_target_lines(targets: object) -> list[str]:
 def supporting_item_lines(items: object, label_key: str, empty_message: str) -> list[str]:
     """Return selected untrusted supporting item lines."""
 
-    if not isinstance(items, list) or not items:
+    item_values = _json_array(items)
+    if not item_values:
         return [f"- {empty_message}"]
     lines: list[str] = []
-    for item in items:
-        if not isinstance(item, dict):
+    for value in item_values:
+        item = _json_object(value)
+        if item is None:
             lines.append("- Unknown supporting item.")
             continue
         label = item.get(label_key, item.get("source", "unknown"))
@@ -289,21 +305,41 @@ def supporting_item_lines(items: object, label_key: str, empty_message: str) -> 
 def omitted_count_lines(counts: object) -> list[str]:
     """Return omitted count lines."""
 
-    if not isinstance(counts, dict):
+    count_values = _json_object(counts)
+    if count_values is None:
         return []
-    return [f"- {key}: `{value}`" for key, value in sorted(counts.items())]
+    return [f"- {key}: `{value}`" for key, value in sorted(count_values.items())]
 
 
-def command_lines(commands: object) -> list[str]:
-    """Return expansion command lines."""
-
-    return [f"- `{command}`" for command in commands] if isinstance(commands, list) else []
-
-
-def bullet_lines(values: object) -> list[str]:
+def bullet_lines(values: object, *, code: bool = False) -> list[str]:
     """Return bullet lines for string-like values."""
 
-    return [f"- {value}" for value in values] if isinstance(values, list) else []
+    item_values = _json_array(values)
+    if code:
+        return [f"- `{value}`" for value in item_values] if item_values else []
+    return [f"- {value}" for value in item_values] if item_values else []
+
+
+command_lines = partial(bullet_lines, code=True)
+
+
+def _json_object(value: object) -> dict[str, object] | None:
+    """Return a JSON object with string keys, or ``None`` when malformed."""
+
+    if not isinstance(value, dict):
+        return None
+    raw = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in raw):
+        return None
+    return {key: item for key, item in raw.items() if isinstance(key, str)}
+
+
+def _json_array(value: object) -> list[object] | None:
+    """Return a JSON array with an explicit element boundary."""
+
+    if not isinstance(value, list):
+        return None
+    return cast(list[object], value)
 
 
 def budget_suffix(

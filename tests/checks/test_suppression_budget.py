@@ -8,6 +8,7 @@ import pytest
 
 from agent_maintainer.checks import suppression_budget as check_suppression_budget
 from agent_maintainer.core.config import MaintainerConfig
+from tests.support.callbacks import constant_callback
 
 NOQA_SUPPRESSION = "# " + "noqa"
 TYPE_IGNORE_SUPPRESSION = "# " + "type: ignore[assignment]"
@@ -30,10 +31,14 @@ def test_suppression_added_python_lines_parses_diff(monkeypatch: pytest.MonkeyPa
     diff_result = subprocess.CompletedProcess(["git"], 0, stdout=diff, stderr="")
     name_status_result = subprocess.CompletedProcess(["git"], 0, stdout="", stderr="")
     calls = [diff_result, name_status_result]
+
+    def next_result(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return calls.pop(0)
+
     monkeypatch.setattr(
         check_suppression_budget.subprocess,
         "run",
-        lambda *args, **_kwargs: calls.pop(0),
+        next_result,
     )
 
     assert check_suppression_budget.added_python_lines("HEAD", staged=False) == [
@@ -54,10 +59,14 @@ def test_suppression_added_python_lines_ignores_copied_destinations(
         stderr="",
     )
     calls = [diff_result, name_status_result]
+
+    def next_result(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return calls.pop(0)
+
     monkeypatch.setattr(
         check_suppression_budget.subprocess,
         "run",
-        lambda *args, **_kwargs: calls.pop(0),
+        next_result,
     )
 
     assert check_suppression_budget.added_python_lines("HEAD", staged=False) == []
@@ -85,10 +94,14 @@ def test_suppression_added_python_lines_skips_non_python_paths(
     diff_result = subprocess.CompletedProcess(["git"], 0, stdout=diff, stderr="")
     name_status_result = subprocess.CompletedProcess(["git"], 0, stdout="", stderr="")
     calls = [diff_result, name_status_result]
+
+    def next_result(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return calls.pop(0)
+
     monkeypatch.setattr(
         check_suppression_budget.subprocess,
         "run",
-        lambda *args, **_kwargs: calls.pop(0),
+        next_result,
     )
 
     assert check_suppression_budget.added_python_lines("HEAD", staged=False) == [
@@ -108,14 +121,12 @@ def test_suppression_main_reports_failures(
     monkeypatch.setattr(
         check_suppression_budget,
         "added_python_lines",
-        lambda base_ref, staged=False: [
-            ("scripts/tool.py", f"value = call() {NOQA_SUPPRESSION}"),
-        ],
+        constant_callback([("scripts/tool.py", f"value = call() {NOQA_SUPPRESSION}")]),
     )
     monkeypatch.setattr(
         check_suppression_budget,
         "load_config",
-        lambda: MaintainerConfig(suppression_max_new=0),
+        constant_callback(MaintainerConfig(suppression_max_new=0)),
     )
 
     assert check_suppression_budget.main([]) == 1
@@ -126,7 +137,9 @@ def test_suppression_main_passes_without_new_suppressions(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        check_suppression_budget, "added_python_lines", lambda *_args, **_kwargs: []
+        check_suppression_budget,
+        "added_python_lines",
+        constant_callback(list[tuple[str, str]]()),
     )
     monkeypatch.setattr(check_suppression_budget, "load_config", MaintainerConfig)
 
@@ -152,14 +165,12 @@ def test_suppression_main_respects_zero_cli_limit(
     monkeypatch.setattr(
         check_suppression_budget,
         "added_python_lines",
-        lambda base_ref, staged=False: [
-            ("scripts/tool.py", f"value = call() {NOQA_SUPPRESSION}"),
-        ],
+        constant_callback([("scripts/tool.py", f"value = call() {NOQA_SUPPRESSION}")]),
     )
     monkeypatch.setattr(
         check_suppression_budget,
         "load_config",
-        lambda: MaintainerConfig(suppression_max_new=100),
+        constant_callback(MaintainerConfig(suppression_max_new=100)),
     )
 
     assert check_suppression_budget.main(["--max-new-suppressions", "0"]) == 1
