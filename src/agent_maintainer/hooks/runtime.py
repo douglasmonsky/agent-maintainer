@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -22,6 +21,7 @@ from agent_maintainer.hooks import (
 )
 from agent_maintainer.hooks import (
     runtime_eventing,
+    runtime_payload,
 )
 from agent_maintainer.hooks import (
     subprocess_runner as hook_subprocess,
@@ -197,13 +197,7 @@ def emit_verifier_result(
 def read_hook_payload() -> dict[str, object]:
     """Read hook JSON from stdin, treating malformed input as empty."""
 
-    try:
-        payload = json.load(sys.stdin)
-    except (json.JSONDecodeError, OSError):
-        return {}
-    if isinstance(payload, dict):
-        return payload
-    return {}
+    return runtime_payload.read_hook_payload(sys.stdin)
 
 
 def is_recursive_stop(event: str, payload: dict[str, object]) -> bool:
@@ -380,7 +374,7 @@ def emit_continue() -> int:
 def emit(payload: dict[str, object]) -> int:
     """Emit one JSON hook response."""
 
-    print(json.dumps(payload))
+    print(runtime_payload.render_hook_payload(payload))
     return 0
 
 

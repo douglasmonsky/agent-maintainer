@@ -24,6 +24,15 @@ def json_array(value: object) -> list[object] | None:
     return cast(list[object], value)
 
 
+def json_object_items(value: object) -> list[tuple[str, object]]:
+    """Return valid string-keyed fields while isolating malformed neighbors."""
+
+    if not isinstance(value, dict):
+        return []
+    raw = cast(dict[object, object], value)
+    return [(key, item) for key, item in raw.items() if isinstance(key, str)]
+
+
 def json_objects(values: list[object]) -> list[dict[str, object]]:
     """Return the valid string-keyed objects from one JSON array."""
 

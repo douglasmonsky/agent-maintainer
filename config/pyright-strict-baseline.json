@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 37,
-    "reportUnknownArgumentType": 128,
+    "reportUnknownArgumentType": 126,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 11,
-    "reportUnknownVariableType": 40
+    "reportUnknownMemberType": 10,
+    "reportUnknownVariableType": 34
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 15 validated attention, command, omitted-count, ratchet, and exact-fact context-pack boundaries; all 16 targeted production diagnostics were removed without suppressions or permissive types.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 16 validated hook input, recursive response, readiness, and runtime boundaries; 9 production diagnostics were removed without suppressions or permissive types, with mutation-state typing deferred to the next bounded batch.",
   "pairs": {
     "src/agent_maintainer/change_plan/parser.py": {
       "reportUnknownArgumentType": 1,
@@ -43,17 +43,6 @@
       "reportUnknownVariableType": 3
     },
     "src/agent_maintainer/hooks/mutations.py": {
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/hooks/pr_wait.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 4
-    },
-    "src/agent_maintainer/hooks/readiness.py": {
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/hooks/runtime.py": {
       "reportUnknownVariableType": 1
     },
     "src/agent_maintainer/ratchet/cli.py": {
@@ -304,5 +293,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 351
+  "total_errors": 342
 }

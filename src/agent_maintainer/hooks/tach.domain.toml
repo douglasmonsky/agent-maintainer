@@ -70,6 +70,7 @@ depends_on = [
 path = "pr_wait"
 depends_on = [
   "//agent_client_hooks.constants",
+  "//agent_maintainer.core.structured_values",
   "//agent_maintainer.wait.broker",
   "//agent_maintainer.wait.github_pr",
 ]
@@ -77,6 +78,7 @@ depends_on = [
 [[modules]]
 path = "readiness"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "//agent_maintainer.wait.broker",
   "//agent_maintainer.verify.locking",
   "//agent_waits.models",
@@ -91,8 +93,13 @@ depends_on = [
   "discovery",
   "readiness",
   "runtime_eventing",
+  "runtime_payload",
   "subprocess_runner",
 ]
+
+[[modules]]
+path = "runtime_payload"
+depends_on = ["//agent_maintainer.core.structured_values"]
 
 [[modules]]
 path = "runtime_eventing"
