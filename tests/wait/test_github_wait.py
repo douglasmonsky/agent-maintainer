@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from collections.abc import Iterator
 
+import pytest
+
 from agent_maintainer.wait.github import (
     TIMEOUT_EXIT_CODE,
     GitHubRunState,
@@ -53,6 +55,7 @@ def test_failure_capsule_lists_failed_jobs() -> None:
                 "conclusion": "failure",
                 "url": "https://run",
                 "jobs": [
+                    None,
                     {
                         "name": "verify",
                         "status": "completed",
@@ -75,6 +78,13 @@ def test_failure_capsule_lists_failed_jobs() -> None:
     assert "Top repair facts:\n1. GitHub job: verify (failure)" in text
     assert "Likely next action:\ngh run view 123 --log-failed" in text
     assert "Expand only if needed:\nhttps://run" in text
+
+
+def test_parse_github_run_state_rejects_non_object_payload() -> None:
+    """GitHub run output must keep its documented object shape."""
+
+    with pytest.raises(ValueError, match="JSON object"):
+        parse_github_run_state("[]")
 
 
 def test_wait_for_github_run_times_out() -> None:

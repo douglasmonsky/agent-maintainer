@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Final
 
+from agent_maintainer.core.structured_values import json_object
 from agent_maintainer.wait.codex_rewake import (
     CODEX_APP_SERVER_TIMEOUT_ENV,
     CODEX_BIN_ENV,
@@ -54,7 +55,7 @@ def read_rewake_envelope(root: Path, wait_id: str) -> dict[str, str] | None:
 
     path = rewake_envelope_path(root, wait_id)
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload: object = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return None
     except (OSError, json.JSONDecodeError):
@@ -62,10 +63,11 @@ def read_rewake_envelope(root: Path, wait_id: str) -> dict[str, str] | None:
         return None
     finally:
         path.unlink(missing_ok=True)
-    if not isinstance(payload, dict) or _expired(payload):
+    report = json_object(payload)
+    if report is None or _expired(report):
         return None
-    value = payload.get("env")
-    if not isinstance(value, dict):
+    value = json_object(report.get("env"))
+    if value is None:
         return None
     return {str(key): str(item) for key, item in value.items()}
 
@@ -75,10 +77,11 @@ def has_rewake_envelope(root: Path, wait_id: str) -> bool:
 
     path = rewake_envelope_path(root, wait_id)
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload: object = json.loads(path.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError, OSError):
         return False
-    if not isinstance(payload, dict) or _expired(payload):
+    report = json_object(payload)
+    if report is None or _expired(report):
         path.unlink(missing_ok=True)
         return False
     return True
@@ -125,12 +128,15 @@ def read_heartbeat(root: Path) -> str:
     """Read latest daemon heartbeat timestamp."""
 
     try:
-        payload = json.loads((watchers_dir(root) / DAEMON_HEARTBEAT_NAME).read_text())
+        payload: object = json.loads(
+            (watchers_dir(root) / DAEMON_HEARTBEAT_NAME).read_text(),
+        )
     except (FileNotFoundError, json.JSONDecodeError, OSError):
         return ""
-    if not isinstance(payload, dict):
+    report = json_object(payload)
+    if report is None:
         return ""
-    return str(payload.get("updated_at", ""))
+    return str(report.get("updated_at", ""))
 
 
 def _rewake_env(env: Mapping[str, str], thread_id: str) -> dict[str, str]:

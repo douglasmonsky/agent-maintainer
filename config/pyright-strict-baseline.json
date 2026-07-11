@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 37,
-    "reportUnknownArgumentType": 146,
+    "reportUnknownArgumentType": 138,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 20,
-    "reportUnknownVariableType": 60
+    "reportUnknownMemberType": 17,
+    "reportUnknownVariableType": 55
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 11 validated Bandit, Ruff, Pyright, and Mutmut JSON boundaries; 13 production diagnostics in agent_maintainer.runners were removed without suppressions or permissive types.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 12 validated daemon, GitHub run, GitHub PR, and cached-verifier state boundaries; 16 production diagnostics in agent_maintainer.wait were removed without suppressions or permissive types.",
   "pairs": {
     "src/agent_maintainer/attention/rendering.py": {
       "reportUnknownArgumentType": 1
@@ -105,23 +105,6 @@
       "reportUnknownArgumentType": 1,
       "reportUnknownMemberType": 2,
       "reportUnknownVariableType": 4
-    },
-    "src/agent_maintainer/wait/daemon_state.py": {
-      "reportUnknownArgumentType": 5,
-      "reportUnknownMemberType": 2,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_maintainer/wait/github.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/wait/github_pr.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/wait/verifier.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownMemberType": 1
     },
     "tests/archguard/test_git_diff.py": {
       "reportUnknownArgumentType": 2,
@@ -353,5 +336,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 398
+  "total_errors": 382
 }

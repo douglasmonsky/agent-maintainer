@@ -5,10 +5,11 @@ from __future__ import annotations
 import json
 import subprocess  # nosec B404
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Final
+from typing import Final
 
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
 from agent_waits.models import (
     TIMEOUT_EXIT_CODE,
     WaitRepairCapsule,
@@ -140,12 +141,15 @@ def query_github_run(config: GitHubWaitConfig) -> GitHubRunState:
 
 def parse_github_run_state(raw_json: str) -> GitHubRunState:
     """Parse `gh run view --json` output."""
-    payload = json.loads(raw_json)
+    payload: object = json.loads(raw_json)
+    report = json_object(payload)
+    if report is None:
+        raise ValueError("GitHub run output must be a JSON object")
     return GitHubRunState(
-        status=str(payload.get("status", "")),
-        conclusion=str(payload.get("conclusion", "")),
-        url=str(payload.get("url", "")),
-        jobs=_parse_jobs(payload.get("jobs", ())),
+        status=str(report.get("status", "")),
+        conclusion=str(report.get("conclusion", "")),
+        url=str(report.get("url", "")),
+        jobs=_parse_jobs(report.get("jobs")),
     )
 
 
@@ -202,12 +206,13 @@ def _gh_run_view_command(config: GitHubWaitConfig) -> list[str]:
 
 
 def _parse_jobs(raw_jobs: object) -> tuple[GitHubJob, ...]:
-    if not isinstance(raw_jobs, Sequence) or isinstance(raw_jobs, (str, bytes)):
+    jobs = json_array(raw_jobs)
+    if jobs is None:
         return ()
-    return tuple(_parse_job(job) for job in raw_jobs if isinstance(job, dict))
+    return tuple(_parse_job(job) for job in json_objects(jobs))
 
 
-def _parse_job(job: dict[str, Any]) -> GitHubJob:
+def _parse_job(job: dict[str, object]) -> GitHubJob:
     return GitHubJob(
         name=str(job.get("name", "")),
         status=str(job.get("status", "")),
