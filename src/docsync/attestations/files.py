@@ -7,7 +7,7 @@ import os
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import cast
 
 from docsync.config.io import MAX_REPOSITORY_INPUT_BYTES
 from docsync.config.load import ConfigError, load_yaml_mapping
@@ -22,9 +22,9 @@ MAX_ATTESTATION_TOTAL_BYTES = MAX_REPOSITORY_INPUT_BYTES + MAX_REPOSITORY_INPUT_
 class AttestationLoadState:
     """Mutable bounded-attestation loading state."""
 
-    records: list[Attestation] = field(default_factory=list)
-    findings: list[Finding] = field(default_factory=list)
-    seen_ids: set[str] = field(default_factory=set)
+    records: list[Attestation] = field(default_factory=list[Attestation])
+    findings: list[Finding] = field(default_factory=list[Finding])
+    seen_ids: set[str] = field(default_factory=set[str])
     remaining_bytes: int = MAX_ATTESTATION_TOTAL_BYTES
 
 
@@ -145,14 +145,24 @@ def _load_attestation_file(path: Path) -> tuple[tuple[Attestation, ...], list[Fi
     records: list[Attestation] = []
     findings: list[Finding] = []
     for index, raw_record in enumerate(raw_records):
-        if not isinstance(raw_record, dict):
+        record_payload = _string_mapping(raw_record)
+        if record_payload is None:
             findings.append(_finding("DS301", f"attestations[{index}] must be a mapping", path))
             continue
-        records.append(_record(path, cast(dict[str, Any], raw_record)))
+        records.append(_record(path, record_payload))
     return tuple(records), findings
 
 
-def _record(path: Path, payload: dict[str, Any]) -> Attestation:
+def _string_mapping(value: object) -> dict[str, object] | None:
+    if not isinstance(value, dict):
+        return None
+    mapping = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in mapping):
+        return None
+    return {key: item for key, item in mapping.items() if isinstance(key, str)}
+
+
+def _record(path: Path, payload: dict[str, object]) -> Attestation:
     return Attestation(
         attestation_id=str(payload.get("id", "")),
         claim_id=str(payload.get("claim", "")),

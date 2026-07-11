@@ -6,6 +6,8 @@ import fnmatch
 from pathlib import Path
 from typing import TypeGuard
 
+from archguard.structured_values import structured_array, structured_object, structured_objects
+
 DEFAULT_SOURCE_EXCLUDES = (
     ".git/",
     ".venv/",
@@ -17,13 +19,8 @@ DEFAULT_SOURCE_EXCLUDES = (
 
 def configured_module_paths(modules: object) -> frozenset[str]:
     """Return module paths declared in a Tach module list."""
-    if not isinstance(modules, list):
-        return frozenset()
-
     paths: list[str] = []
-    for item in modules:
-        if not isinstance(item, dict):
-            continue
+    for item in structured_objects(modules):
         path = item.get("path")
         if non_empty_string(path):
             paths.append(path)
@@ -63,9 +60,12 @@ def module_path_exists(repo_root: Path, source_roots: list[str], module_path: st
 
 def module_has_path(item: object) -> bool:
     """Return whether a Tach module item declares path ownership."""
-    if not isinstance(item, dict):
+    payload = structured_object(item)
+    if payload is None:
         return False
-    return non_empty_string(item.get("path")) or non_empty_string_list(item.get("paths"))
+    return non_empty_string(payload.get("path")) or non_empty_string_list(
+        payload.get("paths"),
+    )
 
 
 def matches_exclude(path_text: str, path_parts: tuple[str, ...], pattern: str) -> bool:
@@ -87,7 +87,8 @@ def non_empty_string(value: object) -> TypeGuard[str]:
 
 def non_empty_string_list(value: object) -> TypeGuard[list[str]]:
     """Return whether value is a non-empty list of strings."""
-    return isinstance(value, list) and bool(value) and all(non_empty_string(item) for item in value)
+    values = structured_array(value)
+    return values is not None and bool(values) and all(non_empty_string(item) for item in values)
 
 
 def _root_module_names(

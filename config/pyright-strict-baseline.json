@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 42,
-    "reportUnknownArgumentType": 186,
+    "reportUnknownArgumentType": 178,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 55,
-    "reportUnknownVariableType": 124
+    "reportUnknownMemberType": 50,
+    "reportUnknownVariableType": 113
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 4 centralized agent_context structured-value normalization; all 33 production diagnostics in the reusable context package were removed without suppressions or Any substitutions.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 5 validated Archguard configuration shapes and DocSync attestation/model factories; all 24 production diagnostics in both governance packages were removed without suppressions or Any substitutions.",
   "pairs": {
     "src/agent_client_hooks/claude_merge.py": {
       "reportUnknownArgumentType": 5,
@@ -230,22 +230,6 @@
     },
     "src/agent_waits/registry.py": {
       "reportUnknownArgumentType": 3
-    },
-    "src/archguard/impact.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 2
-    },
-    "src/archguard/tach_config_sources.py": {
-      "reportUnknownArgumentType": 6,
-      "reportUnknownMemberType": 4,
-      "reportUnknownVariableType": 4
-    },
-    "src/docsync/attestations/files.py": {
-      "reportUnknownVariableType": 3
-    },
-    "src/docsync/core/models.py": {
-      "reportUnknownVariableType": 2
     },
     "tests/archguard/test_git_diff.py": {
       "reportUnknownArgumentType": 2,
@@ -477,5 +461,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 542
+  "total_errors": 518
 }

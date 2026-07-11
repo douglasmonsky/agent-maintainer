@@ -111,6 +111,7 @@ def test_module_rules_ignore_malformed_items_and_flatten_paths() -> None:
     rules = module_rules(
         [
             "bad",
+            {1: "non-string-key"},
             {"paths": ["sample.good", "", 3], "layer": "runtime"},
             {"path": "sample.cli", "layer": "entrypoint"},
             {"path": "", "layer": "runtime"},
