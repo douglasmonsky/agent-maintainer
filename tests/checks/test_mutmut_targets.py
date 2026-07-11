@@ -9,6 +9,16 @@ import pytest
 from agent_maintainer.checks import mutmut_targets
 
 
+def test_mutmut_config_rejects_non_string_nested_key() -> None:
+    """Mutmut configuration must keep TOML-compatible string keys."""
+
+    payload: dict[str, object] = {
+        "tool": {"mutmut": {1: "invalid", "only_mutate": ["src/package"]}},
+    }
+
+    assert mutmut_targets.mutation_config(payload) == {}
+
+
 def test_mutmut_target_ratchet_passes_when_floor_met(tmp_path: Path) -> None:
     """Configured path-like mutation targets count toward ratchet floor."""
 

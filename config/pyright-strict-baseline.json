@@ -1,39 +1,15 @@
 {
   "by_rule": {
     "reportPrivateUsage": 37,
-    "reportUnknownArgumentType": 126,
+    "reportUnknownArgumentType": 120,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 10,
-    "reportUnknownVariableType": 34
+    "reportUnknownMemberType": 4,
+    "reportUnknownVariableType": 23
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 16 validated hook input, recursive response, readiness, and runtime boundaries; 9 production diagnostics were removed without suppressions or permissive types, with mutation-state typing deferred to the next bounded batch.",
+  "note": "Reviewed 2026-07-11 after strict production batch 17 validated maintenance structured-data boundaries and typed collection factories; 23 production diagnostics were removed without suppressions, unchecked casts, or permissive types.",
   "pairs": {
-    "src/agent_maintainer/change_plan/parser.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/checks/cohesive_override.py": {
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/checks/file_lengths.py": {
-      "reportUnknownArgumentType": 3,
-      "reportUnknownMemberType": 2,
-      "reportUnknownVariableType": 2
-    },
-    "src/agent_maintainer/checks/mutmut_targets.py": {
-      "reportUnknownVariableType": 2
-    },
     "src/agent_maintainer/context/cli.py": {
       "reportPrivateUsage": 7
-    },
-    "src/agent_maintainer/core/scaffold/planning.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_maintainer/core/scaffold/transaction.py": {
-      "reportUnknownVariableType": 1
     },
     "src/agent_maintainer/doctor/support/hook_audit.py": {
       "reportUnknownArgumentType": 2,
@@ -41,9 +17,6 @@
     },
     "src/agent_maintainer/doctor/support/logs.py": {
       "reportUnknownVariableType": 3
-    },
-    "src/agent_maintainer/hooks/mutations.py": {
-      "reportUnknownVariableType": 1
     },
     "src/agent_maintainer/ratchet/cli.py": {
       "reportPrivateUsage": 5
@@ -293,5 +266,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 342
+  "total_errors": 319
 }

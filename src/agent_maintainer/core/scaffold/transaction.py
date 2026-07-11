@@ -19,6 +19,10 @@ GIT_BACKUP_ROOT = Path("agent-maintainer/backups/init")
 DEFAULT_FILE_MODE = 0o644
 
 
+def _empty_written_paths() -> list[Path]:
+    return []
+
+
 class InitTransactionError(RuntimeError):
     """Raised when initializer apply cannot preserve a coherent state."""
 
@@ -36,7 +40,7 @@ class InitTransactionState:
     """Mutable recovery state retained across an interrupted apply."""
 
     backups: tuple[InitBackup, ...] = ()
-    written: list[Path] = field(default_factory=list)
+    written: list[Path] = field(default_factory=_empty_written_paths)
 
 
 @dataclass(frozen=True)

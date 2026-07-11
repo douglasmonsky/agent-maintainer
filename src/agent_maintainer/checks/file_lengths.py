@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 from agent_maintainer.core.config import load_config
+from agent_maintainer.core.structured_values import json_object, plain_int
 from agent_maintainer.ecosystems.python.classification import (
     is_python_generated_path,
     is_python_ignored_path,
@@ -210,17 +211,21 @@ def read_baseline(path: Path) -> dict[str, tuple[int, int]]:
 
     if not path.exists():
         return {}
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    files = payload.get("files", {})
-    if not isinstance(files, dict):
+    payload: object = json.loads(path.read_text(encoding="utf-8"))
+    report = json_object(payload)
+    if report is None:
+        raise ValueError("file-length baseline must be an object")
+    files = json_object(report.get("files", {}))
+    if files is None:
         raise ValueError("file-length baseline 'files' must be an object")
     baseline: dict[str, tuple[int, int]] = {}
     for file_path, raw_counts in files.items():
-        if not isinstance(raw_counts, dict):
+        counts = json_object(raw_counts)
+        if counts is None:
             raise ValueError(f"file-length baseline record for {file_path!r} must be an object")
-        baseline[str(file_path)] = (
-            int(raw_counts.get("physical", 0)),
-            int(raw_counts.get("source", 0)),
+        baseline[file_path] = (
+            plain_int(counts.get("physical")),
+            plain_int(counts.get("source")),
         )
     return baseline
 

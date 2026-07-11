@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Protocol
 
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.core.structured_values import json_object
 
 OVERRIDE_SECTION_PATTERN = re.compile(
     r"(?ims)^#{2,6}\s*cohesive-change override\s*$"
@@ -117,9 +118,10 @@ def github_pr_body() -> str | None:
     path = Path(event_path)
     if not path.exists():
         return None
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    pull_request = payload.get("pull_request")
-    if not isinstance(pull_request, dict):
+    payload: object = json.loads(path.read_text(encoding="utf-8"))
+    event = json_object(payload)
+    pull_request = None if event is None else json_object(event.get("pull_request"))
+    if pull_request is None:
         return None
     body = pull_request.get("body")
     return body if isinstance(body, str) else ""

@@ -20,6 +20,10 @@ BACKUP_MANIFEST = "rollback.json"
 DEFAULT_FILE_MODE = 0o644
 
 
+def _empty_written_paths() -> list[Path]:
+    return []
+
+
 class HookMutationError(RuntimeError):
     """Raised after a hook mutation fails and rollback is attempted."""
 
@@ -56,7 +60,7 @@ class HookTransactionState:
     """Mutable recovery state retained when an apply step raises."""
 
     backups: tuple[HookBackup, ...] = ()
-    written: list[Path] = field(default_factory=list)
+    written: list[Path] = field(default_factory=_empty_written_paths)
 
 
 def prepare_write(plan: PlannedWrite, content: str) -> PreparedHookWrite:
