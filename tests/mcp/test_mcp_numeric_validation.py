@@ -14,6 +14,34 @@ OVER_MAX_LINE = 1_000_001
 OVER_MAX_CONTEXT = 201
 
 
+def _context_failures_zero(root: Path) -> object:
+    return tools.context_failures_request(workspace_root=root, limit=0)
+
+
+def _context_failures_bool(root: Path) -> object:
+    return tools.context_failures_request(workspace_root=root, limit=True)
+
+
+def _events_summary_negative(root: Path) -> object:
+    return tools.events_summary_request(workspace_root=root, limit=-1)
+
+
+def _events_summary_unbounded(root: Path) -> object:
+    return tools.events_summary_request(workspace_root=root, limit=OVER_MAX_LIST)
+
+
+def _attention_zero(root: Path) -> object:
+    return tools.attention_request(workspace_root=root, limit=0)
+
+
+def _context_pack_below_minimum(root: Path) -> object:
+    return tools.context_pack_pointer_request(workspace_root=root, budget=BELOW_MIN_BUDGET)
+
+
+def _context_pack_above_maximum(root: Path) -> object:
+    return tools.context_pack_pointer_request(workspace_root=root, budget=OVER_MAX_BUDGET)
+
+
 def test_attention_rejects_unbounded_limit(tmp_path: Path) -> None:
     """The MCP attention view cannot request the complete scored ledger."""
 
@@ -24,22 +52,13 @@ def test_attention_rejects_unbounded_limit(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "request_factory",
     (
-        lambda root: tools.context_failures_request(workspace_root=root, limit=0),
-        lambda root: tools.context_failures_request(workspace_root=root, limit=True),
-        lambda root: tools.events_summary_request(workspace_root=root, limit=-1),
-        lambda root: tools.events_summary_request(
-            workspace_root=root,
-            limit=OVER_MAX_LIST,
-        ),
-        lambda root: tools.attention_request(workspace_root=root, limit=0),
-        lambda root: tools.context_pack_pointer_request(
-            workspace_root=root,
-            budget=BELOW_MIN_BUDGET,
-        ),
-        lambda root: tools.context_pack_pointer_request(
-            workspace_root=root,
-            budget=OVER_MAX_BUDGET,
-        ),
+        _context_failures_zero,
+        _context_failures_bool,
+        _events_summary_negative,
+        _events_summary_unbounded,
+        _attention_zero,
+        _context_pack_below_minimum,
+        _context_pack_above_maximum,
     ),
 )
 def test_numeric_arguments_fail_closed(

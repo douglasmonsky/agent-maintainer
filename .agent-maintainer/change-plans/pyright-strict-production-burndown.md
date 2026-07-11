@@ -1,7 +1,7 @@
 +++
 id = "pyright-strict-production-burndown"
 kind = "mechanical-migration"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-25
 allowed_paths = [

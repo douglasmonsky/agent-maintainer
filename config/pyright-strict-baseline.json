@@ -1,12 +1,12 @@
 {
   "by_rule": {
-    "reportPrivateUsage": 25,
-    "reportUnknownArgumentType": 114,
-    "reportUnknownLambdaType": 135,
+    "reportPrivateUsage": 24,
+    "reportUnknownArgumentType": 82,
+    "reportUnknownLambdaType": 91,
     "reportUnknownMemberType": 4,
     "reportUnknownVariableType": 14
   },
-  "note": "Reviewed 2026-07-11 after the final strict production pass replaced private argparse action coupling and validated diagnostic, runtime-event, scoring, and async-state boundaries; all 27 remaining source diagnostics were removed without suppressions, unchecked casts, or permissive types, leaving test-only debt.",
+  "note": "Reviewed 2026-07-11 after test burndown batch 1 replaced untyped monkeypatch lambdas with typed test doubles across MCP, wait-daemon, regression, and doctor coverage; 77 test diagnostics were removed without changing production code or adding suppressions, casts, or permissive types.",
   "pairs": {
     "tests/archguard/test_git_diff.py": {
       "reportUnknownArgumentType": 2,
@@ -84,10 +84,6 @@
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
     },
-    "tests/doctor/test_context_health.py": {
-      "reportUnknownArgumentType": 4,
-      "reportUnknownLambdaType": 7
-    },
     "tests/doctor/test_doctor_commands.py": {
       "reportUnknownArgumentType": 4,
       "reportUnknownLambdaType": 6
@@ -123,14 +119,6 @@
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 2
     },
-    "tests/mcp/test_mcp_numeric_validation.py": {
-      "reportUnknownArgumentType": 8,
-      "reportUnknownLambdaType": 7
-    },
-    "tests/mcp/test_mcp_path_safety.py": {
-      "reportUnknownArgumentType": 7,
-      "reportUnknownLambdaType": 6
-    },
     "tests/packaging/test_bootstrap_hooks.py": {
       "reportUnknownArgumentType": 6,
       "reportUnknownLambdaType": 3,
@@ -148,10 +136,6 @@
     "tests/ratchet/test_status.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownLambdaType": 1
-    },
-    "tests/regression/test_phase10_error_paths.py": {
-      "reportUnknownArgumentType": 4,
-      "reportUnknownLambdaType": 8
     },
     "tests/release/test_release_state.py": {
       "reportUnknownVariableType": 1
@@ -214,21 +198,12 @@
     "tests/wait/test_codex_app_server.py": {
       "reportPrivateUsage": 12
     },
-    "tests/wait/test_wait_broker_daemon.py": {
-      "reportUnknownArgumentType": 4,
-      "reportUnknownLambdaType": 8
-    },
     "tests/wait/test_wait_cli.py": {
       "reportPrivateUsage": 2
     },
     "tests/wait/test_wait_cli_register_identity.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 6
-    },
-    "tests/wait/test_wait_daemon_cli.py": {
-      "reportPrivateUsage": 1,
-      "reportUnknownArgumentType": 5,
-      "reportUnknownLambdaType": 8
     }
   },
   "schema_version": 2,
@@ -238,5 +213,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 292
+  "total_errors": 215
 }

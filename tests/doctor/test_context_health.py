@@ -256,10 +256,14 @@ def test_ratchet_baseline_unreadable_is_detected(
     baseline_path = tmp_path / config.ratchet_baseline_path
     baseline_path.parent.mkdir(parents=True)
     baseline_path.write_text("{}", encoding="utf-8")
+
+    def fail_baseline(_path: Path) -> object:
+        raise ValueError("bad baseline")
+
     monkeypatch.setattr(
         context_health.baseline,
         "read_baseline",
-        lambda path: (_ for _ in ()).throw(ValueError("bad baseline")),
+        fail_baseline,
     )
 
     result = context_health.check_ratchet_baseline(tmp_path, config)
@@ -278,14 +282,35 @@ def test_ratchet_baseline_reports_stale_and_active(
     baseline_path = tmp_path / config.ratchet_baseline_path
     baseline_path.parent.mkdir(parents=True)
     baseline_path.write_text("{}", encoding="utf-8")
-    monkeypatch.setattr(context_health.baseline, "read_baseline", lambda path: object())
+
+    def read_baseline(_path: Path) -> object:
+        return object()
+
+    def no_counts() -> dict[str, int]:
+        return {}
+
+    def stale_report(baseline: object, base_ref: str) -> SimpleNamespace:
+        del baseline, base_ref
+        return SimpleNamespace(
+            stale_reasons=("base ref changed",),
+            counts=no_counts,
+        )
+
+    def active_counts() -> dict[str, int]:
+        return {"new": 0}
+
+    def active_report(baseline: object, base_ref: str) -> SimpleNamespace:
+        del baseline, base_ref
+        return SimpleNamespace(
+            stale_reasons=(),
+            counts=active_counts,
+        )
+
+    monkeypatch.setattr(context_health.baseline, "read_baseline", read_baseline)
     monkeypatch.setattr(
         context_health.status,
         "status_report",
-        lambda baseline, base_ref: SimpleNamespace(
-            stale_reasons=("base ref changed",),
-            counts=lambda: {},
-        ),
+        stale_report,
     )
 
     stale = context_health.check_ratchet_baseline(tmp_path, config)
@@ -293,10 +318,7 @@ def test_ratchet_baseline_reports_stale_and_active(
     monkeypatch.setattr(
         context_health.status,
         "status_report",
-        lambda baseline, base_ref: SimpleNamespace(
-            stale_reasons=(),
-            counts=lambda: {"new": 0},
-        ),
+        active_report,
     )
     active = context_health.check_ratchet_baseline(tmp_path, config)
 
