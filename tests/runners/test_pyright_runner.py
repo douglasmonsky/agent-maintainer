@@ -101,7 +101,7 @@ def test_python_interpreter_falls_back_to_current_interpreter(
     assert run_pyright.python_interpreter() == sys.executable
 
 
-@pytest.mark.parametrize("output", ["", "{"])
+@pytest.mark.parametrize("output", ["", "{", '{"summary": []}'])
 def test_analyzed_file_count_handles_missing_or_invalid_json(output: str) -> None:
     assert run_pyright.analyzed_file_count(output) is None
 

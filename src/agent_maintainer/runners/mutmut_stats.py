@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+
+from agent_maintainer.core.structured_values import json_object
 
 DEFAULT_STATS_PATH = Path("mutants/mutmut-cicd-stats.json")
 
@@ -48,13 +49,14 @@ def read_stats(path: Path = DEFAULT_STATS_PATH) -> MutmutStats:
     """Read Mutmut CI/CD stats from JSON output."""
 
     with path.open(encoding="utf-8") as handle:
-        payload = json.load(handle)
-    if not isinstance(payload, dict):
+        payload: object = json.load(handle)
+    stats = json_object(payload)
+    if stats is None:
         raise ValueError("mutmut stats must be a JSON object")
-    return stats_from_mapping(payload)
+    return stats_from_mapping(stats)
 
 
-def stats_from_mapping(payload: dict[str, Any]) -> MutmutStats:
+def stats_from_mapping(payload: dict[str, object]) -> MutmutStats:
     """Convert raw Mutmut stats mapping to typed counters."""
 
     return MutmutStats(
@@ -70,7 +72,7 @@ def stats_from_mapping(payload: dict[str, Any]) -> MutmutStats:
     )
 
 
-def as_int(payload: dict[str, Any], key: str) -> int:
+def as_int(payload: dict[str, object], key: str) -> int:
     """Return nonnegative integer counter from Mutmut payload."""
 
     value = payload.get(key, 0)

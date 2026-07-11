@@ -9,6 +9,7 @@ path = "bandit"
 depends_on = [
   "//agent_maintainer.core.config",
   "//agent_maintainer.core.executor",
+  "//agent_maintainer.core.structured_values",
 ]
 
 [[modules]]
@@ -26,13 +27,14 @@ depends_on = []
 
 [[modules]]
 path = "mutmut_stats"
-depends_on = []
+depends_on = ["//agent_maintainer.core.structured_values"]
 
 [[modules]]
 path = "pyright"
 depends_on = [
   "//agent_maintainer.core.config",
   "//agent_maintainer.core.executor",
+  "//agent_maintainer.core.structured_values",
 ]
 
 [[modules]]
@@ -53,6 +55,7 @@ path = "ruff"
 depends_on = [
   "//agent_maintainer.core.config",
   "//agent_maintainer.core.executor",
+  "//agent_maintainer.core.structured_values",
 ]
 
 [[modules]]

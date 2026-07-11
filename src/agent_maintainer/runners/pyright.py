@@ -11,6 +11,7 @@ from pathlib import Path
 
 from agent_maintainer.core.config import MaintainerConfig, load_config
 from agent_maintainer.core.executor import command_env
+from agent_maintainer.core.structured_values import json_object
 
 PYRIGHT_CONFIG_NAME = "pyrightconfig.generated.json"
 PYRIGHT_JSON_NAME = "pyright.json"
@@ -143,15 +144,15 @@ def analyzed_file_count(output: str) -> int | None:
     if not output.strip():
         return None
     try:
-        payload = json.loads(output)
+        payload: object = json.loads(output)
     except json.JSONDecodeError:
-        payload = None
-    if isinstance(payload, dict):
-        summary = payload.get("summary")
-        if isinstance(summary, dict):
-            files_analyzed = summary.get("filesAnalyzed")
-            if isinstance(files_analyzed, int):
-                return files_analyzed
+        return None
+    report = json_object(payload)
+    summary = None if report is None else json_object(report.get("summary"))
+    if summary is not None:
+        files_analyzed = summary.get("filesAnalyzed")
+        if isinstance(files_analyzed, int):
+            return files_analyzed
     return None
 
 

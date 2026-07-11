@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 37,
-    "reportUnknownArgumentType": 147,
+    "reportUnknownArgumentType": 146,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 25,
-    "reportUnknownVariableType": 67
+    "reportUnknownMemberType": 20,
+    "reportUnknownVariableType": 60
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 10 validated coverage artifacts, replaced private argparse types with callbacks, and typed mutation sweep accumulation; all 19 production diagnostics in agent_maintainer.test_intel were removed without suppressions or permissive types.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 11 validated Bandit, Ruff, Pyright, and Mutmut JSON boundaries; 13 production diagnostics in agent_maintainer.runners were removed without suppressions or permissive types.",
   "pairs": {
     "src/agent_maintainer/attention/rendering.py": {
       "reportUnknownArgumentType": 1
@@ -85,21 +85,6 @@
     },
     "src/agent_maintainer/ratchet/cli.py": {
       "reportPrivateUsage": 5
-    },
-    "src/agent_maintainer/runners/bandit.py": {
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 2
-    },
-    "src/agent_maintainer/runners/mutmut_stats.py": {
-      "reportUnknownArgumentType": 1
-    },
-    "src/agent_maintainer/runners/pyright.py": {
-      "reportUnknownMemberType": 2,
-      "reportUnknownVariableType": 2
-    },
-    "src/agent_maintainer/runners/ruff.py": {
-      "reportUnknownMemberType": 2,
-      "reportUnknownVariableType": 3
     },
     "src/agent_maintainer/runtime_events/read.py": {
       "reportUnknownVariableType": 1
@@ -368,5 +353,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 411
+  "total_errors": 398
 }

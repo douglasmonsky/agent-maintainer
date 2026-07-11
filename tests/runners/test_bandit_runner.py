@@ -44,6 +44,7 @@ def test_run_bandit_writes_json_artifact_and_prints_compact_findings(
             stdout=json.dumps(
                 {
                     "results": [
+                        None,
                         {
                             "filename": "scripts/example.py",
                             "line_number": 3,
@@ -51,7 +52,7 @@ def test_run_bandit_writes_json_artifact_and_prints_compact_findings(
                             "issue_severity": "LOW",
                             "issue_confidence": "HIGH",
                             "issue_text": "Use of assert detected.",
-                        }
+                        },
                     ]
                 }
             ),
@@ -64,7 +65,7 @@ def test_run_bandit_writes_json_artifact_and_prints_compact_findings(
     assert run_bandit.run_bandit(json_path, package_paths=("scripts", "src/agent_maintainer")) == 1
 
     payload = json.loads(json_path.read_text(encoding="utf-8"))
-    assert payload["results"][0]["test_id"] == "B101"
+    assert payload["results"][1]["test_id"] == "B101"
     assert "scripts/example.py:3: B101 LOW/HIGH Use of assert detected." in capsys.readouterr().out
 
 

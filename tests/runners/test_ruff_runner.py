@@ -29,12 +29,13 @@ def test_run_ruff_writes_json_artifact_and_prints_compact_diagnostics(
             1,
             stdout=json.dumps(
                 [
+                    None,
                     {
                         "filename": "scripts/example.py",
                         "location": {"row": 2, "column": 3},
                         "code": "F401",
                         "message": "`os` imported but unused",
-                    }
+                    },
                 ]
             ),
             stderr="",
@@ -45,7 +46,7 @@ def test_run_ruff_writes_json_artifact_and_prints_compact_diagnostics(
 
     assert run_ruff.run_ruff(json_path, max_complexity=7) == 1
 
-    assert json.loads(json_path.read_text(encoding="utf-8"))[0]["code"] == "F401"
+    assert json.loads(json_path.read_text(encoding="utf-8"))[1]["code"] == "F401"
     assert "scripts/example.py:2:3: F401 `os` imported but unused" in capsys.readouterr().out
 
 
