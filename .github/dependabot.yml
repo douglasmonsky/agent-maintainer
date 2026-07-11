@@ -13,6 +13,15 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7
+    allow:
+      - dependency-type: "direct"
+    groups:
+      python-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:

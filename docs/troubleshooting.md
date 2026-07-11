@@ -71,8 +71,12 @@ Refresh the lock after changing dependency inputs:
 
 ```bash
 python3 -m agent_maintainer bootstrap
-.venv/bin/python -m pip freeze --exclude-editable | sort > config/dev-lock.txt
+just refresh-dev-lock
 ```
+
+Run the refresh from the repository's Python 3.13 development environment.
+`pip-compile` records dependency provenance so compatible direct updates are
+resolved together instead of editing transitive pins independently.
 
 Then run:
 
