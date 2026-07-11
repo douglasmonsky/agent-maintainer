@@ -1,12 +1,12 @@
 {
   "by_rule": {
-    "reportPrivateUsage": 44,
-    "reportUnknownArgumentType": 479,
-    "reportUnknownLambdaType": 373,
-    "reportUnknownMemberType": 166,
-    "reportUnknownVariableType": 236
+    "reportPrivateUsage": 42,
+    "reportUnknownArgumentType": 466,
+    "reportUnknownLambdaType": 362,
+    "reportUnknownMemberType": 163,
+    "reportUnknownVariableType": 232
   },
-  "note": "Reviewed 2026-07-10 for CS-07 after repairing concrete strict defects; remaining allowances are legacy unknown-type and intentional private-API debt.",
+  "note": "Reviewed 2026-07-11 after upgrading Pyright to 1.1.411 and repairing all new strict diagnostics; remaining allowances are legacy unknown-type and intentional private-API debt.",
   "pairs": {
     "src/agent_client_hooks/claude_merge.py": {
       "reportUnknownArgumentType": 5,
@@ -157,9 +157,9 @@
       "reportUnknownVariableType": 10
     },
     "src/agent_maintainer/core/scaffold/planning.py": {
-      "reportUnknownArgumentType": 5,
-      "reportUnknownMemberType": 5,
-      "reportUnknownVariableType": 5
+      "reportUnknownArgumentType": 2,
+      "reportUnknownMemberType": 3,
+      "reportUnknownVariableType": 3
     },
     "src/agent_maintainer/core/scaffold/transaction.py": {
       "reportUnknownVariableType": 1
@@ -259,9 +259,9 @@
       "reportUnknownVariableType": 2
     },
     "src/agent_maintainer/wait/codex_app_server.py": {
-      "reportUnknownArgumentType": 3,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 6
+      "reportUnknownArgumentType": 1,
+      "reportUnknownMemberType": 2,
+      "reportUnknownVariableType": 4
     },
     "src/agent_maintainer/wait/daemon_state.py": {
       "reportUnknownArgumentType": 5,
@@ -602,15 +602,7 @@
       "reportUnknownVariableType": 4
     },
     "tests/wait/test_codex_app_server.py": {
-      "reportPrivateUsage": 14
-    },
-    "tests/wait/test_codex_rewake.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/wait/test_codex_rewake_cli.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2
+      "reportPrivateUsage": 12
     },
     "tests/wait/test_wait_broker_daemon.py": {
       "reportUnknownArgumentType": 4,
@@ -619,10 +611,6 @@
     "tests/wait/test_wait_cli.py": {
       "reportPrivateUsage": 2
     },
-    "tests/wait/test_wait_cli_background.py": {
-      "reportUnknownArgumentType": 4,
-      "reportUnknownLambdaType": 5
-    },
     "tests/wait/test_wait_cli_codex_background.py": {
       "reportUnknownArgumentType": 8,
       "reportUnknownLambdaType": 8
@@ -630,10 +618,6 @@
     "tests/wait/test_wait_cli_register_identity.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 6
-    },
-    "tests/wait/test_wait_daemon.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 3
     },
     "tests/wait/test_wait_daemon_cli.py": {
       "reportPrivateUsage": 1,
@@ -646,7 +630,7 @@
     "name": "pyright",
     "scope_sha256": "3f9d653891689ef046ef15323d3eb2b830561d663c62d6f6a37d54187d2f717a",
     "type_checking_mode": "strict",
-    "version": "1.1.410"
+    "version": "1.1.411"
   },
-  "total_errors": 1298
+  "total_errors": 1265
 }
