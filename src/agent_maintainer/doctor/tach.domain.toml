@@ -77,6 +77,7 @@ depends_on = [
 [[modules]]
 path = "support.integrations"
 depends_on = [
+    "//agent_waits.capabilities",
     "support.models",
 ]
 

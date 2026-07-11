@@ -9,6 +9,7 @@ depends_on = [
   "cli_background",
   "cli_parsers",
   "cli_register",
+  "codex_smoke",
   "codex_rewake",
   "daemon",
   "daemon_launchd",
@@ -77,7 +78,15 @@ depends_on = [
   "codex_app_server",
   "handlers",
   "registry",
+  "//agent_waits.capabilities",
   "//agent_waits.models",
+]
+
+[[modules]]
+path = "codex_smoke"
+depends_on = [
+  "codex_app_server",
+  "//agent_waits.capabilities",
 ]
 
 [[modules]]

@@ -7,9 +7,14 @@ depends_on = []
 [[modules]]
 path = "broker"
 depends_on = [
+  "capabilities",
   "models",
   "registry",
 ]
+
+[[modules]]
+path = "capabilities"
+depends_on = []
 
 [[modules]]
 path = "models"

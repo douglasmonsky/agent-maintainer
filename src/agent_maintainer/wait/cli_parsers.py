@@ -20,6 +20,7 @@ DEFAULT_VERIFIER_TIMEOUT_SECONDS = 3600
 DEFAULT_READY_CLEANUP_SECONDS = 7 * 24 * 60 * 60
 DEFAULT_DAEMON_INTERVAL_SECONDS = 5
 DEFAULT_DAEMON_IDLE_TIMEOUT_SECONDS = 1800
+DEFAULT_CODEX_SMOKE_TIMEOUT_SECONDS = 30.0
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -35,6 +36,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     _add_sweep_parser(subparsers)
     _add_heartbeat_parser(subparsers)
     _add_cleanup_parser(subparsers)
+    _add_codex_smoke_parser(subparsers)
     _add_daemon_parser(subparsers)
     return parser.parse_args(argv)
 
@@ -225,6 +227,22 @@ def _add_cleanup_parser(subparsers: Any) -> None:
         default=DEFAULT_READY_CLEANUP_SECONDS,
     )
     cleanup.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_codex_smoke_parser(subparsers: Any) -> None:
+    """Add explicit Codex app-server smoke parser."""
+
+    smoke = subparsers.add_parser(
+        "codex-smoke",
+        help="Probe Codex app-server; real turn requires an environment gate.",
+    )
+    smoke.add_argument("--start-turn", action="store_true")
+    smoke.add_argument(
+        "--timeout-seconds",
+        type=float,
+        default=DEFAULT_CODEX_SMOKE_TIMEOUT_SECONDS,
+    )
+    smoke.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_daemon_parser(subparsers: Any) -> None:

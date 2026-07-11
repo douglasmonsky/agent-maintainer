@@ -35,6 +35,7 @@ check_git_state = maintainer_doctor_environment.check_git_state
 
 check_pre_commit = maintainer_doctor_integrations.check_pre_commit
 check_codex_hooks = maintainer_doctor_integrations.check_codex_hooks
+check_codex_rewake_capabilities = maintainer_doctor_integrations.check_codex_rewake_capabilities
 check_claude_code_hooks = maintainer_doctor_integrations.check_claude_code_hooks
 check_canonical_commands = maintainer_doctor_integrations.check_canonical_commands
 normalized_text = maintainer_doctor_integrations.normalized_text
@@ -109,6 +110,7 @@ def run_doctor(
         maintainer_doctor_policy.check_pyright_config(repo_root, config),
         check_pre_commit(repo_root),
         check_codex_hooks(repo_root),
+        *check_codex_rewake_capabilities(),
         check_claude_code_hooks(repo_root),
         maintainer_doctor_hook_audit.check_hook_audit(repo_root, config),
         maintainer_doctor_policy.check_pip_audit_safety(config),

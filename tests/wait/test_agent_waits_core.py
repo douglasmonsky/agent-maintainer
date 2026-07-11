@@ -319,10 +319,10 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     assert record.wait_id not in request["prompt"]
 
 
-def test_background_registration_prefers_terminal_rewake_when_available(
+def test_background_registration_keeps_fallback_until_visible_rewake_is_proven(
     tmp_path: Path,
 ) -> None:
-    """Codex terminal-rewake handoffs avoid heartbeat model polling."""
+    """An app-server candidate alone does not suppress recoverable fallback."""
 
     record = WaitRegistry(tmp_path).register(
         RegisterWait(
@@ -336,15 +336,15 @@ def test_background_registration_prefers_terminal_rewake_when_available(
     text = render_background_registration_text(
         BackgroundWaitRegistration(record=record, watcher_started=True),
         env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: "thread-1"},
-        sdk_available=True,
+        backend_available=True,
     )
 
     assert f"Result: {RESULT_PENDING}" in text
     assert "pending polls stay outside model turns" in text
-    assert "terminal rewake: enabled" in text
-    assert "manual fallback resume:" in text
-    assert "codex_heartbeat_wait" not in text
-    assert "heartbeat request" not in text
+    assert "terminal rewake: enabled" not in text
+    assert "manual resume:" in text
+    assert "codex_heartbeat_wait" in text
+    assert "model-turn fallback" in text
 
 
 def test_background_registration_keeps_heartbeat_without_rewake_backend(
@@ -364,7 +364,7 @@ def test_background_registration_keeps_heartbeat_without_rewake_backend(
     text = render_background_registration_text(
         BackgroundWaitRegistration(record=record, watcher_started=True),
         env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: "thread-1"},
-        sdk_available=False,
+        backend_available=False,
     )
 
     assert "fallback heartbeat request:" in text

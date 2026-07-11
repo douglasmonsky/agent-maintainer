@@ -112,9 +112,29 @@ Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let terminal background watchers try
 automatic Codex continuation. The preferred backend is the local Codex CLI app-server
 `codex app-server --listen stdio://` with Codex thread metadata from
 `CODEX_THREAD_ID` or `AGENT_MAINTAINER_CODEX_THREAD_ID`; optional
-`openai-codex` SDK remains fallback backend. If app-server, SDK, auth, or
-thread metadata is unavailable, the wait stays ready for the manual
-`wait resume <id>` command. No thread id or prompt is stored in the wait record.
+`openai-codex` SDK availability is diagnostic only because no SDK rewake backend
+is implemented. If app-server, auth, or thread metadata is unavailable, the
+wait stays ready for the manual `wait resume <id>` command. No thread id or
+prompt is stored in the wait record. `agent-maintainer doctor` reports redacted
+`codex-thread-context`, `codex-app-server`, `codex-python-sdk`, and
+`codex-terminal-rewake` capability rows without starting app-server.
+
+The default smoke is read-only and token-free:
+
+```bash
+python -m agent_maintainer wait codex-smoke
+```
+
+Starting a harmless real `turn/start` is deliberately separate because it
+spends a model turn. It accepts no caller-provided prompt and requires an
+explicit process-local gate:
+
+```bash
+AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN=1 \
+  python -m agent_maintainer wait codex-smoke --start-turn
+```
+
+Never run the real-turn smoke from doctor, hooks, watchers, or CI.
 
 Terminal-only local polling is the preferred path; automatic visible Codex
 thread rewake is not treated as proven today.

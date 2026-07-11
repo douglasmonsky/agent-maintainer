@@ -11,15 +11,17 @@ from typing import Any, Final
 from agent_maintainer.wait.codex_app_server import CodexAppServerClient
 from agent_maintainer.wait.handlers import continuation_prompt as handler_prompt
 from agent_maintainer.wait.registry import WaitRecord, WaitRegistry
+from agent_waits.capabilities import (
+    CODEX_BIN_ENV,
+    CODEX_CLI_NAME,
+    CODEX_PLATFORM,
+    CODEX_REWAKE_ENV,
+    CODEX_THREAD_ID_ENV,
+    CODEX_THREAD_ID_OVERRIDE_ENV,
+)
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 
-CODEX_PLATFORM: Final = "codex"
-CODEX_REWAKE_ENV: Final = "AGENT_MAINTAINER_CODEX_REWAKE"
-CODEX_THREAD_ID_ENV: Final = "CODEX_THREAD_ID"
-CODEX_THREAD_ID_OVERRIDE_ENV: Final = "AGENT_MAINTAINER_CODEX_THREAD_ID"
-CODEX_BIN_ENV: Final = "AGENT_MAINTAINER_CODEX_BIN"
 CODEX_APP_SERVER_TIMEOUT_ENV: Final = "AGENT_MAINTAINER_CODEX_APP_SERVER_TIMEOUT_SECONDS"
-CODEX_CLI_NAME: Final = "codex"
 REWAKE_STATUS_DISABLED: Final = "disabled"
 REWAKE_STATUS_MANUAL: Final = "ready_for_manual_resume"
 REWAKE_STATUS_RESUMED: Final = "resumed"

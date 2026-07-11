@@ -144,6 +144,12 @@ visible Codex thread rewake is not treated as proven today; app-server turn
 acceptance keeps the wait ready for manual `wait resume <id>` recovery. Heartbeat
 fallback still wakes a model each interval, so use it only when explicit manual
 monitoring is acceptable.
+`agent-maintainer doctor` reports redacted Codex thread, app-server, SDK, and
+terminal-rewake capability rows without launching app-server. Use
+`python -m agent_maintainer wait codex-smoke` for a read-only, token-free probe.
+The `--start-turn` smoke spends one model turn and is refused unless
+`AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN=1`; hooks and CI must never set that
+gate.
 Repo-local wrappers use the checked-out source tree:
 
 ```bash

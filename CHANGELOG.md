@@ -34,6 +34,9 @@ the candidate passes the complete exact-commit release matrix.
   verifiers with a persistent registry, targeted sweeps, background workers,
   heartbeat handoffs, terminal and app-server rewake backends, and manually
   recoverable state.
+- Redacted Codex rewake capability diagnostics and a read-only app-server smoke
+  are available; a real smoke turn requires an explicit process-local spend
+  gate and never accepts a caller-provided prompt.
 - The attention ledger, attention-weighted context packs, recall ledger, and
   surgical next-action ranking retain high-value repair context while reducing
   repeated broad reads.

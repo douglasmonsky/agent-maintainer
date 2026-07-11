@@ -11,7 +11,14 @@ from agent_maintainer.runtime_events.waiting import (
     emit_heartbeat_noop,
     emit_terminal_claimed,
 )
-from agent_maintainer.wait import cli_background, cli_parsers, cli_register, daemon, daemon_launchd
+from agent_maintainer.wait import (
+    cli_background,
+    cli_parsers,
+    cli_register,
+    codex_smoke,
+    daemon,
+    daemon_launchd,
+)
 from agent_maintainer.wait.codex_rewake import (
     CodexRewakeBackend,
     codex_rewake_resumed,
@@ -68,6 +75,7 @@ def main(argv: list[str] | None = None) -> int:
         "sweep": _sweep,
         "heartbeat": _heartbeat,
         "cleanup": _cleanup,
+        "codex-smoke": _codex_smoke,
         "daemon": _daemon,
     }
     handler = handlers.get(args.command)
@@ -198,6 +206,18 @@ def _cleanup(args: argparse.Namespace) -> int:
     emit_cleaned(events, expired_ready=summary.expired_ready)
     print(_render_cleanup(args.format, summary))
     return 0
+
+
+def _codex_smoke(args: argparse.Namespace) -> int:
+    result = codex_smoke.run_codex_smoke(
+        start_turn=args.start_turn,
+        timeout_seconds=args.timeout_seconds,
+    )
+    if args.format == cli_parsers.JSON_FORMAT:
+        print(codex_smoke.render_codex_smoke_json(result))
+    else:
+        print(codex_smoke.render_codex_smoke_text(result))
+    return result.exit_code
 
 
 def _daemon(args: argparse.Namespace) -> int:

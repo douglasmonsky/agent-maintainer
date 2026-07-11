@@ -12,6 +12,7 @@ from subprocess import PIPE, Popen, TimeoutExpired  # nosec B404
 from typing import Final, TextIO
 
 APP_SERVER_COMPLETED_METHODS: Final = frozenset(("turn/completed", "turn.completed"))
+APP_SERVER_THREAD_READ_PROBE_REQUEST_ID: Final = 2
 APP_SERVER_TURN_START_REQUEST_ID: Final = 3
 APP_SERVER_THREAD_READ_REQUEST_START_ID: Final = 1000
 APP_SERVER_THREAD_READ_POLL_SECONDS: Final = 2.0
@@ -76,6 +77,15 @@ class CodexAppServerClient:
         else:
             _stop_process(process)
 
+    def probe_thread(self, thread_id: str) -> None:
+        """Read one thread through app-server without starting a turn."""
+
+        process = self._start_process()
+        try:
+            self._probe_process(process, thread_id)
+        finally:
+            _stop_process(process)
+
     def command(self) -> tuple[str, str, str, str]:
         """Return Codex app-server command."""
 
@@ -102,6 +112,34 @@ class CodexAppServerClient:
             process.stdin.write(f"{json.dumps(message, separators=(',', ':'))}\n")
         process.stdin.flush()
 
+    def _probe_process(self, process: Popen[str], thread_id: str) -> None:
+        if process.stdin is None:
+            raise RuntimeError("Codex app-server stdin unavailable")
+        for message in _app_server_probe_messages(thread_id):
+            process.stdin.write(f"{json.dumps(message, separators=(',', ':'))}\n")
+        process.stdin.flush()
+        self._wait_for_response(process, APP_SERVER_THREAD_READ_PROBE_REQUEST_ID)
+
+    def _wait_for_response(self, process: Popen[str], request_id: int) -> None:
+        lines = _app_server_line_queue(process)
+        deadline = time.monotonic() + self._timeout_seconds
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("Codex app-server probe timed out")
+            line = _get_app_server_line(lines, timeout=min(remaining, 1.0))
+            if line is not None:
+                response = _parse_app_server_line(line)
+                if response is None:
+                    continue
+                if response.error:
+                    raise RuntimeError(response.error)
+                if response.request_id == request_id:
+                    return
+            if process.poll() is not None:
+                stderr = _bounded_stderr(process)
+                raise RuntimeError(f"Codex app-server exited early{stderr}")
+
     def _resume_process(
         self,
         process: Popen[str],
@@ -116,15 +154,7 @@ class CodexAppServerClient:
         process: Popen[str],
         thread_id: str,
     ) -> None:
-        if process.stdout is None:
-            raise RuntimeError("Codex app-server stdout unavailable")
-        lines: LineQueue = queue.Queue()
-        stdout_thread = threading.Thread(
-            target=_read_app_server_stdout,
-            args=(process.stdout, lines),
-            daemon=True,
-        )
-        stdout_thread.start()
+        lines = _app_server_line_queue(process)
         deadline = time.monotonic() + self._timeout_seconds
         state = _AppServerWaitState()
         while True:
@@ -153,6 +183,32 @@ class CodexAppServerClient:
 
 def _app_server_messages(thread_id: str, prompt: str) -> tuple[dict[str, object], ...]:
     return (
+        *_app_server_initialize_messages(),
+        {"id": 2, "method": "thread/resume", "params": {"threadId": thread_id}},
+        {
+            "id": APP_SERVER_TURN_START_REQUEST_ID,
+            "method": "turn/start",
+            "params": {
+                "threadId": thread_id,
+                "input": [{"type": "text", "text": prompt}],
+            },
+        },
+    )
+
+
+def _app_server_probe_messages(thread_id: str) -> tuple[dict[str, object], ...]:
+    return (
+        *_app_server_initialize_messages(),
+        {
+            "id": APP_SERVER_THREAD_READ_PROBE_REQUEST_ID,
+            "method": "thread/read",
+            "params": {"threadId": thread_id, "includeTurns": False},
+        },
+    )
+
+
+def _app_server_initialize_messages() -> tuple[dict[str, object], ...]:
+    return (
         {
             "id": 1,
             "method": "initialize",
@@ -165,16 +221,20 @@ def _app_server_messages(thread_id: str, prompt: str) -> tuple[dict[str, object]
             },
         },
         {"method": "initialized", "params": {}},
-        {"id": 2, "method": "thread/resume", "params": {"threadId": thread_id}},
-        {
-            "id": APP_SERVER_TURN_START_REQUEST_ID,
-            "method": "turn/start",
-            "params": {
-                "threadId": thread_id,
-                "input": [{"type": "text", "text": prompt}],
-            },
-        },
     )
+
+
+def _app_server_line_queue(process: Popen[str]) -> LineQueue:
+    if process.stdout is None:
+        raise RuntimeError("Codex app-server stdout unavailable")
+    lines: LineQueue = queue.Queue()
+    stdout_thread = threading.Thread(
+        target=_read_app_server_stdout,
+        args=(process.stdout, lines),
+        daemon=True,
+    )
+    stdout_thread.start()
+    return lines
 
 
 def _read_app_server_stdout(

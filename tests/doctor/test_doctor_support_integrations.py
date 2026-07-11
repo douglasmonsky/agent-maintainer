@@ -6,6 +6,7 @@ from pathlib import Path
 
 from agent_maintainer.doctor.support import integrations as doctor_integrations
 from agent_maintainer.doctor.support import models as doctor_models
+from agent_waits.capabilities import CODEX_REWAKE_ENV, CODEX_THREAD_ID_ENV
 
 ENCODING = "utf-8"
 
@@ -33,6 +34,66 @@ def test_codex_hooks_disabled(tmp_path: Path) -> None:
     assert result.state == doctor_models.DISABLED
     assert "does not enable hooks" in result.message
     assert "hooks = true" in result.hint
+
+
+def test_codex_rewake_capabilities_are_advisory_when_disabled() -> None:
+    """Optional rewake capability rows do not break strict doctor by default."""
+
+    results = doctor_integrations.check_codex_rewake_capabilities(
+        env={},
+        codex_available=False,
+        sdk_available=False,
+    )
+    by_name = {result.name: result for result in results}
+
+    assert tuple(by_name) == (
+        "codex-thread-context",
+        "codex-app-server",
+        "codex-python-sdk",
+        "codex-terminal-rewake",
+    )
+    assert all(result.status == doctor_models.OK for result in results)
+    assert by_name["codex-thread-context"].state == doctor_models.MISSING
+    assert by_name["codex-app-server"].state == doctor_models.MISSING
+    assert by_name["codex-python-sdk"].state == doctor_models.MISSING
+    assert by_name["codex-terminal-rewake"].state == doctor_models.DISABLED
+
+
+def test_codex_rewake_capabilities_warn_without_claiming_visible_wake() -> None:
+    """Enabled app-server support remains manual-only until smoke proves rewake."""
+
+    thread_id = "thread-private-123"
+    results = doctor_integrations.check_codex_rewake_capabilities(
+        env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: thread_id},
+        codex_available=True,
+        sdk_available=True,
+    )
+    by_name = {result.name: result for result in results}
+    rendered = repr(results)
+
+    assert by_name["codex-thread-context"].status == doctor_models.OK
+    assert by_name["codex-app-server"].status == doctor_models.OK
+    assert by_name["codex-python-sdk"].status == doctor_models.OK
+    assert by_name["codex-terminal-rewake"].status == doctor_models.WARNING
+    assert "visible thread wake is unproven" in by_name["codex-terminal-rewake"].message
+    assert "wait resume <id>" in by_name["codex-terminal-rewake"].hint
+    assert "heartbeat" in by_name["codex-terminal-rewake"].hint
+    assert thread_id not in rendered
+
+
+def test_codex_rewake_terminal_row_names_missing_requirement() -> None:
+    """Enabled rewake reports the first unavailable requirement without secrets."""
+
+    results = doctor_integrations.check_codex_rewake_capabilities(
+        env={CODEX_REWAKE_ENV: "1"},
+        codex_available=True,
+        sdk_available=False,
+    )
+    terminal = results[-1]
+
+    assert terminal.status == doctor_models.WARNING
+    assert terminal.state == doctor_models.MISSING
+    assert "thread context is absent" in terminal.message
 
 
 def test_claude_code_hooks_report_missing_scripts(tmp_path: Path) -> None:

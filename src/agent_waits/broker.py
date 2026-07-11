@@ -6,22 +6,20 @@ import json
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass
-from importlib.util import find_spec
 from pathlib import Path
-from shutil import which
 from types import MappingProxyType
 from typing import Final
 
+from agent_waits import capabilities as codex_capabilities
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 from agent_waits.registry import WaitRecord
 
-CODEX_PLATFORM: Final = "codex"
+CODEX_PLATFORM: Final = codex_capabilities.CODEX_PLATFORM
 CODEX_ALLOW_FOREGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT"
 CODEX_BACKGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_BACKGROUND_WAIT"
-CODEX_REWAKE_ENV: Final = "AGENT_MAINTAINER_CODEX_REWAKE"
-CODEX_BIN_ENV: Final = "AGENT_MAINTAINER_CODEX_BIN"
-CODEX_THREAD_ID_ENV: Final = "CODEX_THREAD_ID"
-CODEX_THREAD_ID_OVERRIDE_ENV: Final = "AGENT_MAINTAINER_CODEX_THREAD_ID"
+CODEX_REWAKE_ENV: Final = codex_capabilities.CODEX_REWAKE_ENV
+CODEX_THREAD_ID_ENV: Final = codex_capabilities.CODEX_THREAD_ID_ENV
+CODEX_THREAD_ID_OVERRIDE_ENV: Final = codex_capabilities.CODEX_THREAD_ID_OVERRIDE_ENV
 CODEX_ENV_MARKERS: Final = (
     "CODEX_SHELL",
     CODEX_THREAD_ID_ENV,
@@ -30,8 +28,6 @@ CODEX_ENV_MARKERS: Final = (
 CHEAP_MONITOR_MODEL: Final = "gpt-5.3-codex-spark"
 HEARTBEAT_DEFAULT_INTERVAL_SECONDS: Final = 120
 HEARTBEAT_REQUEST_TYPE: Final = "codex_heartbeat_wait"
-OPENAI_CODEX_PACKAGE: Final = "openai_codex"
-CODEX_CLI_NAME: Final = "codex"
 BACKGROUND_WAIT_FLAGS: Final[Mapping[str | None, bool]] = MappingProxyType({"0": False})
 
 
@@ -70,22 +66,27 @@ def codex_terminal_rewake_available(
     registration: BackgroundWaitRegistration,
     *,
     env: Mapping[str, str] | None = None,
-    sdk_available: bool | None = None,
+    backend_available: bool | None = None,
 ) -> bool:
     """Return whether detached watcher can wake Codex on terminal state."""
 
     current = os.environ if env is None else env
-    return _codex_terminal_context_available(
-        registration,
+    capabilities = codex_capabilities.inspect_codex_rewake_capabilities(
         current,
-    ) and _codex_rewake_backend_available(sdk_available, current)
+        codex_available=backend_available,
+    )
+    return (
+        registration.watcher_started
+        and registration.record.platform == CODEX_PLATFORM
+        and capabilities.automatic_visible_rewake_available
+    )
 
 
 def render_background_registration_text(
     registration: BackgroundWaitRegistration,
     *,
     env: Mapping[str, str] | None = None,
-    sdk_available: bool | None = None,
+    backend_available: bool | None = None,
 ) -> str:
     """Render compact background wait registration handoff."""
 
@@ -93,7 +94,7 @@ def render_background_registration_text(
     if codex_terminal_rewake_available(
         registration,
         env=env,
-        sdk_available=sdk_available,
+        backend_available=backend_available,
     ):
         return render_wait_capsule(
             WaitRepairCapsule(
@@ -209,28 +210,3 @@ def _codex_background_wait_enabled(env: Mapping[str, str]) -> bool:
 
 def _running_in_codex(env: Mapping[str, str]) -> bool:
     return any(env.get(marker) for marker in CODEX_ENV_MARKERS)
-
-
-def _codex_thread_id(env: Mapping[str, str]) -> str:
-    return env.get(CODEX_THREAD_ID_OVERRIDE_ENV) or env.get(CODEX_THREAD_ID_ENV, "")
-
-
-def _codex_terminal_context_available(
-    registration: BackgroundWaitRegistration,
-    env: Mapping[str, str],
-) -> bool:
-    return (
-        registration.watcher_started
-        and registration.record.platform == CODEX_PLATFORM
-        and env.get(CODEX_REWAKE_ENV) == "1"
-        and _codex_thread_id(env) != ""
-    )
-
-
-def _codex_rewake_backend_available(
-    sdk_available: bool | None,
-    env: Mapping[str, str],
-) -> bool:
-    if sdk_available is not None:
-        return sdk_available
-    return bool(env.get(CODEX_BIN_ENV) or which(CODEX_CLI_NAME) or find_spec(OPENAI_CODEX_PACKAGE))

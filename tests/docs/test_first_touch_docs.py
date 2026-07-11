@@ -157,6 +157,27 @@ def test_setup_advisor_docs_include_workspace_command_example() -> None:
     _assert_phrases_present(phrases)
 
 
+def test_codex_wait_docs_disclose_smoke_and_model_turn_boundaries() -> None:
+    """Codex wait docs keep diagnostic, fallback, and spend boundaries explicit."""
+    phrases = {
+        "docs/codex-hooks.md": (
+            "heartbeat is a model-turn fallback: each scheduled poll wakes a model",
+            "`openai-codex` SDK availability is diagnostic only because no SDK "
+            "rewake backend is implemented.",
+            "python -m agent_maintainer wait codex-smoke",
+            "AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN=1",
+            "Never run the real-turn smoke from doctor, hooks, watchers, or CI.",
+        ),
+        "docs/agent-client-hooks.md": (
+            "Heartbeat fallback still wakes a model each interval",
+            "read-only, token-free probe",
+            "The `--start-turn` smoke spends one model turn",
+            "hooks and CI must never set that gate.",
+        ),
+    }
+    _assert_phrases_present(phrases)
+
+
 def test_known_compressed_prose_fragments_do_not_reappear() -> None:
     """Guard against specific note-fragment regressions found during audit."""
     forbidden_fragments = (

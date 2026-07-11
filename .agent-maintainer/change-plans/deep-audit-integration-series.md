@@ -41,8 +41,8 @@ allowed_paths = [
   "zizmor.yml",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 375
-max_changed_lines = 33000
+max_changed_files = 385
+max_changed_lines = 35000
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
@@ -67,6 +67,8 @@ historical plans. The final branch remains cohesive because its security,
 configuration, generated-artifact, release-evidence, packaging, governance, and
 roadmap claims must pass one exact-commit matrix before integration. Splitting
 the cumulative CI comparison is not possible without losing that proof.
+The scoped ceiling includes the audited Phase 176 notification-state, watcher
+repair, heartbeat, event, privacy, and final-evidence work still listed below.
 
 ## What allowed to change
 

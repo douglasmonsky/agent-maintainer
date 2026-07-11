@@ -65,10 +65,11 @@ The preferred local backend is therefore app-server JSON-RPC over the bundled
 ## Current Slice
 
 The app-server JSON-RPC backend and fail-closed launchd behavior are implemented.
-The real `turn/start` smoke remains manual and gated until a user explicitly
-approves spending a Codex model turn. Capability-focused doctor output, atomic
-notification claims, watcher repair, heartbeat backoff, and the complete
-event/privacy matrix remain active work.
+Capability-focused doctor output and a default read-only app-server smoke are
+implemented. The real `turn/start` smoke remains manual and gated until a user
+explicitly approves spending a Codex model turn. Atomic notification claims,
+watcher repair, heartbeat backoff, and the complete event/privacy matrix remain
+active work.
 
 ## Acceptance Criteria
 
