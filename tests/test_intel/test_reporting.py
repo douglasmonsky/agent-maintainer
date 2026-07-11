@@ -112,9 +112,10 @@ def test_coverage_json_reports_changed_line_percent(tmp_path: Path) -> None:
         json.dumps(
             {
                 "files": {
+                    "broken.py": [],
                     "src/pkg/widget.py": {
-                        "executed_lines": [10],
-                        "missing_lines": [11],
+                        "executed_lines": [None, 10, "invalid"],
+                        "missing_lines": [11, None],
                         "summary": {
                             "percent_covered": JSON_COVERAGE_PERCENT,
                         },

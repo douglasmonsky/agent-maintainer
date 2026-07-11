@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 from agent_maintainer.config import loader
@@ -17,19 +18,19 @@ ACTION_STORE_TRUE = "store_true"
 
 
 def add_parsers(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    add_parser: Callable[..., argparse.ArgumentParser],
 ) -> None:
     """Add mutation intelligence subcommands."""
-    add_targets_parser(subparsers)
-    add_results_parser(subparsers)
-    sweep_cli.add_parser(subparsers)
+    add_targets_parser(add_parser)
+    add_results_parser(add_parser)
+    sweep_cli.add_parser(add_parser)
 
 
 def add_targets_parser(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    add_parser: Callable[..., argparse.ArgumentParser],
 ) -> None:
     """Add advisory mutation-target parser."""
-    mutation_parser = subparsers.add_parser(
+    mutation_parser = add_parser(
         "mutation-targets",
         help="Suggest advisory mutation testing targets.",
     )
@@ -50,10 +51,10 @@ def add_targets_parser(
 
 
 def add_results_parser(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    add_parser: Callable[..., argparse.ArgumentParser],
 ) -> None:
     """Add mutation-results parser."""
-    parser = subparsers.add_parser(
+    parser = add_parser(
         "mutation-results",
         help="Summarize exported Mutmut result statistics.",
     )
