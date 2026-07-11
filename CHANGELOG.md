@@ -21,8 +21,8 @@ the candidate passes the complete exact-commit release matrix.
   manifest to a separately carried digest and verify it immediately before
   attachment or Trusted Publishing.
 - The fixed `markdownlint-cli2` 0.23.0 dependency removes the accepted
-  `js-yaml` advisory, and current Semgrep support restores the `manual` and
-  `all` extras across Python 3.11 through 3.14.
+  `js-yaml` advisory, and the Semgrep 1.169.0 minimum restores the `manual`
+  and `all` extras across Python 3.11 through 3.14 without resolver backtracking.
 
 ### Added Since 0.1.0b5
 

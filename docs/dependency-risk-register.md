@@ -28,7 +28,7 @@ dates.
 | ID | Owner | Expiry | Resolution |
 |---|---|---|---|
 | `DR-001-js-yaml-merge-key-dos` | `release-maintainer` | 2026-09-30 | `markdownlint-cli2` 0.23.0 moved to `js-yaml` 5.2.0. The OSV exception was removed and `npm audit` is clean. |
-| `DR-002-semgrep-python-313-compatibility` | `release-maintainer` | 2026-08-31 | Semgrep 1.169.0 declares Python 3.10 through 3.14 support. The `manual` and `all` extra markers were removed. |
+| `DR-002-semgrep-python-313-compatibility` | `release-maintainer` | 2026-08-31 | Semgrep 1.169.0 declares Python 3.10 through 3.14 support. The `manual` and `all` extras require at least that release to prevent resolver backtracking to incompatible packages. |
 
 ## Review Commands
 

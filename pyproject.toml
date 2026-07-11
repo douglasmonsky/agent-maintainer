@@ -110,7 +110,7 @@ hardening = [
   "yamllint",
   "zizmor",
 ]
-manual = ["cyclonedx-bom", "mutmut", "pip-licenses", "semgrep"]
+manual = ["cyclonedx-bom", "mutmut", "pip-licenses", "semgrep>=1.169.0"]
 compression = ["headroom-ai"]
 mcp = ["mcp>=1.0"]
 all = [
@@ -135,7 +135,7 @@ all = [
   "pytest-cov",
   "radon",
   "ruff",
-  "semgrep",
+  "semgrep>=1.169.0",
   "tach",
   "vulture",
   "wemake-python-styleguide",

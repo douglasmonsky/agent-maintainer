@@ -75,8 +75,8 @@ def test_optional_dependency_extras_are_flattened() -> None:
     assert "mcp>=1.0" in extras["all"]
     assert all("hypothesis" not in dependencies for dependencies in extras.values())
     assert all("rust-just" not in dependencies for dependencies in extras.values())
-    assert "semgrep" in extras["manual"]
-    assert "semgrep" in extras["all"]
+    assert "semgrep>=1.169.0" in extras["manual"]
+    assert "semgrep>=1.169.0" in extras["all"]
 
 
 def test_package_extras_have_valid_requirement_strings() -> None:

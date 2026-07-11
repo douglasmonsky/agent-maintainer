@@ -113,8 +113,8 @@ def test_fixed_dependency_exceptions_are_retired() -> None:
         == FIXED_MARKDOWNLINT_VERSION
     )
     assert package_lock["packages"]["node_modules/js-yaml"]["version"] == FIXED_JS_YAML_VERSION
-    assert "semgrep" in extras["manual"]
-    assert "semgrep" in extras["all"]
+    assert f"semgrep>={CURRENT_SEMGREP_VERSION}" in extras["manual"]
+    assert f"semgrep>={CURRENT_SEMGREP_VERSION}" in extras["all"]
     assert all("python_version" not in requirement for requirement in extras["manual"])
     assert all("python_version" not in requirement for requirement in extras["all"])
     assert f"semgrep=={CURRENT_SEMGREP_VERSION}" in DEV_LOCK.read_text(encoding="utf-8")

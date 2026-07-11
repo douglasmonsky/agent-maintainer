@@ -42,7 +42,7 @@ mitigations = [
   "Keep Semgrep available as a separately installed optional executable.",
   "Continue the local metrics-off scan on resolver-compatible environments.",
 ]
-resolution = "Semgrep 1.169.0 declares Python 3.10 through 3.14 support, so the environment marker was removed from both extras, the development lock was refreshed, and the Python 3.11 through 3.14 compatibility matrix now installs the manual extra."
+resolution = "Semgrep 1.169.0 declares Python 3.10 through 3.14 support, so both extras now require at least that release, the development lock was refreshed, and the Python 3.11 through 3.14 compatibility matrix installs the manual extra without resolver backtracking."
 
 [[risks]]
 id = "DR-003-python-lock-without-hashes"
