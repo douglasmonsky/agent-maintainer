@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import tomllib
 from pathlib import Path
+from typing import cast
 
 from archguard import tach_config_domains as domains
 from archguard import tach_config_sources as sources
@@ -19,9 +20,11 @@ def tach_config_issues(repo_root: Path, *, require_strict_root: bool) -> list[st
         return ["tach.toml absent"]
 
     try:
-        payload = tomllib.loads(config_path.read_text(encoding="utf-8"))
+        payload = _toml_table(tomllib.loads(config_path.read_text(encoding="utf-8")))
     except tomllib.TOMLDecodeError as exc:
         return [f"tach.toml invalid: {exc}"]
+    if payload is None:
+        return ["tach.toml must contain a top-level table"]
 
     issues: list[str] = []
     domain_payloads = domains.domain_payloads(repo_root, payload.get("source_roots"))
@@ -45,12 +48,13 @@ def _module_issues(payload: domains.TachPayload, *, config_name: str) -> list[st
     modules = payload.get("modules")
     if not isinstance(modules, list) or not modules:
         return [f"{config_name} must define at least one module"]
-    if not all(sources.module_has_path(item) for item in modules):
+    module_values = cast(list[object], modules)
+    if not all(sources.module_has_path(item) for item in module_values):
         return [f"each {config_name} module must define path or paths"]
 
     issues: list[str] = []
-    issues.extend(_dependency_contract_issues(modules, config_name=config_name))
-    issues.extend(_large_path_group_issues(modules, config_name=config_name))
+    issues.extend(_dependency_contract_issues(module_values, config_name=config_name))
+    issues.extend(_large_path_group_issues(module_values, config_name=config_name))
     return issues
 
 
@@ -66,8 +70,8 @@ def _domain_module_issues(
     payload: domains.TachPayload,
 ) -> list[str]:
     issues: list[str] = []
-    root = payload.get("root")
-    if isinstance(root, dict) and "depends_on" not in root:
+    root = _toml_table(payload.get("root"))
+    if root is not None and "depends_on" not in root:
         issues.append(f"{domains.DOMAIN_CONFIG_NAME} root depends_on missing: {domain_root}")
 
     modules = payload.get("modules")
@@ -77,8 +81,11 @@ def _domain_module_issues(
         issues.append(f"{domains.DOMAIN_CONFIG_NAME} modules must be a list: {domain_root}")
         return issues
 
-    issues.extend(_dependency_contract_issues(modules, config_name=domains.DOMAIN_CONFIG_NAME))
-    issues.extend(_large_path_group_issues(modules, config_name=domains.DOMAIN_CONFIG_NAME))
+    module_values = cast(list[object], modules)
+    issues.extend(
+        _dependency_contract_issues(module_values, config_name=domains.DOMAIN_CONFIG_NAME)
+    )
+    issues.extend(_large_path_group_issues(module_values, config_name=domains.DOMAIN_CONFIG_NAME))
     return issues
 
 
@@ -100,30 +107,32 @@ def _large_path_group_issues(modules: list[object], *, config_name: str) -> list
 
 
 def _large_path_group_labels(modules: list[object]) -> tuple[str, ...]:
-    return tuple(
-        _module_label(item)
-        for item in modules
-        if isinstance(item, dict)
-        and sources.non_empty_string_list(item.get("paths"))
-        and len(item["paths"]) > MAX_MODULE_PATH_GROUP_SIZE
-    )
+    labels: list[str] = []
+    for item in modules:
+        module = _toml_table(item)
+        if module is None:
+            continue
+        paths = module.get("paths")
+        if sources.non_empty_string_list(paths) and len(paths) > MAX_MODULE_PATH_GROUP_SIZE:
+            labels.append(_module_label(module))
+    return tuple(labels)
 
 
 def _missing_depends_on(item: object) -> bool:
-    if not isinstance(item, dict):
-        return True
-    return "depends_on" not in item
+    module = _toml_table(item)
+    return module is None or "depends_on" not in module
 
 
 def _module_label(item: object) -> str:
-    if not isinstance(item, dict):
+    module = _toml_table(item)
+    if module is None:
         return "<invalid>"
 
-    path = item.get("path")
+    path = module.get("path")
     if sources.non_empty_string(path):
         return path
 
-    paths = item.get("paths")
+    paths = module.get("paths")
     if sources.non_empty_string_list(paths):
         return paths[0]
     return "<unknown>"
@@ -180,3 +189,14 @@ def _module_sample(modules: tuple[str, ...]) -> str:
         return sample
     remaining = len(modules) - MISSING_MODULE_SAMPLE_LIMIT
     return f"{sample}, ... ({remaining} more)"
+
+
+def _toml_table(value: object) -> domains.TachPayload | None:
+    """Return a string-keyed TOML table with an explicit value boundary."""
+
+    if not isinstance(value, dict):
+        return None
+    raw = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in raw):
+        return None
+    return {key: item for key, item in raw.items() if isinstance(key, str)}

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import tomllib
 from pathlib import Path
-from typing import Any
+from typing import cast
 
 from archguard import tach_config_sources as sources
 
 DOMAIN_CONFIG_NAME = "tach.domain.toml"
-TachPayload = dict[str, Any]
+TachPayload = dict[str, object]
 DomainPayload = tuple[str, TachPayload]
 DomainPayloads = tuple[DomainPayload, ...]
 
@@ -39,7 +39,9 @@ def configured_domain_module_paths(payloads: DomainPayloads) -> frozenset[str]:
 def configured_domain_roots(payloads: DomainPayloads) -> frozenset[str]:
     """Return domain roots that explicitly declare package ownership."""
     return frozenset(
-        domain_root for domain_root, payload in payloads if isinstance(payload.get("root"), dict)
+        domain_root
+        for domain_root, payload in payloads
+        if _toml_table(payload.get("root")) is not None
     )
 
 
@@ -70,32 +72,44 @@ def _root_domain_payloads(root_path: Path) -> tuple[DomainPayload, ...]:
 
 def _read_domain_payload(config_path: Path) -> TachPayload | None:
     try:
-        return tomllib.loads(config_path.read_text(encoding="utf-8"))
+        return _toml_table(tomllib.loads(config_path.read_text(encoding="utf-8")))
     except tomllib.TOMLDecodeError:
         return None
 
 
 def _payload_module_paths(domain_root: str, payload: TachPayload) -> tuple[str, ...]:
     paths: list[str] = []
-    if isinstance(payload.get("root"), dict):
+    if _toml_table(payload.get("root")) is not None:
         paths.append(domain_root)
 
     modules = payload.get("modules")
     if isinstance(modules, list):
-        for item in modules:
+        for item in cast(list[object], modules):
             paths.extend(_domain_item_module_paths(domain_root, item))
     return tuple(paths)
 
 
 def _domain_item_module_paths(domain_root: str, item: object) -> tuple[str, ...]:
-    if not isinstance(item, dict):
+    module = _toml_table(item)
+    if module is None:
         return ()
 
-    path = item.get("path")
+    path = module.get("path")
     if sources.non_empty_string(path):
         return (domain_module_path(domain_root, path),)
 
-    module_paths = item.get("paths")
+    module_paths = module.get("paths")
     if sources.non_empty_string_list(module_paths):
         return tuple(domain_module_path(domain_root, path) for path in module_paths)
     return ()
+
+
+def _toml_table(value: object) -> TachPayload | None:
+    """Return a string-keyed TOML table with an explicit value boundary."""
+
+    if not isinstance(value, dict):
+        return None
+    raw = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in raw):
+        return None
+    return {key: item for key, item in raw.items() if isinstance(key, str)}
