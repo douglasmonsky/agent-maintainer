@@ -5,12 +5,16 @@ attestations:
   doc_object: docs.troubleshooting.overview
   evidence:
   - evidence.agent_hooks.configured_repo_noop
-  reason: Mechanical hook runtime extraction; troubleshooting behavior for configured-repo
-    no-op handling unchanged.
+  reason: Internal hook payload refactor; documented troubleshooting behavior remains
+    unchanged.
   reviewer: agent
-  reviewed_at: '2026-07-06T17:41:43Z'
+  reviewed_at: '2026-07-11T20:49:59Z'
   base: HEAD
-  head: 65698ad
+  head: 4927ce3
   evidence_fingerprints:
-    evidence.agent_hooks.configured_repo_noop: sha256:2431a4b70943f0beed1c503f7bdfe11554ff64db2b320c7c972c44701ee62b52
+    evidence.agent_hooks.configured_repo_noop: sha256:0832cab3f375aaaa5de67acf9b9e7498828a24b7e83130d175e65fec0b37fdf4
+  evidence_anchor_fingerprints:
+    evidence.agent_hooks.configured_repo_noop:
+    - sha256:7d7507ba4e4d3d191bb55c85aadd5230f8d3bea0d7c29f74662985fdbdde6318
+  expires_at: null
   statement: Reviewed changed evidence region. Documentation remains accurate.

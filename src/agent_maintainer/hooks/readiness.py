@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
+from agent_maintainer.core.structured_values import json_object
 from agent_maintainer.verify.locking import (
     LOCK_NAME,
     LOCK_STALE_SECONDS,
@@ -181,10 +182,10 @@ def _wait_command(readiness: HookReadiness) -> str:
 
 def _json_object(path: Path) -> dict[str, object]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload: object = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
-    return payload if isinstance(payload, dict) else {}
+    return json_object(payload) or {}
 
 
 def _stale_lock(path: Path) -> bool:

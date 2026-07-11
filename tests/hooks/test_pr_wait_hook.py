@@ -105,7 +105,7 @@ def test_payload_helpers_handle_malformed_and_unmatched_input(
     assert pr_wait.command_text("gh pr create --fill") == "gh pr create --fill"
     assert pr_wait.command_text({"command": 293}) == ""
     assert pr_wait.handoff_from_text("Created pull request") is None
-    assert pr_wait.iter_text(["a", {"b": ["c", None]}]) == ("a", "c")
+    assert pr_wait.iter_text(["a", {1: "ignored", "b": ["c", None]}]) == ("a", "c")
 
 
 def test_codex_handoff_emits_post_tool_use_continuation(

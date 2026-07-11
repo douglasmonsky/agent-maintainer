@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent_client_hooks.constants import CLAUDE_CODE_PLATFORM, CODEX_PLATFORM
+from agent_maintainer.core.structured_values import json_array, json_object, json_object_items
 from agent_maintainer.wait.broker import (
     CODEX_BACKGROUND_PR_WAIT_ENV,
     BackgroundGitHubPrWait,
@@ -107,10 +108,10 @@ def read_hook_payload() -> dict[str, object]:
     """Read hook JSON stdin, treating malformed input as empty."""
 
     try:
-        payload = json.load(sys.stdin)
+        payload: object = json.load(sys.stdin)
     except (json.JSONDecodeError, OSError):
         return {}
-    return payload if isinstance(payload, dict) else {}
+    return json_object(payload) or {}
 
 
 def detect_handoff(payload: dict[str, object]) -> PrWaitHandoff | None:
@@ -126,8 +127,9 @@ def detect_handoff(payload: dict[str, object]) -> PrWaitHandoff | None:
 def command_text(value: object) -> str:
     """Return shell command text from hook tool input."""
 
-    if isinstance(value, dict):
-        command = value.get("command")
+    payload = json_object(value)
+    if payload is not None:
+        command = payload.get("command")
         return command if isinstance(command, str) else ""
     return value if isinstance(value, str) else ""
 
@@ -146,10 +148,12 @@ def iter_text(value: object) -> tuple[str, ...]:
 
     if isinstance(value, str):
         return (value,)
-    if isinstance(value, dict):
-        return tuple(text for item in value.values() for text in iter_text(item))
-    if isinstance(value, list):
-        return tuple(text for item in value for text in iter_text(item))
+    object_items = json_object_items(value)
+    if object_items or isinstance(value, dict):
+        return tuple(text for _, item in object_items for text in iter_text(item))
+    values = json_array(value)
+    if values is not None:
+        return tuple(text for item in values for text in iter_text(item))
     return ()
 
 
