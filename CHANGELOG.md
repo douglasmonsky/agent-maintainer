@@ -52,6 +52,10 @@ the candidate passes the complete exact-commit release matrix.
 - Registry-generated configuration reference documentation, versioned
   capability metadata, repair-fact coverage assessment, scoring example
   datasets, and agent efficacy assessment are now available.
+- Existing-application onboarding fixtures now exercise a mature `src/`
+  library, a flat-layout service with third-party agent configuration, and a
+  `uv` Python/JavaScript application through preview, apply, and idempotent
+  rerun behavior.
 
 ### Changed Since 0.1.0b5
 

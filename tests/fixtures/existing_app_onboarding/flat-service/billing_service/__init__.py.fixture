@@ -1,0 +1,8 @@
+"""Billing helpers from a synthetic flat-layout service."""
+
+
+def invoice_total(subtotal_cents: int, tax_basis_points: int) -> int:
+    """Return a tax-inclusive integer-cent invoice total."""
+
+    tax_cents = subtotal_cents * tax_basis_points // 10_000
+    return subtotal_cents + tax_cents

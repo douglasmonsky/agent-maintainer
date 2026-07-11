@@ -411,6 +411,17 @@ Checks:
 Exit criterion: repository docs, package behavior, changelog, and release
 evidence describe the same beta.
 
+Implementation status (2026-07-10): in progress on
+`codex/deep-release-evidence`. The versioned public contract, repository-local
+links, and built-artifact entry-point matrix are complete. Three static
+existing-application fixtures now cover a mature `src/` library, a flat-layout
+service with third-party Codex and Claude configuration, and a `uv`-managed
+Python/JavaScript application. For every fixture, tests prove read-only preview,
+fail-closed conflict handling, exact recovery backups, supported merges,
+preservation of application files, passing application tests after apply, and a
+byte-stable second apply. Dependency-risk/governance records and the final
+same-commit release matrix remain open.
+
 ## Verification Ladder
 
 Each unit uses the smallest meaningful focused checks first, then broader

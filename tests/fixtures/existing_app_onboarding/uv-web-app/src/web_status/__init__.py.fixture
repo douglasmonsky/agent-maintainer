@@ -1,0 +1,7 @@
+"""Status helpers from a synthetic uv-managed web application."""
+
+
+def service_status(service: str, healthy: bool) -> dict[str, object]:
+    """Return the stable public status payload."""
+
+    return {"service": service, "status": "ok" if healthy else "degraded"}

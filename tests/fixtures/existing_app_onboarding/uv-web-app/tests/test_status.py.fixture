@@ -1,0 +1,12 @@
+"""Tests for the synthetic web status application."""
+
+from web_status import service_status
+
+
+def test_service_status_preserves_public_shape() -> None:
+    """The status payload retains service and status keys."""
+
+    assert service_status("payments", healthy=False) == {
+        "service": "payments",
+        "status": "degraded",
+    }

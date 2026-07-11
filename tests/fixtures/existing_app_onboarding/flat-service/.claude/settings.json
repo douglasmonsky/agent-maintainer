@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "third-party-stop",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "theme": "dark"
+}

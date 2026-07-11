@@ -1,0 +1,11 @@
+"""Tests for the synthetic billing service."""
+
+from billing_service import invoice_total
+
+EXPECTED_TOTAL_CENTS = 10_725
+
+
+def test_invoice_total_uses_integer_cents() -> None:
+    """Tax is calculated without floating-point currency drift."""
+
+    assert invoice_total(10_000, 725) == EXPECTED_TOTAL_CENTS

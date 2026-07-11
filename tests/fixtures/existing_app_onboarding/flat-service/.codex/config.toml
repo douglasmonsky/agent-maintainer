@@ -1,0 +1,6 @@
+[features]
+hooks = false
+
+[mcp_servers.team_tool]
+command = "team-tool"
+args = ["serve"]

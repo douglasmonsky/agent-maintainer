@@ -1,0 +1,10 @@
+{
+  "name": "uv-web-app-assets",
+  "private": true,
+  "scripts": {
+    "test": "pytest -q"
+  },
+  "devDependencies": {
+    "vitest": "2.1.9"
+  }
+}
