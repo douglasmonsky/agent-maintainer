@@ -63,12 +63,13 @@ def test_as_non_negative_int_preserves_field_name_in_parse_errors() -> None:
         coercion.as_non_negative_int(object(), "worker_count")
 
 
-def test_as_float_preserves_numeric_values_and_error_context() -> None:
+@pytest.mark.parametrize("non_finite", (float("inf"), "inf"))
+def test_as_float_preserves_numeric_values_and_error_context(non_finite: object) -> None:
     """Float coercion retains values and names non-finite input precisely."""
 
     assert coercion.as_float(1, "ratio") == 1.0
     with pytest.raises(TypeError, match=r"^ratio must be a finite number$"):
-        coercion.as_float(float("inf"), "ratio")
+        coercion.as_float(non_finite, "ratio")
 
 
 def test_as_choice_reports_sorted_valid_values_and_field_name() -> None:
@@ -219,6 +220,8 @@ def test_named_nested_tables_report_exact_type_errors() -> None:
 
     with pytest.raises(TypeError, match=r"^file_baselines\.groups name must not be empty$"):
         coercion.coerce_file_baseline_group(" ", {"include": ["docs/**"]})
+    with pytest.raises(TypeError, match=r"^file_baselines\.groups\.docs must be a table$"):
+        coercion.coerce_file_baseline_group("docs", [])
     with pytest.raises(TypeError, match=r"^diagnostics must be a table$"):
         coercion.coerce_diagnostics([])
 

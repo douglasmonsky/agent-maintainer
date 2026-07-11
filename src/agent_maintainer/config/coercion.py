@@ -264,7 +264,6 @@ def coerce_field_value(
         "float": as_float,
         "int": as_int,
         "non-negative-int": as_non_negative_int,
-        "str": as_str,
         "tuple": as_tuple,
     }
     if spec.value_kind == "choice":
