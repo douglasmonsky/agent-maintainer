@@ -11,6 +11,7 @@ from typing import Any
 
 from agent_maintainer.core.config import load_config
 from agent_maintainer.core.executor import command_env
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
 
 RUFF_JSON_NAME = "ruff.json"
 RUFF_DIAGNOSTIC_LIMIT = 50
@@ -61,14 +62,15 @@ def write_json_output(path: Path, output: str) -> list[dict[str, Any]] | None:
     if not output.strip():
         return None
     try:
-        payload = json.loads(output)
+        payload: object = json.loads(output)
     except json.JSONDecodeError:
         return None
-    if not isinstance(payload, list):
+    diagnostics = json_array(payload)
+    if diagnostics is None:
         return None
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
-    return [item for item in payload if isinstance(item, dict)]
+    path.write_text(f"{json.dumps(diagnostics, indent=2, sort_keys=True)}\n", encoding="utf-8")
+    return json_objects(diagnostics)
 
 
 def forward_output(
@@ -100,9 +102,9 @@ def format_diagnostics(diagnostics: list[dict[str, Any]]) -> str:
 def format_diagnostic(diagnostic: dict[str, Any]) -> str:
     """Return one compact Ruff diagnostic line."""
 
-    location = diagnostic.get("location", {})
-    row = location.get("row", 1) if isinstance(location, dict) else 1
-    column = location.get("column", 1) if isinstance(location, dict) else 1
+    location = json_object(diagnostic.get("location")) or {}
+    row = location.get("row", 1)
+    column = location.get("column", 1)
     filename = diagnostic.get("filename", "<unknown>")
     code = diagnostic.get("code") or "RUF"
     message = diagnostic.get("message") or ""

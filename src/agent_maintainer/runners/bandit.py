@@ -11,6 +11,7 @@ from typing import Any
 
 from agent_maintainer.core.config import load_config
 from agent_maintainer.core.executor import command_env
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
 
 BANDIT_JSON_NAME = "bandit.json"
 BANDIT_FINDING_LIMIT = 50
@@ -64,17 +65,18 @@ def write_json_output(path: Path, output: str) -> list[dict[str, Any]] | None:
     if not output.strip():
         return None
     try:
-        payload = json.loads(output)
+        payload: object = json.loads(output)
     except json.JSONDecodeError:
         return None
-    if not isinstance(payload, dict):
+    report = json_object(payload)
+    if report is None:
         return None
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
-    raw_findings = payload.get("results", [])
-    if not isinstance(raw_findings, list):
+    path.write_text(f"{json.dumps(report, indent=2, sort_keys=True)}\n", encoding="utf-8")
+    raw_findings = json_array(report.get("results"))
+    if raw_findings is None:
         return None
-    return [item for item in raw_findings if isinstance(item, dict)]
+    return json_objects(raw_findings)
 
 
 def forward_output(
