@@ -8,6 +8,7 @@ from agent_maintainer.assess.efficacy_models import (
     UNKNOWN,
     EfficacyMetric,
 )
+from agent_maintainer.core.structured_values import json_object
 
 PASS_STATUSES = frozenset(("pass", "passed", "success"))
 POINTER_COMMANDS = frozenset(("context", "repair-plan"))
@@ -164,8 +165,8 @@ def _is_background_wait_registration(record: dict[str, Any]) -> bool:
     if record.get("status") in WAIT_BACKGROUND_STATUSES:
         return True
 
-    attributes = record.get("attributes")
-    return isinstance(attributes, dict) and attributes.get("background") is True
+    attributes = json_object(record.get("attributes"))
+    return attributes is not None and attributes.get("background") is True
 
 
 def _is_command(record: dict[str, Any], command: str, *, status: str | None) -> bool:

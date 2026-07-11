@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import argparse
 import os
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from pathlib import Path
 
 from agent_maintainer.assess import (
     debt_score,
+    efficacy,
     file_baselines,
     repair_fact_coverage,
     repair_fact_coverage_reporting,
@@ -19,10 +20,6 @@ from agent_maintainer.assess import (
 )
 from agent_maintainer.assess import (
     evidence as assess_evidence,
-)
-from agent_maintainer.assess.efficacy import (
-    DEFAULT_EVENT_FILE_LIMIT,
-    build_efficacy_report,
 )
 from agent_maintainer.assess.efficacy_reporting import render_text as render_efficacy_text
 from agent_maintainer.assess.models import RepoEvidence
@@ -137,7 +134,7 @@ def _run_efficacy(args: argparse.Namespace, target: Path) -> int:
 
     events_dir = args.events_dir if args.events_dir.is_absolute() else target / args.events_dir
     log_dir = args.log_dir if args.log_dir.is_absolute() else target / args.log_dir
-    report = build_efficacy_report(
+    report = efficacy.build_efficacy_report(
         target,
         events_dir=events_dir,
         log_dir=log_dir,
@@ -211,16 +208,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     repair_fact_parser.add_argument("--json", action=STORE_TRUE)
     repair_fact_parser.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     repair_fact_parser.add_argument("--run-limit", type=int, default=10)
-    _add_efficacy_parser(subparsers)
+    _add_efficacy_parser(subparsers.add_parser)
     return parser.parse_args(argv)
 
 
 def _add_efficacy_parser(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    add_parser: Callable[..., argparse.ArgumentParser],
 ) -> None:
     """Add efficacy assessment parser."""
 
-    efficacy_parser = subparsers.add_parser(
+    efficacy_parser = add_parser(
         "efficacy",
         help="Assess local agent efficacy metrics.",
     )
@@ -241,7 +238,7 @@ def _add_efficacy_parser(
     efficacy_parser.add_argument(
         "--event-file-limit",
         type=int,
-        default=DEFAULT_EVENT_FILE_LIMIT,
+        default=efficacy.DEFAULT_EVENT_FILE_LIMIT,
     )
 
 

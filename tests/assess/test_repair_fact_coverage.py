@@ -59,6 +59,37 @@ def test_no_failure_manifest_has_no_gap(tmp_path: Path) -> None:
     assert report.parser_targets == ()
 
 
+def test_malformed_check_does_not_hide_failure(tmp_path: Path) -> None:
+    """Invalid neighboring checks do not obscure a valid failed record."""
+
+    run_dir = tmp_path / ".verify-logs" / "runs" / "20260704T000001Z-full-mixed"
+    run_dir.mkdir(parents=True)
+    (run_dir / "custom.log").write_text("failed\n", encoding="utf-8")
+    (run_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "run_id": run_dir.name,
+                "profile": "full",
+                "checks": [
+                    None,
+                    {
+                        CHECK_NAME: "custom-check",
+                        CHECK_STATUS: FAILED_STATUS,
+                        LOG_PATH: "custom.log",
+                        LOG_BYTES: 7,
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    report = build_repair_fact_coverage_report(tmp_path, log_dir=tmp_path / ".verify-logs")
+
+    assert report.failed_checks == 1
+    assert report.checks[0].check == "custom-check"
+
+
 def test_structured_failure_counts_as_covered(tmp_path: Path) -> None:
     """Known structured artifacts count as covered repair facts."""
 

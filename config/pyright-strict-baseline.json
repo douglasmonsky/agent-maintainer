@@ -1,40 +1,13 @@
 {
   "by_rule": {
-    "reportPrivateUsage": 42,
-    "reportUnknownArgumentType": 167,
+    "reportPrivateUsage": 41,
+    "reportUnknownArgumentType": 161,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 42,
-    "reportUnknownVariableType": 102
+    "reportUnknownMemberType": 38,
+    "reportUnknownVariableType": 96
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 6 validated client-hook settings, run-artifact categories, and wait-registry records; all 30 production diagnostics in the three integration packages were removed without suppressions or Any substitutions.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 7 routed assessment manifests and repository configuration through validated structured-value boundaries; all 17 production diagnostics in agent_maintainer.assess were removed without new suppressions or Any annotations.",
   "pairs": {
-    "src/agent_maintainer/assess/cli.py": {
-      "reportPrivateUsage": 1
-    },
-    "src/agent_maintainer/assess/debt_manifest.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/assess/efficacy.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_maintainer/assess/efficacy_followthrough.py": {
-      "reportUnknownMemberType": 1
-    },
-    "src/agent_maintainer/assess/evidence.py": {
-      "reportUnknownMemberType": 1
-    },
-    "src/agent_maintainer/assess/repair_fact_coverage.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/assess/repair_fact_coverage_reporting.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownVariableType": 1
-    },
     "src/agent_maintainer/attention/rendering.py": {
       "reportUnknownArgumentType": 1
     },
@@ -443,5 +416,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 488
+  "total_errors": 471
 }

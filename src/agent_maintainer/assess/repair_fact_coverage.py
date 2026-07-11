@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from agent_context.failures import FailureRecord, record_from_payload
 from agent_maintainer.assess.repair_fact_coverage_models import (
@@ -14,6 +13,7 @@ from agent_maintainer.assess.repair_fact_coverage_models import (
     RepairFactParserTarget,
 )
 from agent_maintainer.context.pack import exact_facts
+from agent_maintainer.core.structured_values import json_array, json_object
 
 MANIFEST_NAME = "manifest.json"
 RUNS_DIR_NAME = "runs"
@@ -23,10 +23,9 @@ PERFECT_COVERAGE = 100.0
 
 @dataclass(frozen=True)
 class _ManifestFailure:
-    """Failed check plus manifest context."""
+    """Failed check plus its manifest path."""
 
     manifest_path: Path
-    manifest: dict[str, Any]
     record: FailureRecord
 
 
@@ -98,27 +97,27 @@ def recent_manifest_paths(log_dir: Path, *, run_limit: int) -> tuple[Path, ...]:
     return (latest,) if latest.exists() else ()
 
 
-def read_manifest(path: Path) -> dict[str, Any] | None:
+def read_manifest(path: Path) -> dict[str, object] | None:
     """Return manifest payload if readable."""
 
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload: object = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-    return payload if isinstance(payload, dict) else None
+    return json_object(payload)
 
 
 def failures_for_manifest(
     manifest_path: Path,
-    manifest: dict[str, Any],
+    manifest: dict[str, object],
 ) -> tuple[_ManifestFailure, ...]:
     """Return failed checks for one manifest in stable priority order."""
 
-    checks = manifest.get("checks", [])
-    if not isinstance(checks, list):
+    checks = json_array(manifest.get("checks"))
+    if checks is None:
         return ()
     return tuple(
-        _ManifestFailure(manifest_path, manifest, record)
+        _ManifestFailure(manifest_path, record)
         for record in sorted(failed_records(checks), key=failure_sort_key)
     )
 

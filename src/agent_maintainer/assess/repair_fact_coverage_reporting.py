@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+from dataclasses import fields, is_dataclass
+from typing import cast
 
 from agent_maintainer.assess.repair_fact_coverage_models import (
     RepairFactCheckCoverage,
@@ -77,12 +79,10 @@ def to_dict(value: object) -> object:
     """Return JSON-serializable dataclass payload."""
 
     if isinstance(value, tuple):
-        return [to_dict(item) for item in value]
-    if hasattr(value, "__dataclass_fields__"):
-        return {
-            key: to_dict(getattr(value, key))
-            for key in value.__dataclass_fields__  # type: ignore[attr-defined]
-        }
+        values = cast(tuple[object, ...], value)
+        return [to_dict(item) for item in values]
+    if is_dataclass(value) and not isinstance(value, type):
+        return {field.name: to_dict(getattr(value, field.name)) for field in fields(value)}
     return value
 
 

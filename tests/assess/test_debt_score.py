@@ -191,7 +191,7 @@ def test_debt_score_penalizes_failed_manifest_check(tmp_path: Path) -> None:
     log_dir = tmp_path / ".verify-logs"
     log_dir.mkdir()
     (log_dir / "manifest.json").write_text(
-        json.dumps({"checks": [{"name": "pyright", "status": "failed"}]}),
+        json.dumps({"checks": [None, {"name": "pyright", "status": "failed"}]}),
         encoding="utf-8",
     )
 
