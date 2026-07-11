@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from functools import partial
 from pathlib import Path
 from typing import cast
 
@@ -59,7 +60,11 @@ def render_pack_markdown(
         supporting_item_lines(payload["selected_logs"], "check", "No logs selected."),
     )
     add_section(lines, "Omitted Counts", omitted_count_lines(payload["omitted_counts"]))
-    add_section(lines, "Expansion Commands", command_lines(payload["expansion_commands"]))
+    add_section(
+        lines,
+        "Expansion Commands",
+        bullet_lines(payload["expansion_commands"], code=True),
+    )
     return "\n".join(lines).rstrip()
 
 
@@ -306,18 +311,16 @@ def omitted_count_lines(counts: object) -> list[str]:
     return [f"- {key}: `{value}`" for key, value in sorted(count_values.items())]
 
 
-def command_lines(commands: object) -> list[str]:
-    """Return expansion command lines."""
-
-    command_values = _json_array(commands)
-    return [f"- `{command}`" for command in command_values] if command_values else []
-
-
-def bullet_lines(values: object) -> list[str]:
+def bullet_lines(values: object, *, code: bool = False) -> list[str]:
     """Return bullet lines for string-like values."""
 
     item_values = _json_array(values)
+    if code:
+        return [f"- `{value}`" for value in item_values] if item_values else []
     return [f"- {value}" for value in item_values] if item_values else []
+
+
+command_lines = partial(bullet_lines, code=True)
 
 
 def _json_object(value: object) -> dict[str, object] | None:
