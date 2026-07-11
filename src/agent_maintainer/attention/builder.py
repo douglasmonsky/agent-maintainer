@@ -150,13 +150,7 @@ def _validated_ledger(payload: object) -> AttentionLedger | None:
 def _attention_ledger(payload: object) -> AttentionLedger:
     """Return a typed ledger from one decoded JSON object."""
 
-    ledger = _json_object(payload)
-    if ledger is None:
-        raise TypeError("attention ledger must be an object")
-    raw_files = _object_sequence(ledger.get("files", ()))
-    raw_inputs = _json_object(ledger.get("inputs", {}))
-    if raw_files is None or raw_inputs is None:
-        raise TypeError("attention ledger collections have invalid types")
+    ledger, raw_files, raw_inputs = _ledger_collections(payload)
     files = tuple(_attention_file_score(item) for item in raw_files)
     schema_version = _plain_int(ledger.get("schema_version"), "schema_version")
     if schema_version != SCHEMA_VERSION:
@@ -173,6 +167,21 @@ def _attention_ledger(payload: object) -> AttentionLedger:
         inputs=raw_inputs,
         files=files,
     )
+
+
+def _ledger_collections(
+    payload: object,
+) -> tuple[dict[str, object], Sequence[object], dict[str, object]]:
+    """Return the typed object, file sequence, and input table for a ledger."""
+
+    ledger = _json_object(payload)
+    if ledger is None:
+        raise TypeError("attention ledger must be an object")
+    raw_files = _object_sequence(ledger.get("files", ()))
+    raw_inputs = _json_object(ledger.get("inputs", {}))
+    if raw_files is None or raw_inputs is None:
+        raise TypeError("attention ledger collections have invalid types")
+    return ledger, raw_files, raw_inputs
 
 
 def _attention_file_score(item: object) -> AttentionFileScore:
@@ -239,13 +248,9 @@ def _repo_relative_path(value: object) -> str:
 
     path_text = _nonempty_string(value, "path")
     path = PurePosixPath(path_text)
-    if (
-        "\\" in path_text
-        or path.is_absolute()
-        or path.as_posix() != path_text
-        or path_text == "."
-        or ".." in path.parts
-    ):
+    lexical_invalid = "\\" in path_text or path_text == "."
+    structural_invalid = path.is_absolute() or path.as_posix() != path_text or ".." in path.parts
+    if lexical_invalid or structural_invalid:
         raise ValueError(f"path is not canonical repository-relative: {path_text!r}")
     return path_text
 
@@ -256,7 +261,7 @@ def _unit_interval(value: object, label: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise TypeError(f"{label} must be a number")
     score = float(value)
-    if not math.isfinite(score) or not 0.0 <= score <= 1.0:
+    if not math.isfinite(score) or not 0 <= score <= 1:
         raise ValueError(f"{label} must be finite and between 0 and 1")
     return score
 
