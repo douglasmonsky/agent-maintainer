@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 from agent_maintainer.attention.models import AttentionFileScore, AttentionLedger
+from agent_maintainer.core.structured_values import json_array
 
 
 def render_ledger_json(ledger: AttentionLedger) -> str:
@@ -16,10 +17,11 @@ def render_top_json(ledger: AttentionLedger, *, limit: int) -> str:
     """Render only the requested leading attention scores as JSON."""
 
     payload = ledger.to_payload()
-    files = payload["files"]
-    if isinstance(files, list):
-        payload["files"] = files[: max(0, limit)]
-        payload["returned_file_count"] = len(payload["files"])
+    files = json_array(payload.get("files"))
+    if files is not None:
+        returned_files = files[: max(0, limit)]
+        payload["files"] = returned_files
+        payload["returned_file_count"] = len(returned_files)
     return json.dumps(payload, indent=2, sort_keys=True)
 
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import Final
 
 SCHEMA_VERSION: Final = 1
 
@@ -28,7 +28,7 @@ class AttentionLedger:
     inputs: dict[str, object]
     files: tuple[AttentionFileScore, ...]
 
-    def to_payload(self) -> dict[str, Any]:
+    def to_payload(self) -> dict[str, object]:
         """Return JSON-serializable payload."""
         return {
             "schema_version": self.schema_version,

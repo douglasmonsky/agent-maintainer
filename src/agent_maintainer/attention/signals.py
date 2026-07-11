@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import os
 from collections import Counter
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
 
 from agent_maintainer.attention import git_output, signal_artifacts, signal_context
+from agent_maintainer.core.structured_values import json_array, json_object
 from agent_maintainer.runtime_events.read import read_runtime_events
 
 IGNORED_PARTS = frozenset(
@@ -262,7 +262,7 @@ def _is_attention_path(path: str) -> bool:
 
 
 def _record_paths(
-    record: Mapping[str, Any],
+    record: dict[str, object],
     *,
     repo_root: Path,
     known_paths: set[str],
@@ -294,13 +294,15 @@ def _payload_paths(
 
 def _walk_values(payload: object) -> Iterable[tuple[str | None, object]]:
     """Yield nested mapping keys and scalar values."""
-    if isinstance(payload, Mapping):
-        for key, value in payload.items():
-            key_text = str(key)
-            yield key_text, value
+    mapped = json_object(payload)
+    if mapped is not None:
+        for key, value in mapped.items():
+            yield key, value
             yield from _walk_values(value)
-    elif isinstance(payload, list | tuple):
-        for value in payload:
+        return
+    values = json_array(payload)
+    if values is not None:
+        for value in values:
             yield None, value
             yield from _walk_values(value)
 

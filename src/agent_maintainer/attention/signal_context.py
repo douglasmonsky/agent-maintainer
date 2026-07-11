@@ -11,6 +11,10 @@ DEFAULT_ARTIFACT_READ_LIMIT_BYTES = 200_000
 TrackedFilesProvider = Callable[[Path], tuple[str, ...]]
 
 
+def _empty_performance_notes() -> list[str]:
+    return []
+
+
 @dataclass
 class AttentionSignalContext:
     """Shared bounded inputs for one attention ledger build."""
@@ -19,7 +23,7 @@ class AttentionSignalContext:
     tracked_paths: tuple[str, ...]
     all_tracked_file_count: int
     artifact_read_limit_bytes: int = DEFAULT_ARTIFACT_READ_LIMIT_BYTES
-    performance_notes: list[str] = field(default_factory=list)
+    performance_notes: list[str] = field(default_factory=_empty_performance_notes)
 
     @classmethod
     def build(
