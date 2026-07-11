@@ -9,6 +9,11 @@ from typing import cast
 import pytest
 
 from agent_maintainer.core import bootstrap as maintainer_bootstrap
+from tests.support.callbacks import (
+    completed_process_callback,
+    constant_callback,
+    forbidden_callback,
+)
 
 
 def test_maintainer_project_root_prefers_working_tree(
@@ -67,12 +72,15 @@ def test_maintainer_repairs_hidden_pth_files(
     def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 0, f"{site_packages}\n", "")
 
+    def record_cleared(path: Path, flag: int) -> None:
+        cleared.append((path, flag))
+
     monkeypatch.setattr(maintainer_bootstrap, "hidden_file_flag", lambda: 1)
     monkeypatch.setattr(maintainer_bootstrap.subprocess, "run", fake_run)
     monkeypatch.setattr(
         maintainer_bootstrap,
         "clear_hidden_file_flag",
-        lambda path, flag: cleared.append((path, flag)),
+        record_cleared,
     )
 
     maintainer_bootstrap.repair_pth_visibility(tmp_path, tmp_path / "python")
@@ -88,7 +96,7 @@ def test_maintainer_skips_pth_repair_when_platform_unsupported(
     monkeypatch.setattr(
         maintainer_bootstrap.subprocess,
         "run",
-        lambda *_args, **_kwargs: pytest.fail("site package lookup should be skipped"),
+        forbidden_callback("site package lookup should be skipped"),
     )
 
     maintainer_bootstrap.repair_pth_visibility(tmp_path, tmp_path / "python")
@@ -101,7 +109,7 @@ def test_maintainer_site_package_paths_returns_empty_on_failure(
     monkeypatch.setattr(
         maintainer_bootstrap.subprocess,
         "run",
-        lambda command, **_kwargs: subprocess.CompletedProcess(command, 2, "", ""),
+        completed_process_callback(2),
     )
 
     assert maintainer_bootstrap.site_package_paths(tmp_path, tmp_path / "python") == ()
@@ -136,12 +144,15 @@ def test_maintainer_clear_hidden_file_flag_branches(
     assert not calls
 
     monkeypatch.setattr(maintainer_bootstrap, "chflags_command", lambda: "chflags")
+
+    def record_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, "", "")
+
     monkeypatch.setattr(
         maintainer_bootstrap.subprocess,
         "run",
-        lambda command, **_kwargs: (
-            calls.append(command) or subprocess.CompletedProcess(command, 0, "", "")
-        ),
+        record_run,
     )
     maintainer_bootstrap.clear_hidden_file_flag(pth_file, 1)
     assert not calls
@@ -179,7 +190,7 @@ def test_maintainer_creates_editable_package_link(
     monkeypatch.setattr(
         maintainer_bootstrap,
         "site_package_paths",
-        lambda repo_root, python_path: (site_packages,),
+        constant_callback((site_packages,)),
     )
 
     maintainer_bootstrap.ensure_editable_package_link(tmp_path, tmp_path / "python")
@@ -200,7 +211,7 @@ def test_maintainer_does_not_replace_real_installed_package(
     monkeypatch.setattr(
         maintainer_bootstrap,
         "site_package_paths",
-        lambda repo_root, python_path: (site_packages,),
+        constant_callback((site_packages,)),
     )
 
     maintainer_bootstrap.ensure_editable_package_link(tmp_path, tmp_path / "python")
@@ -224,7 +235,7 @@ def test_maintainer_replaces_stale_editable_package_link(
     monkeypatch.setattr(
         maintainer_bootstrap,
         "site_package_paths",
-        lambda repo_root, python_path: (site_packages,),
+        constant_callback((site_packages,)),
     )
 
     maintainer_bootstrap.ensure_editable_package_link(tmp_path, tmp_path / "python")
@@ -241,7 +252,7 @@ def test_maintainer_skips_editable_package_link_when_source_absent(
     monkeypatch.setattr(
         maintainer_bootstrap,
         "site_package_paths",
-        lambda repo_root, python_path: (site_packages,),
+        constant_callback((site_packages,)),
     )
 
     maintainer_bootstrap.ensure_editable_package_link(tmp_path, tmp_path / "python")

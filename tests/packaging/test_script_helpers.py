@@ -11,6 +11,7 @@ import pytest
 
 from agent_maintainer import cli as maintainer_cli
 from agent_maintainer.core import args as maintainer_args
+from tests.support.callbacks import constant_callback
 from tests.support.paths import REPO_ROOT
 
 BOOTSTRAP_STATUS = 11
@@ -48,13 +49,25 @@ def test_scripted_entrypoints_disable_python_bytecode_writes() -> None:
 
 
 def test_maintainer_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(maintainer_cli, "bootstrap_command", lambda args: BOOTSTRAP_STATUS)
-    monkeypatch.setattr(maintainer_cli, "doctor_main", lambda args: DOCTOR_STATUS)
-    monkeypatch.setattr(maintainer_cli, "guidance_main", lambda args: GUIDANCE_STATUS)
-    monkeypatch.setattr(maintainer_cli, "init_main", lambda args: INIT_STATUS)
-    monkeypatch.setattr(maintainer_cli, "install_command", lambda args: INSTALL_STATUS)
-    monkeypatch.setattr(maintainer_cli, "ratchet_command", lambda args: RATCHET_STATUS)
-    monkeypatch.setattr(maintainer_cli, "verify_main", lambda args: VERIFY_STATUS)
+    monkeypatch.setattr(
+        maintainer_cli,
+        "bootstrap_command",
+        constant_callback(BOOTSTRAP_STATUS),
+    )
+    monkeypatch.setattr(maintainer_cli, "doctor_main", constant_callback(DOCTOR_STATUS))
+    monkeypatch.setattr(maintainer_cli, "guidance_main", constant_callback(GUIDANCE_STATUS))
+    monkeypatch.setattr(maintainer_cli, "init_main", constant_callback(INIT_STATUS))
+    monkeypatch.setattr(
+        maintainer_cli,
+        "install_command",
+        constant_callback(INSTALL_STATUS),
+    )
+    monkeypatch.setattr(
+        maintainer_cli,
+        "ratchet_command",
+        constant_callback(RATCHET_STATUS),
+    )
+    monkeypatch.setattr(maintainer_cli, "verify_main", constant_callback(VERIFY_STATUS))
 
     assert maintainer_cli.main(["bootstrap"]) == BOOTSTRAP_STATUS
     assert maintainer_cli.main(["doctor", "--strict"]) == DOCTOR_STATUS
@@ -102,7 +115,11 @@ def test_maintainer_console_script_dispatches(
 ) -> None:
     calls: list[list[str]] = []
 
-    monkeypatch.setattr(maintainer_cli, "main", lambda argv: calls.append(argv) or 0)
+    def record_main(argv: list[str]) -> int:
+        calls.append(argv)
+        return 0
+
+    monkeypatch.setattr(maintainer_cli, "main", record_main)
     monkeypatch.setattr(sys, "argv", ["agent-maintainer", "doctor"])
 
     assert maintainer_cli.console_main() == 0
@@ -114,7 +131,11 @@ def test_maintainer_package_main_module_dispatches(
 ) -> None:
     calls: list[list[str]] = []
 
-    monkeypatch.setattr(maintainer_cli, "main", lambda argv: calls.append(argv) or 0)
+    def record_main(argv: list[str]) -> int:
+        calls.append(argv)
+        return 0
+
+    monkeypatch.setattr(maintainer_cli, "main", record_main)
     monkeypatch.setattr(sys, "argv", ["python -m agent_maintainer", "doctor"])
 
     with pytest.raises(SystemExit) as exc_info:
