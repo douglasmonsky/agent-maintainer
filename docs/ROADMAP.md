@@ -153,7 +153,8 @@ Detailed scope:
 
 Track work:
 
-- [ ] Phase 176: Codex Terminal Rewake Hardening
+- [ ] Phase 176: Codex Terminal Rewake Hardening — implementation is complete;
+      the explicitly gated real-turn smoke remains pending user authorization.
 
 ## Future Work
 

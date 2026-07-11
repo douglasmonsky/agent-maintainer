@@ -1,6 +1,6 @@
 # Critical Stabilization Roadmap
 
-- Status: active
+- Status: implementation complete; final exact-commit verification pending
 - Target: release-ready `0.1.0b6`
 - Audit baseline: `b4c0505bdcc6bdfd7b4cd2cb65c52095c83ea862`
 - Started: 2026-07-09
@@ -411,9 +411,10 @@ Checks:
 Exit criterion: repository docs, package behavior, changelog, and release
 evidence describe the same beta.
 
-Implementation status (2026-07-10): in progress on
-`codex/deep-release-evidence`. The versioned public contract, repository-local
-links, and built-artifact entry-point matrix are complete. Three static
+Implementation status (2026-07-10): implementation complete on
+`codex/deep-release-evidence`; final exact-commit verification remains open.
+The versioned public contract, repository-local links, and built-artifact
+entry-point matrix are complete. Three static
 existing-application fixtures now cover a mature `src/` library, a flat-layout
 service with third-party Codex and Claude configuration, and a `uv`-managed
 Python/JavaScript application. For every fixture, tests prove read-only preview,
@@ -503,17 +504,24 @@ After this program:
 
 ## Stabilization Definition of Done
 
-- [ ] CS-01 through CS-09 are implemented with focused regression tests.
-- [ ] Bootstrap/install and generated-file dogfood tests leave a clean tree on
+- [x] CS-01 through CS-09 are implemented with focused regression tests.
+- [x] Bootstrap/install and generated-file dogfood tests leave a clean tree on
       first and second run.
 - [ ] Full, CI, security, manual, and release profiles pass for one commit.
-- [ ] Strict typing debt is reviewed and monotonic by rule and file.
+- [x] Strict typing debt is reviewed and monotonic by rule and file.
 - [x] Workflow actions are immutable and artifact identity is verified.
-- [ ] Unreleased, public docs, upgrade guidance, and package behavior agree.
-- [ ] All repository-local Markdown links resolve.
-- [ ] Every advertised console script passes built-artifact smoke tests.
+- [x] Unreleased, public docs, upgrade guidance, and package behavior agree.
+- [x] All repository-local Markdown links resolve.
+- [x] Every advertised console script passes built-artifact smoke tests.
 - [ ] No threshold, baseline, exclusion, or suppression was weakened merely to
       obtain a pass.
 - [ ] Final diff review finds no secret, private-data, production, or unrelated
       changes.
-- [ ] Remaining external release-owner actions are documented explicitly.
+- [x] Remaining external release-owner actions are documented explicitly in
+      the [release checklist](../release-checklist.md).
+
+Checked entries above have committed implementation and focused regression
+evidence. The remaining three local gates close only after the final matrix and
+diff review run against one clean exact commit. Publication, hosted CI, and
+account/repository settings remain separate release-owner actions; they are not
+local stabilization implementation work.

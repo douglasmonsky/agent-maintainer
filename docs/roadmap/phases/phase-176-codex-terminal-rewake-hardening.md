@@ -1,6 +1,6 @@
 # Phase 176: Codex Terminal Rewake Hardening
 
-Status: active
+Status: implementation complete; manual validation pending
 
 ## Goal
 
@@ -74,6 +74,18 @@ Fallback requests now carry deterministic exponential backoff from at least 120
 seconds to a 1,800-second cap. The complete lifecycle event taxonomy is wired to
 durable claims, and allowlist regressions cover wait records and runtime events.
 The explicitly gated real-turn smoke remains the only manual evidence item.
+
+## Remaining Validation
+
+- [x] Default read-only app-server smoke is token-free and fail-closed.
+- [x] Focused rewake, notification-claim, watcher-repair, fallback, event, and
+      privacy regressions pass.
+- [ ] Run the explicitly gated real `turn/start` smoke after the user authorizes
+      spending one Codex model turn.
+
+Until that final smoke passes, terminal rewake remains opt-in and this phase
+stays open in the root roadmap. The missing manual evidence does not reopen the
+completed implementation work.
 
 ## Acceptance Criteria
 
