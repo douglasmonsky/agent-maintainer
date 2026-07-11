@@ -486,7 +486,7 @@ known_first_party = [
 ]
 package_module_name_map = { "headroom-ai" = "headroom", "PyYAML" = "yaml" }
 requirements_files = ["requirements.txt"]
-requirements_files_dev = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
+requirements_files_dev = ["config/dev-dependencies.in", "config/dev-lock.txt"]
 
 [tool.deptry.per_rule_ignores]
 DEP002 = [

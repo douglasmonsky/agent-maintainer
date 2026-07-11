@@ -522,14 +522,14 @@ just verify
 `bootstrap` installs development dependencies only. Hook and pre-commit setup
 is an explicit, previewable `install` action.
 
-Refresh the pinned dev lock after changing `config/dev-dependencies.txt`:
+Refresh the pinned dev lock after changing `config/dev-dependencies.in`:
 
 ```bash
 just bootstrap
 just refresh-dev-lock
 ```
 
-The repository pins direct development tools in `config/dev-dependencies.txt`
+The repository pins direct development tools in `config/dev-dependencies.in`
 and uses `pip-compile` under Python 3.13 to resolve their compatible
 graph into `config/dev-lock.txt`. Dependabot groups compatible direct updates;
 it does not propose isolated transitive-lock edits.
