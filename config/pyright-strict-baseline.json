@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 41,
-    "reportUnknownArgumentType": 161,
+    "reportUnknownArgumentType": 159,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 38,
-    "reportUnknownVariableType": 96
+    "reportUnknownMemberType": 36,
+    "reportUnknownVariableType": 77
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 7 routed assessment manifests and repository configuration through validated structured-value boundaries; all 17 production diagnostics in agent_maintainer.assess were removed without new suppressions or Any annotations.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 8 validated TOML mappings and explicitly narrowed internal configuration tuples; all 23 production diagnostics in agent_maintainer.config were removed without suppressions or loosened types.",
   "pairs": {
     "src/agent_maintainer/attention/rendering.py": {
       "reportUnknownArgumentType": 1
@@ -33,24 +33,6 @@
     },
     "src/agent_maintainer/checks/mutmut_targets.py": {
       "reportUnknownVariableType": 2
-    },
-    "src/agent_maintainer/config/loader.py": {
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 2
-    },
-    "src/agent_maintainer/config/reference.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_maintainer/config/source_validation.py": {
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 9
-    },
-    "src/agent_maintainer/config/validation.py": {
-      "reportUnknownVariableType": 4
-    },
-    "src/agent_maintainer/config/value_types.py": {
-      "reportUnknownVariableType": 1
     },
     "src/agent_maintainer/context/cli.py": {
       "reportPrivateUsage": 7
@@ -416,5 +398,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 471
+  "total_errors": 448
 }
