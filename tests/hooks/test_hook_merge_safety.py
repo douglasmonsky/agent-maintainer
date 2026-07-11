@@ -56,6 +56,22 @@ def test_claude_merge_is_idempotent_with_coexisting_hooks(tmp_path: Path) -> Non
     assert merge.merge_claude_settings(settings, managed) == first
 
 
+def test_merge_keeps_valid_hooks_beside_malformed(tmp_path: Path) -> None:
+    """Malformed neighboring values cannot hide a valid third-party hook."""
+
+    settings = tmp_path / "settings.json"
+    third_party = _entry("third-party")
+    settings.write_text(
+        json.dumps({"hooks": {"Stop": [None, third_party]}}),
+        encoding="utf-8",
+    )
+
+    rendered = merge.merge_claude_settings(settings, templates.claude_settings())
+    entries = json.loads(rendered)["hooks"]["Stop"]
+
+    assert third_party in entries
+
+
 def test_claude_merge_preserves_hook_sharing_managed_matcher(tmp_path: Path) -> None:
     """A third-party command survives inside an otherwise managed matcher."""
 

@@ -44,6 +44,7 @@ path = "claude_merge"
 depends_on = [
   "constants",
   "manifest",
+  "structured_values",
 ]
 
 [[modules]]
@@ -57,5 +58,10 @@ depends_on = [
 path = "removal"
 depends_on = [
   "merge",
+  "structured_values",
   "templates",
 ]
+
+[[modules]]
+path = "structured_values"
+depends_on = []

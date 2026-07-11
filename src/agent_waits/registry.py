@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import cast
 
 from agent_waits import constants as wait_constants
 from agent_waits import heartbeat as wait_heartbeat
@@ -244,10 +245,13 @@ class WaitRegistry:
         path = self.waits_dir / f"{wait_id}.json"
         if not path.exists():
             raise WaitRegistryError(f"wait record not found: {wait_id}")
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(payload, dict):
+        try:
+            parsed = _optional_mapping(cast(object, json.loads(path.read_text(encoding="utf-8"))))
+        except WaitRegistryError as exc:
+            raise WaitRegistryError(f"wait record is not an object: {wait_id}") from exc
+        if parsed is None:
             raise WaitRegistryError(f"wait record is not an object: {wait_id}")
-        return wait_record_from_dict(payload)
+        return wait_record_from_dict(parsed)
 
     def claim_ready_for_notification(
         self,
@@ -336,9 +340,13 @@ def wait_records(registry: WaitRegistry) -> tuple[WaitRecord, ...]:
         return ()
     records: list[WaitRecord] = []
     for path in registry.waits_dir.glob("*.json"):
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if isinstance(payload, dict):
-            records.append(wait_record_from_dict(payload))
+        payload: object = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            parsed = _optional_mapping(payload)
+        except WaitRegistryError:
+            continue
+        if parsed is not None:
+            records.append(wait_record_from_dict(parsed))
     return tuple(sorted(records, key=lambda record: (record.updated_at, record.wait_id)))
 
 
@@ -378,9 +386,7 @@ def _stale_ready(
 
 def _wait_id(kind: str, target_id: str, created_at: str) -> str:
     safe_timestamp = created_at.replace("-", "").replace(":", "").replace(".", "")
-    safe_kind = _safe_segment(kind)
-    safe_target = _safe_segment(target_id)
-    return f"{safe_kind}-{safe_target}-{safe_timestamp}"
+    return f"{_safe_segment(kind)}-{_safe_segment(target_id)}-{safe_timestamp}"
 
 
 def _safe_segment(value: str) -> str:
@@ -389,8 +395,7 @@ def _safe_segment(value: str) -> str:
 
 
 def _timestamp(now: datetime | None = None) -> str:
-    current = now or datetime.now(UTC)
-    return current.astimezone(UTC).isoformat().replace("+00:00", "Z")
+    return (now or datetime.now(UTC)).astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
 def _parse_timestamp(value: str) -> datetime:
@@ -429,9 +434,7 @@ def _required_int(payload: dict[str, object], field: str) -> int:
 
 
 def _optional_text(value: object) -> str | None:
-    if value is None:
-        return None
-    return str(value)
+    return None if value is None else str(value)
 
 
 def _optional_mapping(value: object) -> dict[str, object] | None:
@@ -439,4 +442,7 @@ def _optional_mapping(value: object) -> dict[str, object] | None:
         return None
     if not isinstance(value, dict):
         raise WaitRegistryError("wait record mapping field must be an object")
-    return dict(value)
+    mapping = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in mapping):
+        raise WaitRegistryError("wait record mapping field keys must be strings")
+    return {key: item for key, item in mapping.items() if isinstance(key, str)}

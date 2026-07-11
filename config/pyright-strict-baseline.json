@@ -1,23 +1,13 @@
 {
   "by_rule": {
     "reportPrivateUsage": 42,
-    "reportUnknownArgumentType": 178,
+    "reportUnknownArgumentType": 167,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 50,
-    "reportUnknownVariableType": 113
+    "reportUnknownMemberType": 42,
+    "reportUnknownVariableType": 102
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 5 validated Archguard configuration shapes and DocSync attestation/model factories; all 24 production diagnostics in both governance packages were removed without suppressions or Any substitutions.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 6 validated client-hook settings, run-artifact categories, and wait-registry records; all 30 production diagnostics in the three integration packages were removed without suppressions or Any substitutions.",
   "pairs": {
-    "src/agent_client_hooks/claude_merge.py": {
-      "reportUnknownArgumentType": 5,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 4
-    },
-    "src/agent_client_hooks/removal.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 2,
-      "reportUnknownVariableType": 1
-    },
     "src/agent_maintainer/assess/cli.py": {
       "reportPrivateUsage": 1
     },
@@ -222,14 +212,6 @@
     "src/agent_maintainer/wait/verifier.py": {
       "reportUnknownArgumentType": 1,
       "reportUnknownMemberType": 1
-    },
-    "src/agent_run_artifacts/pr_summary.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 6
-    },
-    "src/agent_waits/registry.py": {
-      "reportUnknownArgumentType": 3
     },
     "tests/archguard/test_git_diff.py": {
       "reportUnknownArgumentType": 2,
@@ -461,5 +443,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 518
+  "total_errors": 488
 }

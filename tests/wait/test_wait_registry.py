@@ -6,6 +6,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+import pytest
+
 from agent_maintainer.wait.github_pr import (
     GitHubPrCheck,
     GitHubPrChecksState,
@@ -21,6 +23,7 @@ from agent_maintainer.wait.registry import (
     render_resume_text,
     render_wait_record_text,
 )
+from agent_waits.registry import WaitRegistryError, wait_records
 
 NOW = datetime.fromisoformat("2026-07-06T22:00:00+00:00")
 LATER = datetime.fromisoformat("2026-07-06T22:05:00+00:00")
@@ -58,6 +61,18 @@ def test_register_github_pr_wait_persists_safely(tmp_path: Path) -> None:
     assert not record_path.with_suffix(".json.tmp").exists()
     assert "hook_input" not in raw_record
     assert "token" not in raw_record.lower()
+
+
+def test_registry_skips_non_object_records(tmp_path: Path) -> None:
+    """Malformed registry files fail direct reads without hiding valid waits."""
+
+    registry = WaitRegistry(tmp_path)
+    valid = register_wait(registry, tmp_path)
+    (registry.waits_dir / "invalid.json").write_text("[]", encoding="utf-8")
+
+    assert wait_records(registry) == (valid,)
+    with pytest.raises(WaitRegistryError, match="not an object"):
+        registry.read("invalid")
 
 
 def test_complete_github_pr_wait_state(tmp_path: Path) -> None:

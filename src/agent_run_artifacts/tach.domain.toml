@@ -35,6 +35,7 @@ path = "pr_summary"
 depends_on = [
   "models",
   "pr_summary_support",
+  "structured_values",
 ]
 
 [[modules]]
@@ -73,3 +74,7 @@ path = "timing"
 depends_on = [
   "models",
 ]
+
+[[modules]]
+path = "structured_values"
+depends_on = []

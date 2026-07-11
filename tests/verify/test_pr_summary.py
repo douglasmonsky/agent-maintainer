@@ -56,6 +56,7 @@ def test_pr_summary_reports_technical_debt_score(tmp_path: Path) -> None:
                 "summary": "The repo has strong maintenance controls.",
                 "interpretation": "Healthy overall; treat listed categories as watch items.",
                 "categories": [
+                    None,
                     {
                         "name": "Tests and Coverage",
                         "score": 10,
