@@ -161,9 +161,9 @@ def _merge_package_json(current: str, starter: str) -> str | None:
     starter_dependencies = starter_payload.get("devDependencies", {})
     if not isinstance(current_dependencies, dict) or not isinstance(starter_dependencies, dict):
         return None
-    if _dependency_version_conflict(current_dependencies, starter_dependencies):
-        return None
-    if not _merge_package_engines(payload, starter_payload):
+    if _dependency_version_conflict(
+        current_dependencies, starter_dependencies
+    ) or not _merge_package_engines(payload, starter_payload):
         return None
     current_dependencies.update(starter_dependencies)
     rendered = json.dumps(payload, indent=2, sort_keys=True)

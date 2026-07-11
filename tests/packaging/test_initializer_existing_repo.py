@@ -155,6 +155,27 @@ def test_hardening_package_merge_refuses_incompatible_node_engine(tmp_path: Path
     assert package_item.reason == "existing content requires explicit replacement"
 
 
+def test_hardening_package_merge_refuses_dependency_version_conflict(tmp_path: Path) -> None:
+    """An existing managed dependency version remains an explicit conflict."""
+
+    package = tmp_path / "package.json"
+    package.write_text(
+        json.dumps(
+            {
+                "name": "existing",
+                "devDependencies": {"markdownlint-cli2": "0.22.1"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    files = initializer.files_for_track("hardening")
+    plan = planning.build_plan(tmp_path, files)
+    package_item = next(item for item in plan if item.starter.path == "package.json")
+
+    assert package_item.action == planning.InitAction.CONFLICT
+    assert package_item.reason == "existing content requires explicit replacement"
+
+
 def test_hardening_package_merge_preserves_other_engine_contracts(tmp_path: Path) -> None:
     """Adding the required Node engine preserves unrelated engine metadata."""
 
