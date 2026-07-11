@@ -20,10 +20,13 @@ def test_lifecycle_help_stops_before_dispatch(
 ) -> None:
     """Lifecycle help exits in argparse without calling a mutation handler."""
 
+    def fail_mutation(_options: object) -> int:
+        pytest.fail("help dispatched a mutation")
+
     monkeypatch.setattr(
         cli,
         f"{command}_hooks",
-        lambda _options: pytest.fail("help dispatched a mutation"),
+        fail_mutation,
     )
 
     with pytest.raises(SystemExit) as raised:
@@ -115,9 +118,12 @@ def test_update_command_delegates_install_options(
     """Update uses the install-like lossless merge option contract."""
 
     calls: list[manager.InstallOptions] = []
-    monkeypatch.setattr(
-        cli, "update_hooks", lambda options: calls.append(options) or INSTALL_STATUS
-    )
+
+    def update_hooks(options: manager.InstallOptions) -> int:
+        calls.append(options)
+        return INSTALL_STATUS
+
+    monkeypatch.setattr(cli, "update_hooks", update_hooks)
 
     status = cli.main(["update", "codex", "--target", str(tmp_path), "--dry-run"])
 
@@ -138,10 +144,15 @@ def test_uninstall_command_delegates_removal_options(
     """Uninstall passes scope, confirmation, preview, and ownership flags."""
 
     calls: list[lifecycle.UninstallOptions] = []
+
+    def uninstall_hooks(options: lifecycle.UninstallOptions) -> int:
+        calls.append(options)
+        return UNINSTALL_STATUS
+
     monkeypatch.setattr(
         cli,
         "uninstall_hooks",
-        lambda options: calls.append(options) or UNINSTALL_STATUS,
+        uninstall_hooks,
     )
 
     status = cli.main(

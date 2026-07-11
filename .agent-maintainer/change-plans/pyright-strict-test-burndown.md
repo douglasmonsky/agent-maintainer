@@ -8,12 +8,13 @@ allowed_paths = [
   ".agent-maintainer/change-plans/pyright-strict-production-burndown.md",
   ".agent-maintainer/change-plans/pyright-strict-test-burndown.md",
   "config/pyright-strict-baseline.json",
-  "tests/doctor/test_context_health.py",
-  "tests/mcp/test_mcp_numeric_validation.py",
-  "tests/mcp/test_mcp_path_safety.py",
-  "tests/regression/test_phase10_error_paths.py",
-  "tests/wait/test_wait_broker_daemon.py",
-  "tests/wait/test_wait_daemon_cli.py",
+  "tests/doctor/test_doctor_commands.py",
+  "tests/doctor/test_doctor_support_environment.py",
+  "tests/hooks/test_hook_cli.py",
+  "tests/hooks/test_hook_runtime.py",
+  "tests/packaging/test_bootstrap_hooks.py",
+  "tests/runners/test_secret_scan_runner.py",
+  "tests/wait/test_wait_cli_register_identity.py",
 ]
 forbidden_paths = ["src/**", "config/prod/**", ".env", ".env.*"]
 max_changed_files = 16
@@ -22,12 +23,13 @@ allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
 ratchet_targets = [
-  "tests/doctor/test_context_health.py",
-  "tests/mcp/test_mcp_numeric_validation.py",
-  "tests/mcp/test_mcp_path_safety.py",
-  "tests/regression/test_phase10_error_paths.py",
-  "tests/wait/test_wait_broker_daemon.py",
-  "tests/wait/test_wait_daemon_cli.py",
+  "tests/doctor/test_doctor_commands.py",
+  "tests/doctor/test_doctor_support_environment.py",
+  "tests/hooks/test_hook_cli.py",
+  "tests/hooks/test_hook_runtime.py",
+  "tests/packaging/test_bootstrap_hooks.py",
+  "tests/runners/test_secret_scan_runner.py",
+  "tests/wait/test_wait_cli_register_identity.py",
 ]
 +++
 # Cohesive Change Plan: pyright-strict-test-burndown
@@ -41,13 +43,13 @@ by shared fixture pattern and package risk.
 
 ## Why this should not be split smaller
 
-The selected six modules share one mechanical callback-typing pattern and 77
-diagnostics. Splitting them would repeat the same review, baseline, full
+The selected modules share one mechanical callback-typing pattern and form a
+60–80 diagnostic batch. Splitting them would repeat the same review, baseline, full
 verifier, and hosted-CI work without reducing implementation risk.
 
 ## What allowed to change
 
-Only this plan, the completed production plan, the strict baseline, and the six
+Only this plan, the completed production plan, the strict baseline, and the
 listed test modules may change in this batch. Test behavior and production
 interfaces must remain unchanged.
 

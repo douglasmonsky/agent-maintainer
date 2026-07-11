@@ -12,6 +12,16 @@ from agent_maintainer.wait import cli
 PR_NUMBER = "291"
 
 
+def _fixed_identity(
+    _root: Path,
+    *,
+    branch: str,
+    head_sha: str,
+) -> tuple[str, str]:
+    del branch, head_sha
+    return "codex/wait", "abc123"
+
+
 def test_register_github_pr_cli_writes_git_identity(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -21,7 +31,7 @@ def test_register_github_pr_cli_writes_git_identity(
 
     monkeypatch.setattr(
         "agent_maintainer.wait.cli_register.complete_git_identity",
-        lambda root, *, branch, head_sha: ("codex/wait", "abc123"),
+        _fixed_identity,
     )
 
     status = cli.main(
@@ -52,9 +62,19 @@ def test_register_github_pr_cli_new_head_creates_new_wait(
     """PR wait registration separates active waits by head SHA."""
 
     heads = iter(("abc123", "def456"))
+
+    def changing_identity(
+        _root: Path,
+        *,
+        branch: str,
+        head_sha: str,
+    ) -> tuple[str, str]:
+        del branch, head_sha
+        return "codex/wait", next(heads)
+
     monkeypatch.setattr(
         "agent_maintainer.wait.cli_register.complete_git_identity",
-        lambda root, *, branch, head_sha: ("codex/wait", next(heads)),
+        changing_identity,
     )
 
     first_status = cli.main(_register_pr_args(tmp_path))
