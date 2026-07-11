@@ -135,7 +135,42 @@ def test_hardening_package_merge_preserves_existing_metadata(tmp_path: Path) -> 
     merged = json.loads(package_item.content)
     assert merged["name"] == "existing"
     assert merged["scripts"] == {"test": "vitest"}
+    assert merged["engines"] == {"node": ">=22"}
     assert "markdownlint-cli2" in merged["devDependencies"]
+
+
+def test_hardening_package_merge_refuses_incompatible_node_engine(tmp_path: Path) -> None:
+    """An explicit incompatible Node contract is reviewed as a conflict."""
+
+    package = tmp_path / "package.json"
+    package.write_text(
+        json.dumps({"name": "existing", "engines": {"node": ">=20"}}),
+        encoding="utf-8",
+    )
+    files = initializer.files_for_track("hardening")
+    plan = planning.build_plan(tmp_path, files)
+    package_item = next(item for item in plan if item.starter.path == "package.json")
+
+    assert package_item.action == planning.InitAction.CONFLICT
+    assert package_item.reason == "existing content requires explicit replacement"
+
+
+def test_hardening_package_merge_preserves_other_engine_contracts(tmp_path: Path) -> None:
+    """Adding the required Node engine preserves unrelated engine metadata."""
+
+    package = tmp_path / "package.json"
+    package.write_text(
+        json.dumps({"name": "existing", "engines": {"npm": ">=10"}}),
+        encoding="utf-8",
+    )
+    files = initializer.files_for_track("hardening")
+    plan = planning.build_plan(tmp_path, files)
+    package_item = next(item for item in plan if item.starter.path == "package.json")
+
+    assert package_item.action == planning.InitAction.MERGE
+    assert package_item.content is not None
+    merged = json.loads(package_item.content)
+    assert merged["engines"] == {"node": ">=22", "npm": ">=10"}
 
 
 def test_clean_clone_initializer_twice_keeps_git_status_clean(tmp_path: Path) -> None:

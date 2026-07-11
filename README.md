@@ -35,6 +35,7 @@ Read more where it matters:
 - [First run walkthrough](docs/onboarding-first-run.md)
 - [Diagnostics loop](docs/diagnostics-repair-loop.md)
 - [Tool map](docs/tool-map.md)
+- [Dependency risk register](docs/dependency-risk-register.md)
 
 ## What It Is
 
@@ -130,6 +131,9 @@ source.
 | `core` | A minimum useful local CI maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |
 | `agent` | Repos where Codex, Claude Code, or other agents actively edit code. | Core plus `AGENTS.md`, generated guidance target, Codex hooks, Claude Code hooks. |
 | `hardening` | Repos that want docs/config hygiene and security-adjacent surfaces too. | Agent plus Node-backed tooling metadata. |
+
+The hardening track declares Node.js 22 or newer for its optional npm-backed
+Markdown and TOML tooling instead of silently installing incompatible versions.
 
 Agent and hardening scaffolds render Codex and Claude Code configuration plus
 every referenced post-edit, PR-wait, stop, and audit wrapper from the same

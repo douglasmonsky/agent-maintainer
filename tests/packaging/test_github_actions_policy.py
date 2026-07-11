@@ -16,6 +16,7 @@ ACTION_PINS = {
     "actions/checkout": ("9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", "v7"),
     "actions/download-artifact": ("3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c", "v8"),
     "actions/setup-python": ("ece7cb06caefa5fff74198d8649806c4678c61a1", "v6.3.0"),
+    "actions/setup-node": ("48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", "v6.4.0"),
     "actions/upload-artifact": ("043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", "v7"),
     "pypa/gh-action-pypi-publish": (
         "cef221092ed1bacb1cc03d23a2d87d1d172e277b",
@@ -43,14 +44,16 @@ def test_verify_workflow_disables_python_bytecode_writes() -> None:
 
 
 def test_python_compatibility_matrix_smokes_built_distributions() -> None:
-    """Every supported Python installs both artifacts and runs their scripts."""
+    """Every supported Python installs manual tooling and smokes artifacts."""
 
     workflow = VERIFY_WORKFLOW.read_text(encoding="utf-8")
     normalized = " ".join(workflow.split())
 
     assert 'python-version: ["3.11", "3.12", "3.13", "3.14"]' in workflow
     assert 'AGENT_MAINTAINER_RUN_RELEASE_TESTS: "1"' in workflow
-    assert 'python -m pip install -c config/dev-lock.txt -e ".[core]" build twine' in normalized
+    assert (
+        'python -m pip install -c config/dev-lock.txt -e ".[core,manual]" build twine' in normalized
+    )
     assert (
         "python -m pytest -m artifact_smoke tests/release/test_release_packaging.py -q"
     ) in normalized
@@ -73,6 +76,20 @@ def test_verify_workflow_installs_node_backed_external_tools() -> None:
 
     assert "npm ci" in workflow
     assert "npm install -g" not in workflow
+
+
+def test_workflows_with_npm_use_pinned_node_22() -> None:
+    """Node-backed gates never inherit a mutable runner toolchain."""
+
+    setup_node = ACTION_PINS["actions/setup-node"]
+    expected_use = f"uses: actions/setup-node@{setup_node[0]} # {setup_node[1]}"
+    for path in WORKFLOWS:
+        workflow = path.read_text(encoding="utf-8")
+        if "npm ci" not in workflow:
+            continue
+        assert expected_use in workflow
+        assert 'node-version: "22"' in workflow
+        assert "package-manager-cache: false" in workflow
 
 
 def test_deep_verify_workflow_runs_scheduled_manual_security_profiles() -> None:

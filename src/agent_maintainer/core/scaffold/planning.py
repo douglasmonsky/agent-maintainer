@@ -163,6 +163,8 @@ def _merge_package_json(current: str, starter: str) -> str | None:
         return None
     if _dependency_version_conflict(current_dependencies, starter_dependencies):
         return None
+    if not _merge_package_engines(payload, starter_payload):
+        return None
     current_dependencies.update(starter_dependencies)
     rendered = json.dumps(payload, indent=2, sort_keys=True)
     return f"{rendered}\n"
@@ -172,6 +174,20 @@ def _decode_json_pair(current: str, starter: str) -> tuple[object, object]:
     """Decode current and starter JSON as one fallible operation."""
 
     return json.loads(current), json.loads(starter)
+
+
+def _merge_package_engines(
+    payload: dict[object, object],
+    starter_payload: dict[object, object],
+) -> bool:
+    starter_engines = starter_payload.get("engines", {})
+    current_engines = payload.setdefault("engines", {})
+    if not isinstance(starter_engines, dict) or not isinstance(current_engines, dict):
+        return False
+    if _dependency_version_conflict(current_engines, starter_engines):
+        return False
+    current_engines.update(starter_engines)
+    return True
 
 
 def _dependency_version_conflict(

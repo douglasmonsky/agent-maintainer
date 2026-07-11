@@ -1,0 +1,137 @@
+"""Dependency automation and accepted-risk policy tests."""
+
+from __future__ import annotations
+
+import json
+import tomllib
+from datetime import date
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+RISK_CONFIG = REPO_ROOT / "config" / "dependency-risks.toml"
+RISK_DOCUMENT = REPO_ROOT / "docs" / "dependency-risk-register.md"
+OSV_CONFIG = REPO_ROOT / "osv-scanner.toml"
+DEPENDABOT_CONFIG = REPO_ROOT / ".github" / "dependabot.yml"
+PACKAGE_JSON = REPO_ROOT / "package.json"
+PACKAGE_LOCK = REPO_ROOT / "package-lock.json"
+PROJECT_CONFIG = REPO_ROOT / "pyproject.toml"
+DEV_LOCK = REPO_ROOT / "config" / "dev-lock.txt"
+ALLOWED_STATUSES = {"accepted", "resolved"}
+FIXED_MARKDOWNLINT_VERSION = "0.23.0"
+FIXED_JS_YAML_VERSION = "5.2.0"
+CURRENT_SEMGREP_VERSION = "1.169.0"
+MINIMUM_RATIONALE_LENGTH = 40
+EXPECTED_RISK_IDS = {
+    "DR-001-js-yaml-merge-key-dos",
+    "DR-002-semgrep-python-313-compatibility",
+    "DR-003-python-lock-without-hashes",
+    "DR-004-build-system-lower-bounds",
+}
+
+
+def test_dependency_risk_records_are_owned_expiring_and_actionable() -> None:
+    """Every dependency exception has enough metadata to force a decision."""
+
+    payload = _load_toml(RISK_CONFIG)
+    risks = payload["risks"]
+
+    assert payload["version"] == 1
+    risk_ids = {risk["id"] for risk in risks}
+    assert risk_ids >= EXPECTED_RISK_IDS
+    assert len(risk_ids) == len(risks)
+    for risk in risks:
+        assert risk["status"] in ALLOWED_STATUSES
+        assert risk["owner"].strip()
+        assert len(risk["rationale"].strip()) >= MINIMUM_RATIONALE_LENGTH
+        assert risk["accepted_on"] <= risk["expires_on"]
+        assert risk["ecosystems"]
+        assert all(item.strip() for item in risk["ecosystems"])
+        assert risk["artifacts"]
+        assert all((REPO_ROOT / item).exists() for item in risk["artifacts"])
+        assert len(set(risk["advisories"])) == len(risk["advisories"])
+        assert risk["review_trigger"].strip()
+        assert risk["resolution_condition"].strip()
+        assert risk["mitigations"]
+        assert all(item.strip() for item in risk["mitigations"])
+        if risk["status"] == "accepted":
+            assert date.today() <= risk["expires_on"]
+        else:
+            assert risk["accepted_on"] <= risk["resolved_on"] <= risk["expires_on"]
+            assert risk["resolution"].strip()
+
+
+def test_osv_ignores_exactly_match_active_advisory_risks() -> None:
+    """OSV suppressions cannot outlive their owned accepted-risk record."""
+
+    risks = _load_toml(RISK_CONFIG)["risks"]
+    accepted_advisory_pairs = [
+        (advisory, risk)
+        for risk in risks
+        if risk["status"] == "accepted"
+        for advisory in risk["advisories"]
+    ]
+    advisory_ids = [advisory for advisory, _risk in accepted_advisory_pairs]
+    assert len(advisory_ids) == len(set(advisory_ids))
+    accepted_advisories = dict(accepted_advisory_pairs)
+    ignored_records = _load_toml(OSV_CONFIG).get("IgnoredVulns", [])
+    ignored = {record["id"]: record for record in ignored_records}
+
+    assert len(ignored) == len(ignored_records)
+    assert ignored.keys() == accepted_advisories.keys()
+    for advisory, risk in accepted_advisories.items():
+        assert ignored[advisory]["ignoreUntil"] == risk["expires_on"]
+        assert risk["id"] in ignored[advisory]["reason"]
+
+
+def test_dependency_automation_covers_every_repository_ecosystem() -> None:
+    """Dependabot covers Python, npm, and immutable workflow dependencies."""
+
+    payload = yaml.safe_load(DEPENDABOT_CONFIG.read_text(encoding="utf-8"))
+    updates = payload["updates"]
+    ecosystems = {entry["package-ecosystem"] for entry in updates}
+
+    assert ecosystems == {"github-actions", "npm", "pip"}
+    assert all(entry["directory"] == "/" for entry in updates)
+    assert all(entry["schedule"]["interval"] == "weekly" for entry in updates)
+
+
+def test_fixed_dependency_exceptions_are_retired() -> None:
+    """Fixed npm and Python support gaps are no longer accepted or excluded."""
+
+    package = json.loads(PACKAGE_JSON.read_text(encoding="utf-8"))
+    package_lock = json.loads(PACKAGE_LOCK.read_text(encoding="utf-8"))
+    project = _load_toml(PROJECT_CONFIG)
+    extras = project["project"]["optional-dependencies"]
+
+    assert package["devDependencies"]["markdownlint-cli2"] == FIXED_MARKDOWNLINT_VERSION
+    assert package["engines"] == {"node": ">=22"}
+    assert (
+        package_lock["packages"]["node_modules/markdownlint-cli2"]["version"]
+        == FIXED_MARKDOWNLINT_VERSION
+    )
+    assert package_lock["packages"]["node_modules/js-yaml"]["version"] == FIXED_JS_YAML_VERSION
+    assert "semgrep" in extras["manual"]
+    assert "semgrep" in extras["all"]
+    assert all("python_version" not in requirement for requirement in extras["manual"])
+    assert all("python_version" not in requirement for requirement in extras["all"])
+    assert f"semgrep=={CURRENT_SEMGREP_VERSION}" in DEV_LOCK.read_text(encoding="utf-8")
+
+
+def test_public_risk_register_covers_machine_records() -> None:
+    """The public register explains every machine-enforced risk decision."""
+
+    documentation = RISK_DOCUMENT.read_text(encoding="utf-8")
+    risks = _load_toml(RISK_CONFIG)["risks"]
+
+    for risk in risks:
+        assert risk["id"] in documentation
+        assert risk["owner"] in documentation
+        assert risk["expires_on"].isoformat() in documentation
+
+
+def _load_toml(path: Path) -> dict[str, Any]:
+    with path.open("rb") as handle:
+        return tomllib.load(handle)

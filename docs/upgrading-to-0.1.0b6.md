@@ -60,6 +60,9 @@ understanding the intended policy.
 - TypeScript/React findings remain advisory unless the repository explicitly
   owns and configures the relevant workspace commands.
 - Optional MCP and experimental task-broker dependencies remain opt-in.
+- The optional npm-backed hardening tools now require Node.js 22 or newer. An
+  existing incompatible `engines.node` value is reported as an initializer
+  conflict instead of being replaced silently.
 - Release consumers verify exact artifact inventories and digests; locally
   renamed or substituted release bundles are rejected.
 

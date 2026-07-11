@@ -126,7 +126,7 @@ CASES = (
                     '"test": "pytest -q"',
                     '"vitest": "2.1.9"',
                     '"@taplo/cli": "0.7.0"',
-                    '"markdownlint-cli2": "0.22.1"',
+                    '"markdownlint-cli2": "0.23.0"',
                 ),
             ),
         ),
@@ -291,10 +291,11 @@ def _assert_claude_settings(path: Path, *, preserve_third_party: bool) -> None:
 def _assert_package_json(path: Path) -> None:
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert payload["name"] == "uv-web-app-assets"
+    assert payload["engines"] == {"node": ">=22"}
     assert payload["scripts"] == {"test": "pytest -q"}
     assert payload["devDependencies"] == {
         "@taplo/cli": "0.7.0",
-        "markdownlint-cli2": "0.22.1",
+        "markdownlint-cli2": "0.23.0",
         "vitest": "2.1.9",
     }
 

@@ -419,8 +419,11 @@ service with third-party Codex and Claude configuration, and a `uv`-managed
 Python/JavaScript application. For every fixture, tests prove read-only preview,
 fail-closed conflict handling, exact recovery backups, supported merges,
 preservation of application files, passing application tests after apply, and a
-byte-stable second apply. Dependency-risk/governance records and the final
-same-commit release matrix remain open.
+byte-stable second apply. The dependency-risk register now enforces owned,
+expiring decisions; retired npm and Semgrep exceptions have executable
+regression coverage, and dependency automation covers every repository
+ecosystem. Public governance documents and the final same-commit release matrix
+remain open.
 
 ## Verification Ladder
 

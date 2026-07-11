@@ -108,9 +108,12 @@ PACKAGE_JSON = textwrap.dedent(
     {
       "name": "agent-maintainer-project",
       "private": true,
+      "engines": {
+        "node": ">=22"
+      },
       "devDependencies": {
         "@taplo/cli": "0.7.0",
-        "markdownlint-cli2": "0.22.1"
+        "markdownlint-cli2": "0.23.0"
       }
     }
     """

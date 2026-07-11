@@ -126,11 +126,12 @@ build job, then consumes only its verified `packages/` directory.
 - [ ] State any breaking CLI, config, environment variable, or generated-file
   changes.
 - [ ] Include verification evidence, including release-only packaging command.
-- [ ] List known risks and current beta limitations.
+- [ ] Review the [dependency risk register](dependency-risk-register.md), then
+  list known risks and current beta limitations in the release notes.
 - [ ] Confirm agent-facing hook output stays quiet on success and bounded on
   failure, with full detail routed to `.verify-logs` and uploaded artifacts.
-- [ ] Mention Semgrep is excluded from `manual` and `all` extras on Python
-  3.13+ while resolver compatibility is unstable there, if still true.
+- [ ] Confirm the `manual` and `all` extras resolve Semgrep across Python 3.11
+  through 3.14.
 
 ## Smoke Test
 

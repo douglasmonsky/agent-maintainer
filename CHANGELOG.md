@@ -20,6 +20,9 @@ the candidate passes the complete exact-commit release matrix.
   the exact inventory, byte sizes, and SHA-256 digests. Release jobs bind that
   manifest to a separately carried digest and verify it immediately before
   attachment or Trusted Publishing.
+- The fixed `markdownlint-cli2` 0.23.0 dependency removes the accepted
+  `js-yaml` advisory, and current Semgrep support restores the `manual` and
+  `all` extras across Python 3.11 through 3.14.
 
 ### Added Since 0.1.0b5
 
@@ -56,6 +59,9 @@ the candidate passes the complete exact-commit release matrix.
   library, a flat-layout service with third-party agent configuration, and a
   `uv` Python/JavaScript application through preview, apply, and idempotent
   rerun behavior.
+- An owned, expiring dependency-risk register now binds accepted advisories to
+  exact OSV expiry records, while Dependabot covers Python, npm, and pinned
+  GitHub Actions dependencies.
 
 ### Changed Since 0.1.0b5
 

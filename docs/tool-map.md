@@ -224,10 +224,14 @@ of dumping raw JSON into terminal output.
 
 Semgrep provides local SAST in the `manual` profile when `enable_semgrep = true`.
 Use local or pinned configs first, for example `semgrep.yml`, and keep
-`--metrics=off` in committed args for private/local scans. The public package
-extra installs Semgrep only on Python versions where its dependency graph is
-currently resolver-friendly; Python 3.13 and newer users can still install
-Semgrep separately when their platform supports it.
+`--metrics=off` in committed args for private/local scans. The `manual` and
+`all` extras install Semgrep across the supported Python 3.11 through 3.14
+matrix.
+
+The optional npm-backed Markdown and TOML gates require Node.js 22 or newer.
+Hardening initialization adds that engine contract to compatible package
+metadata and reports an explicit conflicting Node engine for review instead of
+silently installing incompatible tooling.
 
 pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`. When the input is a complete, pinned, transitive lockfile, add `--no-deps --disable-pip --progress-spinner off --timeout 20` to avoid slow resolver work without making ordinary PyPI latency fail the gate. Do not use that fast path for partial requirements files that still need dependency resolution. In `fresh-strict`, enabling pip-audit without pinned args is a failure.
 
