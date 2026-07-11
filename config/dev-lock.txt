@@ -16,7 +16,7 @@ anyio==4.14.1
     #   starlette
 arrow==1.4.0
     # via isoduration
-astroid==4.0.4
+astroid==4.1.2
     # via pylint
 attrs==26.1.0
     # via
@@ -62,7 +62,7 @@ charset-normalizer==3.4.9
     # via requests
 check-jsonschema==0.37.4
     # via -r config/dev-dependencies.txt
-click==8.1.8
+click==8.4.2
     # via
     #   check-jsonschema
     #   click-option-group
@@ -107,7 +107,7 @@ distlib==0.4.3
     # via virtualenv
 docutils==0.23
     # via readme-renderer
-exceptiongroup==1.2.2
+exceptiongroup==1.3.1
     # via semgrep
 face==26.0.1
     # via glom
@@ -174,7 +174,7 @@ jinja2==3.1.6
     # via diff-cover
 jsonpointer==3.1.1
     # via jsonschema
-jsonschema==4.25.1
+jsonschema==4.26.0
     # via
     #   check-jsonschema
     #   cyclonedx-python-lib
@@ -194,7 +194,7 @@ linkify-it-py==2.1.0
     # via markdown-it-py
 lxml==6.1.1
     # via cyclonedx-python-lib
-mando==0.7.1
+mando==0.8.2
     # via radon
 markdown-it-py==4.2.0
     # via
@@ -207,7 +207,7 @@ mccabe==0.7.0
     # via
     #   flake8
     #   pylint
-mcp==1.23.3
+mcp==1.28.1
     # via semgrep
 mdit-py-plugins==0.6.1
     # via textual
@@ -229,7 +229,7 @@ nodeenv==1.10.0
     # via
     #   pre-commit
     #   pyright
-opentelemetry-api==1.37.0
+opentelemetry-api==1.43.0
     # via
     #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-instrumentation
@@ -238,32 +238,32 @@ opentelemetry-api==1.37.0
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
     #   semgrep
-opentelemetry-exporter-otlp-proto-common==1.37.0
+opentelemetry-exporter-otlp-proto-common==1.43.0
     # via opentelemetry-exporter-otlp-proto-http
-opentelemetry-exporter-otlp-proto-http==1.37.0
+opentelemetry-exporter-otlp-proto-http==1.43.0
     # via semgrep
-opentelemetry-instrumentation==0.58b0
+opentelemetry-instrumentation==0.64b0
     # via
     #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-threading
-opentelemetry-instrumentation-requests==0.58b0
+opentelemetry-instrumentation-requests==0.64b0
     # via semgrep
-opentelemetry-instrumentation-threading==0.58b0
+opentelemetry-instrumentation-threading==0.64b0
     # via semgrep
-opentelemetry-proto==1.37.0
+opentelemetry-proto==1.43.0
     # via
     #   opentelemetry-exporter-otlp-proto-common
     #   opentelemetry-exporter-otlp-proto-http
-opentelemetry-sdk==1.37.0
+opentelemetry-sdk==1.43.0
     # via
     #   opentelemetry-exporter-otlp-proto-http
     #   semgrep
-opentelemetry-semantic-conventions==0.58b0
+opentelemetry-semantic-conventions==0.64b0
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-requests
     #   opentelemetry-sdk
-opentelemetry-util-http==0.58b0
+opentelemetry-util-http==0.64b0
     # via opentelemetry-instrumentation-requests
 packageurl-python==0.17.6
     # via
@@ -332,7 +332,7 @@ pydantic==2.13.4
     # via
     #   mcp
     #   pydantic-settings
-pydantic-core==2.46.4
+pydantic-core==2.47.0
     # via pydantic
 pydantic-settings==2.14.2
     # via mcp
