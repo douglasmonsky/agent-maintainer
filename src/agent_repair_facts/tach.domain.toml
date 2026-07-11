@@ -93,4 +93,5 @@ depends_on = []
 path = "parsers.typescript_tests"
 depends_on = [
   "parsers.typescript_diagnostics",
+  "payloads",
 ]

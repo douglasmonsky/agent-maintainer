@@ -99,6 +99,34 @@ def test_docsync_json_report_without_locations_keeps_check_fact(
     ]
 
 
+def test_docsync_json_report_skips_non_object_findings(tmp_path: Path) -> None:
+    """Malformed finding entries cannot obscure a valid repair fact."""
+
+    report_path = tmp_path / "report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "findings": [
+                    None,
+                    {
+                        "code": "DS201",
+                        "severity": "error",
+                        "message": "Evidence changed without reviewed docs.",
+                        "locations": [{"path": "src/demo.py", "start_line": 12}],
+                    },
+                ],
+                "ok": False,
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (record("docsync", report_path),))
+
+    assert len(facts) == 1
+    assert facts[0]["symbol"] == "DS201"
+
+
 def record(check: str, artifact_path: Path) -> FailureRecord:
     """Build failed check record with a structured artifact."""
 
