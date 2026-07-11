@@ -12,6 +12,7 @@ import pytest
 
 from agent_maintainer.runners import mutmut as run_mutmut
 from agent_maintainer.runners import mutmut_stats
+from tests.support.callbacks import constant_callback
 
 MUTMUT_FAILURE_EXIT = 2
 
@@ -276,7 +277,7 @@ def test_successful_mutmut_run_keeps_mutants_when_requested(
 def test_mutmut_executable_falls_back_to_name(monkeypatch: pytest.MonkeyPatch) -> None:
     """The runner falls back to invoking mutmut by name."""
 
-    monkeypatch.setattr(run_mutmut.shutil, "which", lambda name: None)
+    monkeypatch.setattr(run_mutmut.shutil, "which", constant_callback(None))
 
     assert run_mutmut.mutmut_executable() == "mutmut"
 

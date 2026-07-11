@@ -97,7 +97,7 @@ def test_html_report_handles_invalid_debt_score(tmp_path: Path) -> None:
 
 def write_report_artifacts(log_dir: Path) -> None:
     """Write minimal verifier artifacts."""
-    manifest = {
+    manifest: dict[str, object] = {
         "profile": "full",
         "base_ref": "HEAD",
         "compare_branch": "origin/main",

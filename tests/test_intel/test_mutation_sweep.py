@@ -26,10 +26,14 @@ def test_mutation_sweep_ranks_changed_covered_churned_module(
     """Changed, covered, churned branch logic ranks first."""
 
     write_sweep_project(tmp_path)
+
+    def churn_count(_repo_root: Path, path: str) -> int:
+        return SCORE_CHURN if path.endswith("score.py") else 0
+
     monkeypatch.setattr(
         mutation_sweep,
         "git_churn_count",
-        lambda _repo_root, path: SCORE_CHURN if path.endswith("score.py") else 0,
+        churn_count,
     )
 
     report = mutation_sweep.build_mutation_sweep_report(

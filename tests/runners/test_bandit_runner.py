@@ -10,6 +10,7 @@ import pytest
 
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.runners import bandit as run_bandit
+from tests.support.callbacks import constant_callback
 
 INVALID_CONFIG_EXIT_CODE = 2
 
@@ -59,7 +60,7 @@ def test_run_bandit_writes_json_artifact_and_prints_compact_findings(
             stderr="",
         )
 
-    monkeypatch.setattr(run_bandit.shutil, "which", lambda name: "/usr/bin/bandit")
+    monkeypatch.setattr(run_bandit.shutil, "which", constant_callback("/usr/bin/bandit"))
     monkeypatch.setattr(run_bandit.subprocess, "run", fake_run)
 
     assert run_bandit.run_bandit(json_path, package_paths=("scripts", "src/agent_maintainer")) == 1

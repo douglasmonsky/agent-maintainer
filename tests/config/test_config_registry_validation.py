@@ -77,7 +77,10 @@ def test_environment_defaults_round_trip() -> None:
     assert loader.apply_env(expected, environment=environment) == expected
 
 
-def _environment_text(spec: registry.ConfigFieldSpec, value: object) -> str:
+def _environment_text(
+    spec: registry.ConfigFieldSpec,
+    value: bool | int | float | str | tuple[str, ...] | None,
+) -> str:
     if isinstance(value, tuple):
         return shlex.join(value) if spec.env_style == "shell" else ",".join(value)
     if isinstance(value, bool):

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from agent_maintainer.config import reference, registry
+from agent_maintainer.core.structured_values import json_array, json_object
 from tests.support.paths import REPO_ROOT
 
 
@@ -19,12 +20,18 @@ def test_payload_covers_fields_and_tables() -> None:
     """Machine metadata covers every field and supported nested table."""
 
     payload = reference.capability_payload()
-    fields = payload["fields"]
-    nested = payload["nested_tables"]
+    fields = json_array(payload["fields"])
+    nested = json_object(payload["nested_tables"])
 
-    assert isinstance(fields, list)
-    assert {row["name"] for row in fields if isinstance(row, dict)} == set(registry.FIELD_SPECS)
-    assert isinstance(nested, dict)
+    assert fields is not None
+    names = {
+        name
+        for item in fields
+        if (row := json_object(item)) is not None
+        if isinstance(name := row.get("name"), str)
+    }
+    assert names == set(registry.FIELD_SPECS)
+    assert nested is not None
     assert set(nested) == {
         "diagnostics",
         "file_baselines",

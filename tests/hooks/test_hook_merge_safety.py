@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from agent_client_hooks import merge, removal, templates
+from agent_maintainer.core.structured_values import json_array, json_object
 
 
 def test_claude_merge_preserves_third_party_hooks_and_order(tmp_path: Path) -> None:
@@ -129,6 +130,11 @@ def _entry(command: str) -> dict[str, object]:
 def _commands(entry: dict[str, object]) -> list[object]:
     """Return commands from one synthetic Claude event entry."""
 
-    hooks = entry["hooks"]
-    assert isinstance(hooks, list)
-    return [hook["command"] for hook in hooks if isinstance(hook, dict)]
+    hooks = json_array(entry["hooks"])
+    assert hooks is not None
+    commands: list[object] = []
+    for raw_hook in hooks:
+        hook = json_object(raw_hook)
+        if hook is not None and "command" in hook:
+            commands.append(hook["command"])
+    return commands

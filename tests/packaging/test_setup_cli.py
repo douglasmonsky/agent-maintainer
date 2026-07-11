@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.core import bootstrap, setup_cli
+from tests.support.callbacks import forbidden_callback
 from tests.support.paths import REPO_ROOT
 
 BOOTSTRAP_STATUS = 17
@@ -136,7 +137,7 @@ def test_bootstrap_dry_run_does_not_create_virtualenv(
     monkeypatch.setattr(
         bootstrap,
         "ensure_virtualenv",
-        lambda _root: pytest.fail("dry-run created a virtualenv"),
+        forbidden_callback("dry-run created a virtualenv"),
     )
 
     assert bootstrap.bootstrap(target=tmp_path, dry_run=True) == 0
@@ -157,7 +158,7 @@ def test_install_dry_run_skips_pre_commit_and_hook_writes(
     monkeypatch.setattr(
         bootstrap,
         "install_pre_commit",
-        lambda _root: pytest.fail("dry-run installed pre-commit"),
+        forbidden_callback("dry-run installed pre-commit"),
     )
 
     assert bootstrap.install(target=tmp_path, dry_run=True) == 0

@@ -11,6 +11,7 @@ import pytest
 
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.runners import pyright as run_pyright
+from tests.support.callbacks import constant_callback
 
 
 def test_write_pyright_config_uses_maintainer_mode_and_roots(
@@ -50,7 +51,7 @@ def test_run_pyright_writes_json_artifact(
             stderr="",
         )
 
-    monkeypatch.setattr(run_pyright.shutil, "which", lambda name: "/usr/bin/pyright")
+    monkeypatch.setattr(run_pyright.shutil, "which", constant_callback("/usr/bin/pyright"))
     monkeypatch.setattr(run_pyright.subprocess, "run", fake_run)
 
     assert run_pyright.run_pyright(config_path, json_path) == 0
@@ -75,7 +76,7 @@ def test_run_pyright_fails_when_no_files_are_analyzed(
             stderr="",
         )
 
-    monkeypatch.setattr(run_pyright.shutil, "which", lambda name: "/usr/bin/pyright")
+    monkeypatch.setattr(run_pyright.shutil, "which", constant_callback("/usr/bin/pyright"))
     monkeypatch.setattr(run_pyright.subprocess, "run", fake_run)
 
     assert run_pyright.run_pyright(config_path) == 1

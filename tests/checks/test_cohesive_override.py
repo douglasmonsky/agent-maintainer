@@ -9,6 +9,7 @@ import pytest
 
 from agent_maintainer.checks import change_budget, cohesive_override
 from agent_maintainer.core.config import MaintainerConfig
+from tests.support.callbacks import constant_callback
 
 
 def enabled_config() -> MaintainerConfig:
@@ -226,9 +227,7 @@ def test_change_budget_main_accepts_eligible_local_override(
     monkeypatch.setattr(
         change_budget,
         "run_git_numstat",
-        lambda base_ref, staged=False: [
-            change_budget.FileChange("src/agent_maintainer/core/config.py", 10, 0),
-        ],
+        constant_callback([change_budget.FileChange("src/agent_maintainer/core/config.py", 10, 0)]),
     )
     monkeypatch.setattr(
         change_budget,

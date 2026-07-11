@@ -1,124 +1,7 @@
 {
-  "by_rule": {
-    "reportPrivateUsage": 15,
-    "reportUnknownArgumentType": 25,
-    "reportUnknownLambdaType": 26,
-    "reportUnknownMemberType": 1,
-    "reportUnknownVariableType": 10
-  },
-  "note": "Reviewed 2026-07-11 after test burndown batch 3 migrated callback-heavy test modules and replaced brittle private-helper tests with public behavior checks; 72 diagnostics were removed without changing production code or adding suppressions, casts, or permissive types.",
-  "pairs": {
-    "tests/assess/test_debt_score.py": {
-      "reportPrivateUsage": 1
-    },
-    "tests/attention/test_attention_builder.py": {
-      "reportUnknownVariableType": 2
-    },
-    "tests/attention/test_attention_context_pack.py": {
-      "reportUnknownVariableType": 1
-    },
-    "tests/change_plan/test_cli.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/checks/test_cohesive_override.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/config/test_config_reference.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "tests/config/test_config_registry_validation.py": {
-      "reportUnknownArgumentType": 2
-    },
-    "tests/context/test_estimate.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/context/test_exact_facts.py": {
-      "reportUnknownArgumentType": 1
-    },
-    "tests/core/test_executor_reporting.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/docsync/test_path_helpers.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/hooks/test_hook_merge_safety.py": {
-      "reportUnknownVariableType": 1
-    },
-    "tests/hooks/test_hook_mutations.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/hooks/test_hook_output_invariants.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/packaging/test_setup_cli.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/ratchet/test_status.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/release/test_release_state.py": {
-      "reportUnknownVariableType": 1
-    },
-    "tests/report/test_html_report.py": {
-      "reportUnknownVariableType": 1
-    },
-    "tests/runners/test_bandit_runner.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/runners/test_mutmut_runner.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/runners/test_pyright_runner.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/runners/test_ruff_runner.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/test_intel/test_mutation_sweep.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2,
-      "reportUnknownMemberType": 1
-    },
-    "tests/test_intel/test_mutation_sweep_executor.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/test_intel/test_mutation_targets.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/verify/test_artifact_runtime_events.py": {
-      "reportUnknownVariableType": 3
-    },
-    "tests/verify/test_async_child.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownLambdaType": 1
-    },
-    "tests/verify/test_background_wait.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownLambdaType": 2
-    },
-    "tests/wait/test_codex_app_server.py": {
-      "reportPrivateUsage": 12
-    },
-    "tests/wait/test_wait_cli.py": {
-      "reportPrivateUsage": 2
-    }
-  },
+  "by_rule": {},
+  "note": "Reviewed 2026-07-11 after the final test burndown removed all 77 remaining strict diagnostics without suppressions, unchecked casts, or production changes.",
+  "pairs": {},
   "schema_version": 2,
   "tool": {
     "name": "pyright",
@@ -126,5 +9,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 77
+  "total_errors": 0
 }

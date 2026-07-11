@@ -10,6 +10,7 @@ import pytest
 
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.runners import ruff as run_ruff
+from tests.support.callbacks import constant_callback
 
 INVALID_CONFIG_EXIT_CODE = 2
 
@@ -41,7 +42,7 @@ def test_run_ruff_writes_json_artifact_and_prints_compact_diagnostics(
             stderr="",
         )
 
-    monkeypatch.setattr(run_ruff.shutil, "which", lambda name: "/usr/bin/ruff")
+    monkeypatch.setattr(run_ruff.shutil, "which", constant_callback("/usr/bin/ruff"))
     monkeypatch.setattr(run_ruff.subprocess, "run", fake_run)
 
     assert run_ruff.run_ruff(json_path, max_complexity=7) == 1

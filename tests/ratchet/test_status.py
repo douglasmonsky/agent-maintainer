@@ -13,6 +13,7 @@ from agent_maintainer.ratchet.models import (
     RatchetFinding,
 )
 from agent_maintainer.ratchet.status import compare_findings, stale_reasons
+from tests.support.callbacks import constant_callback
 
 
 def test_status_categories_include_new_worsened_improved_resolved() -> None:
@@ -96,7 +97,7 @@ def test_status_report_uses_current_findings(
     monkeypatch.setattr(
         ratchet_status,
         "current_findings",
-        lambda checks: (finding("tracked.py", 3),),
+        constant_callback((finding("tracked.py", 3),)),
     )
 
     report = ratchet_status.status_report(baseline, base_ref="HEAD")

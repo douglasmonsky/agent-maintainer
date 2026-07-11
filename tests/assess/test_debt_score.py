@@ -11,7 +11,6 @@ from agent_maintainer.assess import cli
 from agent_maintainer.assess.debt_score import (
     DEBT_SCORE_JSON,
     DEBT_SCORE_MARKDOWN,
-    _summary,
     build_debt_report,
     score_interpretation,
 )
@@ -229,14 +228,13 @@ def test_debt_score_truncated_scan_lowers_confidence(tmp_path: Path) -> None:
     assert report.confidence == "low"
 
 
-def test_debt_score_summary_bands() -> None:
-    """Score summaries cover each risk band."""
+def test_debt_score_interpretation_bands() -> None:
+    """Public score interpretations cover each risk band."""
 
-    assert "strong maintenance controls" in _summary(10)
     assert "watch items" in score_interpretation(10)
-    assert "few adoption gaps" in _summary(40)
-    assert "meaningful debt risk" in _summary(60)
-    assert "conservative ratchets" in _summary(CRITICAL_SCORE_SAMPLE)
+    assert "tightening opportunities" in score_interpretation(40)
+    assert "prioritize tests" in score_interpretation(60)
+    assert "conservative ratchets" in score_interpretation(CRITICAL_SCORE_SAMPLE)
 
 
 def _category(report: DebtScoreReport, name: str) -> DebtCategory:

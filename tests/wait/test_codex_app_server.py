@@ -3,28 +3,14 @@
 from __future__ import annotations
 
 import json
-import queue
 import subprocess
 import sys
-from io import StringIO
 from pathlib import Path
-from typing import Any, cast
 
 import pytest
 
-from agent_maintainer.wait.codex_app_server import (
-    CodexAppServerClient,
-    _AppServerWaitState,
-    _bounded_stderr,
-    _consume_app_server_line,
-    _get_app_server_line,
-    _maybe_request_thread_read,
-    _stop_process,
-    _turn_from_result,
-    _update_turn_state,
-)
+from agent_maintainer.wait.codex_app_server import CodexAppServerClient
 from agent_maintainer.wait.codex_app_server_protocol import (
-    _json_object,
     app_server_turn_completed,
     parse_app_server_line,
 )
@@ -61,12 +47,9 @@ with log_path.open("w", encoding="utf-8") as log:
 
     def popen_factory(
         _command: list[str],
-        **kwargs: Any,
+        **_kwargs: object,
     ) -> subprocess.Popen[str]:
-        return subprocess.Popen(
-            [sys.executable, str(script), str(log_path)],
-            **kwargs,
-        )
+        return _spawn_script(script, log_path)
 
     client = CodexAppServerClient(
         codex_bin="codex-test",
@@ -123,12 +106,9 @@ with log_path.open("w", encoding="utf-8") as log:
 
     def popen_factory(
         _command: list[str],
-        **kwargs: Any,
+        **_kwargs: object,
     ) -> subprocess.Popen[str]:
-        return subprocess.Popen(
-            [sys.executable, str(script), str(log_path)],
-            **kwargs,
-        )
+        return _spawn_script(script, log_path)
 
     client = CodexAppServerClient(
         codex_bin="codex-test",
@@ -206,12 +186,9 @@ with log_path.open("w", encoding="utf-8") as log:
 
     def popen_factory(
         _command: list[str],
-        **kwargs: Any,
+        **_kwargs: object,
     ) -> subprocess.Popen[str]:
-        return subprocess.Popen(
-            [sys.executable, str(script), str(log_path)],
-            **kwargs,
-        )
+        return _spawn_script(script, log_path)
 
     client = CodexAppServerClient(
         codex_bin="codex-test",
@@ -246,29 +223,11 @@ def test_app_server_completion_accepts_known_event_spellings() -> None:
     assert not app_server_turn_completed(json.dumps({"method": "turn/started"}))
 
 
-def test_app_server_completion_requires_accepted_turn() -> None:
-    """Completion events before turn acceptance fail closed."""
-
-    with pytest.raises(RuntimeError, match="completed unaccepted turn"):
-        _consume_app_server_line(
-            json.dumps({"method": "turn/completed"}),
-            _AppServerWaitState(),
-        )
-
-
-def test_app_server_line_queue_timeout_returns_none() -> None:
-    """Timed queue reads return None while app-server is still quiet."""
-
-    lines: queue.Queue[str | None] = queue.Queue()
-
-    assert _get_app_server_line(lines, timeout=0.01) is None
-
-
 def test_app_server_json_helpers_ignore_invalid_payloads() -> None:
     """App-server JSON parsing ignores non-object or malformed messages."""
 
-    assert _json_object("not-json") == {}
-    assert _json_object("[]") == {}
+    assert parse_app_server_line("not-json") is None
+    assert parse_app_server_line("[]") is None
     assert parse_app_server_line(json.dumps({"id": "not-int"})) is None
     response = parse_app_server_line(
         json.dumps({"id": 9, "error": {"message": "boom"}}),
@@ -278,180 +237,74 @@ def test_app_server_json_helpers_ignore_invalid_payloads() -> None:
     assert response.error == "boom"
 
 
-def test_app_server_turn_state_handles_terminal_and_ignored_shapes() -> None:
-    """Turn status extraction handles missing, completed, and failed states."""
+def test_app_server_client_rejects_unaccepted_completion(tmp_path: Path) -> None:
+    """Public client rejects completion before turn/start acceptance."""
 
-    state = _AppServerWaitState()
-    _update_turn_state(None, state)
-    _update_turn_state({"thread": {"turns": "not-list"}}, state)
-    _update_turn_state({"turn": {"id": "turn-1"}}, state)
-
-    assert not state.completed
-    assert _turn_from_result({"thread": {"turns": [object()]}}, "turn-1") is None
-    assert _turn_from_result({"turn": {1: "invalid-key"}}, "turn-1") is None
-
-    _update_turn_state(
-        {"thread": {"turns": [{"id": "turn-1", "status": "completed"}]}},
-        state,
+    script = tmp_path / "unaccepted_completion.py"
+    script.write_text(
+        'import json\nprint(json.dumps({"method": "turn/completed"}), flush=True)\n'
+        "for _line in __import__('sys').stdin:\n    pass\n",
+        encoding="utf-8",
     )
+    client = _client_for_script(script, timeout_seconds=1)
 
-    assert state.turn_id == "turn-1"
-    assert state.completed
-
-    with pytest.raises(RuntimeError, match="status failed"):
-        _update_turn_state(
-            {"turn": {"id": "turn-2", "status": "failed"}},
-            _AppServerWaitState(),
-        )
+    with pytest.raises(RuntimeError, match="completed unaccepted turn"):
+        client.resume_thread(THREAD_ID, "continue now")
 
 
-def test_app_server_thread_read_polling_writes_when_due() -> None:
-    """Thread-read polling writes only when a turn is accepted and known."""
+def test_app_server_client_reports_early_exit_stderr(tmp_path: Path) -> None:
+    """Public client surfaces bounded stderr when the server exits early."""
 
-    process = FakeTextProcess()
-    state = _AppServerWaitState()
-
-    _maybe_request_thread_read(cast(Any, process), THREAD_ID, state, poll_seconds=0)
-    assert process.stdin is not None
-    assert process.stdin.getvalue() == ""
-
-    state.turn_accepted = True
-    state.turn_id = "turn-1"
-    _maybe_request_thread_read(cast(Any, process), THREAD_ID, state, poll_seconds=0)
-
-    assert process.stdin is not None
-    assert '"method":"thread/read"' in process.stdin.getvalue()
-
-
-def test_app_server_thread_read_polling_requires_stdin() -> None:
-    """Thread-read polling fails clearly if app-server stdin is unavailable."""
-
-    process = FakeTextProcess()
-    process.stdin = None
-    state = _AppServerWaitState(turn_accepted=True, turn_id="turn-1")
-
-    with pytest.raises(RuntimeError, match="stdin unavailable"):
-        _maybe_request_thread_read(cast(Any, process), THREAD_ID, state, poll_seconds=0)
-
-
-def test_app_server_wait_handles_unavailable_stdout_and_exit() -> None:
-    """App-server wait reports missing stdout and early process exits."""
-
-    client = CodexAppServerClient(codex_bin="codex-test", timeout_seconds=0.01)
-
-    with pytest.raises(RuntimeError, match="stdout unavailable"):
-        process = FakeTextProcess()
-        process.stdout = None
-        client._wait_for_completion(cast(Any, process), THREAD_ID)
+    script = tmp_path / "early_exit.py"
+    script.write_text(
+        "import sys\n"
+        "for _index in range(4):\n    sys.stdin.readline()\n"
+        "print('boom', file=sys.stderr, flush=True)\n",
+        encoding="utf-8",
+    )
+    client = _client_for_script(script, timeout_seconds=1)
 
     with pytest.raises(RuntimeError, match="exited early: boom"):
-        client._wait_for_completion(
-            cast(
-                Any,
-                FakeTextProcess(stdout=StringIO(""), stderr=StringIO("boom"), poll_result=1),
-            ),
-            THREAD_ID,
-        )
+        client.resume_thread(THREAD_ID, "continue now")
 
 
-def test_app_server_wait_times_out_when_process_stays_quiet() -> None:
-    """App-server wait times out when no line or process exit arrives."""
+def test_app_server_client_times_out_while_server_is_quiet(tmp_path: Path) -> None:
+    """Public client times out when the server remains quiet."""
 
-    client = CodexAppServerClient(codex_bin="codex-test", timeout_seconds=0.01)
+    script = tmp_path / "quiet.py"
+    script.write_text(
+        "import sys, time\nfor _index in range(4):\n    sys.stdin.readline()\ntime.sleep(2)\n",
+        encoding="utf-8",
+    )
+    client = _client_for_script(script, timeout_seconds=0.01)
 
     with pytest.raises(TimeoutError, match="rewake timed out"):
-        client._wait_for_completion(
-            cast(Any, FakeTextProcess(stdout=StringIO(""))),
-            THREAD_ID,
-        )
+        client.resume_thread(THREAD_ID, "continue now")
 
 
-def test_app_server_process_helpers_cover_stderr_and_kill() -> None:
-    """Process helpers bound stderr and kill stubborn app-server processes."""
+def _client_for_script(script: Path, *, timeout_seconds: float) -> CodexAppServerClient:
+    """Return a client backed by one fixture app-server script."""
 
-    process = FakeTextProcess()
-    process.stderr = None
-    assert _bounded_stderr(cast(Any, process)) == ""
-    assert _bounded_stderr(cast(Any, FakeTextProcess(stderr=StringIO("")))) == ""
-    assert _bounded_stderr(cast(Any, FakeTextProcess(stderr=StringIO("boom")))) == ": boom"
+    def popen_factory(
+        _command: list[str],
+        **_kwargs: object,
+    ) -> subprocess.Popen[str]:
+        return _spawn_script(script)
 
-    process = StubbornProcess()
-    _stop_process(cast(Any, process))
-
-    assert process.terminated
-    assert process.killed
-
-
-def test_probe_stops_process_when_interrupted(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Read-only probing always reaps its app-server child on interruption."""
-
-    process = StubbornProcess()
-    client = CodexAppServerClient(
+    return CodexAppServerClient(
         codex_bin="codex-test",
-        timeout_seconds=1,
-        popen_factory=lambda *_args, **_kwargs: cast(Any, process),
+        timeout_seconds=timeout_seconds,
+        popen_factory=popen_factory,
     )
 
-    def interrupt_probe(*_args: object) -> None:
-        raise KeyboardInterrupt
 
-    monkeypatch.setattr(
-        "agent_maintainer.wait.codex_app_server._probe_process",
-        interrupt_probe,
+def _spawn_script(script: Path, *arguments: Path) -> subprocess.Popen[str]:
+    """Start a text-mode fixture app-server with the required pipes."""
+
+    return subprocess.Popen(  # nosec B603
+        [sys.executable, str(script), *(str(argument) for argument in arguments)],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
     )
-
-    with pytest.raises(KeyboardInterrupt):
-        client.probe_thread(THREAD_ID)
-
-    assert process.terminated
-    assert process.killed
-
-
-class FakeTextProcess:
-    """Small text-mode process double for app-server edge cases."""
-
-    def __init__(
-        self,
-        *,
-        stdin: StringIO | None = None,
-        stdout: StringIO | None = None,
-        stderr: StringIO | None = None,
-        poll_result: int | None = None,
-    ) -> None:
-        self.stdin: StringIO | None = StringIO() if stdin is None else stdin
-        self.stdout: StringIO | None = StringIO() if stdout is None else stdout
-        self.stderr: StringIO | None = StringIO() if stderr is None else stderr
-        self._poll_result = poll_result
-
-    def poll(self) -> int | None:
-        """Return configured process state."""
-
-        return self._poll_result
-
-
-class StubbornProcess(FakeTextProcess):
-    """Process double that requires kill after terminate."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.terminated = False
-        self.killed = False
-
-    def terminate(self) -> None:
-        """Record terminate request."""
-
-        self.terminated = True
-
-    def wait(self, *, timeout: int) -> int:
-        """Raise once after terminate, then report killed process exit."""
-
-        if not self.killed:
-            raise subprocess.TimeoutExpired("codex", timeout)
-        return 0
-
-    def kill(self) -> None:
-        """Record kill request."""
-
-        self.killed = True

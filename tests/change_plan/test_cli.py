@@ -12,6 +12,7 @@ from agent_maintainer import cli as maintainer_cli
 from agent_maintainer.change_plan import cli as change_plan_cli
 from agent_maintainer.change_plan.models import ChangedPath
 from tests.change_plan.test_parser import valid_plan_text
+from tests.support.callbacks import constant_callback
 
 
 def test_change_plan_new_refuses_overwrite(
@@ -187,7 +188,7 @@ def test_change_plan_check_runs_git_scope(
     monkeypatch.setattr(
         change_plan_cli.git_scope,
         "git_changes",
-        lambda *_args, **_kwargs: (ChangedPath(path="README.md", added=1, deleted=0),),
+        constant_callback((ChangedPath(path="README.md", added=1, deleted=0),)),
     )
 
     assert (

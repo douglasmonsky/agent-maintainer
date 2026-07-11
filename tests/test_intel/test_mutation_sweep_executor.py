@@ -15,6 +15,7 @@ from agent_maintainer.test_intel.mutation import sweep_execution as mutation_swe
 from agent_maintainer.test_intel.mutation import sweep_executor as mutation_sweep_executor
 from agent_maintainer.test_intel.mutation import sweep_reporting as mutation_sweep_reporting
 from agent_maintainer.test_intel.mutation import sweep_runner as mutation_sweep_runner
+from tests.support.callbacks import constant_callback
 
 EXECUTABLE_MODE = 0o755
 FAKE_KILLED_MUTANTS = 4
@@ -174,7 +175,7 @@ def test_mutmut_command_uses_venv_script(
     mutmut_path = bin_dir / "mutmut"
     python_path.write_text("", encoding="utf-8")
     mutmut_path.write_text("", encoding="utf-8")
-    monkeypatch.setattr(mutation_sweep_runner.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(mutation_sweep_runner.shutil, "which", constant_callback(None))
     monkeypatch.setattr(sys, "executable", str(python_path))
 
     command = mutation_sweep_runner.mutmut_command(
