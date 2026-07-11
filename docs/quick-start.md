@@ -27,6 +27,12 @@ Run the initializer from the target repository:
 agent-maintainer init --track core --preset existing-app
 ```
 
+For CI-only adoption without local hooks:
+
+```bash
+agent-maintainer init --ci-only
+```
+
 Preview the files first with `--dry-run`:
 
 ```bash

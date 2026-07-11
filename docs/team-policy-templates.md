@@ -20,6 +20,9 @@ Use them with any track:
 agent-maintainer init --track agent --preset team-agent-heavy
 ```
 
+`agent-maintainer init --ci-only` writes only the workflow and dependency file,
+so it intentionally skips team preset policy config.
+
 ## Templates
 
 | Template | Use When | Policy Shape |

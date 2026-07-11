@@ -36,6 +36,21 @@ def configured_domain_module_paths(payloads: DomainPayloads) -> frozenset[str]:
     return frozenset(paths)
 
 
+def configured_domain_roots(payloads: DomainPayloads) -> frozenset[str]:
+    """Return domain roots that explicitly declare package ownership."""
+    return frozenset(
+        domain_root for domain_root, payload in payloads if isinstance(payload.get("root"), dict)
+    )
+
+
+def module_is_owned_by_domain(module_path: str, domain_roots: frozenset[str]) -> bool:
+    """Return whether a configured domain root owns a source-module descendant."""
+    return any(
+        module_path == domain_root or module_path.startswith(f"{domain_root}.")
+        for domain_root in domain_roots
+    )
+
+
 def domain_module_path(domain_root: str, path: str) -> str:
     """Return full module path for a domain-local module path."""
     if path in {"", ".", "<root>"}:

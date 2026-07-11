@@ -149,7 +149,6 @@ def workflow_checks() -> list[models.Check]:
                 "--strict-collection",
                 "--persona=pedantic",
                 ".github/workflows",
-                ".github/dependabot.yml",
             ],
             models.FULL_PROFILES,
             required_executable="zizmor",

@@ -11,6 +11,7 @@ from agent_maintainer.core.scaffold.templates import (
     CORE_TRACK,
     TRACKS,
     StarterFile,
+    ci_starter_files,
     starter_files_for_preset,
 )
 
@@ -38,6 +39,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--force", action="store_true", help="overwrite existing generated files")
     parser.add_argument(
+        "--ci-only",
+        action="store_true",
+        help="write only GitHub Actions CI starter files",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="print planned writes without changing files",
@@ -49,7 +55,7 @@ def main(argv: list[str]) -> int:
     """Write starter maintainer files for a package-first install."""
     args = parse_args(argv)
     target = args.target.resolve()
-    files = files_for_track(args.track, args.preset)
+    files = ci_starter_files() if args.ci_only else files_for_track(args.track, args.preset)
     plan = planning.build_plan(target, files)
     print(planning.render_plan(plan))
     if args.dry_run:

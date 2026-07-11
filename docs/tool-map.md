@@ -25,6 +25,9 @@ ai-agent-heavy`, `--preset legacy-ratchet`, `--preset strict-new-repo`, or a
 team preset such as `--preset team-agent-heavy` to tune starter policy without
 changing which files the track writes.
 
+Use `python3 -m agent_maintainer init --ci-only` when only the GitHub Actions
+verification workflow and its Agent Maintainer dependency file are needed.
+
 Use `python3 -m agent_maintainer assess setup` before first adoption to
 recommend a track, preset, optional gates, and AI follow-up prompts. Use
 `python3 -m agent_maintainer assess debt` to write an advisory lower-is-better
@@ -280,9 +283,9 @@ regularly. Revisit SHA pinning if the kit moves toward stricter supply-chain
 requirements.
 
 `actionlint` checks workflow syntax and common GitHub Actions mistakes when
-`.github/workflows` exists. `zizmor` runs offline against workflows and
-Dependabot config to catch risky CI/CD patterns. This repository enables both
-through the normal full/CI verifier profiles.
+`.github/workflows` exists. `zizmor` runs offline against workflow files to
+catch risky CI/CD patterns; Dependabot configuration is validated separately.
+This repository enables both through the normal full/CI verifier profiles.
 
 ## Configuration model
 

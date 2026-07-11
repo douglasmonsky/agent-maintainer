@@ -141,7 +141,12 @@ def _explicit_source_module_issues(
     )
     configured = sources.configured_module_paths(payload.get("modules"))
     configured |= domains.configured_domain_module_paths(domain_payloads)
-    missing = tuple(module for module in modules if module not in configured)
+    domain_roots = domains.configured_domain_roots(domain_payloads)
+    missing = tuple(
+        module
+        for module in modules
+        if module not in configured and not domains.module_is_owned_by_domain(module, domain_roots)
+    )
     if not missing:
         return []
     return [f"tach.toml must explicitly list source modules: {_module_sample(missing)}"]

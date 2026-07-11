@@ -9,7 +9,7 @@ from pathlib import Path
 from yamllint import linter
 from yamllint.config import YamlLintConfig
 
-from agent_maintainer.core.scaffold import initializer, template_config
+from agent_maintainer.core.scaffold import initializer, template_config, templates
 from tests.support.paths import REPO_ROOT
 
 STARTER_CONFIG = Path("config") / "pyproject.agent-maintainer.toml"
@@ -39,7 +39,7 @@ def test_core_init_writes_minimum_adoption_files(tmp_path: Path) -> None:
     assert "verify --profile ci \\" in workflow
     assert '--base-ref "$BASE_REF"' in workflow
     assert '--compare-branch "$BASE_REF"' in workflow
-    assert "python -m pip install -e ." in workflow
+    assert "python -m pip install -e ." not in workflow
     assert "if [ -f package.json ]; then" in workflow
     assert "npm ci" in workflow
     assert "--no-deps" not in workflow
@@ -56,6 +56,32 @@ def test_starter_config_template_matches_initializer() -> None:
     template = (REPO_ROOT / STARTER_CONFIG).read_text(encoding="utf-8")
 
     assert template == template_config.STARTER_PYPROJECT
+
+
+def test_ci_only_init_writes_workflow_adoption_files(tmp_path: Path) -> None:
+    """CI-only mode writes GitHub Actions files without local hook setup."""
+
+    status = initializer.main(["--target", str(tmp_path), "--ci-only"])
+
+    assert status == 0
+    assert (tmp_path / "config" / "dev-dependencies.txt").exists()
+    assert (tmp_path / ".github" / "workflows" / "verify.yml").exists()
+    assert not (tmp_path / STARTER_CONFIG).exists()
+    assert not (tmp_path / ".pre-commit-config.yaml").exists()
+    assert not (tmp_path / ".codex" / "config.toml").exists()
+
+    workflow = (tmp_path / ".github" / "workflows" / "verify.yml").read_text(encoding="utf-8")
+    assert "python -m pip install -r config/dev-dependencies.txt" in workflow
+    assert "python -m pip install -e ." not in workflow
+
+
+def test_ci_only_starter_files_are_minimal() -> None:
+    """CI-only starter files stay limited to workflow dependencies."""
+
+    assert {starter.path for starter in templates.ci_starter_files()} == {
+        ".github/workflows/verify.yml",
+        "config/dev-dependencies.txt",
+    }
 
 
 def test_agent_init_includes_codex_hooks_and_agent_guidance(tmp_path: Path) -> None:

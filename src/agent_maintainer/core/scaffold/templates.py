@@ -15,6 +15,12 @@ AGENT_TRACK = "agent"
 HARDENING_TRACK = "hardening"
 TRACKS = (CORE_TRACK, AGENT_TRACK, HARDENING_TRACK)
 AGENT_HOOK_TRACKS = (AGENT_TRACK, HARDENING_TRACK)
+CI_ONLY_STARTER_PATHS = frozenset(
+    (
+        "config/dev-dependencies.txt",
+        ".github/workflows/verify.yml",
+    )
+)
 
 DEV_DEPENDENCIES = "agent-maintainer[core]\n"
 
@@ -69,7 +75,6 @@ WORKFLOW = textwrap.dedent(
               if [ -f config/dev-dependencies.txt ]; then
                 python -m pip install -r config/dev-dependencies.txt
               fi
-              python -m pip install -e .
               if [ -f package.json ]; then
                 npm ci
               fi
@@ -157,6 +162,14 @@ def starter_files_for_preset(preset: str) -> tuple[StarterFile, ...]:
         TRACKS,
     )
     return (config_file, *STATIC_STARTER_FILES)
+
+
+def ci_starter_files() -> tuple[StarterFile, ...]:
+    """Return starter files needed for GitHub Actions-only adoption."""
+
+    return tuple(
+        starter for starter in STATIC_STARTER_FILES if starter.path in CI_ONLY_STARTER_PATHS
+    )
 
 
 # docsync:evidence.end evidence.readme.adoption_track_templates

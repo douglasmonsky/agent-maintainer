@@ -72,6 +72,12 @@ Initialize a repo:
 agent-maintainer init --track core --preset existing-app
 ```
 
+For CI-only adoption without local hooks:
+
+```bash
+agent-maintainer init --ci-only
+```
+
 Merge `config/pyproject.agent-maintainer.toml` into your `pyproject.toml`, tune
 paths, then run:
 
@@ -135,6 +141,10 @@ source.
 | `core` | A minimum useful local CI maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |
 | `agent` | Repos where Codex, Claude Code, or other agents actively edit code. | Core plus `AGENTS.md`, generated guidance target, Codex hooks, Claude Code hooks. |
 | `hardening` | Repos that want docs/config hygiene and security-adjacent surfaces too. | Agent plus Node-backed tooling metadata. |
+
+Use `agent-maintainer init --ci-only` when a repo only needs the GitHub Actions
+verification workflow and `config/dev-dependencies.txt`, without local hooks or
+starter policy config.
 
 The hardening track declares Node.js 22 or newer for its optional npm-backed
 Markdown and TOML tooling instead of silently installing incompatible versions.
