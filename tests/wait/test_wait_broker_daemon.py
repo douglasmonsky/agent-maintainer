@@ -15,6 +15,19 @@ PR_NUMBER = "291"
 WATCHER_PID = 123
 
 
+def _failed_daemon(root: Path, _wait_id: str) -> daemon_launchd.DaemonLaunch:
+    return daemon_launchd.DaemonLaunch(
+        started=False,
+        label="com.agent-maintainer.wait.test",
+        log_path=root / "daemon.log",
+        error="launchd failed",
+    )
+
+
+def _started_watcher(_root: Path, _wait_id: str) -> DetachedWatcher:
+    return DetachedWatcher(command=("python",), pid=WATCHER_PID)
+
+
 def test_start_registered_watcher_reports_launchd_fallback(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -28,17 +41,12 @@ def test_start_registered_watcher_reports_launchd_fallback(
     monkeypatch.setattr(
         broker,
         "ensure_wait_daemon",
-        lambda root, wait_id: daemon_launchd.DaemonLaunch(
-            started=False,
-            label="com.agent-maintainer.wait.test",
-            log_path=tmp_path / "daemon.log",
-            error="launchd failed",
-        ),
+        _failed_daemon,
     )
     monkeypatch.setattr(
         broker,
         "start_wait_watcher",
-        lambda root, wait_id: DetachedWatcher(command=("python",), pid=WATCHER_PID),
+        _started_watcher,
     )
 
     registration = broker.start_registered_watcher(tmp_path, record)
@@ -64,12 +72,7 @@ def test_codex_rewake_requires_launchd(
     monkeypatch.setattr(
         broker,
         "ensure_wait_daemon",
-        lambda root, wait_id: daemon_launchd.DaemonLaunch(
-            started=False,
-            label="com.agent-maintainer.wait.test",
-            log_path=tmp_path / "daemon.log",
-            error="launchd failed",
-        ),
+        _failed_daemon,
     )
 
     registration = broker.start_registered_watcher(tmp_path, record)
@@ -92,12 +95,7 @@ def test_start_registered_watcher_reports_both_failures(
     monkeypatch.setattr(
         broker,
         "ensure_wait_daemon",
-        lambda root, wait_id: daemon_launchd.DaemonLaunch(
-            started=False,
-            label="com.agent-maintainer.wait.test",
-            log_path=tmp_path / "daemon.log",
-            error="launchd failed",
-        ),
+        _failed_daemon,
     )
 
     def fail_watcher(root: Path, wait_id: str) -> None:

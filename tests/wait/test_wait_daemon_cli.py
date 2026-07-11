@@ -16,6 +16,54 @@ RUN_IDLE_TIMEOUT_SECONDS = 11
 RUN_INTERVAL_SECONDS = 7
 
 
+def _daemon_status(root: Path) -> daemon_launchd.DaemonStatus:
+    return daemon_launchd.DaemonStatus(
+        label="com.agent-maintainer.wait.test",
+        plist_path=root / "agent.plist",
+        log_path=root / "daemon.log",
+        loaded=True,
+        pid=PID,
+        last_heartbeat="2026-07-09T00:00:00Z",
+    )
+
+
+def _successful_install(
+    root: Path,
+    *,
+    options: daemon_launchd.LaunchAgentInstallOptions,
+) -> daemon_launchd.DaemonLaunch:
+    del options
+    return daemon_launchd.DaemonLaunch(
+        started=True,
+        label="com.agent-maintainer.wait.test",
+        log_path=root / "daemon.log",
+    )
+
+
+def _failed_install(
+    root: Path,
+    *,
+    options: daemon_launchd.LaunchAgentInstallOptions,
+) -> daemon_launchd.DaemonLaunch:
+    del options
+    return daemon_launchd.DaemonLaunch(
+        started=False,
+        label="com.agent-maintainer.wait.test",
+        log_path=root / "daemon.log",
+        error="boom",
+    )
+
+
+def _unloaded_status(root: Path) -> daemon_launchd.DaemonStatus:
+    return daemon_launchd.DaemonStatus(
+        label="com.agent-maintainer.wait.test",
+        plist_path=root / "agent.plist",
+        log_path=root / "daemon.log",
+        loaded=False,
+        error="not loaded",
+    )
+
+
 def test_daemon_cli_status_json(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -26,14 +74,7 @@ def test_daemon_cli_status_json(
     monkeypatch.setattr(
         cli.daemon_launchd,
         "daemon_status",
-        lambda root: daemon_launchd.DaemonStatus(
-            label="com.agent-maintainer.wait.test",
-            plist_path=tmp_path / "agent.plist",
-            log_path=tmp_path / "daemon.log",
-            loaded=True,
-            pid=PID,
-            last_heartbeat="2026-07-09T00:00:00Z",
-        ),
+        _daemon_status,
     )
 
     status = cli.main(["daemon", "status", "--root", str(tmp_path), "--format", "json"])
@@ -54,11 +95,7 @@ def test_daemon_cli_install_text(
     monkeypatch.setattr(
         cli.daemon_launchd,
         "install_launch_agent",
-        lambda root, options: daemon_launchd.DaemonLaunch(
-            started=True,
-            label="com.agent-maintainer.wait.test",
-            log_path=tmp_path / "daemon.log",
-        ),
+        _successful_install,
     )
 
     status = cli.main(["daemon", "install", "--root", str(tmp_path)])
@@ -79,11 +116,7 @@ def test_daemon_cli_install_json_and_failure_text(
     monkeypatch.setattr(
         cli.daemon_launchd,
         "install_launch_agent",
-        lambda root, options: daemon_launchd.DaemonLaunch(
-            started=True,
-            label="com.agent-maintainer.wait.test",
-            log_path=tmp_path / "daemon.log",
-        ),
+        _successful_install,
     )
     status = cli.main(["daemon", "install", "--root", str(tmp_path), "--format", "json"])
     payload = json.loads(capsys.readouterr().out)
@@ -93,22 +126,22 @@ def test_daemon_cli_install_json_and_failure_text(
     monkeypatch.setattr(
         cli.daemon_launchd,
         "install_launch_agent",
-        lambda root, options: daemon_launchd.DaemonLaunch(
-            started=False,
-            label="com.agent-maintainer.wait.test",
-            log_path=tmp_path / "daemon.log",
-            error="boom",
-        ),
+        _failed_install,
     )
     status = cli.main(["daemon", "install", "--root", str(tmp_path)])
     assert status == 1
     assert "daemon not started: boom" in capsys.readouterr().out
 
 
-def test_daemon_cli_unknown_command_returns_error() -> None:
+def test_daemon_cli_unknown_command_returns_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Daemon command handler has defensive unknown-command branch."""
 
-    status = cli._daemon(Namespace(daemon_command="other"))
+    def parse_unknown(_argv: list[str]) -> Namespace:
+        return Namespace(command="daemon", daemon_command="other")
+
+    monkeypatch.setattr(cli, "parse_args", parse_unknown)
+
+    status = cli.main([])
 
     assert status == ERROR_EXIT_CODE
 
@@ -123,13 +156,7 @@ def test_daemon_cli_uninstall_text(
     monkeypatch.setattr(
         cli.daemon_launchd,
         "uninstall_launch_agent",
-        lambda root: daemon_launchd.DaemonStatus(
-            label="com.agent-maintainer.wait.test",
-            plist_path=tmp_path / "agent.plist",
-            log_path=tmp_path / "daemon.log",
-            loaded=False,
-            error="not loaded",
-        ),
+        _unloaded_status,
     )
 
     status = cli.main(["daemon", "uninstall", "--root", str(tmp_path)])

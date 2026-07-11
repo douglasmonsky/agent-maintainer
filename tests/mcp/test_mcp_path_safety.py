@@ -157,33 +157,39 @@ def test_context_file_rejects_device_path_before_open(
         )
 
 
+def _context_failures_traversal(root: Path) -> object:
+    return tools.context_failures_request(workspace_root=root, log_dir="../logs")
+
+
+def _context_pack_traversal(root: Path) -> object:
+    return tools.context_pack_pointer_request(workspace_root=root, log_dir="../logs")
+
+
+def _events_summary_traversal(root: Path) -> object:
+    return tools.events_summary_request(workspace_root=root, events_dir="../events")
+
+
+def _attention_traversal(root: Path) -> object:
+    return tools.attention_request(workspace_root=root, target="../repository")
+
+
+def _docsync_config_traversal(root: Path) -> object:
+    return tools.docsync_check_request(workspace_root=root, config="../config.yml")
+
+
+def _docsync_trace_traversal(root: Path) -> object:
+    return tools.docsync_check_request(workspace_root=root, trace="../trace.json")
+
+
 @pytest.mark.parametrize(
     "request_factory",
     (
-        lambda root: tools.context_failures_request(
-            workspace_root=root,
-            log_dir="../logs",
-        ),
-        lambda root: tools.context_pack_pointer_request(
-            workspace_root=root,
-            log_dir="../logs",
-        ),
-        lambda root: tools.events_summary_request(
-            workspace_root=root,
-            events_dir="../events",
-        ),
-        lambda root: tools.attention_request(
-            workspace_root=root,
-            target="../repository",
-        ),
-        lambda root: tools.docsync_check_request(
-            workspace_root=root,
-            config="../config.yml",
-        ),
-        lambda root: tools.docsync_check_request(
-            workspace_root=root,
-            trace="../trace.json",
-        ),
+        _context_failures_traversal,
+        _context_pack_traversal,
+        _events_summary_traversal,
+        _attention_traversal,
+        _docsync_config_traversal,
+        _docsync_trace_traversal,
     ),
 )
 def test_every_mcp_filesystem_argument_rejects_traversal(
