@@ -12,12 +12,9 @@ expected_units = [
 ]
 expires = 2026-08-31
 allowed_paths = [
-  ".agent-maintainer/change-plans/**",
-  ".docsync/**",
-  ".github/**",
-  ".gitignore",
-  ".serena/**",
-  "AGENTS.md",
+  ".agent-maintainer/change-plans/**", ".docsync/**",
+  ".github/**", ".gitignore",
+  ".serena/**", "AGENTS.md",
   "CHANGELOG.md",
   "CODE_OF_CONDUCT.md",
   "CONTRIBUTING.md",

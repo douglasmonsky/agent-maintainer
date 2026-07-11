@@ -58,7 +58,7 @@ jobs:
           python -m pytest -m artifact_smoke tests/release/test_release_packaging.py -q
 
   verify:
-    name: repository verification
+    name: verify
     runs-on: ubuntu-latest
     env:
       PYTHONDONTWRITEBYTECODE: "1"

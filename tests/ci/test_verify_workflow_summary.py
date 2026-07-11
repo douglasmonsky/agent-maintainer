@@ -13,3 +13,4 @@ def test_verify_workflow_appends_pr_summary_to_step_summary() -> None:
     assert "Append verification summary" in workflow
     assert ".verify-logs/pr-summary.md" in workflow
     assert 'cat .verify-logs/pr-summary.md >> "$GITHUB_STEP_SUMMARY"' in workflow
+    assert "  verify:\n    name: verify\n" in workflow
