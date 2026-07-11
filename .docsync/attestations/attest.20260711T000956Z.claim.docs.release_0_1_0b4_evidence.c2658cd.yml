@@ -1,24 +1,23 @@
 version: 1
 attestations:
-- id: attest.20260710T213534Z.claim.docs.release_0_1_0b4_evidence.00adab6
+- id: attest.20260711T000956Z.claim.docs.release_0_1_0b4_evidence.c2658cd
   claim: claim.docs.release_0_1_0b4_evidence
   doc_object: docs.release_0_1_0b4.overview
   evidence:
   - evidence.release.publish_workflow
   - evidence.release.packaging_tests
-  reason: Exact-commit distribution manifests and verified-bundle installation strengthen
-    current release gates; the historical 0.1.0b4 release description remains accurate.
+  reason: packaging_test_matrix_strengthened
   reviewer: agent
-  reviewed_at: '2026-07-10T21:35:34Z'
+  reviewed_at: '2026-07-11T00:09:56Z'
   base: HEAD
-  head: 00adab6
+  head: c2658cd
   evidence_fingerprints:
     evidence.release.publish_workflow: sha256:8887e3d18f604cb53f4536f233ac16a5dddc32d9b50c0a254bd9e622e7b38163
-    evidence.release.packaging_tests: sha256:a2f08a00205cd7213eed8011e9f29a30b4c1b57e38c05099e0de9fa3145efdb5
+    evidence.release.packaging_tests: sha256:e7d1d5da5f4cd8d76c9f63faaf68bf32fe680af609ce7f651421e5deb77f012f
   evidence_anchor_fingerprints:
     evidence.release.publish_workflow:
     - sha256:6517ff9a60834e03780413c45ae82df0cdd41418df2c1c0a7f96e20159ce1119
     evidence.release.packaging_tests:
-    - sha256:cc17501ef1c3c072d4ba655a8b8df59a6534f31453bb8be0764c0c9d22ec4ca5
+    - sha256:80f482f6923d557d0efd237c3357c0866379a09abd45042c827f5dd0825cfea8
   expires_at: null
   statement: Reviewed changed evidence region. Documentation remains accurate.

@@ -10,6 +10,7 @@ allowed_paths = [
   ".docsync/trace.yml",
   ".github/CODEOWNERS",
   ".github/ISSUE_TEMPLATE/**",
+  ".github/workflows/verify.yml",
   ".serena/**",
   "AGENTS.md",
   "CHANGELOG.md",

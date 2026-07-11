@@ -71,10 +71,11 @@ python3 -m pytest -m release tests/release -q
 
 Release tests intentionally build wheel and sdist artifacts in a temporary
 directory, run `twine check`, install each declared extra in clean virtual
-environments without `--no-deps`, smoke console scripts from built artifacts,
-and check release-state drift such as version/changelog alignment, public
-metadata URLs, Trusted Publisher environment names, and existing release evidence
-when present.
+environments without `--no-deps`, and smoke every advertised console script
+from both built artifacts. The verify workflow repeats that artifact smoke under
+Python 3.11, 3.12, 3.13, and 3.14. Release-state checks also cover
+version/changelog alignment, public metadata URLs, Trusted Publisher environment
+names, and existing release evidence when present.
 
 The `publish` workflow does not trust these local runs as publish authorization.
 Its `release-evidence` job reruns full, CI, security, manual, and release checks
@@ -100,6 +101,8 @@ build job, then consumes only its verified `packages/` directory.
   `release evidence valid` before building or publishing.
 - [ ] Confirm Actionlint, workflow schema validation, and strict Zizmor pass for
   `verify.yml`, `deep-verify.yml`, and `publish.yml`.
+- [ ] Confirm the Python 3.11 through 3.14 compatibility matrix built and
+  installed both distribution formats and ran every advertised console script.
 - [ ] Confirm the `python-distributions` artifact contains `manifest.json` and
   only the manifest-listed wheel and sdist files under `packages/`.
 - [ ] Confirm every consumer matches the build job's
@@ -109,6 +112,7 @@ build job, then consumes only its verified `packages/` directory.
 - [ ] Install from TestPyPI in a clean environment.
 - [ ] Run `agent-maintainer --help`.
 - [ ] Run `archguard --help`.
+- [ ] Run `docsync --help`.
 - [ ] Run `agent-maintainer init --track core --target <tmp-repo>`.
 - [ ] If TestPyPI smoke passes, push the annotated tag, create the GitHub
   release from that tag, and publish the same version to PyPI.
@@ -130,9 +134,10 @@ build job, then consumes only its verified `packages/` directory.
 
 ## Smoke Test
 
-- [ ] Install built wheel in a clean virtual environment.
-- [ ] Run `agent-maintainer --help`.
-- [ ] Run `archguard --help`.
+- [ ] Install the built wheel and sdist into separate clean environments under
+  every supported Python version.
+- [ ] Run `agent-maintainer --help`, `archguard --help`, and `docsync --help`
+  from each artifact environment.
 - [ ] Run `agent-maintainer init --track core --target <tmp-repo>`.
 - [ ] Merge generated config into a minimal downstream `pyproject.toml`.
 - [ ] Run `agent-maintainer verify --profile precommit` in that

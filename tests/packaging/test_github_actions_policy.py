@@ -42,6 +42,20 @@ def test_verify_workflow_disables_python_bytecode_writes() -> None:
     assert 'PYTHONDONTWRITEBYTECODE: "1"' in workflow
 
 
+def test_python_compatibility_matrix_smokes_built_distributions() -> None:
+    """Every supported Python installs both artifacts and runs their scripts."""
+
+    workflow = VERIFY_WORKFLOW.read_text(encoding="utf-8")
+    normalized = " ".join(workflow.split())
+
+    assert 'python-version: ["3.11", "3.12", "3.13", "3.14"]' in workflow
+    assert 'AGENT_MAINTAINER_RUN_RELEASE_TESTS: "1"' in workflow
+    assert 'python -m pip install -c config/dev-lock.txt -e ".[core]" build twine' in normalized
+    assert (
+        "python -m pytest -m artifact_smoke tests/release/test_release_packaging.py -q"
+    ) in normalized
+
+
 def test_verify_workflow_installs_gitleaks_from_release_artifact() -> None:
     workflow = VERIFY_WORKFLOW.read_text(encoding="utf-8")
 

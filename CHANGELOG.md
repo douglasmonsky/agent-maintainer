@@ -76,6 +76,9 @@ the candidate passes the complete exact-commit release matrix.
 - Public documentation now distinguishes published release evidence from
   candidate intent, validates repository-local links, and provides a
   version-matched candidate guide and release index.
+- Python 3.11 through 3.14 compatibility CI now builds both distribution
+  formats, installs each into a clean environment, and runs every advertised
+  console script instead of relying on editable-install smoke alone.
 - Consumer-repository doctor and bootstrap flows now honor the requested root,
   linked-worktree metadata, and package-first execution instead of assuming the
   Agent Maintainer source repository.

@@ -23,6 +23,7 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONPATH: src
+      AGENT_MAINTAINER_RUN_RELEASE_TESTS: "1"
 
     steps:
       - name: Checkout
@@ -39,12 +40,13 @@ jobs:
       - name: Install compatibility dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[core]"
+          python -m pip install -c config/dev-lock.txt -e ".[core]" build twine
 
       - name: Smoke supported entrypoints
         run: |
           python -m agent_maintainer --help
           python -m archguard --help
+          python -m docsync --help
 
       - name: Run compatibility tests
         run: |
@@ -53,6 +55,7 @@ jobs:
             tests/packaging/test_package_metadata.py \
             tests/packaging/test_onboarding_smoke.py \
             -q
+          python -m pytest -m artifact_smoke tests/release/test_release_packaging.py -q
 
   verify:
     name: repository verification

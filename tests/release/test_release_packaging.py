@@ -7,6 +7,7 @@ import shutil
 import subprocess  # nosec B404
 import sys
 import tarfile
+import tomllib
 import venv
 import zipfile
 from pathlib import Path
@@ -27,6 +28,11 @@ SOURCE_METADATA = REPO_ROOT / "src" / "agent_maintainer.egg-info"
 BUILD_DIR = REPO_ROOT / "build"
 GIT_SHA_LENGTH = 40
 SYNTHETIC_RELEASE_SHA = "a" * GIT_SHA_LENGTH
+SCRIPT_HELP_MARKERS = {
+    "agent-maintainer": "python -m agent_maintainer verify --profile precommit",
+    "archguard": "tach-config",
+    "docsync": "Documentation traceability",
+}
 
 
 def run(command: list[str], *, cwd: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
@@ -66,6 +72,27 @@ def artifact_contains_license(path: Path) -> bool:
         return any(name.endswith("/LICENSE") for name in archive.getnames())
 
 
+def advertised_console_scripts() -> tuple[str, ...]:
+    """Return the console scripts advertised by package metadata."""
+
+    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
+        metadata = tomllib.load(handle)
+    scripts = metadata["project"]["scripts"]
+    assert isinstance(scripts, dict)
+    return tuple(sorted(str(name) for name in scripts))
+
+
+def smoke_console_scripts(python: Path) -> None:
+    """Run help for every advertised script from one artifact environment."""
+
+    expected_scripts = tuple(sorted(SCRIPT_HELP_MARKERS))
+    assert advertised_console_scripts() == expected_scripts
+    for script in expected_scripts:
+        result = run([str(python.parent / script), "--help"])
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert SCRIPT_HELP_MARKERS[script] in result.stdout
+
+
 # docsync:evidence.start evidence.release.packaging_tests
 @pytest.mark.release
 @release_only
@@ -92,11 +119,12 @@ def test_release_extra_dependency_graph_installs(tmp_path: Path, extra: str) -> 
 
 
 @pytest.mark.release
+@pytest.mark.artifact_smoke
 @release_only
-def test_release_builds_artifacts_and_installs_console_script(
+def test_release_builds_artifacts_and_installs_console_scripts(
     tmp_path: Path,
 ) -> None:
-    """Built wheel and sdist install cleanly and expose console script."""
+    """Built wheel and sdist install cleanly and expose every console script."""
     dist_dir = tmp_path / "dist"
     try:
         result = run(
@@ -159,23 +187,7 @@ def test_release_builds_artifacts_and_installs_console_script(
 
         result = run([str(python), "-m", "pip", "show", "agent-maintainer"])
         assert result.returncode == 0, result.stdout + result.stderr
-
-        result = run(
-            [
-                str(python.parent / "agent-maintainer"),
-                "--help",
-            ]
-        )
-        assert result.returncode == 0, result.stdout + result.stderr
-        assert "python -m agent_maintainer verify --profile precommit" in result.stdout
-        result = run(
-            [
-                str(python.parent / "archguard"),
-                "--help",
-            ]
-        )
-        assert result.returncode == 0, result.stdout + result.stderr
-    assert "tach-config" in result.stdout
+        smoke_console_scripts(python)
 
 
 # docsync:evidence.end evidence.release.packaging_tests

@@ -467,6 +467,7 @@ pythonpath = [".", "src"]
 testpaths = ["tests"]
 markers = [
   "release: release-only packaging checks that build artifacts and install extras",
+  "artifact_smoke: build wheel and sdist, then run every advertised console script",
 ]
 
 [tool.deptry]
