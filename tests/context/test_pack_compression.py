@@ -18,6 +18,7 @@ from agent_maintainer.context.pack.compression import (
     compress_supporting_context,
     headroom_fallback_message,
 )
+from tests.support.callbacks import constant_callback
 
 
 def test_context_pack_compresses_supporting_context_not_exact_facts(
@@ -37,7 +38,7 @@ def test_context_pack_compresses_supporting_context_not_exact_facts(
     monkeypatch.setattr(
         headroom_backend.importlib,
         "import_module",
-        lambda name: fake_module,
+        constant_callback(fake_module),
     )
 
     pack = build_context_pack(
@@ -75,7 +76,7 @@ def test_context_pack_headroom_failure_falls_back_when_optional(
     monkeypatch.setattr(
         headroom_backend.importlib,
         "import_module",
-        lambda name: fake_module,
+        constant_callback(fake_module),
     )
     monkeypatch.chdir(tmp_path)
 

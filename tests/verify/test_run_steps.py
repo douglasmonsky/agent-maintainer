@@ -13,6 +13,7 @@ from agent_maintainer.models import Check, CheckResult
 from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
 from agent_maintainer.verify import run_steps
 from agent_maintainer.verify.runtime_eventing import ProfileRuntimeEvents
+from tests.support.callbacks import constant_callback
 
 MAX_LINES = 20
 MAX_CHARS = 2000
@@ -102,8 +103,8 @@ def _config(tmp_path: Path) -> MaintainerConfig:
 
 def _stub_validation(monkeypatch: pytest.MonkeyPatch) -> None:
     """Disable unrelated layout and Git ref validation."""
-    monkeypatch.setattr(run_steps, "layout_failures", lambda _config, _profile: [])
-    monkeypatch.setattr(run_steps, "ref_failures", lambda *args, **kwargs: ())
+    monkeypatch.setattr(run_steps, "layout_failures", constant_callback([]))
+    monkeypatch.setattr(run_steps, "ref_failures", constant_callback(()))
 
 
 class FailingCheckRunner:

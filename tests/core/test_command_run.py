@@ -102,11 +102,12 @@ def test_process_tree_single_fallback(
     assert fake_process.killed is False
 
 
-def test_single_process_timeout_kills() -> None:
+def test_single_process_timeout_kills(monkeypatch: pytest.MonkeyPatch) -> None:
     """Single-process cleanup kills when graceful termination times out."""
 
     fake_process = FakeProcess(timeout_once=True)
-    command_run._terminate_single_process(fake_process)
+    monkeypatch.setattr(command_run.os, "name", "nt")
+    command_run.terminate_process_tree(fake_process)
     assert fake_process.terminated is True
     assert fake_process.killed is True
 
@@ -118,7 +119,7 @@ def test_posix_group_missing_process(
 
     fake_process = FakeProcess()
     monkeypatch.setattr(command_run.os, "killpg", raise_process_lookup)
-    command_run._terminate_posix_group(fake_process)
+    command_run.terminate_process_tree(fake_process)
     assert fake_process.wait_count == 0
 
 
@@ -129,7 +130,7 @@ def test_posix_group_permission_fallback(
 
     fake_process = FakeProcess()
     monkeypatch.setattr(command_run.os, "killpg", raise_permission_error)
-    command_run._terminate_posix_group(fake_process)
+    command_run.terminate_process_tree(fake_process)
 
     assert fake_process.terminated is True
 
@@ -143,7 +144,7 @@ def test_posix_process_group_kills_after_timeout(
     recorder = SignalRecorder()
     monkeypatch.setattr(command_run.os, "killpg", recorder)
 
-    command_run._terminate_posix_group(fake_process)
+    command_run.terminate_process_tree(fake_process)
 
     assert recorder.signals == [command_run.signal.SIGTERM, command_run.signal.SIGKILL]
 

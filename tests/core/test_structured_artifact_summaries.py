@@ -255,7 +255,7 @@ def test_pytest_summary_caps_failures_and_missing_coverage(
 def test_security_summaries_cap_and_ignore_invalid_payloads() -> None:
     """Security summaries cap long outputs and ignore malformed nested data."""
 
-    semgrep_payload = {
+    semgrep_payload: dict[str, object] = {
         "results": [
             {
                 "check_id": f"rule-{index}",
@@ -266,11 +266,11 @@ def test_security_summaries_cap_and_ignore_invalid_payloads() -> None:
             for index in range(structured_security.STRUCTURED_DIAGNOSTIC_LIMIT + 1)
         ]
     }
-    gitleaks_payload = [
+    gitleaks_payload: list[object] = [
         {"RuleID": f"rule-{index}", "File": "src/example.py"}
         for index in range(structured_security.STRUCTURED_DIAGNOSTIC_LIMIT + 1)
     ]
-    pip_audit_payload = {
+    pip_audit_payload: dict[str, object] = {
         "dependencies": [
             {"name": "bad", "vulns": {}},
             {
@@ -283,7 +283,7 @@ def test_security_summaries_cap_and_ignore_invalid_payloads() -> None:
             },
         ]
     }
-    osv_payload = {
+    osv_payload: dict[str, object] = {
         "results": [
             {"packages": {}},
             {

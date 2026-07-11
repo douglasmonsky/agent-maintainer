@@ -10,6 +10,7 @@ import pytest
 
 from agent_maintainer.checks import file_lengths as check_file_lengths
 from agent_maintainer.core.config import MaintainerConfig
+from tests.support.callbacks import constant_callback
 
 
 def test_file_length_helpers_find_eligible_python_files(tmp_path: Path) -> None:
@@ -30,7 +31,11 @@ def test_file_length_helpers_find_eligible_python_files(tmp_path: Path) -> None:
 
 
 def test_file_length_changed_only_uses_git_files(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(check_file_lengths, "git_files", lambda command: [Path("changed.py")])
+    monkeypatch.setattr(
+        check_file_lengths,
+        "git_files",
+        constant_callback([Path("changed.py")]),
+    )
 
     assert check_file_lengths.expand_paths([], changed_only=True) == [Path("changed.py")]
 
@@ -39,7 +44,7 @@ def test_file_length_git_files_handles_success_and_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     completed = subprocess.CompletedProcess(["git"], 0, stdout="a.py\nREADME.md\n", stderr="")
-    monkeypatch.setattr(check_file_lengths.subprocess, "run", lambda *args, **_kwargs: completed)
+    monkeypatch.setattr(check_file_lengths.subprocess, "run", constant_callback(completed))
 
     assert check_file_lengths.git_files(["git"]) == [Path("a.py")]
 

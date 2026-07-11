@@ -10,6 +10,7 @@ import pytest
 
 from agent_client_hooks import adapters, merge, templates
 from agent_maintainer.hooks import manager
+from tests.support.callbacks import constant_callback
 
 MANAGED_CODEX_POST_TOOL_USE_HOOKS = 2
 
@@ -250,10 +251,10 @@ def test_confirm_user_scope_accepts_only_explicit_yes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """User-scope confirmation requires an explicit yes answer."""
-    monkeypatch.setattr("builtins.input", lambda _prompt: "yes")
+    monkeypatch.setattr("builtins.input", constant_callback("yes"))
     assert manager.confirm_user_scope()
 
-    monkeypatch.setattr("builtins.input", lambda _prompt: "n")
+    monkeypatch.setattr("builtins.input", constant_callback("n"))
     assert not manager.confirm_user_scope()
 
 
@@ -264,7 +265,7 @@ def test_install_noops_when_no_plans(
 ) -> None:
     """Install reports a no-op when selected clients have no planned writes."""
 
-    monkeypatch.setattr(manager, "planned_writes", lambda *_args: ())
+    monkeypatch.setattr(manager, "planned_writes", constant_callback(()))
 
     status = manager.install_hooks(
         manager.InstallOptions(target=tmp_path, client=manager.CODEX_CLIENT),

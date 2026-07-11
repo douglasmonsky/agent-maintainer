@@ -11,9 +11,13 @@ import pytest
 from archguard import git_diff
 
 
+def _command_path(name: str) -> str:
+    return f"/bin/{name}"
+
+
 def test_git_name_only_command_uses_base_ref(monkeypatch: pytest.MonkeyPatch) -> None:
     """Build a base-ref git diff command."""
-    monkeypatch.setattr(git_diff.shutil, "which", lambda name: f"/bin/{name}")
+    monkeypatch.setattr(git_diff.shutil, "which", _command_path)
 
     assert git_diff.git_name_only_command("origin/main", staged=False) == [
         "/bin/git",
@@ -26,7 +30,7 @@ def test_git_name_only_command_uses_base_ref(monkeypatch: pytest.MonkeyPatch) ->
 
 def test_git_name_only_command_uses_cached_diff(monkeypatch: pytest.MonkeyPatch) -> None:
     """Build a staged git diff command."""
-    monkeypatch.setattr(git_diff.shutil, "which", lambda name: f"/bin/{name}")
+    monkeypatch.setattr(git_diff.shutil, "which", _command_path)
 
     assert git_diff.git_name_only_command("HEAD", staged=True) == [
         "/bin/git",
