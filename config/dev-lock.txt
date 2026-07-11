@@ -316,7 +316,7 @@ prettytable==3.18.0
     # via pip-licenses
 prompt-toolkit==3.0.52
     # via tach
-protobuf==6.33.6
+protobuf==7.35.1
     # via
     #   googleapis-common-protos
     #   opentelemetry-proto
