@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import cast
 
 from agent_maintainer.assess.models import RepoEvidence
+from agent_maintainer.core.structured_values import json_object
 
 DEFAULT_MAX_EVIDENCE_FILES = 5_000
 GIT_LIST_TIMEOUT_SECONDS = 10
@@ -169,8 +170,8 @@ def _has_agent_config(root: Path) -> bool:
         data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
     except tomllib.TOMLDecodeError:
         return False
-    tool = data.get("tool", {})
-    return isinstance(tool, dict) and isinstance(tool.get("agent_maintainer"), dict)
+    tool = json_object(data.get("tool"))
+    return tool is not None and json_object(tool.get("agent_maintainer")) is not None
 
 
 def _package_scripts(root: Path) -> tuple[str, ...]:

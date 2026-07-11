@@ -16,6 +16,7 @@ from agent_maintainer.assess.efficacy_models import (
     EfficacyMetric,
     EfficacyReport,
 )
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
 from agent_maintainer.runtime_events.read import (
     RuntimeEventReadResult,
     read_runtime_events,
@@ -183,15 +184,15 @@ def _first_failure_to_pass_ms(records: list[dict[str, Any]]) -> int | None:
     return None
 
 
-def _read_latest_manifest(log_dir: Path) -> dict[str, Any] | None:
+def _read_latest_manifest(log_dir: Path) -> dict[str, object] | None:
     manifest_path = _latest_manifest_path(log_dir)
     if manifest_path is None:
         return None
     try:
-        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        payload: object = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-    return payload if isinstance(payload, dict) else None
+    return json_object(payload)
 
 
 def _latest_manifest_path(log_dir: Path) -> Path | None:
@@ -202,18 +203,18 @@ def _latest_manifest_path(log_dir: Path) -> Path | None:
     return max(existing, key=lambda path: path.stat().st_mtime)
 
 
-def _failed_manifest_checks(manifest: dict[str, Any]) -> Iterable[dict[str, Any]]:
-    checks = manifest.get("checks")
-    if not isinstance(checks, list):
+def _failed_manifest_checks(manifest: dict[str, object]) -> Iterable[dict[str, object]]:
+    checks = json_array(manifest.get("checks"))
+    if checks is None:
         return ()
     return (
         check
-        for check in checks
-        if isinstance(check, dict) and str(check.get("status", "")).lower() in FAILED_STATUSES
+        for check in json_objects(checks)
+        if str(check.get("status", "")).lower() in FAILED_STATUSES
     )
 
 
-def _manifest_token_savings(checks: Iterable[dict[str, Any]]) -> int:
+def _manifest_token_savings(checks: Iterable[dict[str, object]]) -> int:
     raw_chars = sum(_positive_int(check.get("log_bytes")) for check in checks)
     bounded_chars = min(raw_chars, DEFAULT_CONTEXT_BUDGET)
     return max(raw_chars - bounded_chars, 0) // TOKEN_CHARS

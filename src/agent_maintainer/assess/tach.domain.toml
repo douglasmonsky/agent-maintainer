@@ -48,7 +48,7 @@ depends_on = []
 
 [[modules]]
 path = "debt_manifest"
-depends_on = []
+depends_on = ["//agent_maintainer.core.structured_values"]
 
 [[modules]]
 path = "debt_security"
@@ -58,6 +58,7 @@ depends_on = ["//agent_maintainer.config.schema", "models"]
 path = "efficacy"
 depends_on = [
   "//agent_context.failures",
+  "//agent_maintainer.core.structured_values",
   "//agent_maintainer.runtime_events.read",
   "efficacy_followthrough",
   "efficacy_models",
@@ -65,7 +66,10 @@ depends_on = [
 
 [[modules]]
 path = "efficacy_followthrough"
-depends_on = ["efficacy_models"]
+depends_on = [
+  "//agent_maintainer.core.structured_values",
+  "efficacy_models",
+]
 
 [[modules]]
 path = "efficacy_models"
@@ -77,7 +81,10 @@ depends_on = ["efficacy_models"]
 
 [[modules]]
 path = "evidence"
-depends_on = ["models"]
+depends_on = [
+  "//agent_maintainer.core.structured_values",
+  "models",
+]
 
 [[modules]]
 path = "file_baselines"
@@ -95,6 +102,7 @@ depends_on = []
 path = "repair_fact_coverage"
 depends_on = [
 "//agent_context.failures",
+"//agent_maintainer.core.structured_values",
 "repair_fact_coverage_models",
 "//agent_maintainer.context.pack.exact_facts",
 ]

@@ -182,12 +182,7 @@ def _event_records() -> list[dict[str, object]]:
             "event_name": "wait.registered",
             "command": "wait",
             "status": "foreground",
-            "attributes": {
-                "background": False,
-                "target_id": "legacy",
-                "target_kind": "github-pr",
-                "wait_id": "github-pr-legacy-example",
-            },
+            "attributes": [],
         },
         {
             "event_name": "wait.foreground_blocked",
@@ -238,6 +233,7 @@ def _write_manifest(path: Path, *, log_bytes: int) -> None:
         json.dumps(
             {
                 "checks": [
+                    None,
                     {
                         "name": "pyright",
                         "status": "failed",

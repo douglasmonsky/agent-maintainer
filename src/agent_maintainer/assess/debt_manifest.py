@@ -6,6 +6,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
+
 FAILED_CHECK_PENALTY = 16
 WARNING_CHECK_PENALTY = 6
 MAX_MANIFEST_CATEGORY_PENALTY = 32
@@ -39,27 +41,28 @@ def manifest_signals(log_dir: Path) -> ManifestSignals:
     if not path.exists():
         return ManifestSignals(present=False, malformed=False, checks=())
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload: object = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return ManifestSignals(present=True, malformed=True, checks=())
-    if not isinstance(payload, dict):
+    manifest = json_object(payload)
+    if manifest is None:
         return ManifestSignals(present=True, malformed=True, checks=())
     return ManifestSignals(
         present=True,
         malformed=False,
-        checks=manifest_checks(payload.get("checks")),
+        checks=manifest_checks(manifest.get("checks")),
     )
 
 
 def manifest_checks(value: object) -> tuple[ManifestCheck, ...]:
     """Return typed checks from raw manifest JSON."""
 
-    if not isinstance(value, list):
+    values = json_array(value)
+    if values is None:
         return ()
     checks: list[ManifestCheck] = []
-    for entry in value:
-        if isinstance(entry, dict):
-            checks.extend(_manifest_check(entry))
+    for entry in json_objects(values):
+        checks.extend(_manifest_check(entry))
     return tuple(checks)
 
 
@@ -114,7 +117,7 @@ def csv(values: tuple[str, ...]) -> str:
     return ", ".join(values) if values else "none"
 
 
-def _manifest_check(entry: dict[object, object]) -> tuple[ManifestCheck, ...]:
+def _manifest_check(entry: dict[str, object]) -> tuple[ManifestCheck, ...]:
     """Return one manifest check when fields are valid."""
 
     name = entry.get("name")
