@@ -35,10 +35,10 @@ guide and relevant split phase file. If the split roadmap appears missing or
 stale, restore the source document named `agent-maintainer-full-roadmap-blueprint.md`
 and split it back into `docs/roadmap/phases/` before continuing implementation.
 
-Agent Maintainer is in beta. The current major roadmap covers context-safe
-legacy ratchets, test intelligence, planned large-change support, and optional
-compression. Do not collapse it into one large PR. The blueprint requires one
-phase per PR unless the user explicitly changes that rule.
+Agent Maintainer is in beta. The active priorities are publishing the final
+`0.1.0b6` commit, proving retained value in external repositories, and paying
+down reviewed quality debt without weakening existing gates. Completed feature
+tracks remain below as recovery history, not as unstarted plans.
 
 ## Current Baseline
 
@@ -95,7 +95,7 @@ needed:
 - [DocSync, provider evidence, and runtime, phases 124-144](roadmap/archive/completed-phases-124-144-docsync-provider-runtime.md)
 - [Runtime context ROI, phases 145-148](roadmap/archive/completed-phases-145-148-runtime-context-roi.md)
 
-## Planned: Future-Call ROI Acceleration Track
+## Completed: Future-Call ROI Acceleration Track
 
 Agent Maintainer should convert local primitives into compounding leverage for future agent calls. This track prioritizes work by expected return on cost, quality, and speed: runtime-event intelligence, repair-fact coverage, surgical next actions, DocSync verifier integration, attention scoring, and a hermetic downstream task-broker incubator.
 Detailed scope: [`docs/roadmap/future-call-roi-acceleration.md`](roadmap/future-call-roi-acceleration.md)
@@ -119,7 +119,7 @@ Track work:
 - [x] Phase 163: Attention Ledger Performance Guards
 - [x] Phase 164: Agent Efficacy Metrics
 
-## Planned: TypeScript/React Provider Maturation
+## Completed: TypeScript/React Provider Maturation
 
 Return to polyglot work through the existing TypeScript/JavaScript provider
 track. Focus first on TypeScript and React repositories, not new ecosystems.
@@ -140,7 +140,7 @@ Track work:
 - [x] Phase 174: TypeScript Workspace Command Config
 - [x] Phase 175: Setup Advisor Workspace Command Example
 
-## Planned: Codex Wait And Rewake Hardening
+## Validation Pending: Codex Wait And Rewake Hardening
 
 This is separate from TypeScript/React provider maturation. The goal is to make
 known waits act like real suspension primitives: local watchers own pending
@@ -154,6 +154,35 @@ Track work:
 
 - [ ] Phase 176: Codex Terminal Rewake Hardening — implementation is complete;
       the explicitly gated real-turn smoke remains pending user authorization.
+
+## Active: External Proof And Strict-Typing Debt
+
+The next product milestone is external activation evidence, not another broad
+feature phase. Run a three-to-five-repository cohort covering at least 30 real
+coding-agent tasks, and measure activation time, initializer conflicts,
+false-positive review findings, repair iterations, context expansions, review
+cost, and four-week retained use.
+
+The strict-Pyright ratchet is reviewed but not clean. Its 2026-07-11 baseline is
+`1,265` diagnostics. Burn it down through typed boundaries and test doubles;
+do not lower strictness, raise allowances, or add broad suppressions.
+
+- [ ] Strict batch 1: reduce the baseline to at most `948` diagnostics (at
+      least 25% below `1,265`), starting with the highest-count files.
+- [ ] Strict batch 2: reduce the baseline to at most `632` diagnostics.
+- [ ] Strict completion: reach zero strict diagnostics and retire the baseline.
+- [ ] Reclassify top-level help and public docs into stable workflow, repair and
+      inspection, optional local intelligence, experimental integrations, and
+      operations. Keep basic quiet waits distinct from experimental rewake.
+- [ ] Guarantee changed, failed, exact-fact, and explicitly requested paths are
+      retained when attention-ledger sampling caps large repositories.
+- [ ] Validate attention schema version, file count, normalized paths, and
+      finite `0..1` scores; label context relevance as direct, inferred, or
+      background and omit background notes from tight hook output.
+- [ ] Add `agent_waits` to the internal-package current-state document and
+      secondary dependency-direction regression coverage.
+- [ ] Publish a pre-1.0 API-support policy naming supported commands and formats,
+      intended beta imports, and unstable internal top-level packages.
 
 ## Future Work
 
