@@ -65,7 +65,7 @@ release-check:
     PYTHON="$([ -x .venv/bin/python ] && printf '%s' .venv/bin/python || printf '%s' python3)"; AGENT_MAINTAINER_RUN_RELEASE_TESTS=1 "$PYTHON" -m pytest -m release tests/release -q
 
 refresh-dev-lock:
-    PYTHON="${PYTHON:-$([ -x .venv/bin/python ] && printf '%s' .venv/bin/python || printf '%s' python3)}"; case "$("$PYTHON" --version)" in "Python 3.13."*) ;; *) printf '%s\n' 'refresh-dev-lock requires Python 3.13' >&2; exit 1 ;; esac; "$PYTHON" -m piptools compile --allow-unsafe --resolver=backtracking --strip-extras --upgrade --output-file=config/dev-lock.txt config/dev-dependencies.txt pyproject.toml
+    PYTHON="${PYTHON:-$([ -x .venv/bin/python ] && printf '%s' .venv/bin/python || printf '%s' python3)}"; case "$("$PYTHON" --version)" in "Python 3.13."*) ;; *) printf '%s\n' 'refresh-dev-lock requires Python 3.13' >&2; exit 1 ;; esac; "$PYTHON" -m piptools compile --allow-unsafe --resolver=backtracking --strip-extras --upgrade --output-file=config/dev-lock.txt config/dev-dependencies.in pyproject.toml
 
 # Example for a flat package layout:
 verify-flat PACKAGE:

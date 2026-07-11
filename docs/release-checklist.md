@@ -36,7 +36,7 @@ discipline, not the normal local edit loop.
 - [ ] `CHANGELOG.md` has an entry for the version being published.
 - [ ] Changelog summarizes stabilization work since the previous beta, including
   known limitations.
-- [ ] `config/dev-dependencies.txt` and `config/dev-lock.txt` are in sync.
+- [ ] `config/dev-dependencies.in` and `config/dev-lock.txt` are in sync.
 - [ ] If files under `docs/assets/graphics/` changed, confirm the README still
   renders the static image assets clearly.
 - [ ] Release tag is annotated:

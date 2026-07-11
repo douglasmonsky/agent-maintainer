@@ -65,7 +65,8 @@ not as an unstructured shell failure.
 
 ## Dependency Lock
 
-`config/dev-dependencies.txt` is the human-edited dependency input. `config/dev-lock.txt` is generated and preferred by bootstrap and CI when present.
+`config/dev-dependencies.in` is this repository's human-edited pip-compile
+input. `config/dev-lock.txt` is generated and preferred by bootstrap and CI.
 
 Refresh the lock after changing dependency inputs:
 

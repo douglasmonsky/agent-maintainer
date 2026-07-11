@@ -108,9 +108,10 @@ the candidate passes the complete exact-commit release matrix.
 - Consumer-repository doctor and bootstrap flows now honor the requested root,
   linked-worktree metadata, and package-first execution instead of assuming the
   Agent Maintainer source repository.
-- Direct development tools are pinned in a human-owned input and compiled into
-  a provenance-annotated compatible graph. Dependabot groups direct patch and
-  minor updates instead of proposing isolated transitive-lock edits.
+- Direct development tools are pinned in a human-owned `.in` input and compiled
+  into a provenance-annotated compatible graph. Dependabot recognizes the
+  pip-compile input/lock pair and groups direct patch and minor updates instead
+  of proposing isolated transitive-lock edits.
 
 ### Fixed Since 0.1.0b5
 
