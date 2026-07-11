@@ -109,10 +109,18 @@ def test_git_changes_uses_numstat_parser(
 
 def test_current_branch_uses_ci_head(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     result = SimpleNamespace(stdout="")
-    monkeypatch.setattr(git_scope.subprocess, "run", lambda *_args, **_kwargs: result)
-    monkeypatch.setattr(git_scope, "getenv", {"GITHUB_ACTIONS": "true", "GITHUB_HEAD_REF": "x"}.get)
+
+    def fake_run(*_args: object, **_kwargs: object) -> SimpleNamespace:
+        return result
+
+    def empty_getenv(_key: str, default: str | None = None) -> str | None:
+        return default
+
+    ci_environment = {"GITHUB_ACTIONS": "true", "GITHUB_HEAD_REF": "x"}
+    monkeypatch.setattr(git_scope.subprocess, "run", fake_run)
+    monkeypatch.setattr(git_scope, "getenv", ci_environment.get)
     assert git_scope.current_branch(tmp_path) == "x"
-    monkeypatch.setattr(git_scope, "getenv", {}.get)
+    monkeypatch.setattr(git_scope, "getenv", empty_getenv)
     assert git_scope.current_branch(tmp_path) == ""
     result.stdout = "local"
     assert git_scope.current_branch(tmp_path) == "local"
