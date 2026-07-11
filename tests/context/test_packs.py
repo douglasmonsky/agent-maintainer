@@ -29,6 +29,8 @@ from agent_maintainer.context.pack import rendering as compatibility_rendering
 from agent_maintainer.context.pack.builder import (
     ContextPackRequest,
     build_context_pack,
+    payload_expansion_commands,
+    payload_omitted_counts,
     selected_log_names,
     write_context_pack,
 )
@@ -377,6 +379,14 @@ def test_context_pack_helpers_handle_defensive_branches() -> None:
     assert "Likely next action:\nInspect the first failed check summary." in pointer
     assert selected_log_names(ContextPackRequest(), ()) == ()
     assert target_commands({"top_targets": "invalid"}) == ()
+    assert target_commands({"top_targets": [None, {"first_command": "inspect"}]}) == ("inspect",)
+    assert payload_expansion_commands({"expansion_commands": [None, "inspect"]}) == [
+        "None",
+        "inspect",
+    ]
+    assert payload_omitted_counts({"omitted_counts": {"logs": 2, "bad": "value"}}) == {
+        "logs": 2,
+    }
     assert fact_pointer_lines("invalid", 1) == []
     assert command_pointer_lines("invalid", 1) == []
     assert command_pointer_lines([], 1) == [

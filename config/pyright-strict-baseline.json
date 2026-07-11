@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 37,
-    "reportUnknownArgumentType": 133,
+    "reportUnknownArgumentType": 128,
     "reportUnknownLambdaType": 135,
-    "reportUnknownMemberType": 15,
-    "reportUnknownVariableType": 47
+    "reportUnknownMemberType": 11,
+    "reportUnknownVariableType": 40
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 14 validated attention ledger and recursive signal payload boundaries; all 8 production diagnostics in agent_maintainer.attention were removed without suppressions or permissive types.",
+  "note": "Reviewed 2026-07-11 after strict burn-down batch 15 validated attention, command, omitted-count, ratchet, and exact-fact context-pack boundaries; all 16 targeted production diagnostics were removed without suppressions or permissive types.",
   "pairs": {
     "src/agent_maintainer/change_plan/parser.py": {
       "reportUnknownArgumentType": 1,
@@ -26,23 +26,6 @@
     },
     "src/agent_maintainer/context/cli.py": {
       "reportPrivateUsage": 7
-    },
-    "src/agent_maintainer/context/pack/attention.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownMemberType": 3,
-      "reportUnknownVariableType": 2
-    },
-    "src/agent_maintainer/context/pack/builder.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_maintainer/context/pack/exact_facts.py": {
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/context/pack/ratchet.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownMemberType": 1,
-      "reportUnknownVariableType": 1
     },
     "src/agent_maintainer/core/scaffold/planning.py": {
       "reportUnknownArgumentType": 2,
@@ -321,5 +304,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 367
+  "total_errors": 351
 }
