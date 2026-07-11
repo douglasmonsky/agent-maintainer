@@ -271,7 +271,10 @@ verifier, and staged verifier runs scan the staged diff through stdin. The
 manual `security` profile runs a full-history scan. Gitleaks reports are
 written under `.verify-logs/` and run with redaction.
 
-`config/dev-dependencies.txt` is the human-edited dependency input. `config/dev-lock.txt` is the pinned install and audit artifact when present; bootstrap and CI prefer it automatically.
+`config/dev-dependencies.in` is this repository's human-edited pip-compile
+input. `config/dev-lock.txt` is the pinned install and audit artifact; bootstrap
+and CI prefer it automatically. Generated consumer projects may still use the
+standalone `config/dev-dependencies.txt` bootstrap input.
 
 ## GitHub Actions policy
 
