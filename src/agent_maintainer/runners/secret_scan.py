@@ -31,8 +31,7 @@ def main(argv: list[str]) -> int:
     """Run configured secret scanner and return its exit code."""
     args = parse_args(argv)
     if args.backend not in SUPPORTED_SECRET_SCANNERS:
-        supported = ", ".join(sorted(SUPPORTED_SECRET_SCANNERS))
-        print(f"Unsupported secret scanner backend. Supported: {supported}.")
+        print("Unsupported secret scanner backend. Supported: gitleaks.")
         return 1
     if args.backend == GITLEAKS_SCANNER:
         return run_gitleaks(args)
