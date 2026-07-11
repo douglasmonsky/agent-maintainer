@@ -1,9 +1,11 @@
 # Critical Stabilization Roadmap
 
-- Status: local exact-commit verification complete; external publication pending
+- Status: implementation merged through protected PR #345; external publication pending
 - Target: release-ready `0.1.0b6`
 - Audit baseline: `b4c0505bdcc6bdfd7b4cd2cb65c52095c83ea862`
 - Started: 2026-07-09
+- Integration merge: `c6f668d4cb836f021f97b8fb55d0d270d3f6a44f`
+- Final hosted verification: `29146029341` (required `verify` plus Python 3.11–3.14)
 
 ## Decision
 

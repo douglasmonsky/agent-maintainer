@@ -70,18 +70,17 @@ Current pre-case-study decision:
 - [x] Pre-case-study hardening complete; measured proof work promoted to
       Phase 89.
 
-## Active: Critical Stabilization
+## Completed: Critical Stabilization
 
-Feature-track work is paused while the repository closes the release-blocking
-findings from the 2026-07-09 deep audit. The decision-complete implementation
-and release-readiness contract is:
+The release-blocking findings from the 2026-07-09 deep audit were implemented,
+verified, and merged through protected PR #345. The decision-complete
+implementation and release-readiness contract is:
 
 [`docs/roadmap/critical-stabilization.md`](roadmap/critical-stabilization.md).
 
-This stabilization program explicitly supersedes the normal one-phase-per-PR
-rule for its dedicated integration branch. It still requires focused commits,
-tests with each behavior change, and the full verification matrix before the
-program can be marked complete.
+The program used focused commits on its dedicated integration branch and passed
+the required local and hosted verification. External `0.1.0b6` publication
+remains tracked by the candidate-release checkbox above.
 
 ## Completed Phase Archive
 

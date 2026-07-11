@@ -1,7 +1,7 @@
 +++
 id = "deep-audit-integration-series"
 kind = "integration-branch-series"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 integration_branch = "codex/deep-release-evidence"
 target_branch = "main"
