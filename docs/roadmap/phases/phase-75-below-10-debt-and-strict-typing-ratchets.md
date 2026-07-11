@@ -78,3 +78,12 @@ mutation/test debt, and split only evidence-backed near-limit modules.
 - Changing public profile names.
 - External case studies.
 - Headroom integration.
+
+## Completion Follow-Up (2026-07-11)
+
+The dogfood repository subsequently eliminated all strict-Pyright debt: the
+configured strict scope now reports zero diagnostics across 740 files. Ordinary
+Pyright is therefore promoted to `strict`, the repository-specific migration
+ratchet is disabled, and its zero-error baseline artifact is removed. The
+disabled-by-default per-file/per-rule ratchet remains supported for downstream
+repositories that still need an incremental migration path.

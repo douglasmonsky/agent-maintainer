@@ -8,9 +8,23 @@ import pytest
 
 from agent_maintainer.config import loader as maintainer_config_loader
 from agent_maintainer.core.config import MaintainerConfig
+from tests.support.paths import REPO_ROOT
 
 CONFIG_PYRIGHT_STRICT_MAX_ERRORS = 9
 ENV_PYRIGHT_STRICT_MAX_ERRORS = 8
+
+
+def test_repository_uses_strict_pyright_without_migration_baseline() -> None:
+    """Dogfood policy uses ordinary strict checking after migration reaches zero."""
+
+    loaded = maintainer_config_loader.apply_pyproject(
+        MaintainerConfig(),
+        maintainer_config_loader.read_pyproject(REPO_ROOT / "pyproject.toml"),
+    )
+
+    assert loaded.pyright_type_checking_mode == "strict"
+    assert loaded.pyright_strict_ratchet_enabled is False
+    assert not (REPO_ROOT / "config" / "pyright-strict-baseline.json").exists()
 
 
 def test_pyright_strict_ratchet_config_loads(tmp_path: Path) -> None:
