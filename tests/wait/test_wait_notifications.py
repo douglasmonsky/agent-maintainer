@@ -53,12 +53,12 @@ def test_concurrent_terminal_claimers_produce_one_winner(tmp_path: Path) -> None
     record = ready_wait(registry, tmp_path)
     barrier = Barrier(2)
 
-    def claim() -> WaitRecord | None:
+    def claim(_index: int) -> WaitRecord | None:
         barrier.wait()
         return claim_terminal_notification(registry, record.wait_id, now=NOW)
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        results = tuple(executor.map(lambda _index: claim(), range(2)))
+        results = tuple(executor.map(claim, range(2)))
 
     assert sum(result is not None for result in results) == 1
 
@@ -70,12 +70,12 @@ def test_terminal_observation_can_be_claimed_once(tmp_path: Path) -> None:
     record = ready_wait(registry, tmp_path)
     barrier = Barrier(2)
 
-    def claim() -> WaitRecord | None:
+    def claim(_index: int) -> WaitRecord | None:
         barrier.wait()
         return claim_terminal_observation(registry, record.wait_id, now=NOW)
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        results = tuple(executor.map(lambda _index: claim(), range(2)))
+        results = tuple(executor.map(claim, range(2)))
 
     assert sum(result is not None for result in results) == 1
     persisted = registry.read(record.wait_id)
@@ -197,11 +197,11 @@ def test_parallel_stale_repairs_report_one_failure(
 
     monkeypatch.setattr(notifications_module, "wait_records", synchronized_records)
 
-    def repair() -> tuple[WaitRecord, ...]:
+    def repair(_index: int) -> tuple[WaitRecord, ...]:
         return repair_stale_notifications(registry, lease_seconds=60, now=LATER)
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        repaired = tuple(executor.map(lambda _index: repair(), range(2)))
+        repaired = tuple(executor.map(repair, range(2)))
 
     assert sum(len(records) for records in repaired) == 1
     assert registry.read(record.wait_id).status == WAIT_STATUS_NOTIFY_FAILED

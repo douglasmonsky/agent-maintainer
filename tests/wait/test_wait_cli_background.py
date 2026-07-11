@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from functools import partial
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,7 @@ from agent_maintainer.wait.registry import (
     RegisterGitHubPrWait,
     RegisterGitHubRunWait,
     RegisterVerifierWait,
+    WaitRecord,
     WaitRegistry,
 )
 from agent_maintainer.wait.sweeper import DetachedWatcher, SweepSummary, sweep_once
@@ -129,18 +131,7 @@ def test_register_cli_can_start_watcher(
 
     calls: list[tuple[Path, str]] = []
     sink = InMemoryRuntimeEventSink()
-
-    monkeypatch.setattr(
-        WaitRuntimeEvents,
-        "create",
-        classmethod(
-            lambda _cls, *, target_kind, target_id: WaitRuntimeEvents(
-                sink=sink,
-                target_kind=target_kind,
-                target_id=target_id,
-            ),
-        ),
-    )
+    monkeypatch.setattr(WaitRuntimeEvents, "create", partial(WaitRuntimeEvents, sink=sink))
 
     def start_watcher(root: Path, wait_id: str) -> DetachedWatcher:
         calls.append((root, wait_id))
@@ -192,11 +183,10 @@ def test_sweep_once_cli_prints_summary(
 ) -> None:
     """Wait sweep once CLI renders compact summary."""
 
-    monkeypatch.setattr(
-        cli,
-        "sweep_once",
-        lambda _registry: SweepSummary(checked=1, updated=1, pending=0, ready=1),
-    )
+    def sweep_summary(_registry: WaitRegistry) -> SweepSummary:
+        return SweepSummary(checked=1, updated=1, pending=0, ready=1)
+
+    monkeypatch.setattr(cli, "sweep_once", sweep_summary)
 
     status = cli.main(["sweep", "--once", "--root", str(tmp_path)])
 
@@ -318,7 +308,11 @@ def test_sweep_watch_cli_prints_resume(
             ),
         ),
     )
-    monkeypatch.setattr(cli, "watch_wait", lambda _registry, _wait_id: completed)
+
+    def completed_watch(_registry: WaitRegistry, _wait_id: str) -> WaitRecord:
+        return completed
+
+    monkeypatch.setattr(cli, "watch_wait", completed_watch)
 
     status = cli.main(["sweep", "--watch", record.wait_id, "--root", str(tmp_path)])
 

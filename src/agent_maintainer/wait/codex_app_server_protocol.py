@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, cast
 
 APP_SERVER_COMPLETED_METHODS: Final = frozenset(
     ("turn/completed", "turn.completed"),
@@ -67,10 +67,10 @@ def parse_app_server_line(line: str) -> JsonRpcResponse | None:
         return None
     error = payload.get("error")
     if isinstance(error, Mapping):
-        message = str(error.get("message") or "Codex app-server error")
+        message = str(cast(Mapping[str, object], error).get("message") or "Codex app-server error")
         return JsonRpcResponse(request_id, error=message)
     result = payload.get("result")
-    mapped_result = result if isinstance(result, Mapping) else None
+    mapped_result = cast(Mapping[str, object], result) if isinstance(result, Mapping) else None
     return JsonRpcResponse(request_id, result=mapped_result)
 
 
@@ -101,7 +101,7 @@ def _app_server_initialize_messages() -> tuple[JsonMessage, ...]:
 
 def _json_object(line: str) -> dict[str, object]:
     try:
-        payload = json.loads(line)
+        payload: object = json.loads(line)
     except json.JSONDecodeError:
         return {}
-    return payload if isinstance(payload, dict) else {}
+    return cast(dict[str, object], payload) if isinstance(payload, dict) else {}

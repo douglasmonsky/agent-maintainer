@@ -12,10 +12,10 @@ from agent_waits.record_lock import wait_record_lock
 from agent_waits.registry import (
     WaitRecord,
     WaitRegistry,
-    _parse_timestamp,
-    _timestamp,
-    _write_record,
+    format_timestamp,
+    parse_timestamp,
     wait_records,
+    write_record,
 )
 
 WATCHER_STRATEGY_KEY: Final = "watcher_strategy"
@@ -74,11 +74,11 @@ def mark_watcher_started(
 ) -> WaitRecord:
     """Persist watcher start facts without commands, environment, or payloads."""
 
-    timestamp = _timestamp(now)
+    started_at = format_timestamp(now)
     updates: dict[str, object] = {
         WATCHER_STRATEGY_KEY: strategy,
-        WATCHER_STARTED_AT_KEY: timestamp,
-        WATCHER_LAST_POLL_AT_KEY: timestamp,
+        WATCHER_STARTED_AT_KEY: started_at,
+        WATCHER_LAST_POLL_AT_KEY: started_at,
     }
     if pid is not None:
         updates[WATCHER_PID_KEY] = pid
@@ -102,7 +102,7 @@ def mark_watcher_poll(
     return _update_metadata(
         registry,
         wait_id,
-        _MetadataPatch({WATCHER_LAST_POLL_AT_KEY: _timestamp(now)}),
+        _MetadataPatch({WATCHER_LAST_POLL_AT_KEY: format_timestamp(now)}),
         now=now,
     )
 
@@ -143,7 +143,7 @@ def watcher_repair_eligible(
         reference = state.repair_claimed_at or record.updated_at
     else:
         reference = state.last_poll_at or state.started_at or record.created_at
-    age = (_parse_timestamp(_timestamp(now)) - _parse_timestamp(reference)).total_seconds()
+    age = (parse_timestamp(format_timestamp(now)) - parse_timestamp(reference)).total_seconds()
     return 0 <= stale_after_seconds <= age
 
 
@@ -166,13 +166,13 @@ def claim_watcher_repair(
             now=now,
         ):
             return None
-        timestamp = _timestamp(now)
+        claimed_at = format_timestamp(now)
         metadata = dict(current.metadata or {})
         metadata[WATCHER_STRATEGY_KEY] = WATCHER_REPAIRING
-        metadata[WATCHER_REPAIR_CLAIMED_AT_KEY] = timestamp
+        metadata[WATCHER_REPAIR_CLAIMED_AT_KEY] = claimed_at
         metadata.pop(WATCHER_PID_KEY, None)
-        claimed = replace(current, updated_at=timestamp, metadata=metadata)
-        _write_record(registry.waits_dir, claimed)
+        claimed = replace(current, updated_at=claimed_at, metadata=metadata)
+        write_record(registry.waits_dir, claimed)
         return claimed
 
 
@@ -206,8 +206,8 @@ def _update_metadata(
         if patch.clear_failure:
             metadata.pop(WATCHER_ERROR_KEY, None)
             metadata.pop(WATCHER_REPAIR_CLAIMED_AT_KEY, None)
-        updated = replace(current, updated_at=_timestamp(now), metadata=metadata)
-        _write_record(registry.waits_dir, updated)
+        updated = replace(current, updated_at=format_timestamp(now), metadata=metadata)
+        write_record(registry.waits_dir, updated)
         return updated
 
 

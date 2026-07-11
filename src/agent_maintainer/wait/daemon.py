@@ -66,7 +66,7 @@ def run_daemon(
                 lease_seconds=DEFAULT_NOTIFICATION_LEASE_SECONDS,
             ),
         )
-        resumed = _resume_ready_with_envelopes(registry, root, current)
+        resumed = resume_ready_with_envelopes(registry, root, current)
         records = wait_registry.wait_records(registry)
         if summary.updated or resumed or _has_active_work(root, records):
             last_activity = active_hooks.monotonic()
@@ -75,7 +75,7 @@ def run_daemon(
     return 0
 
 
-def _resume_ready_with_envelopes(
+def resume_ready_with_envelopes(
     registry: wait_registry.WaitRegistry,
     root: Path,
     env: Mapping[str, str],

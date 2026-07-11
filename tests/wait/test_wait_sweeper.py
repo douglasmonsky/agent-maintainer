@@ -5,6 +5,7 @@ from __future__ import annotations
 import subprocess
 import time
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 
 import pytest
@@ -69,10 +70,7 @@ def test_terminal_observed_event_is_claimed_once(
     """Repeated sweepers cannot duplicate one durable terminal event."""
 
     sink = InMemoryRuntimeEventSink()
-    monkeypatch.setattr(
-        "agent_maintainer.wait.sweeper.WaitRuntimeEvents.create",
-        lambda **kwargs: WaitRuntimeEvents(sink=sink, **kwargs),
-    )
+    monkeypatch.setattr(WaitRuntimeEvents, "create", partial(WaitRuntimeEvents, sink=sink))
     registry = WaitRegistry(tmp_path)
     register_wait(registry, tmp_path)
 

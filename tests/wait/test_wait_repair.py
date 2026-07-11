@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 
 import pytest
@@ -188,17 +189,7 @@ def test_repair_fails_closed_abandoned_notification_claim(
     """The repair command also closes stale notifying leases without retrying."""
 
     sink = InMemoryRuntimeEventSink()
-    monkeypatch.setattr(
-        WaitRuntimeEvents,
-        "create",
-        classmethod(
-            lambda _cls, *, target_kind, target_id: WaitRuntimeEvents(
-                sink=sink,
-                target_kind=target_kind,
-                target_id=target_id,
-            ),
-        ),
-    )
+    monkeypatch.setattr(WaitRuntimeEvents, "create", partial(WaitRuntimeEvents, sink=sink))
     registry = WaitRegistry(tmp_path)
     pending = pending_wait(registry, tmp_path)
     ready = registry.complete(
@@ -277,7 +268,11 @@ def test_repair_cli_renders_json(
         failed=0,
         dry_run=False,
     )
-    monkeypatch.setattr(wait_repair, "repair_waits", lambda *_args, **_kwargs: expected)
+
+    def repair_waits_stub(_root: Path, **_kwargs: object) -> wait_repair.RepairSummary:
+        return expected
+
+    monkeypatch.setattr(wait_repair, "repair_waits", repair_waits_stub)
 
     status = cli.main(["repair", "--format", "json", "--stale-after", "60"])
 

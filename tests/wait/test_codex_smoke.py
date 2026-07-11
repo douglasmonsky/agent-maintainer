@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 
 import pytest
 
@@ -24,7 +23,7 @@ def test_read_only_smoke_probes_thread_without_leaking_context() -> None:
         env={CODEX_THREAD_ID_ENV: THREAD_ID, CODEX_BIN_ENV: CODEX_BIN},
         start_turn=False,
         timeout_seconds=7,
-        client_factory=lambda **kwargs: client.capture_options(kwargs),
+        client_factory=client.capture_options,
     )
 
     assert result.exit_code == 0
@@ -61,7 +60,7 @@ def test_turn_smoke_uses_fixed_prompt_after_explicit_gate() -> None:
             codex_smoke.CODEX_SMOKE_TURN_ENV: "1",
         },
         start_turn=True,
-        client_factory=lambda **kwargs: client.capture_options(kwargs),
+        client_factory=client.capture_options,
     )
 
     assert result.exit_code == 0
@@ -78,7 +77,7 @@ def test_smoke_redacts_backend_exception_details() -> None:
     result = codex_smoke.run_codex_smoke(
         env={CODEX_THREAD_ID_ENV: THREAD_ID, CODEX_BIN_ENV: CODEX_BIN},
         start_turn=False,
-        client_factory=lambda **_kwargs: FailingSmokeClient(),
+        client_factory=failing_client_factory,
     )
 
     assert result.exit_code == 1
@@ -92,12 +91,8 @@ def test_codex_smoke_cli_renders_json(
 ) -> None:
     """Wait CLI exposes the smoke harness without adding durable state."""
 
-    expected = codex_smoke.CodexSmokeResult(
-        status="PASS",
-        mode=codex_smoke.SMOKE_MODE_READ_ONLY,
-        detail="Read-only Codex app-server probe passed.",
-    )
-    monkeypatch.setattr(codex_smoke, "run_codex_smoke", lambda **_kwargs: expected)
+    expected = successful_smoke_result()
+    monkeypatch.setattr(codex_smoke, "run_codex_smoke", successful_smoke_result)
 
     status = cli.main(["codex-smoke", "--format", "json", "--timeout-seconds", "9"])
 
@@ -119,10 +114,10 @@ class FakeSmokeClient:
     def __init__(self) -> None:
         self.probed: list[str] = []
         self.resumed: list[tuple[str, str]] = []
-        self.options: dict[str, Any] = {}
+        self.options: dict[str, object] = {}
 
-    def capture_options(self, options: dict[str, Any]) -> FakeSmokeClient:
-        self.options = options
+    def capture_options(self, *, codex_bin: str, timeout_seconds: float) -> FakeSmokeClient:
+        self.options = {"codex_bin": codex_bin, "timeout_seconds": timeout_seconds}
         return self
 
     def probe_thread(self, thread_id: str) -> None:
@@ -144,3 +139,15 @@ class FailingSmokeClient:
 
 def unexpected_client_factory(**_kwargs: object) -> FakeSmokeClient:
     raise AssertionError("client must not be created before the spend gate")
+
+
+def failing_client_factory(**_kwargs: object) -> FailingSmokeClient:
+    return FailingSmokeClient()
+
+
+def successful_smoke_result(**_kwargs: object) -> codex_smoke.CodexSmokeResult:
+    return codex_smoke.CodexSmokeResult(
+        status="PASS",
+        mode=codex_smoke.SMOKE_MODE_READ_ONLY,
+        detail="Read-only Codex app-server probe passed.",
+    )

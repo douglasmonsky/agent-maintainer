@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
+from typing import cast
 
 from agent_client_hooks import merge as hook_merge
 from agent_client_hooks import templates as hook_templates
@@ -135,6 +136,8 @@ def _merge_claude_text(current: str, starter: str) -> str | None:
     managed = json.loads(starter).get("hooks", {})
     if not isinstance(hooks, dict) or not isinstance(managed, dict):
         return None
+    hooks = cast(dict[object, object], hooks)
+    managed = cast(dict[object, object], managed)
     for event, entries in managed.items():
         hooks[event] = hook_merge.merge_claude_event(hooks.get(event), entries)
     rendered = json.dumps(payload, indent=2, sort_keys=True)
@@ -161,6 +164,8 @@ def _merge_package_json(current: str, starter: str) -> str | None:
     starter_dependencies = starter_payload.get("devDependencies", {})
     if not isinstance(current_dependencies, dict) or not isinstance(starter_dependencies, dict):
         return None
+    current_dependencies = cast(dict[object, object], current_dependencies)
+    starter_dependencies = cast(dict[object, object], starter_dependencies)
     if _dependency_version_conflict(
         current_dependencies, starter_dependencies
     ) or not _merge_package_engines(payload, starter_payload):
@@ -184,6 +189,8 @@ def _merge_package_engines(
     current_engines = payload.setdefault("engines", {})
     if not isinstance(starter_engines, dict) or not isinstance(current_engines, dict):
         return False
+    starter_engines = cast(dict[object, object], starter_engines)
+    current_engines = cast(dict[object, object], current_engines)
     if _dependency_version_conflict(current_engines, starter_engines):
         return False
     current_engines.update(starter_engines)

@@ -411,6 +411,9 @@ def _write_record(waits_dir: Path, record: WaitRecord) -> None:
     tmp_path.replace(path)
 
 
+format_timestamp, parse_timestamp, write_record = _timestamp, _parse_timestamp, _write_record
+
+
 def _target_id(payload: dict[str, object]) -> str:
     target = payload.get("target_id", payload.get("pr_number"))
     if target is None:

@@ -11,6 +11,7 @@ import tomllib
 import venv
 import zipfile
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -76,10 +77,15 @@ def advertised_console_scripts() -> tuple[str, ...]:
     """Return the console scripts advertised by package metadata."""
 
     with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
-        metadata = tomllib.load(handle)
-    scripts = metadata["project"]["scripts"]
-    assert isinstance(scripts, dict)
-    return tuple(sorted(str(name) for name in scripts))
+        metadata = _object_mapping(tomllib.load(handle))
+    project = _object_mapping(metadata.get("project"))
+    scripts = _object_mapping(project.get("scripts"))
+    return tuple(sorted(scripts))
+
+
+def _object_mapping(value: object) -> dict[str, object]:
+    assert isinstance(value, dict)
+    return cast(dict[str, object], value)
 
 
 def smoke_console_scripts(python: Path) -> None:

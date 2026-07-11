@@ -12,10 +12,10 @@ from agent_waits.record_lock import wait_record_lock
 from agent_waits.registry import (
     WaitRecord,
     WaitRegistry,
-    _parse_timestamp,
-    _timestamp,
-    _write_record,
+    format_timestamp,
+    parse_timestamp,
     wait_records,
+    write_record,
 )
 
 NOTIFICATION_OUTCOME_FAILED: Final = "failed"
@@ -46,16 +46,16 @@ def claim_terminal_notification(
         current = registry.read(wait_id)
         if not current.notification_ready:
             return None
-        timestamp = _timestamp(now)
+        claimed_at = format_timestamp(now)
         metadata = dict(current.metadata or {})
-        metadata["notification_claimed_at"] = timestamp
+        metadata["notification_claimed_at"] = claimed_at
         claimed = replace(
             current,
             status=wait_constants.WAIT_STATUS_NOTIFYING,
-            updated_at=timestamp,
+            updated_at=claimed_at,
             metadata=metadata,
         )
-        _write_record(registry.waits_dir, claimed)
+        write_record(registry.waits_dir, claimed)
         return claimed
 
 
@@ -140,9 +140,9 @@ def _claim_observation(
         metadata = dict(current.metadata or {})
         if not eligible(current) or metadata_key in metadata:
             return None
-        metadata[metadata_key] = _timestamp(now)
+        metadata[metadata_key] = format_timestamp(now)
         observed = replace(current, metadata=metadata)
-        _write_record(registry.waits_dir, observed)
+        write_record(registry.waits_dir, observed)
         return observed
 
 
@@ -166,7 +166,7 @@ def finish_terminal_notification(
             failure_reason=failure_reason,
             now=now,
         )
-        _write_record(registry.waits_dir, finished)
+        write_record(registry.waits_dir, finished)
         return finished
 
 
@@ -201,7 +201,7 @@ def repair_stale_notifications(
                 failure_reason=FAILURE_LEASE_EXPIRED,
                 now=now,
             )
-            _write_record(registry.waits_dir, finished)
+            write_record(registry.waits_dir, finished)
             repaired.append(finished)
     return tuple(repaired)
 
@@ -213,9 +213,9 @@ def _finished_notification(
     failure_reason: str,
     now: datetime | None,
 ) -> WaitRecord:
-    timestamp = _timestamp(now)
+    finished_at = format_timestamp(now)
     metadata = dict(current.metadata or {})
-    metadata["notification_finished_at"] = timestamp
+    metadata["notification_finished_at"] = finished_at
     if outcome == NOTIFICATION_OUTCOME_RESUMED:
         status = wait_constants.WAIT_STATUS_RESUMED
         metadata.pop("notification_failure_reason", None)
@@ -225,7 +225,7 @@ def _finished_notification(
     return replace(
         current,
         status=status,
-        updated_at=timestamp,
+        updated_at=finished_at,
         metadata=metadata,
     )
 
@@ -238,8 +238,8 @@ def _stale_notification(
 ) -> bool:
     if record.status != wait_constants.WAIT_STATUS_NOTIFYING:
         return False
-    current_time = _parse_timestamp(_timestamp(now))
-    age = (current_time - _parse_timestamp(record.updated_at)).total_seconds()
+    current_time = parse_timestamp(format_timestamp(now))
+    age = (current_time - parse_timestamp(record.updated_at)).total_seconds()
     return age >= lease_seconds
 
 

@@ -10,6 +10,7 @@ import sys
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -301,18 +302,26 @@ def _assert_package_json(path: Path) -> None:
 
 
 def _hook_commands(entries: object) -> set[str]:
-    assert isinstance(entries, list)
     commands: set[str] = set()
-    for entry in entries:
-        assert isinstance(entry, dict)
-        hooks = entry.get("hooks")
-        assert isinstance(hooks, list)
-        for hook in hooks:
-            assert isinstance(hook, dict)
-            command = hook.get("command")
+    for entry in _object_list(entries):
+        hooks = _object_mapping(entry).get("hooks")
+        for hook in _object_list(hooks):
+            command = _object_mapping(hook).get("command")
             assert isinstance(command, str)
             commands.add(command)
     return commands
+
+
+def _object_mapping(value: object) -> dict[str, object]:
+    assert isinstance(value, dict)
+    mapping = cast(dict[object, object], value)
+    assert all(isinstance(key, str) for key in mapping)
+    return cast(dict[str, object], mapping)
+
+
+def _object_list(value: object) -> list[object]:
+    assert isinstance(value, list)
+    return cast(list[object], value)
 
 
 def _run_application_tests(repository: Path, case: ExistingApplicationCase) -> None:

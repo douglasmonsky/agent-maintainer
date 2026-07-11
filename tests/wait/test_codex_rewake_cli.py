@@ -42,7 +42,11 @@ def test_sweep_watch_cli_prints_rewake(
             ),
         ),
     )
-    monkeypatch.setattr(cli, "watch_wait", lambda _registry, _wait_id: completed)
+
+    def completed_watch(_registry: WaitRegistry, _wait_id: str) -> WaitRecord:
+        return completed
+
+    monkeypatch.setattr(cli, "watch_wait", completed_watch)
     monkeypatch.setattr(cli, "CodexRewakeBackend", SuccessfulRewakeBackend)
 
     status = cli.main(["sweep", "--watch", record.wait_id, "--root", str(tmp_path)])
@@ -75,13 +79,16 @@ def test_sweep_watch_requires_durable_resumed_state(
         ),
     )
     resumed_events: list[str] = []
-    monkeypatch.setattr(cli, "watch_wait", lambda _registry, _wait_id: completed)
+
+    def completed_watch(_registry: WaitRegistry, _wait_id: str) -> WaitRecord:
+        return completed
+
+    def capture_resumed(item: WaitRecord) -> None:
+        resumed_events.append(item.wait_id)
+
+    monkeypatch.setattr(cli, "watch_wait", completed_watch)
     monkeypatch.setattr(cli, "CodexRewakeBackend", UnpersistedRewakeBackend)
-    monkeypatch.setattr(
-        cli.cli_background,
-        "emit_resumed",
-        lambda item: resumed_events.append(item.wait_id),
-    )
+    monkeypatch.setattr(cli.cli_background, "emit_resumed", capture_resumed)
 
     status = cli.main(["sweep", "--watch", record.wait_id, "--root", str(tmp_path)])
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -133,4 +133,4 @@ def _read(path: Path) -> str:
 def _load_yaml(path: Path) -> dict[str, Any]:
     payload = yaml.safe_load(_read(path))
     assert isinstance(payload, dict)
-    return payload
+    return cast(dict[str, Any], payload)

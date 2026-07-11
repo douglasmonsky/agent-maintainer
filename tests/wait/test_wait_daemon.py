@@ -5,7 +5,8 @@ from __future__ import annotations
 import plistlib
 import stat
 import subprocess
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from functools import partial
 from pathlib import Path
 
 import pytest
@@ -225,11 +226,11 @@ def test_ensure_wait_daemon_success_and_failure(
         CODEX_THREAD_ID_ENV: THREAD_ID,
         CODEX_BIN_ENV: "/bin/echo",
     }
-    monkeypatch.setattr(
-        daemon_launchd,
-        "launchd_rewake_supported",
-        lambda current: True,
-    )
+
+    def launchd_supported(_current: Mapping[str, str] | None) -> bool:
+        return True
+
+    monkeypatch.setattr(daemon_launchd, "launchd_rewake_supported", launchd_supported)
     success = daemon_launchd.ensure_wait_daemon(
         tmp_path,
         "wait-ok",
@@ -299,17 +300,7 @@ def test_daemon_run_resumes_ready_wait_once(
     """Daemon consumes envelope and marks ready wait resumed."""
 
     sink = InMemoryRuntimeEventSink()
-    monkeypatch.setattr(
-        WaitRuntimeEvents,
-        "create",
-        classmethod(
-            lambda _cls, *, target_kind, target_id: WaitRuntimeEvents(
-                sink=sink,
-                target_kind=target_kind,
-                target_id=target_id,
-            ),
-        ),
-    )
+    monkeypatch.setattr(WaitRuntimeEvents, "create", partial(WaitRuntimeEvents, sink=sink))
     registry = WaitRegistry(tmp_path)
     record = completed_pr_wait(registry, tmp_path)
     daemon_state.write_rewake_envelope(
@@ -334,7 +325,7 @@ def test_daemon_run_resumes_ready_wait_once(
             return "resumed"
 
     monkeypatch.setattr(daemon, "CodexRewakeBackend", FakeBackend)
-    monkeypatch.setattr(daemon, "codex_rewake_resumed", lambda result: result == "resumed")
+    monkeypatch.setattr(daemon, "codex_rewake_resumed", is_resumed)
 
     now = {"value": 0.0}
 
@@ -385,9 +376,9 @@ def test_daemon_requires_durable_resumed_state(
             return "resumed"
 
     monkeypatch.setattr(daemon, "CodexRewakeBackend", UnpersistedBackend)
-    monkeypatch.setattr(daemon, "codex_rewake_resumed", lambda result: result == "resumed")
+    monkeypatch.setattr(daemon, "codex_rewake_resumed", is_resumed)
 
-    resumed = daemon._resume_ready_with_envelopes(registry, tmp_path, {})
+    resumed = daemon.resume_ready_with_envelopes(registry, tmp_path, {})
 
     assert resumed == 0
     assert registry.read(record.wait_id).status != WAIT_STATUS_RESUMED
@@ -407,3 +398,7 @@ def completed_pr_wait(registry: WaitRegistry, root: Path) -> WaitRecord:
             ),
         ),
     )
+
+
+def is_resumed(result: object) -> bool:
+    return result == "resumed"

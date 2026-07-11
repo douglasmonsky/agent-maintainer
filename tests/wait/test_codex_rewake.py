@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from functools import partial
 from pathlib import Path
 
 import pytest
@@ -76,7 +77,7 @@ def test_backend_stays_manual_without_backend(
 ) -> None:
     """Enabled rewake leaves manual resume ready without app-server."""
 
-    monkeypatch.setattr(codex_rewake_module, "which", lambda _name: None)
+    monkeypatch.setattr(codex_rewake_module, "which", no_codex_binary)
     registry = WaitRegistry(tmp_path)
     record = completed_wait(registry, tmp_path)
 
@@ -125,10 +126,7 @@ def test_backend_events_use_fixed_fields_without_private_context(
     """Notification events include lifecycle facts, never Codex context."""
 
     sink = InMemoryRuntimeEventSink()
-    monkeypatch.setattr(
-        "agent_maintainer.runtime_events.waiting.WaitRuntimeEvents.create",
-        lambda **kwargs: WaitRuntimeEvents(sink=sink, **kwargs),
-    )
+    monkeypatch.setattr(WaitRuntimeEvents, "create", partial(WaitRuntimeEvents, sink=sink))
     registry = WaitRegistry(tmp_path)
     record = completed_wait(registry, tmp_path)
 
@@ -272,3 +270,7 @@ class CapturingAppServerClient:
         """Record app-server resume request."""
 
         self.calls.append((thread_id, prompt))
+
+
+def no_codex_binary(_name: str) -> None:
+    return None

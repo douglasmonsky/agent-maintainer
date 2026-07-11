@@ -6,7 +6,7 @@ import contextlib
 import hashlib
 import os
 import time
-from collections.abc import Iterator
+from collections.abc import Generator
 from pathlib import Path
 from typing import Final
 
@@ -21,7 +21,7 @@ def wait_record_lock(
     wait_id: str,
     *,
     wait_seconds: float = LOCK_WAIT_SECONDS,
-) -> Iterator[None]:
+) -> Generator[None, None, None]:
     """Serialize one brief read-modify-write transition for a wait record."""
 
     waits_dir.mkdir(parents=True, exist_ok=True)
