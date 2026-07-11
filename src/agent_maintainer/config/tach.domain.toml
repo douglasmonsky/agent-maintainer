@@ -7,7 +7,9 @@ depends_on = []
 [[modules]]
 path = "coercion"
 depends_on = [
+  "registry",
   "schema",
+  "validation",
 ]
 
 [[modules]]
@@ -15,14 +17,24 @@ path = "loader"
 depends_on = [
   "coercion",
   "modes",
+  "registry",
   "schema",
+  "validation",
 ]
 
 [[modules]]
+path = "issues"
+depends_on = []
+
+[[modules]]
 path = "metadata"
+depends_on = ["registry"]
+
+[[modules]]
+path = "preflight"
 depends_on = [
   "loader",
-  "schema",
+  "validation",
 ]
 
 [[modules]]
@@ -40,8 +52,31 @@ depends_on = [
 ]
 
 [[modules]]
+path = "registry"
+depends_on = [
+  "registry_capabilities",
+  "schema",
+  "schema_fields",
+]
+
+[[modules]]
+path = "registry_capabilities"
+depends_on = []
+
+[[modules]]
+path = "reference"
+depends_on = ["registry"]
+
+[[modules]]
 path = "schema_fields"
 depends_on = []
+
+[[modules]]
+path = "source_validation"
+depends_on = [
+  "issues",
+  "registry",
+]
 
 [[modules]]
 path = "structure_defaults"
@@ -54,6 +89,14 @@ depends_on = []
 [[modules]]
 path = "validation"
 depends_on = [
-  "coercion",
+  "//agent_maintainer.models",
+  "issues",
+  "registry",
   "schema",
+  "source_validation",
+  "value_types",
 ]
+
+[[modules]]
+path = "value_types"
+depends_on = ["registry"]

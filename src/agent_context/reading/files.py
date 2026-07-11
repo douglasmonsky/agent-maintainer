@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from agent_context.budget import bound_text
 from agent_context.failures import DEFAULT_CONTEXT_BUDGET
 from agent_context.models import ContextBudget
-from agent_context.reading.file_safety import FileSafety, inspect_file
+from agent_context.reading.file_safety import FileSafety, read_text_file
 from agent_context.reading.python_outline import (
     PythonOutline,
     SymbolOutline,
@@ -31,6 +31,7 @@ class FileRequest:
     around: int | None = None
     context_lines: int = DEFAULT_FILE_CONTEXT_LINES
     budget: int = DEFAULT_CONTEXT_BUDGET
+    workspace_root: Path = field(default_factory=Path.cwd)
 
 
 @dataclass(frozen=True)
@@ -82,10 +83,10 @@ class ContextSelection:
 def select_file_context(request: FileRequest) -> FileContext:
     """Return safe file context for request."""
 
-    safety = inspect_file(request.path)
-    if not safety.allowed:
-        return refused_context(request.path, safety)
-    text = request.path.read_text(encoding="utf-8")
+    safe_read = read_text_file(request.path, workspace_root=request.workspace_root)
+    if not safe_read.safety.allowed or safe_read.text is None:
+        return refused_context(request.path, safe_read.safety)
+    text = safe_read.text
     outline = outline_for_path(request.path, text)
     return selected_file_context(request, text, outline)
 

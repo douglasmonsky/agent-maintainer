@@ -93,9 +93,8 @@ def unique_paths(paths: tuple[str, ...]) -> list[str]:
 def run_pyright(config_path: Path, json_output_path: Path | None = None) -> int:
     """Run Pyright against a project config."""
 
-    pyright = shutil.which("pyright") or "pyright"
     command = [
-        pyright,
+        pyright_executable(),
         "--project",
         str(config_path),
         "--pythonpath",
@@ -121,6 +120,12 @@ def run_pyright(config_path: Path, json_output_path: Path | None = None) -> int:
         )
         return 1
     return result.returncode
+
+
+def pyright_executable() -> str:
+    """Return the configured Pyright executable name or path."""
+
+    return shutil.which("pyright") or "pyright"
 
 
 def python_interpreter() -> str:

@@ -39,7 +39,9 @@ def test_symbol_context_extracts_named_method(tmp_path: Path) -> None:
 
     path = write_python(tmp_path)
 
-    context = select_file_context(FileRequest(path=path, symbol="Example.method"))
+    context = select_file_context(
+        FileRequest(path=path, symbol="Example.method", workspace_root=tmp_path),
+    )
 
     assert context.mode == "symbol"
     assert context.start_line is not None
@@ -52,7 +54,7 @@ def test_default_python_file_context_returns_outline(tmp_path: Path) -> None:
 
     path = write_python(tmp_path)
 
-    context = select_file_context(FileRequest(path=path))
+    context = select_file_context(FileRequest(path=path, workspace_root=tmp_path))
 
     assert context.mode == "outline"
     assert "Python outline:" in context.text
@@ -66,7 +68,7 @@ def test_non_python_file_context_returns_line_summary(tmp_path: Path) -> None:
     path = tmp_path / "notes.txt"
     path.write_text("one\ntwo", encoding="utf-8")
 
-    context = select_file_context(FileRequest(path=path))
+    context = select_file_context(FileRequest(path=path, workspace_root=tmp_path))
 
     assert context.mode == "outline"
     assert context.text == "File lines: 2"
@@ -77,7 +79,9 @@ def test_missing_symbol_returns_bounded_message(tmp_path: Path) -> None:
 
     path = write_python(tmp_path)
 
-    context = select_file_context(FileRequest(path=path, symbol="Missing"))
+    context = select_file_context(
+        FileRequest(path=path, symbol="Missing", workspace_root=tmp_path),
+    )
 
     assert context.mode == "symbol"
     assert context.text == "Symbol not found: Missing"
@@ -88,9 +92,16 @@ def test_line_and_around_context_are_bounded(tmp_path: Path) -> None:
 
     path = write_python(tmp_path)
 
-    line_context = select_file_context(FileRequest(path=path, line_range="1:2"))
+    line_context = select_file_context(
+        FileRequest(path=path, line_range="1:2", workspace_root=tmp_path),
+    )
     around_context = select_file_context(
-        FileRequest(path=path, around=AROUND_LINE, context_lines=ONE_CONTEXT_LINE),
+        FileRequest(
+            path=path,
+            around=AROUND_LINE,
+            context_lines=ONE_CONTEXT_LINE,
+            workspace_root=tmp_path,
+        ),
     )
 
     assert line_context.text == "@decorator\nclass Example:"
@@ -102,7 +113,9 @@ def test_file_renderers_include_metadata(tmp_path: Path) -> None:
     """File renderers include metadata and JSON payloads."""
 
     path = write_python(tmp_path)
-    context = select_file_context(FileRequest(path=path, line_range="1:2"))
+    context = select_file_context(
+        FileRequest(path=path, line_range="1:2", workspace_root=tmp_path),
+    )
 
     text_output = render_file_text(context)
     json_output = json.loads(render_file_json(context))
@@ -117,16 +130,41 @@ def test_refused_file_context_returns_message(tmp_path: Path) -> None:
     path = tmp_path / "data.bin"
     path.write_bytes(b"abc\x00def")
 
-    context = select_file_context(FileRequest(path=path, outline=True))
+    context = select_file_context(
+        FileRequest(path=path, outline=True, workspace_root=tmp_path),
+    )
 
     assert context.refused is True
     assert "Refused file context" in context.text
 
 
-def test_file_cli_outputs_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_file_context_refuses_workspace_escape(tmp_path: Path) -> None:
+    """Default file selection cannot expand a file outside its workspace root."""
+
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    outside = tmp_path / "outside.py"
+    secret = "OUTSIDE-CONTEXT-CANARY"
+    outside.write_text(secret, encoding="utf-8")
+
+    context = select_file_context(
+        FileRequest(path=Path("../outside.py"), workspace_root=workspace),
+    )
+
+    assert context.refused is True
+    assert context.reason == "path escapes workspace root"
+    assert secret not in context.text
+
+
+def test_file_cli_outputs_json(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """File subcommand emits JSON output."""
 
     path = write_python(tmp_path)
+    monkeypatch.chdir(tmp_path)
 
     assert context_cli.main(["file", str(path), "--symbols", "--format", "json"]) == 0
 

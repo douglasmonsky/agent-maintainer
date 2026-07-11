@@ -32,6 +32,8 @@ runtime events + repair facts + DocSync + context packs + file baselines + packa
 - No extracted internal package may import `agent_maintainer`.
 - No phase may widen Tach buckets to silence architecture failures.
 - Every new summary preserves raw evidence handles.
+- DocSync confines bounded inputs to the repository and writes verifier reports
+  only when the integration requests them explicitly.
 - Every agent-facing output prefers compact repair capsules and expansion
   commands over pasted logs.
 - Any external orchestration framework sits behind an adapter and must not own

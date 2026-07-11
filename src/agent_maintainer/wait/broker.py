@@ -9,17 +9,15 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Final
 
-from agent_maintainer.wait.daemon_launchd import ensure_wait_daemon
-from agent_maintainer.wait.handlers import WaitRegistration, handler_for
-from agent_maintainer.wait.registry import (
-    WAIT_KIND_GITHUB_PR,
-    WAIT_KIND_GITHUB_RUN,
-    WAIT_KIND_VERIFIER,
-    WaitRecord,
-    WaitRegistry,
+from agent_maintainer.wait import (
+    daemon_launchd,
+    handlers,
 )
-from agent_maintainer.wait.sweeper import start_wait_watcher
+from agent_maintainer.wait import (
+    registry as wait_registry,
+)
 from agent_waits import broker as wait_broker
+from agent_waits import watcher_state as wait_watcher_state
 
 CODEX_BACKGROUND_PR_WAIT_ENV: Final = "AGENT_MAINTAINER_BACKGROUND_PR_WAIT"
 CODEX_BACKGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_BACKGROUND_WAIT"
@@ -28,9 +26,20 @@ CODEX_ENV_MARKERS = wait_broker.CODEX_ENV_MARKERS
 CODEX_PLATFORM = wait_broker.CODEX_PLATFORM
 BACKGROUND_WAIT_FLAGS: Final[Mapping[str | None, bool]] = MappingProxyType({"0": False})
 
+ensure_wait_daemon = daemon_launchd.ensure_wait_daemon
+handler_for = handlers.handler_for
+WaitRegistration = handlers.WaitRegistration
+WAIT_KIND_GITHUB_PR = wait_registry.WAIT_KIND_GITHUB_PR
+WAIT_KIND_GITHUB_RUN = wait_registry.WAIT_KIND_GITHUB_RUN
+WAIT_KIND_VERIFIER = wait_registry.WAIT_KIND_VERIFIER
+WaitRecord = wait_registry.WaitRecord
+WaitRegistry = wait_registry.WaitRegistry
+
 BackgroundWaitRegistration = wait_broker.BackgroundWaitRegistration
 codex_foreground_wait_allowed = wait_broker.codex_foreground_wait_allowed
+codex_terminal_rewake_available = wait_broker.codex_terminal_rewake_available
 heartbeat_prompt = wait_broker.heartbeat_prompt
+heartbeat_backoff = wait_broker.heartbeat_backoff
 heartbeat_request = wait_broker.heartbeat_request
 heartbeat_request_json = wait_broker.heartbeat_request_json
 render_background_registration_text = wait_broker.render_background_registration_text
@@ -89,6 +98,30 @@ class BackgroundVerifierWait:
     timeout_seconds: int = 3600
 
 
+@dataclass(frozen=True)
+class DetachedWatcher:
+    """Detached watcher metadata."""
+
+    command: tuple[str, ...]
+    pid: int
+
+
+def start_wait_watcher(
+    root: Path,
+    wait_id: str,
+    *,
+    python_executable: str | None = None,
+) -> DetachedWatcher:
+    """Start a detached local watcher process for one wait record."""
+
+    command, pid = daemon_launchd.launch_wait_watcher_process(
+        root,
+        wait_id,
+        python_executable=python_executable,
+    )
+    return DetachedWatcher(command=command, pid=pid)
+
+
 def register_background_wait(wait: BackgroundKnownWait) -> BackgroundWaitRegistration:
     """Register a known wait and start its silent watcher."""
 
@@ -115,8 +148,14 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
 
     daemon_launch = ensure_wait_daemon(root, record.wait_id)
     if daemon_launch.started:
+        updated = wait_watcher_state.mark_watcher_started(
+            WaitRegistry(root),
+            record,
+            strategy="launchd",
+            pid=None,
+        )
         return BackgroundWaitRegistration(
-            record=record,
+            record=updated,
             watcher_started=True,
             root=str(root),
             watcher_strategy="launchd",
@@ -124,8 +163,13 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
             watcher_log=str(daemon_launch.log_path),
         )
     if _strict_codex_rewake(record):
+        updated = wait_watcher_state.mark_watcher_failed(
+            WaitRegistry(root),
+            record,
+            error_code="launchd_required",
+        )
         return BackgroundWaitRegistration(
-            record=record,
+            record=updated,
             watcher_started=False,
             watcher_error=f"launchd required for Codex rewake: {daemon_launch.error}",
             root=str(root),
@@ -133,13 +177,18 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
         )
 
     try:
-        start_wait_watcher(root, record.wait_id)
+        watcher = start_wait_watcher(root, record.wait_id)
     except OSError as exc:
         watcher_error = str(exc)
         if daemon_launch.error and daemon_launch.error != "unsupported":
             watcher_error = f"launchd: {daemon_launch.error}; popen: {watcher_error}"
+        updated = wait_watcher_state.mark_watcher_failed(
+            WaitRegistry(root),
+            record,
+            error_code="watcher_start_failed",
+        )
         return BackgroundWaitRegistration(
-            record=record,
+            record=updated,
             watcher_started=False,
             watcher_error=watcher_error,
             root=str(root),
@@ -148,12 +197,19 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
     watcher_error = ""
     if daemon_launch.error and daemon_launch.error != "unsupported":
         watcher_error = f"launchd fallback: {daemon_launch.error}"
+    updated = wait_watcher_state.mark_watcher_started(
+        WaitRegistry(root),
+        record,
+        strategy="popen",
+        pid=watcher.pid,
+    )
     return BackgroundWaitRegistration(
-        record=record,
+        record=updated,
         watcher_started=True,
         watcher_error=watcher_error,
         root=str(root),
         watcher_strategy="popen",
+        watcher_pid=watcher.pid,
     )
 
 

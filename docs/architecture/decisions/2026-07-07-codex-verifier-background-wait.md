@@ -18,6 +18,22 @@ explicitly allowed, start the existing async verifier child, register a generic
 `agent_waits` verifier wait record, start a quiet watcher, and render the same
 structured heartbeat handoff used by known wait commands.
 
+The async launch is a durable lifecycle rather than a bare `Popen` call:
+
+1. atomically persist `starting` state and stable stdout/stderr destinations;
+2. spawn a new session with `stdin=DEVNULL`, owned log handles, and
+   `close_fds=True`;
+3. persist `running` only after capturing the child PID;
+4. have the owned child entrypoint wait for that running record before invoking
+   verifier behavior; and
+5. atomically persist `passed`, `failed`, `error`, or `cancelled` with the real
+   process exit code.
+
+The detached wait watcher follows the same noninteractive stream and descriptor
+contract. A spawn or child infrastructure failure is terminal `ERROR`, not a
+quality-check `FAIL` and not a pending record that eventually masquerades as a
+timeout.
+
 ## Boundary
 
 `agent_maintainer.verify` may depend on standalone `agent_waits` primitives for
@@ -25,6 +41,11 @@ Codex environment policy, durable generic wait records, and handoff rendering.
 It must not import `agent_maintainer.wait` adapters. The wait CLI remains the
 owner of verifier polling and resume rendering; the verifier package only starts
 the detached `agent_maintainer wait sweep --watch` process.
+
+The one-way polling dependency is explicit: `agent_maintainer.wait.verifier`
+may read `agent_maintainer.verify.async_state` so it can convert child lifecycle
+records into truthful terminal wait records. Async verifier code does not import
+the wait adapters.
 
 This is reflected in `src/agent_maintainer/verify/tach.domain.toml` by allowing
 `quiet` and `background_wait` to depend on `agent_waits` primitives while keeping
@@ -45,3 +66,7 @@ This is reflected in `src/agent_maintainer/verify/tach.domain.toml` by allowing
 Common Codex validation commands now use the background wait and heartbeat
 contract by default. Local foreground validation remains available with
 `AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1`.
+
+A POSIX pseudo-terminal integration test closes the launcher's fd 0 before
+spawn, exits the parent, closes the terminal, and requires the detached verifier
+to produce its real manifest without a bad-file-descriptor failure.

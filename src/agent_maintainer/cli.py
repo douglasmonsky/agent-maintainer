@@ -5,19 +5,27 @@ from __future__ import annotations
 import sys
 from collections.abc import Callable
 
-from agent_maintainer.context.cli import main as context_main
-from agent_maintainer.core.bootstrap import bootstrap, install
-from agent_maintainer.core.guidance import main as guidance_main
+from agent_maintainer.config import preflight
+from agent_maintainer.context.cli import main as _context_main
+from agent_maintainer.core.guidance import main as _guidance_main
 from agent_maintainer.core.runtime import disable_bytecode_writes
-from agent_maintainer.core.scaffold.initializer import main as init_main
-from agent_maintainer.doctor.cli import main as doctor_main
-from agent_maintainer.hooks.cli import main as hooks_main
+from agent_maintainer.core.scaffold.initializer import main as _init_main
+from agent_maintainer.doctor.cli import main as _doctor_main
+from agent_maintainer.hooks.cli import main as _hooks_main
 from agent_maintainer.runtime_events.commands import run_with_command_events
-from agent_maintainer.verify.quiet import main as verify_main
+from agent_maintainer.verify.quiet import main as _verify_main
 
 disable_bytecode_writes()
 
 CommandRunner = Callable[[list[str]], int]
+
+
+context_main: CommandRunner = preflight.ValidatedCommand(_context_main)
+guidance_main: CommandRunner = preflight.ValidatedCommand(_guidance_main)
+init_main: CommandRunner = preflight.ValidatedCommand(_init_main)
+doctor_main: CommandRunner = preflight.ValidatedCommand(_doctor_main)
+hooks_main: CommandRunner = preflight.ValidatedCommand(_hooks_main)
+verify_main: CommandRunner = preflight.ValidatedCommand(_verify_main)
 
 # docsync:evidence.start evidence.readme.command_registry
 USAGE = """Usage:
@@ -133,66 +141,79 @@ def command_handlers() -> dict[str, CommandRunner]:
 # docsync:evidence.end evidence.readme.command_registry
 
 
+@preflight.ValidatedCommand
 def assess_command(command_args: list[str]) -> int:
     """Run assess command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.assess.cli", command_args)
 
 
+@preflight.ValidatedCommand
 def attention_command(command_args: list[str]) -> int:
     """Run attention command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.attention.cli", command_args)
 
 
-def bootstrap_command(_command_args: list[str]) -> int:
+@preflight.ValidatedCommand
+def bootstrap_command(command_args: list[str]) -> int:
     """Adapt bootstrap shared command handler signature."""
-    return bootstrap()
+    return _run_module_main("agent_maintainer.core.setup_cli", ["bootstrap", *command_args])
 
 
+@preflight.ValidatedCommand
 def change_plan_command(command_args: list[str]) -> int:
     """Run change-plan command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.change_plan.cli", command_args)
 
 
+@preflight.ValidatedCommand
 def events_command(command_args: list[str]) -> int:
     """Run runtime events command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.runtime_events.cli", command_args)
 
 
-def install_command(_command_args: list[str]) -> int:
+@preflight.ValidatedCommand
+def install_command(command_args: list[str]) -> int:
     """Adapt install shared command handler signature."""
-    return install()
+    return _run_module_main("agent_maintainer.core.setup_cli", ["install", *command_args])
 
 
+@preflight.ValidatedCommand
 def mcp_command(command_args: list[str]) -> int:
     """Run optional MCP server command lazily."""
     return _run_module_main("agent_maintainer.mcp.server", command_args)
 
 
+@preflight.ValidatedCommand
 def ratchet_command(command_args: list[str]) -> int:
     """Run ratchet command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.ratchet.cli", command_args)
 
 
+@preflight.ValidatedCommand
 def report_command(command_args: list[str]) -> int:
     """Run report command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.report.cli", command_args)
 
 
+@preflight.ValidatedCommand
 def repair_plan_command(command_args: list[str]) -> int:
     """Run repair-plan command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.repair_plan.cli", command_args)
 
 
+@preflight.ValidatedCommand
 def scoring_command(command_args: list[str]) -> int:
     """Run scoring command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.scoring.cli", command_args)
 
 
+@preflight.ValidatedCommand
 def test_intel_command(command_args: list[str]) -> int:
     """Run test-intel command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.test_intel.cli", command_args)
 
 
+@preflight.ValidatedCommand
 def wait_command(command_args: list[str]) -> int:
     """Run quiet wait command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.wait.cli", command_args)

@@ -9,6 +9,7 @@ path = "args"
 depends_on = [
   "//agent_maintainer.config.modes",
   "//agent_maintainer.config.schema",
+  "//agent_maintainer.config.validation",
   "//agent_maintainer.models",
 ]
 
@@ -16,9 +17,18 @@ depends_on = [
 path = "bootstrap"
 depends_on = [
   "runtime",
+  "setup_plans",
   "tooling.capabilities",
   "//agent_maintainer.hooks.manager",
 ]
+
+[[modules]]
+path = "setup_cli"
+depends_on = ["bootstrap"]
+
+[[modules]]
+path = "setup_plans"
+depends_on = []
 
 [[modules]]
 path = "artifact_environment"
@@ -70,7 +80,7 @@ depends_on = []
 [[modules]]
 path = "scaffold.templates"
 depends_on = [
-  "//agent_client_hooks.templates",
+  "//agent_client_hooks.manifest",
   "scaffold.presets",
   "scaffold.template_config",
 ]
@@ -78,9 +88,23 @@ depends_on = [
 [[modules]]
 path = "scaffold.initializer"
 depends_on = [
+  "scaffold.planning",
   "scaffold.presets",
   "scaffold.templates",
+  "scaffold.transaction",
 ]
+
+[[modules]]
+path = "scaffold.planning"
+depends_on = [
+  "//agent_client_hooks.merge",
+  "//agent_client_hooks.templates",
+  "scaffold.templates",
+]
+
+[[modules]]
+path = "scaffold.transaction"
+depends_on = ["scaffold.planning"]
 
 [[modules]]
 path = "layout"

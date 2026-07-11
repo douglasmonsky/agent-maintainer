@@ -6,12 +6,14 @@ import re
 from pathlib import Path
 from typing import Any
 
+from agent_context.reading import file_safety
 from agent_maintainer.attention import builder as attention_builder
 from agent_maintainer.attention.models import AttentionFileScore
 
 ATTENTION_LEDGER_PATH = Path("attention/files.json")
 MAX_ATTENTION_ENTRIES = 5
 MAX_RISK_NOTES = 3
+MAX_ATTENTION_LEDGER_BYTES = 1_048_576
 PATH_PATTERN = re.compile(
     r"(?P<path>(?:src|tests|docs|config|examples|\.github|\.codex|\.claude)/[^\s:'\"`]+)"
 )
@@ -21,17 +23,41 @@ def attention_payload(
     log_dir: Path,
     exact_facts: list[dict[str, object]],
     selected_logs: list[dict[str, object]],
+    *,
+    workspace_root: Path,
 ) -> dict[str, object]:
     """Return optional attention block for one context pack."""
     ledger_path = log_dir / ATTENTION_LEDGER_PATH
-    if not ledger_path.exists():
+    confined = file_safety.confined_path(ledger_path, workspace_root=workspace_root)
+    if isinstance(confined, file_safety.FileSafety):
         return {
             "available": False,
             "ledger_path": str(ledger_path),
             "entries": [],
             "risk_notes": [],
         }
-    ledger = attention_builder.read_attention_ledger(ledger_path)
+    safety = file_safety.inspect_path(
+        confined,
+        max_bytes=MAX_ATTENTION_LEDGER_BYTES,
+    )
+    if safety is not None:
+        return {
+            "available": False,
+            "ledger_path": str(ledger_path),
+            "entries": [],
+            "risk_notes": [],
+        }
+    ledger = attention_builder.read_attention_ledger(
+        confined,
+        workspace_root=workspace_root,
+    )
+    if ledger is None:
+        return {
+            "available": False,
+            "ledger_path": str(ledger_path),
+            "entries": [],
+            "risk_notes": [],
+        }
     by_path = {score.path: score for score in ledger.files}
     selected_paths = _fact_paths(exact_facts)
     if not selected_paths:

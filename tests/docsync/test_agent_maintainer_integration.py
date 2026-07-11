@@ -52,6 +52,7 @@ def test_catalog_adds_docsync_when_trace_exists(
         "check",
         "--base",
         "origin/main",
+        "--write-reports",
     ]
     assert docsync.profiles == LOCAL_GATE_PROFILES
     assert docsync.required_paths == (".docsync/trace.yml",)

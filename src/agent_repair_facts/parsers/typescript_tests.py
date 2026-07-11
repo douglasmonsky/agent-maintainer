@@ -18,7 +18,7 @@ def parse_vitest_json(raw_output: str) -> list[TypeScriptDiagnostic]:
     """Parse Vitest task-style JSON output."""
     try:
         payload = json.loads(raw_output)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, RecursionError):
         return []
     return vitest_payload_diagnostics(payload)
 

@@ -1,17 +1,143 @@
 # Changelog
 
-## Unreleased
+## Unreleased (target: 0.1.0b6)
+
+`0.1.0b6` is an unpublished release candidate. `0.1.0b5` remains the latest
+published package and its release-evidence record remains authoritative until
+the candidate passes the complete exact-commit release matrix.
+
+### Security Since 0.1.0b5
+
+- All repository-controlled filesystem access is confined to approved roots.
+  MCP and DocSync reads reject escapes, special files, oversized inputs, and
+  unsafe write destinations before opening or replacing data.
+- GitHub Actions use full-SHA-pinned implementations, explicit concurrency, and
+  strict unfiltered workflow security checks instead of mutable action tags.
+- Publishing requires fresh full, CI, security, manual, and release manifests
+  from one clean commit. Every consumer revalidates the exact-commit evidence
+  aggregate before using it.
+- Wheel and source-distribution transfers carry a deterministic manifest with
+  the exact inventory, byte sizes, and SHA-256 digests. Release jobs bind that
+  manifest to a separately carried digest and verify it immediately before
+  attachment or Trusted Publishing.
+- The fixed `markdownlint-cli2` 0.23.0 dependency removes the accepted
+  `js-yaml` advisory, and the Semgrep 1.169.0 minimum restores the `manual`
+  and `all` extras across Python 3.11 through 3.14 without resolver backtracking.
 
 ### Added Since 0.1.0b5
 
-- Release evidence for `0.1.0b5`, including TestPyPI/PyPI workflow links,
-  artifact hashes, and clean-install smoke commands.
-- Public documentation drift tests that keep README and roadmap current-release
-  references aligned with recorded release evidence.
+- Structured runtime events now cover checks, hooks, commands, verifier
+  artifacts, waits, and efficacy outcomes. New summary, waste, JSONL, and
+  OpenTelemetry-compatible export commands make local behavior inspectable
+  without uploading raw logs.
+- Background-safe durable waits now cover GitHub runs, PR checks, and local
+  verifiers with a persistent registry, targeted sweeps, background workers,
+  heartbeat handoffs, terminal and app-server rewake backends, and manually
+  recoverable state.
+- Redacted Codex rewake capability diagnostics and a read-only app-server smoke
+  are available; a real smoke turn requires an explicit process-local spend
+  gate and never accepts a caller-provided prompt.
+- The attention ledger, attention-weighted context packs, recall ledger, and
+  surgical next-action ranking retain high-value repair context while reducing
+  repeated broad reads.
+- Optional MCP commands expose bounded Agent Maintainer operations through
+  static, capability-aware handlers while keeping MCP dependencies opt-in.
+- Agent-task-broker experiments add handoff results, lock/worktree planning,
+  adapter contracts, model-tier routing, and a Codex SDK plan backend under an
+  explicitly incubating surface.
+- TypeScript/React advisory support now records package/workspace shape,
+  configured command ownership, React/Vite/Next fixtures, test and coverage
+  repair facts, suppression facts, reviewability thresholds, and doctor/setup
+  guidance without claiming Python gate parity.
+- Provider-neutral file baselines report matched and changed files, changed
+  lines, and compact next actions across configured documentation, config,
+  test, and frontend file groups.
+- DocSync gained explicit object-end markers, freshness metadata, verifier
+  repair facts, extraction review tooling, a standalone README, and an
+  onboarding fixture for the supported public boundary.
+- Registry-generated configuration reference documentation, versioned
+  capability metadata, repair-fact coverage assessment, scoring example
+  datasets, and agent efficacy assessment are now available.
+- Existing-application onboarding fixtures now exercise a mature `src/`
+  library, a flat-layout service with third-party agent configuration, and a
+  `uv` Python/JavaScript application through preview, apply, and idempotent
+  rerun behavior.
+- An owned, expiring dependency-risk register now binds accepted advisories to
+  exact OSV expiry records, while Dependabot covers Python, npm, and pinned
+  GitHub Actions dependencies.
+- Public beta governance now includes security reporting, support,
+  contribution, conduct, ownership, pull-request, and structured issue-intake
+  policies.
 
 ### Changed Since 0.1.0b5
 
-- README and roadmap current-release links now point at `0.1.0b5`.
+- Agent-client installation, scaffolding, status, update, and uninstall now use
+  one managed hook inventory. Status distinguishes current, stale, missing, and
+  intentionally unmanaged files.
+- Bootstrap is dependency-only. Hook and pre-commit mutation is an explicit,
+  strictly parsed action with side-effect-free preview, conflict classification,
+  collision-proof backup, transactional apply, and rollback.
+- Initializer preview classifies additions, unchanged files, supported merges,
+  conflicts, and user-owned skips. Force no longer means silently replacing
+  guidance or unrelated client configuration.
+- Complete configuration preflight now resolves file settings, environment
+  overrides, and CLI flags through one registry. Unknown, mistyped,
+  contradictory, type-confused, out-of-range, or path-escaping policy fails
+  closed before behavior begins.
+- Detached verifier and wait processes own their terminal lifecycle, persist
+  launch/running/terminal state, and separate quality failures from spawn,
+  cancellation, and transport failures.
+- Wait handoffs now identify heartbeat polling as a model-turn fallback and
+  state that every scheduled poll consumes a model turn.
+- Terminal Codex notification is claimed once before external work. Failed,
+  abandoned, or visibly unconfirmed attempts become manually resumable
+  `notify_failed` records, while explicit repair can restart stale inactive
+  watchers from privacy-safe pid and poll metadata.
+- Model-turn fallback handoffs now request exponential cadence backoff from 120
+  to 1,800 seconds, and allowlisted wait lifecycle events cover watcher,
+  terminal, notification, resume, failure, and fallback boundaries without
+  persisting Codex context or backend diagnostics.
+- Strict Pyright debt ratchets by file/rule pair under a versioned,
+  tool-and-scope-bound baseline rather than an aggregate error allowance.
+- Public documentation now distinguishes published release evidence from
+  candidate intent, validates repository-local links, and provides a
+  version-matched candidate guide and release index.
+- Python 3.11 through 3.14 compatibility CI now builds both distribution
+  formats, installs each into a clean environment, and runs every advertised
+  console script instead of relying on editable-install smoke alone.
+- Consumer-repository doctor and bootstrap flows now honor the requested root,
+  linked-worktree metadata, and package-first execution instead of assuming the
+  Agent Maintainer source repository.
+
+### Fixed Since 0.1.0b5
+
+- Claude and Codex hook merges preserve unrelated commands and ordering.
+  Uninstall removes only managed identities, refuses unowned files, and rolls
+  prior removals back if a later operation fails.
+- Agent and hardening scaffolds include every configured PR-wait and audit
+  wrapper; install, status, update, and uninstall no longer disagree about the
+  managed inventory.
+- Async verifier readiness, PR wait handoff, heartbeat scoping, local-HEAD wait
+  identity, warning handling, targeted sweeps, launchd tool paths, and terminal
+  completion detection now remain correct across terminal closure and restart.
+- Runtime-event waste, attention scanning, efficacy metrics, retained mutation
+  results, duplicate artifact warnings, and Pylint, Vulture, DocSync,
+  TypeScript, pytest, coverage, and change-budget repair facts now handle their
+  defensive and fallback paths consistently.
+- The mutation quality gate and strict typing baseline are restored without
+  lowering thresholds, and repository Markdown links resolve after roadmap
+  archival moves.
+- Pytest now removes repository-local Git overrides inherited from hooks, so
+  synthetic repositories cannot replace a caller's staged or worktree index.
+
+### Experimental and Advisory
+
+- Task-broker, model-tier routing, Codex SDK planning, optional MCP, and
+  TypeScript/React provider work remain opt-in or advisory. They do not expand
+  the stable Python blocking contract for this beta.
+- Review [the b6 candidate notes](docs/releases/0.1.0b6.md) and
+  [the upgrade guide](docs/upgrading-to-0.1.0b6.md) before evaluating the
+  candidate in an existing application.
 
 ## 0.1.0b5 - 2026-07-03
 

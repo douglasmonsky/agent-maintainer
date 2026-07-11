@@ -39,6 +39,14 @@ Preview the files first with `--dry-run`:
 agent-maintainer init --track core --preset existing-app --dry-run
 ```
 
+Preview classifies every destination as `ADD`, `UNCHANGED`, `MERGE`, `CONFLICT`,
+or `SKIP` and never requires `--force`. Apply is all-or-nothing when unresolved
+conflicts remain. Supported dependency, package metadata, Codex, and Claude
+files merge without deleting unrelated content; existing `AGENTS.md` is
+preserved. Explicitly forced conflicts are backed up under Git-private
+`.git/agent-maintainer/backups/init/<transaction>/` storage with rollback
+instructions. Non-Git targets fall back to `.agent-maintainer/backups/init/`.
+
 The initializer writes starter files:
 
 - `config/pyproject.agent-maintainer.toml`

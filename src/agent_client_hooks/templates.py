@@ -250,6 +250,7 @@ def pr_wait_hook_wrapper(*, platform: str, async_rewake: bool) -> str:
     return textwrap.dedent(
         f"""
             \"\"\"Agent Maintainer {platform} PR wait hook wrapper.\"\"\"
+
             from __future__ import annotations
 
             import importlib
@@ -346,8 +347,9 @@ def hook_audit_shim() -> str:
         sys.path.insert(0, str(REPO_ROOT / "src"))
 
         _AUDIT = importlib.import_module("agent_maintainer.hooks.audit")
-        __all__ = tuple(name for name in dir(_AUDIT) if not name.startswith("_"))
-        globals().update({name: getattr(_AUDIT, name) for name in __all__})
+        HookAuditRecord = _AUDIT.HookAuditRecord
+        record_hook_result = _AUDIT.record_hook_result
+        status_for_exit = _AUDIT.status_for_exit
         """
     ).lstrip()
 

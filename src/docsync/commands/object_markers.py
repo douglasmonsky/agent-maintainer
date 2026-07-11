@@ -6,7 +6,9 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
+from docsync.config.io import read_bounded_text, write_text_file
 from docsync.config.load import load_config
+from docsync.config.paths import resolve_input_within
 from docsync.markdown.object_regions import collect_markers
 from docsync.markdown.parser import parse_markdown_file
 from docsync.trace.load import load_trace
@@ -59,14 +61,19 @@ def repair_object_end_markers(
 ) -> ObjectEndMarkerRepairResult:
     """Plan or apply explicit object end-marker insertions."""
     config = load_config(repo_root, config_path)
-    trace = load_trace(repo_root, trace_path or config.trace_path)
+    trace = load_trace(repo_root, trace_path)
     insertions_by_path: dict[Path, list[ObjectEndMarkerInsertion]] = {}
     for document in trace.documents.values():
         path = document.path
-        full_path = repo_root / path
+        full_path = resolve_input_within(
+            repo_root,
+            path,
+            label="DocSync object-marker input",
+            allow_missing=True,
+        )
         if not full_path.exists():
             continue
-        lines = full_path.read_text(encoding="utf-8").splitlines()
+        lines = read_bounded_text(full_path, label="DocSync object-marker input").splitlines()
         result = parse_markdown_file(
             repo_root,
             path,
@@ -137,16 +144,35 @@ def _apply_insertions(
     object_end_marker: str,
     insertions_by_path: dict[Path, list[ObjectEndMarkerInsertion]],
 ) -> None:
+    resolved_paths = {
+        path: resolve_input_within(
+            repo_root,
+            path,
+            label="DocSync object-marker write target",
+        )
+        for path in insertions_by_path
+    }
+    contents = {
+        path: read_bounded_text(
+            resolved_path,
+            label="DocSync object-marker write target",
+        ).splitlines()
+        for path, resolved_path in resolved_paths.items()
+    }
     for path, insertions in insertions_by_path.items():
-        full_path = repo_root / path
-        lines = full_path.read_text(encoding="utf-8").splitlines()
+        full_path = resolved_paths[path]
+        lines = contents[path]
         for insertion in sorted(insertions, key=lambda item: item.line_number, reverse=True):
             lines.insert(
                 insertion.line_number - 1,
                 _marker_text(object_end_marker, insertion.object_id),
             )
         content = "\n".join(lines)
-        full_path.write_text(f"{content}\n", encoding="utf-8")
+        write_text_file(
+            full_path,
+            f"{content}\n",
+            label="DocSync object-marker write target",
+        )
 
 
 def _marker_text(directive: str, object_id: str) -> str:

@@ -1,0 +1,73 @@
+"""Public CLI and stability classifications used by the config registry."""
+
+from __future__ import annotations
+
+CLI_OVERRIDE_FIELDS = frozenset(
+    (
+        "allow_source_without_test_change",
+        "architecture_tool",
+        "check_jsonschema_args",
+        "coverage_fail_under",
+        "coverage_source",
+        "diff_cover_fail_under",
+        "enable_check_jsonschema",
+        "enable_interrogate",
+        "enable_markdownlint",
+        "enable_mutmut",
+        "enable_pip_audit",
+        "enable_secret_scanning",
+        "enable_semgrep",
+        "enable_taplo",
+        "enable_wemake",
+        "enable_yamllint",
+        "file_length_baseline",
+        "file_length_paths",
+        "interrogate_fail_under",
+        "markdownlint_paths",
+        "mode",
+        "mutmut_args",
+        "package_paths",
+        "require_tests",
+        "secret_scan_history_profiles",
+        "secret_scan_profiles",
+        "secret_scanner",
+        "semgrep_args",
+        "semgrep_profiles",
+        "source_roots",
+        "taplo_paths",
+        "test_roots",
+        "vulture_paths",
+        "yamllint_paths",
+    )
+)
+
+STABLE_FIELDS = frozenset(
+    (
+        "allow_source_without_test_change",
+        "architecture_tool",
+        "change_block_files",
+        "change_block_lines",
+        "change_warn_files",
+        "change_warn_lines",
+        "coverage_fail_under",
+        "coverage_source",
+        "diff_cover_fail_under",
+        "file_length_baseline",
+        "file_length_max_physical",
+        "file_length_max_source",
+        "file_length_paths",
+        "mode",
+        "package_paths",
+        "pyright_type_checking_mode",
+        "require_tests",
+        "ruff_max_complexity",
+        "source_roots",
+        "source_without_test_change_error_profiles",
+        "suppression_max_new",
+        "test_roots",
+        "vulture_paths",
+        "xenon_max_absolute",
+        "xenon_max_average",
+        "xenon_max_modules",
+    )
+)

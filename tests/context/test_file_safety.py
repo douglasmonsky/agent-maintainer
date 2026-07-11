@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
+
+import pytest
 
 import agent_context.reading.file_safety as file_safety_module
 import agent_maintainer.context.reading.file_safety as old_file_safety
-from agent_context.reading.file_safety import inspect_file
+from agent_context.reading.file_safety import MAX_FILE_BYTES, inspect_file, read_text_file
 
 MINIFIED_JSON_CHARS = 2_100
 
@@ -115,3 +118,134 @@ def test_minified_json_is_refused(tmp_path: Path) -> None:
 
     assert result.allowed is False
     assert result.reason == "minified JSON"
+
+
+@pytest.mark.parametrize(
+    "name",
+    (
+        ".docker/config.json",
+        ".env",
+        ".env.production",
+        ".envrc",
+        ".git-credentials",
+        ".kube/config",
+        "auth.json",
+        "client_secret_123.json",
+        "credentials.json",
+        "credentials.yml",
+        "id_rsa",
+        "kubeconfig",
+        "private-key.pem",
+        "secret.json",
+        "secrets.yaml",
+        "terraform.tfstate.backup",
+        "terraform.tfvars",
+        "terraform.tfvars.json",
+        "token.json",
+    ),
+)
+def test_sensitive_file_names_are_refused_without_open(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    name: str,
+) -> None:
+    """Credential-bearing names are denied before file contents are opened."""
+
+    path = tmp_path / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("secret", encoding="utf-8")
+    monkeypatch.setattr(file_safety_module.os, "open", forbidden_open)
+
+    result = inspect_file(path)
+
+    assert result.allowed is False
+    assert result.reason == "sensitive path"
+
+
+def test_sparse_oversized_file_is_refused_without_open(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Sparse files over the byte ceiling are rejected from lstat metadata."""
+
+    path = tmp_path / "oversized.txt"
+    with path.open("wb") as stream:
+        stream.seek(MAX_FILE_BYTES)
+        stream.write(b"x")
+    monkeypatch.setattr(file_safety_module.os, "open", forbidden_open)
+
+    result = inspect_file(path)
+
+    assert result.allowed is False
+    assert "byte limit" in result.reason
+
+
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFO support is POSIX-only")
+def test_fifo_is_refused_without_opening_or_blocking(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """FIFO metadata is refused before the bounded reader opens it."""
+
+    path = tmp_path / "context.pipe"
+    os.mkfifo(path)
+    monkeypatch.setattr(file_safety_module.os, "open", forbidden_open)
+
+    result = inspect_file(path)
+
+    assert result.allowed is False
+    assert result.reason == "not a regular file"
+
+
+def test_directory_is_refused_as_non_regular(tmp_path: Path) -> None:
+    """Directories cannot enter the text reader."""
+
+    result = inspect_file(tmp_path)
+
+    assert result.allowed is False
+    assert result.reason == "not a regular file"
+
+
+def test_symlink_parent_is_refused(tmp_path: Path) -> None:
+    """A symlinked parent cannot redirect an otherwise regular file read."""
+
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "source.py").write_text("secret = True", encoding="utf-8")
+    redirect = tmp_path / "redirect"
+    redirect.symlink_to(outside, target_is_directory=True)
+
+    result = inspect_file(redirect / "source.py")
+
+    assert result.allowed is False
+    assert result.reason == "symlink parent"
+
+
+def test_safe_text_reader_uses_one_descriptor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Safety inspection and UTF-8 decoding share one bounded file read."""
+
+    path = tmp_path / "source.py"
+    path.write_text("value = 1\n", encoding="utf-8")
+    real_open = file_safety_module.os.open
+    opened: list[Path] = []
+
+    def counted_open(target: Path, flags: int) -> int:
+        opened.append(Path(target))
+        return real_open(target, flags)
+
+    monkeypatch.setattr(file_safety_module.os, "open", counted_open)
+
+    result = read_text_file(path)
+
+    assert result.safety.allowed is True
+    assert result.text == "value = 1\n"
+    assert opened == [path]
+
+
+def forbidden_open(*args: object, **kwargs: object) -> int:
+    """Fail if a path-level refusal attempts content access."""
+
+    raise AssertionError(f"unexpected open: {args!r} {kwargs!r}")

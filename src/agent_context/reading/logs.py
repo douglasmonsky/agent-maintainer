@@ -7,9 +7,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent_context.failures import DEFAULT_CONTEXT_BUDGET, load_manifest
+from agent_context.reading.file_safety import read_bounded_utf8_file
 
 DEFAULT_TAIL_LINES = 120
 TOKEN_CHAR_RATIO = 4
+MAX_LOG_BYTES = 8_388_608
 
 
 @dataclass(frozen=True)
@@ -21,6 +23,8 @@ class LogRequest:
     line_range: str | None = None
     budget: int = DEFAULT_CONTEXT_BUDGET
     confirm_large: bool = False
+    workspace_root: Path | None = None
+    require_relative_manifest_paths: bool = True
 
 
 @dataclass(frozen=True)
@@ -49,18 +53,39 @@ class LogSelection:
         }
 
 
-def resolve_log_path(log_dir: Path, check_name: str) -> Path:
+def resolve_log_path(
+    log_dir: Path,
+    check_name: str,
+    *,
+    workspace_root: Path | None = None,
+    require_relative_manifest_paths: bool = True,
+) -> Path:
     """Return log path from manifest or conventional log filename."""
 
+    root = _log_workspace_root(log_dir, workspace_root)
     manifest = load_manifest(log_dir)
-    if manifest is not None:
-        checks = manifest.get("checks", [])
-        if isinstance(checks, list):
-            for check in checks:
-                path = log_path_from_check(check, check_name)
-                if path is not None:
-                    return path if path.is_absolute() else Path.cwd() / path
-    return log_dir / f"{check_name}.log"
+    path = _manifest_log_path(manifest, check_name)
+    if path is None:
+        return log_dir / f"{check_name}.log"
+    if require_relative_manifest_paths:
+        _validate_manifest_path(path)
+        return root / path
+    return path if path.is_absolute() else Path.cwd() / path
+
+
+def _manifest_log_path(manifest: object, check_name: str) -> Path | None:
+    """Return the first matching log path from a manifest payload."""
+
+    if not isinstance(manifest, dict):
+        return None
+    checks = manifest.get("checks", [])
+    if not isinstance(checks, list):
+        return None
+    for check in checks:
+        path = log_path_from_check(check, check_name)
+        if path is not None:
+            return path
+    return None
 
 
 def log_path_from_check(check: object, check_name: str) -> Path | None:
@@ -80,11 +105,57 @@ def select_log(
     """Return selected log content or a bounded refusal."""
 
     request = request or LogRequest()
-    path = resolve_log_path(log_dir, check_name)
+    root = _log_workspace_root(log_dir, request.workspace_root)
+    resolved = _selected_log_text(log_dir, check_name, request=request, workspace_root=root)
+    if isinstance(resolved, LogSelection):
+        return resolved
+    path, text = resolved
+    return _bounded_log_selection(check_name, path, text, request=request)
+
+
+def _selected_log_text(
+    log_dir: Path,
+    check_name: str,
+    *,
+    request: LogRequest,
+    workspace_root: Path,
+) -> tuple[Path, str] | LogSelection:
+    """Resolve and read one safe log, or return a terminal selection."""
+
     try:
-        text = path.read_text(encoding="utf-8")
-    except OSError:
-        return LogSelection(check_name, path, f"No log found for {check_name}: {path}", 0, 0, 0)
+        path = resolve_log_path(
+            log_dir,
+            check_name,
+            workspace_root=workspace_root,
+            require_relative_manifest_paths=request.require_relative_manifest_paths,
+        )
+    except ValueError as exc:
+        return LogSelection(check_name, log_dir, f"Refused log context: {exc}", 0, 0, 0, True)
+    safe_read = read_bounded_utf8_file(
+        path,
+        workspace_root=workspace_root,
+        max_bytes=MAX_LOG_BYTES,
+    )
+    if safe_read.text is None:
+        reason = safe_read.safety.reason
+        if reason.startswith("unreadable:"):
+            prefix = f"No log found for {check_name}"
+            message = ": ".join((prefix, str(path)))
+            return LogSelection(check_name, path, message, 0, 0, 0)
+        message = f"Refused log context: {reason}"
+        return LogSelection(check_name, path, message, 0, len(message), 0, True)
+    return path, safe_read.text
+
+
+def _bounded_log_selection(
+    check_name: str,
+    path: Path,
+    text: str,
+    *,
+    request: LogRequest,
+) -> LogSelection:
+    """Slice and budget one already-read log."""
+
     selected, omitted_lines = slice_text(text, request)
     selected_chars = len(selected)
     original_chars = len(text)
@@ -102,6 +173,23 @@ def select_log(
         omitted_chars = selected_chars - request.budget
         bounded = f"{bounded}\n... log output omitted {omitted_chars} chars."
     return LogSelection(check_name, path, bounded, original_chars, len(bounded), omitted_lines)
+
+
+def _log_workspace_root(log_dir: Path, workspace_root: Path | None) -> Path:
+    """Return the explicit workspace, or the explicit absolute log directory."""
+
+    if workspace_root is not None:
+        return workspace_root.resolve()
+    return log_dir.resolve().parent if log_dir.is_absolute() else Path.cwd().resolve()
+
+
+def _validate_manifest_path(path: Path) -> None:
+    """Reject manifest-controlled absolute and traversal log paths."""
+
+    if path.is_absolute():
+        raise ValueError("manifest log_path must be workspace-relative")
+    if ".." in path.parts:
+        raise ValueError("manifest log_path must not contain parent traversal")
 
 
 def slice_text(

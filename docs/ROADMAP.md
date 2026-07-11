@@ -54,10 +54,34 @@ Current external release state:
       package indexes. Release evidence is recorded in
       [`docs/releases/0.1.0b5.md`](releases/0.1.0b5.md).
 
+Current source candidate state:
+
+- [x] The unpublished `0.1.0b6` release candidate is the package-metadata and
+      main-branch documentation target. Review the
+      [candidate notes](releases/0.1.0b6.md) and
+      [upgrade guide](upgrading-to-0.1.0b6.md).
+- [ ] `0.1.0b6` becomes the current external release only after the exact
+      candidate commit passes the complete release matrix and publication
+      evidence replaces candidate intent in the
+      [release index](releases/README.md).
+
 Current pre-case-study decision:
 
 - [x] Pre-case-study hardening complete; measured proof work promoted to
       Phase 89.
+
+## Active: Critical Stabilization
+
+Feature-track work is paused while the repository closes the release-blocking
+findings from the 2026-07-09 deep audit. The decision-complete implementation
+and release-readiness contract is:
+
+[`docs/roadmap/critical-stabilization.md`](roadmap/critical-stabilization.md).
+
+This stabilization program explicitly supersedes the normal one-phase-per-PR
+rule for its dedicated integration branch. It still requires focused commits,
+tests with each behavior change, and the full verification matrix before the
+program can be marked complete.
 
 ## Completed Phase Archive
 
@@ -108,8 +132,14 @@ Track work:
 - [x] Phase 165: React Fixture Corpus And Reviewability Baseline
 - [x] Phase 166: TypeScript Package-Manager And Workspace Evidence
 - [x] Phase 167: React/Vite/Next Structured Test And Coverage Facts
-- [ ] Phase 168: TypeScript/React Doctor And Setup Guidance
-- [ ] Phase 169: TypeScript/React Blocking-Gate Promotion Assessment
+- [x] Phase 168: TypeScript/React Doctor And Setup Guidance
+- [x] Phase 169: TypeScript Repair-Fact Output Guidance
+- [x] Phase 170: TypeScript Setup Advisor Output Guidance
+- [x] Phase 171: TypeScript Setup Advisor Script Fixtures
+- [x] Phase 172: TypeScript Setup Advisor Root Package Boundary
+- [x] Phase 173: TypeScript Workspace Command Ownership Design
+- [x] Phase 174: TypeScript Workspace Command Config
+- [x] Phase 175: Setup Advisor Workspace Command Example
 
 ## Planned: Codex Wait And Rewake Hardening
 
@@ -123,7 +153,8 @@ Detailed scope:
 
 Track work:
 
-- [ ] Phase 176: Codex Terminal Rewake Hardening
+- [ ] Phase 176: Codex Terminal Rewake Hardening — implementation is complete;
+      the explicitly gated real-turn smoke remains pending user authorization.
 
 ## Future Work
 

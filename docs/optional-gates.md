@@ -37,6 +37,9 @@ Hardening covers docs/config and security-adjacent surfaces:
 - check-jsonschema;
 - markdownlint-cli2 and Taplo through Node metadata when selected.
 
+The DocSync gate explicitly requests reports for Agent Maintainer artifacts;
+plain standalone `docsync check` performs no report writes.
+
 ## Manual
 
 Manual gates are intentionally slower or more specialized:

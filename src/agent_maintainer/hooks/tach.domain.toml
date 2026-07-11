@@ -19,6 +19,7 @@ depends_on = [
 [[modules]]
 path = "cli"
 depends_on = [
+  "lifecycle",
   "manager",
   "pr_wait",
   "runtime",
@@ -38,11 +39,26 @@ path = "discovery"
 depends_on = []
 
 [[modules]]
+path = "lifecycle"
+depends_on = [
+  "//agent_client_hooks.adapters",
+  "//agent_client_hooks.manifest",
+  "//agent_client_hooks.removal",
+  "manager",
+  "mutations",
+]
+
+[[modules]]
 path = "manager"
 depends_on = [
   "//agent_client_hooks.adapters",
   "//agent_client_hooks.merge",
+  "mutations",
 ]
+
+[[modules]]
+path = "mutations"
+depends_on = ["//agent_client_hooks.adapters"]
 
 [[modules]]
 path = "merge"

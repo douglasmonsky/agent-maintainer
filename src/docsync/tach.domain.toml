@@ -24,14 +24,26 @@ depends_on = [
 [[modules]]
 path = "attestations.create"
 depends_on = [
+  "config.io",
+  "config.paths",
   "core.fingerprints",
+  "core.models",
   "indexer",
+]
+
+[[modules]]
+path = "attestations.files"
+depends_on = [
+  "config.io",
+  "config.load",
+  "config.paths",
+  "core.models",
 ]
 
 [[modules]]
 path = "attestations.load"
 depends_on = [
-  "config.load",
+  "attestations.files",
   "core.fingerprints",
   "core.models",
 ]
@@ -77,6 +89,9 @@ depends_on = [
   "api",
   "commands.object_markers",
   "config.defaults",
+  "config.io",
+  "config.paths",
+  "core.models",
   "freshness",
   "reports.human",
   "reports.json_report",
@@ -87,7 +102,9 @@ depends_on = [
 [[modules]]
 path = "commands.object_markers"
 depends_on = [
+  "config.io",
   "config.load",
+  "config.paths",
   "markdown.object_regions",
   "markdown.parser",
   "trace.load",
@@ -104,20 +121,53 @@ path = "config.defaults"
 depends_on = []
 
 [[modules]]
+path = "config.errors"
+depends_on = []
+
+[[modules]]
+path = "config.io"
+depends_on = [
+  "config.errors",
+]
+
+[[modules]]
 path = "config.load"
 depends_on = [
+  "config.errors",
+  "config.io",
+  "config.resolution",
   "core.models",
+]
+
+[[modules]]
+path = "config.paths"
+depends_on = [
+  "config.errors",
+  "config.io",
+]
+
+[[modules]]
+path = "config.resolution"
+depends_on = [
+  "config.defaults",
+  "config.errors",
+  "config.io",
+  "config.paths",
 ]
 
 [[modules]]
 path = "freshness"
 depends_on = [
+  "config.defaults",
+  "config.io",
   "core.models",
 ]
 
 [[modules]]
 path = "comments.scanner"
 depends_on = [
+  "config.io",
+  "config.paths",
   "core.fingerprints",
   "core.models",
 ]
@@ -134,13 +184,20 @@ depends_on = []
 path = "git.diff"
 depends_on = [
   "core.models",
+  "git.process",
 ]
+
+[[modules]]
+path = "git.process"
+depends_on = []
 
 [[modules]]
 path = "indexer"
 depends_on = [
   "comments.scanner",
+  "config.io",
   "config.load",
+  "config.paths",
   "core.models",
   "markdown.parser",
   "trace.load",
@@ -149,6 +206,8 @@ depends_on = [
 [[modules]]
 path = "markdown.parser"
 depends_on = [
+    "config.io",
+    "config.paths",
     "core.fingerprints",
     "core.models",
     "markdown.object_regions",
@@ -169,31 +228,60 @@ depends_on = [
 [[modules]]
 path = "reports.json_report"
 depends_on = [
+  "config.io",
   "core.models",
 ]
 
 [[modules]]
 path = "reports.review_packet"
 depends_on = [
+  "config.io",
+  "config.paths",
   "core.models",
 ]
 
 [[modules]]
 path = "reports.sarif"
 depends_on = [
+  "config.io",
   "core.models",
 ]
 
 [[modules]]
+path = "trace.edit_payload"
+depends_on = [
+  "config.io",
+  "config.load",
+  "config.paths",
+  "trace.errors",
+]
+
+[[modules]]
+path = "trace.errors"
+depends_on = []
+
+[[modules]]
 path = "trace.load"
 depends_on = [
+  "config.io",
   "config.load",
+  "config.paths",
   "core.fingerprints",
+  "core.models",
+  "trace.spans",
+]
+
+[[modules]]
+path = "trace.spans"
+depends_on = [
   "core.models",
 ]
 
 [[modules]]
 path = "trace.edit"
 depends_on = [
-  "config.load",
+  "config.io",
+  "config.paths",
+  "trace.edit_payload",
+  "trace.errors",
 ]

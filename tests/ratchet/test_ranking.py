@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 from agent_maintainer.ratchet import cli as ratchet_cli
+from agent_maintainer.ratchet import ranking
 from agent_maintainer.ratchet.baseline import write_baseline
 from agent_maintainer.ratchet.models import (
     BaselineProvenance,
@@ -58,6 +59,24 @@ def test_ranked_targets_respect_limit() -> None:
     )
 
     assert len(ranked_targets(report, changed_path_set=set(), limit=1)) == 1
+
+
+def test_changed_paths_rejects_git_option_injection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An option-like revision is refused before Git can write outside the repo."""
+
+    outside = tmp_path / "outside.diff"
+    outside.write_text("unchanged\n", encoding="utf-8")
+
+    def forbidden_run(*args: object, **kwargs: object) -> None:
+        raise AssertionError(f"unsafe revision reached subprocess: {args!r} {kwargs!r}")
+
+    monkeypatch.setattr(ranking.subprocess, "run", forbidden_run)
+
+    assert ranking.changed_paths(f"--output={outside}") == set()
+    assert outside.read_text(encoding="utf-8") == "unchanged\n"
 
 
 def test_ratchet_next_outputs_text(

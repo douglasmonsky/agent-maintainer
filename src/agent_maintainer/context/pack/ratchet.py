@@ -14,18 +14,17 @@ def ratchet_payload(
     baseline_path: Path | None,
     base_ref: str,
     target_limit: int,
+    live_recompute: bool = True,
 ) -> dict[str, object]:
     """Return ratchet state targets when a baseline exists."""
 
+    if not live_recompute:
+        return _unavailable_payload(
+            baseline_path,
+            reason="live ratchet recomputation disabled for this bounded context request",
+        )
     if baseline_path is None or not baseline_path.exists():
-        return {
-            "baseline_path": None if baseline_path is None else str(baseline_path),
-            "available": False,
-            "reason": "ratchet baseline not found",
-            "counts": {},
-            "stale_reasons": [],
-            "top_targets": [],
-        }
+        return _unavailable_payload(baseline_path, reason="ratchet baseline not found")
 
     baseline = read_baseline(baseline_path)
     report = status_report(baseline, base_ref=base_ref)
@@ -49,8 +48,30 @@ def target_commands(ratchet_state: dict[str, object]) -> tuple[str, ...]:
     targets = ratchet_state.get("top_targets", [])
     if not isinstance(targets, list):
         return ()
-    return tuple(
-        str(target["first_command"])
-        for target in targets
-        if isinstance(target, dict) and target.get("first_command")
-    )
+    commands = (_target_command(target) for target in targets)
+    return tuple(command for command in commands if command is not None)
+
+
+def _unavailable_payload(
+    baseline_path: Path | None,
+    *,
+    reason: str,
+) -> dict[str, object]:
+    """Return the stable payload shape for unavailable ratchet state."""
+
+    return {
+        "baseline_path": None if baseline_path is None else str(baseline_path),
+        "available": False,
+        "reason": reason,
+        "counts": {},
+        "stale_reasons": [],
+        "top_targets": [],
+    }
+
+
+def _target_command(target: object) -> str | None:
+    """Return one target command when the payload item is valid."""
+
+    if not isinstance(target, dict) or not target.get("first_command"):
+        return None
+    return str(target["first_command"])

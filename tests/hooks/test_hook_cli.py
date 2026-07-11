@@ -6,10 +6,30 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.hooks import cli, manager
+from agent_maintainer.hooks import cli, lifecycle, manager
 
 INSTALL_STATUS = 7
+UNINSTALL_STATUS = 9
 RUNTIME_STATUS = 11
+
+
+@pytest.mark.parametrize("command", ("update", "uninstall"))
+def test_lifecycle_help_stops_before_dispatch(
+    command: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Lifecycle help exits in argparse without calling a mutation handler."""
+
+    monkeypatch.setattr(
+        cli,
+        f"{command}_hooks",
+        lambda _options: pytest.fail("help dispatched a mutation"),
+    )
+
+    with pytest.raises(SystemExit) as raised:
+        cli.main([command, "--help"])
+
+    assert raised.value.code == 0
 
 
 def test_install_command_delegates_options(
@@ -85,6 +105,69 @@ def test_install_command_delegates_async_rewake_option(
             dry_run=True,
             async_rewake_stop=True,
         ),
+    ]
+
+
+def test_update_command_delegates_install_options(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Update uses the install-like lossless merge option contract."""
+
+    calls: list[manager.InstallOptions] = []
+    monkeypatch.setattr(
+        cli, "update_hooks", lambda options: calls.append(options) or INSTALL_STATUS
+    )
+
+    status = cli.main(["update", "codex", "--target", str(tmp_path), "--dry-run"])
+
+    assert status == INSTALL_STATUS
+    assert calls == [
+        manager.InstallOptions(
+            target=tmp_path,
+            client=manager.CODEX_CLIENT,
+            dry_run=True,
+        )
+    ]
+
+
+def test_uninstall_command_delegates_removal_options(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Uninstall passes scope, confirmation, preview, and ownership flags."""
+
+    calls: list[lifecycle.UninstallOptions] = []
+    monkeypatch.setattr(
+        cli,
+        "uninstall_hooks",
+        lambda options: calls.append(options) or UNINSTALL_STATUS,
+    )
+
+    status = cli.main(
+        [
+            "uninstall",
+            "claude-code",
+            "--target",
+            str(tmp_path),
+            "--scope",
+            manager.USER_SCOPE,
+            "--force",
+            "--yes",
+            "--dry-run",
+        ]
+    )
+
+    assert status == UNINSTALL_STATUS
+    assert calls == [
+        lifecycle.UninstallOptions(
+            target=tmp_path,
+            client=manager.CLAUDE_CODE_CLIENT,
+            scope=manager.USER_SCOPE,
+            force=True,
+            yes=True,
+            dry_run=True,
+        )
     ]
 
 

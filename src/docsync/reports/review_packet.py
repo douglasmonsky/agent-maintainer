@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from docsync.config.io import read_bounded_text
+from docsync.config.paths import resolve_input_within
 from docsync.core.models import CheckResult, EvidenceAnchor, LineSpan
 
 
@@ -101,8 +103,17 @@ def _evidence_snippet(repo_root: Path, anchor: EvidenceAnchor) -> dict[str, Any]
 
 
 def _snippet(repo_root: Path, span: LineSpan) -> dict[str, Any]:
-    path = repo_root / span.path
-    lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    path = resolve_input_within(
+        repo_root,
+        span.path,
+        label="DocSync review snippet input",
+        allow_missing=True,
+    )
+    lines = (
+        read_bounded_text(path, label="DocSync review snippet input").splitlines()
+        if path.exists()
+        else []
+    )
     start = max(span.start_line, 1)
     end = min(span.end_line, len(lines))
     return {

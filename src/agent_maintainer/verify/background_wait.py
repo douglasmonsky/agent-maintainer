@@ -79,8 +79,10 @@ def start_wait_watcher(root: Path, wait_id: str) -> tuple[bool, str]:
         subprocess.Popen(  # nosec B603 # pylint: disable=consider-using-with
             list(command),
             cwd=root,
+            stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            close_fds=True,
             start_new_session=True,
         )
     except OSError as exc:

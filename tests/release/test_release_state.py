@@ -28,28 +28,34 @@ def project_metadata() -> dict[str, object]:
 @pytest.mark.release
 @release_only
 def test_release_version_has_changelog_entry() -> None:
-    """Release version must appear in the changelog."""
+    """Candidate version must appear as the explicit Unreleased target."""
 
     version = str(project_metadata()["version"])
     changelog = (REPO_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
 
-    assert f"## {version}" in changelog
+    assert f"## Unreleased (target: {version})" in changelog
 
 
 @pytest.mark.release
 @release_only
-def test_release_evidence_matches_version_when_present() -> None:
-    """Existing release evidence must match the declared package version."""
+def test_release_candidate_notes_are_truthful() -> None:
+    """Candidate notes identify the version without inventing release evidence."""
 
     version = str(project_metadata()["version"])
-    evidence_path = REPO_ROOT / "docs" / "releases" / f"{version}.md"
+    candidate_path = REPO_ROOT / "docs" / "releases" / f"{version}.md"
+    candidate = candidate_path.read_text(encoding="utf-8")
 
-    if not evidence_path.exists():
-        return
-
-    evidence = evidence_path.read_text(encoding="utf-8")
-    assert f"Agent Maintainer {version}" in evidence
-    assert f"agent_maintainer-{version}" in evidence
+    assert f"# Agent Maintainer {version} Candidate Notes" in candidate
+    assert "- Status: `unpublished`" in candidate
+    for false_evidence in (
+        "Git tag:",
+        "GitHub release:",
+        "TestPyPI workflow:",
+        "PyPI workflow:",
+        "sha256:",
+        f"agent_maintainer-{version}",
+    ):
+        assert false_evidence not in candidate
 
 
 @pytest.mark.release
@@ -75,3 +81,4 @@ def test_public_metadata_urls_match_repository() -> None:
     assert isinstance(urls, dict)
     assert urls["Repository"] == "https://github.com/douglasmonsky/agent-maintainer"
     assert urls["Issues"] == "https://github.com/douglasmonsky/agent-maintainer/issues"
+    assert urls["Documentation"] == "https://github.com/douglasmonsky/agent-maintainer#readme"

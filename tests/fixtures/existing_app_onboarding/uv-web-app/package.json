@@ -1,0 +1,13 @@
+{
+  "name": "uv-web-app-assets",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "pytest -q"
+  },
+  "devDependencies": {
+    "vitest": "2.1.9"
+  }
+}

@@ -11,7 +11,7 @@ should take priority over new scanner categories.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-74-review-driven-stabilization.md`](roadmap/phases/phase-74-review-driven-stabilization.md)
+[`docs/roadmap/phases/phase-74-review-driven-stabilization.md`](../phases/phase-74-review-driven-stabilization.md)
 
 Completed work:
 
@@ -26,7 +26,7 @@ reduces real mutation survivors, and keeps cleanup refactors evidence-backed.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-75-below-10-debt-and-strict-typing-ratchets.md`](roadmap/phases/phase-75-below-10-debt-and-strict-typing-ratchets.md)
+[`docs/roadmap/phases/phase-75-below-10-debt-and-strict-typing-ratchets.md`](../phases/phase-75-below-10-debt-and-strict-typing-ratchets.md)
 
 Completed work:
 
@@ -39,7 +39,7 @@ catalog and policy behavior. This phase creates the polyglot provider roadmap
 without runtime behavior changes, provider implementation, new language support,
 or config migration. Detailed scope:
 
-[`docs/roadmap/phases/phase-76-ecosystem-provider-roadmap.md`](roadmap/phases/phase-76-ecosystem-provider-roadmap.md)
+[`docs/roadmap/phases/phase-76-ecosystem-provider-roadmap.md`](../phases/phase-76-ecosystem-provider-roadmap.md)
 
 Completed work:
 
@@ -68,7 +68,7 @@ keeps Python the core/reference provider and TypeScript/JavaScript experimental,
 and aligns provider metadata, doctor output, and tool capability hints.
 Detailed scope:
 
-[`docs/roadmap/phases/phase-93-provider-stabilization-and-doctor-alignment.md`](roadmap/phases/phase-93-provider-stabilization-and-doctor-alignment.md)
+[`docs/roadmap/phases/phase-93-provider-stabilization-and-doctor-alignment.md`](../phases/phase-93-provider-stabilization-and-doctor-alignment.md)
 
 Completed work:
 
@@ -83,7 +83,7 @@ structure cohesion, and future file-change classification before those checks
 are generalized across TypeScript/JavaScript or later providers.
 Detailed scope:
 
-[`docs/roadmap/phases/phase-94-multi-ecosystem-reviewability-policy-design.md`](roadmap/phases/phase-94-multi-ecosystem-reviewability-policy-design.md)
+[`docs/roadmap/phases/phase-94-multi-ecosystem-reviewability-policy-design.md`](../phases/phase-94-multi-ecosystem-reviewability-policy-design.md)
 
 Completed work:
 
@@ -97,7 +97,7 @@ reviewability behavior unchanged while making changed-file role and ecosystem
 facts explicit for future advisory TypeScript/JavaScript policy work.
 Detailed scope:
 
-[`docs/roadmap/phases/phase-95-provider-aware-file-change-classification.md`](roadmap/phases/phase-95-provider-aware-file-change-classification.md)
+[`docs/roadmap/phases/phase-95-provider-aware-file-change-classification.md`](../phases/phase-95-provider-aware-file-change-classification.md)
 
 Completed work:
 
@@ -111,7 +111,7 @@ This phase adds a low-noise advisory assessment that reports changed files by
 ecosystem and role, then points users to current Python-only blocking policy.
 Detailed scope:
 
-[`docs/roadmap/phases/phase-96-advisory-reviewability-assessment.md`](roadmap/phases/phase-96-advisory-reviewability-assessment.md)
+[`docs/roadmap/phases/phase-96-advisory-reviewability-assessment.md`](../phases/phase-96-advisory-reviewability-assessment.md)
 
 Completed work:
 
@@ -125,7 +125,7 @@ provider-owned advisory suppression classifiers for TypeScript/JavaScript
 and surfaces counts through `assess reviewability`.
 Detailed scope:
 
-[`docs/roadmap/phases/phase-97-advisory-ecosystem-suppression-classification.md`](roadmap/phases/phase-97-advisory-ecosystem-suppression-classification.md)
+[`docs/roadmap/phases/phase-97-advisory-ecosystem-suppression-classification.md`](../phases/phase-97-advisory-ecosystem-suppression-classification.md)
 
 Completed work:
 
@@ -140,7 +140,7 @@ files, and advisory suppressions while splitting advisory change collection from
 the Python change-budget filter.
 Detailed scope:
 
-[`docs/roadmap/phases/phase-98-typescript-reviewability-fixture-evidence.md`](roadmap/phases/phase-98-typescript-reviewability-fixture-evidence.md)
+[`docs/roadmap/phases/phase-98-typescript-reviewability-fixture-evidence.md`](../phases/phase-98-typescript-reviewability-fixture-evidence.md)
 
 Completed work:
 
@@ -154,7 +154,7 @@ TypeScript/JavaScript source/test advisory findings, and broad suppression
 findings while keeping TypeScript/JavaScript non-blocking.
 Detailed scope:
 
-[`docs/roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md`](roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md)
+[`docs/roadmap/phases/phase-99-advisory-provider-reviewability-summaries.md`](../phases/phase-99-advisory-provider-reviewability-summaries.md)
 
 Completed work:
 
@@ -169,7 +169,7 @@ notes without adding new ecosystems or blocking TypeScript gates.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-100-typescript-provider-maturation.md`](roadmap/phases/phase-100-typescript-provider-maturation.md)
+[`docs/roadmap/phases/phase-100-typescript-provider-maturation.md`](../phases/phase-100-typescript-provider-maturation.md)
 
 Completed work:
 
@@ -183,7 +183,7 @@ keeping TypeScript non-blocking.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-101-typescript-advisory-threshold-evidence.md`](roadmap/phases/phase-101-typescript-advisory-threshold-evidence.md)
+[`docs/roadmap/phases/phase-101-typescript-advisory-threshold-evidence.md`](../phases/phase-101-typescript-advisory-threshold-evidence.md)
 
 Completed work:
 
@@ -198,7 +198,7 @@ policy.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-102-typescript-setup-advisor.md`](roadmap/phases/phase-102-typescript-setup-advisor.md)
+[`docs/roadmap/phases/phase-102-typescript-setup-advisor.md`](../phases/phase-102-typescript-setup-advisor.md)
 
 Completed work:
 
@@ -213,7 +213,7 @@ package-manager autodetection or blocking TypeScript policy.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-104-typescript-test-repair-facts.md`](roadmap/phases/phase-104-typescript-test-repair-facts.md)
+[`docs/roadmap/phases/phase-104-typescript-test-repair-facts.md`](../phases/phase-104-typescript-test-repair-facts.md)
 
 Completed work:
 
@@ -228,7 +228,7 @@ support or public plugin API work.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-105-provider-dispatch-registry.md`](roadmap/phases/phase-105-provider-dispatch-registry.md)
+[`docs/roadmap/phases/phase-105-provider-dispatch-registry.md`](../phases/phase-105-provider-dispatch-registry.md)
 
 Completed work:
 
@@ -242,7 +242,7 @@ TypeScript/JavaScript is the only active non-Python maturation track.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-106-archive-go-provider-history.md`](roadmap/phases/phase-106-archive-go-provider-history.md)
+[`docs/roadmap/phases/phase-106-archive-go-provider-history.md`](../phases/phase-106-archive-go-provider-history.md)
 
 Completed work:
 
@@ -256,7 +256,7 @@ current state without mistaking old phase summaries for active work.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-107-roadmap-status-label-cleanup.md`](roadmap/phases/phase-107-roadmap-status-label-cleanup.md)
+[`docs/roadmap/phases/phase-107-roadmap-status-label-cleanup.md`](../phases/phase-107-roadmap-status-label-cleanup.md)
 
 Completed work:
 
@@ -271,7 +271,7 @@ should point to run-scoped artifacts and one expansion command by default.
 
 Detailed scope:
 
-[`docs/roadmap/phases/phase-108-repair-capsule-output-contract.md`](roadmap/phases/phase-108-repair-capsule-output-contract.md)
+[`docs/roadmap/phases/phase-108-repair-capsule-output-contract.md`](../phases/phase-108-repair-capsule-output-contract.md)
 
 Completed work:
 

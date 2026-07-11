@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+from functools import partial
 from pathlib import Path
 
 import pytest
 
+from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import cli
 from agent_maintainer.wait.github import GitHubRunState, GitHubWaitResult
 from agent_maintainer.wait.github_pr import (
@@ -18,12 +21,14 @@ from agent_maintainer.wait.registry import (
     RegisterGitHubPrWait,
     RegisterGitHubRunWait,
     RegisterVerifierWait,
+    WaitRecord,
     WaitRegistry,
 )
-from agent_maintainer.wait.sweeper import sweep_once
+from agent_maintainer.wait.sweeper import DetachedWatcher, SweepSummary, sweep_once
 from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 PR_NUMBER = "291"
+IDEMPOTENT_REGISTRATION_CALLS = 2
 
 
 def test_register_github_pr_cli_writes_json(
@@ -125,26 +130,48 @@ def test_register_cli_can_start_watcher(
     """Wait register CLI can start detached watcher."""
 
     calls: list[tuple[Path, str]] = []
+    sink = InMemoryRuntimeEventSink()
+    monkeypatch.setattr(WaitRuntimeEvents, "create", partial(WaitRuntimeEvents, sink=sink))
+
+    def start_watcher(root: Path, wait_id: str) -> DetachedWatcher:
+        calls.append((root, wait_id))
+        return DetachedWatcher(command=("python",), pid=123)
+
     monkeypatch.setattr(
         "agent_maintainer.wait.broker.start_wait_watcher",
-        lambda root, wait_id: calls.append((root, wait_id)),
+        start_watcher,
     )
 
-    status = cli.main(
-        [
-            "register",
-            "github-pr",
-            PR_NUMBER,
-            "--root",
-            str(tmp_path),
-            "--platform",
-            "claude",
-            "--start-watcher",
-        ],
-    )
+    argv = [
+        "register",
+        "github-pr",
+        PR_NUMBER,
+        "--root",
+        str(tmp_path),
+        "--platform",
+        "claude",
+        "--start-watcher",
+    ]
+    status = cli.main(argv)
+    duplicate_status = cli.main(argv)
 
     assert status == 0
-    assert len(calls) == 1
+    assert duplicate_status == 0
+    assert len(calls) == IDEMPOTENT_REGISTRATION_CALLS
+    assert calls[0][1] == calls[1][1]
+    assert [record["event_name"] for record in sink.records] == [
+        "wait.registered",
+        "wait.watcher_started",
+        "wait.fallback_used",
+    ]
+    watcher_attributes = sink.records[1]["attributes"]
+    assert isinstance(watcher_attributes, dict)
+    assert watcher_attributes == {
+        "strategy": "popen",
+        "target_id": PR_NUMBER,
+        "target_kind": "github-pr",
+        "wait_id": calls[0][1],
+    }
     assert calls[0][0] == tmp_path
     assert calls[0][1] in capsys.readouterr().out
 
@@ -156,11 +183,10 @@ def test_sweep_once_cli_prints_summary(
 ) -> None:
     """Wait sweep once CLI renders compact summary."""
 
-    monkeypatch.setattr(
-        cli,
-        "sweep_once",
-        lambda _registry: cli.SweepSummary(checked=1, updated=1, pending=0, ready=1),
-    )
+    def sweep_summary(_registry: WaitRegistry) -> SweepSummary:
+        return SweepSummary(checked=1, updated=1, pending=0, ready=1)
+
+    monkeypatch.setattr(cli, "sweep_once", sweep_summary)
 
     status = cli.main(["sweep", "--once", "--root", str(tmp_path)])
 
@@ -282,7 +308,11 @@ def test_sweep_watch_cli_prints_resume(
             ),
         ),
     )
-    monkeypatch.setattr(cli, "watch_wait", lambda _registry, _wait_id: completed)
+
+    def completed_watch(_registry: WaitRegistry, _wait_id: str) -> WaitRecord:
+        return completed
+
+    monkeypatch.setattr(cli, "watch_wait", completed_watch)
 
     status = cli.main(["sweep", "--watch", record.wait_id, "--root", str(tmp_path)])
 

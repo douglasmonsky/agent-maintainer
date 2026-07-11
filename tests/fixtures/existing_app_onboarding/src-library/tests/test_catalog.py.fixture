@@ -1,0 +1,9 @@
+"""Tests for the synthetic catalog library."""
+
+from acme_catalog import normalize_sku
+
+
+def test_normalize_sku() -> None:
+    """Whitespace and word separators are normalized."""
+
+    assert normalize_sku("  blue widget ") == "BLUE-WIDGET"

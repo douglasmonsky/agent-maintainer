@@ -18,6 +18,7 @@ from agent_maintainer.verify.result_summary import apply_optional_skip_policy
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
 STRICT_COMPLEXITY = 8
+INFRASTRUCTURE_ERROR_STATUS = 2
 
 
 def test_main_async_launches_background_verifier(
@@ -51,6 +52,44 @@ def test_main_async_launches_background_verifier(
     output = capsys.readouterr().out
     assert "Result: PENDING" in output
     assert "python -m agent_maintainer wait verifier async-run" in output
+
+
+def test_main_async_launch_failure_is_compact(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Infrastructure spawn errors return status 2 without a traceback."""
+
+    monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
+    monkeypatch.setattr(
+        verify_quiet,
+        "load_config",
+        lambda: replace(
+            MaintainerConfig(),
+            source_roots=("src",),
+            package_paths=("src",),
+            test_roots=("tests",),
+            diagnostic_artifacts_dir=str(tmp_path / ".verify-logs"),
+        ),
+    )
+
+    def fail_launch(_request: AsyncVerifierRequest) -> AsyncVerifierLaunch:
+        raise verify_quiet.async_jobs.AsyncVerifierLaunchError(
+            "cannot start verifier run-1: spawn unavailable",
+            state_path=tmp_path / ".verify-logs" / "jobs" / "run-1.json",
+        )
+
+    monkeypatch.setattr(verify_quiet.async_jobs, "launch_async_verifier", fail_launch)
+
+    status = verify_quiet.main(["--profile", "fast", "--async"])
+
+    assert status == INFRASTRUCTURE_ERROR_STATUS
+    error = capsys.readouterr().err
+    assert "FAIL async verifier launch" in error
+    assert "spawn unavailable" in error
+    assert "State:" in error
 
 
 def test_collect_results_stops_on_layout_failure(

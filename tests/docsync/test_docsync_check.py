@@ -49,6 +49,19 @@ def test_check_accepts_changed_evidence_with_doc_update(tmp_path: Path) -> None:
     assert result.ok
 
 
+def test_check_accepts_linked_object_update_when_claim_has_no_marker(tmp_path: Path) -> None:
+    """Claims without precise markers fall back to their linked object span."""
+    _write_repo(tmp_path)
+    _replace(tmp_path / ".docsync" / "trace.yml", "    marker: claim.demo\n", "")
+    _commit_all(tmp_path)
+    _replace(tmp_path / "src.py", "Demo behavior.", "Changed behavior.")
+    _replace(tmp_path / "README.md", "Demo claim.", "Changed claim.")
+
+    result = check_repo(CheckOptions(repo_root=tmp_path, base_ref="HEAD"))
+
+    assert result.ok
+
+
 def test_check_rejects_unrelated_doc_object_update(tmp_path: Path) -> None:
     """Unrelated object edits do not satisfy changed evidence review."""
     _write_repo(tmp_path)

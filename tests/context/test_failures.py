@@ -74,6 +74,19 @@ def test_failures_missing_manifest_is_graceful(
     assert "No verifier manifest found" in capsys.readouterr().out
 
 
+def test_deeply_nested_manifest_is_refused_without_crashing(tmp_path: Path) -> None:
+    """A bounded but recursive manifest fails closed as unavailable input."""
+
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    nesting = 2_000
+    (tmp_path / "manifest.json").write_text(
+        "".join(("[" * nesting, "0", "]" * nesting)),
+        encoding="utf-8",
+    )
+
+    assert failure_records(tmp_path) == ()
+
+
 def write_manifest(path: Path, *, failed_checks: tuple[str, ...]) -> None:
     """Write verifier manifest fixture."""
 

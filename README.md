@@ -16,6 +16,12 @@ repositories.
 > Agent Maintainer is in beta. The core workflow is usable today, but starter
 > files and defaults may change as it is tested across more Python repository
 > layouts.
+>
+> Latest published package: `agent-maintainer==0.1.0b5`, with immutable
+> [release evidence](docs/releases/0.1.0b5.md). This checkout and its
+> documentation target the unpublished `0.1.0b6` release candidate; see the
+> [candidate notes](docs/releases/0.1.0b6.md) and
+> [upgrade guide](docs/upgrading-to-0.1.0b6.md).
 
 Agent Maintainer helps coding agents make smaller, safer, more reviewable code
 changes. It wraps your existing quality tools in low-noise profiles, adds
@@ -29,6 +35,11 @@ Read more where it matters:
 - [First run walkthrough](docs/onboarding-first-run.md)
 - [Diagnostics loop](docs/diagnostics-repair-loop.md)
 - [Tool map](docs/tool-map.md)
+- [Dependency risk register](docs/dependency-risk-register.md)
+- [Security policy](SECURITY.md)
+- [Support policy](SUPPORT.md)
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## What It Is
 
@@ -48,8 +59,12 @@ raw evidence stays in run-scoped artifacts.
 Install the core toolset:
 
 ```bash
-python -m pip install "agent-maintainer[core]"
+python -m pip install "agent-maintainer[core]==0.1.0b5"
 ```
+
+That pin installs the latest published beta. To evaluate the unpublished b6
+candidate from a trusted checkout, use `python -m pip install -e ".[core]"`
+from the repository root and follow the candidate upgrade guide.
 
 Initialize a repo:
 
@@ -131,11 +146,24 @@ Use `agent-maintainer init --ci-only` when a repo only needs the GitHub Actions
 verification workflow and `config/dev-dependencies.txt`, without local hooks or
 starter policy config.
 
+The hardening track declares Node.js 22 or newer for its optional npm-backed
+Markdown and TOML tooling instead of silently installing incompatible versions.
+
+Agent and hardening scaffolds render Codex and Claude Code configuration plus
+every referenced post-edit, PR-wait, stop, and audit wrapper from the same
+managed-file inventory used by install, update, status, and uninstall. Generated
+wrappers are checked for byte-for-byte currentness rather than existence alone.
+
 Preview before writing:
 
 ```bash
 agent-maintainer init --track agent --preset ai-agent-heavy --dry-run
 ```
+
+The preview classifies each destination as add, unchanged, merge, conflict, or
+skip without requiring force. Apply refuses the whole plan while an unresolved
+conflict remains, preserves user-owned `AGENTS.md`, backs up explicit forced
+replacements, and rolls back earlier writes if a later destination fails.
 
 Presets tune policy:
 
@@ -220,6 +248,10 @@ context.
 | Docs/config hygiene | DocSync freshness checks, markdownlint-cli2, yamllint, Taplo, check-jsonschema. |
 | Mutation testing | Mutmut target ratchet, result ratchets, advisory deep sweep executor. |
 | Agent repair loop | `.verify-logs`, context commands, repair plans, PR summaries, static HTML reports. |
+
+The verifier invokes DocSync with `--write-reports` so JSON/SARIF repair
+artifacts are an explicit integration output. A standalone `docsync check`
+remains read-only.
 
 Read more:
 [optional gates](docs/optional-gates.md),
@@ -335,7 +367,10 @@ Agent Maintainer is designed to be safe to try:
 Read more:
 [Release checklist](docs/release-checklist.md),
 [troubleshooting](docs/troubleshooting.md),
-[0.1.0b5 release notes](docs/releases/0.1.0b5.md).
+[release index](docs/releases/README.md),
+[0.1.0b5 release evidence](docs/releases/0.1.0b5.md),
+[0.1.0b6 candidate notes](docs/releases/0.1.0b6.md),
+[0.1.0b6 upgrade guide](docs/upgrading-to-0.1.0b6.md).
 
 ## Configuration
 
@@ -368,12 +403,17 @@ variables, then CLI flags. When multiple file configs exist,
 `.agent-maintainer/config.toml` wins over `agent-maintainer.toml`.
 Environment overrides use the `AGENT_MAINTAINER_*` prefix.
 
+Known commands validate the complete resolved policy before running behavior.
+Invalid configuration exits with status 2 and reports the source plus dotted
+key; help remains available for repair and discovery.
+
 ```bash
 AGENT_MAINTAINER_SOURCE_ROOTS=src,tests python3 -m agent_maintainer doctor
 ```
 
 Read more:
 [quick start](docs/quick-start.md),
+[configuration reference](docs/configuration-reference.md),
 [structure cohesion](docs/structure-cohesion.md),
 [tool map](docs/tool-map.md).
 
@@ -472,10 +512,15 @@ reconstruct long environment-prefixed commands:
 
 ```bash
 just bootstrap
+python3 -m agent_maintainer install --dry-run
+python3 -m agent_maintainer install
 just doctor
 just verify-precommit
 just verify
 ```
+
+`bootstrap` installs development dependencies only. Hook and pre-commit setup
+is an explicit, previewable `install` action.
 
 Refresh the pinned dev lock after changing `config/dev-dependencies.txt`:
 
@@ -493,6 +538,9 @@ Read more:
 
 - [Changelog](CHANGELOG.md)
 - [MIT License](LICENSE)
+- [Security](SECURITY.md)
+- [Support](SUPPORT.md)
+- [Contributing](CONTRIBUTING.md)
 - [Context compression](docs/context-compression.md)
 - [Cohesive change plans](docs/cohesive-change-plans.md)
 - [Roadmap blueprint index](docs/roadmap/full-roadmap-blueprint.md)

@@ -3,15 +3,23 @@
 from __future__ import annotations
 
 import re
-import subprocess  # nosec B404
 from dataclasses import dataclass
 from pathlib import Path
 
 from docsync.core.models import LineSpan
+from docsync.git.process import (
+    DEFAULT_GIT_TIMEOUT_SECONDS,
+    DEFAULT_MAX_GIT_STDOUT_BYTES,
+    GitProcessError,
+    GitProcessResult,
+    run_git,
+)
 
 HUNK_RE = re.compile(
     r"@@ -(?P<old>\d+)(?:,(?P<old_count>\d+))? \+(?P<new>\d+)(?:,(?P<new_count>\d+))? @@"
 )
+GIT_TIMEOUT_SECONDS = DEFAULT_GIT_TIMEOUT_SECONDS
+MAX_GIT_OUTPUT_BYTES = DEFAULT_MAX_GIT_STDOUT_BYTES
 
 
 @dataclass(frozen=True)
@@ -55,20 +63,36 @@ def parse_changed_line_spans(diff_text: str) -> tuple[LineSpan, ...]:
 
 
 def _git_diff(repo_root: Path, base_ref: str) -> str:
+    _validate_revision(base_ref)
     errors: list[str] = []
     for candidate in _base_ref_candidates(repo_root, base_ref):
-        command = ["git", "diff", "--unified=0", "--no-ext-diff", candidate, "--"]
-        completed = subprocess.run(  # nosec B603
-            command,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        _validate_revision(candidate)
+        command = [
+            "git",
+            "diff",
+            "--unified=0",
+            "--no-ext-diff",
+            "--no-textconv",
+            candidate,
+            "--",
+        ]
+        completed = _run_git(repo_root, tuple(command[1:]))
         if completed.returncode == 0:
             return completed.stdout
         errors.append(_git_error(candidate, completed.stderr))
     raise GitDiffError("; ".join(errors) or "git diff failed")
+
+
+def _validate_revision(value: str) -> None:
+    """Reject revision text that Git could interpret as an option."""
+
+    if (
+        not value
+        or value.strip() != value
+        or value.startswith("-")
+        or any(character.isspace() or not character.isprintable() for character in value)
+    ):
+        raise GitDiffError("base ref must be a non-option Git revision without whitespace")
 
 
 def _git_error(candidate: str, stderr: str) -> str:
@@ -91,16 +115,25 @@ def _base_ref_candidates(repo_root: Path, base_ref: str) -> tuple[str, ...]:
 
 
 def _git_output(repo_root: Path, args: tuple[str, ...]) -> str:
-    completed = subprocess.run(  # nosec B603, B607
-        ["git", *args],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        completed = _run_git(repo_root, args)
+    except GitDiffError:
+        return ""
     if completed.returncode != 0:
         return ""
     return completed.stdout.strip()
+
+
+def _run_git(repo_root: Path, args: tuple[str, ...]) -> GitProcessResult:
+    try:
+        return run_git(
+            repo_root,
+            args,
+            timeout_seconds=GIT_TIMEOUT_SECONDS,
+            max_stdout_bytes=MAX_GIT_OUTPUT_BYTES,
+        )
+    except GitProcessError as exc:
+        raise GitDiffError(str(exc)) from exc
 
 
 def _new_path(line: str) -> Path | None:

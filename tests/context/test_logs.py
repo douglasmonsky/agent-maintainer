@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from agent_context.failures import FailureRecord
 from agent_context.reading.logs import LogRequest, render_log_text, select_log
 from agent_maintainer.context import cli as context_cli
@@ -86,7 +88,10 @@ def test_large_log_refuses_without_confirmation(tmp_path: Path) -> None:
     assert "--confirm-large" in selection.text
 
 
-def test_log_cli_outputs_json(tmp_path: Path, capsys) -> None:
+def test_log_cli_outputs_json(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """Log subcommand emits JSON output."""
 
     write_log(tmp_path, "ruff", line_count=THREE_LINES)

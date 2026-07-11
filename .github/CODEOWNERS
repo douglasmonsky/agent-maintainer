@@ -1,0 +1,12 @@
+# Default ownership and explicit high-risk review routes.
+* @douglasmonsky
+
+/.github/ @douglasmonsky
+/SECURITY.md @douglasmonsky
+/config/ @douglasmonsky
+/docs/releases/ @douglasmonsky
+/osv-scanner.toml @douglasmonsky
+/package-lock.json @douglasmonsky
+/package.json @douglasmonsky
+/pyproject.toml @douglasmonsky
+/src/ @douglasmonsky

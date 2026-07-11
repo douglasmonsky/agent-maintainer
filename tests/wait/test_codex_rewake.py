@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import json
+from functools import partial
 from pathlib import Path
 
 import pytest
 
+from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import codex_rewake as codex_rewake_module
 from agent_maintainer.wait.codex_rewake import (
     CODEX_BIN_ENV,
@@ -22,6 +26,7 @@ from agent_maintainer.wait.github_pr import (
     GitHubPrWaitResult,
 )
 from agent_maintainer.wait.registry import (
+    WAIT_STATUS_NOTIFY_FAILED,
     WAIT_STATUS_READY,
     RegisterGitHubPrWait,
     WaitRecord,
@@ -30,6 +35,9 @@ from agent_maintainer.wait.registry import (
 
 PR_NUMBER = "291"
 THREAD_ID = "thread-1"
+PRIVATE_API_KEY = "private-api-key-value"
+PRIVATE_HOOK_STDIN = "private-hook-stdin-value"
+PRIVATE_PAYLOAD = "private-payload-value"
 
 
 def test_backend_skips_without_feature_flag(tmp_path: Path) -> None:
@@ -69,7 +77,7 @@ def test_backend_stays_manual_without_backend(
 ) -> None:
     """Enabled rewake leaves manual resume ready without app-server."""
 
-    monkeypatch.setattr(codex_rewake_module, "which", lambda _name: None)
+    monkeypatch.setattr(codex_rewake_module, "which", no_codex_binary)
     registry = WaitRegistry(tmp_path)
     record = completed_wait(registry, tmp_path)
 
@@ -104,9 +112,51 @@ def test_backend_app_server_acceptance_stays_manual(tmp_path: Path) -> None:
 
     assert result.status == REWAKE_STATUS_MANUAL
     assert "visible thread wake is not confirmed" in result.detail
-    assert registry.read(record.wait_id).status == WAIT_STATUS_READY
+    persisted = registry.read(record.wait_id)
+    assert persisted.status == WAIT_STATUS_NOTIFY_FAILED
+    assert persisted.ready is True
     assert app_server.calls == [(THREAD_ID, continuation_prompt(record))]
     assert_private_data_not_persisted(tmp_path, record)
+
+
+def test_backend_events_use_fixed_fields_without_private_context(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Notification events include lifecycle facts, never Codex context."""
+
+    sink = InMemoryRuntimeEventSink()
+    monkeypatch.setattr(WaitRuntimeEvents, "create", partial(WaitRuntimeEvents, sink=sink))
+    registry = WaitRegistry(tmp_path)
+    record = completed_wait(registry, tmp_path)
+
+    CodexRewakeBackend(
+        registry,
+        env={
+            CODEX_REWAKE_ENV: "1",
+            CODEX_THREAD_ID_ENV: THREAD_ID,
+            CODEX_BIN_ENV: "codex-test",
+            "OPENAI_API_KEY": PRIVATE_API_KEY,
+            "HOOK_STDIN": PRIVATE_HOOK_STDIN,
+            "PRIVATE_PAYLOAD": PRIVATE_PAYLOAD,
+        },
+        app_server_client=FakeAppServerClient(),
+    ).resume_if_available(record)
+
+    assert [event["event_name"] for event in sink.records] == [
+        "wait.notify_attempted",
+        "wait.notify_failed",
+    ]
+    rendered = json.dumps(sink.records, sort_keys=True)
+    assert THREAD_ID not in rendered
+    assert continuation_prompt(record) not in rendered
+    assert PRIVATE_API_KEY not in rendered
+    assert PRIVATE_HOOK_STDIN not in rendered
+    assert PRIVATE_PAYLOAD not in rendered
+    assert_private_data_not_persisted(tmp_path, record)
+    failure_attributes = sink.records[1]["attributes"]
+    assert isinstance(failure_attributes, dict)
+    assert failure_attributes["reason"] == "visible_wake_unconfirmed"
 
 
 def test_backend_app_server_uses_acceptance_handoff(
@@ -136,7 +186,7 @@ def test_backend_app_server_uses_acceptance_handoff(
     ).resume_if_available(record)
 
     assert result.status == REWAKE_STATUS_MANUAL
-    assert registry.read(record.wait_id).status == WAIT_STATUS_READY
+    assert registry.read(record.wait_id).status == WAIT_STATUS_NOTIFY_FAILED
     assert len(clients) == 1
     assert clients[0].return_after_turn_acceptance is True
     assert clients[0].calls == [(THREAD_ID, continuation_prompt(record))]
@@ -158,7 +208,7 @@ def test_backend_does_not_fallback_to_sdk(tmp_path: Path) -> None:
 
     assert result.status == REWAKE_STATUS_MANUAL
     assert "Codex app-server rewake failed" in result.detail
-    assert registry.read(record.wait_id).status == WAIT_STATUS_READY
+    assert registry.read(record.wait_id).status == WAIT_STATUS_NOTIFY_FAILED
     assert_private_data_not_persisted(tmp_path, record)
 
 
@@ -192,6 +242,9 @@ def assert_private_data_not_persisted(root: Path, record: WaitRecord) -> None:
     raw_record = wait_record_path(root, record).read_text(encoding="utf-8")
     assert THREAD_ID not in raw_record
     assert continuation_prompt(record) not in raw_record
+    assert PRIVATE_API_KEY not in raw_record
+    assert PRIVATE_HOOK_STDIN not in raw_record
+    assert PRIVATE_PAYLOAD not in raw_record
 
 
 class FakeAppServerClient:
@@ -217,3 +270,7 @@ class CapturingAppServerClient:
         """Record app-server resume request."""
 
         self.calls.append((thread_id, prompt))
+
+
+def no_codex_binary(_name: str) -> None:
+    return None

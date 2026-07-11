@@ -10,12 +10,13 @@ Supported clients:
 
 | Client | Config | Hook wrappers |
 |---|---|---|
-| Codex | `.codex/config.toml` | `.codex/hooks/post_edit_fast_gate.py`, `.codex/hooks/stop_full_verify.py` |
-| Claude Code | `.claude/settings.json` | `.claude/hooks/post_tool_use.py`, `.claude/hooks/stop.py`, `.claude/hooks/subagent_stop.py` |
+| Codex | `.codex/config.toml` | `.codex/hooks/post_edit_fast_gate.py`, `.codex/hooks/post_pr_wait.py`, `.codex/hooks/stop_full_verify.py`, `.codex/hooks/hook_audit.py` |
+| Claude Code | `.claude/settings.json` | `.claude/hooks/post_tool_use.py`, `.claude/hooks/post_pr_wait.py`, `.claude/hooks/stop.py`, `.claude/hooks/subagent_stop.py` |
 
-Internally, each client is represented by an `AgentClientAdapter`. Adapters own
-client-specific config and hook paths. The shared hook manager still owns
-permission prompts, dry-run behavior, backups, merge policy, and file writes.
+One managed-file manifest owns each path, renderer, scope, merge strategy,
+ownership marker, status policy, scaffold inclusion, and uninstall behavior.
+Client adapters select from that manifest. The shared hook manager owns
+permission prompts, dry-run behavior, backups, and file writes.
 
 Install repo-local hook files:
 
@@ -28,6 +29,25 @@ Inspect hook status:
 ```bash
 python3 -m agent_maintainer hooks status all
 ```
+
+Update installed hooks through the same merge and backup contract:
+
+```bash
+python3 -m agent_maintainer hooks update all --dry-run
+python3 -m agent_maintainer hooks update all
+```
+
+Remove only manifest-owned entries and scripts:
+
+```bash
+python3 -m agent_maintainer hooks uninstall all --dry-run
+python3 -m agent_maintainer hooks uninstall all
+```
+
+Uninstall preserves unrelated Codex and Claude configuration, including a
+third-party command co-located inside a managed Claude matcher. Current managed
+scripts are removed directly. A stale script must retain its ownership marker
+and requires `--force`; an unowned file is refused even with force.
 
 Preview changes before writing files:
 
@@ -69,8 +89,17 @@ Use `--yes` only in deliberate automation:
 python3 -m agent_maintainer hooks install claude-code --scope user --yes
 ```
 
-Existing files are backed up before managed writes unless `--force` is passed.
-Dry-run mode never prompts for user-level permission and never creates backups.
+Changed existing files are always backed up, including when `--force` resolves
+an invalid managed config or a stale owned script. Repository recovery data
+lives under Git-private
+`.git/agent-maintainer/backups/hooks/<transaction>/` storage. User-scope and
+non-Git operations fall back to `.agent-maintainer/backups/hooks/` under their
+ownership root. Each transaction includes a `rollback.json` restore/remove
+manifest. Writes and removals are applied atomically as one transaction and
+earlier destinations are restored if a later operation fails. Dry-run mode
+never prompts for user-level permission, writes files, removes files, or creates
+backups. A second current install or update is a byte-for-byte no-op and creates
+no new transaction.
 
 User-level hooks are repo opt-in. When a global hook fires outside a Git
 repository, or inside a repository without `[tool.agent_maintainer]` in
@@ -109,12 +138,32 @@ silent while that wait is pending, and print its terminal resume capsule once.
 Structured heartbeat requests include `on_pending: silent`, `on_terminal:
 resume_and_review`, and `merge_policy: merge_only_if_satisfactory`; stale ready
 records can be expired with `python -m agent_maintainer wait cleanup --root <repo>`.
+They also include a deterministic exponential backoff contract: start at no
+less than 120 seconds, double after each silent pending result, and cap at 1,800
+seconds. Fixed-cadence schedulers should use the cap rather than minute-level
+polling.
 Terminal-only local polling is preferred for Codex waits. Launchd failure is
 reported instead of silently downgrading to a detached `popen` watcher. Automatic
 visible Codex thread rewake is not treated as proven today; app-server turn
 acceptance keeps the wait ready for manual `wait resume <id>` recovery. Heartbeat
 fallback still wakes a model each interval, so use it only when explicit manual
 monitoring is acceptable.
+`agent-maintainer doctor` reports redacted Codex thread, app-server, SDK, and
+terminal-rewake capability rows without launching app-server. Use
+`python -m agent_maintainer wait codex-smoke` for a read-only, token-free probe.
+The `--start-turn` smoke spends one model turn and is refused unless
+`AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN=1`; hooks and CI must never set that
+gate.
+Automatic notification is claimed once before any Codex call. Unconfirmed or
+failed wake attempts enter manually resumable `notify_failed` state and are not
+retried automatically. `python -m agent_maintainer wait repair --dry-run`
+reports stale pending watchers; an explicit repair rechecks liveness and starts
+the strongest supported watcher without calling Codex.
+Wait lifecycle events cover registration, watcher start/failure, one durably
+claimed terminal observation, notification attempt/failure, confirmed resume,
+and rendered fallback. Their attributes are allowlisted and exclude process
+ids, commands, thread ids, prompts, hook stdin, environment values, API keys,
+backend diagnostics, and private payloads.
 Repo-local wrappers use the checked-out source tree:
 
 ```bash
@@ -136,9 +185,12 @@ hash. Re-review hooks after changing:
 
 - `.codex/config.toml`
 - `.codex/hooks/post_edit_fast_gate.py`
+- `.codex/hooks/post_pr_wait.py`
 - `.codex/hooks/stop_full_verify.py`
+- `.codex/hooks/hook_audit.py`
 - `.claude/settings.json`
 - `.claude/hooks/post_tool_use.py`
+- `.claude/hooks/post_pr_wait.py`
 - `.claude/hooks/stop.py`
 - `.claude/hooks/subagent_stop.py`
 - the command each hook runs

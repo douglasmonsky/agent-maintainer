@@ -25,6 +25,7 @@ from agent_maintainer.assess.efficacy import (
     build_efficacy_report,
 )
 from agent_maintainer.assess.efficacy_reporting import render_text as render_efficacy_text
+from agent_maintainer.assess.models import RepoEvidence
 from agent_maintainer.config import loader as config_loader
 
 DEFAULT_TARGET = Path(".")
@@ -52,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
     return status
 
 
-def _run_setup(args: argparse.Namespace, repo_evidence) -> int:
+def _run_setup(args: argparse.Namespace, repo_evidence: RepoEvidence) -> int:
     """Run setup assessment."""
     report = setup_advisor.build_setup_report(repo_evidence)
     print(
@@ -64,7 +65,7 @@ def _run_setup(args: argparse.Namespace, repo_evidence) -> int:
 def _run_debt(
     args: argparse.Namespace,
     target: Path,
-    repo_evidence,
+    repo_evidence: RepoEvidence,
 ) -> int:
     """Run technical debt assessment."""
     with _working_directory(target):
@@ -214,7 +215,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _add_efficacy_parser(subparsers: argparse._SubParsersAction) -> None:
+def _add_efficacy_parser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
     """Add efficacy assessment parser."""
 
     efficacy_parser = subparsers.add_parser(

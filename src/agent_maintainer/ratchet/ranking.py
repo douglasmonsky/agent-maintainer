@@ -146,9 +146,16 @@ def status_weight(status: str) -> int:
 def changed_paths(base_ref: str) -> set[str]:
     """Return paths changed relative to a base ref."""
 
+    if (
+        not base_ref
+        or base_ref.strip() != base_ref
+        or base_ref.startswith("-")
+        or any(character.isspace() or not character.isprintable() for character in base_ref)
+    ):
+        return set()
     try:
         result = subprocess.run(  # nosec B603
-            ("git", "diff", "--name-only", base_ref),
+            ("git", "diff", "--name-only", base_ref, "--"),
             check=True,
             capture_output=True,
             text=True,

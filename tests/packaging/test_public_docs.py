@@ -8,7 +8,10 @@ import tomllib
 from pathlib import Path
 
 README = Path("README.md")
+RELEASE_INDEX = Path("docs/releases/README.md")
 MIN_READ_MORE_LINKS = 8
+LATEST_PUBLISHED_LABEL = "Latest published release"
+CURRENT_CANDIDATE_LABEL = "Current release candidate"
 
 REQUIRED_README_LINKS = (
     "docs/quick-start.md",
@@ -31,27 +34,17 @@ def _project_version() -> str:
     return str(metadata["project"]["version"])
 
 
-def _version_key(version: str) -> tuple[object, ...]:
-    """Sort release evidence versions in human version order."""
+def _indexed_release(label: str) -> tuple[str, str]:
+    """Return version and target recorded for a release-index label."""
 
-    return tuple(int(part) if part.isdigit() else part for part in re.split(r"(\d+)", version))
-
-
-def _latest_recorded_release_version() -> str:
-    """Return the newest recorded release evidence version."""
-
-    release_docs = tuple(Path("docs/releases").glob("*.md"))
-    assert release_docs
-    return max(release_docs, key=lambda path: _version_key(path.stem)).stem
-
-
-def _current_release_evidence_version() -> str:
-    """Return current package version when recorded, otherwise latest evidence."""
-
-    version = _project_version()
-    if Path("docs/releases", f"{version}.md").exists():
-        return version
-    return _latest_recorded_release_version()
+    index = RELEASE_INDEX.read_text(encoding="utf-8")
+    match = re.search(
+        rf"^- {re.escape(label)}: \[`([^`]+)`\]\(([^)]+)\)",
+        index,
+        flags=re.MULTILINE,
+    )
+    assert match is not None, label
+    return match.group(1), match.group(2)
 
 
 def _commits_since_latest_tag() -> int:
@@ -94,13 +87,20 @@ def test_readme_uses_public_beta_framing() -> None:
     )
     assert visible_text.startswith("# Agent Maintainer\n")
     assert "Agent Maintainer is in beta" in text
-    assert 'python -m pip install "agent-maintainer[core]"' in text
+    published_version, _ = _indexed_release(LATEST_PUBLISHED_LABEL)
+    candidate_version, _ = _indexed_release(CURRENT_CANDIDATE_LABEL)
+
+    assert candidate_version == _project_version()
+    assert f'python -m pip install "agent-maintainer[core]=={published_version}"' in text
+    assert f"Latest published package: `agent-maintainer=={published_version}`" in text
+    assert f"unpublished `{candidate_version}` release candidate" in text
     assert "agent-maintainer init --track core" in text
     assert "python3 -m agent_maintainer assess setup" in text
     assert "python3 -m agent_maintainer assess debt" in text
     assert "[Release checklist](docs/release-checklist.md)" in text
-    release_version = _current_release_evidence_version()
-    assert f"[{release_version} release notes](docs/releases/{release_version}.md)" in text
+    assert f"docs/releases/{published_version}.md" in text
+    assert f"docs/releases/{candidate_version}.md" in text
+    assert f"docs/upgrading-to-{candidate_version}.md" in text
     assert "[MIT License](LICENSE)" in text
     assert "[Changelog](CHANGELOG.md)" in text
     assert "docs/assets/graphics/agent-maintainer-social-preview.png" in text
@@ -123,7 +123,7 @@ def test_license_and_changelog_are_public_beta_ready() -> None:
 
     assert license_text.startswith("MIT License\n")
     assert "Copyright (c) 2026 Doug Monsky" in license_text
-    assert f"## {_project_version()}" in changelog
+    assert f"## Unreleased (target: {_project_version()})" in changelog
     assert "## 0.1.0b4 - 2026-06-29" in changelog
     assert "Fourth beta release of Agent Maintainer." in changelog
     assert "quiet on success and bounded on failure" in changelog
@@ -141,22 +141,78 @@ def test_changelog_unreleased_section_tracks_post_release_commits() -> None:
     if _commits_since_latest_tag() == 0:
         return
 
-    assert "No changes yet." not in _unreleased_section(changelog)
+    unreleased = _unreleased_section(changelog)
+    assert "No changes yet." not in unreleased
+    for required_topic in (
+        "repository-controlled filesystem access",
+        "managed hook inventory",
+        "configuration preflight",
+        "runtime events",
+        "durable waits",
+        "attention ledger",
+        "optional MCP",
+        "TypeScript/React",
+        "exact-commit",
+        "SHA-256",
+        "DocSync",
+    ):
+        assert required_topic in unreleased
 
 
-def test_current_release_docs_match_recorded_evidence() -> None:
-    """Current release links should track recorded release evidence."""
+# docsync:evidence.start evidence.release.public_contract_tests
+def test_public_release_docs_distinguish_published_and_candidate() -> None:
+    """Public docs distinguish published evidence from candidate intent."""
 
-    version = _current_release_evidence_version()
-    release_path = Path("docs/releases", f"{version}.md")
+    published_version, published_target = _indexed_release(LATEST_PUBLISHED_LABEL)
+    candidate_version, candidate_target = _indexed_release(CURRENT_CANDIDATE_LABEL)
+    published_path = Path("docs/releases", published_target)
+    candidate_path = Path("docs/releases", candidate_target)
     readme = README.read_text(encoding="utf-8")
     roadmap = Path("docs/ROADMAP.md").read_text(encoding="utf-8")
+    candidate = candidate_path.read_text(encoding="utf-8")
 
-    assert release_path.exists()
-    assert f"docs/releases/{version}.md" in readme
-    assert f"agent-maintainer=={version}" in roadmap
-    assert f"`v{version}`" in roadmap
-    assert f"docs/releases/{version}.md" in roadmap
+    assert candidate_version == _project_version()
+    assert published_version != candidate_version
+    assert published_target == f"{published_version}.md"
+    assert candidate_target == f"{candidate_version}.md"
+    assert published_path.exists()
+    assert candidate_path.exists()
+    assert f"docs/releases/{published_version}.md" in readme
+    assert f"docs/releases/{candidate_version}.md" in readme
+    assert f"agent-maintainer=={published_version}" in roadmap
+    assert f"`v{published_version}`" in roadmap
+    assert f"docs/releases/{published_version}.md" in roadmap
+    assert f"unpublished `{candidate_version}` release candidate" in roadmap
+    assert f"# Agent Maintainer {candidate_version} Candidate Notes" in candidate
+    assert "- Status: `unpublished`" in candidate
+    for false_evidence in (
+        "Git tag:",
+        "GitHub release:",
+        "TestPyPI workflow:",
+        "PyPI workflow:",
+        "sha256:",
+        f"agent_maintainer-{candidate_version}",
+    ):
+        assert false_evidence not in candidate
+
+
+def test_candidate_upgrade_guide_covers_safe_adoption() -> None:
+    """Candidate upgrade guidance covers preview, verification, and rollback."""
+
+    published_version, _ = _indexed_release(LATEST_PUBLISHED_LABEL)
+    candidate_version, _ = _indexed_release(CURRENT_CANDIDATE_LABEL)
+    guide_path = Path(f"docs/upgrading-to-{candidate_version}.md")
+
+    assert guide_path.exists()
+    guide = guide_path.read_text(encoding="utf-8")
+    assert f"# Upgrading from {published_version} to {candidate_version}" in guide
+    assert "agent-maintainer init --dry-run" in guide
+    assert "agent-maintainer install --dry-run" in guide
+    assert "agent-maintainer doctor" in guide
+    assert "## Rollback" in guide
+
+
+# docsync:evidence.end evidence.release.public_contract_tests
 
 
 def test_readme_omits_private_history_terms() -> None:

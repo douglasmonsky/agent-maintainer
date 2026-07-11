@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import cast
 
 import pytest
@@ -10,8 +11,13 @@ from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
 from agent_maintainer.runtime_events.waiting import (
     WaitRuntimeEvents,
     emit_cleaned,
+    emit_fallback_used,
     emit_heartbeat_noop,
+    emit_notify_attempted,
+    emit_notify_failed,
     emit_terminal_claimed,
+    emit_watcher_failed,
+    emit_watcher_started,
 )
 
 POLL_ATTEMPT = 2
@@ -47,29 +53,67 @@ def test_wait_runtime_events_emit_lifecycle_records() -> None:
     events = WaitRuntimeEvents(sink=sink, target_kind="github-run", target_id="123")
 
     events.registered(wait_id="wait-1", background=True)
+    emit_watcher_started(events, wait_id="wait-1", strategy="launchd")
+    emit_watcher_failed(events, wait_id="wait-2", reason="watcher_start_failed")
     events.foreground_blocked(wait_id="wait-1")
     events.swept(checked=1, updated=1, pending=0, ready=1)
     events.ready(wait_id="wait-1", result="PASS")
+    emit_notify_attempted(events, wait_id="wait-1", backend="codex-app-server")
+    emit_notify_failed(events, wait_id="wait-1", reason="visible_wake_unconfirmed")
     events.resumed(wait_id="wait-1")
+    emit_fallback_used(
+        events,
+        wait_id="wait-1",
+        initial_interval_seconds=120,
+        max_interval_seconds=1800,
+    )
     emit_heartbeat_noop(events)
     emit_terminal_claimed(events, wait_id="wait-1", result="PASS")
     emit_cleaned(events, expired_ready=1)
 
     assert [record["event_name"] for record in sink.records] == [
         "wait.registered",
+        "wait.watcher_started",
+        "wait.watcher_failed",
         "wait.foreground_blocked",
         "wait.swept",
         "wait.ready",
+        "wait.notify_attempted",
+        "wait.notify_failed",
         "wait.resumed",
+        "wait.fallback_used",
         "wait.heartbeat_noop",
         "wait.terminal_claimed",
         "wait.cleaned",
     ]
     assert sink.records[0]["status"] == "background"
-    assert sink.records[3]["status"] == "PASS"
-    assert sink.records[5]["status"] == "pending"
-    assert sink.records[6]["status"] == "PASS"
-    assert sink.records[7]["status"] == "completed"
+    assert sink.records[5]["status"] == "PASS"
+    assert sink.records[7]["status"] == "failed"
+    assert sink.records[9]["status"] == "offered"
+    assert sink.records[10]["status"] == "pending"
+    assert sink.records[11]["status"] == "PASS"
+    assert sink.records[12]["status"] == "completed"
+
+
+def test_wait_lifecycle_events_allowlist_external_values() -> None:
+    """Lifecycle events never forward backend diagnostics or command data."""
+
+    sink = InMemoryRuntimeEventSink()
+    events = WaitRuntimeEvents(sink=sink, target_kind="verifier", target_id="run-1")
+    private_value = "private-command-and-backend-diagnostic"
+
+    emit_watcher_started(events, wait_id="wait-1", strategy=private_value)
+    emit_watcher_failed(events, wait_id="wait-1", reason=private_value)
+    emit_notify_attempted(events, wait_id="wait-1", backend=private_value)
+    emit_notify_failed(events, wait_id="wait-1", reason=private_value)
+
+    rendered = json.dumps(sink.records, sort_keys=True)
+    assert private_value not in rendered
+    attributes = [cast("dict[str, object]", record["attributes"]) for record in sink.records]
+    assert attributes[0]["strategy"] == "other"
+    assert attributes[1]["reason"] == "watcher_failed"
+    assert attributes[2]["backend"] == "other"
+    assert attributes[3]["reason"] == "notification_failed"
 
 
 def test_wait_events_fallback_to_null_sink(

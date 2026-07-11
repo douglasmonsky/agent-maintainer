@@ -16,6 +16,7 @@ Profiles:
 
 from __future__ import annotations
 
+import sys
 from dataclasses import replace
 from pathlib import Path
 
@@ -186,7 +187,12 @@ def start_async_verifier(
         log_dir=log_dir,
         fingerprint=fingerprint,
     )
-    launch = async_jobs.launch_async_verifier(request)
+    try:
+        launch = async_jobs.launch_async_verifier(request)
+    except async_jobs.AsyncVerifierLaunchError as exc:
+        print(f"FAIL async verifier launch: {exc}", file=sys.stderr)
+        print(f"State: {exc.state_path}", file=sys.stderr)
+        return 2
     if _codex_background_async_launch():
         registration = background_wait.register_background_verifier_wait(
             launch.run_id,
@@ -215,6 +221,4 @@ def _codex_background_async_launch() -> bool:
 
 
 if __name__ == "__main__":
-    import sys
-
     sys.exit(main(sys.argv[1:]))

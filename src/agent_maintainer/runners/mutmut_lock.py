@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -18,7 +18,7 @@ MUTMUT_LOCK_NAME = "mutmut.lock"
 
 
 @contextmanager
-def mutmut_run_lock() -> Iterator[None]:
+def mutmut_run_lock() -> Generator[None, None, None]:
     """Serialize Mutmut runs that share the generated mutants directory."""
 
     lock_path = mutmut_lock_path()

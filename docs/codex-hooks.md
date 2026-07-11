@@ -24,8 +24,10 @@ Install Codex hooks with:
 python3 -m agent_maintainer hooks install codex
 ```
 
-`python3 -m agent_maintainer install` also installs managed agent-client hooks
-and local pre-commit setup. It does not approve Codex hooks for you.
+`python3 -m agent_maintainer install` explicitly installs managed agent-client
+hooks and local pre-commit setup; add `--dry-run` to preview without mutation.
+Dependency-only `bootstrap` no longer installs hooks implicitly. Neither command
+approves Codex hooks for you.
 
 ## Trust Review
 
@@ -37,7 +39,9 @@ Re-review hooks after any change to:
 
 - `.codex/config.toml`
 - `.codex/hooks/post_edit_fast_gate.py`
+- `.codex/hooks/post_pr_wait.py`
 - `.codex/hooks/stop_full_verify.py`
+- `.codex/hooks/hook_audit.py`
 - the command each hook runs
 - repo path copied into hook source
 
@@ -97,19 +101,75 @@ Codex heartbeat requests are wait-scoped. When the Codex app
 `automation_update` tool is available, create one current-thread heartbeat
 that runs `python -m agent_maintainer wait sweep --one <wait-id> --root
 <repo>`. The heartbeat request includes `on_pending: silent`, `on_terminal:
-resume_and_review`, and `merge_policy: merge_only_if_satisfactory`. The
-targeted sweep command polls only that wait once, prints nothing while the
-wait is pending, and prints its terminal resume capsule once. Use `python -m
-agent_maintainer wait cleanup --root <repo>` to expire stale ready records
-after a terminal wait is no longer useful.
+resume_and_review`, `merge_policy: merge_only_if_satisfactory`, and an explicit
+exponential backoff contract. The initial interval is at least 120 seconds;
+after each silent pending result, consumers should double it up to 1,800
+seconds and reset only for a terminal result or a new wait. A scheduler that
+cannot reschedule should use the 1,800-second cap instead of fixed minute-level
+polling. The heartbeat is a model-turn fallback: each scheduled poll wakes a
+model and consumes a model turn. The targeted sweep command polls only that
+wait once, prints nothing while the wait is pending, and prints its terminal
+resume capsule once. Use `python -m agent_maintainer wait cleanup --root
+<repo>` to expire stale ready records after a terminal wait is no longer useful.
 
 Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let terminal background watchers try
 automatic Codex continuation. The preferred backend is the local Codex CLI app-server
 `codex app-server --listen stdio://` with Codex thread metadata from
 `CODEX_THREAD_ID` or `AGENT_MAINTAINER_CODEX_THREAD_ID`; optional
-`openai-codex` SDK remains fallback backend. If app-server, SDK, auth, or
-thread metadata is unavailable, the wait stays ready for the manual
-`wait resume <id>` command. No thread id or prompt is stored in the wait record.
+`openai-codex` SDK availability is diagnostic only because no SDK rewake backend
+is implemented. If app-server, auth, or thread metadata is unavailable, the
+wait stays ready for the manual `wait resume <id>` command. No thread id or
+prompt is stored in the wait record. `agent-maintainer doctor` reports redacted
+`codex-thread-context`, `codex-app-server`, `codex-python-sdk`, and
+`codex-terminal-rewake` capability rows without starting app-server.
+
+The default smoke is read-only and token-free:
+
+```bash
+python -m agent_maintainer wait codex-smoke
+```
+
+Starting a harmless real `turn/start` is deliberately separate because it
+spends a model turn. It accepts no caller-provided prompt and requires an
+explicit process-local gate:
+
+```bash
+AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN=1 \
+  python -m agent_maintainer wait codex-smoke --start-turn
+```
+
+Never run the real-turn smoke from doctor, hooks, watchers, or CI.
+
+Terminal notification uses a fail-closed durable state machine:
+`ready_for_manual_resume` -> `notifying` -> `resumed` or `notify_failed`.
+The transition to `notifying` is claimed under a per-wait lock before any Codex
+call. App-server errors, abandoned claims, and accepted turns whose visible
+desktop wake is unconfirmed become `notify_failed`; they remain manually
+resumable but are never retried automatically.
+
+Watcher lifecycle metadata persists only strategy, process id where applicable,
+start time, last poll time, fixed failure codes, and privacy-safe lifecycle
+observation timestamps. Inspect stale pending waits without changing them, then
+repair only dead or inactive watchers:
+
+```bash
+python -m agent_maintainer wait repair --dry-run --stale-after 60
+python -m agent_maintainer wait repair --wait-id <wait-id> --stale-after 60
+```
+
+Repair rechecks state under the same per-wait lock, never calls Codex, never
+changes terminal results, and stores fixed failure codes instead of commands,
+environment values, thread ids, prompts, or backend diagnostics.
+
+The wait runtime-event lifecycle is `wait.registered`,
+`wait.watcher_started` or `wait.watcher_failed`, `wait.ready` for the single
+durably claimed terminal observation, `wait.notify_attempted`,
+`wait.notify_failed` or `wait.resumed`, and `wait.fallback_used` when the text
+handoff offers model-turn fallback. Event attributes are allowlisted: they may
+contain stable wait identifiers, terminal status, safe watcher strategy,
+numeric backoff facts, and fixed failure codes. They never contain process ids,
+commands, labels, log paths, thread ids, prompts, hook stdin, environment
+values, API keys, app-server diagnostics, or private payloads.
 
 Terminal-only local polling is the preferred path; automatic visible Codex
 thread rewake is not treated as proven today.

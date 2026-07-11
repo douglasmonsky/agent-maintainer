@@ -1,0 +1,51 @@
+name: Feature request
+description: Propose an outcome-aligned improvement to Agent Maintainer.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the user problem and evidence. Large implementation proposals
+        may be narrowed or deferred while critical stabilization is active.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who has this problem, in what workflow, and how often?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable success without prescribing architecture.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and measurement
+      description: Include a synthetic example, design-partner signal, or metric that would validate the improvement.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Explain current workarounds and why they are insufficient.
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Safety, privacy, and compatibility constraints
+      description: Note repository mutation, private-data, platform, or backwards-compatibility concerns.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues and the current roadmap.
+          required: true
+        - label: The proposal preserves local-first operation by default.
+          required: true

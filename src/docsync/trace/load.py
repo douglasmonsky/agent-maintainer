@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from docsync.config.load import ConfigError, load_yaml_mapping
+from docsync.config.io import read_bounded_text
+from docsync.config.load import ConfigError, parse_yaml_mapping
+from docsync.config.paths import PathBoundaryError, resolve_input_within
 from docsync.core.fingerprints import sha256_text
 from docsync.core.models import (
     Claim,
@@ -17,37 +19,58 @@ from docsync.core.models import (
     TraceGraph,
     TraceObject,
 )
+from docsync.trace.spans import trace_item_spans
 
 
 class TraceError(ValueError):
     """Raised when a DocSync trace file cannot be loaded."""
 
 
+MAX_TRACE_SOURCE_FILES = 512
+MAX_TRACE_SOURCE_BYTES = 33_554_432
+
+
 def load_trace(repo_root: Path, trace_path: Path | None = None) -> TraceGraph:
     """Load the human-authored DocSync trace graph."""
     resolved_root = repo_root.resolve()
-    resolved_trace = _resolve_path(resolved_root, trace_path or Path(".docsync/trace.yml"))
-    if not resolved_trace.exists():
-        raise TraceError(f"DocSync trace not found: {resolved_trace}")
     try:
-        payload = load_yaml_mapping(resolved_trace)
-    except ConfigError as exc:
+        resolved_trace = resolve_input_within(
+            resolved_root,
+            trace_path or Path(".docsync/trace.yml"),
+            label="DocSync trace path",
+        )
+    except PathBoundaryError as exc:
         raise TraceError(str(exc)) from exc
+    trace_text, payload = _trace_payload(resolved_trace)
     version = payload.get("version")
     if version != 1:
         raise TraceError("DocSync trace version must be 1")
     _validate_schema_shape(payload)
-    line_map = _trace_item_spans(
-        resolved_trace,
+    line_map = trace_item_spans(
+        trace_text,
         span_path=_relative_path(resolved_root, resolved_trace),
     )
-    return TraceGraph(
+    graph = TraceGraph(
         path=resolved_trace,
-        documents=_load_documents(payload["documents"], line_map),
-        objects=_load_objects(payload["objects"], line_map),
+        documents=_load_documents(resolved_root, payload["documents"], line_map),
+        objects=_load_objects(resolved_root, payload["objects"], line_map),
         claims=_load_claims(payload["claims"], line_map),
-        evidence=_load_evidence(payload["evidence"], line_map),
+        evidence=_load_evidence(resolved_root, payload["evidence"], line_map),
     )
+    _validate_trace_source_budget(resolved_root, graph)
+    return graph
+
+
+def _trace_payload(path: Path) -> tuple[str, dict[str, Any]]:
+    try:
+        return _read_trace_payload(path)
+    except (ConfigError, PathBoundaryError) as exc:
+        raise TraceError(str(exc)) from exc
+
+
+def _read_trace_payload(path: Path) -> tuple[str, dict[str, Any]]:
+    text = read_bounded_text(path, label="DocSync trace path")
+    return text, parse_yaml_mapping(text, path=path)
 
 
 def _validate_schema_shape(payload: dict[str, Any]) -> None:
@@ -62,6 +85,7 @@ def _validate_schema_shape(payload: dict[str, Any]) -> None:
 
 
 def _load_documents(
+    repo_root: Path,
     raw_documents: object,
     line_map: dict[tuple[str, str], LineSpan],
 ) -> dict[str, TraceDocument]:
@@ -71,7 +95,11 @@ def _load_documents(
         payload = _mapping(raw_document, f"documents.{document_id}")
         loaded[document_id] = TraceDocument(
             document_id=document_id,
-            path=Path(str(payload.get("path", ""))),
+            path=_repo_input_path(
+                repo_root,
+                payload.get("path", ""),
+                label=f"documents.{document_id}.path",
+            ),
             title=_optional_string(payload.get("title")),
             audience=_optional_string(payload.get("audience")),
             trace_span=line_map.get(("documents", document_id)),
@@ -80,6 +108,7 @@ def _load_documents(
 
 
 def _load_objects(
+    repo_root: Path,
     raw_objects: object,
     line_map: dict[tuple[str, str], LineSpan],
 ) -> dict[str, TraceObject]:
@@ -92,7 +121,11 @@ def _load_objects(
             object_id=object_id,
             document_id=str(payload.get("document", "")),
             kind=str(payload.get("kind", "")),
-            path=Path(str(payload.get("path", ""))),
+            path=_repo_input_path(
+                repo_root,
+                payload.get("path", ""),
+                label=f"objects.{object_id}.path",
+            ),
             marker=str(payload.get("marker", object_id)),
             heading_level=_optional_int(heading.get("level")),
             heading_text=_optional_string(heading.get("text")),
@@ -130,6 +163,7 @@ def _load_claims(
 
 
 def _load_evidence(
+    repo_root: Path,
     raw_evidence: object,
     line_map: dict[tuple[str, str], LineSpan],
 ) -> dict[str, TraceEvidence]:
@@ -141,13 +175,21 @@ def _load_evidence(
             evidence_id=evidence_id,
             evidence_type=str(payload.get("type", "")),
             description=_optional_string(payload.get("description")),
-            anchors=_load_anchors(payload.get("anchors", ()), evidence_id),
+            anchors=_load_anchors(
+                repo_root,
+                payload.get("anchors", ()),
+                evidence_id,
+            ),
             trace_span=line_map.get(("evidence", evidence_id)),
         )
     return loaded
 
 
-def _load_anchors(raw_anchors: object, evidence_id: str) -> tuple[TraceEvidenceAnchor, ...]:
+def _load_anchors(
+    repo_root: Path,
+    raw_anchors: object,
+    evidence_id: str,
+) -> tuple[TraceEvidenceAnchor, ...]:
     if raw_anchors is None:
         return ()
     if not isinstance(raw_anchors, list):
@@ -158,7 +200,11 @@ def _load_anchors(raw_anchors: object, evidence_id: str) -> tuple[TraceEvidenceA
         payload = _mapping(raw_anchor, f"evidence.{evidence_id}.anchors[{index}]")
         anchors.append(
             TraceEvidenceAnchor(
-                path=Path(str(payload.get("path", ""))),
+                path=_repo_input_path(
+                    repo_root,
+                    payload.get("path", ""),
+                    label=f"evidence.{evidence_id}.anchors[{index}].path",
+                ),
                 mode=str(payload.get("mode", "")),
             )
         )
@@ -204,56 +250,6 @@ def _severity(value: object) -> Severity:
     raise TraceError(f"Unsupported claim severity: {severity}")
 
 
-def _trace_item_spans(path: Path, *, span_path: Path) -> dict[tuple[str, str], LineSpan]:
-    lines = path.read_text(encoding="utf-8").splitlines()
-    starts = _trace_item_starts(lines)
-    return _trace_spans_from_starts(starts, len(lines), span_path)
-
-
-def _trace_item_starts(lines: list[str]) -> list[tuple[str, str, int]]:
-    starts: list[tuple[str, str, int]] = []
-    current_section: str | None = None
-    for line_number, line in enumerate(lines, start=1):
-        section = _trace_section(line)
-        if section is not None:
-            current_section = section
-            continue
-        if current_section is not None and _is_trace_item_line(line):
-            item_id = line.strip().split(":", 1)[0]
-            starts.append((current_section, item_id, line_number))
-    return starts
-
-
-def _trace_section(line: str) -> str | None:
-    stripped = line.strip()
-    if line.startswith(" ") or not stripped.endswith(":"):
-        return None
-    section = stripped[:-1]
-    if section not in {"documents", "objects", "claims", "evidence"}:
-        return None
-    return section
-
-
-def _is_trace_item_line(line: str) -> bool:
-    return line.startswith("  ") and not line.startswith("    ") and ":" in line.strip()
-
-
-def _trace_spans_from_starts(
-    starts: list[tuple[str, str, int]],
-    line_count: int,
-    span_path: Path,
-) -> dict[tuple[str, str], LineSpan]:
-    spans: dict[tuple[str, str], LineSpan] = {}
-    for index, (section, item_id, start_line) in enumerate(starts):
-        next_start = starts[index + 1][2] if index + 1 < len(starts) else line_count + 1
-        spans[(section, item_id)] = LineSpan(
-            path=span_path,
-            start_line=start_line,
-            end_line=next_start - 1,
-        )
-    return spans
-
-
 def _relative_path(repo_root: Path, path: Path) -> Path:
     try:
         return path.relative_to(repo_root)
@@ -261,7 +257,43 @@ def _relative_path(repo_root: Path, path: Path) -> Path:
         return path
 
 
-def _resolve_path(repo_root: Path, path: Path) -> Path:
-    if path.is_absolute():
-        return path
-    return repo_root / path
+def _repo_input_path(repo_root: Path, value: object, *, label: str) -> Path:
+    candidate = Path(str(value))
+    try:
+        resolved = resolve_input_within(
+            repo_root,
+            candidate,
+            label=f"DocSync trace {label}",
+            allow_missing=True,
+        )
+    except PathBoundaryError as exc:
+        raise TraceError(str(exc)) from exc
+    return resolved.relative_to(repo_root)
+
+
+def _validate_trace_source_budget(repo_root: Path, graph: TraceGraph) -> None:
+    """Bound the distinct repository files one trace can make DocSync inspect."""
+
+    paths = {
+        *(document.path for document in graph.documents.values()),
+        *(doc_object.path for doc_object in graph.objects.values()),
+        *(anchor.path for evidence in graph.evidence.values() for anchor in evidence.anchors),
+    }
+    if len(paths) > MAX_TRACE_SOURCE_FILES:
+        raise TraceError(
+            f"DocSync trace names {len(paths)} source files; limit is {MAX_TRACE_SOURCE_FILES}"
+        )
+    total_bytes = 0
+    for relative_path in paths:
+        full_path = repo_root / relative_path
+        try:
+            total_bytes += full_path.lstat().st_size
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise TraceError(f"Cannot inspect DocSync trace source: {relative_path}") from exc
+        if total_bytes > MAX_TRACE_SOURCE_BYTES:
+            raise TraceError(
+                "DocSync trace source inputs exceed the "
+                f"{MAX_TRACE_SOURCE_BYTES}-byte aggregate limit"
+            )

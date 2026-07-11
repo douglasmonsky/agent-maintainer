@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
+
+import pytest
 
 from agent_context.failures import FailureRecord
 from agent_maintainer.context.pack import exact_facts
@@ -17,7 +20,8 @@ from agent_maintainer.context.pack import (
 )
 from agent_maintainer.context.pack.builder import ContextPackRequest, build_context_pack
 from agent_repair_facts import registry
-from agent_repair_facts.parsers import lint, logs, pytest, typescript
+from agent_repair_facts.parsers import lint, logs, typescript
+from agent_repair_facts.parsers import pytest as pytest_parsers
 from agent_repair_facts.payloads import fact_payload
 
 RUFF_LINE = 7
@@ -38,6 +42,37 @@ def test_repair_fact_package_exports_registry_functions() -> None:
     assert registry.log_facts("unknown", Path("missing.log")) == []
 
 
+def test_exact_fact_budget_deduplicates_manifest_artifact_reads(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Duplicate manifest paths cannot multiply parser reads."""
+
+    artifact = tmp_path / "ruff.json"
+    artifact.write_text("[]\n", encoding=ENCODING)
+    calls: list[Path] = []
+
+    def fake_artifact_facts(
+        check: str,
+        path: Path,
+        text: str,
+    ) -> list[dict[str, object]]:
+        calls.append(path)
+        assert text == "[]\n"
+        return [fact_payload({"check": check, "message": "one fact"})]
+
+    monkeypatch.setattr(registry, "artifact_facts_from_text", fake_artifact_facts)
+    duplicate_record = replace(
+        record("ruff", artifact),
+        artifact_paths=(str(artifact),) * 250,
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (duplicate_record,))
+
+    assert len(facts) == 1
+    assert calls == [artifact]
+
+
 def test_old_context_pack_registry_imports_are_compatibility_shims() -> None:
     """Old context-pack parser imports remain stable through shims."""
     assert old_registry.artifact_facts is registry.artifact_facts
@@ -45,7 +80,7 @@ def test_old_context_pack_registry_imports_are_compatibility_shims() -> None:
     assert old_payloads.fact_payload is fact_payload
     assert old_lint_parsers.ruff_facts is lint.ruff_facts
     assert old_log_parsers.file_length_facts is logs.file_length_facts
-    assert old_pytest_parsers.pytest_artifact_facts is pytest.pytest_artifact_facts
+    assert old_pytest_parsers.pytest_artifact_facts is pytest_parsers.pytest_artifact_facts
     assert old_typescript_parsers.typescript_lint_facts is (typescript.typescript_lint_facts)
 
 
@@ -333,8 +368,8 @@ def test_pack_uses_structured_fact(tmp_path: Path) -> None:
                         "name": "ruff",
                         "status": "failed",
                         "exit_code": 1,
-                        "log_path": str(log_dir / "ruff.log"),
-                        "artifacts": [str(artifact)],
+                        "log_path": str(Path(log_dir.name) / "ruff.log"),
+                        "artifacts": [str(Path(log_dir.name) / artifact.name)],
                     },
                 ],
             },

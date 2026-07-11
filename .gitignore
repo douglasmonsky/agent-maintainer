@@ -8,6 +8,7 @@
 .tox/
 .venv/
 .verify-logs/
+.agent-maintainer/backups/
 .claude/settings.local.json
 __pycache__/
 *.pyc

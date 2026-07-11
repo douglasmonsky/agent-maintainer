@@ -45,6 +45,9 @@ PUBLIC_DOC_OBJECTS = {
     "docs.mutation_testing.overview",
     "docs.context_safety.overview",
     "docs.multi_ecosystem_reviewability_policy.overview",
+    "docs.release_index.overview",
+    "docs.release_0_1_0b6_candidate.overview",
+    "docs.upgrade_0_1_0b6.overview",
 }
 
 PUBLIC_DOC_CLAIMS = {
@@ -70,6 +73,9 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.mutation_testing_targeted_workflow",
     "claim.docs.context_safety_pointer_first_packs",
     "claim.docs.multi_ecosystem_reviewability_advisory",
+    "claim.docs.release_index_state",
+    "claim.docs.release_0_1_0b6_candidate_truth",
+    "claim.docs.upgrade_0_1_0b6_safe_adoption",
 }
 
 ACTIVE_DOC_PATHS = {
@@ -113,6 +119,9 @@ ACTIVE_DOC_PATHS = {
     "docs/case-studies/typescript-provider-maturation.md",
     "docs/releases/0.1.0b4.md",
     "docs/releases/0.1.0b5.md",
+    "docs/releases/0.1.0b6.md",
+    "docs/releases/README.md",
+    "docs/upgrading-to-0.1.0b6.md",
 }
 
 

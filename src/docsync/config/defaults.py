@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+DEFAULT_FRESHNESS_FILENAME = "freshness.json"
+
 DEFAULT_CONFIG_TEXT = """version: 1
 paths:
   include:
@@ -47,6 +49,7 @@ attestations:
   require_reason_from_trace: true
   require_current_fingerprint: true
 outputs:
+  directory: ".docsync/out"
   index_json: ".docsync/out/index.json"
   report_json: ".docsync/out/report.json"
   review_packet_json: ".docsync/out/review-packet.json"

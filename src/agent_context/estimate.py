@@ -12,6 +12,7 @@ from agent_context.failures import (
     failure_records,
     render_failures_text,
 )
+from agent_context.reading.file_safety import read_text_file
 from agent_context.reading.logs import LogRequest, resolve_log_path, slice_text
 
 TOKEN_CHAR_RATIO = 4
@@ -51,24 +52,35 @@ class EstimateRequest:
     diff: bool = False
     diff_summary: bool = False
     budget: int = DEFAULT_CONTEXT_BUDGET
+    workspace_root: Path = field(default_factory=Path.cwd)
 
 
 def estimate_context(request: EstimateRequest) -> ContextEstimate:
     """Return context size estimate for requested source."""
 
     if request.file_path is not None:
-        return estimate_file(request.file_path, request.budget)
+        return estimate_file(
+            request.file_path,
+            request.budget,
+            workspace_root=request.workspace_root,
+        )
     if request.log_check is not None:
-        return estimate_log(request.log_dir, request.log_check, request.log_request, request.budget)
+        return estimate_log(
+            request.log_dir,
+            request.log_check,
+            request.log_request,
+            request.budget,
+            workspace_root=request.workspace_root,
+        )
     if request.diff:
         return estimate_diff(request.diff_summary, request.budget)
     return estimate_failures(request.log_dir, request.budget)
 
 
-def estimate_file(path: Path, budget: int) -> ContextEstimate:
+def estimate_file(path: Path, budget: int, *, workspace_root: Path) -> ContextEstimate:
     """Return output estimate for a file expansion."""
 
-    text = read_text(path)
+    text = read_text(path, workspace_root=workspace_root)
     return build_estimate(
         label=f"file {path}",
         chars=len(text),
@@ -82,11 +94,17 @@ def estimate_log(
     check_name: str,
     log_request: LogRequest,
     budget: int,
+    *,
+    workspace_root: Path,
 ) -> ContextEstimate:
     """Return output estimate for a verifier log expansion."""
 
-    path = resolve_log_path(log_dir, check_name)
-    text = read_text(path)
+    path = resolve_log_path(
+        log_dir,
+        check_name,
+        workspace_root=workspace_root,
+    )
+    text = read_text(path, workspace_root=workspace_root)
     selected, _omitted_lines = slice_text(text, log_request)
     return build_estimate(
         label=f"log {check_name}",
@@ -156,13 +174,11 @@ def log_recommendation(check_name: str, chars: int) -> str:
     return f"--log {check_name} --tail 120 --budget {budget} --confirm-large"
 
 
-def read_text(path: Path) -> str:
+def read_text(path: Path, *, workspace_root: Path) -> str:
     """Read UTF-8 text returning empty text when missing."""
 
-    try:
-        return path.read_text(encoding="utf-8")
-    except OSError:
-        return ""
+    safe_read = read_text_file(path, workspace_root=workspace_root)
+    return safe_read.text or ""
 
 
 def run_git_diff(args: list[str]) -> str:

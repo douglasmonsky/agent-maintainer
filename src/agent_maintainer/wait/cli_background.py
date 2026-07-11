@@ -5,11 +5,18 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
+from agent_maintainer.runtime_events import waiting as wait_runtime
 from agent_maintainer.wait import broker
 from agent_maintainer.wait.handlers import handler_for
-from agent_maintainer.wait.registry import WaitRecord, wait_record_json
+from agent_maintainer.wait.registry import WaitRecord, WaitRegistry, wait_record_json
 from agent_maintainer.wait.sweeper import SweepSummary
+from agent_waits.notifications import (
+    claim_fallback_used_observation,
+    claim_registration_observation,
+    claim_terminal_observation,
+    claim_watcher_started_observation,
+)
+from agent_waits.watcher_state import watcher_state
 
 JSON_FORMAT = "json"
 
@@ -33,7 +40,9 @@ def background_github_pr_if_needed(
                 timeout_seconds=args.timeout_seconds,
             ),
         )
-        emit_registered(registration.record, background=True)
+        emit_registered(args.root, registration.record, background=True)
+        emit_watcher_result(args.root, registration)
+        emit_fallback_handoff(args.root, registration, output_format=args.format)
         emit_foreground_blocked(registration.record)
         return registration
     return None
@@ -54,7 +63,9 @@ def background_github_run_if_needed(
                 timeout_seconds=args.timeout_seconds,
             ),
         )
-        emit_registered(registration.record, background=True)
+        emit_registered(args.root, registration.record, background=True)
+        emit_watcher_result(args.root, registration)
+        emit_fallback_handoff(args.root, registration, output_format=args.format)
         emit_foreground_blocked(registration.record)
         return registration
     return None
@@ -75,7 +86,9 @@ def background_verifier_if_needed(
                 timeout_seconds=args.timeout_seconds,
             ),
         )
-        emit_registered(registration.record, background=True)
+        emit_registered(args.root, registration.record, background=True)
+        emit_watcher_result(args.root, registration)
+        emit_fallback_handoff(args.root, registration, output_format=args.format)
         emit_foreground_blocked(registration.record)
         return registration
     return None
@@ -103,10 +116,12 @@ def maybe_start_registered_watcher(
     return broker.start_registered_watcher(root, record)
 
 
-def emit_registered(record: WaitRecord, *, background: bool) -> None:
-    """Emit a wait registration runtime event."""
+def emit_registered(root: Path, record: WaitRecord, *, background: bool) -> None:
+    """Claim and emit a wait registration runtime event once."""
 
-    wait_events(record).registered(wait_id=record.wait_id, background=background)
+    observed = claim_registration_observation(WaitRegistry(root), record.wait_id)
+    if observed is not None:
+        wait_events(observed).registered(wait_id=observed.wait_id, background=background)
 
 
 def emit_foreground_blocked(record: WaitRecord) -> None:
@@ -118,7 +133,7 @@ def emit_foreground_blocked(record: WaitRecord) -> None:
 def emit_swept(summary: SweepSummary) -> None:
     """Emit a wait sweep runtime event."""
 
-    WaitRuntimeEvents.create(
+    wait_runtime.WaitRuntimeEvents.create(
         target_kind="wait-registry",
         target_id="wait-sweep",
     ).swept(
@@ -129,12 +144,15 @@ def emit_swept(summary: SweepSummary) -> None:
     )
 
 
-def emit_ready(record: WaitRecord) -> None:
-    """Emit a terminal wait-ready runtime event."""
+def emit_ready(registry: WaitRegistry, record: WaitRecord) -> None:
+    """Claim and emit a terminal wait-ready runtime event once."""
 
-    wait_events(record).ready(
-        wait_id=record.wait_id,
-        result=record.terminal_result,
+    observed = claim_terminal_observation(registry, record.wait_id)
+    if observed is None:
+        return
+    wait_events(observed).ready(
+        wait_id=observed.wait_id,
+        result=observed.terminal_result,
     )
 
 
@@ -142,6 +160,56 @@ def emit_resumed(record: WaitRecord) -> None:
     """Emit an automatic wait-resume runtime event."""
 
     wait_events(record).resumed(wait_id=record.wait_id)
+
+
+def emit_watcher_result(
+    root: Path,
+    registration: broker.BackgroundWaitRegistration,
+) -> None:
+    """Emit one privacy-safe watcher lifecycle result."""
+
+    record = registration.record
+    events = wait_events(record)
+    state = watcher_state(record)
+    if registration.watcher_started:
+        observed = claim_watcher_started_observation(WaitRegistry(root), record.wait_id)
+        if observed is not None:
+            wait_runtime.emit_watcher_started(
+                events,
+                wait_id=record.wait_id,
+                strategy=state.strategy,
+            )
+    elif state.error_code:
+        wait_runtime.emit_watcher_failed(
+            events,
+            wait_id=record.wait_id,
+            reason=state.error_code,
+        )
+
+
+def emit_fallback_handoff(
+    root: Path,
+    registration: broker.BackgroundWaitRegistration,
+    *,
+    output_format: str,
+) -> None:
+    """Emit one fallback event only when the text handoff exposes it."""
+
+    if output_format == JSON_FORMAT or broker.codex_terminal_rewake_available(registration):
+        return
+    observed = claim_fallback_used_observation(
+        WaitRegistry(root),
+        registration.record.wait_id,
+    )
+    if observed is None:
+        return
+    backoff = broker.heartbeat_backoff(registration.record)
+    wait_runtime.emit_fallback_used(
+        wait_events(registration.record),
+        wait_id=registration.record.wait_id,
+        initial_interval_seconds=int(backoff["initial_interval_seconds"]),
+        max_interval_seconds=int(backoff["max_interval_seconds"]),
+    )
 
 
 def render_registered(
@@ -175,7 +243,10 @@ def render_background(
     return broker.render_background_registration_text(registration)
 
 
-def wait_events(record: WaitRecord) -> WaitRuntimeEvents:
+def wait_events(record: WaitRecord) -> wait_runtime.WaitRuntimeEvents:
     """Return runtime event adapter for one wait record."""
 
-    return WaitRuntimeEvents.create(target_kind=record.kind, target_id=record.target_id)
+    return wait_runtime.WaitRuntimeEvents.create(
+        target_kind=record.kind,
+        target_id=record.target_id,
+    )

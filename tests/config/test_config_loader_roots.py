@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer.config import coercion
 from agent_maintainer.config import loader as maintainer_config_loader
 
 
@@ -49,3 +50,19 @@ def test_load_config_reads_explicit_neutral_config_root(
 
     assert loaded.source_roots == ("app",)
     assert Path.cwd() == outside
+
+
+def test_loader_compatibility_helpers(tmp_path: Path) -> None:
+    """Established loader helpers retain their provider-neutral behavior."""
+
+    (tmp_path / "agent-maintainer.toml").write_text('source_roots = ["lib"]\n', encoding="utf-8")
+    updates: dict[str, object] = {}
+    maintainer_config_loader.merge_env_values(
+        updates,
+        (("change_warn_lines", "EXAMPLE_WARN_LINES"),),
+        coercion.as_int,
+        environment={"EXAMPLE_WARN_LINES": "42"},
+    )
+
+    assert maintainer_config_loader.read_config(tmp_path) == {"source_roots": ["lib"]}
+    assert updates == {"change_warn_lines": 42}

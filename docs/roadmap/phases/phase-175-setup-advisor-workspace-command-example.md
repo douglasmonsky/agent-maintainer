@@ -1,6 +1,6 @@
 # Phase 175: Setup Advisor Workspace Command Example
 
-Status: active
+Status: complete
 
 ## Goal
 

@@ -41,6 +41,32 @@ def test_diagnostic_toml_keys_are_nested() -> None:
     )
 
 
+def test_metadata_facade_helpers_match_registry() -> None:
+    """Established metadata helpers remain backed by registry facts."""
+
+    assert metadata.DIAGNOSTIC_TOML_KEYS
+    assert metadata.toml_key_for("diagnostic_artifacts_enabled") == "diagnostics.enabled"
+    assert metadata.cli_override_for("source_roots") == metadata.CLI_OVERRIDE_VERIFY
+    assert metadata.docs_label_for("source_roots") == "Source Roots"
+    assert metadata.stability_for("source_roots") == metadata.STABILITY_STABLE
+
+
+def test_metadata_facade_preserves_value_type() -> None:
+    """Compatibility metadata remains its established six-field value type."""
+
+    constructed = metadata.ConfigFieldMetadata(
+        "sample",
+        "sample",
+        "",
+        metadata.CLI_OVERRIDE_NONE,
+        "Sample",
+        metadata.STABILITY_BETA,
+    )
+
+    assert constructed.field_name == "sample"
+    assert isinstance(metadata.FIELD_METADATA["source_roots"], metadata.ConfigFieldMetadata)
+
+
 def test_cli_override_metadata_matches_verify_cli() -> None:
     """CLI override metadata matches fields actually used by verifier CLI."""
     cli_override_fields = {
@@ -75,6 +101,8 @@ def loader_env_vars_by_field() -> dict[str, str]:
         loader.COVERAGE_ENVS,
         loader.FLOAT_ENVS,
         loader.NON_NEGATIVE_INT_ENVS,
+        loader.SHELL_ENVS,
+        loader.SPECIAL_ENVS,
         loader.STRING_ENVS,
         loader.THRESHOLD_ENVS,
         loader.TUPLE_ENVS,

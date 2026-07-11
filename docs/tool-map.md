@@ -34,21 +34,25 @@ recommend a track, preset, optional gates, and AI follow-up prompts. Use
 Technical Debt Score under `.verify-logs`; the static HTML report includes that
 score when the artifact exists.
 
-Use `python3 -m agent_maintainer bootstrap` for one-command local setup,
+Use `python3 -m agent_maintainer bootstrap` for dependency-only local setup,
 For package consumers, `bootstrap` operates on the current repository tree; it no longer falls back to the installed Agent Maintainer source checkout. When `config/dev-lock.txt` and `config/dev-dependencies.txt` are absent and the repository does not contain local `src/agent_maintainer`, bootstrap skips package dependency installation and leaves the consumer project package untouched. Use `python3 -m agent_maintainer doctor --root <repo> --format json` for scriptable setup checks outside the target repo CWD.
 `python3 -m agent_maintainer doctor` for setup health, `python3 -m
 agent_maintainer guidance` for generated agent-facing guidance, `python3 -m
 agent_maintainer verify --profile precommit` for local completion checks,
 `python3 -m agent_maintainer verify --profile full` for deeper review,
 `python3 -m agent_maintainer verify --profile manual` for slow opt-in checks,
-and `python3 -m agent_maintainer install` to install local hooks without
-reinstalling dependencies. Use `python3 -m agent_maintainer hooks install all`
-to install managed agent-client hooks directly.
+and `python3 -m agent_maintainer install` to explicitly install local pre-commit
+and managed hooks without reinstalling dependencies. Both commands accept
+`--dry-run`; bootstrap never installs hooks implicitly. Use `python3 -m
+agent_maintainer hooks install all` to select managed agent-client hooks
+directly. `hooks update` refreshes those files through the same lossless merge,
+and `hooks uninstall` removes only manifest-owned entries and scripts.
 
 When `.docsync/trace.yml` exists, Agent Maintainer adds a `docsync`
-verification check to local profiles. The check runs `docsync check`,
-captures `.docsync/out/report.json`, and turns DocSync findings into
-exact repair facts for context packs and repair capsules.
+verification check to local profiles. The check runs `docsync check
+--write-reports`, captures `.docsync/out/report.json`, and turns DocSync
+findings into exact repair facts for context packs and repair capsules. Plain
+standalone `docsync check` remains read-only.
 
 `doctor --strict` turns setup warnings into a nonzero exit. Use it after bootstrap and after pushing local commits when you want a clean health signal that includes git sync state. In an Agent Maintainer source checkout, doctor verifies imports resolve local `src/agent_maintainer` and warns if the interactive `agent-maintainer` console script points at stale installed code; repair with `python -m pip install -e .`.
 
@@ -142,10 +146,11 @@ summaries intentionally omit raw secret values and point to run-scoped artifacts
 for details.
 Managed agent-client hooks append local execution evidence to
 `.verify-logs/hooks.jsonl`, and `doctor` reports latest audited hook status.
-Hook install/status behavior is routed through agent-client adapters. Current
+Hook install/update/status/uninstall behavior is routed through the shared
+managed-file manifest and agent-client adapters. Current
 adapters are Codex and Claude Code; they own client-specific config paths and
-hook script paths, while the hook manager owns prompts, backups, merges, and
-writes.
+hook script paths, while the hook manager owns prompts, Git-private backups,
+identity-aware merges/removals, and transactional writes/deletes.
 
 `repair-plan` prints a non-mutating repair sequence for the next agent loop.
 Use `python3 -m agent_maintainer repair-plan` for the latest failure,
@@ -222,10 +227,14 @@ of dumping raw JSON into terminal output.
 
 Semgrep provides local SAST in the `manual` profile when `enable_semgrep = true`.
 Use local or pinned configs first, for example `semgrep.yml`, and keep
-`--metrics=off` in committed args for private/local scans. The public package
-extra installs Semgrep only on Python versions where its dependency graph is
-currently resolver-friendly; Python 3.13 and newer users can still install
-Semgrep separately when their platform supports it.
+`--metrics=off` in committed args for private/local scans. The `manual` and
+`all` extras install Semgrep across the supported Python 3.11 through 3.14
+matrix.
+
+The optional npm-backed Markdown and TOML gates require Node.js 22 or newer.
+Hardening initialization adds that engine contract to compatible package
+metadata and reports an explicit conflicting Node engine for review instead of
+silently installing incompatible tooling.
 
 pip-audit checks Python packages for known vulnerabilities. It is disabled by default in this kit because it may use network access and, without an input file, can audit unrelated packages in the active environment. Enable it explicitly with pinned input, such as `pip_audit_args = ["-r", "config/dev-lock.txt"]`. When the input is a complete, pinned, transitive lockfile, add `--no-deps --disable-pip --progress-spinner off --timeout 20` to avoid slow resolver work without making ordinary PyPI latency fail the gate. Do not use that fast path for partial requirements files that still need dependency resolution. In `fresh-strict`, enabling pip-audit without pinned args is a failure.
 

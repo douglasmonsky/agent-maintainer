@@ -81,8 +81,7 @@ def ensure_wait_daemon(
     wait_id: str,
     *,
     env: Mapping[str, str] | None = None,
-    runner: LaunchctlRunner | None = None,
-    python_executable: str = sys.executable,
+    options: LaunchAgentInstallOptions | None = None,
 ) -> DaemonLaunch:
     """Write rewake envelope and ensure launchd daemon is running."""
 
@@ -96,12 +95,42 @@ def ensure_wait_daemon(
             root,
             wait_id,
             current,
-            runner=runner,
-            python_executable=python_executable,
+            options=options,
         )
     except (OSError, RuntimeError) as exc:
         return DaemonLaunch(False, label=label, log_path=log_path, error=str(exc))
     return DaemonLaunch(True, label=label, log_path=log_path)
+
+
+def launch_wait_watcher_process(
+    root: Path,
+    wait_id: str,
+    *,
+    python_executable: str | None = None,
+) -> tuple[tuple[str, ...], int]:
+    """Launch a detached local watcher and return its command and pid."""
+
+    command = (
+        python_executable or sys.executable,
+        "-m",
+        "agent_maintainer",
+        "wait",
+        "sweep",
+        "--watch",
+        wait_id,
+        "--root",
+        str(root),
+    )
+    process = subprocess.Popen(  # nosec B603 # pylint: disable=consider-using-with
+        list(command),
+        cwd=root,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        close_fds=True,
+        start_new_session=True,
+    )
+    return command, process.pid
 
 
 def install_launch_agent(
@@ -229,17 +258,10 @@ def _write_envelope_and_install(
     wait_id: str,
     env: Mapping[str, str],
     *,
-    runner: LaunchctlRunner | None,
-    python_executable: str,
+    options: LaunchAgentInstallOptions | None,
 ) -> None:
     write_rewake_envelope(root, wait_id, env)
-    install_launch_agent(
-        root,
-        options=LaunchAgentInstallOptions(
-            runner=runner,
-            python_executable=python_executable,
-        ),
-    )
+    install_launch_agent(root, options=options)
 
 
 def _bootstrap_launch_agent(

@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
+import time
 from pathlib import Path
 
+from agent_maintainer.verify import async_state
 from agent_maintainer.wait.models import TIMEOUT_EXIT_CODE
 from agent_maintainer.wait.verifier import (
     VerifierWaitConfig,
@@ -17,6 +20,7 @@ from agent_maintainer.wait.verifier import (
 )
 
 ERROR_EXIT_CODE = 2
+CANCELLED_PROCESS_STATUS = 143
 
 
 def test_verifier_wait_renders_success_manifest(tmp_path: Path) -> None:
@@ -143,6 +147,101 @@ def test_verifier_query_once_reads_cached_fail_job(tmp_path: Path) -> None:
     assert "Result: FAIL" in render_verifier_wait_text(result)
 
 
+def test_verifier_wait_distinguishes_quality_failure_state(tmp_path: Path) -> None:
+    """A completed nonzero verifier is a quality failure, not infrastructure error."""
+
+    write_lifecycle_state(tmp_path, "quality-fail", status=async_state.JOB_STATUS_FAILED)
+
+    result = query_verifier_run_once(
+        VerifierWaitConfig(run_id="quality-fail", log_dir=tmp_path),
+    )
+
+    assert result is not None
+    assert result.exit_code == 1
+    assert result.error == ""
+    assert "Result: FAIL" in render_verifier_wait_text(result)
+
+
+def test_verifier_wait_reports_infrastructure_error_state(tmp_path: Path) -> None:
+    """A child crash becomes terminal ERROR instead of a misleading timeout."""
+
+    write_lifecycle_state(
+        tmp_path,
+        "infra-error",
+        status=async_state.JOB_STATUS_ERROR,
+        error="RuntimeError: child crashed",
+    )
+
+    result = query_verifier_run_once(
+        VerifierWaitConfig(run_id="infra-error", log_dir=tmp_path),
+    )
+
+    assert result is not None
+    assert result.exit_code == ERROR_EXIT_CODE
+    assert result.process_exit_code == 1
+    assert "Result: ERROR" in render_verifier_wait_text(result)
+    assert "child crashed" in render_verifier_wait_text(result)
+
+
+def test_verifier_wait_reports_cancelled_state(tmp_path: Path) -> None:
+    """Signal cancellation has a distinct terminal result and exit status."""
+
+    write_lifecycle_state(
+        tmp_path,
+        "cancelled",
+        status=async_state.JOB_STATUS_CANCELLED,
+        error="received signal SIGTERM",
+        exit_code=CANCELLED_PROCESS_STATUS,
+    )
+
+    result = query_verifier_run_once(
+        VerifierWaitConfig(run_id="cancelled", log_dir=tmp_path),
+    )
+
+    assert result is not None
+    assert result.cancelled is True
+    assert result.exit_code == CANCELLED_PROCESS_STATUS
+    assert result.process_exit_code == CANCELLED_PROCESS_STATUS
+    assert "Result: CANCELLED" in render_verifier_wait_text(result)
+    assert json.loads(render_verifier_wait_json(result))["status"] == "cancelled"
+
+
+def test_current_job_state_rejects_same_run_stale_manifest(tmp_path: Path) -> None:
+    """A reused run id cannot let an old PASS override current lifecycle state."""
+
+    manifest_path = write_manifest(
+        tmp_path,
+        "reused-run",
+        profile="full",
+        checks=({"name": "stale-check", "status": "passed"},),
+    )
+    os.utime(manifest_path, (1, 1))
+    write_lifecycle_state(
+        tmp_path,
+        "reused-run",
+        status=async_state.JOB_STATUS_RUNNING,
+        exit_code=None,
+    )
+
+    pending = query_verifier_run_once(
+        VerifierWaitConfig(run_id="reused-run", log_dir=tmp_path),
+    )
+
+    assert pending is None
+    write_lifecycle_state(
+        tmp_path,
+        "reused-run",
+        status=async_state.JOB_STATUS_FAILED,
+    )
+    terminal = query_verifier_run_once(
+        VerifierWaitConfig(run_id="reused-run", log_dir=tmp_path),
+    )
+    assert terminal is not None
+    assert terminal.exit_code == 1
+    assert terminal.manifest is not None
+    assert [check.name for check in terminal.manifest.checks] == ["verifier"]
+
+
 def test_verifier_wait_json_lists_failed_checks(tmp_path: Path) -> None:
     """JSON output exposes machine-readable failed check names."""
     write_manifest(
@@ -238,6 +337,38 @@ def write_cached_job(
         encoding="utf-8",
     )
     (jobs_dir / f"{run_id}.stdout.log").write_text(outcome, encoding="utf-8")
+
+
+def write_lifecycle_state(
+    log_dir: Path,
+    run_id: str,
+    *,
+    status: str,
+    error: str = "",
+    exit_code: int | None = 1,
+) -> None:
+    """Write one terminal detached-verifier lifecycle record."""
+
+    jobs_dir = log_dir / "jobs"
+    now = time.time()
+    async_state.write_async_state(
+        jobs_dir / f"{run_id}.json",
+        async_state.AsyncVerifierState(
+            run_id=run_id,
+            profile="full",
+            status=status,
+            process_id=123,
+            command=("python", "-m", "agent_maintainer.verify.async_child"),
+            fingerprint={"profile": "full"},
+            stdout_path=str(jobs_dir / f"{run_id}.stdout.log"),
+            stderr_path=str(jobs_dir / f"{run_id}.stderr.log"),
+            started_at=now,
+            updated_at=now,
+            exit_code=exit_code,
+            error=error,
+            phase="verify",
+        ),
+    )
 
 
 def write_manifest(

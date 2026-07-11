@@ -13,6 +13,7 @@ depends_on = [
   "efficacy_reporting",
   "evidence",
   "file_baselines",
+  "models",
 "repair_fact_coverage",
 "repair_fact_coverage_reporting",
 "reporting",

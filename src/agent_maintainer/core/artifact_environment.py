@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import os
-from collections.abc import Iterator
+from collections.abc import Generator
 from pathlib import Path
 
 COVERAGE_FILE_ENV = "COVERAGE_FILE"
@@ -12,7 +12,7 @@ DIAGNOSTIC_ARTIFACTS_DIR_ENV = "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"
 
 
 @contextlib.contextmanager
-def artifact_environment(log_dir: Path) -> Iterator[None]:
+def artifact_environment(log_dir: Path) -> Generator[None, None, None]:
     """Scope generated tool artifacts to the verifier log directory."""
 
     previous_coverage_file = os.environ.get(COVERAGE_FILE_ENV)

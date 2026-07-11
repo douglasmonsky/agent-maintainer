@@ -2,23 +2,29 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
-from agent_maintainer.config import schema
+from agent_maintainer.config import registry, schema, validation
+
+DEFAULT_CONFIG_SOURCE = "configuration"
 
 
 def as_tuple(value: object, field_name: str) -> tuple[str, ...]:
     """Coerce a string or list-like value into a tuple of normalized paths."""
 
+    items = _tuple_items(value, field_name)
+    return tuple(item.rstrip("/") or "." for item in items if item)
+
+
+def _tuple_items(value: object, field_name: str) -> tuple[str, ...]:
     if value is None:
         return ()
     if isinstance(value, str):
-        items = [part.strip() for part in value.split(",")]
-    elif isinstance(value, (list, tuple)):
-        items = [str(part).strip() for part in value]
-    else:
-        raise TypeError(f"{field_name} must be a string or list of strings")
-    return tuple(item.rstrip("/") or "." for item in items if item)
+        return tuple(part.strip() for part in value.split(","))
+    if isinstance(value, (list, tuple)) and all(isinstance(part, str) for part in value):
+        return tuple(part.strip() for part in value)
+    raise TypeError(f"{field_name} must be a string or list of strings")
 
 
 def as_bool(value: object, field_name: str) -> bool:
@@ -38,7 +44,7 @@ def as_bool(value: object, field_name: str) -> bool:
 def as_int(value: object, field_name: str) -> int:
     """Coerce an integer config value."""
 
-    if isinstance(value, int):
+    if isinstance(value, int) and not isinstance(value, bool):
         return value
     if not isinstance(value, str):
         raise TypeError(f"{field_name} must be an integer")
@@ -63,13 +69,19 @@ def as_float(value: object, field_name: str) -> float:
     if isinstance(value, bool):
         raise TypeError(f"{field_name} must be a number")
     if isinstance(value, (float, int)):
-        return float(value)
-    if not isinstance(value, str):
-        raise TypeError(f"{field_name} must be a number")
-    try:
-        return float(value)
-    except (TypeError, ValueError) as exc:
-        raise TypeError(f"{field_name} must be a number") from exc
+        return _finite_float(float(value), field_name)
+    if isinstance(value, str):
+        try:
+            return _finite_float(float(value), field_name)
+        except ValueError as exc:
+            raise TypeError(f"{field_name} must be a number") from exc
+    raise TypeError(f"{field_name} must be a number")
+
+
+def _finite_float(value: float, field_name: str) -> float:
+    if math.isfinite(value):
+        return value
+    raise TypeError(f"{field_name} must be a finite number")
 
 
 def as_str(value: object, field_name: str) -> str:
@@ -90,27 +102,16 @@ def as_choice(value: object, field_name: str, choices: frozenset[str]) -> str:
     raise TypeError(f"{field_name} must be one of: {valid_values}")
 
 
-DIAGNOSTIC_FIELD_PARSERS = (
-    ("enabled", "diagnostic_artifacts_enabled", as_bool),
-    ("log_dir", "diagnostic_artifacts_dir", as_str),
-    ("run_history_limit", "diagnostic_run_history_limit", as_non_negative_int),
-)
-
-
-WORKSPACE_FIELD_PARSERS = (
-    ("source_roots", as_tuple),
-    ("test_roots", as_tuple),
-    ("package_paths", as_tuple),
-    ("coverage_source", as_tuple),
-    ("typescript_lint_command", as_tuple),
-    ("typescript_typecheck_command", as_tuple),
-    ("typescript_test_command", as_tuple),
+WORKSPACE_FIELD_PARSERS = tuple(
+    (field_name, as_tuple) for field_name in sorted(registry.WORKSPACE_KEYS)
 )
 
 
 def coerce_file_baseline_group(
     name: str,
     raw_value: object,
+    *,
+    source: str = DEFAULT_CONFIG_SOURCE,
 ) -> schema.FileBaselineGroupConfig:
     """Coerce one named provider-neutral file baseline group."""
     if not name.strip():
@@ -118,6 +119,10 @@ def coerce_file_baseline_group(
     if not isinstance(raw_value, dict):
         raise TypeError(f"file_baselines.groups.{name} must be a table")
     raw_group: dict[str, object] = raw_value
+    validation.validate_raw_config(
+        {"file_baselines": {"groups": {name: raw_group}}},
+        source=source,
+    )
     include = as_tuple(raw_group.get("include"), f"file_baselines.groups.{name}.include")
     if not include:
         raise TypeError(f"file_baselines.groups.{name}.include must not be empty")
@@ -146,11 +151,19 @@ def coerce_file_baseline_group(
     )
 
 
-def coerce_file_baselines(raw_value: object) -> dict[str, object]:
+def coerce_file_baselines(
+    raw_value: object,
+    *,
+    source: str = DEFAULT_CONFIG_SOURCE,
+) -> dict[str, object]:
     """Coerce nested provider-neutral file baseline config."""
     if not isinstance(raw_value, dict):
         raise TypeError("file_baselines must be a table")
     raw_table: dict[str, object] = raw_value
+    validation.validate_raw_config(
+        {"file_baselines": raw_table},
+        source=source,
+    )
     updates: dict[str, object] = {}
     enabled = raw_table.get("enabled")
     if enabled is not None:
@@ -168,7 +181,8 @@ def coerce_file_baselines(raw_value: object) -> dict[str, object]:
             raise TypeError("file_baselines.groups must be a table")
         group_table: dict[str, object] = groups
         updates["file_baselines"] = tuple(
-            coerce_file_baseline_group(name, group) for name, group in sorted(group_table.items())
+            coerce_file_baseline_group(name, group, source=source)
+            for name, group in sorted(group_table.items())
         )
     return updates
 
@@ -176,12 +190,18 @@ def coerce_file_baselines(raw_value: object) -> dict[str, object]:
 def coerce_workspace(
     name: str,
     raw_value: object,
+    *,
+    source: str = DEFAULT_CONFIG_SOURCE,
 ) -> schema.WorkspaceConfig:
     """Coerce one named workspace config table."""
     if not name.strip():
         raise TypeError("workspace name must not be empty")
     if not isinstance(raw_value, dict):
         raise TypeError(f"workspaces.{name} must be a table")
+    validation.validate_raw_config(
+        {"workspaces": {name: raw_value}},
+        source=source,
+    )
     updates = {
         field_name: parser(raw_value.get(field_name), f"workspaces.{name}.{field_name}")
         for field_name, parser in WORKSPACE_FIELD_PARSERS
@@ -189,62 +209,121 @@ def coerce_workspace(
     return schema.WorkspaceConfig(name=name, **updates)
 
 
-def coerce_workspaces(raw_value: object) -> tuple[schema.WorkspaceConfig, ...]:
+def coerce_workspaces(
+    raw_value: object,
+    *,
+    source: str = DEFAULT_CONFIG_SOURCE,
+) -> tuple[schema.WorkspaceConfig, ...]:
     """Coerce nested workspace config tables."""
     if not isinstance(raw_value, dict):
         raise TypeError("workspaces must be a table")
-    return tuple(coerce_workspace(name, payload) for name, payload in sorted(raw_value.items()))
+    return tuple(
+        coerce_workspace(name, payload, source=source)
+        for name, payload in sorted(raw_value.items())
+    )
 
 
-def coerce_diagnostics(raw_value: object) -> dict[str, object]:
+def coerce_diagnostics(
+    raw_value: object,
+    *,
+    source: str = DEFAULT_CONFIG_SOURCE,
+) -> dict[str, object]:
     """Coerce the nested diagnostics config table."""
 
     if not isinstance(raw_value, dict):
         raise TypeError("diagnostics must be a table")
+    validation.validate_raw_config(
+        {"diagnostics": raw_value},
+        source=source,
+    )
     updates: dict[str, object] = {}
-    for raw_name, field_name, parser in DIAGNOSTIC_FIELD_PARSERS:
+    for raw_name, field_name in registry.DIAGNOSTIC_FIELD_MAP.items():
         value = raw_value.get(raw_name)
         if value is not None:
-            updates[field_name] = parser(value, f"diagnostics.{raw_name}")
+            spec = registry.FIELD_SPECS[field_name]
+            updates[field_name] = coerce_field_value(
+                spec,
+                value,
+                f"diagnostics.{raw_name}",
+                source=source,
+            )
     return updates
 
 
-def coerce_updates(raw: dict[str, Any]) -> dict[str, object]:  # noqa: C901
+def coerce_field_value(
+    spec: registry.ConfigFieldSpec,
+    value: object,
+    field_name: str,
+    *,
+    source: str = DEFAULT_CONFIG_SOURCE,
+) -> object:
+    """Coerce and validate one value from its registry specification."""
+
+    parsers = {
+        "bool": as_bool,
+        "float": as_float,
+        "int": as_int,
+        "non-negative-int": as_non_negative_int,
+        "tuple": as_tuple,
+    }
+    if spec.value_kind == "choice":
+        parsed = as_choice(value, field_name, spec.choices)
+    elif spec.value_kind == "str":
+        parsed = value if spec.allow_empty and isinstance(value, str) else as_str(value, field_name)
+    else:
+        parser = parsers.get(spec.value_kind)
+        if parser is None:
+            raise TypeError(f"{field_name} is not a scalar configuration field")
+        parsed = parser(value, field_name)
+    return validation.validate_field_value(parsed, spec, source=source)
+
+
+def coerce_updates(
+    raw: dict[str, Any],
+    *,
+    source: str = DEFAULT_CONFIG_SOURCE,
+    prefix: str = validation.TOOL_TABLE,
+) -> dict[str, object]:
     """Coerce raw pyproject config values into dataclass update values."""
 
+    validation.validate_raw_config(raw, source=source, prefix=prefix)
     updates: dict[str, object] = {}
-    field_parsers = (
-        (schema.TUPLE_FIELDS, as_tuple),
-        (schema.BOOL_FIELDS, as_bool),
-        (schema.NON_NEGATIVE_INT_FIELDS, as_non_negative_int),
-        (schema.INT_FIELDS, as_int),
-        (schema.FLOAT_FIELDS, as_float),
-        (schema.STR_FIELDS, as_str),
-    )
-    for fields, parser in field_parsers:
-        for field_name in fields:
-            raw_value = raw.get(field_name)
-            if raw_value is not None:
-                updates[field_name] = parser(raw_value, field_name)
+    for spec in registry.FIELD_SPECS.values():
+        raw_item = _raw_scalar_item(raw, spec)
+        if raw_item is None:
+            continue
+        raw_key, raw_value = raw_item
+        if raw_value is not None:
+            updates[spec.field_name] = coerce_field_value(
+                spec,
+                raw_value,
+                raw_key,
+                source=source,
+            )
     workspaces = raw.get("workspaces")
     if workspaces is not None:
-        updates["workspaces"] = coerce_workspaces(workspaces)
-    architecture_tool = raw.get("architecture_tool")
-    if architecture_tool is not None:
-        updates["architecture_tool"] = as_choice(
-            architecture_tool, "architecture_tool", schema.VALID_ARCHITECTURE_TOOLS
-        )
-    compression_backend = raw.get("context_compression_backend")
-    if compression_backend is not None:
-        updates["context_compression_backend"] = as_choice(
-            compression_backend,
-            "context_compression_backend",
-            schema.VALID_CONTEXT_COMPRESSION_BACKENDS,
-        )
+        updates["workspaces"] = coerce_workspaces(workspaces, source=source)
     diagnostics = raw.get("diagnostics")
     if diagnostics is not None:
-        updates.update(coerce_diagnostics(diagnostics))
+        updates.update(coerce_diagnostics(diagnostics, source=source))
     file_baselines = raw.get("file_baselines")
     if file_baselines is not None:
-        updates.update(coerce_file_baselines(file_baselines))
+        updates.update(coerce_file_baselines(file_baselines, source=source))
     return updates
+
+
+def _raw_scalar_item(
+    raw: dict[str, Any],
+    spec: registry.ConfigFieldSpec,
+) -> tuple[str, object] | None:
+    if spec.field_name in registry.NESTED_FIELD_KINDS:
+        return None
+    raw_keys = (
+        spec.toml_aliases
+        if spec.field_name in registry.NESTED_TOML_KEYS
+        else (spec.toml_key, *spec.toml_aliases)
+    )
+    return next(
+        ((key, raw[key]) for key in raw_keys if key in raw),
+        None,
+    )

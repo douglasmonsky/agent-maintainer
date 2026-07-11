@@ -13,6 +13,10 @@ depends_on = [
 ]
 
 [[modules]]
+path = "distribution_bundle"
+depends_on = []
+
+[[modules]]
 path = "git_state"
 depends_on = []
 
@@ -40,6 +44,29 @@ depends_on = [
   "//agent_context.budget",
   "//agent_context.models",
 ]
+
+[[modules]]
+path = "release_evidence"
+depends_on = [
+  "release_evidence_contract",
+  "release_evidence_validation",
+  "release_profile_evidence",
+]
+
+[[modules]]
+path = "release_evidence_contract"
+depends_on = []
+
+[[modules]]
+path = "release_evidence_validation"
+depends_on = [
+  "release_evidence_contract",
+  "release_profile_evidence",
+]
+
+[[modules]]
+path = "release_profile_evidence"
+depends_on = ["release_evidence_contract"]
 
 [[modules]]
 path = "timing"

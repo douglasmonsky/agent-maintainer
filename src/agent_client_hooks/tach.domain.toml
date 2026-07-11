@@ -17,14 +17,45 @@ path = "templates"
 depends_on = ["constants"]
 
 [[modules]]
-path = "adapters"
+path = "manifest"
 depends_on = [
   "constants",
   "templates",
 ]
 
 [[modules]]
+path = "status"
+depends_on = [
+  "constants",
+  "manifest",
+  "merge",
+]
+
+[[modules]]
+path = "adapters"
+depends_on = [
+  "constants",
+  "manifest",
+  "status",
+]
+
+[[modules]]
+path = "claude_merge"
+depends_on = [
+  "constants",
+  "manifest",
+]
+
+[[modules]]
 path = "merge"
 depends_on = [
+  "claude_merge",
+  "templates",
+]
+
+[[modules]]
+path = "removal"
+depends_on = [
+  "merge",
   "templates",
 ]

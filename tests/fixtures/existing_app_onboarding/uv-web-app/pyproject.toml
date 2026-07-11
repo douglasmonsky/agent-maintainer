@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "uv-web-app"
+version = "0.9.0"
+description = "Synthetic existing uv-managed web application fixture"
+requires-python = ">=3.12"
+dependencies = ["httpx>=0.28"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

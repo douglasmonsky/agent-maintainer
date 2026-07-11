@@ -20,7 +20,7 @@ def parse_coverage_summary_json(raw_output: str) -> list[TypeScriptDiagnostic]:
     """Parse Istanbul coverage-summary JSON output."""
     try:
         payload = json.loads(raw_output)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, RecursionError):
         return []
     return coverage_summary_diagnostics(payload)
 

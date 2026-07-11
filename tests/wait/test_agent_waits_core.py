@@ -37,6 +37,8 @@ from agent_waits.rendering import render_wait_record_text
 
 NOW = datetime.fromisoformat("2026-07-07T02:00:00+00:00")
 FALLBACK_MONITOR_INTERVAL_SECONDS = 120
+FALLBACK_MONITOR_MAX_INTERVAL_SECONDS = 1800
+LONG_MONITOR_INTERVAL_SECONDS = 3600
 
 
 def test_running_in_codex_accepts_thread_override() -> None:
@@ -69,6 +71,27 @@ def test_generic_wait_registry_writes_target_id(tmp_path: Path) -> None:
     assert record.wait_id == "verifier-run-123-20260707T020000Z"
     assert record.metadata == {HEARTBEAT_MODE_METADATA: HEARTBEAT_MODE_REPO}
     assert "target: run-123" in render_wait_record_text(record)
+
+
+def test_heartbeat_backoff_caps_large_configured_interval(tmp_path: Path) -> None:
+    """Fallback cadence never advertises an interval above its hard cap."""
+
+    record = WaitRegistry(tmp_path).register(
+        RegisterWait(
+            root=tmp_path,
+            kind="verifier",
+            target_id="run-long",
+            interval_seconds=LONG_MONITOR_INTERVAL_SECONDS,
+            now=NOW,
+        ),
+    )
+
+    request = json.loads(heartbeat_request_json(record, root=tmp_path))
+    backoff = request["backoff"]
+
+    assert request["preferred_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
+    assert backoff["initial_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
+    assert backoff["max_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
 
 
 def test_register_deduplicates_active_wait_identity(tmp_path: Path) -> None:
@@ -301,6 +324,7 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     assert "verifier wait registered for run-123" in text
     assert "watcher: started" in text
     assert "fallback heartbeat request:" in text
+    assert "model-turn fallback: each heartbeat poll consumes a model turn" in text
     assert heartbeat_prompt(record) in text
     request = json.loads(heartbeat_request_json(record, root=tmp_path))
     assert request["scope"] == "wait"
@@ -310,18 +334,28 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     assert request["preferred_monitor_model"] == "gpt-5.3-codex-spark"
     assert request["preferred_monitor_reasoning"] == "minimal"
     assert request["preferred_interval_seconds"] == FALLBACK_MONITOR_INTERVAL_SECONDS
+    assert request["heartbeat_attempt"] == 0
+    assert request["backoff"] == {
+        "strategy": "exponential",
+        "initial_interval_seconds": FALLBACK_MONITOR_INTERVAL_SECONDS,
+        "multiplier": 2,
+        "max_interval_seconds": FALLBACK_MONITOR_MAX_INTERVAL_SECONDS,
+        "reset_on": "terminal_or_new_wait",
+    }
     assert request["merge_policy"] == "merge_only_if_satisfactory"
     assert request["sweep_command"].endswith(
         f"wait sweep --one {record.wait_id} --root {tmp_path}",
     )
     assert "targeted wait sweep command" in request["prompt"]
+    assert "exponential backoff" in request["prompt"]
+    assert "stop the heartbeat" in request["prompt"]
     assert record.wait_id not in request["prompt"]
 
 
-def test_background_registration_prefers_terminal_rewake_when_available(
+def test_background_registration_keeps_fallback_until_visible_rewake_is_proven(
     tmp_path: Path,
 ) -> None:
-    """Codex terminal-rewake handoffs avoid heartbeat model polling."""
+    """An app-server candidate alone does not suppress recoverable fallback."""
 
     record = WaitRegistry(tmp_path).register(
         RegisterWait(
@@ -335,15 +369,15 @@ def test_background_registration_prefers_terminal_rewake_when_available(
     text = render_background_registration_text(
         BackgroundWaitRegistration(record=record, watcher_started=True),
         env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: "thread-1"},
-        sdk_available=True,
+        backend_available=True,
     )
 
     assert f"Result: {RESULT_PENDING}" in text
     assert "pending polls stay outside model turns" in text
-    assert "terminal rewake: enabled" in text
-    assert "manual fallback resume:" in text
-    assert "codex_heartbeat_wait" not in text
-    assert "heartbeat request" not in text
+    assert "terminal rewake: enabled" not in text
+    assert "manual resume:" in text
+    assert "codex_heartbeat_wait" in text
+    assert "model-turn fallback" in text
 
 
 def test_background_registration_keeps_heartbeat_without_rewake_backend(
@@ -363,7 +397,7 @@ def test_background_registration_keeps_heartbeat_without_rewake_backend(
     text = render_background_registration_text(
         BackgroundWaitRegistration(record=record, watcher_started=True),
         env={CODEX_REWAKE_ENV: "1", CODEX_THREAD_ID_ENV: "thread-1"},
-        sdk_available=False,
+        backend_available=False,
     )
 
     assert "fallback heartbeat request:" in text

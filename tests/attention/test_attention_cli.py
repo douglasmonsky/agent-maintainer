@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
+
+import pytest
 
 from agent_maintainer.attention import cli
 
 
-def test_attention_update_top_explain_and_changed(tmp_path: Path, capsys) -> None:
+def test_attention_update_top_explain_and_changed(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """CLI writes and reads the attention ledger."""
     _init_repo(tmp_path)
     _write(tmp_path / "src" / "app.py", "VALUE = 1\n")
@@ -26,6 +32,11 @@ def test_attention_update_top_explain_and_changed(tmp_path: Path, capsys) -> Non
     output = capsys.readouterr().out
     assert "Attention Ledger" in output
     assert "src/app.py" in output
+
+    assert cli.main(["--target", str(tmp_path), "top", "--limit", "1", "--format", "json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["returned_file_count"] == 1
+    assert len(payload["files"]) == 1
 
     assert cli.main(["--target", str(tmp_path), "explain", "src/app.py"]) == 0
     output = capsys.readouterr().out

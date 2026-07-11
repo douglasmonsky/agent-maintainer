@@ -1,5 +1,7 @@
 # Phase 176: Codex Terminal Rewake Hardening
 
+Status: implementation complete; manual validation pending
+
 ## Goal
 
 Make known waits behave like a real suspension primitive in Codex: pending state
@@ -15,7 +17,8 @@ The Codex desktop app provides `CODEX_THREAD_ID` to local commands. The bundled
 `openai-codex` package is optional and is not present in the current repo venv.
 
 The preferred local backend is therefore app-server JSON-RPC over the bundled
-`codex` CLI. The Python SDK remains a secondary fallback when installed.
+`codex` CLI. The Python SDK is reported as diagnostic capability only; no SDK
+rewake backend is implemented.
 
 ## Implementation Plan
 
@@ -62,9 +65,27 @@ The preferred local backend is therefore app-server JSON-RPC over the bundled
 
 ## Current Slice
 
-This phase starts by adding the app-server JSON-RPC backend and documenting the
-full hardening roadmap. The real `turn/start` smoke remains manual and gated
-until a user explicitly approves spending a Codex model turn.
+The app-server JSON-RPC backend and fail-closed launchd behavior are implemented.
+Capability-focused doctor output and a default read-only app-server smoke are
+implemented. The real `turn/start` smoke remains manual and gated until a user
+explicitly approves spending a Codex model turn. Atomic notification claims and
+stale watcher repair are implemented with privacy-safe durable metadata.
+Fallback requests now carry deterministic exponential backoff from at least 120
+seconds to a 1,800-second cap. The complete lifecycle event taxonomy is wired to
+durable claims, and allowlist regressions cover wait records and runtime events.
+The explicitly gated real-turn smoke remains the only manual evidence item.
+
+## Remaining Validation
+
+- [x] Default read-only app-server smoke is token-free and fail-closed.
+- [x] Focused rewake, notification-claim, watcher-repair, fallback, event, and
+      privacy regressions pass.
+- [ ] Run the explicitly gated real `turn/start` smoke after the user authorizes
+      spending one Codex model turn.
+
+Until that final smoke passes, terminal rewake remains opt-in and this phase
+stays open in the root roadmap. The missing manual evidence does not reopen the
+completed implementation work.
 
 ## Acceptance Criteria
 

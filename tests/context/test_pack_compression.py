@@ -228,7 +228,7 @@ def write_failure_log(root: Path, check_name: str, content: str) -> Path:
                 "name": check_name,
                 "status": "failed",
                 "exit_code": 1,
-                "log_path": str(log_path),
+                "log_path": str(Path(log_dir.name) / log_path.name),
             },
         ],
     }

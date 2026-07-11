@@ -2,29 +2,29 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from agent_client_hooks import templates
+from agent_client_hooks import claude_merge, templates
 
 CODEX_HOOK_FEATURE = "hooks = true"
 
 
 def merge_claude_settings(path: Path, managed_content: str) -> str:
-    """Merge managed hook settings into existing Claude settings JSON."""
+    """Retain the public Claude merge facade for compatibility."""
 
-    with path.open(encoding="utf-8") as stream:
-        current = json.load(stream)
-    managed = json.loads(managed_content)
-    if not isinstance(current, dict):
-        current = {}
-    hooks = current.setdefault("hooks", {})
-    if not isinstance(hooks, dict):
-        current["hooks"] = {}
-        hooks = current["hooks"]
-    for event, entries in managed["hooks"].items():
-        hooks[event] = entries
-    return f"{json.dumps(current, indent=2, sort_keys=True)}\n"
+    return claude_merge.merge_claude_settings(path, managed_content)
+
+
+def merge_claude_event(current: object, managed: object) -> list[object]:
+    """Retain the public event merge facade for compatibility."""
+
+    return claude_merge.merge_claude_event(current, managed)
+
+
+def strip_managed_claude_entry(entry: object) -> tuple[object | None, bool]:
+    """Retain the public narrow-removal facade for lifecycle callers."""
+
+    return claude_merge.strip_managed_claude_entry(entry)
 
 
 def merge_codex_config(existing: str, managed_block: str) -> str:

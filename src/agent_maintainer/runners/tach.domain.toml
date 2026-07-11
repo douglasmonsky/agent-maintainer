@@ -41,7 +41,12 @@ depends_on = [
   "//agent_maintainer.core.config",
   "//agent_maintainer.core.executor",
   "pyright",
+  "pyright_strict_baseline",
 ]
+
+[[modules]]
+path = "pyright_strict_baseline"
+depends_on = []
 
 [[modules]]
 path = "ruff"

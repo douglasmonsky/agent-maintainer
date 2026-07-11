@@ -27,6 +27,9 @@ that keeps raw logs out of chat.
 | Mutation testing | Mutmut target/result ratchets, mutation sweep | `manual` | Keep blocking targets narrow; use sweeps for advisory test discovery. |
 | Repair loop | `.verify-logs`, context commands, repair plans, HTML report | all profiles | Use run IDs and bounded context instead of pasting raw logs. |
 
+Agent Maintainer requests DocSync JSON/SARIF with `docsync check
+--write-reports` for repair facts. Direct `docsync check` stays read-only.
+
 ## Recommended Agent Workflow
 
 1. Read `AGENTS.md` and `AGENTS.agent-maintainer.md`.

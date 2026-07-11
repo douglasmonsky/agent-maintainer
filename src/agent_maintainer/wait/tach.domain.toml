@@ -9,16 +9,18 @@ depends_on = [
   "cli_background",
   "cli_parsers",
   "cli_register",
+  "codex_smoke",
   "codex_rewake",
   "daemon",
   "daemon_launchd",
   "github",
-    "github_pr",
-    "registry",
-    "sweeper",
-    "sweeper_rendering",
-    "verifier",
-    "//agent_maintainer.runtime_events.waiting",
+  "github_pr",
+  "registry",
+  "sweeper",
+  "sweeper_rendering",
+  "verifier",
+  "wait_repair",
+  "//agent_maintainer.runtime_events.waiting",
 ]
 
 [[modules]]
@@ -29,6 +31,8 @@ depends_on = [
   "registry",
   "sweeper",
   "//agent_maintainer.runtime_events.waiting",
+  "//agent_waits.notifications",
+  "//agent_waits.watcher_state",
 ]
 
 [[modules]]
@@ -67,8 +71,8 @@ depends_on = [
   "handlers",
   "daemon_launchd",
   "registry",
-  "sweeper",
   "//agent_waits.broker",
+  "//agent_waits.watcher_state",
 ]
 
 [[modules]]
@@ -77,11 +81,28 @@ depends_on = [
   "codex_app_server",
   "handlers",
   "registry",
+  "//agent_maintainer.runtime_events.waiting",
+  "//agent_waits.capabilities",
+  "//agent_waits.constants",
   "//agent_waits.models",
+  "//agent_waits.notifications",
+]
+
+[[modules]]
+path = "codex_smoke"
+depends_on = [
+  "codex_app_server",
+  "//agent_waits.capabilities",
 ]
 
 [[modules]]
 path = "codex_app_server"
+depends_on = [
+  "codex_app_server_protocol",
+]
+
+[[modules]]
+path = "codex_app_server_protocol"
 depends_on = []
 
 [[modules]]
@@ -92,6 +113,9 @@ depends_on = [
   "daemon_state",
   "registry",
   "sweeper",
+  "//agent_maintainer.runtime_events.waiting",
+  "//agent_waits.notifications",
+  "//agent_waits.watcher_state",
 ]
 
 [[modules]]
@@ -142,21 +166,35 @@ depends_on = [
 [[modules]]
 path = "sweeper"
 depends_on = [
-    "github",
-    "github_pr",
-    "handlers",
-    "registry",
+  "broker",
+  "github",
+  "github_pr",
+  "handlers",
+  "registry",
+  "//agent_maintainer.runtime_events.waiting",
+  "//agent_waits.notifications",
+  "//agent_waits.watcher_state",
 ]
 
 [[modules]]
 path = "sweeper_rendering"
 depends_on = [
+    "daemon_launchd",
     "sweeper",
     "//agent_waits.models",
 ]
 
 [[modules]]
 path = "verifier"
+depends_on = [
+  "verifier_rendering",
+  "verifier_manifest",
+  "//agent_maintainer.verify.async_state",
+  "//agent_waits.models",
+]
+
+[[modules]]
+path = "verifier_rendering"
 depends_on = [
   "verifier_manifest",
   "//agent_waits.models",
@@ -165,3 +203,14 @@ depends_on = [
 [[modules]]
 path = "verifier_manifest"
 depends_on = []
+
+[[modules]]
+path = "wait_repair"
+depends_on = [
+  "broker",
+  "daemon_launchd",
+  "registry",
+  "//agent_maintainer.runtime_events.waiting",
+  "//agent_waits.notifications",
+  "//agent_waits.watcher_state",
+]

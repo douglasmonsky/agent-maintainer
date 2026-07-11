@@ -129,7 +129,16 @@ def test_core_commands_write_artifacts_from_fixture_repo(tmp_path: Path) -> None
     _commit_all(tmp_path)
 
     index_result = docsync_cli.main(["--repo-root", str(tmp_path), "index"])
-    check_result = docsync_cli.main(["--repo-root", str(tmp_path), "check", "--base", "HEAD"])
+    check_result = docsync_cli.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "check",
+            "--base",
+            "HEAD",
+            "--write-reports",
+        ]
+    )
     prompt_result = docsync_cli.main(["--repo-root", str(tmp_path), "prompt", "--base", "HEAD"])
     attest_result = docsync_cli.main(
         [
@@ -150,9 +159,22 @@ def test_core_commands_write_artifacts_from_fixture_repo(tmp_path: Path) -> None
     assert attest_result == 0
     assert (tmp_path / ".docsync" / "out" / "index.json").exists()
     assert (tmp_path / ".docsync" / "out" / "report.json").exists()
+    assert (tmp_path / ".docsync" / "out" / "report.sarif.json").exists()
     assert (tmp_path / ".docsync" / "out" / "review-packet.json").exists()
     assert (tmp_path / ".docsync" / "out" / "review-prompt.md").exists()
     assert tuple((tmp_path / ".docsync" / "attestations").glob("*.yml"))
+
+
+def test_check_is_read_only_unless_reports_are_requested(tmp_path: Path) -> None:
+    """Plain checks do not create generated report artifacts."""
+    _write_repo(tmp_path)
+    _commit_all(tmp_path)
+
+    result = docsync_cli.main(["--repo-root", str(tmp_path), "check", "--base", "HEAD"])
+
+    assert result == 0
+    assert not (tmp_path / ".docsync" / "out" / "report.json").exists()
+    assert not (tmp_path / ".docsync" / "out" / "report.sarif.json").exists()
 
 
 def test_repair_object_end_markers_dry_run_and_write(

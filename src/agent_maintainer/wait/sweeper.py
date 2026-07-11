@@ -2,20 +2,29 @@
 
 from __future__ import annotations
 
-import subprocess  # nosec B404
-import sys
+import datetime as dt
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime
-from pathlib import Path
 
-from agent_maintainer.wait import handlers as wait_handlers
-from agent_maintainer.wait import registry as wait_registry
-from agent_maintainer.wait.github import QueryRun
-from agent_maintainer.wait.github_pr import QueryPrChecks
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
+from agent_maintainer.wait import (
+    broker,
+    github,
+    github_pr,
+)
+from agent_maintainer.wait import (
+    handlers as wait_handlers,
+)
+from agent_maintainer.wait import (
+    registry as wait_registry,
+)
+from agent_waits import watcher_state as wait_watcher_state
+from agent_waits.notifications import claim_terminal_observation
 
 Sleep = Callable[[int], None]
+DetachedWatcher = broker.DetachedWatcher
+start_wait_watcher = broker.start_wait_watcher
 
 
 @dataclass(frozen=True)
@@ -35,20 +44,13 @@ class CleanupSummary:
     expired_ready: int
 
 
-@dataclass(frozen=True)
-class DetachedWatcher:
-    """Detached watcher metadata."""
-
-    command: tuple[str, ...]
-
-
 def sweep_once(
     registry: wait_registry.WaitRegistry,
     *,
-    query_checks: QueryPrChecks | None = None,
-    query_run: QueryRun | None = None,
+    query_checks: github_pr.QueryPrChecks | None = None,
+    query_run: github.QueryRun | None = None,
     query_verifier: wait_handlers.VerifierQuery | None = None,
-    now: datetime | None = None,
+    now: dt.datetime | None = None,
 ) -> SweepSummary:
     """Poll pending waits once without printing pending chatter."""
 
@@ -79,36 +81,38 @@ def sweep_record(
     record: wait_registry.WaitRecord,
     *,
     queries: wait_handlers.WaitQueries | None = None,
-    now: datetime | None = None,
+    now: dt.datetime | None = None,
 ) -> wait_registry.WaitRecord:
     """Poll one wait record once and persist meaningful state changes."""
 
     if record.status != wait_registry.WAIT_STATUS_PENDING:
         return record
     if _expired(record, now):
-        return registry.complete(
+        completed = registry.complete(
             record,
             terminal_result=wait_registry.RESULT_TIMEOUT,
             resume_message="",
             state_data={"timed_out": True},
             now=now,
         )
-    effective_queries = queries or wait_handlers.WaitQueries()
-    return wait_handlers.handler_for(record.kind).poll_once(
-        registry,
-        record,
-        queries=effective_queries,
-        now=now,
-    )
+    else:
+        effective_queries = queries or wait_handlers.WaitQueries()
+        completed = wait_handlers.handler_for(record.kind).poll_once(
+            registry,
+            record,
+            queries=effective_queries,
+            now=now,
+        )
+    return _emit_terminal_observed(registry, completed, now=now)
 
 
 def sweep_ready_notifications(
     registry: wait_registry.WaitRegistry,
     *,
-    query_checks: QueryPrChecks | None = None,
-    query_run: QueryRun | None = None,
+    query_checks: github_pr.QueryPrChecks | None = None,
+    query_run: github.QueryRun | None = None,
     query_verifier: wait_handlers.VerifierQuery | None = None,
-    now: datetime | None = None,
+    now: dt.datetime | None = None,
 ) -> tuple[wait_registry.WaitRecord, ...]:
     """Sweep once and claim repo-heartbeat ready records."""
 
@@ -126,7 +130,7 @@ def cleanup_waits(
     registry: wait_registry.WaitRegistry,
     *,
     ready_older_than_seconds: int,
-    now: datetime | None = None,
+    now: dt.datetime | None = None,
 ) -> CleanupSummary:
     """Expire stale ready waits that should no longer notify."""
 
@@ -142,9 +146,9 @@ def watch_wait(
     registry: wait_registry.WaitRegistry,
     wait_id: str,
     *,
-    query_checks: QueryPrChecks | None = None,
+    query_checks: github_pr.QueryPrChecks | None = None,
     sleep: Sleep = time.sleep,
-    now: datetime | None = None,
+    now: dt.datetime | None = None,
 ) -> wait_registry.WaitRecord:
     """Watch one wait until terminal resume record is ready."""
 
@@ -155,39 +159,13 @@ def watch_wait(
         record = registry.read(wait_id)
         if record.ready:
             return record
+        record = wait_watcher_state.mark_watcher_poll(registry, wait_id, now=now)
+        if record.ready:
+            return record
         updated = sweep_record(registry, record, queries=queries, now=now)
         if updated.ready:
             return updated
         sleep(updated.interval_seconds)
-
-
-def start_wait_watcher(
-    root: Path,
-    wait_id: str,
-    *,
-    python_executable: str = sys.executable,
-) -> DetachedWatcher:
-    """Start a detached local watcher process for one wait record."""
-
-    command = (
-        python_executable,
-        "-m",
-        "agent_maintainer",
-        "wait",
-        "sweep",
-        "--watch",
-        wait_id,
-        "--root",
-        str(root),
-    )
-    subprocess.Popen(  # nosec B603 # pylint: disable=consider-using-with
-        list(command),
-        cwd=root,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True,
-    )
-    return DetachedWatcher(command=command)
 
 
 def _pending_records(registry: wait_registry.WaitRegistry) -> tuple[wait_registry.WaitRecord, ...]:
@@ -198,7 +176,28 @@ def _pending_records(registry: wait_registry.WaitRegistry) -> tuple[wait_registr
     )
 
 
-def _expired(record: wait_registry.WaitRecord, now: datetime | None) -> bool:
-    deadline = datetime.fromisoformat(record.deadline_at.replace("Z", "+00:00"))
-    current = now or datetime.now(UTC)
-    return current.astimezone(UTC) >= deadline
+def _expired(record: wait_registry.WaitRecord, now: dt.datetime | None) -> bool:
+    deadline = dt.datetime.fromisoformat(record.deadline_at.replace("Z", "+00:00"))
+    current = now or dt.datetime.now(dt.UTC)
+    return current.astimezone(dt.UTC) >= deadline
+
+
+def _emit_terminal_observed(
+    registry: wait_registry.WaitRegistry,
+    record: wait_registry.WaitRecord,
+    *,
+    now: dt.datetime | None,
+) -> wait_registry.WaitRecord:
+    if not record.ready:
+        return record
+    observed = claim_terminal_observation(registry, record.wait_id, now=now)
+    if observed is None:
+        return registry.read(record.wait_id)
+    WaitRuntimeEvents.create(
+        target_kind=observed.kind,
+        target_id=observed.target_id,
+    ).ready(
+        wait_id=observed.wait_id,
+        result=observed.terminal_result,
+    )
+    return observed

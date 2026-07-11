@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 # docsync:evidence.start evidence.readme.package_metadata
 [project]
 name = "agent-maintainer"
-version = "0.1.0b5"
+version = "0.1.0b6"
 description = "Repository maintenance checks and diagnostics for AI-assisted Python development."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -110,12 +110,7 @@ hardening = [
   "yamllint",
   "zizmor",
 ]
-manual = [
-  "cyclonedx-bom",
-  "mutmut",
-  "pip-licenses",
-  "semgrep; python_version < '3.13'",
-]
+manual = ["cyclonedx-bom", "mutmut", "pip-licenses", "semgrep>=1.169.0"]
 compression = ["headroom-ai"]
 mcp = ["mcp>=1.0"]
 all = [
@@ -140,7 +135,7 @@ all = [
   "pytest-cov",
   "radon",
   "ruff",
-  "semgrep; python_version < '3.13'",
+  "semgrep>=1.169.0",
   "tach",
   "vulture",
   "wemake-python-styleguide",
@@ -241,6 +236,7 @@ vulture_paths = [
   ".codex/hooks",
   ".claude/hooks",
   "tests",
+  "config/vulture-whitelist.py",
 ]
 require_tests = true
 coverage_fail_under = 90
@@ -355,6 +351,7 @@ check_jsonschema_args = [
   "--builtin-schema",
   "vendor.github-workflows",
   ".github/workflows/verify.yml",
+  ".github/workflows/deep-verify.yml",
   ".github/workflows/publish.yml",
 ]
 runtime_events_enabled = true
@@ -417,6 +414,7 @@ do_not_mutate = [
 pytest_add_cli_args_test_selection = [
   "tests/config/test_config_coercion.py",
   "tests/config/test_config_loading.py",
+  "tests/config/test_config_registry_validation.py",
   "tests/config/test_workspace_config.py::test_coerce_updates_reads_workspace_tables",
   "tests/core/test_runtime.py",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_ranks_branchy_tested_logic",
@@ -465,6 +463,7 @@ pythonpath = [".", "src"]
 testpaths = ["tests"]
 markers = [
   "release: release-only packaging checks that build artifacts and install extras",
+  "artifact_smoke: build wheel and sdist, then run every advertised console script",
 ]
 
 [tool.deptry]

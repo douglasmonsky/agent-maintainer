@@ -9,11 +9,13 @@ from typing import Any
 
 from agent_context.budget import bound_text
 from agent_context.models import ContextBudget
+from agent_context.reading.file_safety import read_bounded_utf8_file
 
 MANIFEST_NAME = "manifest.json"
 
 DEFAULT_FAILURE_LIMIT = 20
 DEFAULT_CONTEXT_BUDGET = 12_000
+MAX_MANIFEST_BYTES = 1_048_576
 FAILURE_STATUSES = frozenset(("failed",))
 
 
@@ -80,9 +82,17 @@ def load_manifest(log_dir: Path) -> dict[str, Any] | None:
     """Load manifest JSON when present and valid."""
 
     path = manifest_path(log_dir)
+    workspace_root = log_dir if log_dir.is_absolute() else Path.cwd()
+    safe_read = read_bounded_utf8_file(
+        path,
+        workspace_root=workspace_root,
+        max_bytes=MAX_MANIFEST_BYTES,
+    )
+    if safe_read.text is None:
+        return None
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        payload = json.loads(safe_read.text)
+    except (json.JSONDecodeError, RecursionError):
         return None
     return payload if isinstance(payload, dict) else None
 

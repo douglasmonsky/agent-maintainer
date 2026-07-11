@@ -4,17 +4,79 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol
 
 PYTHON_PATH_RE = re.compile(r"(?P<path>[\w./-]+\.py):(?P<line>\d+)")
+SUPPORTED_ENCODINGS = frozenset((None, "utf-8"))
+SUPPORTED_ERROR_HANDLERS = frozenset((None, "strict", "replace"))
 
 
-def read_json(path: Path) -> object | None:
+class FactSource(Protocol):
+    """Text source accepted by exact repair-fact parsers."""
+
+    @property
+    def name(self) -> str:
+        """Return the source filename."""
+
+        raise NotImplementedError
+
+    @property
+    def suffix(self) -> str:
+        """Return the source filename suffix."""
+
+        raise NotImplementedError
+
+    def read_text(
+        self,
+        encoding: str | None = None,
+        errors: str | None = None,
+    ) -> str:
+        """Return source text."""
+
+        raise NotImplementedError
+
+
+@dataclass(frozen=True)
+class MemoryFactSource:
+    """Already-read text exposed through the legacy parser source interface."""
+
+    path: Path
+    content: str
+
+    @property
+    def name(self) -> str:
+        """Return the original source filename."""
+
+        return self.path.name
+
+    @property
+    def suffix(self) -> str:
+        """Return the original source suffix."""
+
+        return self.path.suffix
+
+    def read_text(
+        self,
+        encoding: str | None = None,
+        errors: str | None = None,
+    ) -> str:
+        """Return captured text without reopening the original path."""
+
+        if encoding not in SUPPORTED_ENCODINGS:
+            raise ValueError(f"unsupported in-memory text encoding: {encoding}")
+        if errors not in SUPPORTED_ERROR_HANDLERS:
+            raise ValueError(f"unsupported in-memory error handler: {errors}")
+        return self.content
+
+
+def read_json(path: FactSource) -> object | None:
     """Return JSON artifact payload when available."""
 
     try:
         return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError, RecursionError):
         return None
 
 

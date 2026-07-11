@@ -1,0 +1,7 @@
+"""Catalog helpers from an established synthetic library."""
+
+
+def normalize_sku(raw_sku: str) -> str:
+    """Return a stable uppercase SKU token."""
+
+    return raw_sku.strip().upper().replace(" ", "-")

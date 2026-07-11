@@ -1,0 +1,51 @@
+name: Support request
+description: Ask a focused setup or usage question.
+title: "[Support]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Support is best effort. Use the private security route for vulnerabilities,
+        and remove secrets or identifying data from public diagnostics.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "0.1.0b5 or a full commit SHA"
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to accomplish?
+    validations:
+      required: true
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What have you tried?
+      description: Include exact commands and the relevant documented workflow.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include operating system, Python version, and installation method.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Include only bounded output with credentials, private paths, and identifying data removed.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I read SUPPORT.md and searched existing issues.
+          required: true
+        - label: This request contains no secrets, private data, or security exploit details.
+          required: true

@@ -1,0 +1,83 @@
+version = 1
+
+[[risks]]
+id = "DR-001-js-yaml-merge-key-dos"
+status = "resolved"
+category = "known-vulnerability"
+ecosystems = ["npm"]
+artifacts = ["package.json", "package-lock.json", "osv-scanner.toml"]
+advisories = ["GHSA-h67p-54hq-rp68"]
+owner = "release-maintainer"
+accepted_on = 2026-07-09
+expires_on = 2026-09-30
+resolved_on = 2026-07-10
+rationale = "markdownlint-cli2 0.22.1 pinned vulnerable js-yaml 4.1.1, while the available overrides and older releases either broke ESM loading or introduced additional vulnerable transitive dependencies."
+review_trigger = "A markdownlint-cli2 release uses a js-yaml version outside the advisory range."
+resolution_condition = "Upgrade markdownlint-cli2, remove the OSV ignore, and pass npm audit plus Markdown lint."
+mitigations = [
+  "Use the dependency only for development-time Markdown linting.",
+  "Keep the OSV exception bounded by ignoreUntil while no compatible fix exists.",
+]
+resolution = "Upgraded markdownlint-cli2 to 0.23.0, which uses js-yaml 5.2.0; npm audit reports zero vulnerabilities and the OSV exception was removed."
+
+[[risks]]
+id = "DR-002-semgrep-python-313-compatibility"
+status = "resolved"
+category = "compatibility"
+ecosystems = ["python"]
+artifacts = [
+  "pyproject.toml",
+  "config/dev-lock.txt",
+  ".github/workflows/verify.yml",
+]
+advisories = []
+owner = "release-maintainer"
+accepted_on = 2026-07-03
+expires_on = 2026-08-31
+resolved_on = 2026-07-10
+rationale = "The public manual and all extras excluded Semgrep on Python 3.13 and newer while its earlier dependency graph did not resolve reliably across the package's complete supported-Python matrix."
+review_trigger = "Semgrep publishes and classifies a release for Python 3.13 and 3.14."
+resolution_condition = "Install Semgrep through both extras on supported Python versions and pass the configured manual scan."
+mitigations = [
+  "Keep Semgrep available as a separately installed optional executable.",
+  "Continue the local metrics-off scan on resolver-compatible environments.",
+]
+resolution = "Semgrep 1.169.0 declares Python 3.10 through 3.14 support, so both extras now require at least that release, the development lock was refreshed, and the Python 3.11 through 3.14 compatibility matrix installs the manual extra without resolver backtracking."
+
+[[risks]]
+id = "DR-003-python-lock-without-hashes"
+status = "accepted"
+category = "supply-chain-integrity"
+ecosystems = ["python"]
+artifacts = ["config/dev-dependencies.txt", "config/dev-lock.txt"]
+advisories = []
+owner = "release-maintainer"
+accepted_on = 2026-07-10
+expires_on = 2026-08-31
+rationale = "The development lock pins the complete resolved environment but does not carry distribution hashes, so an index or transport compromise is not rejected by pip solely from repository metadata."
+review_trigger = "Any dependency input changes, bootstrap installation behavior changes, or the record reaches its expiry date."
+resolution_condition = "Generate cross-platform-compatible hashes and make bootstrap plus CI install the locked environment with pip hash enforcement."
+mitigations = [
+  "Pin every resolved Python development dependency to an exact version.",
+  "Run pip-audit, OSV Scanner, license reporting, and SBOM generation in release gates.",
+  "Bind release wheel and source-distribution bytes to exact-commit SHA-256 manifests.",
+]
+
+[[risks]]
+id = "DR-004-build-system-lower-bounds"
+status = "accepted"
+category = "build-reproducibility"
+ecosystems = ["python"]
+artifacts = ["pyproject.toml"]
+advisories = []
+owner = "release-maintainer"
+accepted_on = 2026-07-10
+expires_on = 2026-08-31
+rationale = "The isolated PEP 517 build environment resolves lower-bounded setuptools and wheel requirements at build time, so independently repeated builds can use different tool bytes even when project source is unchanged."
+review_trigger = "Any build-system requirement changes, a release candidate is promoted, or the record reaches its expiry date."
+resolution_condition = "Adopt a reviewed, independently pinned build toolchain and record its provenance with the release evidence."
+mitigations = [
+  "Build wheel and source distribution together from one clean exact commit.",
+  "Run twine metadata checks and install both artifacts in clean environments.",
+  "Record the exact artifact inventory, byte sizes, and SHA-256 digests across every release transfer.",
+]

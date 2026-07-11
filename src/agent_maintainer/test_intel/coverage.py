@@ -4,16 +4,25 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from importlib import import_module
 from pathlib import Path
+from types import ModuleType
 from typing import Any
-
-try:
-    from defusedxml import ElementTree as DEFUSED_ELEMENT_TREE
-except ModuleNotFoundError:
-    DEFUSED_ELEMENT_TREE = None
 
 from agent_maintainer.test_intel import coverage_lines
 from agent_maintainer.test_intel.models import CoverageSummary
+
+
+def _load_defused_element_tree() -> ModuleType | None:
+    """Load optional defused ElementTree without redefining a constant."""
+
+    try:
+        return import_module("defusedxml.ElementTree")
+    except ModuleNotFoundError:
+        return None
+
+
+DEFUSED_ELEMENT_TREE = _load_defused_element_tree()
 
 
 def coverage_for_changed_sources(

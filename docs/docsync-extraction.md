@@ -21,7 +21,8 @@ The product and implementation sequence lives in
 <!-- docsync:claim claim.docsync.trace_source_truth -->
 DocSync source truth lives under `.docsync/`. The trace file is human-authored,
 and generated files under `.docsync/out/` are rebuildable artifacts that should
-not be committed.
+not be committed. Repository-controlled inputs are bounded and confined to the
+repository; generated report writes require an explicit command mode.
 
 Markdown object regions use explicit start and end markers when
 `require_object_end_markers` is enabled:
@@ -52,6 +53,8 @@ DocSync currently exposes these user-facing commands:
 `docsync init --agents` opts into AGENTS.md policy changes, `docsync doctor
 --fix` applies safe starter repairs, and `docsync trace ...` provides grouped
 authoring commands for documents, objects, evidence, claims, and trace listing.
+Plain `docsync check` is read-only; `--write-reports` explicitly creates its JSON
+and SARIF artifacts under `.docsync/out/`.
 <!-- docsync:claim.end claim.docsync.command_surface -->
 
 Do not extract DocSync only because the directory is separable. Extract it when
@@ -78,8 +81,9 @@ To extract DocSync into a standalone package:
    dependency and keep integration tests here.
 
 Generated files under `.docsync/out/` are not source truth. They are rebuilt by
-`docsync index`, `docsync check`, `docsync prompt`, `docsync attest`, and
-`python -m docsync freshness`.
+`docsync index`, `docsync check --write-reports`, `docsync prompt`, and
+`python -m docsync freshness`. Plain `docsync check` is read-only; use the
+explicit report flag only when JSON and SARIF artifacts are required.
 
 `python -m docsync freshness` writes passive freshness metadata to
 `.docsync/out/freshness.json`. The report records last observed content hashes

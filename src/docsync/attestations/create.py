@@ -9,7 +9,10 @@ from typing import Any
 
 import yaml
 
+from docsync.config.io import write_text_file
+from docsync.config.paths import PathBoundaryError, resolve_within
 from docsync.core.fingerprints import sha256_text
+from docsync.core.models import DocSyncIndex
 from docsync.indexer import build_docsync_index
 
 
@@ -55,10 +58,25 @@ def create_attestation_file(
             }
         ],
     }
+    return _write_attestation(index, attestation_id, payload)
+
+
+def _write_attestation(
+    index: DocSyncIndex,
+    attestation_id: str,
+    payload: dict[str, Any],
+) -> Path:
+    filename = f"{attestation_id}.yml"
+    if Path(filename).name != filename:
+        raise PathBoundaryError("DocSync attestation ID must not contain path separators")
+    path = resolve_within(
+        index.config.attestations_dir,
+        Path(filename),
+        label="DocSync attestation output",
+    )
     index.config.attestations_dir.mkdir(parents=True, exist_ok=True)
-    path = index.config.attestations_dir / f"{attestation_id}.yml"
-    with path.open("w", encoding="utf-8") as handle:
-        _yaml_module().safe_dump(payload, handle, sort_keys=False)
+    content = _yaml_module().safe_dump(payload, sort_keys=False)
+    write_text_file(path, content, label="DocSync attestation output")
     return path
 
 

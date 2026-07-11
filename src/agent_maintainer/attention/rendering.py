@@ -12,6 +12,17 @@ def render_ledger_json(ledger: AttentionLedger) -> str:
     return json.dumps(ledger.to_payload(), indent=2, sort_keys=True)
 
 
+def render_top_json(ledger: AttentionLedger, *, limit: int) -> str:
+    """Render only the requested leading attention scores as JSON."""
+
+    payload = ledger.to_payload()
+    files = payload["files"]
+    if isinstance(files, list):
+        payload["files"] = files[: max(0, limit)]
+        payload["returned_file_count"] = len(payload["files"])
+    return json.dumps(payload, indent=2, sort_keys=True)
+
+
 def render_top_text(ledger: AttentionLedger, *, limit: int) -> str:
     """Render top attention files."""
     lines = [

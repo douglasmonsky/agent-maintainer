@@ -10,6 +10,14 @@
 - [ ] Agent Maintainer profile(s):
 - [ ] Not run:
 
+## Contributor Checks
+
+- [ ] I read `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`.
+- [ ] This change contains no credentials, private data, or identifying records.
+- [ ] User-facing behavior is reflected in tests, docs, and `CHANGELOG.md`.
+- [ ] Security-sensitive details were reported privately rather than placed in
+  this pull request.
+
 ## Cohesive-Change Override
 
 Leave this section as `no` for normal PRs. Set it to `yes` only when a large

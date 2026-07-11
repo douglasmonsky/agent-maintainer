@@ -17,6 +17,12 @@ guidance-check:
 change-plan-check:
     python3 -m agent_maintainer change-plan check
 
+config-reference:
+    python3 -m agent_maintainer.config.reference
+
+config-reference-check:
+    python3 -m agent_maintainer.config.reference --check
+
 verify:
     python3 -m agent_maintainer verify --profile full
 
@@ -79,7 +85,7 @@ verify-full-output:
     markdownlint-cli2 "**/*.md"
     yamllint .github/workflows .pre-commit-config.yaml .markdownlint-cli2.yaml .yamllint zizmor.yml
     taplo fmt --check pyproject.toml tach.toml config/*.toml
-    check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/verify.yml
+    check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/verify.yml .github/workflows/deep-verify.yml .github/workflows/publish.yml
     pip-audit -r config/dev-lock.txt
 
 clean-verify-logs:
