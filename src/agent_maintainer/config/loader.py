@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from agent_maintainer.config import coercion, modes, registry, schema, validation
+from agent_maintainer.core.structured_values import json_object
 
 NEUTRAL_CONFIG_PATHS = (
     Path(".agent-maintainer/config.toml"),
@@ -42,48 +43,51 @@ SPECIAL_ENVS = _env_pairs(registry.SPECIAL_ENV_FIELDS)
 class ConfigDocument:
     """One located raw configuration document and its public key prefix."""
 
-    raw: dict[str, Any]
+    raw: dict[str, object]
     source: str
     prefix: str
 
 
-def _read_toml(path: Path) -> dict[str, Any]:
+def _read_toml(path: Path) -> dict[str, object]:
     """Read one TOML document with source-aware parse failures."""
 
     if not path.exists():
         return {}
     try:
         with path.open("rb") as handle:
-            return tomllib.load(handle)
+            payload: object = tomllib.load(handle)
+            return json_object(payload) or {}
     except (OSError, tomllib.TOMLDecodeError) as exc:
         issue = validation.ConfigIssue(str(path), "<document>", f"invalid TOML: {exc}")
         raise validation.ConfigValidationError((issue,)) from exc
 
 
-def read_pyproject(path: Path | None = None) -> dict[str, Any]:
+def read_pyproject(path: Path | None = None) -> dict[str, object]:
     """Read `[tool.agent_maintainer]` from pyproject.toml."""
 
     selected = path or Path("pyproject.toml")
     return _pyproject_config(_read_toml(selected), source=str(selected))
 
 
-def _pyproject_config(payload: dict[str, Any], *, source: str) -> dict[str, Any]:
+def _pyproject_config(payload: dict[str, object], *, source: str) -> dict[str, object]:
     raw_tool = payload.get("tool")
     if raw_tool is None:
         return {}
-    if not isinstance(raw_tool, dict):
+    tool = json_object(raw_tool)
+    if tool is None:
         raise _shape_error(source, "tool", "must be a table")
-    raw_config = raw_tool.get("agent_maintainer")
+    raw_config = tool.get("agent_maintainer")
     if raw_config is None:
         return {}
-    if not isinstance(raw_config, dict):
+    config = json_object(raw_config)
+    if config is None:
         raise _shape_error(source, validation.TOOL_TABLE, "must be a table")
-    return raw_config
+    return config
 
 
 def read_neutral_config(
     paths: tuple[Path, ...] = NEUTRAL_CONFIG_PATHS,
-) -> dict[str, Any]:
+) -> dict[str, object]:
     """Read the first present neutral Agent Maintainer config file."""
 
     for path in paths:
@@ -113,7 +117,7 @@ def read_config_document(repo_root: Path | None = None) -> ConfigDocument:
     return ConfigDocument({}, "defaults", validation.TOOL_TABLE)
 
 
-def read_config(repo_root: Path | None = None) -> dict[str, Any]:
+def read_config(repo_root: Path | None = None) -> dict[str, object]:
     """Read file-based config with deterministic source precedence."""
 
     return read_config_document(repo_root).raw

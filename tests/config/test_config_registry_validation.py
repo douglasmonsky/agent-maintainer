@@ -91,12 +91,19 @@ def _environment_text(spec: registry.ConfigFieldSpec, value: object) -> str:
         ({"coverage_fail_nder": 90}, "tool.agent_maintainer.coverage_fail_nder"),
         ({"diagnostics": {"lod_dir": "logs"}}, "tool.agent_maintainer.diagnostics.lod_dir"),
         (
-            {"workspaces": {"api": {"source_root": ["src"]}}},
+            {"workspaces": {"broken": [], "api": {"source_root": ["src"]}}},
             "tool.agent_maintainer.workspaces.api.source_root",
         ),
         ({"file_baselines": {"enabledd": True}}, "tool.agent_maintainer.file_baselines.enabledd"),
         (
-            {"file_baselines": {"groups": {"docs": {"include": ["docs/**"], "rol": "docs"}}}},
+            {
+                "file_baselines": {
+                    "groups": {
+                        "broken": [],
+                        "docs": {"include": ["docs/**"], "rol": "docs"},
+                    },
+                },
+            },
             "tool.agent_maintainer.file_baselines.groups.docs.rol",
         ),
     ),
@@ -124,6 +131,28 @@ def test_unknown_keys_fail_at_every_nesting(
         coercion.coerce_file_baselines([])
     with pytest.raises(TypeError, match=r"^file_baselines\.groups must be a table$"):
         coercion.coerce_file_baselines({"groups": []})
+
+
+@pytest.mark.parametrize(
+    ("document", "key"),
+    (
+        ('tool = "bad"', "tool"),
+        ('[tool]\nagent_maintainer = "bad"', validation.TOOL_TABLE),
+    ),
+)
+def test_pyproject_rejects_non_table_config(
+    tmp_path: Path,
+    document: str,
+    key: str,
+) -> None:
+    """TOML container boundaries fail with source-aware diagnostics."""
+
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(document, encoding="utf-8")
+
+    error = capture_config_error(loader.read_pyproject, pyproject)
+
+    assert_issue(error.issues[0], source=str(pyproject), key=key, message="must be a table")
 
 
 def test_neutral_error_has_source_and_prefix(tmp_path: Path) -> None:

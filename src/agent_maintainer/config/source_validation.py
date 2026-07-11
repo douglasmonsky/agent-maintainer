@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
 
 from agent_maintainer.config import registry
 from agent_maintainer.config.issues import ConfigIssue, ConfigValidationError
+from agent_maintainer.core.structured_values import json_object
 
 TOOL_TABLE = "tool.agent_maintainer"
 
@@ -23,7 +23,7 @@ def known_diagnostic_keys() -> frozenset[str]:
     return registry.DIAGNOSTIC_KEYS
 
 
-def unknown_keys(raw: dict[str, Any], *, prefix: str = TOOL_TABLE) -> tuple[str, ...]:
+def unknown_keys(raw: dict[str, object], *, prefix: str = TOOL_TABLE) -> tuple[str, ...]:
     """Return unknown top-level and nested key paths deterministically."""
 
     unknown = [f"{prefix}.{key}" for key in raw if key not in known_top_level_keys()]
@@ -34,7 +34,7 @@ def unknown_keys(raw: dict[str, Any], *, prefix: str = TOOL_TABLE) -> tuple[str,
 
 
 def validate_raw_config(
-    raw: dict[str, Any],
+    raw: dict[str, object],
     *,
     source: str,
     prefix: str = TOOL_TABLE,
@@ -64,56 +64,56 @@ def validate_environment_names(environment: Mapping[str, str]) -> None:
 
 
 def _unknown_fixed_table(
-    raw: dict[str, Any],
+    raw: dict[str, object],
     table_name: str,
     allowed: frozenset[str],
     prefix: str,
 ) -> tuple[str, ...]:
-    value = raw.get(table_name)
-    if not isinstance(value, dict):
+    value = json_object(raw.get(table_name))
+    if value is None:
         return ()
     return tuple(f"{prefix}.{table_name}.{key}" for key in value if key not in allowed)
 
 
 def _unknown_dynamic_table(
-    raw: dict[str, Any],
+    raw: dict[str, object],
     table_name: str,
     allowed: frozenset[str],
     prefix: str,
 ) -> tuple[str, ...]:
-    value = raw.get(table_name)
-    if not isinstance(value, dict):
+    value = json_object(raw.get(table_name))
+    if value is None:
         return ()
     return tuple(
         f"{prefix}.{table_name}.{name}.{key}"
         for name, payload in value.items()
-        if isinstance(payload, dict)
-        for key in payload
+        if (nested := json_object(payload)) is not None
+        for key in nested
         if key not in allowed
     )
 
 
-def _unknown_file_baselines(raw: dict[str, Any], *, prefix: str) -> tuple[str, ...]:
-    value = raw.get("file_baselines")
-    if not isinstance(value, dict):
+def _unknown_file_baselines(raw: dict[str, object], *, prefix: str) -> tuple[str, ...]:
+    value = json_object(raw.get("file_baselines"))
+    if value is None:
         return ()
     unknown = [
         f"{prefix}.file_baselines.{key}" for key in value if key not in registry.FILE_BASELINE_KEYS
     ]
-    groups = value.get("groups")
-    if isinstance(groups, dict):
+    groups = json_object(value.get("groups"))
+    if groups is not None:
         unknown.extend(
             f"{prefix}.file_baselines.groups.{name}.{key}"
             for name, payload in groups.items()
-            if isinstance(payload, dict)
-            for key in payload
+            if (nested := json_object(payload)) is not None
+            for key in nested
             if key not in registry.FILE_BASELINE_GROUP_KEYS
         )
     return tuple(unknown)
 
 
 def _alias_conflict_issues(
-    raw: dict[str, Any],
+    raw: dict[str, object],
     *,
     source: str,
     prefix: str,
@@ -130,7 +130,7 @@ def _alias_conflict_issues(
     )
 
 
-def _has_nested_value(raw: dict[str, Any], dotted_key: str) -> bool:
+def _has_nested_value(raw: dict[str, object], dotted_key: str) -> bool:
     table_name, separator, key = dotted_key.partition(".")
     table = raw.get(table_name)
     return bool(separator and isinstance(table, dict) and key in table)

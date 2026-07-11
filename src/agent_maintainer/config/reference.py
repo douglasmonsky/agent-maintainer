@@ -6,8 +6,10 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import cast
 
 from agent_maintainer.config import registry
+from agent_maintainer.core.structured_values import json_object
 
 REFERENCE_PATH = Path("docs/configuration-reference.md")
 CAPABILITIES_PATH = Path("config/agent-maintainer-capabilities.json")
@@ -64,7 +66,8 @@ def _constraint_payload(spec: registry.ConfigFieldSpec) -> dict[str, object]:
 
 def _json_value(value: object) -> object:
     if isinstance(value, tuple):
-        return [_json_value(item) for item in value]
+        values = cast(tuple[object, ...], value)
+        return [_json_value(item) for item in values]
     return value
 
 
@@ -110,8 +113,8 @@ def render_reference_markdown() -> str:
 
 
 def _nested_table_rows() -> list[str]:
-    nested = capability_payload()["nested_tables"]
-    if not isinstance(nested, dict):
+    nested = json_object(capability_payload()["nested_tables"])
+    if nested is None:
         return []
     return [f"| `{table}` | {_markdown_value(keys)} |" for table, keys in nested.items()]
 

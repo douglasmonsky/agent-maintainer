@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import cast
 
 from agent_maintainer.config import registry
 
@@ -43,5 +44,6 @@ def _str_message(value: object, spec: registry.ConfigFieldSpec) -> str:
 
 
 def _tuple_message(value: object, _spec: registry.ConfigFieldSpec) -> str:
-    valid = isinstance(value, tuple) and all(isinstance(item, str) for item in value)
+    values = cast(tuple[object, ...], value) if isinstance(value, tuple) else ()
+    valid = isinstance(value, tuple) and all(isinstance(item, str) for item in values)
     return "" if valid else "must be a list of strings"

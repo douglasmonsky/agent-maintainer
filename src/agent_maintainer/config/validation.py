@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 from pathlib import PurePosixPath
+from typing import cast
 
 from agent_maintainer import models
 from agent_maintainer.config import registry, schema, source_validation, value_types
@@ -147,7 +148,7 @@ def _path_issues(
     *,
     source: str,
 ) -> tuple[ConfigIssue, ...]:
-    values = value if isinstance(value, tuple) else (value,)
+    values = cast(tuple[object, ...], value) if isinstance(value, tuple) else (value,)
     return tuple(
         ConfigIssue(source, spec.toml_key, f"must be repository-relative without '..': {item}")
         for item in values
@@ -186,7 +187,7 @@ def _profile_issues(
     *,
     source: str,
 ) -> tuple[ConfigIssue, ...]:
-    values = value if isinstance(value, tuple) else ()
+    values = cast(tuple[object, ...], value) if isinstance(value, tuple) else ()
     return tuple(
         ConfigIssue(source, spec.toml_key, f"unknown verification profile: {profile}")
         for profile in values

@@ -15,6 +15,7 @@ depends_on = [
 [[modules]]
 path = "loader"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "coercion",
   "modes",
   "registry",
@@ -65,7 +66,10 @@ depends_on = []
 
 [[modules]]
 path = "reference"
-depends_on = ["registry"]
+depends_on = [
+  "//agent_maintainer.core.structured_values",
+  "registry",
+]
 
 [[modules]]
 path = "schema_fields"
@@ -74,6 +78,7 @@ depends_on = []
 [[modules]]
 path = "source_validation"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "issues",
   "registry",
 ]
