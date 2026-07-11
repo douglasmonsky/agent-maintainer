@@ -1,12 +1,12 @@
 {
   "by_rule": {
     "reportPrivateUsage": 42,
-    "reportUnknownArgumentType": 336,
+    "reportUnknownArgumentType": 326,
     "reportUnknownLambdaType": 180,
-    "reportUnknownMemberType": 145,
-    "reportUnknownVariableType": 228
+    "reportUnknownMemberType": 143,
+    "reportUnknownVariableType": 218
   },
-  "note": "Reviewed 2026-07-11 after strict burn-down batch 1 replaced untyped monkeypatch lambdas with typed test-double boundaries; 334 diagnostics were removed and remaining allowances are legacy unknown-type and intentional private-API debt.",
+  "note": "Reviewed 2026-07-11 after attention-ledger contract validation added typed JSON boundaries, canonical paths, exact counts, and finite 0..1 scores; 22 diagnostics were removed and remaining allowances stay protected for subsequent burn-down work.",
   "pairs": {
     "src/agent_client_hooks/claude_merge.py": {
       "reportUnknownArgumentType": 5,
@@ -76,11 +76,6 @@
     "src/agent_maintainer/assess/repair_fact_coverage_reporting.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/attention/builder.py": {
-      "reportUnknownArgumentType": 10,
-      "reportUnknownMemberType": 2,
-      "reportUnknownVariableType": 10
     },
     "src/agent_maintainer/attention/rendering.py": {
       "reportUnknownArgumentType": 1
@@ -588,5 +583,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 931
+  "total_errors": 909
 }
