@@ -2,18 +2,21 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 STRUCTURED_DIAGNOSTIC_LIMIT = 50
 
 
 def summarize_semgrep_payload(payload: object) -> str | None:
     """Summarize Semgrep JSON findings."""
 
-    if not isinstance(payload, dict):
+    report = _json_object(payload)
+    if report is None:
         return None
-    results = payload.get("results", [])
-    if not isinstance(results, list):
+    results = _json_array(report.get("results", []))
+    if results is None:
         return None
-    findings = [item for item in results if isinstance(item, dict)]
+    findings = [item for value in results if (item := _json_object(value)) is not None]
     lines = [format_semgrep_finding(item) for item in findings[:STRUCTURED_DIAGNOSTIC_LIMIT]]
     append_omitted(lines, len(findings), "Semgrep findings", "semgrep.json")
     return "\n".join(lines) if lines else None
@@ -22,12 +25,12 @@ def summarize_semgrep_payload(payload: object) -> str | None:
 def format_semgrep_finding(finding: dict[str, object]) -> str:
     """Format one Semgrep finding without full source context."""
 
-    start = finding.get("start", {})
-    extra = finding.get("extra", {})
-    line = int_value(start.get("line") if isinstance(start, dict) else None, default=1)
-    col = int_value(start.get("col") if isinstance(start, dict) else None, default=1)
-    message = str_value(extra.get("message") if isinstance(extra, dict) else "")
-    severity = str_value(extra.get("severity") if isinstance(extra, dict) else "")
+    start = _json_object(finding.get("start", {})) or {}
+    extra = _json_object(finding.get("extra", {})) or {}
+    line = int_value(start.get("line"), default=1)
+    col = int_value(start.get("col"), default=1)
+    message = str_value(extra.get("message"))
+    severity = str_value(extra.get("severity"))
     rule_id = str_value(finding.get("check_id"), default="semgrep")
     path = str_value(finding.get("path"), default="<unknown>")
     return f"{path}:{line}:{col}: {rule_id} {severity}: {message}".strip()
@@ -36,17 +39,18 @@ def format_semgrep_finding(finding: dict[str, object]) -> str:
 def summarize_osv_payload(payload: object) -> str | None:
     """Summarize OSV Scanner JSON vulnerabilities."""
 
-    if not isinstance(payload, dict):
+    report = _json_object(payload)
+    if report is None:
         return None
     lines: list[str] = []
-    for result in payload.get("results", []):
-        if isinstance(result, dict):
+    for value in _json_array(report.get("results", [])) or []:
+        if (result := _json_object(value)) is not None:
             lines.extend(osv_result_lines(result))
         if len(lines) >= STRUCTURED_DIAGNOSTIC_LIMIT:
             break
     append_omitted(
         lines,
-        osv_vulnerability_count(payload),
+        osv_vulnerability_count(report),
         "OSV vulnerabilities",
         "osv-scanner.json",
     )
@@ -57,11 +61,12 @@ def osv_result_lines(result: dict[str, object]) -> list[str]:
     """Return formatted OSV vulnerability lines for one result object."""
 
     lines: list[str] = []
-    packages = result.get("packages", [])
-    if not isinstance(packages, list):
+    packages = _json_array(result.get("packages", []))
+    if packages is None:
         return lines
-    for package in packages:
-        if not isinstance(package, dict):
+    for value in packages:
+        package = _json_object(value)
+        if package is None:
             continue
         lines.extend(osv_package_lines(package))
         if len(lines) >= STRUCTURED_DIAGNOSTIC_LIMIT:
@@ -85,9 +90,10 @@ def osv_package_lines(package: dict[str, object]) -> list[str]:
 def summarize_gitleaks_payload(payload: object) -> str | None:
     """Summarize Gitleaks findings without printing secret values."""
 
-    if not isinstance(payload, list):
+    values = _json_array(payload)
+    if values is None:
         return None
-    findings = [item for item in payload if isinstance(item, dict)]
+    findings = [item for value in values if (item := _json_object(value)) is not None]
     lines = [format_gitleaks_finding(item) for item in findings[:STRUCTURED_DIAGNOSTIC_LIMIT]]
     append_omitted(lines, len(findings), "secret-scan findings", "secret-scan.json")
     return "\n".join(lines) if lines else None
@@ -107,14 +113,15 @@ def format_gitleaks_finding(finding: dict[str, object]) -> str:
 def summarize_pip_audit_payload(payload: object) -> str | None:
     """Summarize pip-audit JSON vulnerabilities."""
 
-    if not isinstance(payload, dict):
+    report = _json_object(payload)
+    if report is None:
         return None
-    dependencies = payload.get("dependencies", [])
-    if not isinstance(dependencies, list):
+    dependencies = _json_array(report.get("dependencies", []))
+    if dependencies is None:
         return None
     lines: list[str] = []
-    for dependency in dependencies:
-        if isinstance(dependency, dict):
+    for value in dependencies:
+        if (dependency := _json_object(value)) is not None:
             lines.extend(pip_audit_dependency_lines(dependency))
         if len(lines) >= STRUCTURED_DIAGNOSTIC_LIMIT:
             break
@@ -132,12 +139,12 @@ def pip_audit_dependency_lines(dependency: dict[str, object]) -> list[str]:
 
     name = str_value(dependency.get("name"), default="<unknown>")
     version = str_value(dependency.get("version"), default="?")
-    vulns = dependency.get("vulns", [])
-    if not isinstance(vulns, list):
+    vulns = _json_array(dependency.get("vulns", []))
+    if vulns is None:
         return []
     lines: list[str] = []
-    for vuln in vulns:
-        if isinstance(vuln, dict):
+    for value in vulns:
+        if (vuln := _json_object(value)) is not None:
             lines.append(format_pip_audit_vulnerability(name, version, vuln))
     return lines
 
@@ -150,9 +157,9 @@ def format_pip_audit_vulnerability(
     """Format one pip-audit vulnerability."""
 
     vuln_id = str_value(vuln.get("id"), default="PYSEC")
-    fix_versions = vuln.get("fix_versions", [])
+    fix_versions = _json_array(vuln.get("fix_versions", []))
     fix_text = ""
-    if isinstance(fix_versions, list) and fix_versions:
+    if fix_versions:
         versions = ", ".join(map(str, fix_versions))
         fix_text = f" fix: {versions}"
     prefix = f"{name} {version}: {vuln_id}"
@@ -162,8 +169,8 @@ def format_pip_audit_vulnerability(
 def osv_package_name(package: dict[str, object]) -> str:
     """Return OSV package name with ecosystem when available."""
 
-    raw_package = package.get("package", {})
-    if not isinstance(raw_package, dict):
+    raw_package = _json_object(package.get("package", {}))
+    if raw_package is None:
         return "<unknown>"
     name = str_value(raw_package.get("name"), default="<unknown>")
     ecosystem = str_value(raw_package.get("ecosystem"), default="")
@@ -173,27 +180,28 @@ def osv_package_name(package: dict[str, object]) -> str:
 def vulnerabilities(package: dict[str, object]) -> list[dict[str, object]]:
     """Return vulnerability dictionaries from OSV package payload."""
 
-    raw_vulns = package.get("vulnerabilities", [])
-    if not isinstance(raw_vulns, list):
+    raw_vulns = _json_array(package.get("vulnerabilities", []))
+    if raw_vulns is None:
         return []
-    return [vuln for vuln in raw_vulns if isinstance(vuln, dict)]
+    return [vuln for value in raw_vulns if (vuln := _json_object(value)) is not None]
 
 
 def osv_vulnerability_count(payload: dict[str, object]) -> int:
     """Return total OSV vulnerability count."""
 
     count = 0
-    results = payload.get("results", [])
-    if not isinstance(results, list):
+    results = _json_array(payload.get("results", []))
+    if results is None:
         return count
-    for result in results:
-        if not isinstance(result, dict):
+    for value in results:
+        result = _json_object(value)
+        if result is None:
             continue
-        packages = result.get("packages", [])
-        if not isinstance(packages, list):
+        packages = _json_array(result.get("packages", []))
+        if packages is None:
             continue
-        for package in packages:
-            if isinstance(package, dict):
+        for package_value in packages:
+            if (package := _json_object(package_value)) is not None:
                 count += len(vulnerabilities(package))
     return count
 
@@ -202,11 +210,12 @@ def pip_audit_vulnerability_count(dependencies: list[object]) -> int:
     """Return total pip-audit vulnerability count."""
 
     count = 0
-    for dependency in dependencies:
-        if not isinstance(dependency, dict):
+    for value in dependencies:
+        dependency = _json_object(value)
+        if dependency is None:
             continue
-        vulns = dependency.get("vulns", [])
-        if isinstance(vulns, list):
+        vulns = _json_array(dependency.get("vulns", []))
+        if vulns is not None:
             count += len(vulns)
     return count
 
@@ -243,3 +252,22 @@ def str_value(value: object, *, default: str = "") -> str:
     if value is None:
         return default
     return str(value)
+
+
+def _json_object(value: object) -> dict[str, object] | None:
+    """Return a JSON object with string keys, or ``None`` when malformed."""
+
+    if not isinstance(value, dict):
+        return None
+    raw = cast(dict[object, object], value)
+    if not all(isinstance(key, str) for key in raw):
+        return None
+    return {key: item for key, item in raw.items() if isinstance(key, str)}
+
+
+def _json_array(value: object) -> list[object] | None:
+    """Return a JSON array with an explicit element boundary."""
+
+    if not isinstance(value, list):
+        return None
+    return cast(list[object], value)
