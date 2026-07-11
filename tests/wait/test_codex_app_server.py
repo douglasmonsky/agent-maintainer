@@ -14,17 +14,19 @@ import pytest
 
 from agent_maintainer.wait.codex_app_server import (
     CodexAppServerClient,
-    _app_server_turn_completed,
     _AppServerWaitState,
     _bounded_stderr,
     _consume_app_server_line,
     _get_app_server_line,
-    _json_object,
     _maybe_request_thread_read,
-    _parse_app_server_line,
     _stop_process,
     _turn_from_result,
     _update_turn_state,
+)
+from agent_maintainer.wait.codex_app_server_protocol import (
+    _json_object,
+    app_server_turn_completed,
+    parse_app_server_line,
 )
 
 THREAD_ID = "thread-1"
@@ -238,10 +240,10 @@ with log_path.open("w", encoding="utf-8") as log:
 def test_app_server_completion_accepts_known_event_spellings() -> None:
     """Completion parsing accepts canonical and compatibility event names."""
 
-    assert _app_server_turn_completed(json.dumps({"method": "turn/completed"}))
-    assert _app_server_turn_completed(json.dumps({"method": "turn.completed"}))
-    assert _app_server_turn_completed(json.dumps({"type": "turn/completed"}))
-    assert not _app_server_turn_completed(json.dumps({"method": "turn/started"}))
+    assert app_server_turn_completed(json.dumps({"method": "turn/completed"}))
+    assert app_server_turn_completed(json.dumps({"method": "turn.completed"}))
+    assert app_server_turn_completed(json.dumps({"type": "turn/completed"}))
+    assert not app_server_turn_completed(json.dumps({"method": "turn/started"}))
 
 
 def test_app_server_completion_requires_accepted_turn() -> None:
@@ -267,8 +269,8 @@ def test_app_server_json_helpers_ignore_invalid_payloads() -> None:
 
     assert _json_object("not-json") == {}
     assert _json_object("[]") == {}
-    assert _parse_app_server_line(json.dumps({"id": "not-int"})) is None
-    response = _parse_app_server_line(
+    assert parse_app_server_line(json.dumps({"id": "not-int"})) is None
+    response = parse_app_server_line(
         json.dumps({"id": 9, "error": {"message": "boom"}}),
     )
 
@@ -374,6 +376,33 @@ def test_app_server_process_helpers_cover_stderr_and_kill() -> None:
 
     process = StubbornProcess()
     _stop_process(cast(Any, process))
+
+    assert process.terminated
+    assert process.killed
+
+
+def test_probe_stops_process_when_interrupted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Read-only probing always reaps its app-server child on interruption."""
+
+    process = StubbornProcess()
+    client = CodexAppServerClient(
+        codex_bin="codex-test",
+        timeout_seconds=1,
+        popen_factory=lambda *_args, **_kwargs: cast(Any, process),
+    )
+
+    def interrupt_probe(*_args: object) -> None:
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(
+        "agent_maintainer.wait.codex_app_server._probe_process",
+        interrupt_probe,
+    )
+
+    with pytest.raises(KeyboardInterrupt):
+        client.probe_thread(THREAD_ID)
 
     assert process.terminated
     assert process.killed

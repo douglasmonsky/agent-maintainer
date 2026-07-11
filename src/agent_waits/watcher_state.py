@@ -82,7 +82,7 @@ def mark_watcher_started(
     }
     if pid is not None:
         updates[WATCHER_PID_KEY] = pid
-    remove = () if pid is not None else (WATCHER_PID_KEY,)
+    remove = (WATCHER_PID_KEY,) if pid is None else ()
     return _update_metadata(
         registry,
         record.wait_id,
@@ -144,7 +144,7 @@ def watcher_repair_eligible(
     else:
         reference = state.last_poll_at or state.started_at or record.created_at
     age = (_parse_timestamp(_timestamp(now)) - _parse_timestamp(reference)).total_seconds()
-    return stale_after_seconds >= 0 and age >= stale_after_seconds
+    return 0 <= stale_after_seconds <= age
 
 
 def claim_watcher_repair(

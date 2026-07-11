@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
+from agent_maintainer.runtime_events import waiting as wait_runtime
 from agent_maintainer.wait import broker
 from agent_maintainer.wait.handlers import handler_for
 from agent_maintainer.wait.registry import WaitRecord, WaitRegistry, wait_record_json
@@ -133,7 +133,7 @@ def emit_foreground_blocked(record: WaitRecord) -> None:
 def emit_swept(summary: SweepSummary) -> None:
     """Emit a wait sweep runtime event."""
 
-    WaitRuntimeEvents.create(
+    wait_runtime.WaitRuntimeEvents.create(
         target_kind="wait-registry",
         target_id="wait-sweep",
     ).swept(
@@ -174,9 +174,17 @@ def emit_watcher_result(
     if registration.watcher_started:
         observed = claim_watcher_started_observation(WaitRegistry(root), record.wait_id)
         if observed is not None:
-            events.watcher_started(wait_id=record.wait_id, strategy=state.strategy)
+            wait_runtime.emit_watcher_started(
+                events,
+                wait_id=record.wait_id,
+                strategy=state.strategy,
+            )
     elif state.error_code:
-        events.watcher_failed(wait_id=record.wait_id, reason=state.error_code)
+        wait_runtime.emit_watcher_failed(
+            events,
+            wait_id=record.wait_id,
+            reason=state.error_code,
+        )
 
 
 def emit_fallback_handoff(
@@ -196,7 +204,8 @@ def emit_fallback_handoff(
     if observed is None:
         return
     backoff = broker.heartbeat_backoff(registration.record)
-    wait_events(registration.record).fallback_used(
+    wait_runtime.emit_fallback_used(
+        wait_events(registration.record),
         wait_id=registration.record.wait_id,
         initial_interval_seconds=int(backoff["initial_interval_seconds"]),
         max_interval_seconds=int(backoff["max_interval_seconds"]),
@@ -234,7 +243,10 @@ def render_background(
     return broker.render_background_registration_text(registration)
 
 
-def wait_events(record: WaitRecord) -> WaitRuntimeEvents:
+def wait_events(record: WaitRecord) -> wait_runtime.WaitRuntimeEvents:
     """Return runtime event adapter for one wait record."""
 
-    return WaitRuntimeEvents.create(target_kind=record.kind, target_id=record.target_id)
+    return wait_runtime.WaitRuntimeEvents.create(
+        target_kind=record.kind,
+        target_id=record.target_id,
+    )

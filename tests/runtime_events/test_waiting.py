@@ -11,8 +11,13 @@ from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
 from agent_maintainer.runtime_events.waiting import (
     WaitRuntimeEvents,
     emit_cleaned,
+    emit_fallback_used,
     emit_heartbeat_noop,
+    emit_notify_attempted,
+    emit_notify_failed,
     emit_terminal_claimed,
+    emit_watcher_failed,
+    emit_watcher_started,
 )
 
 POLL_ATTEMPT = 2
@@ -48,15 +53,16 @@ def test_wait_runtime_events_emit_lifecycle_records() -> None:
     events = WaitRuntimeEvents(sink=sink, target_kind="github-run", target_id="123")
 
     events.registered(wait_id="wait-1", background=True)
-    events.watcher_started(wait_id="wait-1", strategy="launchd")
-    events.watcher_failed(wait_id="wait-2", reason="watcher_start_failed")
+    emit_watcher_started(events, wait_id="wait-1", strategy="launchd")
+    emit_watcher_failed(events, wait_id="wait-2", reason="watcher_start_failed")
     events.foreground_blocked(wait_id="wait-1")
     events.swept(checked=1, updated=1, pending=0, ready=1)
     events.ready(wait_id="wait-1", result="PASS")
-    events.notify_attempted(wait_id="wait-1", backend="codex-app-server")
-    events.notify_failed(wait_id="wait-1", reason="visible_wake_unconfirmed")
+    emit_notify_attempted(events, wait_id="wait-1", backend="codex-app-server")
+    emit_notify_failed(events, wait_id="wait-1", reason="visible_wake_unconfirmed")
     events.resumed(wait_id="wait-1")
-    events.fallback_used(
+    emit_fallback_used(
+        events,
         wait_id="wait-1",
         initial_interval_seconds=120,
         max_interval_seconds=1800,
@@ -96,10 +102,10 @@ def test_wait_lifecycle_events_allowlist_external_values() -> None:
     events = WaitRuntimeEvents(sink=sink, target_kind="verifier", target_id="run-1")
     private_value = "private-command-and-backend-diagnostic"
 
-    events.watcher_started(wait_id="wait-1", strategy=private_value)
-    events.watcher_failed(wait_id="wait-1", reason=private_value)
-    events.notify_attempted(wait_id="wait-1", backend=private_value)
-    events.notify_failed(wait_id="wait-1", reason=private_value)
+    emit_watcher_started(events, wait_id="wait-1", strategy=private_value)
+    emit_watcher_failed(events, wait_id="wait-1", reason=private_value)
+    emit_notify_attempted(events, wait_id="wait-1", backend=private_value)
+    emit_notify_failed(events, wait_id="wait-1", reason=private_value)
 
     rendered = json.dumps(sink.records, sort_keys=True)
     assert private_value not in rendered

@@ -14,6 +14,7 @@ from agent_maintainer.runtime_events.sinks import (
 )
 
 WAIT_COMMAND = "wait"
+WAIT_ID_ATTRIBUTE = "wait_id"
 SAFE_WATCHER_STRATEGIES = frozenset(("launchd", "popen"))
 SAFE_WATCHER_FAILURES = frozenset(
     ("launchd_required", "watcher_start_failed", "watcher_repair_failed", "watcher_failed"),
@@ -84,7 +85,7 @@ class WaitRuntimeEvents:
                 attributes={
                     "target_kind": self.target_kind,
                     "target_id": self.target_id,
-                    "wait_id": wait_id,
+                    WAIT_ID_ATTRIBUTE: wait_id,
                     "background": background,
                 },
             ),
@@ -102,7 +103,7 @@ class WaitRuntimeEvents:
                 attributes={
                     "target_kind": self.target_kind,
                     "target_id": self.target_id,
-                    "wait_id": wait_id,
+                    WAIT_ID_ATTRIBUTE: wait_id,
                 },
             ),
         )
@@ -146,7 +147,7 @@ class WaitRuntimeEvents:
                 attributes={
                     "target_kind": self.target_kind,
                     "target_id": self.target_id,
-                    "wait_id": wait_id,
+                    WAIT_ID_ATTRIBUTE: wait_id,
                 },
             ),
         )
@@ -163,87 +164,9 @@ class WaitRuntimeEvents:
                 attributes={
                     "target_kind": self.target_kind,
                     "target_id": self.target_id,
-                    "wait_id": wait_id,
+                    WAIT_ID_ATTRIBUTE: wait_id,
                 },
             ),
-        )
-
-    def watcher_started(self, *, wait_id: str, strategy: str) -> None:
-        """Emit one watcher-started event with allowlisted strategy metadata."""
-
-        _emit_wait_event(
-            self,
-            "wait.watcher_started",
-            status="started",
-            attributes={
-                "wait_id": wait_id,
-                "strategy": _safe_value(strategy, SAFE_WATCHER_STRATEGIES, "other"),
-            },
-        )
-
-    def watcher_failed(self, *, wait_id: str, reason: str) -> None:
-        """Emit one watcher failure using only a fixed reason code."""
-
-        _emit_wait_event(
-            self,
-            "wait.watcher_failed",
-            status="failed",
-            attributes={
-                "wait_id": wait_id,
-                "reason": _safe_value(reason, SAFE_WATCHER_FAILURES, "watcher_failed"),
-            },
-        )
-
-    def notify_attempted(self, *, wait_id: str, backend: str) -> None:
-        """Emit one claimed external-notification attempt."""
-
-        _emit_wait_event(
-            self,
-            "wait.notify_attempted",
-            status="attempted",
-            attributes={
-                "wait_id": wait_id,
-                "backend": "codex-app-server" if backend == "codex-app-server" else "other",
-            },
-        )
-
-    def notify_failed(self, *, wait_id: str, reason: str) -> None:
-        """Emit one fail-closed notification result with a fixed code."""
-
-        _emit_wait_event(
-            self,
-            "wait.notify_failed",
-            status="failed",
-            attributes={
-                "wait_id": wait_id,
-                "reason": _safe_value(
-                    reason,
-                    SAFE_NOTIFICATION_FAILURES,
-                    "notification_failed",
-                ),
-            },
-        )
-
-    def fallback_used(
-        self,
-        *,
-        wait_id: str,
-        initial_interval_seconds: int,
-        max_interval_seconds: int,
-    ) -> None:
-        """Emit one rendered model-turn fallback handoff."""
-
-        _emit_wait_event(
-            self,
-            "wait.fallback_used",
-            status="offered",
-            attributes={
-                "wait_id": wait_id,
-                "strategy": "exponential",
-                "heartbeat_attempt": 0,
-                "initial_interval_seconds": initial_interval_seconds,
-                "max_interval_seconds": max_interval_seconds,
-            },
         )
 
 
@@ -265,7 +188,7 @@ def emit_terminal_claimed(
         events,
         "wait.terminal_claimed",
         status=result,
-        attributes={"wait_id": wait_id},
+        attributes={WAIT_ID_ATTRIBUTE: wait_id},
     )
 
 
@@ -277,6 +200,109 @@ def emit_cleaned(events: WaitRuntimeEvents, *, expired_ready: int) -> None:
         "wait.cleaned",
         status="completed",
         attributes={"expired_ready": expired_ready},
+    )
+
+
+def emit_watcher_started(
+    events: WaitRuntimeEvents,
+    *,
+    wait_id: str,
+    strategy: str,
+) -> None:
+    """Emit one watcher-started event with allowlisted strategy metadata."""
+
+    _emit_wait_event(
+        events,
+        "wait.watcher_started",
+        status="started",
+        attributes={
+            WAIT_ID_ATTRIBUTE: wait_id,
+            "strategy": _safe_value(strategy, SAFE_WATCHER_STRATEGIES, "other"),
+        },
+    )
+
+
+def emit_watcher_failed(
+    events: WaitRuntimeEvents,
+    *,
+    wait_id: str,
+    reason: str,
+) -> None:
+    """Emit one watcher failure using only a fixed reason code."""
+
+    _emit_wait_event(
+        events,
+        "wait.watcher_failed",
+        status="failed",
+        attributes={
+            WAIT_ID_ATTRIBUTE: wait_id,
+            "reason": _safe_value(reason, SAFE_WATCHER_FAILURES, "watcher_failed"),
+        },
+    )
+
+
+def emit_notify_attempted(
+    events: WaitRuntimeEvents,
+    *,
+    wait_id: str,
+    backend: str,
+) -> None:
+    """Emit one claimed external-notification attempt."""
+
+    _emit_wait_event(
+        events,
+        "wait.notify_attempted",
+        status="attempted",
+        attributes={
+            WAIT_ID_ATTRIBUTE: wait_id,
+            "backend": "codex-app-server" if backend == "codex-app-server" else "other",
+        },
+    )
+
+
+def emit_notify_failed(
+    events: WaitRuntimeEvents,
+    *,
+    wait_id: str,
+    reason: str,
+) -> None:
+    """Emit one fail-closed notification result with a fixed code."""
+
+    _emit_wait_event(
+        events,
+        "wait.notify_failed",
+        status="failed",
+        attributes={
+            WAIT_ID_ATTRIBUTE: wait_id,
+            "reason": _safe_value(
+                reason,
+                SAFE_NOTIFICATION_FAILURES,
+                "notification_failed",
+            ),
+        },
+    )
+
+
+def emit_fallback_used(
+    events: WaitRuntimeEvents,
+    *,
+    wait_id: str,
+    initial_interval_seconds: int,
+    max_interval_seconds: int,
+) -> None:
+    """Emit one rendered model-turn fallback handoff."""
+
+    _emit_wait_event(
+        events,
+        "wait.fallback_used",
+        status="offered",
+        attributes={
+            WAIT_ID_ATTRIBUTE: wait_id,
+            "strategy": "exponential",
+            "heartbeat_attempt": 0,
+            "initial_interval_seconds": initial_interval_seconds,
+            "max_interval_seconds": max_interval_seconds,
+        },
     )
 
 

@@ -126,7 +126,7 @@ def test_backend_events_use_fixed_fields_without_private_context(
 
     sink = InMemoryRuntimeEventSink()
     monkeypatch.setattr(
-        "agent_maintainer.wait.codex_rewake.WaitRuntimeEvents.create",
+        "agent_maintainer.runtime_events.waiting.WaitRuntimeEvents.create",
         lambda **kwargs: WaitRuntimeEvents(sink=sink, **kwargs),
     )
     registry = WaitRegistry(tmp_path)

@@ -7,7 +7,6 @@ import hashlib
 import os
 import time
 from collections.abc import Iterator
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Final
 
@@ -16,7 +15,7 @@ LOCK_STALE_SECONDS: Final = 30.0
 LOCK_POLL_SECONDS: Final = 0.05
 
 
-@contextmanager
+@contextlib.contextmanager
 def wait_record_lock(
     waits_dir: Path,
     wait_id: str,

@@ -102,6 +102,37 @@ def ensure_wait_daemon(
     return DaemonLaunch(True, label=label, log_path=log_path)
 
 
+def launch_wait_watcher_process(
+    root: Path,
+    wait_id: str,
+    *,
+    python_executable: str | None = None,
+) -> tuple[tuple[str, ...], int]:
+    """Launch a detached local watcher and return its command and pid."""
+
+    command = (
+        python_executable or sys.executable,
+        "-m",
+        "agent_maintainer",
+        "wait",
+        "sweep",
+        "--watch",
+        wait_id,
+        "--root",
+        str(root),
+    )
+    process = subprocess.Popen(  # nosec B603 # pylint: disable=consider-using-with
+        list(command),
+        cwd=root,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        close_fds=True,
+        start_new_session=True,
+    )
+    return command, process.pid
+
+
 def install_launch_agent(
     root: Path,
     *,

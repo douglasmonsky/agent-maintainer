@@ -37,6 +37,12 @@ The `agent_maintainer.wait` adapter may depend on these generic primitives to
 integrate launchd, detached processes, the Codex app-server, and the CLI.
 `agent_waits` must not depend on those platform-specific adapters.
 
+Keep platform-specific adapters narrow: app-server protocol helpers own JSON-RPC
+messages and parsing, launchd helpers own detached process launch, and rendering
+modules own text/JSON output. Coordination modules may re-export stable entry
+points, but those responsibilities must not collapse back into one CLI or
+sweeper module.
+
 Wait adapters may emit lifecycle events only after the corresponding durable
 claim or state transition. `wait.ready` uses a separate once-only observation
 claim; registration, successful watcher start, and rendered fallback also use

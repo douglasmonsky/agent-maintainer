@@ -9,16 +9,13 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Final
 
-from agent_maintainer.wait.daemon_launchd import ensure_wait_daemon
-from agent_maintainer.wait.handlers import WaitRegistration, handler_for
-from agent_maintainer.wait.registry import (
-    WAIT_KIND_GITHUB_PR,
-    WAIT_KIND_GITHUB_RUN,
-    WAIT_KIND_VERIFIER,
-    WaitRecord,
-    WaitRegistry,
+from agent_maintainer.wait import (
+    daemon_launchd,
+    handlers,
 )
-from agent_maintainer.wait.sweeper import start_wait_watcher
+from agent_maintainer.wait import (
+    registry as wait_registry,
+)
 from agent_waits import broker as wait_broker
 from agent_waits import watcher_state as wait_watcher_state
 
@@ -28,6 +25,15 @@ CODEX_ALLOW_FOREGROUND_WAIT_ENV = wait_broker.CODEX_ALLOW_FOREGROUND_WAIT_ENV
 CODEX_ENV_MARKERS = wait_broker.CODEX_ENV_MARKERS
 CODEX_PLATFORM = wait_broker.CODEX_PLATFORM
 BACKGROUND_WAIT_FLAGS: Final[Mapping[str | None, bool]] = MappingProxyType({"0": False})
+
+ensure_wait_daemon = daemon_launchd.ensure_wait_daemon
+handler_for = handlers.handler_for
+WaitRegistration = handlers.WaitRegistration
+WAIT_KIND_GITHUB_PR = wait_registry.WAIT_KIND_GITHUB_PR
+WAIT_KIND_GITHUB_RUN = wait_registry.WAIT_KIND_GITHUB_RUN
+WAIT_KIND_VERIFIER = wait_registry.WAIT_KIND_VERIFIER
+WaitRecord = wait_registry.WaitRecord
+WaitRegistry = wait_registry.WaitRegistry
 
 BackgroundWaitRegistration = wait_broker.BackgroundWaitRegistration
 codex_foreground_wait_allowed = wait_broker.codex_foreground_wait_allowed
@@ -90,6 +96,30 @@ class BackgroundVerifierWait:
     log_dir: Path = Path(".verify-logs")
     interval_seconds: int = 5
     timeout_seconds: int = 3600
+
+
+@dataclass(frozen=True)
+class DetachedWatcher:
+    """Detached watcher metadata."""
+
+    command: tuple[str, ...]
+    pid: int
+
+
+def start_wait_watcher(
+    root: Path,
+    wait_id: str,
+    *,
+    python_executable: str | None = None,
+) -> DetachedWatcher:
+    """Start a detached local watcher process for one wait record."""
+
+    command, pid = daemon_launchd.launch_wait_watcher_process(
+        root,
+        wait_id,
+        python_executable=python_executable,
+    )
+    return DetachedWatcher(command=command, pid=pid)
 
 
 def register_background_wait(wait: BackgroundKnownWait) -> BackgroundWaitRegistration:

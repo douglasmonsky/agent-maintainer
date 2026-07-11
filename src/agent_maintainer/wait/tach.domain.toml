@@ -71,7 +71,6 @@ depends_on = [
   "handlers",
   "daemon_launchd",
   "registry",
-  "sweeper",
   "//agent_waits.broker",
   "//agent_waits.watcher_state",
 ]
@@ -98,6 +97,12 @@ depends_on = [
 
 [[modules]]
 path = "codex_app_server"
+depends_on = [
+  "codex_app_server_protocol",
+]
+
+[[modules]]
+path = "codex_app_server_protocol"
 depends_on = []
 
 [[modules]]
@@ -161,6 +166,7 @@ depends_on = [
 [[modules]]
 path = "sweeper"
 depends_on = [
+  "broker",
   "github",
   "github_pr",
   "handlers",
@@ -173,6 +179,7 @@ depends_on = [
 [[modules]]
 path = "sweeper_rendering"
 depends_on = [
+    "daemon_launchd",
     "sweeper",
     "//agent_waits.models",
 ]

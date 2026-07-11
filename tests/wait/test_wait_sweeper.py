@@ -185,7 +185,10 @@ def test_start_wait_watcher_uses_quiet_command(
     """Detached watcher command targets one wait and silences output."""
 
     popen_spy = PopenSpy()
-    monkeypatch.setattr("agent_maintainer.wait.sweeper.subprocess.Popen", popen_spy)
+    monkeypatch.setattr(
+        "agent_maintainer.wait.daemon_launchd.subprocess.Popen",
+        popen_spy,
+    )
 
     watcher = start_wait_watcher(tmp_path, "wait-1", python_executable="python")
 

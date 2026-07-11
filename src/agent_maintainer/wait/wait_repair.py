@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -10,26 +9,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import Final
 
-from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
+from agent_maintainer.runtime_events import waiting as wait_runtime
 from agent_maintainer.wait import broker, daemon_launchd
-from agent_maintainer.wait.registry import WaitRecord, WaitRegistry, wait_records
-from agent_waits.notifications import (
-    FAILURE_LEASE_EXPIRED,
-    claim_watcher_started_observation,
-    repair_stale_notifications,
-)
-from agent_waits.watcher_state import (
-    WatcherState,
-    claim_watcher_repair,
-    mark_watcher_failed,
-    mark_watcher_started,
-    watcher_repair_eligible,
-    watcher_state,
-)
+from agent_maintainer.wait import registry as wait_registry
+from agent_waits import notifications
+from agent_waits import watcher_state as wait_watcher_state
 
 DEFAULT_STALE_AFTER_SECONDS: Final = 60
-WatcherActive = Callable[[Path, WatcherState], bool]
-WatcherStarter = Callable[[Path, WaitRecord], broker.BackgroundWaitRegistration]
+WatcherActive = Callable[[Path, wait_watcher_state.WatcherState], bool]
+WatcherStarter = Callable[
+    [Path, wait_registry.WaitRecord],
+    broker.BackgroundWaitRegistration,
+]
 
 
 @dataclass(frozen=True)
@@ -94,7 +85,7 @@ class _RepairOutcome:
 @dataclass(frozen=True)
 class _RepairContext:
     root: Path
-    registry: WaitRegistry
+    registry: wait_registry.WaitRegistry
     request: RepairRequest
     active_check: WatcherActive
     starter: WatcherStarter
@@ -108,7 +99,7 @@ def repair_waits(
 ) -> RepairSummary:
     """Repair stale inactive pending watchers after an atomic per-wait claim."""
 
-    registry = WaitRegistry(root)
+    registry = wait_registry.WaitRegistry(root)
     active_request = RepairRequest() if request is None else request
     active_hooks = RepairHooks() if hooks is None else hooks
     records = _selected_records(registry, active_request.wait_id)
@@ -134,9 +125,15 @@ def repair_waits(
     )
 
 
-def _repair_record(context: _RepairContext, record: WaitRecord) -> _RepairOutcome:
-    active = context.active_check(context.root, watcher_state(record))
-    if not watcher_repair_eligible(
+def _repair_record(
+    context: _RepairContext,
+    record: wait_registry.WaitRecord,
+) -> _RepairOutcome:
+    active = context.active_check(
+        context.root,
+        wait_watcher_state.watcher_state(record),
+    )
+    if not wait_watcher_state.watcher_repair_eligible(
         record,
         active=active,
         stale_after_seconds=context.request.stale_after_seconds,
@@ -145,7 +142,7 @@ def _repair_record(context: _RepairContext, record: WaitRecord) -> _RepairOutcom
         return _RepairOutcome(skipped=1)
     if context.request.dry_run:
         return _RepairOutcome(eligible=1)
-    claimed = claim_watcher_repair(
+    claimed = wait_watcher_state.claim_watcher_repair(
         context.registry,
         record.wait_id,
         active_check=lambda state: context.active_check(context.root, state),
@@ -159,7 +156,7 @@ def _repair_record(context: _RepairContext, record: WaitRecord) -> _RepairOutcom
 
 def _start_claimed_watcher(
     context: _RepairContext,
-    claimed: WaitRecord,
+    claimed: wait_registry.WaitRecord,
 ) -> _RepairOutcome:
     try:
         registration = context.starter(context.root, claimed)
@@ -169,91 +166,99 @@ def _start_claimed_watcher(
     if not registration.watcher_started:
         _mark_repair_failed(context, claimed)
         return _RepairOutcome(eligible=1, failed=1)
-    started = mark_watcher_started(
+    started = wait_watcher_state.mark_watcher_started(
         context.registry,
         claimed,
         strategy=registration.watcher_strategy,
         pid=registration.watcher_pid,
         now=context.request.now,
     )
-    observed = claim_watcher_started_observation(
+    observed = notifications.claim_watcher_started_observation(
         context.registry,
         started.wait_id,
         now=context.request.now,
     )
     if observed is not None:
-        _wait_events(observed).watcher_started(
+        wait_runtime.emit_watcher_started(
+            _wait_events(observed),
             wait_id=observed.wait_id,
-            strategy=watcher_state(observed).strategy,
+            strategy=wait_watcher_state.watcher_state(observed).strategy,
         )
     return _RepairOutcome(eligible=1, repaired=1)
 
 
-def _mark_repair_failed(context: _RepairContext, claimed: WaitRecord) -> None:
-    failed = mark_watcher_failed(
+def _mark_repair_failed(
+    context: _RepairContext,
+    claimed: wait_registry.WaitRecord,
+) -> None:
+    failed = wait_watcher_state.mark_watcher_failed(
         context.registry,
         claimed,
         error_code="watcher_repair_failed",
         now=context.request.now,
     )
-    _wait_events(failed).watcher_failed(
+    wait_runtime.emit_watcher_failed(
+        _wait_events(failed),
         wait_id=failed.wait_id,
-        reason=watcher_state(failed).error_code,
+        reason=wait_watcher_state.watcher_state(failed).error_code,
     )
 
 
 def _repair_notification_claims(
-    registry: WaitRegistry,
+    registry: wait_registry.WaitRegistry,
     request: RepairRequest,
 ) -> int:
     if request.dry_run:
         return 0
-    failed = repair_stale_notifications(
+    failed = notifications.repair_stale_notifications(
         registry,
         lease_seconds=request.stale_after_seconds,
         wait_id=request.wait_id,
         now=request.now,
     )
     for record in failed:
-        WaitRuntimeEvents.create(
+        events = wait_runtime.WaitRuntimeEvents.create(
             target_kind=record.kind,
             target_id=record.target_id,
-        ).notify_failed(
+        )
+        wait_runtime.emit_notify_failed(
+            events,
             wait_id=record.wait_id,
-            reason=FAILURE_LEASE_EXPIRED,
+            reason=notifications.FAILURE_LEASE_EXPIRED,
         )
     return len(failed)
 
 
-def _wait_events(record: WaitRecord) -> WaitRuntimeEvents:
-    return WaitRuntimeEvents.create(target_kind=record.kind, target_id=record.target_id)
+def _wait_events(record: wait_registry.WaitRecord) -> wait_runtime.WaitRuntimeEvents:
+    return wait_runtime.WaitRuntimeEvents.create(
+        target_kind=record.kind,
+        target_id=record.target_id,
+    )
 
 
 def render_repair_text(summary: RepairSummary) -> str:
     """Render compact repair summary."""
 
     result = "PASS" if summary.exit_code == 0 else "ERROR"
+    dry_run = str(summary.dry_run).lower()
     return (
         f"Result: {result}\nChecked: {summary.checked}\nEligible: {summary.eligible}\n"
         f"Repaired: {summary.repaired}\nSkipped: {summary.skipped}\nFailed: {summary.failed}\n"
         f"Notification failures: {summary.notification_failures}\n"
-        f"Dry run: {str(summary.dry_run).lower()}"
+        f"Dry run: {dry_run}"
     )
 
 
-def render_repair_json(summary: RepairSummary) -> str:
-    """Render stable JSON repair summary."""
-
-    return json.dumps(summary.as_dict(), sort_keys=True)
-
-
-def _selected_records(registry: WaitRegistry, wait_id: str | None) -> tuple[WaitRecord, ...]:
+def _selected_records(
+    registry: wait_registry.WaitRegistry,
+    wait_id: str | None,
+) -> tuple[wait_registry.WaitRecord, ...]:
     if wait_id is None:
-        return wait_records(registry)
+        return wait_registry.wait_records(registry)
     return (registry.read(wait_id),)
 
 
-def _watcher_active(root: Path, state: WatcherState) -> bool:
+def _watcher_active(root: Path, state: wait_watcher_state.WatcherState) -> bool:
     if state.strategy == "popen" and state.pid is not None:
         return _pid_alive(state.pid)
     if state.strategy == "launchd":

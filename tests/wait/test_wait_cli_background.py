@@ -22,7 +22,7 @@ from agent_maintainer.wait.registry import (
     RegisterVerifierWait,
     WaitRegistry,
 )
-from agent_maintainer.wait.sweeper import DetachedWatcher, sweep_once
+from agent_maintainer.wait.sweeper import DetachedWatcher, SweepSummary, sweep_once
 from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 PR_NUMBER = "291"
@@ -195,7 +195,7 @@ def test_sweep_once_cli_prints_summary(
     monkeypatch.setattr(
         cli,
         "sweep_once",
-        lambda _registry: cli.SweepSummary(checked=1, updated=1, pending=0, ready=1),
+        lambda _registry: SweepSummary(checked=1, updated=1, pending=0, ready=1),
     )
 
     status = cli.main(["sweep", "--once", "--root", str(tmp_path)])
