@@ -14,7 +14,8 @@ discipline, not the normal local edit loop.
 - [ ] `LICENSE` exists and matches the intended MIT license.
 - [ ] `pyproject.toml` includes license, authors, classifiers, keywords, and
   project URLs.
-- [ ] README links to the license and this release checklist.
+- [ ] README links to the license, security policy, support policy,
+  contribution guide, and this release checklist.
 - [ ] Repo visibility and GitHub URLs are correct for public release.
 - [ ] Pre-release stabilization phases are complete or explicitly deferred in
   `docs/ROADMAP.md`.

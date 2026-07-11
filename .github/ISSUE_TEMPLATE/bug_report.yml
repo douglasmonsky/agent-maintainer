@@ -1,0 +1,70 @@
+name: Bug report
+description: Report a reproducible Agent Maintainer defect.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a defect. Use synthetic data and remove secrets,
+        private paths, and identifying records before submitting.
+  - type: dropdown
+    id: release_state
+    attributes:
+      label: Release state
+      options:
+        - Latest published beta
+        - Unreleased checkout
+        - Older beta
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "0.1.0b5 or a full commit SHA"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include operating system, Python version, installation method, and relevant tool versions.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide exact commands and the smallest synthetic repository shape that reproduces the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Include a bounded failure summary and run ID. Do not upload all of .verify-logs or private source.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues for this problem.
+          required: true
+        - label: I removed credentials, private data, and identifying paths.
+          required: true
+        - label: This is not a security vulnerability requiring private reporting.
+          required: true

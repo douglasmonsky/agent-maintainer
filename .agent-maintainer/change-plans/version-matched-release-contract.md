@@ -11,6 +11,7 @@ allowed_paths = [
   ".github/CODEOWNERS",
   ".github/dependabot.yml",
   ".github/ISSUE_TEMPLATE/**",
+  ".github/pull_request_template.md",
   ".github/workflows/deep-verify.yml",
   ".github/workflows/publish.yml",
   ".github/workflows/verify.yml",

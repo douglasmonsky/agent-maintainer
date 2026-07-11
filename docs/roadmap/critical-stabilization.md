@@ -422,8 +422,9 @@ preservation of application files, passing application tests after apply, and a
 byte-stable second apply. The dependency-risk register now enforces owned,
 expiring decisions; retired npm and Semgrep exceptions have executable
 regression coverage, and dependency automation covers every repository
-ecosystem. Public governance documents and the final same-commit release matrix
-remain open.
+ecosystem. Public governance now covers private security reporting, support,
+contributions, conduct, code ownership, pull requests, and structured issue
+intake. The final same-commit release matrix remains open.
 
 ## Verification Ladder
 

@@ -36,6 +36,10 @@ Read more where it matters:
 - [Diagnostics loop](docs/diagnostics-repair-loop.md)
 - [Tool map](docs/tool-map.md)
 - [Dependency risk register](docs/dependency-risk-register.md)
+- [Security policy](SECURITY.md)
+- [Support policy](SUPPORT.md)
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## What It Is
 
@@ -524,6 +528,9 @@ Read more:
 
 - [Changelog](CHANGELOG.md)
 - [MIT License](LICENSE)
+- [Security](SECURITY.md)
+- [Support](SUPPORT.md)
+- [Contributing](CONTRIBUTING.md)
 - [Context compression](docs/context-compression.md)
 - [Cohesive change plans](docs/cohesive-change-plans.md)
 - [Roadmap blueprint index](docs/roadmap/full-roadmap-blueprint.md)

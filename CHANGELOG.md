@@ -62,6 +62,9 @@ the candidate passes the complete exact-commit release matrix.
 - An owned, expiring dependency-risk register now binds accepted advisories to
   exact OSV expiry records, while Dependabot covers Python, npm, and pinned
   GitHub Actions dependencies.
+- Public beta governance now includes security reporting, support,
+  contribution, conduct, ownership, pull-request, and structured issue-intake
+  policies.
 
 ### Changed Since 0.1.0b5
 
