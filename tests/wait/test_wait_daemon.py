@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import daemon, daemon_launchd, daemon_plist, daemon_state
 from agent_maintainer.wait.codex_rewake import (
     CODEX_BIN_ENV,
@@ -296,6 +298,18 @@ def test_daemon_run_resumes_ready_wait_once(
 ) -> None:
     """Daemon consumes envelope and marks ready wait resumed."""
 
+    sink = InMemoryRuntimeEventSink()
+    monkeypatch.setattr(
+        WaitRuntimeEvents,
+        "create",
+        classmethod(
+            lambda _cls, *, target_kind, target_id: WaitRuntimeEvents(
+                sink=sink,
+                target_kind=target_kind,
+                target_id=target_id,
+            ),
+        ),
+    )
     registry = WaitRegistry(tmp_path)
     record = completed_pr_wait(registry, tmp_path)
     daemon_state.write_rewake_envelope(
@@ -341,7 +355,42 @@ def test_daemon_run_resumes_ready_wait_once(
     assert status == 0
     assert calls == [(record.wait_id, THREAD_ID)]
     assert registry.read(record.wait_id).status == WAIT_STATUS_RESUMED
+    assert [event["event_name"] for event in sink.records] == ["wait.resumed"]
     assert not daemon_state.rewake_envelope_path(tmp_path, record.wait_id).exists()
+
+
+def test_daemon_requires_durable_resumed_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A backend result alone cannot increment daemon resumed accounting."""
+
+    registry = WaitRegistry(tmp_path)
+    record = completed_pr_wait(registry, tmp_path)
+    daemon_state.write_rewake_envelope(
+        tmp_path,
+        record.wait_id,
+        {
+            CODEX_THREAD_ID_ENV: THREAD_ID,
+            CODEX_REWAKE_ENV: "1",
+            CODEX_BIN_ENV: "/usr/local/bin/codex",
+        },
+    )
+
+    class UnpersistedBackend:
+        def __init__(self, _registry: WaitRegistry, *, env: dict[str, str]) -> None:
+            self._env = env
+
+        def resume_if_available(self, _record: WaitRecord) -> str:
+            return "resumed"
+
+    monkeypatch.setattr(daemon, "CodexRewakeBackend", UnpersistedBackend)
+    monkeypatch.setattr(daemon, "codex_rewake_resumed", lambda result: result == "resumed")
+
+    resumed = daemon._resume_ready_with_envelopes(registry, tmp_path, {})
+
+    assert resumed == 0
+    assert registry.read(record.wait_id).status != WAIT_STATUS_RESUMED
 
 
 def completed_pr_wait(registry: WaitRegistry, root: Path) -> WaitRecord:

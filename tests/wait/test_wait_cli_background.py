@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import cli
 from agent_maintainer.wait.github import GitHubRunState, GitHubWaitResult
 from agent_maintainer.wait.github_pr import (
@@ -24,6 +26,7 @@ from agent_maintainer.wait.sweeper import DetachedWatcher, sweep_once
 from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 PR_NUMBER = "291"
+IDEMPOTENT_REGISTRATION_CALLS = 2
 
 
 def test_register_github_pr_cli_writes_json(
@@ -125,6 +128,19 @@ def test_register_cli_can_start_watcher(
     """Wait register CLI can start detached watcher."""
 
     calls: list[tuple[Path, str]] = []
+    sink = InMemoryRuntimeEventSink()
+
+    monkeypatch.setattr(
+        WaitRuntimeEvents,
+        "create",
+        classmethod(
+            lambda _cls, *, target_kind, target_id: WaitRuntimeEvents(
+                sink=sink,
+                target_kind=target_kind,
+                target_id=target_id,
+            ),
+        ),
+    )
 
     def start_watcher(root: Path, wait_id: str) -> DetachedWatcher:
         calls.append((root, wait_id))
@@ -135,21 +151,36 @@ def test_register_cli_can_start_watcher(
         start_watcher,
     )
 
-    status = cli.main(
-        [
-            "register",
-            "github-pr",
-            PR_NUMBER,
-            "--root",
-            str(tmp_path),
-            "--platform",
-            "claude",
-            "--start-watcher",
-        ],
-    )
+    argv = [
+        "register",
+        "github-pr",
+        PR_NUMBER,
+        "--root",
+        str(tmp_path),
+        "--platform",
+        "claude",
+        "--start-watcher",
+    ]
+    status = cli.main(argv)
+    duplicate_status = cli.main(argv)
 
     assert status == 0
-    assert len(calls) == 1
+    assert duplicate_status == 0
+    assert len(calls) == IDEMPOTENT_REGISTRATION_CALLS
+    assert calls[0][1] == calls[1][1]
+    assert [record["event_name"] for record in sink.records] == [
+        "wait.registered",
+        "wait.watcher_started",
+        "wait.fallback_used",
+    ]
+    watcher_attributes = sink.records[1]["attributes"]
+    assert isinstance(watcher_attributes, dict)
+    assert watcher_attributes == {
+        "strategy": "popen",
+        "target_id": PR_NUMBER,
+        "target_kind": "github-pr",
+        "wait_id": calls[0][1],
+    }
     assert calls[0][0] == tmp_path
     assert calls[0][1] in capsys.readouterr().out
 

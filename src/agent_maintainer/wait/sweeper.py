@@ -10,11 +10,13 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import handlers as wait_handlers
 from agent_maintainer.wait import registry as wait_registry
 from agent_maintainer.wait.github import QueryRun
 from agent_maintainer.wait.github_pr import QueryPrChecks
 from agent_waits import watcher_state as wait_watcher_state
+from agent_waits.notifications import claim_terminal_observation
 
 Sleep = Callable[[int], None]
 
@@ -88,20 +90,22 @@ def sweep_record(
     if record.status != wait_registry.WAIT_STATUS_PENDING:
         return record
     if _expired(record, now):
-        return registry.complete(
+        completed = registry.complete(
             record,
             terminal_result=wait_registry.RESULT_TIMEOUT,
             resume_message="",
             state_data={"timed_out": True},
             now=now,
         )
-    effective_queries = queries or wait_handlers.WaitQueries()
-    return wait_handlers.handler_for(record.kind).poll_once(
-        registry,
-        record,
-        queries=effective_queries,
-        now=now,
-    )
+    else:
+        effective_queries = queries or wait_handlers.WaitQueries()
+        completed = wait_handlers.handler_for(record.kind).poll_once(
+            registry,
+            record,
+            queries=effective_queries,
+            now=now,
+        )
+    return _emit_terminal_observed(registry, completed, now=now)
 
 
 def sweep_ready_notifications(
@@ -209,3 +213,24 @@ def _expired(record: wait_registry.WaitRecord, now: datetime | None) -> bool:
     deadline = datetime.fromisoformat(record.deadline_at.replace("Z", "+00:00"))
     current = now or datetime.now(UTC)
     return current.astimezone(UTC) >= deadline
+
+
+def _emit_terminal_observed(
+    registry: wait_registry.WaitRegistry,
+    record: wait_registry.WaitRecord,
+    *,
+    now: datetime | None,
+) -> wait_registry.WaitRecord:
+    if not record.ready:
+        return record
+    observed = claim_terminal_observation(registry, record.wait_id, now=now)
+    if observed is None:
+        return registry.read(record.wait_id)
+    WaitRuntimeEvents.create(
+        target_kind=observed.kind,
+        target_id=observed.target_id,
+    ).ready(
+        wait_id=observed.wait_id,
+        result=observed.terminal_result,
+    )
+    return observed

@@ -138,6 +138,10 @@ silent while that wait is pending, and print its terminal resume capsule once.
 Structured heartbeat requests include `on_pending: silent`, `on_terminal:
 resume_and_review`, and `merge_policy: merge_only_if_satisfactory`; stale ready
 records can be expired with `python -m agent_maintainer wait cleanup --root <repo>`.
+They also include a deterministic exponential backoff contract: start at no
+less than 120 seconds, double after each silent pending result, and cap at 1,800
+seconds. Fixed-cadence schedulers should use the cap rather than minute-level
+polling.
 Terminal-only local polling is preferred for Codex waits. Launchd failure is
 reported instead of silently downgrading to a detached `popen` watcher. Automatic
 visible Codex thread rewake is not treated as proven today; app-server turn
@@ -155,6 +159,11 @@ failed wake attempts enter manually resumable `notify_failed` state and are not
 retried automatically. `python -m agent_maintainer wait repair --dry-run`
 reports stale pending watchers; an explicit repair rechecks liveness and starts
 the strongest supported watcher without calling Codex.
+Wait lifecycle events cover registration, watcher start/failure, one durably
+claimed terminal observation, notification attempt/failure, confirmed resume,
+and rendered fallback. Their attributes are allowlisted and exclude process
+ids, commands, thread ids, prompts, hook stdin, environment values, API keys,
+backend diagnostics, and private payloads.
 Repo-local wrappers use the checked-out source tree:
 
 ```bash

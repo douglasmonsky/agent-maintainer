@@ -99,6 +99,13 @@ def _emit_registration(args: argparse.Namespace, record: WaitRecord) -> int:
         record,
         args.start_watcher,
     )
-    cli_background.emit_registered(record, background=args.start_watcher)
+    cli_background.emit_registered(args.root, record, background=args.start_watcher)
+    if registration is not None:
+        cli_background.emit_watcher_result(args.root, registration)
+        cli_background.emit_fallback_handoff(
+            args.root,
+            registration,
+            output_format=args.format,
+        )
     print(cli_background.render_registered(args.format, record, registration))
     return 0

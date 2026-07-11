@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
+from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import codex_rewake as codex_rewake_module
 from agent_maintainer.wait.codex_rewake import (
     CODEX_BIN_ENV,
@@ -31,6 +34,9 @@ from agent_maintainer.wait.registry import (
 
 PR_NUMBER = "291"
 THREAD_ID = "thread-1"
+PRIVATE_API_KEY = "private-api-key-value"
+PRIVATE_HOOK_STDIN = "private-hook-stdin-value"
+PRIVATE_PAYLOAD = "private-payload-value"
 
 
 def test_backend_skips_without_feature_flag(tmp_path: Path) -> None:
@@ -110,6 +116,49 @@ def test_backend_app_server_acceptance_stays_manual(tmp_path: Path) -> None:
     assert persisted.ready is True
     assert app_server.calls == [(THREAD_ID, continuation_prompt(record))]
     assert_private_data_not_persisted(tmp_path, record)
+
+
+def test_backend_events_use_fixed_fields_without_private_context(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Notification events include lifecycle facts, never Codex context."""
+
+    sink = InMemoryRuntimeEventSink()
+    monkeypatch.setattr(
+        "agent_maintainer.wait.codex_rewake.WaitRuntimeEvents.create",
+        lambda **kwargs: WaitRuntimeEvents(sink=sink, **kwargs),
+    )
+    registry = WaitRegistry(tmp_path)
+    record = completed_wait(registry, tmp_path)
+
+    CodexRewakeBackend(
+        registry,
+        env={
+            CODEX_REWAKE_ENV: "1",
+            CODEX_THREAD_ID_ENV: THREAD_ID,
+            CODEX_BIN_ENV: "codex-test",
+            "OPENAI_API_KEY": PRIVATE_API_KEY,
+            "HOOK_STDIN": PRIVATE_HOOK_STDIN,
+            "PRIVATE_PAYLOAD": PRIVATE_PAYLOAD,
+        },
+        app_server_client=FakeAppServerClient(),
+    ).resume_if_available(record)
+
+    assert [event["event_name"] for event in sink.records] == [
+        "wait.notify_attempted",
+        "wait.notify_failed",
+    ]
+    rendered = json.dumps(sink.records, sort_keys=True)
+    assert THREAD_ID not in rendered
+    assert continuation_prompt(record) not in rendered
+    assert PRIVATE_API_KEY not in rendered
+    assert PRIVATE_HOOK_STDIN not in rendered
+    assert PRIVATE_PAYLOAD not in rendered
+    assert_private_data_not_persisted(tmp_path, record)
+    failure_attributes = sink.records[1]["attributes"]
+    assert isinstance(failure_attributes, dict)
+    assert failure_attributes["reason"] == "visible_wake_unconfirmed"
 
 
 def test_backend_app_server_uses_acceptance_handoff(
@@ -195,6 +244,9 @@ def assert_private_data_not_persisted(root: Path, record: WaitRecord) -> None:
     raw_record = wait_record_path(root, record).read_text(encoding="utf-8")
     assert THREAD_ID not in raw_record
     assert continuation_prompt(record) not in raw_record
+    assert PRIVATE_API_KEY not in raw_record
+    assert PRIVATE_HOOK_STDIN not in raw_record
+    assert PRIVATE_PAYLOAD not in raw_record
 
 
 class FakeAppServerClient:

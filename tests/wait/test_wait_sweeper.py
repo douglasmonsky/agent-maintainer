@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.verify import async_state
 from agent_maintainer.wait.github_pr import (
     GitHubPrCheck,
@@ -58,6 +60,26 @@ def test_sweep_once_completes_terminal_pr_wait(tmp_path: Path) -> None:
     assert completed.status == WAIT_STATUS_READY
     assert completed.terminal_result == "PASS"
     assert "Result: PASS" in completed.resume_message
+
+
+def test_terminal_observed_event_is_claimed_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Repeated sweepers cannot duplicate one durable terminal event."""
+
+    sink = InMemoryRuntimeEventSink()
+    monkeypatch.setattr(
+        "agent_maintainer.wait.sweeper.WaitRuntimeEvents.create",
+        lambda **kwargs: WaitRuntimeEvents(sink=sink, **kwargs),
+    )
+    registry = WaitRegistry(tmp_path)
+    register_wait(registry, tmp_path)
+
+    sweep_once(registry, query_checks=successful_query, now=LATER)
+    sweep_once(registry, query_checks=successful_query, now=EXPIRED)
+
+    assert [record["event_name"] for record in sink.records] == ["wait.ready"]
 
 
 def test_sweep_observes_pending_quietly(

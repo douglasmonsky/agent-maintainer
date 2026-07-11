@@ -37,6 +37,8 @@ from agent_waits.rendering import render_wait_record_text
 
 NOW = datetime.fromisoformat("2026-07-07T02:00:00+00:00")
 FALLBACK_MONITOR_INTERVAL_SECONDS = 120
+FALLBACK_MONITOR_MAX_INTERVAL_SECONDS = 1800
+LONG_MONITOR_INTERVAL_SECONDS = 3600
 
 
 def test_running_in_codex_accepts_thread_override() -> None:
@@ -69,6 +71,27 @@ def test_generic_wait_registry_writes_target_id(tmp_path: Path) -> None:
     assert record.wait_id == "verifier-run-123-20260707T020000Z"
     assert record.metadata == {HEARTBEAT_MODE_METADATA: HEARTBEAT_MODE_REPO}
     assert "target: run-123" in render_wait_record_text(record)
+
+
+def test_heartbeat_backoff_caps_large_configured_interval(tmp_path: Path) -> None:
+    """Fallback cadence never advertises an interval above its hard cap."""
+
+    record = WaitRegistry(tmp_path).register(
+        RegisterWait(
+            root=tmp_path,
+            kind="verifier",
+            target_id="run-long",
+            interval_seconds=LONG_MONITOR_INTERVAL_SECONDS,
+            now=NOW,
+        ),
+    )
+
+    request = json.loads(heartbeat_request_json(record, root=tmp_path))
+    backoff = request["backoff"]
+
+    assert request["preferred_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
+    assert backoff["initial_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
+    assert backoff["max_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
 
 
 def test_register_deduplicates_active_wait_identity(tmp_path: Path) -> None:
@@ -311,11 +334,21 @@ def test_background_registration_text_is_generic(tmp_path: Path) -> None:
     assert request["preferred_monitor_model"] == "gpt-5.3-codex-spark"
     assert request["preferred_monitor_reasoning"] == "minimal"
     assert request["preferred_interval_seconds"] == FALLBACK_MONITOR_INTERVAL_SECONDS
+    assert request["heartbeat_attempt"] == 0
+    assert request["backoff"] == {
+        "strategy": "exponential",
+        "initial_interval_seconds": FALLBACK_MONITOR_INTERVAL_SECONDS,
+        "multiplier": 2,
+        "max_interval_seconds": FALLBACK_MONITOR_MAX_INTERVAL_SECONDS,
+        "reset_on": "terminal_or_new_wait",
+    }
     assert request["merge_policy"] == "merge_only_if_satisfactory"
     assert request["sweep_command"].endswith(
         f"wait sweep --one {record.wait_id} --root {tmp_path}",
     )
     assert "targeted wait sweep command" in request["prompt"]
+    assert "exponential backoff" in request["prompt"]
+    assert "stop the heartbeat" in request["prompt"]
     assert record.wait_id not in request["prompt"]
 
 

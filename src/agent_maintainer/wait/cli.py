@@ -41,7 +41,12 @@ from agent_maintainer.wait.github_pr import (
     render_github_pr_wait_text,
     wait_for_github_pr_checks,
 )
-from agent_maintainer.wait.registry import WaitRecord, WaitRegistry, wait_record_json
+from agent_maintainer.wait.registry import (
+    WAIT_STATUS_RESUMED,
+    WaitRecord,
+    WaitRegistry,
+    wait_record_json,
+)
 from agent_maintainer.wait.sweeper import (
     CleanupSummary,
     SweepSummary,
@@ -171,13 +176,14 @@ def _render_sweep_record(
         return 0
     if pending_is_silent and not record.ready:
         return 0
-    cli_background.emit_ready(record)
+    cli_background.emit_ready(registry, record)
     rewake = CodexRewakeBackend(registry).resume_if_available(record)
-    if codex_rewake_resumed(rewake):
-        cli_background.emit_resumed(record)
-        print(render_codex_rewake_text(record, rewake))
+    persisted = registry.read(record.wait_id)
+    if codex_rewake_resumed(rewake) and persisted.status == WAIT_STATUS_RESUMED:
+        cli_background.emit_resumed(persisted)
+        print(render_codex_rewake_text(persisted, rewake))
         return 0
-    print(cli_background.render_resume(record))
+    print(cli_background.render_resume(persisted))
     return 0
 
 

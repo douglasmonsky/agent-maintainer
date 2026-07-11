@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import Final
+from typing import Final, TypedDict
 
 from agent_waits import capabilities as codex_capabilities
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
@@ -27,6 +27,8 @@ CODEX_ENV_MARKERS: Final = (
 )
 CHEAP_MONITOR_MODEL: Final = "gpt-5.3-codex-spark"
 HEARTBEAT_DEFAULT_INTERVAL_SECONDS: Final = 120
+HEARTBEAT_MAX_INTERVAL_SECONDS: Final = 1800
+HEARTBEAT_BACKOFF_MULTIPLIER: Final = 2
 HEARTBEAT_REQUEST_TYPE: Final = "codex_heartbeat_wait"
 BACKGROUND_WAIT_FLAGS: Final[Mapping[str | None, bool]] = MappingProxyType({"0": False})
 
@@ -43,6 +45,16 @@ class BackgroundWaitRegistration:
     watcher_pid: int | None = None
     watcher_label: str = ""
     watcher_log: str = ""
+
+
+class HeartbeatBackoff(TypedDict):
+    """Structured exponential cadence guidance for fallback consumers."""
+
+    strategy: str
+    initial_interval_seconds: int
+    multiplier: int
+    max_interval_seconds: int
+    reset_on: str
 
 
 def codex_foreground_wait_allowed(env: Mapping[str, str] | None = None) -> bool:
@@ -131,10 +143,30 @@ def heartbeat_prompt(_record: WaitRecord) -> str:
 
     return (
         "Run the targeted wait sweep command from this request. "
-        "If it prints nothing, stay silent and let the next heartbeat continue "
-        "polling. If it prints a terminal resume capsule, inspect failures if "
-        "any, merge only if satisfactory, then continue prior task."
+        "If it prints nothing, stay silent and increase the next interval using "
+        "the request's exponential backoff. If it prints a terminal resume "
+        "capsule, stop the heartbeat, inspect failures if any, merge only if "
+        "satisfactory, then continue prior task."
     )
+
+
+def heartbeat_backoff(record: WaitRecord) -> HeartbeatBackoff:
+    """Return deterministic model-turn fallback cadence guidance."""
+
+    initial_interval = min(
+        max(
+            record.interval_seconds,
+            HEARTBEAT_DEFAULT_INTERVAL_SECONDS,
+        ),
+        HEARTBEAT_MAX_INTERVAL_SECONDS,
+    )
+    return {
+        "strategy": "exponential",
+        "initial_interval_seconds": initial_interval,
+        "multiplier": HEARTBEAT_BACKOFF_MULTIPLIER,
+        "max_interval_seconds": HEARTBEAT_MAX_INTERVAL_SECONDS,
+        "reset_on": "terminal_or_new_wait",
+    }
 
 
 def heartbeat_request(
@@ -150,6 +182,7 @@ def heartbeat_request(
     if root_text:
         sweep_command = f"{sweep_command} --root {root_text}"
         resume_command = f"{resume_command} --root {root_text}"
+    backoff = heartbeat_backoff(record)
     return {
         "type": HEARTBEAT_REQUEST_TYPE,
         "wait_id": record.wait_id,
@@ -165,10 +198,9 @@ def heartbeat_request(
         "fallback_only": True,
         "preferred_monitor_model": CHEAP_MONITOR_MODEL,
         "preferred_monitor_reasoning": "minimal",
-        "preferred_interval_seconds": max(
-            record.interval_seconds,
-            HEARTBEAT_DEFAULT_INTERVAL_SECONDS,
-        ),
+        "preferred_interval_seconds": backoff["initial_interval_seconds"],
+        "heartbeat_attempt": 0,
+        "backoff": backoff,
         "merge_policy": "merge_only_if_satisfactory",
         "prompt": heartbeat_prompt(record),
     }

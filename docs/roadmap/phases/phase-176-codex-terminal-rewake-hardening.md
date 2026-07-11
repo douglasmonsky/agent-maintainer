@@ -17,7 +17,8 @@ The Codex desktop app provides `CODEX_THREAD_ID` to local commands. The bundled
 `openai-codex` package is optional and is not present in the current repo venv.
 
 The preferred local backend is therefore app-server JSON-RPC over the bundled
-`codex` CLI. The Python SDK remains a secondary fallback when installed.
+`codex` CLI. The Python SDK is reported as diagnostic capability only; no SDK
+rewake backend is implemented.
 
 ## Implementation Plan
 
@@ -69,7 +70,10 @@ Capability-focused doctor output and a default read-only app-server smoke are
 implemented. The real `turn/start` smoke remains manual and gated until a user
 explicitly approves spending a Codex model turn. Atomic notification claims and
 stale watcher repair are implemented with privacy-safe durable metadata.
-Heartbeat backoff and the complete event/privacy matrix remain active work.
+Fallback requests now carry deterministic exponential backoff from at least 120
+seconds to a 1,800-second cap. The complete lifecycle event taxonomy is wired to
+durable claims, and allowlist regressions cover wait records and runtime events.
+The explicitly gated real-turn smoke remains the only manual evidence item.
 
 ## Acceptance Criteria
 

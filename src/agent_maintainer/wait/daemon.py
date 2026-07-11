@@ -8,6 +8,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait.codex_rewake import CodexRewakeBackend, codex_rewake_resumed
 from agent_maintainer.wait.daemon_launchd import (
     DAEMON_IDLE_TIMEOUT_SECONDS,
@@ -21,6 +22,7 @@ from agent_maintainer.wait.daemon_state import (
 from agent_maintainer.wait.registry import (
     WAIT_STATUS_PENDING,
     WAIT_STATUS_READY,
+    WAIT_STATUS_RESUMED,
     WaitRecord,
     WaitRegistry,
     wait_records,
@@ -28,6 +30,7 @@ from agent_maintainer.wait.registry import (
 from agent_maintainer.wait.sweeper import sweep_once
 from agent_waits.notifications import (
     DEFAULT_NOTIFICATION_LEASE_SECONDS,
+    FAILURE_LEASE_EXPIRED,
     repair_stale_notifications,
 )
 from agent_waits.watcher_state import mark_pending_watcher_polls
@@ -62,9 +65,11 @@ def run_daemon(
     while active_hooks.monotonic() - last_activity < idle_timeout_seconds:
         summary = sweep_once(registry)
         mark_pending_watcher_polls(registry)
-        repair_stale_notifications(
-            registry,
-            lease_seconds=DEFAULT_NOTIFICATION_LEASE_SECONDS,
+        _emit_stale_notification_failures(
+            repair_stale_notifications(
+                registry,
+                lease_seconds=DEFAULT_NOTIFICATION_LEASE_SECONDS,
+            ),
         )
         resumed = _resume_ready_with_envelopes(registry, root, current)
         records = wait_records(registry)
@@ -89,7 +94,12 @@ def _resume_ready_with_envelopes(
             continue
         merged_env = {**env, **envelope}
         result = CodexRewakeBackend(registry, env=merged_env).resume_if_available(record)
-        if codex_rewake_resumed(result):
+        persisted = registry.read(record.wait_id)
+        if codex_rewake_resumed(result) and persisted.status == WAIT_STATUS_RESUMED:
+            WaitRuntimeEvents.create(
+                target_kind=persisted.kind,
+                target_id=persisted.target_id,
+            ).resumed(wait_id=persisted.wait_id)
             resumed += 1
     return resumed
 
@@ -99,3 +109,14 @@ def _has_active_work(root: Path, records: tuple[WaitRecord, ...]) -> bool:
         record.status == WAIT_STATUS_PENDING or has_rewake_envelope(root, record.wait_id)
         for record in records
     )
+
+
+def _emit_stale_notification_failures(records: tuple[WaitRecord, ...]) -> None:
+    for record in records:
+        WaitRuntimeEvents.create(
+            target_kind=record.kind,
+            target_id=record.target_id,
+        ).notify_failed(
+            wait_id=record.wait_id,
+            reason=FAILURE_LEASE_EXPIRED,
+        )

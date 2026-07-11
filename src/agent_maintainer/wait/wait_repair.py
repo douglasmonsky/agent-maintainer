@@ -10,9 +10,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Final
 
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import broker, daemon_launchd
 from agent_maintainer.wait.registry import WaitRecord, WaitRegistry, wait_records
-from agent_waits.notifications import repair_stale_notifications
+from agent_waits.notifications import (
+    FAILURE_LEASE_EXPIRED,
+    claim_watcher_started_observation,
+    repair_stale_notifications,
+)
 from agent_waits.watcher_state import (
     WatcherState,
     claim_watcher_repair,
@@ -164,22 +169,36 @@ def _start_claimed_watcher(
     if not registration.watcher_started:
         _mark_repair_failed(context, claimed)
         return _RepairOutcome(eligible=1, failed=1)
-    mark_watcher_started(
+    started = mark_watcher_started(
         context.registry,
         claimed,
         strategy=registration.watcher_strategy,
         pid=registration.watcher_pid,
         now=context.request.now,
     )
+    observed = claim_watcher_started_observation(
+        context.registry,
+        started.wait_id,
+        now=context.request.now,
+    )
+    if observed is not None:
+        _wait_events(observed).watcher_started(
+            wait_id=observed.wait_id,
+            strategy=watcher_state(observed).strategy,
+        )
     return _RepairOutcome(eligible=1, repaired=1)
 
 
 def _mark_repair_failed(context: _RepairContext, claimed: WaitRecord) -> None:
-    mark_watcher_failed(
+    failed = mark_watcher_failed(
         context.registry,
         claimed,
         error_code="watcher_repair_failed",
         now=context.request.now,
+    )
+    _wait_events(failed).watcher_failed(
+        wait_id=failed.wait_id,
+        reason=watcher_state(failed).error_code,
     )
 
 
@@ -189,14 +208,25 @@ def _repair_notification_claims(
 ) -> int:
     if request.dry_run:
         return 0
-    return len(
-        repair_stale_notifications(
-            registry,
-            lease_seconds=request.stale_after_seconds,
-            wait_id=request.wait_id,
-            now=request.now,
-        ),
+    failed = repair_stale_notifications(
+        registry,
+        lease_seconds=request.stale_after_seconds,
+        wait_id=request.wait_id,
+        now=request.now,
     )
+    for record in failed:
+        WaitRuntimeEvents.create(
+            target_kind=record.kind,
+            target_id=record.target_id,
+        ).notify_failed(
+            wait_id=record.wait_id,
+            reason=FAILURE_LEASE_EXPIRED,
+        )
+    return len(failed)
+
+
+def _wait_events(record: WaitRecord) -> WaitRuntimeEvents:
+    return WaitRuntimeEvents.create(target_kind=record.kind, target_id=record.target_id)
 
 
 def render_repair_text(summary: RepairSummary) -> str:

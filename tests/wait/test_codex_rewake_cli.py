@@ -53,6 +53,43 @@ def test_sweep_watch_cli_prints_rewake(
     assert SuccessfulRewakeBackend.seen_waits == [record.wait_id]
 
 
+def test_sweep_watch_requires_durable_resumed_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A backend result alone cannot emit a false resumed lifecycle event."""
+
+    registry = WaitRegistry(tmp_path)
+    record = registry.register_github_pr(
+        RegisterGitHubPrWait(root=tmp_path, pr_number=PR_NUMBER),
+    )
+    completed = registry.complete_github_pr(
+        record,
+        GitHubPrWaitResult(
+            pr_number=PR_NUMBER,
+            state=GitHubPrChecksState(
+                pr_number=PR_NUMBER,
+                checks=(GitHubPrCheck(name="verify", state="success"),),
+            ),
+        ),
+    )
+    resumed_events: list[str] = []
+    monkeypatch.setattr(cli, "watch_wait", lambda _registry, _wait_id: completed)
+    monkeypatch.setattr(cli, "CodexRewakeBackend", UnpersistedRewakeBackend)
+    monkeypatch.setattr(
+        cli.cli_background,
+        "emit_resumed",
+        lambda item: resumed_events.append(item.wait_id),
+    )
+
+    status = cli.main(["sweep", "--watch", record.wait_id, "--root", str(tmp_path)])
+
+    assert status == 0
+    assert "Result: RESUMED" not in capsys.readouterr().out
+    assert resumed_events == []
+
+
 class SuccessfulRewakeBackend:
     """Fake Codex rewake backend for CLI integration coverage."""
 
@@ -64,6 +101,7 @@ class SuccessfulRewakeBackend:
     def resume_if_available(self, record: WaitRecord) -> CodexRewakeResult:
         self.seen_waits.append(record.wait_id)
         self.seen_count()
+        self.registry.mark_resumed(record)
         return CodexRewakeResult(
             REWAKE_STATUS_RESUMED,
             "Codex continuation completed",
@@ -73,3 +111,13 @@ class SuccessfulRewakeBackend:
         """Return count of fake rewake calls."""
 
         return len(self.seen_waits)
+
+
+class UnpersistedRewakeBackend:
+    """Fake backend that reports success without the required durable state."""
+
+    def __init__(self, _registry: WaitRegistry) -> None:
+        pass
+
+    def resume_if_available(self, _record: WaitRecord) -> CodexRewakeResult:
+        return CodexRewakeResult(REWAKE_STATUS_RESUMED, "unpersisted")

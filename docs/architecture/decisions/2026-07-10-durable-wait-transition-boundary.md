@@ -37,6 +37,15 @@ The `agent_maintainer.wait` adapter may depend on these generic primitives to
 integrate launchd, detached processes, the Codex app-server, and the CLI.
 `agent_waits` must not depend on those platform-specific adapters.
 
+Wait adapters may emit lifecycle events only after the corresponding durable
+claim or state transition. `wait.ready` uses a separate once-only observation
+claim; registration, successful watcher start, and rendered fallback also use
+per-wait observation claims so idempotent registration cannot duplicate them.
+Notification attempts occur only after the notification claim, and a resume
+event requires persisted `resumed` state. Fallback handoffs expose a
+deterministic exponential backoff contract instead of implying fixed short
+cadence.
+
 ## Boundary
 
 Durable watcher metadata is limited to strategy, positive process id when one
@@ -44,6 +53,11 @@ exists, start time, last poll time, repair-claim time, and fixed failure codes.
 The transition modules must never persist commands, environment variables,
 thread ids, prompts, credentials, terminal payloads beyond the existing wait
 record contract, or raw exception text.
+
+Lifecycle event attributes are similarly allowlisted to stable wait identity,
+terminal status, safe strategy, numeric cadence facts, and fixed failure codes.
+They exclude process ids, commands, labels, log paths, Codex context, and raw
+backend diagnostics.
 
 Locks protect only brief local state transitions. External processes and Codex
 calls run outside the lock after a durable claim has been written. Stale

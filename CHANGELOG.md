@@ -93,6 +93,10 @@ the candidate passes the complete exact-commit release matrix.
   abandoned, or visibly unconfirmed attempts become manually resumable
   `notify_failed` records, while explicit repair can restart stale inactive
   watchers from privacy-safe pid and poll metadata.
+- Model-turn fallback handoffs now request exponential cadence backoff from 120
+  to 1,800 seconds, and allowlisted wait lifecycle events cover watcher,
+  terminal, notification, resume, failure, and fallback boundaries without
+  persisting Codex context or backend diagnostics.
 - Strict Pyright debt ratchets by file/rule pair under a versioned,
   tool-and-scope-bound baseline rather than an aggregate error allowance.
 - Public documentation now distinguishes published release evidence from

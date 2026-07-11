@@ -14,6 +14,18 @@ from agent_maintainer.runtime_events.sinks import (
 )
 
 WAIT_COMMAND = "wait"
+SAFE_WATCHER_STRATEGIES = frozenset(("launchd", "popen"))
+SAFE_WATCHER_FAILURES = frozenset(
+    ("launchd_required", "watcher_start_failed", "watcher_repair_failed", "watcher_failed"),
+)
+SAFE_NOTIFICATION_FAILURES = frozenset(
+    (
+        "app_server_error",
+        "visible_wake_unconfirmed",
+        "notification_lease_expired",
+        "notification_failed",
+    ),
+)
 
 
 @dataclass(frozen=True)
@@ -123,7 +135,7 @@ class WaitRuntimeEvents:
         )
 
     def ready(self, *, wait_id: str, result: str) -> None:
-        """Emit one terminal wait-ready event."""
+        """Emit one terminal-observed event using the stable wait.ready name."""
 
         self.sink.emit(
             RuntimeEvent(
@@ -154,6 +166,84 @@ class WaitRuntimeEvents:
                     "wait_id": wait_id,
                 },
             ),
+        )
+
+    def watcher_started(self, *, wait_id: str, strategy: str) -> None:
+        """Emit one watcher-started event with allowlisted strategy metadata."""
+
+        _emit_wait_event(
+            self,
+            "wait.watcher_started",
+            status="started",
+            attributes={
+                "wait_id": wait_id,
+                "strategy": _safe_value(strategy, SAFE_WATCHER_STRATEGIES, "other"),
+            },
+        )
+
+    def watcher_failed(self, *, wait_id: str, reason: str) -> None:
+        """Emit one watcher failure using only a fixed reason code."""
+
+        _emit_wait_event(
+            self,
+            "wait.watcher_failed",
+            status="failed",
+            attributes={
+                "wait_id": wait_id,
+                "reason": _safe_value(reason, SAFE_WATCHER_FAILURES, "watcher_failed"),
+            },
+        )
+
+    def notify_attempted(self, *, wait_id: str, backend: str) -> None:
+        """Emit one claimed external-notification attempt."""
+
+        _emit_wait_event(
+            self,
+            "wait.notify_attempted",
+            status="attempted",
+            attributes={
+                "wait_id": wait_id,
+                "backend": "codex-app-server" if backend == "codex-app-server" else "other",
+            },
+        )
+
+    def notify_failed(self, *, wait_id: str, reason: str) -> None:
+        """Emit one fail-closed notification result with a fixed code."""
+
+        _emit_wait_event(
+            self,
+            "wait.notify_failed",
+            status="failed",
+            attributes={
+                "wait_id": wait_id,
+                "reason": _safe_value(
+                    reason,
+                    SAFE_NOTIFICATION_FAILURES,
+                    "notification_failed",
+                ),
+            },
+        )
+
+    def fallback_used(
+        self,
+        *,
+        wait_id: str,
+        initial_interval_seconds: int,
+        max_interval_seconds: int,
+    ) -> None:
+        """Emit one rendered model-turn fallback handoff."""
+
+        _emit_wait_event(
+            self,
+            "wait.fallback_used",
+            status="offered",
+            attributes={
+                "wait_id": wait_id,
+                "strategy": "exponential",
+                "heartbeat_attempt": 0,
+                "initial_interval_seconds": initial_interval_seconds,
+                "max_interval_seconds": max_interval_seconds,
+            },
         )
 
 
@@ -210,3 +300,7 @@ def _emit_wait_event(
             },
         ),
     )
+
+
+def _safe_value(value: str, allowed: frozenset[str], fallback: str) -> str:
+    return value if value in allowed else fallback

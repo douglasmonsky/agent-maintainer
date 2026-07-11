@@ -7,6 +7,9 @@ from datetime import datetime
 from pathlib import Path
 from threading import Barrier
 
+import pytest
+
+from agent_waits import notifications as notifications_module
 from agent_waits.constants import (
     WAIT_STATUS_NOTIFY_FAILED,
     WAIT_STATUS_NOTIFYING,
@@ -16,7 +19,9 @@ from agent_waits.notifications import (
     FAILURE_APP_SERVER,
     FAILURE_LEASE_EXPIRED,
     NOTIFICATION_OUTCOME_FAILED,
+    TERMINAL_OBSERVED_AT_METADATA,
     claim_terminal_notification,
+    claim_terminal_observation,
     finish_terminal_notification,
     repair_stale_notifications,
 )
@@ -56,6 +61,28 @@ def test_concurrent_terminal_claimers_produce_one_winner(tmp_path: Path) -> None
         results = tuple(executor.map(lambda _index: claim(), range(2)))
 
     assert sum(result is not None for result in results) == 1
+
+
+def test_terminal_observation_can_be_claimed_once(tmp_path: Path) -> None:
+    """Terminal telemetry has one durable claim across parallel sweepers."""
+
+    registry = WaitRegistry(tmp_path)
+    record = ready_wait(registry, tmp_path)
+    barrier = Barrier(2)
+
+    def claim() -> WaitRecord | None:
+        barrier.wait()
+        return claim_terminal_observation(registry, record.wait_id, now=NOW)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = tuple(executor.map(lambda _index: claim(), range(2)))
+
+    assert sum(result is not None for result in results) == 1
+    persisted = registry.read(record.wait_id)
+    assert persisted.metadata is not None
+    observed_at = persisted.metadata[TERMINAL_OBSERVED_AT_METADATA]
+    assert isinstance(observed_at, str)
+    assert observed_at.startswith("2026-07-10")
 
 
 def test_stale_pending_poll_cannot_overwrite_notification_claim(tmp_path: Path) -> None:
@@ -149,6 +176,35 @@ def test_stale_notification_claim_fails_closed(tmp_path: Path) -> None:
     assert repaired[0].status == WAIT_STATUS_NOTIFY_FAILED
     assert repaired[0].metadata is not None
     assert repaired[0].metadata["notification_failure_reason"] == FAILURE_LEASE_EXPIRED
+
+
+def test_parallel_stale_repairs_report_one_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Only the process that owns the locked transition reports its event."""
+
+    registry = WaitRegistry(tmp_path)
+    record = ready_wait(registry, tmp_path)
+    assert claim_terminal_notification(registry, record.wait_id, now=NOW) is not None
+    barrier = Barrier(2)
+    original_wait_records = notifications_module.wait_records
+
+    def synchronized_records(active_registry: WaitRegistry) -> tuple[WaitRecord, ...]:
+        records = original_wait_records(active_registry)
+        barrier.wait()
+        return records
+
+    monkeypatch.setattr(notifications_module, "wait_records", synchronized_records)
+
+    def repair() -> tuple[WaitRecord, ...]:
+        return repair_stale_notifications(registry, lease_seconds=60, now=LATER)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        repaired = tuple(executor.map(lambda _index: repair(), range(2)))
+
+    assert sum(len(records) for records in repaired) == 1
+    assert registry.read(record.wait_id).status == WAIT_STATUS_NOTIFY_FAILED
 
 
 def ready_wait(registry: WaitRegistry, root: Path) -> WaitRecord:

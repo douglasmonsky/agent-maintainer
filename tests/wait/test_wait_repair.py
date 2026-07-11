@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait import cli, wait_repair
 from agent_waits.broker import BackgroundWaitRegistration
 from agent_waits.constants import WAIT_STATUS_NOTIFY_FAILED, WAIT_STATUS_NOTIFYING
@@ -179,9 +181,24 @@ def test_repair_rechecks_liveness_inside_atomic_claim(tmp_path: Path) -> None:
     assert watcher_state(registry.read(record.wait_id)).strategy == "popen"
 
 
-def test_repair_fails_closed_abandoned_notification_claim(tmp_path: Path) -> None:
+def test_repair_fails_closed_abandoned_notification_claim(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """The repair command also closes stale notifying leases without retrying."""
 
+    sink = InMemoryRuntimeEventSink()
+    monkeypatch.setattr(
+        WaitRuntimeEvents,
+        "create",
+        classmethod(
+            lambda _cls, *, target_kind, target_id: WaitRuntimeEvents(
+                sink=sink,
+                target_kind=target_kind,
+                target_id=target_id,
+            ),
+        ),
+    )
     registry = WaitRegistry(tmp_path)
     pending = pending_wait(registry, tmp_path)
     ready = registry.complete(
@@ -204,6 +221,10 @@ def test_repair_fails_closed_abandoned_notification_claim(tmp_path: Path) -> Non
 
     assert summary.notification_failures == 1
     assert registry.read(ready.wait_id).status == WAIT_STATUS_NOTIFY_FAILED
+    assert [record["event_name"] for record in sink.records] == ["wait.notify_failed"]
+    attributes = sink.records[0]["attributes"]
+    assert isinstance(attributes, dict)
+    assert attributes["reason"] == "notification_lease_expired"
 
 
 def test_targeted_repair_does_not_change_unrelated_notification(tmp_path: Path) -> None:

@@ -31,7 +31,9 @@ BACKGROUND_WAIT_FLAGS: Final[Mapping[str | None, bool]] = MappingProxyType({"0":
 
 BackgroundWaitRegistration = wait_broker.BackgroundWaitRegistration
 codex_foreground_wait_allowed = wait_broker.codex_foreground_wait_allowed
+codex_terminal_rewake_available = wait_broker.codex_terminal_rewake_available
 heartbeat_prompt = wait_broker.heartbeat_prompt
+heartbeat_backoff = wait_broker.heartbeat_backoff
 heartbeat_request = wait_broker.heartbeat_request
 heartbeat_request_json = wait_broker.heartbeat_request_json
 render_background_registration_text = wait_broker.render_background_registration_text

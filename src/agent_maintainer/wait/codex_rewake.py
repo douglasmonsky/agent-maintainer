@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from shutil import which
 from typing import Any, Final
 
+from agent_maintainer.runtime_events.waiting import WaitRuntimeEvents
 from agent_maintainer.wait.codex_app_server import CodexAppServerClient
 from agent_maintainer.wait.handlers import continuation_prompt as handler_prompt
 from agent_maintainer.wait.registry import WaitRecord, WaitRegistry
@@ -19,7 +20,7 @@ from agent_waits.capabilities import (
     CODEX_THREAD_ID_ENV,
     CODEX_THREAD_ID_OVERRIDE_ENV,
 )
-from agent_waits.constants import WAIT_STATUS_READY
+from agent_waits.constants import WAIT_STATUS_NOTIFY_FAILED, WAIT_STATUS_READY
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 from agent_waits.notifications import (
     FAILURE_APP_SERVER,
@@ -87,25 +88,32 @@ class CodexRewakeBackend:
         if claimed is None:
             return CodexRewakeResult(REWAKE_STATUS_SKIPPED, "wait notification already claimed")
         prompt = continuation_prompt(claimed)
+        events = _wait_events(claimed)
+        events.notify_attempted(
+            wait_id=claimed.wait_id,
+            backend="codex-app-server",
+        )
         try:
             self._resume_with_app_server(resume_target, prompt)
         except (OSError, RuntimeError, TimeoutError):
-            finish_terminal_notification(
+            finished = finish_terminal_notification(
                 self._registry,
                 record.wait_id,
                 outcome=NOTIFICATION_OUTCOME_FAILED,
                 failure_reason=FAILURE_APP_SERVER,
             )
+            _emit_notify_failed(events, finished, FAILURE_APP_SERVER)
             return _manual_result(
                 claimed,
                 "Codex app-server rewake failed; details withheld",
             )
-        finish_terminal_notification(
+        finished = finish_terminal_notification(
             self._registry,
             record.wait_id,
             outcome=NOTIFICATION_OUTCOME_FAILED,
             failure_reason=FAILURE_VISIBLE_WAKE_UNCONFIRMED,
         )
+        _emit_notify_failed(events, finished, FAILURE_VISIBLE_WAKE_UNCONFIRMED)
         return _manual_result(
             claimed,
             "Codex app-server accepted continuation, but visible thread wake "
@@ -222,3 +230,16 @@ def _manual_result(record: WaitRecord, detail: str) -> CodexRewakeResult:
         f"{detail}; manual resume: {record.resume_instruction}",
         prompt=continuation_prompt(record),
     )
+
+
+def _wait_events(record: WaitRecord) -> WaitRuntimeEvents:
+    return WaitRuntimeEvents.create(target_kind=record.kind, target_id=record.target_id)
+
+
+def _emit_notify_failed(
+    events: WaitRuntimeEvents,
+    record: WaitRecord,
+    reason: str,
+) -> None:
+    if record.status == WAIT_STATUS_NOTIFY_FAILED:
+        events.notify_failed(wait_id=record.wait_id, reason=reason)

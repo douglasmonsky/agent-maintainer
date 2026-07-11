@@ -170,6 +170,9 @@ def test_codex_wait_docs_disclose_smoke_and_model_turn_boundaries() -> None:
             "ready_for_manual_resume` -> `notifying` -> `resumed` or `notify_failed",
             "python -m agent_maintainer wait repair --dry-run --stale-after 60",
             "Repair rechecks state under the same per-wait lock, never calls Codex",
+            "exponential backoff contract",
+            "wait.notify_attempted",
+            "They never contain process ids",
         ),
         "docs/agent-client-hooks.md": (
             "Heartbeat fallback still wakes a model each interval",
@@ -178,6 +181,8 @@ def test_codex_wait_docs_disclose_smoke_and_model_turn_boundaries() -> None:
             "hooks and CI must never set that gate.",
             "Unconfirmed or failed wake attempts enter manually resumable `notify_failed` state",
             "wait repair --dry-run",
+            "cap at 1,800 seconds",
+            "Their attributes are allowlisted",
         ),
     }
     _assert_phrases_present(phrases)
