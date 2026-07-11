@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
+from agent_maintainer.core.structured_values import json_object
 from agent_maintainer.verify import async_state
 from agent_maintainer.wait import verifier_rendering
 from agent_maintainer.wait.verifier_manifest import (
@@ -165,11 +166,14 @@ def _read_job_result(config: VerifierWaitConfig) -> VerifierWaitResult | None:
         return None
     profile = ""
     try:
-        payload = json.loads((jobs_dir / f"{config.run_id}.json").read_text(encoding="utf-8"))
+        payload: object = json.loads(
+            (jobs_dir / f"{config.run_id}.json").read_text(encoding="utf-8"),
+        )
     except (OSError, json.JSONDecodeError):
-        payload = {}
-    if isinstance(payload, dict):
-        profile = str(payload.get("profile", ""))
+        payload = None
+    metadata = json_object(payload)
+    if metadata is not None:
+        profile = str(metadata.get("profile", ""))
     status = "passed" if outcome == "PASS" else "failed"
     return VerifierWaitResult(
         run_id=config.run_id,

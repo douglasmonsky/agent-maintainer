@@ -5,10 +5,11 @@ from __future__ import annotations
 import json
 import subprocess  # nosec B404
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import Final
 
+from agent_maintainer.core.structured_values import json_array, json_objects
 from agent_waits.models import (
     TIMEOUT_EXIT_CODE,
     WaitRepairCapsule,
@@ -179,12 +180,13 @@ def parse_github_pr_checks_state(
     raw_json: str,
 ) -> GitHubPrChecksState:
     """Parse `gh pr checks --json` output."""
-    payload = json.loads(raw_json)
-    if not isinstance(payload, Sequence) or isinstance(payload, (str, bytes)):
+    payload: object = json.loads(raw_json)
+    checks = json_array(payload)
+    if checks is None:
         return GitHubPrChecksState(pr_number=pr_number)
     return GitHubPrChecksState(
         pr_number=pr_number,
-        checks=tuple(_parse_check(item) for item in payload if isinstance(item, dict)),
+        checks=tuple(_parse_check(item) for item in json_objects(checks)),
     )
 
 
@@ -241,7 +243,7 @@ def _gh_pr_checks_command(config: GitHubPrWaitConfig) -> list[str]:
     return command
 
 
-def _parse_check(item: dict[str, Any]) -> GitHubPrCheck:
+def _parse_check(item: dict[str, object]) -> GitHubPrCheck:
     return GitHubPrCheck(
         name=str(item.get("name", "")),
         state=str(item.get("state", "")),

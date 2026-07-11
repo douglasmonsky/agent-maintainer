@@ -61,6 +61,7 @@ def test_parse_github_pr_checks_state_reads_failures() -> None:
         "291",
         json.dumps(
             [
+                None,
                 {
                     "name": "verify",
                     "state": "failure",

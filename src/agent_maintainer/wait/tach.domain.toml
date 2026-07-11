@@ -52,12 +52,14 @@ depends_on = [
 [[modules]]
 path = "github"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "//agent_waits.models",
 ]
 
 [[modules]]
 path = "github_pr"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "//agent_waits.models",
 ]
 
@@ -134,6 +136,7 @@ depends_on = []
 path = "daemon_state"
 depends_on = [
   "codex_rewake",
+  "//agent_maintainer.core.structured_values",
 ]
 
 [[modules]]
@@ -189,6 +192,7 @@ path = "verifier"
 depends_on = [
   "verifier_rendering",
   "verifier_manifest",
+  "//agent_maintainer.core.structured_values",
   "//agent_maintainer.verify.async_state",
   "//agent_waits.models",
 ]

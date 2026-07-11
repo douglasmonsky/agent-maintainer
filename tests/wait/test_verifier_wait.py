@@ -7,6 +7,8 @@ import os
 import time
 from pathlib import Path
 
+import pytest
+
 from agent_maintainer.verify import async_state
 from agent_maintainer.wait.models import TIMEOUT_EXIT_CODE
 from agent_maintainer.wait.verifier import (
@@ -145,6 +147,29 @@ def test_verifier_query_once_reads_cached_fail_job(tmp_path: Path) -> None:
     assert result is not None
     assert result.exit_code == 1
     assert "Result: FAIL" in render_verifier_wait_text(result)
+
+
+def test_cached_job_with_non_object_metadata_uses_empty_profile(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Malformed cached metadata does not hide a terminal verifier outcome."""
+
+    write_cached_job(tmp_path, "cached-pass", profile="ci", outcome="PASS")
+    (tmp_path / "jobs" / "cached-pass.json").write_text("[]", encoding="utf-8")
+
+    def missing_async_state(_path: Path) -> None:
+        return None
+
+    monkeypatch.setattr(async_state, "read_async_state", missing_async_state)
+
+    result = query_verifier_run_once(
+        VerifierWaitConfig(run_id="cached-pass", log_dir=tmp_path),
+    )
+
+    assert result is not None
+    assert result.manifest is not None
+    assert result.manifest.profile == ""
 
 
 def test_verifier_wait_distinguishes_quality_failure_state(tmp_path: Path) -> None:
