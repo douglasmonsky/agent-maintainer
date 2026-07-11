@@ -20,7 +20,7 @@ from agent_maintainer.wait.registry import (
     RegisterVerifierWait,
     WaitRegistry,
 )
-from agent_maintainer.wait.sweeper import sweep_once
+from agent_maintainer.wait.sweeper import DetachedWatcher, sweep_once
 from agent_maintainer.wait.verifier import VerifierManifest, VerifierWaitResult
 
 PR_NUMBER = "291"
@@ -125,9 +125,14 @@ def test_register_cli_can_start_watcher(
     """Wait register CLI can start detached watcher."""
 
     calls: list[tuple[Path, str]] = []
+
+    def start_watcher(root: Path, wait_id: str) -> DetachedWatcher:
+        calls.append((root, wait_id))
+        return DetachedWatcher(command=("python",), pid=123)
+
     monkeypatch.setattr(
         "agent_maintainer.wait.broker.start_wait_watcher",
-        lambda root, wait_id: calls.append((root, wait_id)),
+        start_watcher,
     )
 
     status = cli.main(

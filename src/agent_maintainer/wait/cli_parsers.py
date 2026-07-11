@@ -21,6 +21,7 @@ DEFAULT_READY_CLEANUP_SECONDS = 7 * 24 * 60 * 60
 DEFAULT_DAEMON_INTERVAL_SECONDS = 5
 DEFAULT_DAEMON_IDLE_TIMEOUT_SECONDS = 1800
 DEFAULT_CODEX_SMOKE_TIMEOUT_SECONDS = 30.0
+DEFAULT_REPAIR_STALE_AFTER_SECONDS = 60
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -36,6 +37,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     _add_sweep_parser(subparsers)
     _add_heartbeat_parser(subparsers)
     _add_cleanup_parser(subparsers)
+    _add_repair_parser(subparsers)
     _add_codex_smoke_parser(subparsers)
     _add_daemon_parser(subparsers)
     return parser.parse_args(argv)
@@ -227,6 +229,21 @@ def _add_cleanup_parser(subparsers: Any) -> None:
         default=DEFAULT_READY_CLEANUP_SECONDS,
     )
     cleanup.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
+
+
+def _add_repair_parser(subparsers: Any) -> None:
+    """Add stale watcher repair parser."""
+
+    repair = subparsers.add_parser("repair", help="Repair stale pending wait watchers.")
+    repair.add_argument("--wait-id")
+    repair.add_argument(
+        "--stale-after",
+        type=int,
+        default=DEFAULT_REPAIR_STALE_AFTER_SECONDS,
+    )
+    repair.add_argument("--dry-run", action="store_true")
+    repair.add_argument(ROOT_OPTION, type=Path, default=Path.cwd())
+    repair.add_argument(FORMAT_OPTION, choices=OUTPUT_FORMATS, default=TEXT_FORMAT)
 
 
 def _add_codex_smoke_parser(subparsers: Any) -> None:

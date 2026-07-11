@@ -133,7 +133,12 @@ class FakeSmokeClient:
 
 
 class FailingSmokeClient:
-    def probe_thread(self, _thread_id: str) -> None:
+    def probe_thread(self, thread_id: str) -> None:
+        del thread_id
+        raise RuntimeError("private-api-key")
+
+    def resume_thread(self, thread_id: str, prompt: str) -> None:
+        del thread_id, prompt
         raise RuntimeError("private-api-key")
 
 

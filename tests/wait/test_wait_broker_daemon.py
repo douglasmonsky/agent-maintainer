@@ -8,8 +8,11 @@ import pytest
 
 from agent_maintainer.wait import broker, daemon_launchd
 from agent_maintainer.wait.registry import RegisterGitHubPrWait, WaitRegistry
+from agent_maintainer.wait.sweeper import DetachedWatcher
+from agent_waits.watcher_state import watcher_state
 
 PR_NUMBER = "291"
+WATCHER_PID = 123
 
 
 def test_start_registered_watcher_reports_launchd_fallback(
@@ -32,13 +35,20 @@ def test_start_registered_watcher_reports_launchd_fallback(
             error="launchd failed",
         ),
     )
-    monkeypatch.setattr(broker, "start_wait_watcher", lambda root, wait_id: None)
+    monkeypatch.setattr(
+        broker,
+        "start_wait_watcher",
+        lambda root, wait_id: DetachedWatcher(command=("python",), pid=WATCHER_PID),
+    )
 
     registration = broker.start_registered_watcher(tmp_path, record)
 
     assert registration.watcher_started
     assert registration.watcher_strategy == "popen"
     assert registration.watcher_error == "launchd fallback: launchd failed"
+    persisted = watcher_state(registry.read(record.wait_id))
+    assert persisted.strategy == "popen"
+    assert persisted.pid == WATCHER_PID
 
 
 def test_codex_rewake_requires_launchd(

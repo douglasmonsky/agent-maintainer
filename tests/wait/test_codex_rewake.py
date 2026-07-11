@@ -22,6 +22,7 @@ from agent_maintainer.wait.github_pr import (
     GitHubPrWaitResult,
 )
 from agent_maintainer.wait.registry import (
+    WAIT_STATUS_NOTIFY_FAILED,
     WAIT_STATUS_READY,
     RegisterGitHubPrWait,
     WaitRecord,
@@ -104,7 +105,9 @@ def test_backend_app_server_acceptance_stays_manual(tmp_path: Path) -> None:
 
     assert result.status == REWAKE_STATUS_MANUAL
     assert "visible thread wake is not confirmed" in result.detail
-    assert registry.read(record.wait_id).status == WAIT_STATUS_READY
+    persisted = registry.read(record.wait_id)
+    assert persisted.status == WAIT_STATUS_NOTIFY_FAILED
+    assert persisted.ready is True
     assert app_server.calls == [(THREAD_ID, continuation_prompt(record))]
     assert_private_data_not_persisted(tmp_path, record)
 
@@ -136,7 +139,7 @@ def test_backend_app_server_uses_acceptance_handoff(
     ).resume_if_available(record)
 
     assert result.status == REWAKE_STATUS_MANUAL
-    assert registry.read(record.wait_id).status == WAIT_STATUS_READY
+    assert registry.read(record.wait_id).status == WAIT_STATUS_NOTIFY_FAILED
     assert len(clients) == 1
     assert clients[0].return_after_turn_acceptance is True
     assert clients[0].calls == [(THREAD_ID, continuation_prompt(record))]
@@ -158,7 +161,7 @@ def test_backend_does_not_fallback_to_sdk(tmp_path: Path) -> None:
 
     assert result.status == REWAKE_STATUS_MANUAL
     assert "Codex app-server rewake failed" in result.detail
-    assert registry.read(record.wait_id).status == WAIT_STATUS_READY
+    assert registry.read(record.wait_id).status == WAIT_STATUS_NOTIFY_FAILED
     assert_private_data_not_persisted(tmp_path, record)
 
 

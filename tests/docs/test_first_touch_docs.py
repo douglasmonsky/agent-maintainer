@@ -167,12 +167,17 @@ def test_codex_wait_docs_disclose_smoke_and_model_turn_boundaries() -> None:
             "python -m agent_maintainer wait codex-smoke",
             "AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN=1",
             "Never run the real-turn smoke from doctor, hooks, watchers, or CI.",
+            "ready_for_manual_resume` -> `notifying` -> `resumed` or `notify_failed",
+            "python -m agent_maintainer wait repair --dry-run --stale-after 60",
+            "Repair rechecks state under the same per-wait lock, never calls Codex",
         ),
         "docs/agent-client-hooks.md": (
             "Heartbeat fallback still wakes a model each interval",
             "read-only, token-free probe",
             "The `--start-turn` smoke spends one model turn",
             "hooks and CI must never set that gate.",
+            "Unconfirmed or failed wake attempts enter manually resumable `notify_failed` state",
+            "wait repair --dry-run",
         ),
     }
     _assert_phrases_present(phrases)

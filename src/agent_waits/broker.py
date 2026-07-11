@@ -40,6 +40,7 @@ class BackgroundWaitRegistration:
     watcher_error: str = ""
     root: str = ""
     watcher_strategy: str = "popen"
+    watcher_pid: int | None = None
     watcher_label: str = ""
     watcher_log: str = ""
 

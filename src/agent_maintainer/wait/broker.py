@@ -20,6 +20,7 @@ from agent_maintainer.wait.registry import (
 )
 from agent_maintainer.wait.sweeper import start_wait_watcher
 from agent_waits import broker as wait_broker
+from agent_waits import watcher_state as wait_watcher_state
 
 CODEX_BACKGROUND_PR_WAIT_ENV: Final = "AGENT_MAINTAINER_BACKGROUND_PR_WAIT"
 CODEX_BACKGROUND_WAIT_ENV: Final = "AGENT_MAINTAINER_BACKGROUND_WAIT"
@@ -115,8 +116,14 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
 
     daemon_launch = ensure_wait_daemon(root, record.wait_id)
     if daemon_launch.started:
+        updated = wait_watcher_state.mark_watcher_started(
+            WaitRegistry(root),
+            record,
+            strategy="launchd",
+            pid=None,
+        )
         return BackgroundWaitRegistration(
-            record=record,
+            record=updated,
             watcher_started=True,
             root=str(root),
             watcher_strategy="launchd",
@@ -124,8 +131,13 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
             watcher_log=str(daemon_launch.log_path),
         )
     if _strict_codex_rewake(record):
+        updated = wait_watcher_state.mark_watcher_failed(
+            WaitRegistry(root),
+            record,
+            error_code="launchd_required",
+        )
         return BackgroundWaitRegistration(
-            record=record,
+            record=updated,
             watcher_started=False,
             watcher_error=f"launchd required for Codex rewake: {daemon_launch.error}",
             root=str(root),
@@ -133,13 +145,18 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
         )
 
     try:
-        start_wait_watcher(root, record.wait_id)
+        watcher = start_wait_watcher(root, record.wait_id)
     except OSError as exc:
         watcher_error = str(exc)
         if daemon_launch.error and daemon_launch.error != "unsupported":
             watcher_error = f"launchd: {daemon_launch.error}; popen: {watcher_error}"
+        updated = wait_watcher_state.mark_watcher_failed(
+            WaitRegistry(root),
+            record,
+            error_code="watcher_start_failed",
+        )
         return BackgroundWaitRegistration(
-            record=record,
+            record=updated,
             watcher_started=False,
             watcher_error=watcher_error,
             root=str(root),
@@ -148,12 +165,19 @@ def start_registered_watcher(root: Path, record: WaitRecord) -> BackgroundWaitRe
     watcher_error = ""
     if daemon_launch.error and daemon_launch.error != "unsupported":
         watcher_error = f"launchd fallback: {daemon_launch.error}"
+    updated = wait_watcher_state.mark_watcher_started(
+        WaitRegistry(root),
+        record,
+        strategy="popen",
+        pid=watcher.pid,
+    )
     return BackgroundWaitRegistration(
-        record=record,
+        record=updated,
         watcher_started=True,
         watcher_error=watcher_error,
         root=str(root),
         watcher_strategy="popen",
+        watcher_pid=watcher.pid,
     )
 
 

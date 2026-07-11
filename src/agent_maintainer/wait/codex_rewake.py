@@ -19,7 +19,15 @@ from agent_waits.capabilities import (
     CODEX_THREAD_ID_ENV,
     CODEX_THREAD_ID_OVERRIDE_ENV,
 )
+from agent_waits.constants import WAIT_STATUS_READY
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
+from agent_waits.notifications import (
+    FAILURE_APP_SERVER,
+    FAILURE_VISIBLE_WAKE_UNCONFIRMED,
+    NOTIFICATION_OUTCOME_FAILED,
+    claim_terminal_notification,
+    finish_terminal_notification,
+)
 
 CODEX_APP_SERVER_TIMEOUT_ENV: Final = "AGENT_MAINTAINER_CODEX_APP_SERVER_TIMEOUT_SECONDS"
 REWAKE_STATUS_DISABLED: Final = "disabled"
@@ -72,16 +80,34 @@ class CodexRewakeBackend:
         resume_target = self._resume_context(record)
         if isinstance(resume_target, CodexRewakeResult):
             return resume_target
-        prompt = continuation_prompt(record)
+        try:
+            claimed = claim_terminal_notification(self._registry, record.wait_id)
+        except TimeoutError:
+            return _manual_result(record, "Codex notification claim is busy")
+        if claimed is None:
+            return CodexRewakeResult(REWAKE_STATUS_SKIPPED, "wait notification already claimed")
+        prompt = continuation_prompt(claimed)
         try:
             self._resume_with_app_server(resume_target, prompt)
-        except (OSError, RuntimeError, TimeoutError) as app_server_exc:
-            return _manual_result(
-                record,
-                f"Codex app-server rewake failed: {app_server_exc}",
+        except (OSError, RuntimeError, TimeoutError):
+            finish_terminal_notification(
+                self._registry,
+                record.wait_id,
+                outcome=NOTIFICATION_OUTCOME_FAILED,
+                failure_reason=FAILURE_APP_SERVER,
             )
+            return _manual_result(
+                claimed,
+                "Codex app-server rewake failed; details withheld",
+            )
+        finish_terminal_notification(
+            self._registry,
+            record.wait_id,
+            outcome=NOTIFICATION_OUTCOME_FAILED,
+            failure_reason=FAILURE_VISIBLE_WAKE_UNCONFIRMED,
+        )
         return _manual_result(
-            record,
+            claimed,
             "Codex app-server accepted continuation, but visible thread wake "
             "is not confirmed; manual resume required",
         )
@@ -187,7 +213,7 @@ def render_codex_rewake_text(
 
 
 def _codex_record_ready(record: WaitRecord) -> bool:
-    return record.platform == CODEX_PLATFORM and record.ready
+    return record.platform == CODEX_PLATFORM and record.status == WAIT_STATUS_READY
 
 
 def _manual_result(record: WaitRecord, detail: str) -> CodexRewakeResult:

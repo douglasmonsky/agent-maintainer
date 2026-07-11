@@ -14,6 +14,7 @@ from agent_maintainer.wait import handlers as wait_handlers
 from agent_maintainer.wait import registry as wait_registry
 from agent_maintainer.wait.github import QueryRun
 from agent_maintainer.wait.github_pr import QueryPrChecks
+from agent_waits import watcher_state as wait_watcher_state
 
 Sleep = Callable[[int], None]
 
@@ -40,6 +41,7 @@ class DetachedWatcher:
     """Detached watcher metadata."""
 
     command: tuple[str, ...]
+    pid: int
 
 
 def sweep_once(
@@ -155,6 +157,9 @@ def watch_wait(
         record = registry.read(wait_id)
         if record.ready:
             return record
+        record = wait_watcher_state.mark_watcher_poll(registry, wait_id, now=now)
+        if record.ready:
+            return record
         updated = sweep_record(registry, record, queries=queries, now=now)
         if updated.ready:
             return updated
@@ -180,7 +185,7 @@ def start_wait_watcher(
         "--root",
         str(root),
     )
-    subprocess.Popen(  # nosec B603 # pylint: disable=consider-using-with
+    process = subprocess.Popen(  # nosec B603 # pylint: disable=consider-using-with
         list(command),
         cwd=root,
         stdin=subprocess.DEVNULL,
@@ -189,7 +194,7 @@ def start_wait_watcher(
         close_fds=True,
         start_new_session=True,
     )
-    return DetachedWatcher(command=command)
+    return DetachedWatcher(command=command, pid=process.pid)
 
 
 def _pending_records(registry: wait_registry.WaitRegistry) -> tuple[wait_registry.WaitRecord, ...]:

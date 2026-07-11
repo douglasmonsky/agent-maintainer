@@ -169,6 +169,7 @@ def test_start_wait_watcher_uses_quiet_command(
 
     assert watcher.command[:4] == ("python", "-m", "agent_maintainer", "wait")
     assert "--watch" in watcher.command
+    assert watcher.pid == FAKE_PROCESS_ID
     assert popen_spy.calls[0]["cwd"] == tmp_path
     assert popen_spy.calls[0]["stdin"] == subprocess.DEVNULL
     assert popen_spy.calls[0]["stdout"] == subprocess.DEVNULL
@@ -293,4 +294,4 @@ class PopenSpy:
 
     def __call__(self, command: list[str], **kwargs: object) -> object:
         self.calls.append({"command": command, **kwargs})
-        return object()
+        return type("Process", (), {"pid": FAKE_PROCESS_ID})()

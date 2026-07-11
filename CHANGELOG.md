@@ -89,6 +89,10 @@ the candidate passes the complete exact-commit release matrix.
   cancellation, and transport failures.
 - Wait handoffs now identify heartbeat polling as a model-turn fallback and
   state that every scheduled poll consumes a model turn.
+- Terminal Codex notification is claimed once before external work. Failed,
+  abandoned, or visibly unconfirmed attempts become manually resumable
+  `notify_failed` records, while explicit repair can restart stale inactive
+  watchers from privacy-safe pid and poll metadata.
 - Strict Pyright debt ratchets by file/rule pair under a versioned,
   tool-and-scope-bound baseline rather than an aggregate error allowance.
 - Public documentation now distinguishes published release evidence from

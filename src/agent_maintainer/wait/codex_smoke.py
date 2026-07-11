@@ -70,13 +70,9 @@ def run_codex_smoke(
 
     current = os.environ if env is None else env
     mode = SMOKE_MODE_TURN if start_turn else SMOKE_MODE_READ_ONLY
-    if start_turn and current.get(CODEX_SMOKE_TURN_ENV) != "1":
-        return CodexSmokeResult(
-            SMOKE_STATUS_ERROR,
-            mode,
-            f"Set {CODEX_SMOKE_TURN_ENV}=1 to authorize one model turn.",
-            exit_code=2,
-        )
+    gate_error = _turn_gate_error(start_turn=start_turn, env=current, mode=mode)
+    if gate_error is not None:
+        return gate_error
     thread_id = current.get(CODEX_THREAD_ID_OVERRIDE_ENV) or current.get(
         CODEX_THREAD_ID_ENV,
         "",
@@ -90,6 +86,37 @@ def run_codex_smoke(
         codex_bin=codex_bin,
         timeout_seconds=timeout_seconds,
     )
+    return _exercise_smoke_client(
+        client,
+        thread_id=thread_id,
+        start_turn=start_turn,
+        mode=mode,
+    )
+
+
+def _turn_gate_error(
+    *,
+    start_turn: bool,
+    env: Mapping[str, str],
+    mode: str,
+) -> CodexSmokeResult | None:
+    if not start_turn or env.get(CODEX_SMOKE_TURN_ENV) == "1":
+        return None
+    return CodexSmokeResult(
+        SMOKE_STATUS_ERROR,
+        mode,
+        f"Set {CODEX_SMOKE_TURN_ENV}=1 to authorize one model turn.",
+        exit_code=2,
+    )
+
+
+def _exercise_smoke_client(
+    client: SmokeClient,
+    *,
+    thread_id: str,
+    start_turn: bool,
+    mode: str,
+) -> CodexSmokeResult:
     try:
         if start_turn:
             client.resume_thread(thread_id, CODEX_SMOKE_PROMPT)

@@ -150,6 +150,11 @@ terminal-rewake capability rows without launching app-server. Use
 The `--start-turn` smoke spends one model turn and is refused unless
 `AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN=1`; hooks and CI must never set that
 gate.
+Automatic notification is claimed once before any Codex call. Unconfirmed or
+failed wake attempts enter manually resumable `notify_failed` state and are not
+retried automatically. `python -m agent_maintainer wait repair --dry-run`
+reports stale pending watchers; an explicit repair rechecks liveness and starts
+the strongest supported watcher without calling Codex.
 Repo-local wrappers use the checked-out source tree:
 
 ```bash

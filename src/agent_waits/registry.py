@@ -9,6 +9,7 @@ from pathlib import Path
 
 from agent_waits import constants as wait_constants
 from agent_waits import heartbeat as wait_heartbeat
+from agent_waits.record_lock import wait_record_lock
 
 
 @dataclass(frozen=True)
@@ -62,6 +63,15 @@ class WaitRecord:
     @property
     def ready(self) -> bool:
         """Return whether the wait has terminal continuation content."""
+
+        return self.status in {
+            wait_constants.WAIT_STATUS_READY,
+            wait_constants.WAIT_STATUS_NOTIFY_FAILED,
+        }
+
+    @property
+    def notification_ready(self) -> bool:
+        """Return whether automatic notification may be claimed once."""
 
         return self.status == wait_constants.WAIT_STATUS_READY
 
@@ -126,7 +136,12 @@ class WaitRegistry:
                     head_sha=inputs.head_sha,
                 )
                 and record.status
-                in {wait_constants.WAIT_STATUS_PENDING, wait_constants.WAIT_STATUS_READY}
+                in {
+                    wait_constants.WAIT_STATUS_PENDING,
+                    wait_constants.WAIT_STATUS_READY,
+                    wait_constants.WAIT_STATUS_NOTIFYING,
+                    wait_constants.WAIT_STATUS_NOTIFY_FAILED,
+                }
             ),
             key=lambda record: record.created_at,
             default=None,
@@ -167,13 +182,17 @@ class WaitRegistry:
     ) -> WaitRecord:
         """Persist the last observed non-terminal wait state."""
 
-        observed = replace(
-            record,
-            updated_at=_timestamp(now),
-            last_observed_state=state_data,
-        )
-        _write_record(self.waits_dir, observed)
-        return observed
+        with wait_record_lock(self.waits_dir, record.wait_id):
+            current = self.read(record.wait_id)
+            if current.status != wait_constants.WAIT_STATUS_PENDING:
+                return current
+            observed = replace(
+                current,
+                updated_at=_timestamp(now),
+                last_observed_state=state_data,
+            )
+            _write_record(self.waits_dir, observed)
+            return observed
 
     def complete(
         self,
@@ -186,16 +205,20 @@ class WaitRegistry:
     ) -> WaitRecord:
         """Persist terminal wait state."""
 
-        completed = replace(
-            record,
-            status=wait_constants.WAIT_STATUS_READY,
-            updated_at=_timestamp(now),
-            terminal_result=terminal_result,
-            last_observed_state=state_data,
-            resume_message=resume_message,
-        )
-        _write_record(self.waits_dir, completed)
-        return completed
+        with wait_record_lock(self.waits_dir, record.wait_id):
+            current = self.read(record.wait_id)
+            if current.status != wait_constants.WAIT_STATUS_PENDING:
+                return current
+            completed = replace(
+                current,
+                status=wait_constants.WAIT_STATUS_READY,
+                updated_at=_timestamp(now),
+                terminal_result=terminal_result,
+                last_observed_state=state_data,
+                resume_message=resume_message,
+            )
+            _write_record(self.waits_dir, completed)
+            return completed
 
     def mark_resumed(
         self,
@@ -205,11 +228,15 @@ class WaitRegistry:
     ) -> WaitRecord:
         """Mark wait record consumed by a continuation."""
 
-        resumed = replace(
-            record, status=wait_constants.WAIT_STATUS_RESUMED, updated_at=_timestamp(now)
-        )
-        _write_record(self.waits_dir, resumed)
-        return resumed
+        with wait_record_lock(self.waits_dir, record.wait_id):
+            current = self.read(record.wait_id)
+            resumed = replace(
+                current,
+                status=wait_constants.WAIT_STATUS_RESUMED,
+                updated_at=_timestamp(now),
+            )
+            _write_record(self.waits_dir, resumed)
+            return resumed
 
     def read(self, wait_id: str) -> WaitRecord:
         """Read one wait record by id."""
@@ -232,13 +259,15 @@ class WaitRegistry:
         claimed: list[WaitRecord] = []
         timestamp = _timestamp(now)
         for record in wait_records(self):
-            if not _repo_heartbeat_ready(record):
-                continue
-            metadata = dict(record.metadata or {})
-            metadata[wait_heartbeat.HEARTBEAT_NOTIFIED_AT_METADATA] = timestamp
-            notified = replace(record, updated_at=timestamp, metadata=metadata)
-            _write_record(self.waits_dir, notified)
-            claimed.append(notified)
+            with wait_record_lock(self.waits_dir, record.wait_id):
+                current = self.read(record.wait_id)
+                if not _repo_heartbeat_ready(current):
+                    continue
+                metadata = dict(current.metadata or {})
+                metadata[wait_heartbeat.HEARTBEAT_NOTIFIED_AT_METADATA] = timestamp
+                notified = replace(current, updated_at=timestamp, metadata=metadata)
+                _write_record(self.waits_dir, notified)
+                claimed.append(notified)
         return tuple(claimed)
 
 
@@ -254,18 +283,20 @@ def expire_ready_records(
     timestamp = _timestamp(now)
     current = _parse_timestamp(timestamp)
     for record in wait_records(registry):
-        if not _stale_ready(record, current, older_than_seconds):
-            continue
-        metadata = dict(record.metadata or {})
-        metadata["expired_reason"] = "ready_ttl"
-        updated = replace(
-            record,
-            status=wait_constants.WAIT_STATUS_EXPIRED_READY,
-            updated_at=timestamp,
-            metadata=metadata,
-        )
-        _write_record(registry.waits_dir, updated)
-        expired.append(updated)
+        with wait_record_lock(registry.waits_dir, record.wait_id):
+            latest = registry.read(record.wait_id)
+            if not _stale_ready(latest, current, older_than_seconds):
+                continue
+            metadata = dict(latest.metadata or {})
+            metadata["expired_reason"] = "ready_ttl"
+            updated = replace(
+                latest,
+                status=wait_constants.WAIT_STATUS_EXPIRED_READY,
+                updated_at=timestamp,
+                metadata=metadata,
+            )
+            _write_record(registry.waits_dir, updated)
+            expired.append(updated)
     return tuple(expired)
 
 

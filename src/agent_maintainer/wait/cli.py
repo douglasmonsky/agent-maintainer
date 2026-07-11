@@ -18,6 +18,7 @@ from agent_maintainer.wait import (
     codex_smoke,
     daemon,
     daemon_launchd,
+    wait_repair,
 )
 from agent_maintainer.wait.codex_rewake import (
     CodexRewakeBackend,
@@ -75,6 +76,7 @@ def main(argv: list[str] | None = None) -> int:
         "sweep": _sweep,
         "heartbeat": _heartbeat,
         "cleanup": _cleanup,
+        "repair": _repair,
         "codex-smoke": _codex_smoke,
         "daemon": _daemon,
     }
@@ -206,6 +208,22 @@ def _cleanup(args: argparse.Namespace) -> int:
     emit_cleaned(events, expired_ready=summary.expired_ready)
     print(_render_cleanup(args.format, summary))
     return 0
+
+
+def _repair(args: argparse.Namespace) -> int:
+    summary = wait_repair.repair_waits(
+        args.root,
+        request=wait_repair.RepairRequest(
+            wait_id=args.wait_id,
+            stale_after_seconds=args.stale_after,
+            dry_run=args.dry_run,
+        ),
+    )
+    if args.format == cli_parsers.JSON_FORMAT:
+        print(wait_repair.render_repair_json(summary))
+    else:
+        print(wait_repair.render_repair_text(summary))
+    return summary.exit_code
 
 
 def _codex_smoke(args: argparse.Namespace) -> int:

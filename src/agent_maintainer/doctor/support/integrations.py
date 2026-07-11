@@ -97,44 +97,46 @@ def check_codex_rewake_capabilities(
         sdk_available=sdk_available,
     )
     optional_status = WARNING if capabilities.feature_enabled else OK
-    thread = DoctorResult(
-        "codex-thread-context",
-        OK if capabilities.thread_context_present else optional_status,
-        (
-            "Codex thread context is present; value withheld."
-            if capabilities.thread_context_present
-            else "Codex thread context is absent."
+    return (
+        _presence_result(
+            name="codex-thread-context",
+            present=capabilities.thread_context_present,
+            present_detail="Codex thread context is present; value withheld.",
+            absent_detail="Codex thread context is absent.",
+            absent_status=optional_status,
         ),
-        state=(
-            doctor_models.ACTIVE if capabilities.thread_context_present else doctor_models.MISSING
+        _presence_result(
+            name="codex-app-server",
+            present=capabilities.app_server_candidate_available,
+            present_detail="Codex CLI candidate is available for app-server probing.",
+            absent_detail="Codex CLI candidate is unavailable.",
+            absent_status=optional_status,
         ),
+        _presence_result(
+            name="codex-python-sdk",
+            present=capabilities.python_sdk_available,
+            present_detail="Python Codex SDK is installed for diagnostics only.",
+            absent_detail="Python Codex SDK is absent; no SDK rewake backend is implemented.",
+            absent_status=OK,
+        ),
+        _codex_terminal_rewake_result(capabilities),
     )
-    app_server = DoctorResult(
-        "codex-app-server",
-        OK if capabilities.app_server_candidate_available else optional_status,
-        (
-            "Codex CLI candidate is available for app-server probing."
-            if capabilities.app_server_candidate_available
-            else "Codex CLI candidate is unavailable."
-        ),
-        state=(
-            doctor_models.ACTIVE
-            if capabilities.app_server_candidate_available
-            else doctor_models.MISSING
-        ),
+
+
+def _presence_result(
+    *,
+    name: str,
+    present: bool,
+    present_detail: str,
+    absent_detail: str,
+    absent_status: str,
+) -> DoctorResult:
+    return DoctorResult(
+        name,
+        OK if present else absent_status,
+        present_detail if present else absent_detail,
+        state=doctor_models.ACTIVE if present else doctor_models.MISSING,
     )
-    sdk = DoctorResult(
-        "codex-python-sdk",
-        OK,
-        (
-            "Python Codex SDK is installed for diagnostics only."
-            if capabilities.python_sdk_available
-            else "Python Codex SDK is absent; no SDK rewake backend is implemented."
-        ),
-        state=doctor_models.ACTIVE if capabilities.python_sdk_available else doctor_models.MISSING,
-    )
-    terminal = _codex_terminal_rewake_result(capabilities)
-    return (thread, app_server, sdk, terminal)
 
 
 def _codex_terminal_rewake_result(

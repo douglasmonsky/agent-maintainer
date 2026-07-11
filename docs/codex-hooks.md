@@ -136,6 +136,26 @@ AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN=1 \
 
 Never run the real-turn smoke from doctor, hooks, watchers, or CI.
 
+Terminal notification uses a fail-closed durable state machine:
+`ready_for_manual_resume` -> `notifying` -> `resumed` or `notify_failed`.
+The transition to `notifying` is claimed under a per-wait lock before any Codex
+call. App-server errors, abandoned claims, and accepted turns whose visible
+desktop wake is unconfirmed become `notify_failed`; they remain manually
+resumable but are never retried automatically.
+
+Watcher records persist only strategy, process id where applicable, start time,
+and last poll time. Inspect stale pending waits without changing them, then
+repair only dead or inactive watchers:
+
+```bash
+python -m agent_maintainer wait repair --dry-run --stale-after 60
+python -m agent_maintainer wait repair --wait-id <wait-id> --stale-after 60
+```
+
+Repair rechecks state under the same per-wait lock, never calls Codex, never
+changes terminal results, and stores fixed failure codes instead of commands,
+environment values, thread ids, prompts, or backend diagnostics.
+
 Terminal-only local polling is the preferred path; automatic visible Codex
 thread rewake is not treated as proven today.
 `AGENT_MAINTAINER_CODEX_REWAKE=1` may attempt app-server handoff, but app-server

@@ -26,6 +26,11 @@ from agent_maintainer.wait.registry import (
     wait_records,
 )
 from agent_maintainer.wait.sweeper import sweep_once
+from agent_waits.notifications import (
+    DEFAULT_NOTIFICATION_LEASE_SECONDS,
+    repair_stale_notifications,
+)
+from agent_waits.watcher_state import mark_pending_watcher_polls
 
 Sleep = Callable[[float], None]
 Monotonic = Callable[[], float]
@@ -56,6 +61,11 @@ def run_daemon(
     current = os.environ if active_hooks.env is None else active_hooks.env
     while active_hooks.monotonic() - last_activity < idle_timeout_seconds:
         summary = sweep_once(registry)
+        mark_pending_watcher_polls(registry)
+        repair_stale_notifications(
+            registry,
+            lease_seconds=DEFAULT_NOTIFICATION_LEASE_SECONDS,
+        )
         resumed = _resume_ready_with_envelopes(registry, root, current)
         records = wait_records(registry)
         if summary.updated or resumed or _has_active_work(root, records):

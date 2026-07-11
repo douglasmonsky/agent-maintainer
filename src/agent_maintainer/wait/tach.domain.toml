@@ -14,12 +14,13 @@ depends_on = [
   "daemon",
   "daemon_launchd",
   "github",
-    "github_pr",
-    "registry",
-    "sweeper",
-    "sweeper_rendering",
-    "verifier",
-    "//agent_maintainer.runtime_events.waiting",
+  "github_pr",
+  "registry",
+  "sweeper",
+  "sweeper_rendering",
+  "verifier",
+  "wait_repair",
+  "//agent_maintainer.runtime_events.waiting",
 ]
 
 [[modules]]
@@ -70,6 +71,7 @@ depends_on = [
   "registry",
   "sweeper",
   "//agent_waits.broker",
+  "//agent_waits.watcher_state",
 ]
 
 [[modules]]
@@ -79,7 +81,9 @@ depends_on = [
   "handlers",
   "registry",
   "//agent_waits.capabilities",
+  "//agent_waits.constants",
   "//agent_waits.models",
+  "//agent_waits.notifications",
 ]
 
 [[modules]]
@@ -101,6 +105,8 @@ depends_on = [
   "daemon_state",
   "registry",
   "sweeper",
+  "//agent_waits.notifications",
+  "//agent_waits.watcher_state",
 ]
 
 [[modules]]
@@ -151,10 +157,11 @@ depends_on = [
 [[modules]]
 path = "sweeper"
 depends_on = [
-    "github",
-    "github_pr",
-    "handlers",
-    "registry",
+  "github",
+  "github_pr",
+  "handlers",
+  "registry",
+  "//agent_waits.watcher_state",
 ]
 
 [[modules]]
@@ -183,3 +190,13 @@ depends_on = [
 [[modules]]
 path = "verifier_manifest"
 depends_on = []
+
+[[modules]]
+path = "wait_repair"
+depends_on = [
+  "broker",
+  "daemon_launchd",
+  "registry",
+  "//agent_waits.notifications",
+  "//agent_waits.watcher_state",
+]
