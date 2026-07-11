@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,28 @@ import pytest
 from agent_maintainer.hooks import runtime
 
 ASYNC_REWAKE_EXIT_CODE = 2
+
+
+def readiness_callback(
+    *,
+    status: str,
+    run_id: str,
+    exit_code: int | None = None,
+) -> Callable[[Path, str], runtime.hook_readiness.HookReadiness]:
+    """Return a typed hook-readiness test double."""
+
+    def callback(
+        _repo_root: Path,
+        profile: str,
+    ) -> runtime.hook_readiness.HookReadiness:
+        return runtime.hook_readiness.HookReadiness(
+            status=status,
+            profile=profile,
+            run_id=run_id,
+            exit_code=exit_code,
+        )
+
+    return callback
 
 
 def installed_repo(tmp_path: Path) -> Path:
@@ -38,9 +61,8 @@ def test_runtime_reports_pending_same_state_verifier(
     monkeypatch.setattr(
         runtime.hook_readiness,
         "hook_readiness",
-        lambda _repo_root, profile: runtime.hook_readiness.HookReadiness(
+        readiness_callback(
             status="pending",
-            profile=profile,
             run_id="run-pending",
         ),
     )
@@ -78,9 +100,8 @@ def test_runtime_async_rewake_pending_readiness_exits_two(
     monkeypatch.setattr(
         runtime.hook_readiness,
         "hook_readiness",
-        lambda _repo_root, profile: runtime.hook_readiness.HookReadiness(
+        readiness_callback(
             status="pending",
-            profile=profile,
             run_id="run-pending",
         ),
     )
@@ -116,9 +137,8 @@ def test_runtime_reuses_completed_same_state_success(
     monkeypatch.setattr(
         runtime.hook_readiness,
         "hook_readiness",
-        lambda _repo_root, profile: runtime.hook_readiness.HookReadiness(
+        readiness_callback(
             status="completed",
-            profile=profile,
             run_id="run-pass",
             exit_code=0,
         ),
@@ -151,9 +171,8 @@ def test_runtime_reuses_completed_same_state_failure(
     monkeypatch.setattr(
         runtime.hook_readiness,
         "hook_readiness",
-        lambda _repo_root, profile: runtime.hook_readiness.HookReadiness(
+        readiness_callback(
             status="completed",
-            profile=profile,
             run_id="run-fail",
             exit_code=1,
         ),
@@ -188,9 +207,8 @@ def test_runtime_async_rewake_failed_readiness_exits_two(
     monkeypatch.setattr(
         runtime.hook_readiness,
         "hook_readiness",
-        lambda _repo_root, profile: runtime.hook_readiness.HookReadiness(
+        readiness_callback(
             status="completed",
-            profile=profile,
             run_id="run-fail",
             exit_code=1,
         ),

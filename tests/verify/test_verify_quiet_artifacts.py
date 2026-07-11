@@ -11,6 +11,8 @@ from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.models import Check, CheckResult
 from agent_maintainer.verify import quiet as verify_quiet
 from agent_maintainer.verify import run_steps as verify_run_steps
+from agent_maintainer.verify.artifact_adapters import RunContext
+from tests.support.callbacks import constant_callback, forbidden_callback
 
 CLI_COVERAGE_THRESHOLD = 92
 CLI_INTERROGATE_THRESHOLD = 30
@@ -20,7 +22,7 @@ STRICT_COMPLEXITY = 8
 def test_main_writes_artifacts_for_selected_profile(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    calls = []
+    calls: list[tuple[Path, RunContext, list[CheckResult]]] = []
     configured_artifact_dirs: list[str] = []
     monkeypatch.chdir(tmp_path)
     allow_foreground_verify(monkeypatch)
@@ -47,24 +49,38 @@ def test_main_writes_artifacts_for_selected_profile(
         configured_artifact_dirs.append(config.diagnostic_artifacts_dir)
         return [Check("custom", ["true"], frozenset(("fast",)))]
 
-    monkeypatch.setattr(verify_quiet, "make_checks", fake_make_checks)
-    monkeypatch.setattr(
-        verify_run_steps,
-        "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(
+    def successful_check(
+        check: Check,
+        log_dir: Path,
+        _max_lines: int,
+        _max_chars: int,
+    ) -> CheckResult:
+        return CheckResult(
             check.name,
             passed=True,
             command=tuple(check.command),
             exit_code=0,
             log_path=str(log_dir / f"{check.name}.log"),
-        ),
+        )
+
+    def record_artifacts(
+        log_dir: Path,
+        context: RunContext,
+        results: list[CheckResult],
+        **_kwargs: object,
+    ) -> None:
+        calls.append((log_dir, context, results))
+
+    monkeypatch.setattr(verify_quiet, "make_checks", fake_make_checks)
+    monkeypatch.setattr(
+        verify_run_steps,
+        "run_check",
+        successful_check,
     )
     monkeypatch.setattr(
         verify_run_steps,
         "write_run_artifacts",
-        lambda log_dir, context, results, **_kwargs: calls.append(
-            (log_dir, context, results),
-        ),
+        record_artifacts,
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0
@@ -101,21 +117,28 @@ def test_failed_run_prints_snapshot_scoped_context_commands(
     monkeypatch.setattr(
         verify_quiet,
         "make_checks",
-        lambda config, base_ref, compare_branch, staged=False: [
-            Check("custom", ["false"], frozenset(("fast",)))
-        ],
+        constant_callback([Check("custom", ["false"], frozenset(("fast",)))]),
     )
-    monkeypatch.setattr(
-        verify_run_steps,
-        "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(
+
+    def failed_check(
+        check: Check,
+        log_dir: Path,
+        _max_lines: int,
+        _max_chars: int,
+    ) -> CheckResult:
+        return CheckResult(
             check.name,
             passed=False,
             output="custom failed",
             command=tuple(check.command),
             exit_code=1,
             log_path=str(log_dir / f"{check.name}.log"),
-        ),
+        )
+
+    monkeypatch.setattr(
+        verify_run_steps,
+        "run_check",
+        failed_check,
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 1
@@ -150,19 +173,26 @@ def test_main_skips_artifacts_when_diagnostics_are_disabled(
     monkeypatch.setattr(
         verify_quiet,
         "make_checks",
-        lambda config, base_ref, compare_branch, staged=False: [
-            Check("custom", ["true"], frozenset(("fast",)))
-        ],
+        constant_callback([Check("custom", ["true"], frozenset(("fast",)))]),
     )
+
+    def successful_check(
+        check: Check,
+        _log_dir: Path,
+        _max_lines: int,
+        _max_chars: int,
+    ) -> CheckResult:
+        return CheckResult(check.name, passed=True)
+
     monkeypatch.setattr(
         verify_run_steps,
         "run_check",
-        lambda check, log_dir, max_lines, max_chars: CheckResult(check.name, passed=True),
+        successful_check,
     )
     monkeypatch.setattr(
         verify_run_steps,
         "write_run_artifacts",
-        lambda log_dir, context, results: pytest.fail("artifacts should be disabled"),
+        forbidden_callback("artifacts should be disabled"),
     )
 
     assert verify_quiet.main(["--profile", "fast"]) == 0
