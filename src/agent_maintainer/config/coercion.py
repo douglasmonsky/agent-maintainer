@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, cast
+from typing import Any, TypeGuard
 
 from agent_maintainer.config import registry, schema, validation
 
@@ -22,10 +22,8 @@ def _tuple_items(value: object, field_name: str) -> tuple[str, ...]:
         return ()
     if isinstance(value, str):
         return tuple(part.strip() for part in value.split(","))
-    if isinstance(value, (list, tuple)):
-        parts = cast(list[object] | tuple[object, ...], value)
-        if all(isinstance(part, str) for part in parts):
-            return tuple(part.strip() for part in parts if isinstance(part, str))
+    if _is_object_sequence(value) and all(isinstance(part, str) for part in value):
+        return tuple(part.strip() for part in value if isinstance(part, str))
     raise TypeError(f"{field_name} must be a string or list of strings")
 
 
@@ -328,9 +326,20 @@ def _raw_scalar_item(
 def _config_table(value: object, label: str) -> dict[str, object]:
     """Return a string-keyed configuration table or fail with field context."""
 
-    if not isinstance(value, dict):
+    if not _is_object_table(value):
         raise TypeError(f"{label} must be a table")
-    raw = cast(dict[object, object], value)
-    if not all(isinstance(key, str) for key in raw):
+    if not all(isinstance(key, str) for key in value):
         raise TypeError(f"{label} keys must be strings")
-    return {key: item for key, item in raw.items() if isinstance(key, str)}
+    return {key: item for key, item in value.items() if isinstance(key, str)}
+
+
+def _is_object_sequence(value: object) -> TypeGuard[list[object] | tuple[object, ...]]:
+    """Return whether value is a list or tuple with explicit element boundaries."""
+
+    return isinstance(value, (list, tuple))
+
+
+def _is_object_table(value: object) -> TypeGuard[dict[object, object]]:
+    """Return whether value is a dictionary with explicit object boundaries."""
+
+    return isinstance(value, dict)

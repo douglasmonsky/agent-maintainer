@@ -218,10 +218,18 @@ def test_coerce_field_value_only_allows_empty_strings_when_registered() -> None:
 def test_named_nested_tables_report_exact_type_errors() -> None:
     """Nested table errors keep stable public names for remediation."""
 
+    with pytest.raises(TypeError, match=r"^file_baselines must be a table$"):
+        coercion.coerce_file_baselines([])
+    with pytest.raises(TypeError, match=r"^file_baselines\.groups must be a table$"):
+        coercion.coerce_file_baselines({"groups": []})
     with pytest.raises(TypeError, match=r"^file_baselines\.groups name must not be empty$"):
         coercion.coerce_file_baseline_group(" ", {"include": ["docs/**"]})
     with pytest.raises(TypeError, match=r"^file_baselines\.groups\.docs must be a table$"):
         coercion.coerce_file_baseline_group("docs", [])
+    with pytest.raises(TypeError, match=r"^workspaces\.api must be a table$"):
+        coercion.coerce_workspace("api", [])
+    with pytest.raises(TypeError, match=r"^workspaces must be a table$"):
+        coercion.coerce_workspaces([])
     with pytest.raises(TypeError, match=r"^diagnostics must be a table$"):
         coercion.coerce_diagnostics([])
 
