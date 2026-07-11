@@ -6,12 +6,13 @@ import json
 import queue
 import threading
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from contextlib import ExitStack
 from dataclasses import dataclass
 from subprocess import PIPE, Popen, TimeoutExpired  # nosec B404
 from typing import Final, TextIO
 
+from agent_maintainer.core.structured_values import json_array, json_object, json_objects
 from agent_maintainer.wait import codex_app_server_protocol as protocol
 
 APP_SERVER_THREAD_READ_POLL_SECONDS: Final = 2.0
@@ -257,7 +258,7 @@ def _consume_app_server_response(
 
 
 def _update_turn_state(
-    result: Mapping[str, object] | None,
+    result: dict[str, object] | None,
     state: _AppServerWaitState,
 ) -> None:
     if result is None:
@@ -278,21 +279,19 @@ def _update_turn_state(
 
 
 def _turn_from_result(
-    result: Mapping[str, object],
+    result: dict[str, object],
     turn_id: str,
-) -> Mapping[str, object] | None:
-    turn = result.get("turn")
-    if isinstance(turn, Mapping):
+) -> dict[str, object] | None:
+    turn = json_object(result.get("turn"))
+    if turn is not None:
         return turn
-    thread = result.get("thread")
-    if not isinstance(thread, Mapping):
+    thread = json_object(result.get("thread"))
+    if thread is None:
         return None
-    turns = thread.get("turns")
-    if not isinstance(turns, list):
+    turns = json_array(thread.get("turns"))
+    if turns is None:
         return None
-    for item in reversed(turns):
-        if not isinstance(item, Mapping):
-            continue
+    for item in reversed(json_objects(turns)):
         if not turn_id or item.get("id") == turn_id:
             return item
     return None

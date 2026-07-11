@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Final, cast
+from typing import Final
+
+from agent_maintainer.core.structured_values import json_object
 
 APP_SERVER_COMPLETED_METHODS: Final = frozenset(
     ("turn/completed", "turn.completed"),
@@ -24,7 +25,7 @@ class JsonRpcResponse:
     """Observed app-server JSON-RPC response."""
 
     request_id: int
-    result: Mapping[str, object] | None = None
+    result: dict[str, object] | None = None
     error: str = ""
 
 
@@ -65,13 +66,11 @@ def parse_app_server_line(line: str) -> JsonRpcResponse | None:
     request_id = payload.get("id")
     if not isinstance(request_id, int):
         return None
-    error = payload.get("error")
-    if isinstance(error, Mapping):
-        message = str(cast(Mapping[str, object], error).get("message") or "Codex app-server error")
+    error = json_object(payload.get("error"))
+    if error is not None:
+        message = str(error.get("message") or "Codex app-server error")
         return JsonRpcResponse(request_id, error=message)
-    result = payload.get("result")
-    mapped_result = cast(Mapping[str, object], result) if isinstance(result, Mapping) else None
-    return JsonRpcResponse(request_id, result=mapped_result)
+    return JsonRpcResponse(request_id, result=json_object(payload.get("result")))
 
 
 def app_server_turn_completed(line: str) -> bool:
@@ -104,4 +103,4 @@ def _json_object(line: str) -> dict[str, object]:
         payload: object = json.loads(line)
     except json.JSONDecodeError:
         return {}
-    return cast(dict[str, object], payload) if isinstance(payload, dict) else {}
+    return json_object(payload) or {}
