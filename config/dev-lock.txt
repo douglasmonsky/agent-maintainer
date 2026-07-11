@@ -529,7 +529,7 @@ virtualenv==21.6.1
     # via pre-commit
 vulture==2.16
     # via -r config/dev-dependencies.txt
-wcmatch==8.5.2
+wcmatch==10.2.1
     # via semgrep
 wcwidth==0.8.2
     # via
