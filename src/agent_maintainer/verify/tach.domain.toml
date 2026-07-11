@@ -41,7 +41,7 @@ depends_on = [
 
 [[modules]]
 path = "async_state"
-depends_on = []
+depends_on = ["//agent_maintainer.core.structured_values"]
 
 [[modules]]
 path = "async_child"

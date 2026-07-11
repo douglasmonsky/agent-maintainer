@@ -8,4 +8,4 @@ depends_on = ["dataset"]
 
 [[modules]]
 path = "dataset"
-depends_on = []
+depends_on = ["//agent_maintainer.core.structured_values"]

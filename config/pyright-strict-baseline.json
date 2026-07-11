@@ -1,41 +1,13 @@
 {
   "by_rule": {
-    "reportPrivateUsage": 37,
-    "reportUnknownArgumentType": 120,
+    "reportPrivateUsage": 25,
+    "reportUnknownArgumentType": 114,
     "reportUnknownLambdaType": 135,
     "reportUnknownMemberType": 4,
-    "reportUnknownVariableType": 23
+    "reportUnknownVariableType": 14
   },
-  "note": "Reviewed 2026-07-11 after strict production batch 17 validated maintenance structured-data boundaries and typed collection factories; 23 production diagnostics were removed without suppressions, unchecked casts, or permissive types.",
+  "note": "Reviewed 2026-07-11 after the final strict production pass replaced private argparse action coupling and validated diagnostic, runtime-event, scoring, and async-state boundaries; all 27 remaining source diagnostics were removed without suppressions, unchecked casts, or permissive types, leaving test-only debt.",
   "pairs": {
-    "src/agent_maintainer/context/cli.py": {
-      "reportPrivateUsage": 7
-    },
-    "src/agent_maintainer/doctor/support/hook_audit.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/doctor/support/logs.py": {
-      "reportUnknownVariableType": 3
-    },
-    "src/agent_maintainer/ratchet/cli.py": {
-      "reportPrivateUsage": 5
-    },
-    "src/agent_maintainer/runtime_events/read.py": {
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/runtime_events/waste.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/scoring/dataset.py": {
-      "reportUnknownArgumentType": 1,
-      "reportUnknownVariableType": 1
-    },
-    "src/agent_maintainer/verify/async_state.py": {
-      "reportUnknownArgumentType": 2,
-      "reportUnknownVariableType": 2
-    },
     "tests/archguard/test_git_diff.py": {
       "reportUnknownArgumentType": 2,
       "reportUnknownLambdaType": 2
@@ -266,5 +238,5 @@
     "type_checking_mode": "strict",
     "version": "1.1.411"
   },
-  "total_errors": 319
+  "total_errors": 292
 }

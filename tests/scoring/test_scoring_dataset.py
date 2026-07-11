@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.scoring import cli
-from agent_maintainer.scoring.dataset import list_examples
+from agent_maintainer.scoring.dataset import list_examples, read_examples
 
 
 def test_scoring_examples_are_provider_neutral() -> None:
@@ -110,3 +110,13 @@ def test_scoring_examples_export_jsonl_includes_local_examples(
     rows = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
     assert rows[0]["example_id"] == "route-low-risk-doc-test"
     assert rows[-1]["example_id"] == "route-local-saved"
+
+
+def test_scoring_examples_reject_non_object_jsonl_row(tmp_path: Path) -> None:
+    """Every persisted scoring row must expose named object fields."""
+
+    examples_file = tmp_path / "examples.jsonl"
+    examples_file.write_text('["not", "an", "object"]\n', encoding="utf-8")
+
+    with pytest.raises(ValueError, match="scoring example must be a JSON object"):
+        read_examples(examples_file)

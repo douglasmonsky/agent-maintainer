@@ -10,13 +10,33 @@ allowed_paths = [
   "docs/architecture/decisions/**",
   "src/agent_maintainer/change_plan/**",
   "src/agent_maintainer/checks/**",
+  "src/agent_maintainer/context/cli.py",
+  "src/agent_maintainer/context/pack/cli.py",
   "src/agent_maintainer/core/scaffold/**",
   "src/agent_maintainer/core/tach.domain.toml",
+  "src/agent_maintainer/doctor/support/hook_audit.py",
+  "src/agent_maintainer/doctor/support/logs.py",
+  "src/agent_maintainer/doctor/tach.domain.toml",
   "src/agent_maintainer/hooks/mutations.py",
+  "src/agent_maintainer/ratchet/cli.py",
+  "src/agent_maintainer/ratchet/models.py",
+  "src/agent_maintainer/runtime_events/read.py",
+  "src/agent_maintainer/runtime_events/tach.domain.toml",
+  "src/agent_maintainer/runtime_events/waste.py",
+  "src/agent_maintainer/scoring/dataset.py",
+  "src/agent_maintainer/scoring/tach.domain.toml",
+  "src/agent_maintainer/verify/async_state.py",
+  "src/agent_maintainer/verify/tach.domain.toml",
   "tests/change_plan/**",
   "tests/checks/**",
+  "tests/context/**",
   "tests/core/**",
+  "tests/doctor/**",
   "tests/hooks/test_hook_mutations.py",
+  "tests/ratchet/**",
+  "tests/runtime_events/**",
+  "tests/scoring/**",
+  "tests/verify/**",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 32
@@ -25,13 +45,14 @@ allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
 ratchet_targets = [
-  "src/agent_maintainer/core/scaffold/planning.py",
-  "src/agent_maintainer/core/scaffold/transaction.py",
-  "src/agent_maintainer/checks/file_lengths.py",
-  "src/agent_maintainer/checks/cohesive_override.py",
-  "src/agent_maintainer/checks/mutmut_targets.py",
-  "src/agent_maintainer/change_plan/parser.py",
-  "src/agent_maintainer/hooks/mutations.py",
+  "src/agent_maintainer/context/cli.py",
+  "src/agent_maintainer/doctor/support/hook_audit.py",
+  "src/agent_maintainer/doctor/support/logs.py",
+  "src/agent_maintainer/ratchet/cli.py",
+  "src/agent_maintainer/runtime_events/read.py",
+  "src/agent_maintainer/runtime_events/waste.py",
+  "src/agent_maintainer/scoring/dataset.py",
+  "src/agent_maintainer/verify/async_state.py",
 ]
 +++
 # Cohesive Change Plan: pyright-strict-production-burndown
@@ -81,6 +102,6 @@ provides the exact diagnostic rollback point.
 
 ## Follow-up ratchet work
 
-Continue the remaining production diagnostics in one final planned batch, then
-run larger test-only batches. When strict diagnostics reach zero, remove the
+This final production pass removes the remaining source diagnostics. Continue
+with larger test-only batches. When strict diagnostics reach zero, remove the
 baseline and mark the roadmap completion item.

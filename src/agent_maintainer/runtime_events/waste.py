@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from agent_maintainer.core.structured_values import json_array
 from agent_maintainer.runtime_events.read import RuntimeEventReadResult
 
 HEAVY_PROFILES = frozenset(("full", "ci", "security", "manual"))
@@ -256,9 +257,10 @@ def _signal_text(signal: dict[str, object]) -> str:
 
 
 def _paths_part(value: object) -> str:
-    if not isinstance(value, list) or not value:
+    path_values = json_array(value)
+    if not path_values:
         return ""
-    paths = ", ".join(str(path) for path in value[:GENERATED_SIGNAL_LIMIT])
+    paths = ", ".join(str(path) for path in path_values[:GENERATED_SIGNAL_LIMIT])
     return f"paths={paths}"
 
 

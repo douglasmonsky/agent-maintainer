@@ -6,6 +6,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from agent_maintainer.core.structured_values import json_array, json_object
+
 JSONL_FORMAT = "jsonl"
 DEFAULT_EXAMPLES_FILE = Path(".verify-logs/scoring/examples.jsonl")
 
@@ -78,10 +80,18 @@ def read_examples(examples_file: Path) -> tuple[ScoringExample, ...]:
     if not examples_file.exists():
         return ()
     return tuple(
-        example_from_payload(json.loads(line))
+        example_from_payload(_example_payload(line))
         for line in examples_file.read_text(encoding="utf-8").splitlines()
         if line.strip()
     )
+
+
+def _example_payload(line: str) -> dict[str, object]:
+    decoded: object = json.loads(line)
+    payload = json_object(decoded)
+    if payload is None:
+        raise ValueError("scoring example must be a JSON object")
+    return payload
 
 
 def add_example(
@@ -131,6 +141,7 @@ def example_from_payload(payload: dict[str, object]) -> ScoringExample:
 
 def _string_tuple(value: object) -> tuple[str, ...]:
     """Return a tuple of strings from a JSON list field."""
-    if isinstance(value, (list, tuple)):
-        return tuple(str(item) for item in value)
+    values = json_array(value)
+    if values is not None:
+        return tuple(str(item) for item in values)
     raise ValueError("expected list-like scoring example field")
