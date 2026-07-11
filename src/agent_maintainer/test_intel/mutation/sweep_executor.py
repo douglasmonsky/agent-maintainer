@@ -27,8 +27,8 @@ def execute_mutation_sweep(
     run_id = new_run_id()
     artifact_dir = request.output_dir / run_id
     artifact_dir.mkdir(parents=True, exist_ok=False)
-    results = []
-    stopped_reason = None
+    results: list[MutationSweepCandidateResult] = []
+    stopped_reason: str | None = None
     candidates = report.candidates[: max(request.candidate_limit, 0)]
     for index, candidate in enumerate(candidates, start=1):
         if time_budget_exhausted(started_at, request.time_budget_minutes):

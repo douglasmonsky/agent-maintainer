@@ -30,13 +30,14 @@ depends_on = [
 [[modules]]
 path = "coverage"
 depends_on = [
+  "//agent_maintainer.core.structured_values",
   "coverage_lines",
   "models",
 ]
 
 [[modules]]
 path = "coverage_lines"
-depends_on = []
+depends_on = ["//agent_maintainer.core.structured_values"]
 
 [[modules]]
 path = "crosshair_candidates"

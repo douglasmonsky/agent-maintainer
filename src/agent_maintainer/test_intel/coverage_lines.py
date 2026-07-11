@@ -8,6 +8,8 @@ import subprocess  # nosec B404
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 
+from agent_maintainer.core.structured_values import json_array
+
 HUNK_HEADER_PATTERN = re.compile(r"^@@ -\d+(?:,\d+)? \+(?P<start>\d+)(?:,\d+)? @@")
 PERCENT_SCALE = 100.0
 
@@ -129,9 +131,10 @@ def line_coverage_percent(
 
 def int_line_set(payload: object) -> frozenset[int]:
     """Return integer line numbers from coverage artifact payload."""
-    if not isinstance(payload, list):
+    values = json_array(payload)
+    if values is None:
         return frozenset()
-    return frozenset(item for item in payload if isinstance(item, int))
+    return frozenset(item for item in values if isinstance(item, int))
 
 
 def changed_line_map(

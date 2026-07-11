@@ -63,7 +63,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         choices=FORMAT_CHOICES,
         default=FORMAT_TEXT,
     )
-    mutation_cli.add_parsers(subparsers)
+    mutation_cli.add_parsers(subparsers.add_parser)
     crosshair_parser = subparsers.add_parser(
         "crosshair-candidates",
         help="Suggest advisory CrossHair contract-analysis candidates.",

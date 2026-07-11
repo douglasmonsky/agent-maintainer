@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 from agent_maintainer.config import loader
@@ -23,11 +24,11 @@ ACTION_STORE_FALSE = "store_false"
 
 
 def add_parser(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    add_parser_callback: Callable[..., argparse.ArgumentParser],
 ) -> None:
     """Add advisory mutation sweep parser."""
 
-    sweep_parser = subparsers.add_parser(
+    sweep_parser = add_parser_callback(
         "mutation-sweep",
         help="Plan or execute advisory deep mutation sweep candidates.",
     )

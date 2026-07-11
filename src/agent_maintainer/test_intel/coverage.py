@@ -9,6 +9,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+from agent_maintainer.core.structured_values import json_object
 from agent_maintainer.test_intel import coverage_lines
 from agent_maintainer.test_intel.models import CoverageSummary
 
@@ -80,11 +81,12 @@ def coverage_from_json(
 ) -> CoverageSummary:
     """Return coverage summary from coverage.py JSON output."""
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload: object = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return CoverageSummary()
-    files = payload.get("files", {})
-    if not isinstance(files, dict):
+    report = json_object(payload)
+    files = None if report is None else json_object(report.get("files"))
+    if files is None:
         return CoverageSummary()
     percentages = [
         percent
@@ -99,17 +101,18 @@ def coverage_from_json(
 
 def json_file_percent(entry: object) -> float | None:
     """Return one file coverage percent from coverage.py JSON entry."""
-    if not isinstance(entry, dict):
+    payload = json_object(entry)
+    if payload is None:
         return None
-    summary = entry.get("summary", {})
-    if not isinstance(summary, dict):
+    summary = json_object(payload.get("summary"))
+    if summary is None:
         return None
     percent = summary.get("percent_covered")
     return float(percent) if isinstance(percent, int | float) else None
 
 
 def json_changed_line_percent(
-    files: dict[object, object],
+    files: dict[str, object],
     changed_lines: Mapping[str, frozenset[int]] | None,
 ) -> float | None:
     """Return changed-line coverage from coverage.py JSON output."""
@@ -128,11 +131,12 @@ def json_changed_line_percent(
 
 def json_line_sets(entry: object) -> tuple[frozenset[int], frozenset[int]]:
     """Return covered and missing executable lines from JSON entry."""
-    if not isinstance(entry, dict):
+    payload = json_object(entry)
+    if payload is None:
         return frozenset(), frozenset()
     return (
-        coverage_lines.int_line_set(entry.get("executed_lines")),
-        coverage_lines.int_line_set(entry.get("missing_lines")),
+        coverage_lines.int_line_set(payload.get("executed_lines")),
+        coverage_lines.int_line_set(payload.get("missing_lines")),
     )
 
 
