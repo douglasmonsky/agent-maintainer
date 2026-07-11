@@ -41,18 +41,20 @@ depends_on = [
 path = "cohesive_override"
 depends_on = [
   "//agent_maintainer.config.schema",
+  "//agent_maintainer.core.structured_values",
 ]
 
 [[modules]]
 path = "file_lengths"
 depends_on = [
   "//agent_maintainer.core.config",
+  "//agent_maintainer.core.structured_values",
   "//agent_maintainer.ecosystems.python.classification",
 ]
 
 [[modules]]
 path = "mutmut_targets"
-depends_on = []
+depends_on = ["//agent_maintainer.core.structured_values"]
 
 [[modules]]
 

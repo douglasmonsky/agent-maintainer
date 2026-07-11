@@ -6,13 +6,13 @@ import re
 import tomllib
 from datetime import date
 from pathlib import Path
-from typing import Any
 
 from agent_maintainer.change_plan.models import (
     FRONT_MATTER_DELIMITER,
     ChangePlan,
     PlanMetadata,
 )
+from agent_maintainer.core.structured_values import json_array, json_object
 
 HEADING_PATTERN = re.compile(r"(?m)^#{1,6}\s+(?P<title>.+?)\s*$")
 
@@ -55,17 +55,17 @@ def split_front_matter(text: str, *, path: Path) -> tuple[str, str]:
     raise PlanParseError(f"{path}: missing closing {FRONT_MATTER_DELIMITER}")
 
 
-def parse_metadata(front_matter: str, *, path: Path) -> dict[str, Any]:
+def parse_metadata(front_matter: str, *, path: Path) -> dict[str, object]:
     """Parse TOML front matter."""
 
     try:
-        data = tomllib.loads(front_matter)
+        data: object = tomllib.loads(front_matter)
     except tomllib.TOMLDecodeError as exc:
         raise PlanParseError(f"{path}: invalid TOML front matter: {exc}") from exc
-    return data
+    return json_object(data) or {}
 
 
-def metadata_from_raw(raw: dict[str, Any], *, path: Path) -> PlanMetadata:
+def metadata_from_raw(raw: dict[str, object], *, path: Path) -> PlanMetadata:
     """Return typed metadata from parsed TOML."""
 
     try:
@@ -75,24 +75,24 @@ def metadata_from_raw(raw: dict[str, Any], *, path: Path) -> PlanMetadata:
             status=required_str(raw, "status"),
             base_ref=required_str(raw, "base_ref"),
             expires=required_date(raw, "expires"),
-            allowed_paths=string_tuple(raw.get("allowed_paths", ())),
-            forbidden_paths=string_tuple(raw.get("forbidden_paths", ())),
+            allowed_paths=string_tuple(raw.get("allowed_paths", [])),
+            forbidden_paths=string_tuple(raw.get("forbidden_paths", [])),
             max_changed_files=required_int(raw, "max_changed_files"),
             max_changed_lines=required_int(raw, "max_changed_lines"),
             allow_source_without_test_change=required_bool(raw, "allow_source_without_test_change"),
             requires_tests=required_bool(raw, "requires_tests"),
             requires_full_verify=required_bool(raw, "requires_full_verify"),
-            ratchet_targets=string_tuple(raw.get("ratchet_targets", ())),
+            ratchet_targets=string_tuple(raw.get("ratchet_targets", [])),
             integration_branch=optional_str(raw, "integration_branch"),
             target_branch=optional_str(raw, "target_branch"),
             merge_strategy=optional_str(raw, "merge_strategy"),
-            expected_units=string_tuple(raw.get("expected_units", ())),
+            expected_units=string_tuple(raw.get("expected_units", [])),
         )
     except (TypeError, ValueError, KeyError) as exc:
         raise PlanParseError(f"{path}: invalid plan metadata: {exc}") from exc
 
 
-def required_str(raw: dict[str, Any], key: str) -> str:
+def required_str(raw: dict[str, object], key: str) -> str:
     """Return required non-empty string metadata."""
 
     value = raw[key]
@@ -101,7 +101,7 @@ def required_str(raw: dict[str, Any], key: str) -> str:
     return value.strip()
 
 
-def optional_str(raw: dict[str, Any], key: str) -> str:
+def optional_str(raw: dict[str, object], key: str) -> str:
     """Return optional stripped string metadata."""
 
     value = raw.get(key, "")
@@ -112,7 +112,7 @@ def optional_str(raw: dict[str, Any], key: str) -> str:
     return value.strip()
 
 
-def required_int(raw: dict[str, Any], key: str) -> int:
+def required_int(raw: dict[str, object], key: str) -> int:
     """Return required positive integer metadata."""
 
     value = raw[key]
@@ -121,7 +121,7 @@ def required_int(raw: dict[str, Any], key: str) -> int:
     return value
 
 
-def required_bool(raw: dict[str, Any], key: str) -> bool:
+def required_bool(raw: dict[str, object], key: str) -> bool:
     """Return required boolean metadata."""
 
     value = raw[key]
@@ -130,7 +130,7 @@ def required_bool(raw: dict[str, Any], key: str) -> bool:
     return value
 
 
-def required_date(raw: dict[str, Any], key: str) -> date:
+def required_date(raw: dict[str, object], key: str) -> date:
     """Return required date metadata."""
 
     value = raw[key]
@@ -142,10 +142,11 @@ def required_date(raw: dict[str, Any], key: str) -> date:
 def string_tuple(value: object) -> tuple[str, ...]:
     """Return tuple of non-empty strings from TOML array metadata."""
 
-    if not isinstance(value, list | tuple):
+    values = json_array(value)
+    if values is None:
         raise TypeError("path lists must be arrays")
-    result = tuple(item.strip() for item in value if isinstance(item, str) and item.strip())
-    if len(result) != len(value):
+    result = tuple(item.strip() for item in values if isinstance(item, str) and item.strip())
+    if len(result) != len(values):
         raise ValueError("path lists must contain only non-empty strings")
     return result
 

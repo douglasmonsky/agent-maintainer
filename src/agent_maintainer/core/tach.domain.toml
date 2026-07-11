@@ -100,6 +100,7 @@ depends_on = [
   "//agent_client_hooks.merge",
   "//agent_client_hooks.templates",
   "scaffold.templates",
+  "structured_values",
 ]
 
 [[modules]]

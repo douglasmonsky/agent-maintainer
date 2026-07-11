@@ -6,11 +6,11 @@ import json
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import cast
 
 from agent_client_hooks import merge as hook_merge
 from agent_client_hooks import templates as hook_templates
 from agent_maintainer.core.scaffold.templates import StarterFile
+from agent_maintainer.core.structured_values import json_object
 
 
 class InitAction(StrEnum):
@@ -127,17 +127,18 @@ def _merge_existing(path: str, current: str, starter: str) -> str | None:
 
 def _merge_claude_text(current: str, starter: str) -> str | None:
     try:
-        payload = json.loads(current)
+        decoded, starter_decoded = _decode_json_pair(current, starter)
     except (json.JSONDecodeError, RecursionError):
         return None
-    if not isinstance(payload, dict):
+    payload = json_object(decoded)
+    managed_payload = json_object(starter_decoded)
+    if payload is None or managed_payload is None:
         return None
-    hooks = payload.setdefault("hooks", {})
-    managed = json.loads(starter).get("hooks", {})
-    if not isinstance(hooks, dict) or not isinstance(managed, dict):
+    hooks = json_object(payload.get("hooks", {}))
+    managed = json_object(managed_payload.get("hooks", {}))
+    if hooks is None or managed is None:
         return None
-    hooks = cast(dict[object, object], hooks)
-    managed = cast(dict[object, object], managed)
+    payload["hooks"] = hooks
     for event, entries in managed.items():
         hooks[event] = hook_merge.merge_claude_event(hooks.get(event), entries)
     rendered = json.dumps(payload, indent=2, sort_keys=True)
@@ -158,14 +159,15 @@ def _merge_package_json(current: str, starter: str) -> str | None:
         payload, starter_payload = _decode_json_pair(current, starter)
     except (json.JSONDecodeError, RecursionError):
         return None
-    if not isinstance(payload, dict) or not isinstance(starter_payload, dict):
+    payload = json_object(payload)
+    starter_payload = json_object(starter_payload)
+    if payload is None or starter_payload is None:
         return None
-    current_dependencies = payload.setdefault("devDependencies", {})
-    starter_dependencies = starter_payload.get("devDependencies", {})
-    if not isinstance(current_dependencies, dict) or not isinstance(starter_dependencies, dict):
+    current_dependencies = json_object(payload.get("devDependencies", {}))
+    starter_dependencies = json_object(starter_payload.get("devDependencies", {}))
+    if current_dependencies is None or starter_dependencies is None:
         return None
-    current_dependencies = cast(dict[object, object], current_dependencies)
-    starter_dependencies = cast(dict[object, object], starter_dependencies)
+    payload["devDependencies"] = current_dependencies
     if _dependency_version_conflict(
         current_dependencies, starter_dependencies
     ) or not _merge_package_engines(payload, starter_payload):
@@ -182,22 +184,19 @@ def _decode_json_pair(current: str, starter: str) -> tuple[object, object]:
 
 
 def _merge_package_engines(
-    payload: dict[object, object],
-    starter_payload: dict[object, object],
+    payload: dict[str, object],
+    starter_payload: dict[str, object],
 ) -> bool:
-    starter_engines = starter_payload.get("engines", {})
-    current_engines = payload.setdefault("engines", {})
-    if not isinstance(starter_engines, dict) or not isinstance(current_engines, dict):
+    starter_engines = json_object(starter_payload.get("engines", {}))
+    current_engines = json_object(payload.get("engines", {}))
+    if starter_engines is None or current_engines is None:
         return False
-    starter_engines = cast(dict[object, object], starter_engines)
-    current_engines = cast(dict[object, object], current_engines)
+    payload["engines"] = current_engines
     if _dependency_version_conflict(current_engines, starter_engines):
         return False
     current_engines.update(starter_engines)
     return True
 
 
-def _dependency_version_conflict(
-    current: dict[object, object], starter: dict[object, object]
-) -> bool:
+def _dependency_version_conflict(current: dict[str, object], starter: dict[str, object]) -> bool:
     return any(key in current and current[key] != value for key, value in starter.items())

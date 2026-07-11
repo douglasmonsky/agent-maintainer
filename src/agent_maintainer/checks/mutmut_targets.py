@@ -6,7 +6,8 @@ import argparse
 import sys
 import tomllib
 from pathlib import Path
-from typing import Any
+
+from agent_maintainer.core.structured_values import json_array, json_object
 
 GLOB_MARKERS = frozenset(("*", "?", "[", "]"))
 SUPPORTED_MUTMUT_KEYS = frozenset(
@@ -93,18 +94,18 @@ def mutmut_target_issues(
     return tuple(issues)
 
 
-def read_pyproject(path: Path) -> dict[str, Any]:
+def read_pyproject(path: Path) -> dict[str, object]:
     """Read TOML project configuration."""
 
     try:
         with path.open("rb") as handle:
-            payload = tomllib.load(handle)
+            payload: object = tomllib.load(handle)
     except (OSError, tomllib.TOMLDecodeError):
         return {}
-    return payload
+    return json_object(payload) or {}
 
 
-def explicit_mutation_targets(payload: dict[str, Any]) -> tuple[str, ...]:
+def explicit_mutation_targets(payload: dict[str, object]) -> tuple[str, ...]:
     """Return unique explicit Mutmut only_mutate targets."""
 
     configured_targets = config_list_values(mutation_config(payload), "only_mutate")
@@ -117,23 +118,20 @@ def explicit_mutation_targets(payload: dict[str, Any]) -> tuple[str, ...]:
     return tuple(targets)
 
 
-def mutation_config(payload: dict[str, Any]) -> dict[str, Any]:
+def mutation_config(payload: dict[str, object]) -> dict[str, object]:
     """Return Mutmut config table from parsed pyproject payload."""
 
-    try:
-        configured = payload["tool"]["mutmut"]
-    except (KeyError, TypeError):
+    tool = json_object(payload.get("tool"))
+    if tool is None:
         return {}
-    if not isinstance(configured, dict):
-        return {}
-    return configured
+    return json_object(tool.get("mutmut")) or {}
 
 
-def config_list_values(config: dict[str, Any], key: str) -> tuple[str, ...]:
+def config_list_values(config: dict[str, object], key: str) -> tuple[str, ...]:
     """Return string values from a list-valued Mutmut config key."""
 
-    values = config.get(key, [])
-    if not isinstance(values, list):
+    values = json_array(config.get(key))
+    if values is None:
         return ()
     return tuple(value for value in values if isinstance(value, str))
 
@@ -172,7 +170,7 @@ def missing_config_path_issues(
     )
 
 
-def unsupported_key_issues(config: dict[str, Any]) -> tuple[str, ...]:
+def unsupported_key_issues(config: dict[str, object]) -> tuple[str, ...]:
     """Return issues for Mutmut keys unsupported by the pinned version."""
 
     return tuple(
