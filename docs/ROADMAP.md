@@ -132,8 +132,14 @@ Track work:
 - [x] Phase 165: React Fixture Corpus And Reviewability Baseline
 - [x] Phase 166: TypeScript Package-Manager And Workspace Evidence
 - [x] Phase 167: React/Vite/Next Structured Test And Coverage Facts
-- [ ] Phase 168: TypeScript/React Doctor And Setup Guidance
-- [ ] Phase 169: TypeScript/React Blocking-Gate Promotion Assessment
+- [x] Phase 168: TypeScript/React Doctor And Setup Guidance
+- [x] Phase 169: TypeScript Repair-Fact Output Guidance
+- [x] Phase 170: TypeScript Setup Advisor Output Guidance
+- [x] Phase 171: TypeScript Setup Advisor Script Fixtures
+- [x] Phase 172: TypeScript Setup Advisor Root Package Boundary
+- [x] Phase 173: TypeScript Workspace Command Ownership Design
+- [x] Phase 174: TypeScript Workspace Command Config
+- [x] Phase 175: Setup Advisor Workspace Command Example
 
 ## Planned: Codex Wait And Rewake Hardening
 

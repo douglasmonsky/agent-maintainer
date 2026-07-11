@@ -117,6 +117,7 @@ def render_background_registration_text(
                 _watcher_detail(registration),
                 f"manual resume: {record.resume_instruction}",
                 "fallback heartbeat request:",
+                "model-turn fallback: each heartbeat poll consumes a model turn",
                 heartbeat_request_json(record, root=registration.root),
             ),
         ),

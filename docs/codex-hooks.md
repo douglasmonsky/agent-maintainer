@@ -102,10 +102,11 @@ Codex heartbeat requests are wait-scoped. When the Codex app
 that runs `python -m agent_maintainer wait sweep --one <wait-id> --root
 <repo>`. The heartbeat request includes `on_pending: silent`, `on_terminal:
 resume_and_review`, and `merge_policy: merge_only_if_satisfactory`. The
-targeted sweep command polls only that wait once, prints nothing while the
-wait is pending, and prints its terminal resume capsule once. Use `python -m
-agent_maintainer wait cleanup --root <repo>` to expire stale ready records
-after a terminal wait is no longer useful.
+heartbeat is a model-turn fallback: each scheduled poll wakes a model and
+consumes a model turn. The targeted sweep command polls only that wait once,
+prints nothing while the wait is pending, and prints its terminal resume
+capsule once. Use `python -m agent_maintainer wait cleanup --root <repo>` to
+expire stale ready records after a terminal wait is no longer useful.
 
 Set `AGENT_MAINTAINER_CODEX_REWAKE=1` to let terminal background watchers try
 automatic Codex continuation. The preferred backend is the local Codex CLI app-server

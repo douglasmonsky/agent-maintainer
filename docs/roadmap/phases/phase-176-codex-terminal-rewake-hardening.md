@@ -1,5 +1,7 @@
 # Phase 176: Codex Terminal Rewake Hardening
 
+Status: active
+
 ## Goal
 
 Make known waits behave like a real suspension primitive in Codex: pending state
@@ -62,9 +64,11 @@ The preferred local backend is therefore app-server JSON-RPC over the bundled
 
 ## Current Slice
 
-This phase starts by adding the app-server JSON-RPC backend and documenting the
-full hardening roadmap. The real `turn/start` smoke remains manual and gated
-until a user explicitly approves spending a Codex model turn.
+The app-server JSON-RPC backend and fail-closed launchd behavior are implemented.
+The real `turn/start` smoke remains manual and gated until a user explicitly
+approves spending a Codex model turn. Capability-focused doctor output, atomic
+notification claims, watcher repair, heartbeat backoff, and the complete
+event/privacy matrix remain active work.
 
 ## Acceptance Criteria
 

@@ -84,6 +84,8 @@ the candidate passes the complete exact-commit release matrix.
 - Detached verifier and wait processes own their terminal lifecycle, persist
   launch/running/terminal state, and separate quality failures from spawn,
   cancellation, and transport failures.
+- Wait handoffs now identify heartbeat polling as a model-turn fallback and
+  state that every scheduled poll consumes a model turn.
 - Strict Pyright debt ratchets by file/rule pair under a versioned,
   tool-and-scope-bound baseline rather than an aggregate error allowance.
 - Public documentation now distinguishes published release evidence from
