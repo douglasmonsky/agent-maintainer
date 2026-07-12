@@ -142,9 +142,9 @@ baseline are retired.
 - [x] Reclassify top-level help and public docs into stable workflow, repair and
       inspection, optional local intelligence, experimental integrations, and
       operations. Keep basic quiet waits distinct from experimental rewake.
-- [ ] Guarantee changed, failed, exact-fact, and explicitly requested paths are
+- [x] Guarantee changed, failed, exact-fact, and explicitly requested paths are
       retained when attention-ledger sampling caps large repositories.
-- [ ] Validate attention schema version, file count, normalized paths, and
+- [x] Validate attention schema version, file count, normalized paths, and
       finite `0..1` scores; label context relevance as direct, inferred, or
       background and omit background notes from tight hook output.
 - [x] Add `agent_waits` to the internal-package current-state document and

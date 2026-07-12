@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
+from typing import cast
 
 from agent_maintainer.attention import builder, rendering
 
 JSON_FORMAT = "json"
 TEXT_FORMAT = "text"
+COMMAND_PRIORITY_PATH_DEST = "_command_priority_path"
+MAX_ARGUMENT_ERROR_CHARS = 240
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -16,19 +20,37 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     target = args.target.resolve()
     output = target / args.output
+    return _dispatch(args, target, output)
+
+
+def _dispatch(args: argparse.Namespace, target: Path, output: Path) -> int:
+    """Build or load a ledger and dispatch the selected command."""
+
     if args.command == "update":
-        ledger = builder.build_attention_ledger(
-            target,
-            log_dir=args.log_dir,
-            events_dir=args.events_dir,
-        )
-        builder.write_attention_ledger(ledger, output)
-        if args.format == JSON_FORMAT:
-            print(rendering.render_ledger_json(ledger))
-        else:
-            print(f"Result: PASS\nAttention ledger: {output}\nFiles: {ledger.file_count}")
-        return 0
+        return _update(args, target, output)
     ledger = _load_or_build(args, target=target, output=output)
+    if ledger is None:
+        return 2
+    return _render_command(args, ledger)
+
+
+def _update(args: argparse.Namespace, target: Path, output: Path) -> int:
+    """Build, write, and render an updated ledger."""
+
+    ledger = _build_ledger(args, target)
+    if ledger is None:
+        return 2
+    builder.write_attention_ledger(ledger, output)
+    if args.format == JSON_FORMAT:
+        print(rendering.render_ledger_json(ledger))
+    else:
+        print(f"Result: PASS\nAttention ledger: {output}\nFiles: {ledger.file_count}")
+    return 0
+
+
+def _render_command(args: argparse.Namespace, ledger: builder.AttentionLedger) -> int:
+    """Render one read-only ledger command."""
+
     if args.command == "top":
         if args.format == JSON_FORMAT:
             print(rendering.render_top_json(ledger, limit=args.limit))
@@ -68,7 +90,16 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     _add_common_options(changed_parser, suppress_defaults=True)
     changed_parser.add_argument("--limit", type=int, default=10)
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    root_priority_paths = cast(list[str], args.priority_path)
+    command_priority_paths = cast(
+        list[str],
+        getattr(args, COMMAND_PRIORITY_PATH_DEST, []),
+    )
+    args.priority_path = [*root_priority_paths, *command_priority_paths]
+    if hasattr(args, COMMAND_PRIORITY_PATH_DEST):
+        delattr(args, COMMAND_PRIORITY_PATH_DEST)
+    return args
 
 
 def _add_common_options(parser: argparse.ArgumentParser, *, suppress_defaults: bool) -> None:
@@ -77,6 +108,8 @@ def _add_common_options(parser: argparse.ArgumentParser, *, suppress_defaults: b
     output_default = argparse.SUPPRESS if suppress_defaults else builder.DEFAULT_OUTPUT_PATH
     log_default = argparse.SUPPRESS if suppress_defaults else Path(".verify-logs")
     events_default = argparse.SUPPRESS if suppress_defaults else Path(".verify-logs/events")
+    priority_default: str | list[str] = argparse.SUPPRESS if suppress_defaults else []
+    priority_dest = COMMAND_PRIORITY_PATH_DEST if suppress_defaults else "priority_path"
     parser.add_argument("--target", type=Path, default=target_default, help="Repository root.")
     parser.add_argument(
         "--output",
@@ -96,11 +129,48 @@ def _add_common_options(parser: argparse.ArgumentParser, *, suppress_defaults: b
         default=events_default,
         help="Runtime events directory relative to target.",
     )
+    parser.add_argument(
+        "--priority-path",
+        dest=priority_dest,
+        action="append",
+        default=priority_default,
+        help="Repository-relative path that must survive background sampling; repeatable.",
+    )
 
 
-def _load_or_build(args: argparse.Namespace, *, target: Path, output: Path):
+def _load_or_build(
+    args: argparse.Namespace,
+    *,
+    target: Path,
+    output: Path,
+) -> builder.AttentionLedger | None:
     """Load existing ledger, or build in memory when absent."""
     existing = builder.read_attention_ledger(output, workspace_root=target)
     if existing is not None:
         return existing
-    return builder.build_attention_ledger(target, log_dir=args.log_dir, events_dir=args.events_dir)
+    return _build_ledger(args, target)
+
+
+def _build_ledger(args: argparse.Namespace, target: Path) -> builder.AttentionLedger | None:
+    """Build one attention ledger from shared CLI options."""
+
+    try:
+        return builder.build_attention_ledger(
+            target,
+            log_dir=args.log_dir,
+            events_dir=args.events_dir,
+            priority_paths=tuple(args.priority_path or ()),
+        )
+    except ValueError as exc:
+        _render_argument_error(exc)
+        return None
+
+
+def _render_argument_error(error: ValueError) -> None:
+    """Render one bounded build-boundary validation error."""
+
+    detail = str(error)
+    if len(detail) > MAX_ARGUMENT_ERROR_CHARS:
+        prefix = detail[: MAX_ARGUMENT_ERROR_CHARS - 3]
+        detail = f"{prefix}..."
+    print(f"attention argument error: {detail}", file=sys.stderr)

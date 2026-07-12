@@ -26,6 +26,26 @@ for the first opt-in non-Python provider.
 also provide `agent-maintainer` for interactive use, but committed hooks and CI
 should prefer the module command.
 
+## Attention priority and provenance
+
+`python3 -m agent_maintainer attention` accepts repeatable `--priority-path`
+arguments for safe, user-requested tracked files that must be considered during
+ledger sampling. Invalid, absolute, escaping, or sensitive paths are rejected;
+safe paths outside the bounded tracked inventory are omitted and recorded in a
+performance note.
+
+Attention keeps changed, failed, exact-fact, and requested tracked paths ahead
+of ordinary background sampling. The normal background budget is 5,000 files:
+if required paths exceed it, all required paths are retained and the ledger
+records an overflow performance note. Discovery and scoring still stop at the
+hard 10,000-path ceiling.
+
+Context attention entries identify their relevance as `direct`, `inferred`, or
+`background`. Direct paths missing from an older otherwise-valid ledger report
+a nullable `score: null` with empty components and a bounded explanation;
+other ledger scores remain finite values from `0` to `1`. Background-only
+entries never produce tight-hook risk notes.
+
 Use `python3 -m agent_maintainer init --track core` for minimum package-first
 adoption, `python3 -m agent_maintainer init --track agent` when Codex, Claude
 Code, or other agents actively edit the repo, and `python3 -m agent_maintainer

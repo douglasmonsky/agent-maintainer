@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -37,12 +37,41 @@ class AttentionSignalContext:
         """Collect tracked files once and apply a deterministic cap."""
 
         paths = tracked_files(repo_root)
-        sampled_paths = _sample_paths(paths, max_tracked_files)
+        return cls.from_paths(
+            repo_root,
+            paths,
+            max_tracked_files=max_tracked_files,
+            artifact_read_limit_bytes=artifact_read_limit_bytes,
+        )
+
+    @classmethod
+    def from_paths(
+        cls,
+        repo_root: Path,
+        paths: tuple[str, ...],
+        *,
+        required_paths: Iterable[str] = (),
+        max_tracked_files: int = DEFAULT_MAX_TRACKED_FILES,
+        artifact_read_limit_bytes: int = DEFAULT_ARTIFACT_READ_LIMIT_BYTES,
+    ) -> AttentionSignalContext:
+        """Build one bounded context from an already collected inventory."""
+
+        required = frozenset(required_paths).intersection(paths)
+        sampled_paths = _sample_paths(paths, max_tracked_files, required_paths=required)
         notes: list[str] = []
         if len(sampled_paths) < len(paths):
             notes.append(
                 "tracked file set capped "
                 f"{len(sampled_paths)}/{len(paths)} using deterministic sampling",
+            )
+        limit_is_positive = max_tracked_files > 0
+        required_exceeds_limit = len(required) > max_tracked_files
+        if limit_is_positive and required_exceeds_limit:
+            cap = f"{len(required)}/{max_tracked_files}"
+            inventory = f"{len(paths)}-path"
+            notes.append(
+                f"required paths exceeded tracked file cap {cap}; retained within "
+                f"{inventory} discovery inventory"
             )
         return cls(
             repo_root=repo_root,
@@ -59,10 +88,28 @@ class AttentionSignalContext:
         return set(self.tracked_paths)
 
 
-def _sample_paths(paths: tuple[str, ...], limit: int) -> tuple[str, ...]:
+def _sample_paths(
+    paths: tuple[str, ...],
+    limit: int,
+    *,
+    required_paths: frozenset[str] | None = None,
+) -> tuple[str, ...]:
     """Return deterministic sampled paths within limit."""
 
     if limit <= 0 or len(paths) <= limit:
+        return paths
+    required_lookup = required_paths or frozenset()
+    required = tuple(path for path in paths if path in required_lookup)
+    remaining = tuple(path for path in paths if path not in required_lookup)
+    if len(required) >= limit:
+        return tuple(sorted(required))
+    return tuple(sorted((*required, *_even_sample(remaining, limit - len(required)))))
+
+
+def _even_sample(paths: tuple[str, ...], limit: int) -> tuple[str, ...]:
+    """Return deterministic evenly spaced paths within a limit."""
+
+    if len(paths) <= limit:
         return paths
     if limit == 1:
         return (paths[0],)

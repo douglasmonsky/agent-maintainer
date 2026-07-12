@@ -121,6 +121,7 @@ def build_context_pack(request: ContextPackRequest) -> ContextPack:
         request.log_dir,
         records,
         compression.logs,
+        requested_paths=request.files,
     )
     payload = context_pack_payload(
         ContextPackPayloadInput(
@@ -203,6 +204,8 @@ def repair_facts_with_attention(
     log_dir: Path,
     records: FailureRecords,
     selected_logs: PackItems,
+    *,
+    requested_paths: tuple[Path, ...] = (),
 ) -> RepairFactsAndAttention:
     """Return repair facts and optional attention payload."""
     workspace_root = log_dir.parent if log_dir.is_absolute() else Path.cwd()
@@ -225,6 +228,7 @@ def repair_facts_with_attention(
         repair_facts,
         selected_logs,
         workspace_root=workspace_root,
+        requested_paths=requested_paths,
     )
     return pack_attention.attach_attention_to_facts(repair_facts, attention), attention
 
