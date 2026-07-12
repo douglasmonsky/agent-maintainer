@@ -133,8 +133,7 @@ def _evidence_findings(
         finding
         for evidence_id in record.evidence_ids
         for finding in _evidence_fingerprint_findings(index, record, evidence_id)
-        if finding.code not in {"DS301", "DS308"}
-        or (record.claim_id, evidence_id) not in current_pairs
+        if finding.code != "DS301" or (record.claim_id, evidence_id) not in current_pairs
     ]
 
 
