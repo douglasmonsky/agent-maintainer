@@ -98,8 +98,16 @@ def test_maintainer_package_entrypoint_help() -> None:
     assert result.returncode == 0
     assert "python -m agent_maintainer doctor" in result.stdout
     assert "python -m agent_maintainer <command> [options]" in result.stdout
-    assert "Core commands:\n" in result.stdout
-    assert "Agent repair commands:\n" in result.stdout
+    for heading in (
+        "Stable workflows:\n",
+        "Repair and inspection:\n",
+        "Optional local intelligence:\n",
+        "Experimental integrations:\n",
+        "Operations:\n",
+    ):
+        assert heading in result.stdout
+    assert "wait            Quiet polling is stable; terminal rewake is experimental." in result.stdout
+    assert "Core commands:\n" not in result.stdout
 
 
 def test_project_exposes_console_script_entrypoint() -> None:
