@@ -149,8 +149,8 @@ baseline are retired.
       background and omit background notes from tight hook output.
 - [x] Add `agent_waits` to the internal-package current-state document and
       secondary dependency-direction regression coverage.
-- [x] Publish a pre-1.0 API-support policy naming supported commands and formats,
-      intended beta imports, and unstable internal top-level packages.
+- [x] Publish exact-installed-version expectations and unfrozen current entry
+      points for commands, formats, and internal top-level packages.
 
 ## Future Work
 

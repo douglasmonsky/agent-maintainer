@@ -12,8 +12,5 @@ attestations:
   base: HEAD
   head: 9993b6b
   evidence_fingerprints:
-    evidence.readme.command_registry: sha256:4db7875c4271c298da2e85ccdf2bda5fcc26e9fe7f4e262e73d8351805278352
-  evidence_anchor_fingerprints:
-    evidence.readme.command_registry:
-    - sha256:56c9448d82815e73074768b79e148c6d9e13324563a3a75795aef500c6e6763a
+    evidence.readme.command_registry: sha256:e7d5e579f653cd31b5b4f7aaafee2ef874d08925ac8be7074d33875bd53b3491
   statement: Reviewed changed evidence region. Documentation remains accurate.

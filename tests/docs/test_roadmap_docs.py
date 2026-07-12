@@ -100,7 +100,7 @@ def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     assert "Strict Pyright cutover complete" in text
     assert "[x] Reclassify top-level help" in text
     assert "[x] Add `agent_waits`" in text
-    assert "[x] Publish a pre-1.0 API-support policy" in text
+    assert "[x] Publish exact-installed-version expectations" in text
     assert "[ ] Guarantee changed, failed, exact-fact" in text
 
 
