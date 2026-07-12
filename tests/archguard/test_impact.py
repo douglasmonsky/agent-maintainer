@@ -336,6 +336,23 @@ def test_module_rules_ignore_malformed_items_and_flatten_paths() -> None:
     )
 
 
+def test_root_module_rules_preserve_explicit_dependency_contracts() -> None:
+    """Root rules distinguish absent, empty, absolute, and local contracts."""
+
+    modules: list[dict[str, object]] = [
+        {"path": "sample.absent", "layer": "runtime"},
+        {"path": "sample.empty", "depends_on": []},
+        {"path": "sample.absolute", "depends_on": ["//other.module"]},
+        {"path": "sample.local", "depends_on": ["other.module"]},
+    ]
+    rules = {rule.name: rule for rule in module_rules(modules)}
+
+    assert rules["sample.absent"].depends_on is None
+    assert rules["sample.empty"].depends_on == ()
+    assert rules["sample.absolute"].depends_on == ("other.module",)
+    assert rules["sample.local"].depends_on == ("other.module",)
+
+
 def test_resolved_files_report_unowned_and_init_modules(tmp_path: Path) -> None:
     """Resolve outside, non-Python, and package init paths."""
 

@@ -96,7 +96,8 @@ def module_rules(modules: object) -> tuple[ModuleRule, ...]:
     for item in structured_objects(modules):
         layer = string_value(item.get("layer"))
         paths = module_paths(item)
-        rules.extend(ModuleRule(name=path, layer=layer) for path in paths)
+        depends_on = domains.dependency_paths(item)
+        rules.extend(ModuleRule(name=path, layer=layer, depends_on=depends_on) for path in paths)
     return tuple(sorted(rules, key=lambda rule: rule.name))
 
 

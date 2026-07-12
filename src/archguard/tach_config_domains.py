@@ -89,10 +89,10 @@ def _domain_rule(
     """Return one normalized domain rule from a config table."""
 
     name = domain_root if path == domain_root else domain_module_path(domain_root, path)
-    return DomainModuleRule(name, _dependency_paths(payload, domain_root), domain_root)
+    return DomainModuleRule(name, dependency_paths(payload, domain_root), domain_root)
 
 
-def _dependency_paths(payload: TachPayload, domain_root: str) -> tuple[str, ...] | None:
+def dependency_paths(payload: TachPayload, domain_root: str = "") -> tuple[str, ...] | None:
     """Return an explicit normalized dependency allowlist when present."""
 
     if "depends_on" not in payload:
@@ -106,7 +106,9 @@ def _dependency_paths(payload: TachPayload, domain_root: str) -> tuple[str, ...]
 def _dependency_path(value: str, domain_root: str) -> str:
     """Return one absolute or domain-local dependency module path."""
 
-    return value[2:] if value.startswith("//") else domain_module_path(domain_root, value)
+    if value.startswith("//"):
+        return value[2:]
+    return domain_module_path(domain_root, value) if domain_root else value
 
 
 def _object_list(value: object) -> tuple[object, ...]:
