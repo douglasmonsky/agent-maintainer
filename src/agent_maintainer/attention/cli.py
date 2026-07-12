@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from agent_maintainer.attention import builder, rendering
@@ -11,24 +12,28 @@ JSON_FORMAT = "json"
 TEXT_FORMAT = "text"
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911
     """Run attention CLI."""
     args = parse_args(argv)
     target = args.target.resolve()
     output = target / args.output
     if args.command == "update":
-        ledger = builder.build_attention_ledger(
-            target,
-            log_dir=args.log_dir,
-            events_dir=args.events_dir,
-        )
+        try:
+            ledger = _build_ledger(args, target)
+        except ValueError as exc:
+            print(f"attention argument error: {exc}", file=sys.stderr)
+            return 2
         builder.write_attention_ledger(ledger, output)
         if args.format == JSON_FORMAT:
             print(rendering.render_ledger_json(ledger))
         else:
             print(f"Result: PASS\nAttention ledger: {output}\nFiles: {ledger.file_count}")
         return 0
-    ledger = _load_or_build(args, target=target, output=output)
+    try:
+        ledger = _load_or_build(args, target=target, output=output)
+    except ValueError as exc:
+        print(f"attention argument error: {exc}", file=sys.stderr)
+        return 2
     if args.command == "top":
         if args.format == JSON_FORMAT:
             print(rendering.render_top_json(ledger, limit=args.limit))
@@ -68,7 +73,16 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     _add_common_options(changed_parser, suppress_defaults=True)
     changed_parser.add_argument("--limit", type=int, default=10)
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if argv is not None:
+        args.priority_path = _priority_paths(argv)
+    return args
+
+
+def _priority_paths(argv: list[str]) -> list[str]:
+    """Return priority path values in their original command-line order."""
+
+    return [argv[index + 1] for index, value in enumerate(argv[:-1]) if value == "--priority-path"]
 
 
 def _add_common_options(parser: argparse.ArgumentParser, *, suppress_defaults: bool) -> None:
@@ -77,6 +91,7 @@ def _add_common_options(parser: argparse.ArgumentParser, *, suppress_defaults: b
     output_default = argparse.SUPPRESS if suppress_defaults else builder.DEFAULT_OUTPUT_PATH
     log_default = argparse.SUPPRESS if suppress_defaults else Path(".verify-logs")
     events_default = argparse.SUPPRESS if suppress_defaults else Path(".verify-logs/events")
+    priority_default = argparse.SUPPRESS if suppress_defaults else []
     parser.add_argument("--target", type=Path, default=target_default, help="Repository root.")
     parser.add_argument(
         "--output",
@@ -96,6 +111,12 @@ def _add_common_options(parser: argparse.ArgumentParser, *, suppress_defaults: b
         default=events_default,
         help="Runtime events directory relative to target.",
     )
+    parser.add_argument(
+        "--priority-path",
+        action="append",
+        default=priority_default,
+        help="Repository-relative path that must survive background sampling; repeatable.",
+    )
 
 
 def _load_or_build(args: argparse.Namespace, *, target: Path, output: Path):
@@ -103,4 +124,15 @@ def _load_or_build(args: argparse.Namespace, *, target: Path, output: Path):
     existing = builder.read_attention_ledger(output, workspace_root=target)
     if existing is not None:
         return existing
-    return builder.build_attention_ledger(target, log_dir=args.log_dir, events_dir=args.events_dir)
+    return _build_ledger(args, target)
+
+
+def _build_ledger(args: argparse.Namespace, target: Path):
+    """Build one attention ledger from shared CLI options."""
+
+    return builder.build_attention_ledger(
+        target,
+        log_dir=args.log_dir,
+        events_dir=args.events_dir,
+        priority_paths=tuple(args.priority_path or ()),
+    )

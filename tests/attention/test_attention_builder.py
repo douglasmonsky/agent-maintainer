@@ -206,6 +206,13 @@ def test_attention_priority_omissions_are_bounded(tmp_path: Path) -> None:
     assert notes[-1] == "priority paths not tracked and omitted: 5"
 
 
+def test_attention_priority_paths_reject_noncanonical_input(tmp_path: Path) -> None:
+    """Explicit priority paths cannot escape the repository."""
+
+    with pytest.raises(ValueError, match="canonical repository-relative"):
+        builder.build_attention_ledger(tmp_path, priority_paths=("../outside",))
+
+
 def test_read_attention_ledger_round_trips_inside_repository(tmp_path: Path) -> None:
     """A regular bounded ledger inside its repository remains readable."""
     _write(tmp_path / "src" / "app.py", "VALUE = 1\n")

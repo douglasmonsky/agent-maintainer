@@ -11,6 +11,22 @@ import pytest
 from agent_maintainer.attention import cli
 
 
+def test_attention_cli_accepts_repeatable_priority_paths() -> None:
+    """Callers can preserve explicitly requested repository paths."""
+
+    args = cli.parse_args(
+        [
+            "--priority-path",
+            "src/app.py",
+            "update",
+            "--priority-path",
+            "tests/test_app.py",
+        ]
+    )
+
+    assert args.priority_path == ["src/app.py", "tests/test_app.py"]
+
+
 def test_attention_update_top_explain_and_changed(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
