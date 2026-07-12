@@ -36,6 +36,7 @@ def test_context_pack_works_without_attention_ledger(tmp_path: Path) -> None:
     pack = write_context_pack(ContextPackRequest(log_dir=log_dir, budget=8_000))
 
     assert pack.payload["attention"] == {
+        "schema_version": 1,
         "available": False,
         "ledger_path": str(log_dir / "attention" / "files.json"),
         "entries": [],
@@ -78,7 +79,9 @@ def test_context_pack_attaches_attention_to_exact_file_fact(tmp_path: Path) -> N
     attention = cast(dict[str, Any], pack.payload["attention"])
     entries = cast(list[dict[str, Any]], attention["entries"])
     assert fact["attention"]["score"] == PRIMARY_SCORE
+    assert fact["attention"]["relevance"] == "direct"
     assert entries[0]["path"] == APP_PATH
+    assert entries[0]["relevance"] == "direct"
     pointer = render_pack_pointer(pack.payload, display_path=str(pack.markdown_path))
     assert "Attention notes:" in pointer
     assert APP_PATH in pointer
@@ -96,7 +99,45 @@ def test_context_pack_attention_falls_back_to_selected_log_paths(tmp_path: Path)
     attention = cast(dict[str, Any], pack.payload["attention"])
     entries = cast(list[dict[str, Any]], attention["entries"])
     assert entries[0]["path"] == APP_PATH
+    assert entries[0]["relevance"] == "inferred"
     assert APP_PATH in pack.markdown
+
+
+def test_direct_fact_survives_valid_ledger_without_score(tmp_path: Path) -> None:
+    """An older sampled ledger cannot replace direct evidence with background."""
+
+    log_dir = tmp_path / ".verify-logs"
+    write_ledger(log_dir, "tests/test_other.py")
+    write_ruff_manifest(log_dir, APP_PATH)
+
+    pack = write_context_pack(ContextPackRequest(log_dir=log_dir, budget=8_000))
+    attention = cast(dict[str, Any], pack.payload["attention"])
+    entries = cast(list[dict[str, Any]], attention["entries"])
+
+    assert entries[0]["path"] == APP_PATH
+    assert entries[0]["score"] is None
+    assert entries[0]["relevance"] == "direct"
+    assert [entry["path"] for entry in entries] == [APP_PATH]
+
+
+def test_background_fallback_has_no_tight_risk_notes(tmp_path: Path) -> None:
+    """Unrelated top-ledger fallback never becomes a hook risk claim."""
+
+    log_dir = tmp_path / ".verify-logs"
+    write_ledger(log_dir, APP_PATH)
+    write_manifest(log_dir, "custom-check")
+    write_log(log_dir, "custom-check", "failure without repository path\n")
+
+    pack = write_context_pack(ContextPackRequest(log_dir=log_dir, budget=8_000))
+    attention = cast(dict[str, Any], pack.payload["attention"])
+    entries = cast(list[dict[str, Any]], attention["entries"])
+
+    assert entries[0]["relevance"] == "background"
+    assert attention["risk_notes"] == []
+    assert "Attention notes:" not in render_pack_pointer(
+        pack.payload,
+        display_path=str(pack.markdown_path),
+    )
 
 
 def write_ledger(log_dir: Path, primary_path: str) -> None:
@@ -160,7 +201,7 @@ def write_manifest(
                 "name": check_name,
                 "status": "failed",
                 "exit_code": 1,
-                "log_path": str(log_dir / f"{check_name}.log"),
+                "log_path": str(Path(log_dir.name) / f"{check_name}.log"),
                 "artifacts": [str(path) for path in artifacts],
             }
         ]
