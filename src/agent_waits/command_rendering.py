@@ -37,7 +37,7 @@ def _pythonpath_prefix(root: Path) -> str:
     if not value:
         return ""
     entries = [
-        str((root / entry).resolve()) if not Path(entry).is_absolute() else entry
+        entry if Path(entry).is_absolute() else str((root / entry).resolve())
         for entry in value.split(os.pathsep)
     ]
     return f"PYTHONPATH={shlex.quote(os.pathsep.join(entries))} "
