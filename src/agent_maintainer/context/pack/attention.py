@@ -178,10 +178,18 @@ def _risk_notes(entries: list[ContextAttentionEntry]) -> list[str]:
             notes.append(f"{entry.path} selected directly; no sampled attention score")
         else:
             reasons = "; ".join(entry.ledger_score.reasons[:2])
-            notes.append(f"{entry.path} attention {entry.ledger_score.score:.4f}: {reasons}")
+            notes.append(_attention_risk_note(entry.path, entry.ledger_score.score, reasons))
         if len(notes) == MAX_RISK_NOTES:
             break
     return notes
+
+
+def _attention_risk_note(path: str, score: float, reasons: str) -> str:
+    """Return one compact risk note for a scored entry."""
+
+    prefix = f"{path} attention "
+    score_text = f"{score:.4f}: "
+    return "".join((prefix, score_text, reasons))
 
 
 def _entry_payload(entry: ContextAttentionEntry) -> dict[str, object]:

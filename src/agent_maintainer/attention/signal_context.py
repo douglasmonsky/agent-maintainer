@@ -64,11 +64,14 @@ class AttentionSignalContext:
                 "tracked file set capped "
                 f"{len(sampled_paths)}/{len(paths)} using deterministic sampling",
             )
-        if len(required) > max_tracked_files > 0:
+        limit_is_positive = max_tracked_files > 0
+        required_exceeds_limit = len(required) > max_tracked_files
+        if limit_is_positive and required_exceeds_limit:
+            cap = f"{len(required)}/{max_tracked_files}"
+            inventory = f"{len(paths)}-path"
             notes.append(
-                "required paths exceeded tracked file cap "
-                f"{len(required)}/{max_tracked_files}; retained within "
-                f"{len(paths)}-path discovery inventory"
+                f"required paths exceeded tracked file cap {cap}; retained within "
+                f"{inventory} discovery inventory"
             )
         return cls(
             repo_root=repo_root,
@@ -89,14 +92,15 @@ def _sample_paths(
     paths: tuple[str, ...],
     limit: int,
     *,
-    required_paths: frozenset[str] = frozenset(),
+    required_paths: frozenset[str] | None = None,
 ) -> tuple[str, ...]:
     """Return deterministic sampled paths within limit."""
 
     if limit <= 0 or len(paths) <= limit:
         return paths
-    required = tuple(path for path in paths if path in required_paths)
-    remaining = tuple(path for path in paths if path not in required_paths)
+    required_lookup = required_paths or frozenset()
+    required = tuple(path for path in paths if path in required_lookup)
+    remaining = tuple(path for path in paths if path not in required_lookup)
     if len(required) >= limit:
         return tuple(sorted(required))
     return tuple(sorted((*required, *_even_sample(remaining, limit - len(required)))))

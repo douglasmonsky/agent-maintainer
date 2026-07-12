@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import cast
 
 from agent_maintainer.attention import builder, rendering
-from agent_maintainer.attention.models import AttentionLedger
 
 JSON_FORMAT = "json"
 TEXT_FORMAT = "text"
@@ -16,24 +15,42 @@ COMMAND_PRIORITY_PATH_DEST = "_command_priority_path"
 MAX_ARGUMENT_ERROR_CHARS = 240
 
 
-def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911
+def main(argv: list[str] | None = None) -> int:
     """Run attention CLI."""
     args = parse_args(argv)
     target = args.target.resolve()
     output = target / args.output
+    return _dispatch(args, target, output)
+
+
+def _dispatch(args: argparse.Namespace, target: Path, output: Path) -> int:
+    """Build or load a ledger and dispatch the selected command."""
+
     if args.command == "update":
-        ledger = _build_ledger(args, target)
-        if ledger is None:
-            return 2
-        builder.write_attention_ledger(ledger, output)
-        if args.format == JSON_FORMAT:
-            print(rendering.render_ledger_json(ledger))
-        else:
-            print(f"Result: PASS\nAttention ledger: {output}\nFiles: {ledger.file_count}")
-        return 0
+        return _update(args, target, output)
     ledger = _load_or_build(args, target=target, output=output)
     if ledger is None:
         return 2
+    return _render_command(args, ledger)
+
+
+def _update(args: argparse.Namespace, target: Path, output: Path) -> int:
+    """Build, write, and render an updated ledger."""
+
+    ledger = _build_ledger(args, target)
+    if ledger is None:
+        return 2
+    builder.write_attention_ledger(ledger, output)
+    if args.format == JSON_FORMAT:
+        print(rendering.render_ledger_json(ledger))
+    else:
+        print(f"Result: PASS\nAttention ledger: {output}\nFiles: {ledger.file_count}")
+    return 0
+
+
+def _render_command(args: argparse.Namespace, ledger: builder.AttentionLedger) -> int:
+    """Render one read-only ledger command."""
+
     if args.command == "top":
         if args.format == JSON_FORMAT:
             print(rendering.render_top_json(ledger, limit=args.limit))
@@ -126,7 +143,7 @@ def _load_or_build(
     *,
     target: Path,
     output: Path,
-) -> AttentionLedger | None:
+) -> builder.AttentionLedger | None:
     """Load existing ledger, or build in memory when absent."""
     existing = builder.read_attention_ledger(output, workspace_root=target)
     if existing is not None:
@@ -134,7 +151,7 @@ def _load_or_build(
     return _build_ledger(args, target)
 
 
-def _build_ledger(args: argparse.Namespace, target: Path) -> AttentionLedger | None:
+def _build_ledger(args: argparse.Namespace, target: Path) -> builder.AttentionLedger | None:
     """Build one attention ledger from shared CLI options."""
 
     try:
@@ -154,5 +171,6 @@ def _render_argument_error(error: ValueError) -> None:
 
     detail = str(error)
     if len(detail) > MAX_ARGUMENT_ERROR_CHARS:
-        detail = f"{detail[: MAX_ARGUMENT_ERROR_CHARS - 3]}..."
+        prefix = detail[: MAX_ARGUMENT_ERROR_CHARS - 3]
+        detail = f"{prefix}..."
     print(f"attention argument error: {detail}", file=sys.stderr)
