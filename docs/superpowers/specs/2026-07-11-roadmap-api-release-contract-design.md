@@ -114,6 +114,9 @@ Record the exact SHA, manifests, artifact smoke result, supported-Python
 coverage, and any skipped externally gated step in
 `docs/releases/0.1.0b6.md`. The release index continues to call b6 an
 unpublished candidate. Publication is a later, explicitly authorized action.
+Because a Git commit cannot contain its own SHA, this record is an
+evidence-only follow-up commit that names the unchanged qualified candidate
+SHA; it does not redefine the follow-up documentation commit as the candidate.
 
 ## Alternatives considered
 
