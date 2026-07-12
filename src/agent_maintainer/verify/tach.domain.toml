@@ -53,8 +53,8 @@ depends_on = [
 [[modules]]
 path = "background_wait"
 depends_on = [
+  "//agent_maintainer.wait.broker",
   "//agent_waits.broker",
-  "//agent_waits.registry",
 ]
 
 [[modules]]

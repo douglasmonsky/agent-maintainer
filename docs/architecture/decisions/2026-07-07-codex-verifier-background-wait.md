@@ -14,8 +14,9 @@ tool call, causing repeated pending-status chat updates.
 ## Decision
 
 When `agent_maintainer verify` runs inside Codex and foreground waits are not
-explicitly allowed, start the existing async verifier child, register a generic
-`agent_waits` verifier wait record, start a quiet watcher, and render the same
+explicitly allowed, start the existing async verifier child and register its
+wait through the typed `agent_maintainer.wait.broker` service. The broker owns
+the persisted record and watcher policy while verifier code renders the same
 structured heartbeat handoff used by known wait commands.
 
 The async launch is a durable lifecycle rather than a bare `Popen` call:
@@ -36,11 +37,11 @@ timeout.
 
 ## Boundary
 
-`agent_maintainer.verify` may depend on standalone `agent_waits` primitives for
-Codex environment policy, durable generic wait records, and handoff rendering.
-It must not import `agent_maintainer.wait` adapters. The wait CLI remains the
-owner of verifier polling and resume rendering; the verifier package only starts
-the detached `agent_maintainer wait sweep --watch` process.
+`agent_maintainer.verify` may call the typed wait broker registration service
+and depend on standalone `agent_waits` primitives for Codex environment policy,
+durable generic wait records, and handoff rendering. Handlers, registry
+internals, daemon, launchd, sweeper, polling, resume, and rewake remain
+forbidden to verifier code.
 
 The one-way polling dependency is explicit: `agent_maintainer.wait.verifier`
 may read `agent_maintainer.verify.async_state` so it can convert child lifecycle
@@ -48,16 +49,18 @@ records into truthful terminal wait records. Async verifier code does not import
 the wait adapters.
 
 This is reflected in `src/agent_maintainer/verify/tach.domain.toml` by allowing
-`quiet` and `background_wait` to depend on `agent_waits` primitives while keeping
-`agent_maintainer.wait` out of the verifier package dependencies.
+`background_wait` to depend on the typed wait broker and `agent_waits` broker.
 
 ## Alternatives Considered
 
 - Change only the `just` recipes to add `--async`. Rejected because direct
   verifier invocations would still foreground-block Codex.
-- Let `verify` import `agent_maintainer.wait.broker`. Rejected because that
-  creates a sideways package dependency from verifier orchestration into wait
-  CLI adapters.
+- Keep a second verifier-owned launcher. Rejected because it duplicates watcher
+  policy and persisted lifecycle ownership.
+- Move launchd into `agent_waits`. Rejected because platform daemon integration
+  remains product-owned.
+- Add an extra forwarding wrapper. Rejected because the typed broker is already
+  the canonical registration boundary.
 - Keep manual guidance only. Rejected because this problem is easy to regress
   and expensive in repeated chat turns.
 
