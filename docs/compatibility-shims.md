@@ -1,0 +1,19 @@
+# Compatibility Shim Inventory
+
+Compatibility shims preserve import paths while internal packages are
+extracted. They remain internal surfaces under the pre-1.0 support policy.
+
+| Group | Forwarding paths | Owner/replacement | Support window | Removal condition | Earliest removal |
+| --- | --- | --- | --- | --- | --- |
+| Archguard forwarding | `agent_maintainer.checks.tach_config`, `agent_maintainer.tach` | `archguard` | through 0.1.0b6 | No supported docs import the forwarding path; no non-compatibility production caller imports it; compatibility tests have been replaced by replacement-path tests; release notes announce removal. | 0.1.0b7 |
+| Configuration facade | `agent_maintainer.config.metadata`, `agent_maintainer.core.config` | configuration packages | through 0.1.0b6 | No supported docs import the forwarding path; no non-compatibility production caller imports it; compatibility tests have been replaced by replacement-path tests; release notes announce removal. | 0.1.0b7 |
+| Context extraction | `agent_maintainer.context.budget`, `agent_maintainer.context.compression.backends`, `agent_maintainer.context.compression.headroom`, `agent_maintainer.context.compression.models`, `agent_maintainer.context.estimate`, `agent_maintainer.context.failures`, `agent_maintainer.context.formatting`, `agent_maintainer.context.models`, `agent_maintainer.context.pack.fact_parsers`, `agent_maintainer.context.pack.fact_payloads`, `agent_maintainer.context.pack.lint_fact_parsers`, `agent_maintainer.context.pack.log_fact_parsers`, `agent_maintainer.context.pack.pytest_fact_parsers`, `agent_maintainer.context.pack.rendering`, `agent_maintainer.context.pack.sanitize`, `agent_maintainer.context.pack.typescript_fact_parsers`, `agent_maintainer.context.reading.diff`, `agent_maintainer.context.reading.diff_classify`, `agent_maintainer.context.reading.diff_git`, `agent_maintainer.context.reading.file_safety`, `agent_maintainer.context.reading.files`, `agent_maintainer.context.reading.logs`, `agent_maintainer.context.reading.python_outline` | `agent_context` | through 0.1.0b6 | No supported docs import the forwarding path; no non-compatibility production caller imports it; compatibility tests have been replaced by replacement-path tests; release notes announce removal. | 0.1.0b7 |
+| Hook extraction | `agent_maintainer.hooks.adapters`, `agent_maintainer.hooks.merge`, `agent_maintainer.hooks.templates` | `agent_client_hooks` | through 0.1.0b6 | No supported docs import the forwarding path; no non-compatibility production caller imports it; compatibility tests have been replaced by replacement-path tests; release notes announce removal. | 0.1.0b7 |
+| Repair-fact extraction | `agent_maintainer.ecosystems.typescript.diagnostics` | `agent_repair_facts` | through 0.1.0b6 | No supported docs import the forwarding path; no non-compatibility production caller imports it; compatibility tests have been replaced by replacement-path tests; release notes announce removal. | 0.1.0b7 |
+| Run-artifact extraction | `agent_maintainer.verify.artifact_manifest`, `agent_maintainer.verify.git_state`, `agent_maintainer.verify.history`, `agent_maintainer.verify.pr_summary`, `agent_maintainer.verify.pr_summary_support`, `agent_maintainer.verify.timing` | `agent_run_artifacts` | through 0.1.0b6 | No supported docs import the forwarding path; no non-compatibility production caller imports it; compatibility tests have been replaced by replacement-path tests; release notes announce removal. | 0.1.0b7 |
+| Wait extraction | `agent_maintainer.wait.models` | `agent_waits` | through 0.1.0b6 | No supported docs import the forwarding path; no non-compatibility production caller imports it; compatibility tests have been replaced by replacement-path tests; release notes announce removal. | 0.1.0b7 |
+
+## Removal gate
+
+All four removal conditions must be proven in one focused PR. No shim is
+removed by this inventory change.

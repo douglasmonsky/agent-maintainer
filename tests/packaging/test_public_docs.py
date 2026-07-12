@@ -8,6 +8,8 @@ import tomllib
 from pathlib import Path
 
 README = Path("README.md")
+API_SUPPORT_POLICY = Path("docs/api-support-policy.md")
+COMPATIBILITY_SHIMS = Path("docs/compatibility-shims.md")
 RELEASE_INDEX = Path("docs/releases/README.md")
 MIN_READ_MORE_LINKS = 8
 LATEST_PUBLISHED_LABEL = "Latest published release"
@@ -76,6 +78,40 @@ def _unreleased_section(changelog: str) -> str:
     start = changelog.index("## Unreleased")
     next_section = changelog.index("\n## ", start + len("## Unreleased"))
     return changelog[start:next_section]
+
+
+def test_public_docs_define_pre_one_api_support() -> None:
+    """The beta API promise and shim lifecycle are public and discoverable."""
+
+    readme = README.read_text(encoding="utf-8")
+    policy = API_SUPPORT_POLICY.read_text(encoding="utf-8")
+    inventory = COMPATIBILITY_SHIMS.read_text(encoding="utf-8")
+
+    assert "docs/api-support-policy.md" in readme
+    assert "## Supported beta surfaces" in policy
+    assert "## Intended beta Python API" in policy
+    assert "`docsync.api`" in policy
+    assert "Distribution is not an API promise" in policy
+    assert "compatibility-shims.md" in policy
+    assert "## Removal gate" in inventory
+    assert "0.1.0b7" in inventory
+    for group in (
+        "Archguard forwarding",
+        "Configuration facade",
+        "Context extraction",
+        "Hook extraction",
+        "Repair-fact extraction",
+        "Run-artifact extraction",
+        "Wait extraction",
+    ):
+        assert group in inventory
+
+    for source_path in sorted(Path("src").rglob("*.py")):
+        source = source_path.read_text(encoding="utf-8")
+        if not source.startswith('\"\"\"Compatibility'):
+            continue
+        module = ".".join(source_path.relative_to("src").with_suffix("").parts)
+        assert f"`{module}`" in inventory, module
 
 
 def test_readme_uses_public_beta_framing() -> None:
