@@ -162,7 +162,8 @@ def test_license_and_changelog_are_public_beta_ready() -> None:
 
     assert license_text.startswith("MIT License\n")
     assert "Copyright (c) 2026 Doug Monsky" in license_text
-    assert f"## Unreleased (target: {_project_version()})" in changelog
+    assert "## Unreleased" in changelog
+    assert "## 0.1.0b6 - 2026-07-12" in changelog
     assert "## 0.1.0b4 - 2026-06-29" in changelog
     assert "Fourth beta release of Agent Maintainer." in changelog
     assert "quiet on success and bounded on failure" in changelog
@@ -182,6 +183,17 @@ def test_changelog_unreleased_section_tracks_post_release_commits() -> None:
 
     unreleased = _unreleased_section(changelog)
     assert "No changes yet." not in unreleased
+    assert "published 0.1.0b6 release evidence" in unreleased
+
+
+def test_changelog_b6_section_retains_release_topics() -> None:
+    """The dated b6 entry, rather than Unreleased, retains release content."""
+
+    changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+    start = changelog.index("## 0.1.0b6 - 2026-07-12")
+    end = changelog.index("## 0.1.0b5 - 2026-07-03", start)
+    b6_section = changelog[start:end]
+
     for required_topic in (
         "repository-controlled filesystem access",
         "managed hook inventory",
@@ -195,7 +207,7 @@ def test_changelog_unreleased_section_tracks_post_release_commits() -> None:
         "SHA-256",
         "DocSync",
     ):
-        assert required_topic in unreleased
+        assert required_topic in b6_section
 
 
 # docsync:evidence.start evidence.release.public_contract_tests

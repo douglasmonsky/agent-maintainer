@@ -1,12 +1,15 @@
 # Changelog
 
-## Unreleased (target: 0.1.0b6)
+## Unreleased
 
-`0.1.0b6` is an unpublished release candidate. `0.1.0b5` remains the latest
-published package and its release-evidence record remains authoritative until
-the candidate passes the complete exact-commit release matrix.
+- Documentation: Recorded published 0.1.0b6 release evidence, package-index
+  upgrade guidance, and completed Phase 176 smoke validation after the b6 tag.
 
-### Security Since 0.1.0b5
+## 0.1.0b6 - 2026-07-12
+
+Sixth beta release of Agent Maintainer.
+
+### Security
 
 - All repository-controlled filesystem access is confined to approved roots.
   MCP and DocSync reads reject escapes, special files, oversized inputs, and
@@ -24,7 +27,7 @@ the candidate passes the complete exact-commit release matrix.
   `js-yaml` advisory, and the Semgrep 1.169.0 minimum restores the `manual`
   and `all` extras across Python 3.11 through 3.14 without resolver backtracking.
 
-### Added Since 0.1.0b5
+### Added in 0.1.0b6
 
 - Structured runtime events now cover checks, hooks, commands, verifier
   artifacts, waits, and efficacy outcomes. New summary, waste, JSONL, and
@@ -69,7 +72,7 @@ the candidate passes the complete exact-commit release matrix.
   contribution, conduct, ownership, pull-request, and structured issue-intake
   policies.
 
-### Changed Since 0.1.0b5
+### Changed in 0.1.0b6
 
 - Agent-client installation, scaffolding, status, update, and uninstall now use
   one managed hook inventory. Status distinguishes current, stale, missing, and
@@ -113,7 +116,7 @@ the candidate passes the complete exact-commit release matrix.
   pip-compile input/lock pair and groups direct patch and minor updates instead
   of proposing isolated transitive-lock edits.
 
-### Fixed Since 0.1.0b5
+### Fixed in 0.1.0b6
 
 - Invalid secret-scanner backend input is no longer echoed to logs or terminal
   output; diagnostics report only the fixed allowlist of supported backends.
@@ -141,9 +144,9 @@ the candidate passes the complete exact-commit release matrix.
 - Task-broker, model-tier routing, Codex SDK planning, optional MCP, and
   TypeScript/React provider work remain opt-in or advisory. They do not expand
   the stable Python blocking contract for this beta.
-- Review [the b6 candidate notes](docs/releases/0.1.0b6.md) and
-  [the upgrade guide](docs/upgrading-to-0.1.0b6.md) before evaluating the
-  candidate in an existing application.
+- Review [the b6 release evidence](docs/releases/0.1.0b6.md) and
+  [the upgrade guide](docs/upgrading-to-0.1.0b6.md) before adopting the
+  published beta in an existing application.
 
 ## 0.1.0b5 - 2026-07-03
 

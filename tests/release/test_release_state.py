@@ -30,13 +30,14 @@ def project_metadata() -> dict[str, object]:
 
 @pytest.mark.release
 @release_only
-def test_release_version_has_changelog_entry() -> None:
-    """Candidate version must appear as the explicit Unreleased target."""
+def test_release_version_has_dated_changelog_entry() -> None:
+    """Published version must appear in a dated release section."""
 
     version = str(project_metadata()["version"])
     changelog = (REPO_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
 
-    assert f"## Unreleased (target: {version})" in changelog
+    assert f"## {version} - 2026-07-12" in changelog
+    assert f"{version} is an unpublished release candidate" not in changelog
 
 
 @pytest.mark.release
