@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import json
 import os
-import shlex
-import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -13,6 +11,7 @@ from types import MappingProxyType
 from typing import Final, TypedDict
 
 from agent_waits import capabilities as codex_capabilities
+from agent_waits import command_rendering
 from agent_waits.models import WaitRepairCapsule, render_wait_capsule
 from agent_waits.registry import WaitRecord
 
@@ -179,15 +178,12 @@ def heartbeat_request(
     """Return machine-readable Codex heartbeat creation request."""
 
     root_text = str(root)
-    executable = shlex.quote(sys.executable)
-    sweep_command = (
-        f"{executable} -m agent_maintainer wait sweep --one {shlex.quote(record.wait_id)}"
-    )
+    command_root = Path(root_text) if root_text else Path.cwd()
+    sweep_command = command_rendering.sweep_command(command_root, record.wait_id)
     resume_command = record.resume_instruction
     if root_text:
-        quoted_root = shlex.quote(root_text)
-        sweep_command = f"{sweep_command} --root {quoted_root}"
-        resume_command = f"{resume_command} --root {quoted_root}"
+        sweep_command = command_rendering.append_root(sweep_command, root_text)
+        resume_command = command_rendering.append_root(resume_command, root_text)
     backoff = heartbeat_backoff(record)
     return {
         "type": HEARTBEAT_REQUEST_TYPE,

@@ -19,9 +19,11 @@ NOW = datetime.fromisoformat("2026-07-07T02:00:00+00:00")
 
 def test_default_wait_commands_use_the_running_executable_and_quote_root(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Default monitor commands remain runnable from roots with spaces."""
 
+    monkeypatch.delenv("PYTHONPATH", raising=False)
     root = tmp_path / "repo root"
     record = WaitRegistry(root).register(
         RegisterWait(root=root, kind="verifier", target_id="run-123", now=NOW),
@@ -51,6 +53,7 @@ def test_default_wait_commands_quote_forged_wait_identifiers(
 ) -> None:
     """Default shell commands treat an untrusted wait ID as one token."""
 
+    monkeypatch.delenv("PYTHONPATH", raising=False)
     monkeypatch.setattr(wait_registry, "_wait_id", _forged_wait_id)
     record = WaitRegistry(tmp_path).register(
         RegisterWait(root=tmp_path, kind="verifier", target_id="run-123", now=NOW),
@@ -65,4 +68,29 @@ def test_default_wait_commands_quote_forged_wait_identifiers(
     )
     assert request["sweep_command"] == (
         f"{executable} -m agent_maintainer wait sweep --one {quoted_id}"
+    )
+
+
+def test_source_checkout_commands_prefix_resolved_pythonpath(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Source-layout commands preserve a root-resolved import path."""
+
+    root = tmp_path / "repo root"
+    monkeypatch.setenv("PYTHONPATH", "src")
+    record = WaitRegistry(root).register(
+        RegisterWait(root=root, kind="verifier", target_id="run-123", now=NOW),
+    )
+
+    request = json.loads(heartbeat_request_json(record, root=root))
+    prefix = f"PYTHONPATH={shlex.quote(str(root / 'src'))} "
+    executable = shlex.quote(sys.executable)
+
+    assert record.resume_instruction == (
+        f"{prefix}{executable} -m agent_maintainer wait resume {record.wait_id}"
+    )
+    assert request["sweep_command"] == (
+        f"{prefix}{executable} -m agent_maintainer wait sweep --one {record.wait_id} "
+        f"--root {shlex.quote(str(root))}"
     )
