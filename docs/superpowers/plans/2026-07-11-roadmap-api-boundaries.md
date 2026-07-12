@@ -135,12 +135,12 @@ def test_public_docs_define_pre_one_api_support() -> None:
     policy = API_SUPPORT_POLICY.read_text(encoding="utf-8")
     inventory = COMPATIBILITY_SHIMS.read_text(encoding="utf-8")
 
-    assert "](docs/api-support-policy.md)" in readme
+    assert "docs/api-support-policy.md" in readme
     assert "## Supported beta surfaces" in policy
     assert "## Intended beta Python API" in policy
     assert "`docsync.api`" in policy
     assert "Distribution is not an API promise" in policy
-    assert "](compatibility-shims.md)" in policy
+    assert "compatibility-shims.md" in policy
     assert "## Removal gate" in inventory
     assert "0.1.0b7" in inventory
     for group in (
@@ -201,9 +201,12 @@ Internal surfaces may change without deprecation.
 
 ## Compatibility shims
 
-The [compatibility-shim inventory](compatibility-shims.md) records forwarding
-owners, support windows, removal conditions, and earliest removal releases.
+The compatibility-shim inventory records forwarding owners, support windows,
+removal conditions, and earliest removal releases.
 ```
+
+Link the words `compatibility-shim inventory` to the sibling file named
+`compatibility-shims.md` when creating the actual policy document.
 
 - [ ] **Step 4: Write the compatibility inventory**
 
@@ -238,8 +241,9 @@ one focused PR and that no shim is removed by this inventory change.
 
 - [ ] **Step 5: Link the policy from the README and verify GREEN**
 
-Add `- [Pre-1.0 API support](docs/api-support-policy.md)` under `Further
-Reading`, adjacent to Support and Contributing.
+Under `Further Reading`, adjacent to Support and Contributing, add a bullet
+labeled `Pre-1.0 API support` targeting the repository-root path
+`docs/api-support-policy.md`.
 
 Run: `PYTHONPATH=src .venv/bin/pytest tests/packaging/test_public_docs.py::test_public_docs_define_pre_one_api_support tests/docs/test_markdown_links.py -q`
 
