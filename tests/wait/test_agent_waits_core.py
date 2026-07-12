@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import shlex
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -92,6 +94,28 @@ def test_heartbeat_backoff_caps_large_configured_interval(tmp_path: Path) -> Non
     assert request["preferred_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
     assert backoff["initial_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
     assert backoff["max_interval_seconds"] == FALLBACK_MONITOR_MAX_INTERVAL_SECONDS
+
+
+def test_default_wait_commands_use_the_running_executable_and_quote_root(
+    tmp_path: Path,
+) -> None:
+    """Default monitor commands remain runnable from roots with spaces."""
+
+    root = tmp_path / "repo root"
+    record = WaitRegistry(root).register(
+        RegisterWait(root=root, kind="verifier", target_id="run-123", now=NOW),
+    )
+
+    request = json.loads(heartbeat_request_json(record, root=root))
+    executable = shlex.quote(sys.executable)
+    quoted_root = shlex.quote(str(root))
+    resume = f"{executable} -m agent_maintainer wait resume {record.wait_id}"
+
+    assert record.resume_instruction == resume
+    assert request["sweep_command"] == (
+        f"{executable} -m agent_maintainer wait sweep --one {record.wait_id} --root {quoted_root}"
+    )
+    assert request["resume_command"] == f"{resume} --root {quoted_root}"
 
 
 def test_register_deduplicates_active_wait_identity(tmp_path: Path) -> None:

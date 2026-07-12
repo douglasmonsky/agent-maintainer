@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
+import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -177,11 +179,13 @@ def heartbeat_request(
     """Return machine-readable Codex heartbeat creation request."""
 
     root_text = str(root)
-    sweep_command = f"python -m agent_maintainer wait sweep --one {record.wait_id}"
+    executable = shlex.quote(sys.executable)
+    sweep_command = f"{executable} -m agent_maintainer wait sweep --one {record.wait_id}"
     resume_command = record.resume_instruction
     if root_text:
-        sweep_command = f"{sweep_command} --root {root_text}"
-        resume_command = f"{resume_command} --root {root_text}"
+        quoted_root = shlex.quote(root_text)
+        sweep_command = f"{sweep_command} --root {quoted_root}"
+        resume_command = f"{resume_command} --root {quoted_root}"
     backoff = heartbeat_backoff(record)
     return {
         "type": HEARTBEAT_REQUEST_TYPE,
