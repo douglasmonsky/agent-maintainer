@@ -19,6 +19,8 @@ from agent_maintainer.attention.models import (
 
 DEFAULT_OUTPUT_PATH = Path(".verify-logs/attention/files.json")
 MAX_ATTENTION_LEDGER_BYTES = file_safety.MAX_FILE_BYTES
+MAX_PRIORITY_PATH_NOTES = 3
+MAX_PRIORITY_PATH_DISPLAY_CHARS = 120
 
 WEIGHT_ITEMS = (
     ("git_changed", 0.24),
@@ -68,6 +70,7 @@ def build_attention_ledger(  # noqa: PLR0913
         max_tracked_files=max_tracked_files,
         artifact_read_limit_bytes=artifact_read_limit_bytes,
     )
+    context.performance_notes.extend(inventory_context.performance_notes)
     context.performance_notes.extend(priority_notes)
     files = context.tracked_paths
     raw_components = {
@@ -281,6 +284,7 @@ def _validated_priority_paths(
     tracked = set(tracked_paths)
     retained: set[str] = set()
     omitted: list[str] = []
+    omitted_count = 0
     for value in values:
         normalized = _repo_relative_path(value)
         if file_safety.sensitive_path(Path(normalized)):
@@ -288,7 +292,14 @@ def _validated_priority_paths(
         if normalized in tracked:
             retained.add(normalized)
         else:
-            omitted.append(f"priority path not tracked and omitted: {normalized}")
+            omitted_count += 1
+            if len(omitted) < MAX_PRIORITY_PATH_NOTES:
+                omitted.append(
+                    "priority path not tracked and omitted: "
+                    f"{normalized[:MAX_PRIORITY_PATH_DISPLAY_CHARS]}"
+                )
+    if omitted_count > len(omitted):
+        omitted.append(f"priority paths not tracked and omitted: {omitted_count}")
     return tuple(sorted(retained)), tuple(omitted)
 
 

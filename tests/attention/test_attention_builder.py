@@ -16,6 +16,8 @@ from agent_maintainer.core.structured_values import json_array, json_object
 TRACKED_FILE_CAP_TEST_TOTAL = 5
 TRACKED_FILE_CAP_TEST_LIMIT = 2
 REQUIRED_PATH_COUNT = 3
+PRIORITY_NOTE_COUNT = 4
+PRIORITY_NOTE_MAX_CHARS = 180
 
 
 def test_attention_ledger_is_deterministic_with_missing_inputs(tmp_path: Path) -> None:
@@ -174,6 +176,34 @@ def test_attention_required_paths_can_use_soft_background_cap(tmp_path: Path) ->
     assert "required paths exceeded tracked file cap 3/2" in " ".join(
         cast(list[str], guards["notes"])
     )
+
+
+def test_attention_keeps_inventory_artifact_refusal_notes(tmp_path: Path) -> None:
+    """Verifier artifact refusals collected before sampling remain visible."""
+
+    _write(tmp_path / "src" / "app.py", "VALUE = 1\n")
+    _write(tmp_path / ".verify-logs" / "runs" / "run-1" / "manifest.json", "x" * 100)
+
+    ledger = builder.build_attention_ledger(tmp_path, artifact_read_limit_bytes=1)
+    guards = cast(dict[str, object], ledger.inputs["performance_guards"])
+
+    notes = cast(list[str], guards["notes"])
+    assert sum("artifact refused manifest.json" in note for note in notes) == 1
+
+
+def test_attention_priority_omissions_are_bounded(tmp_path: Path) -> None:
+    """Caller-controlled untracked priorities cannot expand persisted notes."""
+
+    _write(tmp_path / "src" / "app.py", "VALUE = 1\n")
+    values = tuple(f"missing/{index}-{'x' * 200}.py" for index in range(5))
+
+    ledger = builder.build_attention_ledger(tmp_path, priority_paths=values)
+    guards = cast(dict[str, object], ledger.inputs["performance_guards"])
+    notes = [note for note in cast(list[str], guards["notes"]) if note.startswith("priority path")]
+
+    assert len(notes) == PRIORITY_NOTE_COUNT
+    assert all(len(note) <= PRIORITY_NOTE_MAX_CHARS for note in notes[:REQUIRED_PATH_COUNT])
+    assert notes[-1] == "priority paths not tracked and omitted: 5"
 
 
 def test_read_attention_ledger_round_trips_inside_repository(tmp_path: Path) -> None:
