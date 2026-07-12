@@ -107,6 +107,24 @@ def test_check_accepts_changed_evidence_with_attestation(tmp_path: Path) -> None
     assert result.ok
 
 
+def test_newer_attestation_keeps_historical_record_unchanged(tmp_path: Path) -> None:
+    """A current claim/evidence attestation supersedes stale history only."""
+
+    _write_repo(tmp_path)
+    _commit_all(tmp_path)
+    reason = "internal_refactor_only"
+    created_path = create_attestation(tmp_path, "claim.demo", ("evidence.demo",), reason)
+    historical_path = created_path.rename(created_path.with_name("historical.yml"))
+    historical_text = historical_path.read_text(encoding="utf-8")
+    _replace(tmp_path / "src.py", "Demo behavior.", "Changed behavior.")
+    create_attestation(tmp_path, "claim.demo", ("evidence.demo",), reason)
+
+    result = load_attestations(build_index(IndexOptions(repo_root=tmp_path)))
+
+    assert historical_path.read_text(encoding="utf-8") == historical_text
+    assert {finding.code for finding in result.findings}.isdisjoint({"DS301", "DS308"})
+
+
 def test_check_default_base_ref_falls_back_to_head(tmp_path: Path) -> None:
     """Default check works in repos without origin/main."""
     _write_repo(tmp_path)

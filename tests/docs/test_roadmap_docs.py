@@ -91,6 +91,19 @@ def test_roadmap_overview_describes_current_state() -> None:
     assert "Master implementation blueprint" not in normalized_text
 
 
+def test_active_roadmap_reports_current_strict_and_api_state() -> None:
+    """The active tracker does not revive completed strict-typing debt."""
+
+    text = Path("docs/ROADMAP.md").read_text(encoding="utf-8")
+
+    assert "`1,265` diagnostics" not in text
+    assert "Strict Pyright cutover complete" in text
+    assert "[x] Reclassify top-level help" in text
+    assert "[x] Add `agent_waits`" in text
+    assert "[x] Publish exact-installed-version expectations" in text
+    assert "[ ] Guarantee changed, failed, exact-fact" in text
+
+
 def test_phase_specs_are_split_and_bounded() -> None:
     """Detailed phase specs live in bounded per-phase files."""
 

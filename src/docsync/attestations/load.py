@@ -57,10 +57,35 @@ def load_attestations(index: DocSyncIndex) -> AttestationSet:
 
 
 def _semantic_findings(index: DocSyncIndex, records: list[Attestation]) -> list[Finding]:
-    return [finding for record in records for finding in _record_semantic_findings(index, record)]
+    current_pairs = _current_attestation_pairs(index, records)
+    return [
+        finding
+        for record in records
+        for finding in _record_semantic_findings(index, record, current_pairs)
+    ]
 
 
-def _record_semantic_findings(index: DocSyncIndex, record: Attestation) -> list[Finding]:
+def _current_attestation_pairs(
+    index: DocSyncIndex,
+    records: list[Attestation],
+) -> set[tuple[str, str]]:
+    """Return claim/evidence pairs with an exact-current attestation."""
+
+    return {
+        (record.claim_id, evidence_id)
+        for record in records
+        for evidence_id in record.evidence_ids
+        if record.evidence_fingerprints.get(evidence_id) == _current_fingerprint(index, evidence_id)
+        and record.evidence_anchor_fingerprints.get(evidence_id)
+        == _current_anchor_fingerprints(index, evidence_id)
+    }
+
+
+def _record_semantic_findings(
+    index: DocSyncIndex,
+    record: Attestation,
+    current_pairs: set[tuple[str, str]],
+) -> list[Finding]:
     claim = index.trace.claims.get(record.claim_id)
     if claim is None:
         return [
@@ -72,7 +97,7 @@ def _record_semantic_findings(index: DocSyncIndex, record: Attestation) -> list[
         ]
     findings = _audit_findings(record)
     findings.extend(_reason_findings(claim, record))
-    findings.extend(_evidence_findings(index, record))
+    findings.extend(_evidence_findings(index, record, current_pairs))
     return findings
 
 
@@ -99,11 +124,16 @@ def _reason_findings(claim: Claim, record: Attestation) -> list[Finding]:
     ]
 
 
-def _evidence_findings(index: DocSyncIndex, record: Attestation) -> list[Finding]:
+def _evidence_findings(
+    index: DocSyncIndex,
+    record: Attestation,
+    current_pairs: set[tuple[str, str]],
+) -> list[Finding]:
     return [
         finding
         for evidence_id in record.evidence_ids
         for finding in _evidence_fingerprint_findings(index, record, evidence_id)
+        if finding.code != "DS301" or (record.claim_id, evidence_id) not in current_pairs
     ]
 
 

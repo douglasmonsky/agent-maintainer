@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260712T005925Z.claim.readme.agent_repair_loop.fcbaf61
+  claim: claim.readme.agent_repair_loop
+  doc_object: docs.readme.agent_loop
+  evidence:
+  - evidence.readme.command_registry
+  reason: Top-level command classifications changed; reviewed documentation remains
+    accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-12T00:59:25Z'
+  base: HEAD
+  head: fcbaf61
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:4db7875c4271c298da2e85ccdf2bda5fcc26e9fe7f4e262e73d8351805278352
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:56c9448d82815e73074768b79e148c6d9e13324563a3a75795aef500c6e6763a
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

@@ -31,30 +31,34 @@ verify_main: CommandRunner = preflight.ValidatedCommand(_verify_main)
 USAGE = """Usage:
   python -m agent_maintainer <command> [options]
 
-Core commands:
-  attention       Build and inspect local file attention ledgers.
-  assess          Recommend setup and score maintenance debt.
-  bootstrap       Install development dependencies for this checkout.
+Stable workflows:
   doctor          Inspect setup health and configuration drift.
-  events        Summarize local runtime event JSONL artifacts.
   guidance        Generate or check AGENTS.agent-maintainer.md.
   init            Write starter files into a target repository.
   install         Install local hooks for this repository.
-  mcp             Run optional typed MCP tool surface.
-  wait            Wait quietly for long-running external work.
   verify          Run configured verification profiles.
+  wait            Quiet polling is stable; terminal rewake is experimental.
 
-Agent repair commands:
-  change-plan     Manage cohesive change plans.
+Repair and inspection:
+  assess          Recommend setup and score maintenance debt.
   context         Read bounded failure, log, file, and diff context.
   ratchet         Inspect legacy-ratchet baselines and repair targets.
   repair-plan     Generate repair guidance from current diagnostics.
-  scoring         Manage local scoring dataset examples.
   test-intel      Suggest relevant tests and deeper test targets.
 
-Operations:
-  hooks           Install, audit, and inspect agent-client hooks.
+Optional local intelligence:
+  attention       Build and inspect local file attention ledgers.
+  events          Summarize local runtime event JSONL artifacts.
   report          Render diagnostic reports.
+  scoring         Manage local scoring dataset examples.
+
+Experimental integrations:
+  mcp             Run optional typed MCP tool surface.
+
+Operations:
+  bootstrap       Install development dependencies for this checkout.
+  change-plan     Manage cohesive change plans.
+  hooks           Install, audit, and inspect agent-client hooks.
 
 Examples:
   python -m agent_maintainer doctor --strict

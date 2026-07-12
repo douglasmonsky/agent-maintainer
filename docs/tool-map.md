@@ -6,6 +6,16 @@ part of the default Python workflow. See
 [Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
 for the first opt-in non-Python provider.
 
+## Top-level command surface
+
+| Category | Commands | Stability note |
+| --- | --- | --- |
+| Stable workflows | `doctor`, `guidance`, `init`, `install`, `verify`, `wait` | Quiet polling is stable; terminal rewake is experimental. |
+| Repair and inspection | `assess`, `context`, `ratchet`, `repair-plan`, `test-intel` | Use these commands to inspect and plan repairs. |
+| Optional local intelligence | `attention`, `events`, `report`, `scoring` | Local artifacts and datasets provide optional guidance. |
+| Experimental integrations | `mcp` | Optional typed MCP tool surface. |
+| Operations | `bootstrap`, `change-plan`, `hooks` | Checkout and workflow administration. |
+
 <p align="center">
   <img src="assets/graphics/standard-runs-at-a-glance.png" alt="Agent Maintainer standard runs comparison showing typical fast full verification checks plus optional hardening profiles." width="900">
 </p>

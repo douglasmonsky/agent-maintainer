@@ -65,6 +65,20 @@ BOUNDARIES = (
         ),
     ),
     PackageBoundary(
+        "agent_waits",
+        frozenset(
+            {
+                "agent_client_hooks",
+                "agent_context",
+                "agent_maintainer",
+                "agent_repair_facts",
+                "agent_run_artifacts",
+                "archguard",
+                "docsync",
+            }
+        ),
+    ),
+    PackageBoundary(
         "docsync",
         frozenset(
             {
@@ -74,6 +88,30 @@ BOUNDARIES = (
         ),
     ),
 )
+
+
+def test_agent_waits_boundary_is_declared() -> None:
+    """Reusable wait primitives keep an explicit product-neutral boundary."""
+
+    boundary = next(
+        (item for item in BOUNDARIES if item.package == "agent_waits"),
+        None,
+    )
+
+    assert boundary == PackageBoundary(
+        "agent_waits",
+        frozenset(
+            {
+                "agent_client_hooks",
+                "agent_context",
+                "agent_maintainer",
+                "agent_repair_facts",
+                "agent_run_artifacts",
+                "archguard",
+                "docsync",
+            }
+        ),
+    )
 
 
 def test_extracted_packages_do_not_import_forbidden_product_packages() -> None:
