@@ -10,6 +10,7 @@ from typing import cast
 
 from agent_waits import constants as wait_constants
 from agent_waits import heartbeat as wait_heartbeat
+from agent_waits.command_rendering import resume_command
 from agent_waits.record_lock import wait_record_lock
 
 
@@ -165,8 +166,7 @@ class WaitRegistry:
             created_at=created_at,
             updated_at=created_at,
             deadline_at=_deadline(created_at, inputs.timeout_seconds),
-            resume_instruction=inputs.resume_instruction
-            or f"python -m agent_maintainer wait resume {wait_id}",
+            resume_instruction=inputs.resume_instruction or resume_command(inputs.root, wait_id),
             metadata=wait_heartbeat.registration_metadata(
                 _optional_mapping(inputs.metadata),
             ),

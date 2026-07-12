@@ -8,6 +8,7 @@ depends_on = []
 path = "broker"
 depends_on = [
   "capabilities",
+  "command_rendering",
   "models",
   "registry",
 ]
@@ -22,6 +23,10 @@ depends_on = []
 
 [[modules]]
 path = "constants"
+depends_on = []
+
+[[modules]]
+path = "command_rendering"
 depends_on = []
 
 [[modules]]
@@ -44,6 +49,7 @@ depends_on = []
 path = "registry"
 depends_on = [
   "constants",
+  "command_rendering",
   "heartbeat",
   "record_lock",
 ]
