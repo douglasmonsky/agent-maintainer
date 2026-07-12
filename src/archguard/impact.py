@@ -10,6 +10,7 @@ from archguard import tach_config_domains as domains
 from archguard.structured_values import non_empty_strings, structured_object, structured_objects
 
 NO_OWNER = "<unassigned>"
+MAX_AFFECTED_TESTS = 12
 
 
 @dataclass(frozen=True)
@@ -358,14 +359,19 @@ def affected_tests(repo_root: Path, owned: OwnedModule) -> str:
     if not tests_root.exists() or owned.owner is None:
         return "none found"
     leaf = owned.owner.name.rsplit(".", maxsplit=1)[-1].replace("_", "-")
+    domain_segment = owned.owner.domain_root.rsplit(".", maxsplit=1)[-1]
     candidates = sorted(
         path.relative_to(repo_root).as_posix()
         for path in tests_root.rglob("test_*.py")
-        if leaf.replace("-", "_") in path.stem or owned.owner.name.split(".")[0] in path.parts
+        if leaf.replace("-", "_") in path.stem
+        or domain_segment in path.relative_to(tests_root).parts
     )
     if not candidates:
         return "none found"
-    return ", ".join(candidates)
+    displayed = candidates[:MAX_AFFECTED_TESTS]
+    omitted = len(candidates) - len(displayed)
+    hint_text = ", ".join(displayed)
+    return f"{hint_text} (+{omitted} more)" if omitted else hint_text
 
 
 def join_lines(lines: list[str]) -> str:

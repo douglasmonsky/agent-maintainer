@@ -222,7 +222,7 @@ Tach module entry, configured module entries to still resolve to source, every
 module to declare `depends_on`, and broad `paths = [...]` buckets to stay below
 the configured limit.
 
-Archguard runs alongside Tach when `architecture_tool = "tach"`. Tach enforces the current architecture contract. Archguard governs changes to that contract. If `tach.toml` or `tach.domain.toml` changes, Archguard requires an architecture decision note in `docs/architecture/decisions/`. `archguard map`, `archguard impact <path>`, and `archguard explain-boundary <source> <target>` provide read-only ownership, dependency-direction, affected-test, boundary-violation, and decision-note context before editing architecture-sensitive files.
+Archguard runs alongside Tach when `architecture_tool = "tach"`. Tach enforces the current architecture contract. Archguard governs changes to that contract. If `tach.toml` or `tach.domain.toml` changes, Archguard requires an architecture decision note in `docs/architecture/decisions/`. `archguard map`, `archguard impact <path>`, and `archguard explain-boundary <source> <target>` provide read-only ownership, dependency-direction, affected-test, boundary-violation, and decision-note context before editing architecture-sensitive files. They merge nested domain ownership with root rules, prefer explicit domain dependencies when present, and retain legacy layer direction for rules without an explicit allowlist. Affected-test hints are sorted and bounded. If root or nested policy cannot be loaded, Archguard reports the bounded load error and treats dependency direction as unknown rather than inferring an allowed boundary.
 
 ## Diff hygiene gates
 

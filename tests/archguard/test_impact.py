@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from archguard.impact import (
+    MAX_AFFECTED_TESTS,
     ArchitectureMap,
     ModuleRule,
     OwnedModule,
@@ -98,6 +99,11 @@ def test_nested_domains_override_broad_root_ownership(tmp_path: Path) -> None:
     """Nested domains provide ownership and explicit boundary policy."""
 
     write_domain_fixture(tmp_path)
+    for index in range(13):
+        (tmp_path / "tests" / "verify" / f"test_worker_{index}.py").write_text(
+            "def test_worker(): pass\n",
+            encoding="utf-8",
+        )
     architecture = load_architecture(tmp_path)
 
     impact = render_impact(tmp_path, architecture, Path("src/sample/verify/worker.py"))
@@ -115,6 +121,9 @@ def test_nested_domains_override_broad_root_ownership(tmp_path: Path) -> None:
     )
 
     assert "Module ownership: sample.verify.worker" in impact
+    assert "Affected tests: tests/verify/test_worker.py" in impact
+    assert impact.count("tests/verify/") == MAX_AFFECTED_TESTS
+    assert "(+2 more)" in impact
     assert "sample.verify.worker" in render_map(architecture)
     assert "depends on: sample.wait.broker" in render_map(architecture)
     assert "allowed: sample.verify.worker declares sample.wait.broker" in allowed
