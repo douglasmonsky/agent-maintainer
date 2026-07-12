@@ -358,7 +358,7 @@ depends_on = []
     ignored_path.mkdir()
     (ignored_path / "tach.domain.toml").write_text("root = [", encoding="utf-8")
 
-    payloads = tach_config_domains.domain_payloads(tmp_path, ["src"])
+    payloads = tach_config_domains.load_domain_payloads(tmp_path, ["src"]).payloads
 
     assert payloads == (("package", {"root": {"depends_on": []}}),)
     assert tach_config_domains.domain_module_path("package", ".") == "package"

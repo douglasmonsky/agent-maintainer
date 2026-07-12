@@ -27,7 +27,8 @@ def tach_config_issues(repo_root: Path, *, require_strict_root: bool) -> list[st
         return ["tach.toml must contain a top-level table"]
 
     issues: list[str] = []
-    domain_payloads = domains.domain_payloads(repo_root, payload.get("source_roots"))
+    domain_load = domains.load_domain_payloads(repo_root, payload.get("source_roots"))
+    domain_payloads = domain_load.payloads
     issues.extend(_source_root_issues(payload))
     issues.extend(_module_issues(payload, config_name="tach.toml"))
     issues.extend(_domain_payload_issues(domain_payloads))

@@ -6,6 +6,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
+from archguard import tach_config_domains
 from archguard.structured_values import non_empty_strings, structured_object, structured_objects
 
 NO_OWNER = "<unassigned>"
@@ -26,6 +27,7 @@ class ArchitectureMap:
     source_roots: tuple[str, ...]
     layers: tuple[str, ...]
     modules: tuple[ModuleRule, ...]
+    load_errors: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -53,11 +55,20 @@ def load_architecture(repo_root: Path) -> ArchitectureMap:
     """Load Tach architecture map from repository root."""
 
     config_path = repo_root / "tach.toml"
-    payload = structured_object(tomllib.loads(config_path.read_text(encoding="utf-8"))) or {}
+    try:
+        payload = structured_object(tomllib.loads(config_path.read_text(encoding="utf-8"))) or {}
+    except tomllib.TOMLDecodeError:
+        return ArchitectureMap((), (), (), ("tach.toml: invalid_toml",))
+    except UnicodeError:
+        return ArchitectureMap((), (), (), ("tach.toml: invalid_utf8",))
+    except OSError:
+        return ArchitectureMap((), (), (), ("tach.toml: read_error",))
+    domain_load = tach_config_domains.load_domain_payloads(repo_root, payload.get("source_roots"))
     return ArchitectureMap(
         source_roots=non_empty_strings(payload.get("source_roots")),
         layers=non_empty_strings(payload.get("layers")),
         modules=module_rules(payload.get("modules")),
+        load_errors=domain_load.errors,
     )
 
 
@@ -102,6 +113,9 @@ def render_map(architecture: ArchitectureMap) -> str:
     ]
     for rule in architecture.modules:
         lines.append(f"- {rule.name} [{rule.layer}]")
+    if architecture.load_errors:
+        lines.extend(("", "Policy load errors:"))
+        lines.extend(f"- {error}" for error in architecture.load_errors)
     return join_lines(lines)
 
 
@@ -206,6 +220,8 @@ def dependency_direction(
 ) -> str:
     """Return allowed dependency direction for an owner."""
 
+    if architecture.load_errors:
+        return "unknown: architecture policy is incomplete"
     if owner is None or owner.layer not in architecture.layers:
         return "unknown"
     layer_index = architecture.layers.index(owner.layer)
@@ -223,6 +239,8 @@ def boundary_status(
 ) -> str:
     """Return boundary status if source imports target."""
 
+    if architecture.load_errors:
+        return "unknown: architecture policy is incomplete"
     if source is None or target is None:
         return "unknown; at least one file is not owned by Tach"
     if source.name == target.name:

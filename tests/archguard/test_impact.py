@@ -64,6 +64,42 @@ def test_render_map_lists_modules_layers_and_roots(tmp_path: Path) -> None:
     assert "- sample.service [runtime]" in output
 
 
+def test_malformed_domain_policy_fails_boundary_explanation_closed(tmp_path: Path) -> None:
+    """Incomplete nested policy never falls back to a broad allowed result."""
+
+    write_tach_fixture(tmp_path)
+    domain = tmp_path / "src" / "sample" / "broken" / "tach.domain.toml"
+    domain.parent.mkdir(parents=True)
+    domain.write_text("[[modules]\npath =", encoding="utf-8")
+
+    architecture = load_architecture(tmp_path)
+    output = render_boundary(
+        tmp_path,
+        architecture,
+        Path("src/sample/cli.py"),
+        Path("src/sample/models.py"),
+    )
+
+    assert architecture.load_errors == ("src/sample/broken/tach.domain.toml: invalid_toml",)
+    assert "Policy load errors:" in render_map(architecture)
+    assert "Dependency direction: unknown: architecture policy is incomplete" in output
+    assert "allowed:" not in output
+
+
+def test_malformed_root_policy_returns_bounded_error_map(tmp_path: Path) -> None:
+    """Root parse failures are reported without a traceback or false policy."""
+
+    (tmp_path / "tach.toml").write_text("[[modules]\npath =", encoding="utf-8")
+
+    architecture = load_architecture(tmp_path)
+
+    assert architecture.load_errors == ("tach.toml: invalid_toml",)
+    assert "- tach.toml: invalid_toml" in render_map(architecture)
+    assert dependency_direction(architecture, None) == (
+        "unknown: architecture policy is incomplete"
+    )
+
+
 def test_render_impact_reports_owner_direction_and_tests(tmp_path: Path) -> None:
     """Render impact for changed source file."""
 

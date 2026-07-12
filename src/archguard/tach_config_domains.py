@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import tomllib
+from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
@@ -14,18 +15,29 @@ DomainPayload = tuple[str, TachPayload]
 DomainPayloads = tuple[DomainPayload, ...]
 
 
-def domain_payloads(repo_root: Path, source_roots: object) -> DomainPayloads:
-    """Return parsed Tach domain files under configured source roots."""
+@dataclass(frozen=True)
+class DomainLoadResult:
+    """Parsed domain payloads plus bounded fail-closed errors."""
+
+    payloads: DomainPayloads
+    errors: tuple[str, ...]
+
+
+def load_domain_payloads(repo_root: Path, source_roots: object) -> DomainLoadResult:
+    """Return parsed Tach domain files and bounded loader errors."""
     if not sources.non_empty_string_list(source_roots):
-        return ()
+        return DomainLoadResult((), ())
 
     payloads: list[DomainPayload] = []
+    errors: list[str] = []
     for source_root in source_roots:
         root_path = repo_root / source_root
         if not root_path.exists():
             continue
-        payloads.extend(_root_domain_payloads(root_path))
-    return tuple(payloads)
+        result = _root_domain_payloads(repo_root, root_path)
+        payloads.extend(result.payloads)
+        errors.extend(result.errors)
+    return DomainLoadResult(tuple(sorted(payloads)), tuple(sorted(errors)))
 
 
 def configured_domain_module_paths(payloads: DomainPayloads) -> frozenset[str]:
@@ -60,21 +72,29 @@ def domain_module_path(domain_root: str, path: str) -> str:
     return f"{domain_root}.{path}"
 
 
-def _root_domain_payloads(root_path: Path) -> tuple[DomainPayload, ...]:
+def _root_domain_payloads(repo_root: Path, root_path: Path) -> DomainLoadResult:
     payloads: list[DomainPayload] = []
+    errors: list[str] = []
     for config_path in sorted(root_path.rglob(DOMAIN_CONFIG_NAME)):
-        payload = _read_domain_payload(config_path)
+        payload, error = _read_domain_payload(config_path)
         domain_root = ".".join(config_path.parent.relative_to(root_path).parts)
         if payload is not None and domain_root:
             payloads.append((domain_root, payload))
-    return tuple(payloads)
+        if error is not None:
+            path = config_path.relative_to(repo_root).as_posix()
+            errors.append(f"{path}: {error}")
+    return DomainLoadResult(tuple(payloads), tuple(errors))
 
 
-def _read_domain_payload(config_path: Path) -> TachPayload | None:
+def _read_domain_payload(config_path: Path) -> tuple[TachPayload | None, str | None]:
     try:
-        return _toml_table(tomllib.loads(config_path.read_text(encoding="utf-8")))
+        return _toml_table(tomllib.loads(config_path.read_text(encoding="utf-8"))), None
     except tomllib.TOMLDecodeError:
-        return None
+        return None, "invalid_toml"
+    except UnicodeError:
+        return None, "invalid_utf8"
+    except OSError:
+        return None, "read_error"
 
 
 def _payload_module_paths(domain_root: str, payload: TachPayload) -> tuple[str, ...]:
