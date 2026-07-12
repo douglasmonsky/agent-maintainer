@@ -18,6 +18,7 @@ src/
   agent_context/       # bounded context, context packs, safe expansion
   agent_run_artifacts/ # verifier artifact schemas and renderers
   agent_client_hooks/  # hook config/templates/adapters
+  agent_waits/         # product-neutral wait records, watcher state, and notification claims
   docsync/             # docs evidence and claim-freshness package
   archguard/           # architecture/config validation package
 ```
@@ -40,6 +41,8 @@ unless a future ADR explicitly reopens the decision.
   models, adapter selection, and install planning into `agent_client_hooks`.
 - Phase 116 added executable dependency-direction tests for extracted
   packages.
+- `agent_waits` dependency direction is covered by the AST regression and its
+  package-local Tach contract.
 - Phase 118 extracted pure context-pack rendering and sanitizing helpers into
   `agent_context`.
 - Phase 119 extracted reusable context-compression primitives and backend
