@@ -40,6 +40,7 @@ def attention_payload(
     selected_logs: list[dict[str, object]],
     *,
     workspace_root: Path,
+    requested_paths: Iterable[Path] = (),
 ) -> dict[str, object]:
     """Return optional attention block for one context pack."""
     ledger_path = log_dir / ATTENTION_LEDGER_PATH
@@ -59,7 +60,9 @@ def attention_payload(
     if ledger is None:
         return _unavailable_payload(ledger_path)
     by_path = {score.path: score for score in ledger.files}
-    direct_paths = _fact_paths(exact_facts)
+    direct_paths = _unique_paths(
+        (*_fact_paths(exact_facts), *_requested_paths(requested_paths, workspace_root))
+    )
     inferred_paths = tuple(
         path for path in _log_paths(selected_logs, by_path) if path not in direct_paths
     )
@@ -118,6 +121,18 @@ def attach_attention_to_facts(
 def _fact_paths(facts: list[dict[str, object]]) -> tuple[str, ...]:
     """Return unique file paths from exact repair facts."""
     return _unique_paths(str(path) for fact in facts if isinstance((path := fact.get("path")), str))
+
+
+def _requested_paths(paths: Iterable[Path], workspace_root: Path) -> tuple[str, ...]:
+    """Return safe requested paths as repository-relative POSIX paths."""
+
+    normalized: list[str] = []
+    for path in paths:
+        confined = file_safety.confined_path(path, workspace_root=workspace_root)
+        if isinstance(confined, file_safety.FileSafety):
+            continue
+        normalized.append(confined.relative_to(workspace_root.resolve()).as_posix())
+    return _unique_paths(normalized)
 
 
 def _log_paths(

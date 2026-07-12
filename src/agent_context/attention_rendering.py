@@ -60,6 +60,7 @@ def _attention_entry_lines(entries: list[dict[str, object]]) -> list[str]:
     lines: list[str] = []
     for entry in entries:
         path = entry.get("path", "<unknown>")
-        score = entry.get("score", 0)
-        lines.append(f"  - {score}: {path}")
+        score = entry.get("score")
+        score_text = "unscored" if score is None else str(score)
+        lines.append(f"  - {score_text}: {path}")
     return lines
