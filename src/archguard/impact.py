@@ -6,7 +6,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from archguard import tach_config_domains
+from archguard import tach_config_domains as domains
 from archguard.structured_values import non_empty_strings, structured_object, structured_objects
 
 NO_OWNER = "<unassigned>"
@@ -14,10 +14,12 @@ NO_OWNER = "<unassigned>"
 
 @dataclass(frozen=True)
 class ModuleRule:
-    """Configured Tach module ownership rule."""
+    """Configured Tach module ownership and dependency rule."""
 
     name: str
-    layer: str
+    layer: str = NO_OWNER
+    depends_on: tuple[str, ...] | None = None
+    domain_root: str = ""
 
 
 @dataclass(frozen=True)
@@ -63,24 +65,83 @@ def load_architecture(repo_root: Path) -> ArchitectureMap:
         return ArchitectureMap((), (), (), ("tach.toml: invalid_utf8",))
     except OSError:
         return ArchitectureMap((), (), (), ("tach.toml: read_error",))
-    domain_load = tach_config_domains.load_domain_payloads(repo_root, payload.get("source_roots"))
+    domain_load = domains.load_domain_payloads(repo_root, payload.get("source_roots"))
     return ArchitectureMap(
         source_roots=non_empty_strings(payload.get("source_roots")),
         layers=non_empty_strings(payload.get("layers")),
-        modules=module_rules(payload.get("modules")),
+        modules=_all_module_rules(payload.get("modules"), domain_load.payloads),
         load_errors=domain_load.errors,
     )
 
 
-def module_rules(modules: object) -> tuple[ModuleRule, ...]:
+def _all_module_rules(
+    root_modules: object,
+    domain_payloads: domains.DomainPayloads,
+) -> tuple[ModuleRule, ...]:
+    """Return root and nested domain rules sorted by full module name."""
+
+    rules = list(module_rules(root_modules))
+    for domain_root, payload in domain_payloads:
+        rules.extend(_domain_rules(domain_root, payload))
+    return tuple(sorted(rules, key=lambda rule: rule.name))
+
+
+def _domain_rules(domain_root: str, payload: domains.TachPayload) -> tuple[ModuleRule, ...]:
+    """Return ownership rules declared by one nested domain payload."""
+
+    rules = list(module_rules(payload.get("modules"), domain_root=domain_root))
+    root = structured_object(payload.get("root"))
+    if root is not None:
+        rules.append(_module_rule(domain_root, root, domain_root=domain_root))
+    return tuple(rules)
+
+
+def module_rules(modules: object, *, domain_root: str = "") -> tuple[ModuleRule, ...]:
     """Return flattened module ownership rules."""
 
     rules: list[ModuleRule] = []
     for item in structured_objects(modules):
         layer = string_value(item.get("layer"))
         paths = module_paths(item)
-        rules.extend(ModuleRule(name=path, layer=layer) for path in paths)
+        rules.extend(
+            _module_rule(path, item, layer=layer, domain_root=domain_root) for path in paths
+        )
     return tuple(sorted(rules, key=lambda rule: rule.name))
+
+
+def _module_rule(
+    path: str,
+    item: dict[str, object],
+    *,
+    layer: str = NO_OWNER,
+    domain_root: str,
+) -> ModuleRule:
+    """Return one full-name rule with optional explicit dependencies."""
+
+    name = domains.domain_module_path(domain_root, path) if domain_root else path
+    return ModuleRule(
+        name=name,
+        layer=layer,
+        depends_on=_dependency_paths(item, domain_root),
+        domain_root=domain_root,
+    )
+
+
+def _dependency_paths(item: dict[str, object], domain_root: str) -> tuple[str, ...] | None:
+    """Return an explicit normalized dependency allowlist when present."""
+
+    if "depends_on" not in item:
+        return None
+    values = non_empty_strings(item.get("depends_on"))
+    return tuple(_dependency_path(value, domain_root) for value in values)
+
+
+def _dependency_path(value: str, domain_root: str) -> str:
+    """Return one absolute or domain-local dependency module path."""
+
+    if value.startswith("//"):
+        return value[2:]
+    return domains.domain_module_path(domain_root, value) if domain_root else value
 
 
 def module_paths(item: dict[str, object]) -> tuple[str, ...]:
@@ -112,11 +173,21 @@ def render_map(architecture: ArchitectureMap) -> str:
         "Modules:",
     ]
     for rule in architecture.modules:
-        lines.append(f"- {rule.name} [{rule.layer}]")
+        lines.append(_render_rule(rule))
     if architecture.load_errors:
         lines.extend(("", "Policy load errors:"))
         lines.extend(f"- {error}" for error in architecture.load_errors)
     return join_lines(lines)
+
+
+def _render_rule(rule: ModuleRule) -> str:
+    """Render one ownership rule without changing legacy map lines."""
+
+    line = f"- {rule.name} [{rule.layer}]"
+    if rule.depends_on is None:
+        return line
+    dependencies = ", ".join(rule.depends_on) or "<none>"
+    return f"{line} depends on: {dependencies}"
 
 
 def render_impact(repo_root: Path, architecture: ArchitectureMap, file_path: Path) -> str:
@@ -222,6 +293,10 @@ def dependency_direction(
 
     if architecture.load_errors:
         return "unknown: architecture policy is incomplete"
+    if owner is not None and owner.depends_on is not None:
+        if not owner.depends_on:
+            return f"{owner.name} may not depend on other configured modules"
+        return f"{owner.name} may depend on {', '.join(owner.depends_on)}"
     if owner is None or owner.layer not in architecture.layers:
         return "unknown"
     layer_index = architecture.layers.index(owner.layer)
@@ -245,13 +320,29 @@ def boundary_status(
         return "unknown; at least one file is not owned by Tach"
     if source.name == target.name:
         return "same module"
+    if source.depends_on is not None:
+        return _explicit_boundary_status(source, target)
     if source.layer not in architecture.layers or target.layer not in architecture.layers:
         return "unknown; at least one layer is not configured"
     source_index = architecture.layers.index(source.layer)
     target_index = architecture.layers.index(target.layer)
-    if source_index <= target_index:
-        return f"allowed: {source.layer} can depend on {target.layer}"
-    return f"violation: {source.layer} must not depend on {target.layer}"
+    return (
+        f"allowed: {source.layer} can depend on {target.layer}"
+        if source_index <= target_index
+        else f"violation: {source.layer} must not depend on {target.layer}"
+    )
+
+
+def _explicit_boundary_status(source: ModuleRule, target: ModuleRule) -> str:
+    """Return explicit dependency allowlist status for two owned modules."""
+
+    allowed = any(
+        target.name == dependency or target.name.startswith(f"{dependency}.")
+        for dependency in source.depends_on or ()
+    )
+    if allowed:
+        return f"allowed: {source.name} declares {target.name}"
+    return f"violation: {source.name} does not declare {target.name}"
 
 
 def affected_tests(repo_root: Path, owned: OwnedModule) -> str:
