@@ -101,7 +101,8 @@ def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     assert "[x] Reclassify top-level help" in text
     assert "[x] Add `agent_waits`" in text
     assert "[x] Publish exact-installed-version expectations" in text
-    assert "[ ] Guarantee changed, failed, exact-fact" in text
+    assert "[x] Guarantee changed, failed, exact-fact" in text
+    assert "[x] Validate attention schema version" in text
 
 
 def test_phase_specs_are_split_and_bounded() -> None:
