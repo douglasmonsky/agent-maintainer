@@ -29,10 +29,10 @@ guide and relevant split phase file. If the split roadmap appears missing or
 stale, restore the source document named `agent-maintainer-full-roadmap-blueprint.md`
 and split it back into `docs/roadmap/phases/` before continuing implementation.
 
-Agent Maintainer is in beta. The active priorities are publishing the final
-`0.1.0b6` commit, proving retained value in external repositories, and paying
-down reviewed quality debt without weakening existing gates. Completed feature
-tracks remain below as recovery history, not as unstarted plans.
+Agent Maintainer is in beta. The active priorities are proving retained value
+in external repositories and paying down reviewed quality debt without
+weakening existing gates. Completed feature tracks remain below as recovery
+history, not as unstarted plans.
 
 ## Current Baseline
 
@@ -43,21 +43,10 @@ example repos, and the first cohesive-change budget exception.
 
 Current external release state:
 
-- [x] `agent-maintainer==0.1.0b5` is published to TestPyPI and PyPI,
-      attached to GitHub prerelease `v0.1.0b5`, and smoke-tested from both
+- [x] `agent-maintainer==0.1.0b6` is published to TestPyPI and PyPI,
+      attached to GitHub prerelease `v0.1.0b6`, and smoke-tested from both
       package indexes. Release evidence is recorded in
-      [`docs/releases/0.1.0b5.md`](releases/0.1.0b5.md).
-
-Current source candidate state:
-
-- [x] The unpublished `0.1.0b6` release candidate is the package-metadata and
-      main-branch documentation target. Review the
-      [candidate notes](releases/0.1.0b6.md) and
-      [upgrade guide](upgrading-to-0.1.0b6.md).
-- [ ] `0.1.0b6` becomes the current external release only after the exact
-      candidate commit passes the complete release matrix and publication
-      evidence replaces candidate intent in the
-      [release index](releases/README.md).
+      [`docs/releases/0.1.0b6.md`](releases/0.1.0b6.md).
 
 Current pre-case-study decision:
 
@@ -73,8 +62,8 @@ implementation and release-readiness contract is:
 [`docs/roadmap/critical-stabilization.md`](roadmap/critical-stabilization.md).
 
 The program used focused commits on its dedicated integration branch and passed
-the required local and hosted verification. External `0.1.0b6` publication
-remains tracked by the candidate-release checkbox above.
+the required local and hosted verification. External `0.1.0b6` publication is
+recorded in the release evidence above.
 
 ## Completed Phase Archive
 
@@ -110,7 +99,7 @@ Track work:
 
 - [x] Phases 165-175: TypeScript/React maturation work in the detailed scope
 
-## Validation Pending: Codex Wait And Rewake Hardening
+## Completed: Codex Wait And Rewake Hardening
 
 This is separate from TypeScript/React provider maturation. The goal is to make
 known waits act like real suspension primitives: local watchers own pending
@@ -122,8 +111,8 @@ Detailed scope:
 
 Track work:
 
-- [ ] Phase 176: Codex Terminal Rewake Hardening — implementation is complete;
-      the explicitly gated real-turn smoke remains pending user authorization.
+- [x] Phase 176: Codex Terminal Rewake Hardening — the read-only and explicitly
+      gated real-turn smokes passed; terminal rewake remains opt-in.
 
 ## Active: External Proof And Architecture Hardening
 

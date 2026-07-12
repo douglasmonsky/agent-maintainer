@@ -1,6 +1,6 @@
 # Phase 176: Codex Terminal Rewake Hardening
 
-Status: implementation complete; manual validation pending
+Status: complete; read-only and real-turn smoke validation passed
 
 ## Goal
 
@@ -67,25 +67,24 @@ rewake backend is implemented.
 
 The app-server JSON-RPC backend and fail-closed launchd behavior are implemented.
 Capability-focused doctor output and a default read-only app-server smoke are
-implemented. The real `turn/start` smoke remains manual and gated until a user
-explicitly approves spending a Codex model turn. Atomic notification claims and
+implemented. The explicitly gated real `turn/start` smoke passed after user
+authorization to spend one Codex model turn. Atomic notification claims and
 stale watcher repair are implemented with privacy-safe durable metadata.
 Fallback requests now carry deterministic exponential backoff from at least 120
 seconds to a 1,800-second cap. The complete lifecycle event taxonomy is wired to
 durable claims, and allowlist regressions cover wait records and runtime events.
-The explicitly gated real-turn smoke remains the only manual evidence item.
+The explicitly gated real-turn smoke completed the final manual evidence item.
 
 ## Remaining Validation
 
 - [x] Default read-only app-server smoke is token-free and fail-closed.
 - [x] Focused rewake, notification-claim, watcher-repair, fallback, event, and
       privacy regressions pass.
-- [ ] Run the explicitly gated real `turn/start` smoke after the user authorizes
-      spending one Codex model turn.
+- [x] The explicitly gated real `turn/start` smoke passed after user
+      authorization to spend one Codex model turn.
 
-Until that final smoke passes, terminal rewake remains opt-in and this phase
-stays open in the root roadmap. The missing manual evidence does not reopen the
-completed implementation work.
+Terminal rewake remains opt-in. The completed smoke closes this phase in the
+root roadmap without changing its guarded default behavior.
 
 ## Acceptance Criteria
 
@@ -103,5 +102,4 @@ completed implementation work.
 
 - Arbitrary interception of every long-running shell command.
 - Persisting Codex thread ids or private prompts in durable wait records.
-- Making terminal rewake default before the gated real-turn smoke proves the
-  current desktop thread resumes as intended.
+- Making terminal rewake default; the completed smoke preserves opt-in behavior.

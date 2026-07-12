@@ -41,24 +41,29 @@ def test_release_version_has_changelog_entry() -> None:
 
 @pytest.mark.release
 @release_only
-def test_release_candidate_notes_are_truthful() -> None:
-    """Candidate notes identify the version without inventing release evidence."""
+def test_release_notes_record_published_b6_evidence() -> None:
+    """Published b6 notes retain exact immutable release evidence."""
 
     version = str(project_metadata()["version"])
     candidate_path = REPO_ROOT / "docs" / "releases" / f"{version}.md"
     candidate = candidate_path.read_text(encoding="utf-8")
 
-    assert f"# Agent Maintainer {version} Candidate Notes" in candidate
-    assert "- Status: `unpublished`" in candidate
-    for false_evidence in (
-        "Git tag:",
-        "GitHub release:",
-        "TestPyPI workflow:",
-        "PyPI workflow:",
-        "sha256:",
-        f"agent_maintainer-{version}",
+    assert f"# Agent Maintainer {version} Release Evidence" in candidate
+    for evidence in (
+        "3492f6fd8459c9de24a714a84b65d53766a0d606",
+        "v0.1.0b6",
+        "29208426926",
+        "29208792067",
+        "29209369320",
+        "f81ea2c7b1c7ffd493f94ca528c954fa1aa664ed39b4e9b496d6966c2cd4bd15",
+        "9241b39c85be42c44567b396df9d503f1044e63d417f738fcb7047b83a88afe4",
+        "39e6e12845a02e690904a7902d4ade6330193cde945b42ebb827935865717945",
+        "3d27c3c77c2d07c8491c25e0d42e9f185be1e6672f10e5bfc93fa802b352078f",
+        "Real-turn smoke: `passed`",
+        "TestPyPI index smoke: `passed`",
+        "PyPI index smoke: `passed`",
     ):
-        assert false_evidence not in candidate
+        assert evidence in candidate
 
 
 @pytest.mark.release
