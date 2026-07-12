@@ -56,38 +56,38 @@ implementation history belongs in the existing archive and change-plan files.
 
 Add one public policy document with three explicit tiers:
 
-1. **Supported beta surfaces:** the `agent-maintainer`, `archguard`, and
-   `docsync` console entry points; documented subcommands and exit behavior;
-   documented `[tool.agent_maintainer]` configuration; and documented JSON or
-   artifact schemas carrying a schema version.
-2. **Intended beta Python API:** only import paths explicitly named in the
-   policy or an API document. `docsync.api` is included because it is already
-   declared as the stable DocSync API. Adding another import requires a docs
-   change and a compatibility test.
+1. **Current-version documented surfaces:** the `agent-maintainer`, `archguard`,
+   and `docsync` console entry points; documented `[tool.agent_maintainer]`
+   configuration; and documented schema-versioned formats are expected to work
+   for the exact installed beta version. They carry no cross-version
+   compatibility promise before 1.0.
+2. **Current Python entry points:** `docsync.api` remains the intended DocSync
+   integration boundary for current code, but its signature may change between
+   beta releases without a deprecation window.
 3. **Internal/unstable surfaces:** implementation modules under
    `agent_maintainer`, `archguard`, and the extracted top-level packages unless
    explicitly promoted. Distribution in the wheel is not, by itself, a support
    promise.
 
-During `0.x`, supported beta surfaces may change only with release notes,
-upgrade guidance, and a compatibility decision. Removal of a supported surface
-requires at least one beta release of notice unless the surface is unsafe or
-unusable. Internal surfaces may change without deprecation.
+During `0.x`, commands, configuration, formats, and imports may change or be
+removed without a compatibility shim or deprecation release. Release notes and
+upgrade guidance should explain material user-facing changes when useful, but
+they are communication rather than a compatibility gate.
 
 ### Compatibility inventory
 
-Create a checked-in inventory grouped by boundary rather than pretending each
-thin forwarding module is an independent product. Every group records:
+Create a checked-in cleanup inventory grouped by boundary rather than pretending
+each thin forwarding module is an independent product. Every group records:
 
 - owning package and replacement import;
 - all forwarding modules in the group;
-- current callers or compatibility tests;
-- support window (`through 0.1.0b6` for the initial inventory);
-- removal condition (zero supported docs and zero non-compatibility callers);
-- earliest removal release (never earlier than `0.1.0b7`).
+- current internal callers, docs, or tests that must migrate with removal; and
+- the deletion rule: migrate current callers and delete the shim in the same
+  tested change.
 
-No shim is removed in this track. The inventory converts accidental permanence
-into an explicit, testable migration queue.
+Compatibility is not a reason to retain a shim. This track does not mass-delete
+forwarders blindly because an active internal caller would break, but no grace
+release, notice period, or external import promise blocks deletion.
 
 ### `agent_waits` ownership
 
@@ -120,15 +120,14 @@ SHA; it does not redefine the follow-up documentation commit as the candidate.
 
 ## Alternatives considered
 
-- **Leave support implicit until 1.0.** Rejected because the wheel already
-  distributes several top-level packages and compatibility shims; ambiguity is
-  already imposing maintenance cost.
+- **Leave beta instability implicit.** Rejected because users and agents need
+  to know that current documentation is not a cross-version promise.
 - **Freeze every import present in the wheel.** Rejected because packaging
   implementation units are not all intended libraries and a blanket promise
   would prevent needed beta refactoring.
-- **Delete the shims before b6.** Rejected because compatibility tests and
-  documented historical paths still exercise them, while the release candidate
-  needs stabilization rather than broad churn.
+- **Delete every shim without migrating active callers.** Rejected because beta
+  freedom permits breaking external compatibility, not knowingly breaking the
+  repository's current runtime and test graph.
 
 ## Error handling and evidence
 
@@ -144,8 +143,8 @@ SHA; it does not redefine the follow-up documentation commit as the candidate.
 - The active roadmap contains no stale strict-Pyright diagnostic target.
 - The support policy makes CLI, format, configuration, and import commitments
   distinguishable at a glance.
-- Every known compatibility-shim group has a removal condition and earliest
-  release.
+- Every known shim group has a canonical replacement and immediate tested
+  deletion rule, with no support window or earliest-release gate.
 - `agent_waits` has documented ownership and a passing secondary dependency
   regression.
 - One exact b6 candidate SHA has complete local qualification evidence, with
