@@ -112,22 +112,12 @@ def test_newer_attestation_keeps_historical_record_unchanged(tmp_path: Path) -> 
 
     _write_repo(tmp_path)
     _commit_all(tmp_path)
-    created_path = create_attestation(
-        tmp_path,
-        "claim.demo",
-        ("evidence.demo",),
-        "internal_refactor_only",
-    )
-    historical_path = created_path.with_name("historical.yml")
-    created_path.rename(historical_path)
+    reason = "internal_refactor_only"
+    created_path = create_attestation(tmp_path, "claim.demo", ("evidence.demo",), reason)
+    historical_path = created_path.rename(created_path.with_name("historical.yml"))
     historical_text = historical_path.read_text(encoding="utf-8")
     _replace(tmp_path / "src.py", "Demo behavior.", "Changed behavior.")
-    create_attestation(
-        tmp_path,
-        "claim.demo",
-        ("evidence.demo",),
-        "internal_refactor_only",
-    )
+    create_attestation(tmp_path, "claim.demo", ("evidence.demo",), reason)
 
     result = load_attestations(build_index(IndexOptions(repo_root=tmp_path)))
 
