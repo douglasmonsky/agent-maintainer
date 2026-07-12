@@ -35,6 +35,30 @@ def test_tach_config_issues_reports_invalid_toml(tmp_path: Path) -> None:
     assert issues[0].startswith("tach.toml invalid:")
 
 
+def test_tach_config_issues_reports_malformed_nested_domain(tmp_path: Path) -> None:
+    """Report a bounded error when nested domain policy cannot be parsed."""
+
+    package = tmp_path / "src" / "package"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    (package / "tach.domain.toml").write_text("[[modules]\npath =", encoding="utf-8")
+    (tmp_path / "tach.toml").write_text(
+        """
+source_roots = ["src"]
+root_module = "forbid"
+
+[[modules]]
+path = "package"
+depends_on = []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert issues == ["src/package/tach.domain.toml: invalid_toml"]
+
+
 def test_tach_config_issues_requires_source_roots(tmp_path: Path) -> None:
     """Require Tach source roots to make ownership checks meaningful."""
     (tmp_path / "tach.toml").write_text(
