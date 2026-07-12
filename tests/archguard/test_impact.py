@@ -133,6 +133,104 @@ def test_domain_dependencies_normalize_local_and_absolute_paths(tmp_path: Path) 
     assert rules["sample.wait.broker"].depends_on == ()
 
 
+def test_domain_dependencies_ignore_malformed_values(tmp_path: Path) -> None:
+    """Malformed dependency entries do not become implicit permissions."""
+
+    write_domain_fixture(tmp_path)
+    domain = tmp_path / "src" / "sample" / "wait" / "tach.domain.toml"
+    domain.write_text(
+        '[root]\ndepends_on = []\n\n[[modules]]\npath = "broker"\ndepends_on = [42]\n',
+        encoding="utf-8",
+    )
+
+    architecture = load_architecture(tmp_path)
+    rules = {rule.name: rule for rule in architecture.modules}
+
+    assert rules["sample.wait.broker"].depends_on == ()
+
+
+def test_explicit_package_dependency_allows_owned_descendant(tmp_path: Path) -> None:
+    """An explicit package dependency permits its configured descendants."""
+
+    write_domain_fixture(tmp_path)
+    domain = tmp_path / "src" / "sample" / "verify" / "tach.domain.toml"
+    domain.write_text(
+        '[root]\ndepends_on = []\n\n[[modules]]\npath = "worker"\ndepends_on = ["//sample.wait"]\n',
+        encoding="utf-8",
+    )
+
+    output = render_boundary(
+        tmp_path,
+        load_architecture(tmp_path),
+        Path("src/sample/verify/worker.py"),
+        Path("src/sample/wait/broker.py"),
+    )
+
+    assert "allowed: sample.verify.worker declares sample.wait.broker" in output
+
+
+def test_domain_root_owns_unlisted_descendants(tmp_path: Path) -> None:
+    """A domain root remains the nearest owner for descendants without a rule."""
+
+    write_domain_fixture(tmp_path)
+    path = tmp_path / "src" / "sample" / "verify" / "unlisted.py"
+    path.write_text("VALUE = 1\n", encoding="utf-8")
+
+    output = render_impact(
+        tmp_path,
+        load_architecture(tmp_path),
+        Path("src/sample/verify/unlisted.py"),
+    )
+
+    assert "Module ownership: sample.verify" in output
+
+
+def test_empty_explicit_allowlist_has_closed_direction_and_boundary(tmp_path: Path) -> None:
+    """An explicit empty allowlist rejects dependencies instead of using layers."""
+
+    write_domain_fixture(tmp_path)
+    architecture = load_architecture(tmp_path)
+    broker = next(rule for rule in architecture.modules if rule.name == "sample.wait.broker")
+
+    assert dependency_direction(architecture, broker) == (
+        "sample.wait.broker may not depend on other configured modules"
+    )
+    assert (
+        boundary_status(
+            architecture,
+            broker,
+            next(rule for rule in architecture.modules if rule.name == "sample.verify.worker"),
+        )
+        == "violation: sample.wait.broker does not declare sample.verify.worker"
+    )
+
+
+def test_legacy_root_policy_output_is_byte_for_byte_stable(tmp_path: Path) -> None:
+    """Root-layer maps retain their established rendering and direction text."""
+
+    write_tach_fixture(tmp_path)
+    architecture = load_architecture(tmp_path)
+    service = next(rule for rule in architecture.modules if rule.name == "sample.service")
+    cli = next(rule for rule in architecture.modules if rule.name == "sample.cli")
+
+    assert render_map(architecture) == (
+        "# Architecture Map\n"
+        "Source roots: src\n"
+        "Layers: entrypoint, runtime, models\n"
+        "\n"
+        "Modules:\n"
+        "- sample.cli [entrypoint]\n"
+        "- sample.models [models]\n"
+        "- sample.service [runtime]\n"
+    )
+    assert dependency_direction(architecture, service) == (
+        "runtime may depend on runtime, models; may be used by entrypoint, runtime"
+    )
+    assert boundary_status(architecture, cli, service) == (
+        "allowed: entrypoint can depend on runtime"
+    )
+
+
 def test_malformed_domain_policy_fails_boundary_explanation_closed(tmp_path: Path) -> None:
     """Incomplete nested policy never falls back to a broad allowed result."""
 

@@ -92,7 +92,13 @@ def _domain_rules(domain_root: str, payload: domains.TachPayload) -> tuple[Modul
     rules = list(module_rules(payload.get("modules"), domain_root=domain_root))
     root = structured_object(payload.get("root"))
     if root is not None:
-        rules.append(_module_rule(domain_root, root, domain_root=domain_root))
+        rules.append(
+            ModuleRule(
+                name=domain_root,
+                depends_on=_dependency_paths(root, domain_root),
+                domain_root=domain_root,
+            )
+        )
     return tuple(rules)
 
 
