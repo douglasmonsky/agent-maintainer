@@ -146,6 +146,39 @@ def test_explicitly_requested_file_is_direct_attention_context(tmp_path: Path) -
     assert entries[0]["relevance"] == "direct"
 
 
+def test_unsafe_requested_files_are_omitted_from_attention_context(tmp_path: Path) -> None:
+    """Sensitive, refused, symlink, and outside requests are never direct context."""
+
+    log_dir = tmp_path / ".verify-logs"
+    refused = tmp_path / "__pycache__" / "module.pyc"
+    refused.parent.mkdir()
+    refused.write_bytes(b"cache")
+    target = tmp_path / "docs" / "guide.md"
+    target.parent.mkdir()
+    target.write_text("# Guide\n", encoding="utf-8")
+    symlink = tmp_path / "guide-link.md"
+    symlink.symlink_to(target)
+    write_ledger(log_dir, APP_PATH)
+    write_manifest(log_dir, "custom-check")
+    write_log(log_dir, "custom-check", "failure without repository path\n")
+
+    pack = write_context_pack(
+        ContextPackRequest(
+            log_dir=log_dir,
+            budget=8_000,
+            files=(tmp_path / ".env", refused, symlink, tmp_path.parent / "outside.md"),
+        )
+    )
+    attention = cast(dict[str, Any], pack.payload["attention"])
+    entries = cast(list[dict[str, Any]], attention["entries"])
+
+    assert entries[0]["path"] == APP_PATH
+    assert entries[0]["relevance"] == "background"
+    assert {entry["path"] for entry in entries}.isdisjoint(
+        {".env", "__pycache__/module.pyc", "guide-link.md", "../outside.md"}
+    )
+
+
 def test_background_fallback_has_no_tight_risk_notes(tmp_path: Path) -> None:
     """Unrelated top-ledger fallback never becomes a hook risk claim."""
 

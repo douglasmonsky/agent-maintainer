@@ -131,6 +131,8 @@ def _requested_paths(paths: Iterable[Path], workspace_root: Path) -> tuple[str, 
         confined = file_safety.confined_path(path, workspace_root=workspace_root)
         if isinstance(confined, file_safety.FileSafety):
             continue
+        if file_safety.inspect_path(confined) is not None:
+            continue
         normalized.append(confined.relative_to(workspace_root.resolve()).as_posix())
     return _unique_paths(normalized)
 
