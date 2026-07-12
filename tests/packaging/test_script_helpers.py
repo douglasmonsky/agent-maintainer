@@ -106,7 +106,9 @@ def test_maintainer_package_entrypoint_help() -> None:
         "Operations:\n",
     ):
         assert heading in result.stdout
-    assert "wait            Quiet polling is stable; terminal rewake is experimental." in result.stdout
+    assert (
+        "wait            Quiet polling is stable; terminal rewake is experimental." in result.stdout
+    )
     assert "Core commands:\n" not in result.stdout
 
 

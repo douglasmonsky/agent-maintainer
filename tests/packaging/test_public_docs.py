@@ -113,7 +113,7 @@ def test_public_docs_define_pre_one_api_support() -> None:
 
     for source_path in sorted(Path("src").rglob("*.py")):
         source = source_path.read_text(encoding="utf-8")
-        if not source.startswith('\"\"\"Compatibility'):
+        if not source.startswith('"""Compatibility'):
             continue
         module = ".".join(source_path.relative_to("src").with_suffix("").parts)
         assert f"`{module}`" in inventory, module
