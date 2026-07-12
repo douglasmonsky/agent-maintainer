@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shlex
 import sys
 from datetime import datetime
@@ -94,3 +95,25 @@ def test_source_checkout_commands_prefix_resolved_pythonpath(
         f"{prefix}{executable} -m agent_maintainer wait sweep --one {record.wait_id} "
         f"--root {shlex.quote(str(root))}"
     )
+
+
+def test_source_checkout_commands_resolve_pythonpath_lists(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Relative and empty Python path entries resolve against the wait root."""
+
+    root = tmp_path / "repo root"
+    monkeypatch.setenv("PYTHONPATH", os.pathsep.join(("src", "", "vendor")))
+    record = WaitRegistry(root).register(
+        RegisterWait(root=root, kind="verifier", target_id="run-123", now=NOW),
+    )
+
+    request = json.loads(heartbeat_request_json(record, root=root))
+    resolved = os.pathsep.join(
+        str(root / entry) if entry else str(root) for entry in ("src", "", "vendor")
+    )
+    prefix = f"PYTHONPATH={shlex.quote(resolved)} "
+
+    assert record.resume_instruction.startswith(prefix)
+    assert request["sweep_command"].startswith(prefix)
