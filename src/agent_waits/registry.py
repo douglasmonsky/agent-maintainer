@@ -168,7 +168,10 @@ class WaitRegistry:
             updated_at=created_at,
             deadline_at=_deadline(created_at, inputs.timeout_seconds),
             resume_instruction=inputs.resume_instruction
-            or f"{shlex.quote(sys.executable)} -m agent_maintainer wait resume {wait_id}",
+            or (
+                f"{shlex.quote(sys.executable)} -m agent_maintainer wait resume "
+                f"{shlex.quote(wait_id)}"
+            ),
             metadata=wait_heartbeat.registration_metadata(
                 _optional_mapping(inputs.metadata),
             ),

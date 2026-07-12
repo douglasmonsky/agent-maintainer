@@ -180,7 +180,9 @@ def heartbeat_request(
 
     root_text = str(root)
     executable = shlex.quote(sys.executable)
-    sweep_command = f"{executable} -m agent_maintainer wait sweep --one {record.wait_id}"
+    sweep_command = (
+        f"{executable} -m agent_maintainer wait sweep --one {shlex.quote(record.wait_id)}"
+    )
     resume_command = record.resume_instruction
     if root_text:
         quoted_root = shlex.quote(root_text)
