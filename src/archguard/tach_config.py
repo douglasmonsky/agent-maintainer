@@ -21,8 +21,12 @@ def tach_config_issues(repo_root: Path, *, require_strict_root: bool) -> list[st
 
     try:
         payload = _toml_table(tomllib.loads(config_path.read_text(encoding="utf-8")))
-    except tomllib.TOMLDecodeError as exc:
-        return [f"tach.toml invalid: {exc}"]
+    except tomllib.TOMLDecodeError:
+        return ["tach.toml: invalid_toml"]
+    except UnicodeError:
+        return ["tach.toml: invalid_utf8"]
+    except OSError:
+        return ["tach.toml: read_error"]
     if payload is None:
         return ["tach.toml must contain a top-level table"]
 

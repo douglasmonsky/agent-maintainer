@@ -26,13 +26,50 @@ root_module = "ignore"
     assert 'tach.toml must set root_module = "forbid"' in issues
 
 
-def test_tach_config_issues_reports_invalid_toml(tmp_path: Path) -> None:
-    """Report invalid Tach TOML before deeper validation."""
+def test_tach_config_issues_reports_bounded_invalid_toml(tmp_path: Path) -> None:
+    """Report invalid root TOML without exposing parser details."""
     (tmp_path / "tach.toml").write_text("source_roots = [", encoding="utf-8")
 
     issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
 
-    assert issues[0].startswith("tach.toml invalid:")
+    assert issues == ["tach.toml: invalid_toml"]
+
+
+def test_tach_config_issues_reports_bounded_invalid_utf8(tmp_path: Path) -> None:
+    """Report an invalid root encoding without exposing file content."""
+
+    (tmp_path / "tach.toml").write_bytes(b"\xff")
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert issues == ["tach.toml: invalid_utf8"]
+
+
+def test_tach_config_issues_reports_bounded_read_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Report a root read failure without exposing operating-system details."""
+
+    config_path = tmp_path / "tach.toml"
+    config_path.write_text("root_module = 'forbid'", encoding="utf-8")
+    original_read_text = Path.read_text
+
+    def raise_for_root(
+        path: Path,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
+    ) -> str:
+        if path == config_path:
+            raise OSError("private read failure")
+        return original_read_text(path, encoding=encoding, errors=errors, newline=newline)
+
+    monkeypatch.setattr(Path, "read_text", raise_for_root)
+
+    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
+
+    assert issues == ["tach.toml: read_error"]
 
 
 def test_tach_config_issues_reports_malformed_nested_domain(tmp_path: Path) -> None:
