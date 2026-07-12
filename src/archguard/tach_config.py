@@ -19,15 +19,16 @@ def tach_config_issues(repo_root: Path, *, require_strict_root: bool) -> list[st
     if not config_path.exists():
         return ["tach.toml absent"]
 
-    try:
-        payload = _toml_table(tomllib.loads(config_path.read_text(encoding="utf-8")))
-    except tomllib.TOMLDecodeError as exc:
-        return [f"tach.toml invalid: {exc}"]
+    payload, load_error = _load_root_payload(config_path)
+    if load_error:
+        return [load_error]
     if payload is None:
         return ["tach.toml must contain a top-level table"]
 
     issues: list[str] = []
-    domain_payloads = domains.domain_payloads(repo_root, payload.get("source_roots"))
+    domain_load = domains.load_domain_payloads(repo_root, payload.get("source_roots"))
+    domain_payloads = domain_load.payloads
+    issues.extend(domain_load.errors)
     issues.extend(_source_root_issues(payload))
     issues.extend(_module_issues(payload, config_name="tach.toml"))
     issues.extend(_domain_payload_issues(domain_payloads))
@@ -36,6 +37,19 @@ def tach_config_issues(repo_root: Path, *, require_strict_root: bool) -> list[st
     if require_strict_root and payload.get("root_module") != "forbid":
         issues.append('tach.toml must set root_module = "forbid"')
     return issues
+
+
+def _load_root_payload(config_path: Path) -> tuple[domains.TachPayload | None, str | None]:
+    """Return the root payload or a bounded loader error."""
+
+    try:
+        return _toml_table(tomllib.loads(config_path.read_text(encoding="utf-8"))), None
+    except tomllib.TOMLDecodeError:
+        return None, "tach.toml: invalid_toml"
+    except UnicodeError:
+        return None, "tach.toml: invalid_utf8"
+    except OSError:
+        return None, "tach.toml: read_error"
 
 
 def _source_root_issues(payload: domains.TachPayload) -> list[str]:

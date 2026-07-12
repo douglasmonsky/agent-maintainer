@@ -22,7 +22,7 @@ depends_on = []
 
 [[modules]]
 path = "impact"
-depends_on = ["structured_values"]
+depends_on = ["structured_values", "tach_config_domains"]
 
 [[modules]]
 path = "models"

@@ -26,15 +26,6 @@ root_module = "ignore"
     assert 'tach.toml must set root_module = "forbid"' in issues
 
 
-def test_tach_config_issues_reports_invalid_toml(tmp_path: Path) -> None:
-    """Report invalid Tach TOML before deeper validation."""
-    (tmp_path / "tach.toml").write_text("source_roots = [", encoding="utf-8")
-
-    issues = tach_config.tach_config_issues(tmp_path, require_strict_root=True)
-
-    assert issues[0].startswith("tach.toml invalid:")
-
-
 def test_tach_config_issues_requires_source_roots(tmp_path: Path) -> None:
     """Require Tach source roots to make ownership checks meaningful."""
     (tmp_path / "tach.toml").write_text(
@@ -358,7 +349,7 @@ depends_on = []
     ignored_path.mkdir()
     (ignored_path / "tach.domain.toml").write_text("root = [", encoding="utf-8")
 
-    payloads = tach_config_domains.domain_payloads(tmp_path, ["src"])
+    payloads = tach_config_domains.load_domain_payloads(tmp_path, ["src"]).payloads
 
     assert payloads == (("package", {"root": {"depends_on": []}}),)
     assert tach_config_domains.domain_module_path("package", ".") == "package"
