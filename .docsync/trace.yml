@@ -178,11 +178,11 @@ documents:
     audience: public
   docs.release_0_1_0b6_candidate:
     path: docs/releases/0.1.0b6.md
-    title: Agent Maintainer 0.1.0b6 Candidate Notes
+    title: Agent Maintainer 0.1.0b6 Release Evidence
     audience: public
   docs.upgrade_0_1_0b6:
     path: docs/upgrading-to-0.1.0b6.md
-    title: Upgrading from 0.1.0b5 to 0.1.0b6
+    title: Installing or Upgrading to 0.1.0b6
     audience: public
 
   docs.future_call_roi_acceleration:
@@ -597,7 +597,7 @@ objects:
     marker: docs.release_0_1_0b6_candidate.overview
     heading:
       level: 1
-      text: Agent Maintainer 0.1.0b6 Candidate Notes
+      text: Agent Maintainer 0.1.0b6 Release Evidence
   docs.upgrade_0_1_0b6.overview:
     document: docs.upgrade_0_1_0b6
     kind: heading_section
@@ -605,7 +605,7 @@ objects:
     marker: docs.upgrade_0_1_0b6.overview
     heading:
       level: 1
-      text: Upgrading from 0.1.0b5 to 0.1.0b6
+      text: Installing or Upgrading to 0.1.0b6
 
   docs.future_call_roi_acceleration.overview:
     document: docs.future_call_roi_acceleration
@@ -1042,19 +1042,19 @@ claims:
       - evidence.release.publish_workflow
   claim.docs.release_index_state:
     object: docs.release_index.overview
-    text: Release index distinguishes immutable published evidence from unpublished candidate intent.
+    text: Release index identifies the latest immutable published evidence.
     severity: high
     evidence:
       - evidence.release.public_contract_tests
   claim.docs.release_0_1_0b6_candidate_truth:
     object: docs.release_0_1_0b6_candidate.overview
-    text: Candidate notes identify 0.1.0b6 as unpublished and do not invent publication evidence.
+    text: Release evidence records exact 0.1.0b6 publication identifiers and artifact digests.
     severity: high
     evidence:
       - evidence.release.public_contract_tests
   claim.docs.upgrade_0_1_0b6_safe_adoption:
     object: docs.upgrade_0_1_0b6.overview
-    text: Upgrade guidance covers mutation preview, verification, and rollback to the published beta.
+    text: Upgrade guidance covers published-package adoption, mutation preview, verification, and rollback.
     severity: high
     evidence:
       - evidence.release.public_contract_tests

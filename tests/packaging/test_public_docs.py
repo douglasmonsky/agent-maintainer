@@ -13,7 +13,6 @@ COMPATIBILITY_SHIMS = Path("docs/compatibility-shims.md")
 RELEASE_INDEX = Path("docs/releases/README.md")
 MIN_READ_MORE_LINKS = 8
 LATEST_PUBLISHED_LABEL = "Latest published release"
-CURRENT_CANDIDATE_LABEL = "Current release candidate"
 
 REQUIRED_README_LINKS = (
     "docs/quick-start.md",
@@ -129,19 +128,17 @@ def test_readme_uses_public_beta_framing() -> None:
     assert visible_text.startswith("# Agent Maintainer\n")
     assert "Agent Maintainer is in beta" in text
     published_version, _ = _indexed_release(LATEST_PUBLISHED_LABEL)
-    candidate_version, _ = _indexed_release(CURRENT_CANDIDATE_LABEL)
-
-    assert candidate_version == _project_version()
     assert f'python -m pip install "agent-maintainer[core]=={published_version}"' in text
     assert f"Latest published package: `agent-maintainer=={published_version}`" in text
-    assert f"unpublished `{candidate_version}` release candidate" in text
+    assert f"unpublished `{published_version}` release candidate" not in text
+    assert "agent-maintainer==0.1.0b5" not in text
     assert "agent-maintainer init --track core" in text
     assert "python3 -m agent_maintainer assess setup" in text
     assert "python3 -m agent_maintainer assess debt" in text
     assert "[Release checklist](docs/release-checklist.md)" in text
     assert f"docs/releases/{published_version}.md" in text
-    assert f"docs/releases/{candidate_version}.md" in text
-    assert f"docs/upgrading-to-{candidate_version}.md" in text
+    assert f"docs/releases/{published_version}.md" in text
+    assert "docs/upgrading-to-0.1.0b6.md" in text
     assert "[MIT License](LICENSE)" in text
     assert "[Changelog](CHANGELOG.md)" in text
     assert "docs/assets/graphics/agent-maintainer-social-preview.png" in text
@@ -164,7 +161,8 @@ def test_license_and_changelog_are_public_beta_ready() -> None:
 
     assert license_text.startswith("MIT License\n")
     assert "Copyright (c) 2026 Doug Monsky" in license_text
-    assert f"## Unreleased (target: {_project_version()})" in changelog
+    assert "## Unreleased" in changelog
+    assert "## 0.1.0b6 - 2026-07-12" in changelog
     assert "## 0.1.0b4 - 2026-06-29" in changelog
     assert "Fourth beta release of Agent Maintainer." in changelog
     assert "quiet on success and bounded on failure" in changelog
@@ -184,6 +182,17 @@ def test_changelog_unreleased_section_tracks_post_release_commits() -> None:
 
     unreleased = _unreleased_section(changelog)
     assert "No changes yet." not in unreleased
+    assert "published 0.1.0b6 release evidence" in unreleased
+
+
+def test_changelog_b6_section_retains_release_topics() -> None:
+    """The dated b6 entry, rather than Unreleased, retains release content."""
+
+    changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+    start = changelog.index("## 0.1.0b6 - 2026-07-12")
+    end = changelog.index("## 0.1.0b5 - 2026-07-03", start)
+    b6_section = changelog[start:end]
+
     for required_topic in (
         "repository-controlled filesystem access",
         "managed hook inventory",
@@ -197,56 +206,41 @@ def test_changelog_unreleased_section_tracks_post_release_commits() -> None:
         "SHA-256",
         "DocSync",
     ):
-        assert required_topic in unreleased
+        assert required_topic in b6_section
 
 
 # docsync:evidence.start evidence.release.public_contract_tests
-def test_public_release_docs_distinguish_published_and_candidate() -> None:
-    """Public docs distinguish published evidence from candidate intent."""
+def test_public_release_docs_record_published_b6_evidence() -> None:
+    """Public docs point at published b6 evidence and completed validation."""
 
     published_version, published_target = _indexed_release(LATEST_PUBLISHED_LABEL)
-    candidate_version, candidate_target = _indexed_release(CURRENT_CANDIDATE_LABEL)
     published_path = Path("docs/releases", published_target)
-    candidate_path = Path("docs/releases", candidate_target)
     readme = README.read_text(encoding="utf-8")
     roadmap = Path("docs/ROADMAP.md").read_text(encoding="utf-8")
-    candidate = candidate_path.read_text(encoding="utf-8")
+    release = published_path.read_text(encoding="utf-8")
 
-    assert candidate_version == _project_version()
-    assert published_version != candidate_version
+    assert published_version == _project_version()
     assert published_target == f"{published_version}.md"
-    assert candidate_target == f"{candidate_version}.md"
     assert published_path.exists()
-    assert candidate_path.exists()
     assert f"docs/releases/{published_version}.md" in readme
-    assert f"docs/releases/{candidate_version}.md" in readme
     assert f"agent-maintainer=={published_version}" in roadmap
     assert f"`v{published_version}`" in roadmap
     assert f"docs/releases/{published_version}.md" in roadmap
-    assert f"unpublished `{candidate_version}` release candidate" in roadmap
-    assert f"# Agent Maintainer {candidate_version} Candidate Notes" in candidate
-    assert "- Status: `unpublished`" in candidate
-    for false_evidence in (
-        "Git tag:",
-        "GitHub release:",
-        "TestPyPI workflow:",
-        "PyPI workflow:",
-        "sha256:",
-        f"agent_maintainer-{candidate_version}",
-    ):
-        assert false_evidence not in candidate
+    assert "Phase 176" in roadmap
+    assert "real-turn smokes passed" in roadmap
+    assert f"# Agent Maintainer {published_version} Release Evidence" in release
+    assert "Real-turn smoke: `passed`" in release
 
 
-def test_candidate_upgrade_guide_covers_safe_adoption() -> None:
-    """Candidate upgrade guidance covers preview, verification, and rollback."""
+def test_published_upgrade_guide_covers_safe_adoption() -> None:
+    """Published upgrade guidance installs b6 while retaining safe adoption."""
 
     published_version, _ = _indexed_release(LATEST_PUBLISHED_LABEL)
-    candidate_version, _ = _indexed_release(CURRENT_CANDIDATE_LABEL)
-    guide_path = Path(f"docs/upgrading-to-{candidate_version}.md")
+    guide_path = Path(f"docs/upgrading-to-{published_version}.md")
 
     assert guide_path.exists()
     guide = guide_path.read_text(encoding="utf-8")
-    assert f"# Upgrading from {published_version} to {candidate_version}" in guide
+    assert f"agent-maintainer[core]=={published_version}" in guide
     assert "agent-maintainer init --dry-run" in guide
     assert "agent-maintainer install --dry-run" in guide
     assert "agent-maintainer doctor" in guide

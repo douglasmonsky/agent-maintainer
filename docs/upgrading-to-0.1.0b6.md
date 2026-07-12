@@ -1,24 +1,22 @@
 <!-- docsync:object docs.upgrade_0_1_0b6.overview -->
-# Upgrading from 0.1.0b5 to 0.1.0b6
+# Installing or Upgrading to 0.1.0b6
 
-`0.1.0b6` is currently unpublished. Use this guide only to evaluate a trusted
-candidate checkout or locally built distribution; keep `0.1.0b5` pinned for
-normal package-index installation until the release index moves.
+`0.1.0b6` is published to PyPI. Use this guide to adopt the released package
+or upgrade from `0.1.0b5` while retaining a straightforward rollback path.
 
 ## Before You Start
 
 1. Commit or otherwise preserve the application repository's current state.
 2. Record existing Codex and Claude hook configuration owned by other tools.
-3. Keep the published beta available for rollback:
+3. Install the published release:
 
    ```bash
-   python -m pip install "agent-maintainer[core]==0.1.0b5"
+   python -m pip install "agent-maintainer[core]==0.1.0b6"
    ```
 
-4. Install the candidate from a trusted clean checkout:
+4. Confirm the installed package is healthy:
 
    ```bash
-   python -m pip install -e ".[core]"
    agent-maintainer doctor
    ```
 
@@ -38,7 +36,7 @@ do not use force as a substitute for reviewing ownership.
 
 ## Validate Configuration
 
-The candidate rejects unknown keys, invalid types, contradictory settings,
+The release rejects unknown keys, invalid types, contradictory settings,
 unsafe paths, and invalid environment overrides before verification starts.
 Run:
 
@@ -82,8 +80,8 @@ second identical run.
 
 ## Rollback
 
-If candidate behavior is unsuitable, restore the preserved repository state
-and reinstall the published beta:
+If release behavior is unsuitable, restore the preserved repository state
+and reinstall the prior beta:
 
 ```bash
 python -m pip install --force-reinstall "agent-maintainer[core]==0.1.0b5"
