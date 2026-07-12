@@ -129,8 +129,10 @@ def test_readme_uses_public_beta_framing() -> None:
     assert visible_text.startswith("# Agent Maintainer\n")
     assert "Agent Maintainer is in beta" in text
     published_version, _ = _indexed_release(LATEST_PUBLISHED_LABEL)
-    assert 'python -m pip install "agent-maintainer[core]==' in text
-    assert "Latest published package:" in text
+    assert f'python -m pip install "agent-maintainer[core]=={published_version}"' in text
+    assert f"Latest published package: `agent-maintainer=={published_version}`" in text
+    assert f"unpublished `{published_version}` release candidate" not in text
+    assert "agent-maintainer==0.1.0b5" not in text
     assert "agent-maintainer init --track core" in text
     assert "python3 -m agent_maintainer assess setup" in text
     assert "python3 -m agent_maintainer assess debt" in text
