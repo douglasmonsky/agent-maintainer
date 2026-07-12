@@ -125,7 +125,7 @@ Track work:
 - [ ] Phase 176: Codex Terminal Rewake Hardening — implementation is complete;
       the explicitly gated real-turn smoke remains pending user authorization.
 
-## Active: External Proof And Strict-Typing Debt
+## Active: External Proof And Architecture Hardening
 
 The next product milestone is external activation evidence, not another broad
 feature phase. Run a three-to-five-repository cohort covering at least 30 real
@@ -133,15 +133,13 @@ coding-agent tasks, and measure activation time, initializer conflicts,
 false-positive review findings, repair iterations, context expansions, review
 cost, and four-week retained use.
 
-The strict-Pyright ratchet is reviewed but not clean. Its 2026-07-11 baseline is
-`1,265` diagnostics. Burn it down through typed boundaries and test doubles;
-do not lower strictness, raise allowances, or add broad suppressions.
+Strict Pyright cutover complete: zero diagnostics and the former ratchet
+baseline are retired.
 
-- [ ] Strict batch 1: reduce the baseline to at most `948` diagnostics (at
-      least 25% below `1,265`), starting with the highest-count files.
-- [ ] Strict batch 2: reduce the baseline to at most `632` diagnostics.
-- [ ] Strict completion: reach zero strict diagnostics and retire the baseline.
-- [ ] Reclassify top-level help and public docs into stable workflow, repair and
+- [ ] External proof: run the three-to-five-repository cohort and retain its
+      activation and use evidence.
+- [x] Strict Pyright cutover complete: zero diagnostics; baseline retired.
+- [x] Reclassify top-level help and public docs into stable workflow, repair and
       inspection, optional local intelligence, experimental integrations, and
       operations. Keep basic quiet waits distinct from experimental rewake.
 - [ ] Guarantee changed, failed, exact-fact, and explicitly requested paths are
@@ -149,9 +147,9 @@ do not lower strictness, raise allowances, or add broad suppressions.
 - [ ] Validate attention schema version, file count, normalized paths, and
       finite `0..1` scores; label context relevance as direct, inferred, or
       background and omit background notes from tight hook output.
-- [ ] Add `agent_waits` to the internal-package current-state document and
+- [x] Add `agent_waits` to the internal-package current-state document and
       secondary dependency-direction regression coverage.
-- [ ] Publish a pre-1.0 API-support policy naming supported commands and formats,
+- [x] Publish a pre-1.0 API-support policy naming supported commands and formats,
       intended beta imports, and unstable internal top-level packages.
 
 ## Future Work
