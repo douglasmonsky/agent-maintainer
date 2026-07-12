@@ -37,9 +37,9 @@ reported that launchd was required but unavailable.
 
 `agent_maintainer.wait.broker` remains the canonical application-level
 registration service. `agent_maintainer.verify.background_wait` will construct
-one `BackgroundKnownWait` for kind `verifier` and delegate to
-`register_background_wait`. Its local `start_wait_watcher` function and
-`subprocess`/`sys` ownership will be removed.
+one `BackgroundVerifierWait` and delegate to the existing
+`register_background_verifier` specialization. Its local `start_wait_watcher`
+function and `subprocess`/`sys` ownership will be removed.
 
 This is an intentional narrow dependency from the verifier launch adapter to
 the wait registration service. The verifier may request registration and render
