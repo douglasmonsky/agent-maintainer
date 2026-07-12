@@ -233,7 +233,10 @@ def test_malformed_shell_environment_fails_closed() -> None:
 def test_runtime_env_is_not_treated_as_config() -> None:
     """Documented process controls coexist with fail-closed config names."""
 
-    environment = {"AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT": "1"}
+    environment = {
+        "AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT": "1",
+        "AGENT_MAINTAINER_CODEX_REWAKE_SMOKE_TURN": "1",
+    }
 
     assert loader.apply_env(schema.MaintainerConfig(), environment=environment) == (
         schema.MaintainerConfig()
