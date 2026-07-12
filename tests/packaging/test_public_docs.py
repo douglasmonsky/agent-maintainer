@@ -13,7 +13,6 @@ COMPATIBILITY_SHIMS = Path("docs/compatibility-shims.md")
 RELEASE_INDEX = Path("docs/releases/README.md")
 MIN_READ_MORE_LINKS = 8
 LATEST_PUBLISHED_LABEL = "Latest published release"
-CURRENT_CANDIDATE_LABEL = "Current release candidate"
 
 REQUIRED_README_LINKS = (
     "docs/quick-start.md",
