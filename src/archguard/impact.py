@@ -82,73 +82,22 @@ def _all_module_rules(
     """Return root and nested domain rules sorted by full module name."""
 
     rules = list(module_rules(root_modules))
-    for domain_root, payload in domain_payloads:
-        rules.extend(_domain_rules(domain_root, payload))
+    rules.extend(
+        ModuleRule(rule.name, depends_on=rule.depends_on, domain_root=rule.domain_root)
+        for rule in domains.domain_module_rules(domain_payloads)
+    )
     return tuple(sorted(rules, key=lambda rule: rule.name))
 
 
-def _domain_rules(domain_root: str, payload: domains.TachPayload) -> tuple[ModuleRule, ...]:
-    """Return ownership rules declared by one nested domain payload."""
-
-    rules = list(module_rules(payload.get("modules"), domain_root=domain_root))
-    root = structured_object(payload.get("root"))
-    if root is not None:
-        rules.append(
-            ModuleRule(
-                name=domain_root,
-                depends_on=_dependency_paths(root, domain_root),
-                domain_root=domain_root,
-            )
-        )
-    return tuple(rules)
-
-
-def module_rules(modules: object, *, domain_root: str = "") -> tuple[ModuleRule, ...]:
+def module_rules(modules: object) -> tuple[ModuleRule, ...]:
     """Return flattened module ownership rules."""
 
     rules: list[ModuleRule] = []
     for item in structured_objects(modules):
         layer = string_value(item.get("layer"))
         paths = module_paths(item)
-        rules.extend(
-            _module_rule(path, item, layer=layer, domain_root=domain_root) for path in paths
-        )
+        rules.extend(ModuleRule(name=path, layer=layer) for path in paths)
     return tuple(sorted(rules, key=lambda rule: rule.name))
-
-
-def _module_rule(
-    path: str,
-    item: dict[str, object],
-    *,
-    layer: str = NO_OWNER,
-    domain_root: str,
-) -> ModuleRule:
-    """Return one full-name rule with optional explicit dependencies."""
-
-    name = domains.domain_module_path(domain_root, path) if domain_root else path
-    return ModuleRule(
-        name=name,
-        layer=layer,
-        depends_on=_dependency_paths(item, domain_root),
-        domain_root=domain_root,
-    )
-
-
-def _dependency_paths(item: dict[str, object], domain_root: str) -> tuple[str, ...] | None:
-    """Return an explicit normalized dependency allowlist when present."""
-
-    if "depends_on" not in item:
-        return None
-    values = non_empty_strings(item.get("depends_on"))
-    return tuple(_dependency_path(value, domain_root) for value in values)
-
-
-def _dependency_path(value: str, domain_root: str) -> str:
-    """Return one absolute or domain-local dependency module path."""
-
-    if value.startswith("//"):
-        return value[2:]
-    return domains.domain_module_path(domain_root, value) if domain_root else value
 
 
 def module_paths(item: dict[str, object]) -> tuple[str, ...]:
@@ -303,7 +252,8 @@ def dependency_direction(
     if owner is not None and owner.depends_on is not None:
         if not owner.depends_on:
             return f"{owner.name} may not depend on other configured modules"
-        return f"{owner.name} may depend on {', '.join(owner.depends_on)}"
+        dependencies = ", ".join(owner.depends_on)
+        return f"{owner.name} may depend on {dependencies}"
     if owner is None or owner.layer not in architecture.layers:
         return "unknown"
     layer_index = architecture.layers.index(owner.layer)
@@ -321,10 +271,12 @@ def boundary_status(
 ) -> str:
     """Return boundary status if source imports target."""
 
-    if architecture.load_errors:
-        return "unknown: architecture policy is incomplete"
-    if source is None or target is None:
-        return "unknown; at least one file is not owned by Tach"
+    if architecture.load_errors or source is None or target is None:
+        return (
+            "unknown: architecture policy is incomplete"
+            if architecture.load_errors
+            else "unknown; at least one file is not owned by Tach"
+        )
     if source.name == target.name:
         return "same module"
     if source.depends_on is not None:

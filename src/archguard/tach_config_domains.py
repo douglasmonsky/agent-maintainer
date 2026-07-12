@@ -23,6 +23,15 @@ class DomainLoadResult:
     errors: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class DomainModuleRule:
+    """One normalized nested-domain ownership and dependency rule."""
+
+    name: str
+    depends_on: tuple[str, ...] | None
+    domain_root: str
+
+
 def load_domain_payloads(repo_root: Path, source_roots: object) -> DomainLoadResult:
     """Return parsed Tach domain files and bounded loader errors."""
     if not sources.non_empty_string_list(source_roots):
@@ -46,6 +55,77 @@ def configured_domain_module_paths(payloads: DomainPayloads) -> frozenset[str]:
     for domain_root, payload in payloads:
         paths.update(_payload_module_paths(domain_root, payload))
     return frozenset(paths)
+
+
+def domain_module_rules(payloads: DomainPayloads) -> tuple[DomainModuleRule, ...]:
+    """Return normalized ownership and dependency rules for nested domains."""
+
+    rules: list[DomainModuleRule] = []
+    for domain_root, payload in payloads:
+        rules.extend(_payload_module_rules(domain_root, payload))
+    return tuple(sorted(rules, key=lambda rule: rule.name))
+
+
+def _payload_module_rules(domain_root: str, payload: TachPayload) -> tuple[DomainModuleRule, ...]:
+    """Return normalized rules declared by one domain payload."""
+
+    rules: list[DomainModuleRule] = []
+    root = _toml_table(payload.get("root"))
+    if root is not None:
+        rules.append(_domain_rule(domain_root, domain_root, root))
+    for item in _object_list(payload.get("modules")):
+        module = _toml_table(item)
+        if module is None:
+            continue
+        rules.extend(_domain_rule(domain_root, path, module) for path in _module_paths(module))
+    return tuple(rules)
+
+
+def _domain_rule(
+    domain_root: str,
+    path: str,
+    payload: TachPayload,
+) -> DomainModuleRule:
+    """Return one normalized domain rule from a config table."""
+
+    name = domain_root if path == domain_root else domain_module_path(domain_root, path)
+    return DomainModuleRule(name, _dependency_paths(payload, domain_root), domain_root)
+
+
+def _dependency_paths(payload: TachPayload, domain_root: str) -> tuple[str, ...] | None:
+    """Return an explicit normalized dependency allowlist when present."""
+
+    if "depends_on" not in payload:
+        return None
+    values = _object_list(payload.get("depends_on"))
+    return tuple(
+        _dependency_path(value, domain_root) for value in values if sources.non_empty_string(value)
+    )
+
+
+def _dependency_path(value: str, domain_root: str) -> str:
+    """Return one absolute or domain-local dependency module path."""
+
+    return value[2:] if value.startswith("//") else domain_module_path(domain_root, value)
+
+
+def _object_list(value: object) -> tuple[object, ...]:
+    """Return a list value with an explicit object boundary."""
+
+    if not isinstance(value, list):
+        return ()
+    return tuple(cast(list[object], value))
+
+
+def _module_paths(payload: TachPayload) -> tuple[str, ...]:
+    """Return configured local paths from one module payload."""
+
+    path = payload.get("path")
+    if sources.non_empty_string(path):
+        return (path,)
+    return tuple(
+        value for value in _object_list(payload.get("paths")) if sources.non_empty_string(value)
+    )
 
 
 def configured_domain_roots(payloads: DomainPayloads) -> frozenset[str]:
