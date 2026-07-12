@@ -88,13 +88,18 @@ def test_public_docs_define_pre_one_api_support() -> None:
     inventory = COMPATIBILITY_SHIMS.read_text(encoding="utf-8")
 
     assert "docs/api-support-policy.md" in readme
-    assert "## Supported beta surfaces" in policy
-    assert "## Intended beta Python API" in policy
+    assert "## Current-version documented surfaces" in policy
+    assert "## Current Python entry points" in policy
+    assert "no cross-version compatibility guarantee" in policy
+    assert "may change or be removed without a deprecation window" in policy
     assert "`docsync.api`" in policy
-    assert "Distribution is not an API promise" in policy
-    assert "compatibility-shims.md" in policy
-    assert "## Removal gate" in inventory
-    assert "0.1.0b7" in inventory
+    assert "not a frozen signature" in policy
+    assert "## Deletion rule" in inventory
+    assert "Compatibility is not a reason to retain a shim" in inventory
+    assert "same tested change" in inventory
+    assert "0.1.0b7" not in inventory
+    assert "Support window" not in inventory
+    assert "Earliest removal" not in inventory
     for group in (
         "Archguard forwarding",
         "Configuration facade",

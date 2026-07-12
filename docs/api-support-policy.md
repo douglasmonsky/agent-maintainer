@@ -1,30 +1,24 @@
 # Pre-1.0 API Support Policy
 
-## Supported beta surfaces
+## Current-version documented surfaces
 
-The documented `agent-maintainer`, `archguard`, and `docsync` commands,
-documented `[tool.agent_maintainer]` keys, and schema-versioned documented
-artifacts are supported for the current beta line.
+Documented commands, configuration, and schema-versioned artifacts are expected to work for the exact installed beta version. There is no cross-version compatibility guarantee before 1.0.
 
-## Intended beta Python API
+## Current Python entry points
 
-`docsync.api` is the only initially named supported Python import surface.
-Adding another import requires public documentation and a compatibility test.
+`docsync.api` is the intended DocSync integration boundary for current code, not a frozen signature. It may change or be removed without a deprecation window before 1.0.
 
 ## Internal and unstable surfaces
 
-Distribution is not an API promise. Other modules under `agent_maintainer`,
-`archguard`, `agent_context`, `agent_client_hooks`, `agent_repair_facts`,
-`agent_run_artifacts`, `agent_waits`, and `docsync` remain internal unless this
-policy explicitly promotes them.
+Distribution is not an API promise. Internal packages and modules may change or
+be removed without compatibility shims.
 
-## Change and deprecation window
+## Change communication
 
-Supported beta surfaces receive release notes, upgrade guidance, and at least
-one beta release of notice before removal unless they are unsafe or unusable.
-Internal surfaces may change without deprecation.
+Release notes and upgrade guidance should explain material user-facing changes
+when useful, but communication is not a compatibility gate.
 
-## Compatibility shims
+## Forwarding-module cleanup
 
-The [compatibility-shim inventory](compatibility-shims.md) records forwarding
-owners, support windows, removal conditions, and earliest removal releases.
+The [compatibility-shim cleanup inventory](compatibility-shims.md) identifies
+canonical replacements. Compatibility is not a reason to retain a shim.
