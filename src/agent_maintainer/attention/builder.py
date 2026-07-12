@@ -31,38 +31,54 @@ WEIGHT_ITEMS = (
 )
 
 
-def build_attention_ledger(
+def build_attention_ledger(  # noqa: PLR0913
     target: Path,
     *,
     log_dir: Path | None = None,
     events_dir: Path | None = None,
     max_tracked_files: int = signal_context.DEFAULT_MAX_TRACKED_FILES,
     artifact_read_limit_bytes: int = (signal_context.DEFAULT_ARTIFACT_READ_LIMIT_BYTES),
+    priority_paths: Sequence[str] = (),
 ) -> AttentionLedger:
     """Return deterministic attention ledger for target repository."""
     repo_root = target.resolve()
     resolved_log_dir = log_dir or Path(".verify-logs")
     resolved_events_dir = events_dir or Path(".verify-logs/events")
-    context = signal_context.AttentionSignalContext.build(
+    tracked_paths = signals.tracked_files(repo_root)
+    inventory_context = signal_context.AttentionSignalContext.from_paths(
         repo_root,
-        tracked_files=signals.tracked_files,
+        tracked_paths,
+        max_tracked_files=0,
+        artifact_read_limit_bytes=artifact_read_limit_bytes,
+    )
+    changed = signals.changed_counts(repo_root)
+    verifier_artifacts = signals.verifier_artifact_counts(
+        repo_root,
+        log_dir=repo_root / resolved_log_dir,
+        context=inventory_context,
+    )
+    explicit_paths, priority_notes = _validated_priority_paths(
+        priority_paths,
+        tracked_paths=tracked_paths,
+    )
+    context = signal_context.AttentionSignalContext.from_paths(
+        repo_root,
+        tracked_paths,
+        required_paths=(*changed, *verifier_artifacts, *explicit_paths),
         max_tracked_files=max_tracked_files,
         artifact_read_limit_bytes=artifact_read_limit_bytes,
     )
+    context.performance_notes.extend(priority_notes)
     files = context.tracked_paths
     raw_components = {
-        "git_changed": signals.changed_counts(repo_root),
+        "git_changed": changed,
         "git_churn": signals.churn_counts(repo_root),
         "runtime_events": signals.runtime_event_counts(
             repo_root,
             events_dir=repo_root / resolved_events_dir,
             context=context,
         ),
-        "verifier_artifacts": signals.verifier_artifact_counts(
-            repo_root,
-            log_dir=repo_root / resolved_log_dir,
-            context=context,
-        ),
+        "verifier_artifacts": verifier_artifacts,
         "docsync": signals.docsync_counts(repo_root, context=context),
         "file_baselines": signals.file_baseline_counts(
             repo_root,
@@ -253,6 +269,27 @@ def _repo_relative_path(value: object) -> str:
     if lexical_invalid or structural_invalid:
         raise ValueError(f"path is not canonical repository-relative: {path_text!r}")
     return path_text
+
+
+def _validated_priority_paths(
+    values: Sequence[str],
+    *,
+    tracked_paths: tuple[str, ...],
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Return safe tracked priority paths and bounded omission notes."""
+
+    tracked = set(tracked_paths)
+    retained: set[str] = set()
+    omitted: list[str] = []
+    for value in values:
+        normalized = _repo_relative_path(value)
+        if file_safety.sensitive_path(Path(normalized)):
+            raise ValueError(f"priority path is sensitive: {normalized!r}")
+        if normalized in tracked:
+            retained.add(normalized)
+        else:
+            omitted.append(f"priority path not tracked and omitted: {normalized}")
+    return tuple(sorted(retained)), tuple(omitted)
 
 
 def _unit_interval(value: object, label: str) -> float:
