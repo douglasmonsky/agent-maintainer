@@ -19,9 +19,11 @@ Updates and uninstall operations stop when those files were edited or the
 manifest cannot prove ownership.
 
 The `agent_maintainer.skill` domain owns resource loading and the personal-skill
-lifecycle. Its CLI may depend on that lifecycle; lifecycle may depend only on
-the resource and model modules. The root CLI exposes this as an undecorated
-`skill` command so personal state can be managed outside a Git repository.
+lifecycle. Its CLI may depend on that lifecycle; lifecycle composes the
+resource, ownership-manifest, transactional-filesystem, and model modules. The
+ownership module depends only on models; transactions is filesystem-only. The
+root CLI exposes this as an undecorated `skill` command so personal state can
+be managed outside a Git repository.
 
 The skill teaches the agent to offer Recommended, Guided, or Full control setup
 after the new repository's stack is known and before the initial commit. The

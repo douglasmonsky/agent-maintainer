@@ -68,8 +68,9 @@ def _dispatch(args: argparse.Namespace) -> tuple[lifecycle.SkillStatus, ...]:
 
 
 def _render_status(status_value: lifecycle.SkillStatus) -> str:
+    state = status_value.state.value
     fields = [
-        f"{status_value.client}: {status_value.state.value}",
+        f"{status_value.client}: {state}",
         f"packaged={status_value.package_version}",
     ]
     if status_value.installed_version is not None:

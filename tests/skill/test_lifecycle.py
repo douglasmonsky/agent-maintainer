@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.skill import lifecycle, resources
+from agent_maintainer.skill import lifecycle, resources, transactions
 from agent_maintainer.skill.models import SkillBundle, SkillFile, SkillState
 
 CLIENTS = ("codex", "claude-code")
@@ -255,7 +255,7 @@ def test_failed_tree_replacement_restores_original_install(
                 raise OSError("synthetic replace failure")
         real_replace(source, target)
 
-    monkeypatch.setattr(lifecycle.os, "replace", fail_staged_replace)
+    monkeypatch.setattr(transactions.os, "replace", fail_staged_replace)
 
     with pytest.raises(lifecycle.SkillMutationError, match="rolled back"):
         lifecycle.install(tmp_path, ("codex",))

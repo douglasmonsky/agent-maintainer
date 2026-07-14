@@ -8,12 +8,20 @@ depends_on = ["lifecycle"]
 
 [[modules]]
 path = "lifecycle"
-depends_on = ["models", "resources"]
+depends_on = ["models", "ownership", "resources", "transactions"]
 
 [[modules]]
 path = "models"
 depends_on = []
 
 [[modules]]
+path = "ownership"
+depends_on = ["models"]
+
+[[modules]]
 path = "resources"
 depends_on = ["models"]
+
+[[modules]]
+path = "transactions"
+depends_on = []

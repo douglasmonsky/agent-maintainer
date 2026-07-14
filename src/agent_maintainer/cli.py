@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import sys
-from collections.abc import Callable
 
 from agent_maintainer.config import preflight
 from agent_maintainer.context.cli import main as _context_main
@@ -18,7 +17,7 @@ from agent_maintainer.verify.quiet import main as _verify_main
 
 disable_bytecode_writes()
 
-CommandRunner = Callable[[list[str]], int]
+CommandRunner = preflight.CommandRunner
 
 
 context_main: CommandRunner = preflight.ValidatedCommand(_context_main)
