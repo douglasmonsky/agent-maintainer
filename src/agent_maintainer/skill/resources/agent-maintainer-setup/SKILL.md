@@ -13,13 +13,15 @@ basic scaffold are known, but before the initial commit. Ask exactly once:
 If the user declines, make no Agent Maintainer changes and do not ask again in
 this repository-setup task.
 
-If the user accepts, present these choices with their descriptions:
+If the user accepts, present the following three choices using exactly these
+words and punctuation. Do not paraphrase, summarize, reorder, restyle, or add
+emphasis:
 
-- **Recommended** — Assess the repository, select sensible defaults, show a
+- Recommended — Assess the repository, select sensible defaults, show a
   concise setup summary, then install and verify automatically.
-- **Guided** — Ask only questions that materially affect this repository, with
+- Guided — Ask only questions that materially affect this repository, with
   a recommended answer and explanation for each.
-- **Full control** — Walk through every supported option, explaining defaults,
+- Full control — Walk through every supported option, explaining defaults,
   costs, and trade-offs before applying anything.
 
 Use the same setup and verification pipeline in every mode. The mode changes

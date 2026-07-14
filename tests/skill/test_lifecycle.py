@@ -15,6 +15,7 @@ from agent_maintainer.skill.models import SkillBundle, SkillFile, SkillState
 CLIENTS = ("codex", "claude-code")
 
 
+# docsync:evidence.start evidence.skill.lifecycle_tests
 def test_install_status_and_uninstall_both_clients(tmp_path: Path) -> None:
     """Both clients receive and safely remove the same portable bundle."""
 
@@ -76,6 +77,33 @@ def test_stale_owned_files_update_and_preserve_unrelated_content(
     assert (destination / "SKILL.md").read_text(encoding="utf-8").endswith("\n# changed\n")
 
 
+def test_stale_update_allows_managed_file_set_evolution(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A release may remove an old resource and add a new owned resource."""
+    lifecycle.install(tmp_path, ("codex",))
+    destination = lifecycle.client_destination(tmp_path, "codex")
+    unrelated = destination / "notes.txt"
+    unrelated.write_text("keep\n", encoding="utf-8")
+    changed = _bundle(
+        "9.9.9",
+        {
+            "SKILL.md": "new skill\n",
+            "agents/client.yaml": "new metadata\n",
+        },
+    )
+    monkeypatch.setattr(lifecycle.resources, "load_bundle", lambda: changed)
+
+    assert lifecycle.status(tmp_path, "codex").state is SkillState.STALE
+    updated = lifecycle.install(tmp_path, ("codex",))[0]
+
+    assert updated.state is SkillState.CURRENT
+    assert not (destination / "agents/openai.yaml").exists()
+    assert (destination / "agents/client.yaml").read_text(encoding="utf-8") == "new metadata\n"
+    assert unrelated.read_text(encoding="utf-8") == "keep\n"
+
+
 def test_uninstall_preserves_unrelated_content(tmp_path: Path) -> None:
     """Removing a managed skill leaves unrelated files in its directory."""
 
@@ -86,12 +114,16 @@ def test_uninstall_preserves_unrelated_content(tmp_path: Path) -> None:
 
     result = lifecycle.uninstall(tmp_path, ("codex",))[0]
 
-    assert result.state is SkillState.MISSING
+    assert result.state is SkillState.LOCALLY_MODIFIED
+    assert lifecycle.status(tmp_path, "codex") == result
     assert destination.is_dir()
     assert unrelated.read_text(encoding="utf-8") == "keep\n"
     assert not (destination / "SKILL.md").exists()
     assert not (destination / "agents").exists()
     assert not (destination / lifecycle.MANIFEST_NAME).exists()
+
+
+# docsync:evidence.end evidence.skill.lifecycle_tests
 
 
 def test_existing_unowned_destination_is_never_adopted(tmp_path: Path) -> None:
@@ -108,6 +140,20 @@ def test_existing_unowned_destination_is_never_adopted(tmp_path: Path) -> None:
     assert existing.read_text(encoding="utf-8") == "mine\n"
 
 
+def test_dangling_destination_symlink_is_locally_modified(tmp_path: Path) -> None:
+    """A dangling link at the ownership boundary is never treated as absent."""
+    destination = lifecycle.client_destination(tmp_path, "codex")
+    destination.parent.mkdir(parents=True)
+    destination.symlink_to(tmp_path / "missing-target", target_is_directory=True)
+
+    result = lifecycle.status(tmp_path, "codex")
+
+    assert result.state is SkillState.LOCALLY_MODIFIED
+    assert "not an owned directory" in result.detail
+    with pytest.raises(lifecycle.SkillOwnershipError, match="locally modified"):
+        lifecycle.install(tmp_path, ("codex",))
+
+
 @pytest.mark.parametrize("manifest_content", ("not json\n", "{}\n"))
 def test_invalid_manifest_blocks_mutation(tmp_path: Path, manifest_content: str) -> None:
     """Malformed or incomplete ownership data fails closed."""
@@ -119,6 +165,43 @@ def test_invalid_manifest_blocks_mutation(tmp_path: Path, manifest_content: str)
     assert lifecycle.status(tmp_path, "codex").state is SkillState.LOCALLY_MODIFIED
     with pytest.raises(lifecycle.SkillOwnershipError):
         lifecycle.uninstall(tmp_path, ("codex",))
+
+
+def test_manifest_rejects_unsafe_managed_path(tmp_path: Path) -> None:
+    """Ownership metadata cannot direct access outside its managed directory."""
+    lifecycle.install(tmp_path, ("codex",))
+    destination = lifecycle.client_destination(tmp_path, "codex")
+    manifest_path = destination / lifecycle.MANIFEST_NAME
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["files"] = {"../outside": "0" * 64}
+    manifest_path.write_text(f"{json.dumps(payload)}\n", encoding="utf-8")
+
+    result = lifecycle.status(tmp_path, "codex")
+
+    assert result.state is SkillState.LOCALLY_MODIFIED
+    assert "safe relative paths" in result.detail
+
+
+def test_symlinked_managed_parent_blocks_mutation(tmp_path: Path) -> None:
+    """A parent symlink cannot redirect a verified read or removal outside ownership."""
+    lifecycle.install(tmp_path, ("codex",))
+    destination = lifecycle.client_destination(tmp_path, "codex")
+    managed = destination / "agents/openai.yaml"
+    content = managed.read_text(encoding="utf-8")
+    managed.unlink()
+    managed.parent.rmdir()
+    external = tmp_path / "external"
+    external.mkdir()
+    (external / "openai.yaml").write_text(content, encoding="utf-8")
+    (destination / "agents").symlink_to(external, target_is_directory=True)
+
+    result = lifecycle.status(tmp_path, "codex")
+
+    assert result.state is SkillState.LOCALLY_MODIFIED
+    assert "unsafe managed path" in result.detail
+    with pytest.raises(lifecycle.SkillOwnershipError):
+        lifecycle.uninstall(tmp_path, ("codex",))
+    assert (external / "openai.yaml").read_text(encoding="utf-8") == content
 
 
 def test_missing_managed_file_blocks_mutation(tmp_path: Path) -> None:
@@ -215,3 +298,11 @@ def _changed_bundle(bundle: SkillBundle) -> SkillBundle:
         digest = hashlib.sha256(content.encode("utf-8")).hexdigest()
         files.append(SkillFile(item.relative_path, content, digest))
     return SkillBundle(bundle.name, "9.9.9", tuple(files))
+
+
+def _bundle(version: str, contents: dict[str, str]) -> SkillBundle:
+    files = tuple(
+        SkillFile(path, content, hashlib.sha256(content.encode("utf-8")).hexdigest())
+        for path, content in sorted(contents.items())
+    )
+    return SkillBundle(resources.SKILL_NAME, version, files)

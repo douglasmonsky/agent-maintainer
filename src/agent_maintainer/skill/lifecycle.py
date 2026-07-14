@@ -9,7 +9,7 @@ import shutil
 import tempfile
 import uuid
 from collections.abc import Callable, Mapping
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Final, cast
 
 from agent_maintainer.skill import resources
@@ -67,10 +67,16 @@ def install(home: Path, clients: tuple[str, ...]) -> tuple[SkillStatus, ...]:
             results.append(before)
             continue
         _require_owned_or_missing(before)
+        old_files = (
+            _read_manifest(before.destination, client=client, bundle=bundle).files
+            if before.state is SkillState.STALE
+            else ()
+        )
         _replace_destination(
             before.destination,
-            lambda staged, selected_client=client: _write_bundle(
+            lambda staged, selected_client=client, owned=old_files: _replace_bundle(
                 staged,
+                owned,
                 client=selected_client,
                 bundle=bundle,
             ),
@@ -97,15 +103,22 @@ def uninstall(home: Path, clients: tuple[str, ...]) -> tuple[SkillStatus, ...]:
             lambda staged, owned=manifest.files: _remove_bundle(staged, owned),
         )
         _remove_empty_directory(before.destination)
-        results.append(_missing_status(home, client, bundle=bundle))
+        results.append(_status(home, client, bundle=bundle))
     return tuple(results)
 
 
 def _status(home: Path, client: str, *, bundle: SkillBundle) -> SkillStatus:
     destination = client_destination(home, client)
+    if destination.is_symlink():
+        return _modified_status(
+            destination,
+            client,
+            bundle,
+            "destination is not an owned directory",
+        )
     if not destination.exists():
         return _missing_status(home, client, bundle=bundle)
-    if destination.is_symlink() or not destination.is_dir():
+    if not destination.is_dir():
         return _modified_status(
             destination,
             client,
@@ -175,10 +188,6 @@ def _read_manifest(destination: Path, *, client: str, bundle: SkillBundle) -> Sk
     if manifest.client != client:
         msg = "ownership manifest client mismatch"
         raise SkillOwnershipError(msg)
-    packaged_paths = tuple(sorted(item.relative_path for item in bundle.files))
-    if tuple(path for path, _digest in manifest.files) != packaged_paths:
-        msg = "ownership manifest managed file set mismatch"
-        raise SkillOwnershipError(msg)
     return manifest
 
 
@@ -206,8 +215,21 @@ def _parse_manifest_files(value: object) -> list[tuple[str, str]]:
     for path, digest in cast("dict[object, object]", value).items():
         if not isinstance(path, str) or not isinstance(digest, str):
             raise TypeError("files must map paths to digests")
+        _validate_managed_path(path)
         parsed.append((path, digest))
     return parsed
+
+
+def _validate_managed_path(path: str) -> None:
+    parsed = PurePosixPath(path)
+    if (
+        not path
+        or parsed.is_absolute()
+        or parsed.as_posix() != path
+        or any(part in {".", ".."} for part in parsed.parts)
+        or path == MANIFEST_NAME
+    ):
+        raise TypeError("files must use safe relative paths")
 
 
 def _required_string(payload: Mapping[str, object], key: str) -> str:
@@ -219,6 +241,8 @@ def _required_string(payload: Mapping[str, object], key: str) -> str:
 
 def _managed_content_problem(destination: Path, manifest: SkillManifest) -> str:
     for relative_path, expected_digest in manifest.files:
+        if _managed_path_has_symlink(destination, relative_path):
+            return f"unsafe managed path: {relative_path}"
         path = destination.joinpath(*relative_path.split("/"))
         if path.is_symlink() or not path.is_file():
             return f"missing managed file: {relative_path}"
@@ -233,6 +257,10 @@ def _managed_content_problem(destination: Path, manifest: SkillManifest) -> str:
 
 def _write_bundle(destination: Path, *, client: str, bundle: SkillBundle) -> None:
     for item in bundle.files:
+        _validate_managed_path(item.relative_path)
+        if _managed_path_has_symlink(destination, item.relative_path):
+            msg = f"unsafe managed path: {item.relative_path}"
+            raise SkillOwnershipError(msg)
         path = destination.joinpath(*item.relative_path.split("/"))
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(item.content, encoding="utf-8")
@@ -244,6 +272,27 @@ def _write_bundle(destination: Path, *, client: str, bundle: SkillBundle) -> Non
         "files": {item.relative_path: item.digest for item in bundle.files},
     }
     _write_json(destination / MANIFEST_NAME, manifest)
+
+
+def _managed_path_has_symlink(destination: Path, relative_path: str) -> bool:
+    current = destination
+    for part in PurePosixPath(relative_path).parts:
+        current /= part
+        if current.is_symlink():
+            return True
+    return False
+
+
+def _replace_bundle(
+    destination: Path,
+    old_files: tuple[tuple[str, str], ...],
+    *,
+    client: str,
+    bundle: SkillBundle,
+) -> None:
+    if old_files:
+        _remove_bundle(destination, old_files)
+    _write_bundle(destination, client=client, bundle=bundle)
 
 
 def _remove_bundle(destination: Path, files: tuple[tuple[str, str], ...]) -> None:

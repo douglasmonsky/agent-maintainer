@@ -7,6 +7,7 @@ from agent_maintainer.skill import resources
 SHA256_HEX_LENGTH = 64
 
 
+# docsync:evidence.start evidence.skill.portable_resource_tests
 def test_shared_skill_has_portable_frontmatter_and_setup_modes() -> None:
     """One common skill triggers before initial commits in both clients."""
 
@@ -19,9 +20,9 @@ def test_shared_skill_has_portable_frontmatter_and_setup_modes() -> None:
     assert "allowed-tools" not in skill.content
     assert "creating, scaffolding, bootstrapping, or initializing" in skill.content
     assert "Set up Agent Maintainer for this repository?" in skill.content
-    assert skill.content.count("**Recommended**") == 1
-    assert skill.content.count("**Guided**") == 1
-    assert skill.content.count("**Full control**") == 1
+    assert skill.content.count("Recommended — Assess the repository") == 1
+    assert skill.content.count("Guided — Ask only questions") == 1
+    assert skill.content.count("Full control — Walk through every supported option") == 1
     assert "before the initial commit" in skill.content
     assert "Do not add an MCP server or compatibility shim." in skill.content
 
@@ -46,6 +47,9 @@ def test_shared_skill_covers_approved_setup_pipeline() -> None:
     )
     for phrase in expected_phrases:
         assert phrase in skill.content
+
+
+# docsync:evidence.end evidence.skill.portable_resource_tests
 
 
 def test_codex_metadata_names_the_shared_skill() -> None:
