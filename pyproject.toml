@@ -147,6 +147,12 @@ all = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"agent_maintainer.skill" = [
+  "resources/agent-maintainer-setup/SKILL.md",
+  "resources/agent-maintainer-setup/agents/openai.yaml",
+]
+
 [tool.agent_maintainer]
 mode = "fresh-strict"
 architecture_tool = "tach"

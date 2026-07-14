@@ -53,6 +53,20 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     )
 
 
+def test_setup_skill_resources_are_declared_as_package_data() -> None:
+    """Built distributions retain both portable setup skill resources."""
+
+    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
+        metadata = tomllib.load(handle)
+
+    assert metadata["tool"]["setuptools"]["package-data"] == {
+        "agent_maintainer.skill": [
+            "resources/agent-maintainer-setup/SKILL.md",
+            "resources/agent-maintainer-setup/agents/openai.yaml",
+        ]
+    }
+
+
 def test_optional_dependency_extras_are_flattened() -> None:
     """Extras avoid recursive self-references so installers stay predictable."""
 
