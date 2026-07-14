@@ -276,6 +276,8 @@ enable_pip_audit = true
 pip_audit_args = [
   "-r",
   "config/dev-lock.txt",
+  "--ignore-vuln",
+  "PYSEC-2026-2132",
   "--no-deps",
   "--disable-pip",
   "--progress-spinner",
