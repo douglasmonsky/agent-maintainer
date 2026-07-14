@@ -1,7 +1,7 @@
 +++
 id = "dual-client-setup-skill"
 kind = "cohesive-feature"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-07-28
 allowed_paths = [
