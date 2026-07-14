@@ -94,17 +94,20 @@ def test_unknown_command_ignores_invalid_policy(
     assert "FAIL configuration" not in error
 
 
-def test_every_root_handler_has_config_preflight() -> None:
-    """New root commands cannot bypass the shared validation wrapper."""
+def test_repository_root_handlers_have_config_preflight() -> None:
+    """Only the personal skill command may bypass repository validation."""
 
     handlers = cli.command_handlers()
-    validated = tuple(
-        handler for handler in handlers.values() if isinstance(handler, preflight.ValidatedCommand)
-    )
+    validated = {
+        name: handler
+        for name, handler in handlers.items()
+        if isinstance(handler, preflight.ValidatedCommand)
+    }
 
     assert handlers
-    assert len(validated) == len(handlers)
-    assert all(handler.original_handler() for handler in validated)
+    assert set(handlers) - set(validated) == {"skill"}
+    assert handlers["skill"] is cli.skill_command
+    assert all(handler.original_handler() for handler in validated.values())
 
 
 def fake_handlers(calls: list[list[str]]) -> dict[str, cli.CommandRunner]:

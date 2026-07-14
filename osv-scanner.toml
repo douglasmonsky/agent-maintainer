@@ -1,2 +1,17 @@
 # Accepted OSV exceptions must also have an active, unexpired record in
-# config/dependency-risks.toml. There are currently no accepted advisories.
+# config/dependency-risks.toml.
+
+[[IgnoredVulns]]
+id = "PYSEC-2026-2132"
+reason = "DR-005-click-command-injection: Semgrep 1.169.0 requires Click 8.1.x; Agent Maintainer does not use click.edit()."
+ignoreUntil = 2026-07-28
+
+[[IgnoredVulns]]
+id = "CVE-2026-7246"
+reason = "DR-005-click-command-injection: alias of PYSEC-2026-2132 under the same time-bounded Semgrep constraint."
+ignoreUntil = 2026-07-28
+
+[[IgnoredVulns]]
+id = "GHSA-47fr-3ffg-hgmw"
+reason = "DR-005-click-command-injection: alias of PYSEC-2026-2132 under the same time-bounded Semgrep constraint."
+ignoreUntil = 2026-07-28

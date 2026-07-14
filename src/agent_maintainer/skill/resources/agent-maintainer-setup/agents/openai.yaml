@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Maintainer Setup"
+  short_description: "Configure new repositories with Agent Maintainer"
+  default_prompt: "Use $agent-maintainer-setup when creating this repository and offer the approved setup modes before its initial commit."

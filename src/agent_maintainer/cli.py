@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import sys
-from collections.abc import Callable
 
 from agent_maintainer.config import preflight
 from agent_maintainer.context.cli import main as _context_main
@@ -13,11 +12,12 @@ from agent_maintainer.core.scaffold.initializer import main as _init_main
 from agent_maintainer.doctor.cli import main as _doctor_main
 from agent_maintainer.hooks.cli import main as _hooks_main
 from agent_maintainer.runtime_events.commands import run_with_command_events
+from agent_maintainer.skill.cli import main as _skill_main
 from agent_maintainer.verify.quiet import main as _verify_main
 
 disable_bytecode_writes()
 
-CommandRunner = Callable[[list[str]], int]
+CommandRunner = preflight.CommandRunner
 
 
 context_main: CommandRunner = preflight.ValidatedCommand(_context_main)
@@ -36,6 +36,7 @@ Stable workflows:
   guidance        Generate or check AGENTS.agent-maintainer.md.
   init            Write starter files into a target repository.
   install         Install local hooks for this repository.
+  skill           Install the setup skill for personal agent clients.
   verify          Run configured verification profiles.
   wait            Quiet polling is stable; terminal rewake is experimental.
 
@@ -70,6 +71,7 @@ Examples:
   python -m agent_maintainer context failures
   python -m agent_maintainer context log pyright --tail 120
   python -m agent_maintainer guidance --check
+  python -m agent_maintainer skill install --client codex --client claude-code
   python -m agent_maintainer hooks status
   python -m agent_maintainer events summary
   python -m agent_maintainer scoring examples export --format jsonl
@@ -136,6 +138,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "report": report_command,
         "repair-plan": repair_plan_command,
         "scoring": scoring_command,
+        "skill": skill_command,
         "test-intel": test_intel_command,
         "wait": wait_command,
         "verify": verify_main,
@@ -209,6 +212,11 @@ def repair_plan_command(command_args: list[str]) -> int:
 def scoring_command(command_args: list[str]) -> int:
     """Run scoring command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.scoring.cli", command_args)
+
+
+def skill_command(command_args: list[str]) -> int:
+    """Manage personal setup skills without repository configuration preflight."""
+    return _skill_main(command_args)
 
 
 @preflight.ValidatedCommand

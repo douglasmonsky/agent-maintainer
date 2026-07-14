@@ -27,6 +27,7 @@ README_CLAIMS = {
 }
 
 PUBLIC_DOC_OBJECTS = {
+    "docs.agent_maintainer_setup_skill.overview",
     "docs.quick_start.overview",
     "docs.onboarding_first_run.overview",
     "docs.diagnostics_repair_loop.overview",
@@ -51,6 +52,7 @@ PUBLIC_DOC_OBJECTS = {
 }
 
 PUBLIC_DOC_CLAIMS = {
+    "claim.docs.agent_maintainer_setup_dual_client",
     "claim.docs.quick_start_package_flow",
     "claim.docs.onboarding_first_run_repair_loop",
     "claim.docs.diagnostics_run_scoped_artifacts",
@@ -82,6 +84,7 @@ ACTIVE_DOC_PATHS = {
     "README.md",
     "docs/agent-client-hooks.md",
     "docs/agent-maintainer-guidance.md",
+    "docs/agent-maintainer-setup-skill.md",
     "docs/architecture-policy.md",
     "docs/change-plans.md",
     "docs/codex-hooks.md",

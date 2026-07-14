@@ -6,6 +6,7 @@ import os
 import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass
+from importlib import resources
 from pathlib import Path
 
 import pytest
@@ -76,6 +77,30 @@ def tuple_toml(values: tuple[str, ...]) -> str:
     """Render a simple tuple of strings as TOML array syntax."""
 
     return "[" + ", ".join(f'"{value}"' for value in values) + "]"
+
+
+def test_packaged_setup_skill_resources_and_help(tmp_path: Path) -> None:
+    """Package data and its repository-independent command ship together."""
+    skill_root = resources.files("agent_maintainer.skill").joinpath(
+        "resources",
+        "agent-maintainer-setup",
+    )
+    assert skill_root.joinpath("SKILL.md").is_file()
+    assert skill_root.joinpath("agents", "openai.yaml").is_file()
+
+    environment = dict(os.environ)
+    environment.update(
+        {
+            "HOME": str(tmp_path / "home"),
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONPATH": str(REPO_ROOT / "src"),
+        }
+    )
+    run(
+        [sys.executable, "-m", "agent_maintainer", "skill", "--help"],
+        cwd=tmp_path,
+        env=environment,
+    )
 
 
 def configured_starter_config(starter_config: str, layout: DownstreamLayout) -> str:

@@ -81,3 +81,27 @@ mitigations = [
   "Run twine metadata checks and install both artifacts in clean environments.",
   "Record the exact artifact inventory, byte sizes, and SHA-256 digests across every release transfer.",
 ]
+
+[[risks]]
+id = "DR-005-click-command-injection"
+status = "accepted"
+category = "known-vulnerability"
+ecosystems = ["python"]
+artifacts = [
+  "pyproject.toml",
+  "config/dev-lock.txt",
+  "osv-scanner.toml",
+  "docs/dependency-risk-register.md",
+]
+advisories = ["PYSEC-2026-2132", "CVE-2026-7246", "GHSA-47fr-3ffg-hgmw"]
+owner = "release-maintainer"
+accepted_on = 2026-07-14
+expires_on = 2026-07-28
+rationale = "Semgrep 1.169.0 is the latest available release and requires Click on the 8.1 line, while the advisory is fixed only in Click 8.3.3. Agent Maintainer does not import Click or call click.edit(), the vulnerable API."
+review_trigger = "Semgrep publishes a release compatible with Click 8.3.3 or newer, or this record reaches its expiry date."
+resolution_condition = "Upgrade Click to 8.3.3 or newer through a compatible Semgrep release, remove the pip-audit ignore, refresh the development lock, and pass the complete security profile."
+mitigations = [
+  "Ignore only PYSEC-2026-2132 while retaining all other pip-audit findings as blocking failures.",
+  "Do not add any Agent Maintainer use of click.edit() while this risk is accepted.",
+  "Keep Semgrep limited to development and CI scanning of repository content.",
+]

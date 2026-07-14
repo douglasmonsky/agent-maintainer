@@ -68,9 +68,28 @@ def artifact_contains_license(path: Path) -> bool:
     if path.suffix == ".whl":
         with zipfile.ZipFile(path) as archive:
             return any(name.endswith(".dist-info/licenses/LICENSE") for name in archive.namelist())
-
     with tarfile.open(path) as archive:
         return any(name.endswith("/LICENSE") for name in archive.getnames())
+
+
+def smoke_setup_skill(python: Path) -> None:
+    """Assert an installed artifact exposes skill data and its public command."""
+    resource_check = (
+        "from importlib import resources; "
+        "root = resources.files('agent_maintainer.skill') / 'resources' / "
+        "'agent-maintainer-setup'; "
+        "assert (root / 'SKILL.md').is_file(); "
+        "assert (root / 'agents' / 'openai.yaml').is_file()"
+    )
+    result = run([str(python), "-c", resource_check])
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    executable = python.parent / "agent-maintainer"
+    result = run([str(executable), "skill", "--help"])
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "install" in result.stdout
+    assert "status" in result.stdout
+    assert "uninstall" in result.stdout
 
 
 def advertised_console_scripts() -> tuple[str, ...]:
@@ -194,6 +213,7 @@ def test_release_builds_artifacts_and_installs_console_scripts(
         result = run([str(python), "-m", "pip", "show", "agent-maintainer"])
         assert result.returncode == 0, result.stdout + result.stderr
         smoke_console_scripts(python)
+        smoke_setup_skill(python)
 
 
 # docsync:evidence.end evidence.release.packaging_tests

@@ -147,6 +147,12 @@ all = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"agent_maintainer.skill" = [
+  "resources/agent-maintainer-setup/SKILL.md",
+  "resources/agent-maintainer-setup/agents/openai.yaml",
+]
+
 [tool.agent_maintainer]
 mode = "fresh-strict"
 architecture_tool = "tach"
@@ -270,6 +276,8 @@ enable_pip_audit = true
 pip_audit_args = [
   "-r",
   "config/dev-lock.txt",
+  "--ignore-vuln",
+  "PYSEC-2026-2132",
   "--no-deps",
   "--disable-pip",
   "--progress-spinner",

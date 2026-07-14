@@ -22,6 +22,9 @@ ISSUE_FORMS = (
     ISSUE_TEMPLATE_DIR / "feature_request.yml",
     ISSUE_TEMPLATE_DIR / "support_request.yml",
 )
+SETUP_SKILL_DECISION = (
+    REPO_ROOT / "docs/architecture/decisions/2026-07-13-dual-client-setup-skill.md"
+)
 
 
 def test_public_policy_documents_exist_and_are_linked() -> None:
@@ -36,6 +39,18 @@ def test_public_policy_documents_exist_and_are_linked() -> None:
     assert "SECURITY.md" in contributing
     assert "SUPPORT.md" in contributing
     assert "CODE_OF_CONDUCT.md" in contributing
+
+
+def test_setup_skill_architecture_decision_bounds_personal_state() -> None:
+    """The new architecture edge records its narrow client-state boundary."""
+    decision = _read(SETUP_SKILL_DECISION)
+
+    assert "personal skill" in decision.casefold()
+    assert "Codex" in decision
+    assert "Claude Code" in decision
+    assert "MCP" in decision
+    assert "hook" in decision.casefold()
+    assert "lifecycle" in decision
 
 
 def test_security_and_support_routes_are_private_and_privacy_bounded() -> None:

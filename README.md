@@ -31,6 +31,7 @@ logs into chat.
 Read more where it matters:
 
 - [Quick start](docs/quick-start.md)
+- [New-repository setup skill](docs/agent-maintainer-setup-skill.md)
 - [First run walkthrough](docs/onboarding-first-run.md)
 - [Diagnostics loop](docs/diagnostics-repair-loop.md)
 - [Tool map](docs/tool-map.md)

@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260714T042634Z.claim.readme.run_profiles.057db51
+  claim: claim.readme.run_profiles
+  doc_object: docs.readme.run_profiles
+  evidence:
+  - evidence.readme.command_registry
+  reason: Added an unrelated personal-skill command; reviewed run-profile documentation
+    and it remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-14T04:26:34Z'
+  base: HEAD
+  head: 057db51
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:39eb9d79dbb7cad888b3f03108a85e68dc5dd269567e13090f07280c0a12642c
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:d2e4c1968199c09a9360bcf077fe0554a6ce78fcd9bea95fea7d0e550b2e0267
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
