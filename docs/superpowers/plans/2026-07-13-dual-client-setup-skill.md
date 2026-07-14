@@ -42,6 +42,7 @@
 - Create: `src/agent_maintainer/skill/resources/agent-maintainer-setup/SKILL.md`
 - Create: `src/agent_maintainer/skill/resources/agent-maintainer-setup/agents/openai.yaml`
 - Create: `tests/skill/test_resources.py`
+- Create: `tests/skill/test_interaction_contract.py`
 - Modify: `pyproject.toml`
 - Modify: `tests/packaging/test_package_metadata.py`
 
@@ -68,7 +69,29 @@ def test_shared_skill_has_portable_frontmatter_and_setup_modes() -> None:
     assert "Do not add an MCP server" in skill.content
 ```
 
-Also assert `agents/openai.yaml` contains the display name, 25-64 character short description, and a default prompt naming `$agent-maintainer-setup`.
+Also parse `agents/openai.yaml` with `yaml.safe_load` and assert the exact
+`interface` mapping contains the display name, 25-64 character short
+description, and a default prompt naming `$agent-maintainer-setup`, with no
+other top-level keys.
+
+Create `test_interaction_contract.py` with one phrase matrix covering each
+approved scenario:
+
+```python
+SCENARIOS = {
+    "decline": ("make no Agent Maintainer changes", "do not ask again"),
+    "recommended_python": ("track `agent`", "preset `strict-new-repo`"),
+    "typescript": ("Do not guess", "explicit TypeScript command"),
+    "escalation": ("continue in Guided or Full control",),
+    "guided": ("Ask only questions", "materially affect this repository"),
+    "full_control": ("every supported", "before writing repository files"),
+    "completion": ("Merge", "agent-maintainer doctor", "--profile precommit"),
+}
+```
+
+Load the shared skill and assert every phrase for every scenario. This is the
+deterministic interaction contract; live clients remain responsible for model
+behavior.
 
 - [ ] **Step 2: Run the resource tests and observe RED**
 
@@ -110,12 +133,15 @@ def load_bundle() -> SkillBundle:
 
 Use only `name` and `description` frontmatter. Include the exact consent prompt and the three approved descriptions, then specify Recommended defaults, Guided material questions, Full control's complete questionnaire, exact dependency pinning, advisor/dry-run/init/config-merge/guidance/doctor/precommit flow, conflict escalation, no-write decline, and final reporting. For repositories without a Python dependency convention, name `.agent-maintainer/tool-requirements.txt` and the ignored `.agent-maintainer/venv/`, and require Guided consent before creating them. End with `Do not add an MCP server or compatibility shim.` Keep the resource below 220 lines.
 
-Generate `agents/openai.yaml` with:
+Generate `agents/openai.yaml` with this exact command rather than writing
+assignment syntax into the YAML file:
 
-```text
-display_name=Agent Maintainer Setup
-short_description=Configure new repositories with Agent Maintainer
-default_prompt=Use $agent-maintainer-setup when creating this repository and offer the approved setup modes before its initial commit.
+```bash
+python /Users/Monsky/.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py \
+  src/agent_maintainer/skill/resources/agent-maintainer-setup \
+  --interface 'display_name=Agent Maintainer Setup' \
+  --interface 'short_description=Configure new repositories with Agent Maintainer' \
+  --interface 'default_prompt=Use $agent-maintainer-setup when creating this repository and offer the approved setup modes before its initial commit.'
 ```
 
 - [ ] **Step 5: Configure exact package data**
@@ -133,7 +159,7 @@ Extend the package metadata test to assert those exact entries.
 - [ ] **Step 6: Run GREEN checks**
 
 ```bash
-PYTHONPATH=src .venv/bin/pytest tests/skill/test_resources.py tests/packaging/test_package_metadata.py -q
+PYTHONPATH=src .venv/bin/pytest tests/skill/test_resources.py tests/skill/test_interaction_contract.py tests/packaging/test_package_metadata.py -q
 python /Users/Monsky/.codex/skills/.system/skill-creator/scripts/quick_validate.py src/agent_maintainer/skill/resources/agent-maintainer-setup
 PYTHONPATH=src .venv/bin/ruff check src/agent_maintainer/skill tests/skill/test_resources.py
 PYTHONPATH=src .venv/bin/ruff format --check src/agent_maintainer/skill tests/skill/test_resources.py
@@ -143,7 +169,8 @@ Expected: all pass.
 
 - [ ] **Step 7: Commit**
 
-Stage only Task 1 files and commit `feat: package agent maintainer setup skill`.
+Stage only Task 1 files, including `test_interaction_contract.py`, and commit
+`feat: package agent maintainer setup skill`.
 
 ### Task 2: Implement ownership-safe dual-client lifecycle
 
@@ -396,15 +423,72 @@ Expected: both current. Stop on locally modified state; do not overwrite.
 
 - [ ] **Step 6: Run fresh-session trigger tests**
 
-Use isolated temporary repositories and this prompt only:
+Create and preserve isolated scratch repositories under:
+
+```text
+/Users/Monsky/Developer/Codex/agent-maintainer-skill-forward-tests/2026-07-13/codex
+/Users/Monsky/Developer/Codex/agent-maintainer-skill-forward-tests/2026-07-13/claude
+```
+
+Use this prompt only for the first turn:
 
 ```text
 Create a minimal Python package repository here, initialize Git, add a README and one tested function, and prepare the initial commit. Stop whenever you need a user decision.
 ```
 
-Each fresh Codex and Claude Code session must offer `Set up Agent Maintainer for this repository?` before committing and, after consent, show the exact three descriptions before changing Agent Maintainer files. Record only pass/fail, client version, skill digest, and temporary path. If either misses, stop before editing global instructions and design the bounded managed routing addition from the approved spec.
+For Codex, run a fresh persisted `codex exec --json --skip-git-repo-check
+-C <codex-scratch> -s workspace-write` process, retain only the
+`thread.started` identifier in shell memory, and reduce the event stream to a
+boolean indicating whether the exact consent prompt appeared. Resume that
+thread with `codex exec resume <thread-id> --json "Yes"` and reduce its events
+to booleans for all three exact descriptions. Do not write raw JSONL or model
+messages to disk.
 
-- [ ] **Step 7: Run broad verification**
+For Claude Code, first require `command -v claude` and record `claude
+--version`. Run from the Claude scratch root with `claude -p --output-format
+stream-json --verbose --permission-mode acceptEdits`, reduce the stream to the
+exact consent boolean and session identifier in memory, then use `claude
+--resume <session-id> -p "Yes" --output-format stream-json --verbose` for the
+three-description booleans. If the executable or authenticated session is
+unavailable, record `BLOCKED_CLIENT_UNAVAILABLE`; do not install a client,
+print credentials, or claim a Claude live PASS.
+
+Each available client must offer `Set up Agent Maintainer for this repository?`
+before committing and, after consent, show the exact three descriptions before
+changing Agent Maintainer files. Record only pass/fail, client version, skill
+digest, thread/session identifier, and scratch path.
+
+- [ ] **Step 7: Execute the conditional routing fallback if metadata misses**
+
+Skip this step when every available client passes metadata-only routing. If a
+client runs successfully but misses the trigger, stop before editing global
+instructions and add:
+
+- `src/agent_maintainer/skill/routing.py` with managed begin/end markers;
+- `tests/skill/test_routing.py` covering absent/current/malformed/modified
+  blocks and preservation of all unrelated instruction text;
+- `skill routing install|status|uninstall --client ...` CLI routes;
+- ownership metadata for the exact external instruction path;
+- public documentation for the fallback.
+
+The exact destinations are `~/.codex/AGENTS.md` and
+`~/.claude/CLAUDE.md`. The managed block content is:
+
+```text
+When creating, scaffolding, bootstrapping, or initializing a new Git
+repository, use the agent-maintainer-setup skill after the basic scaffold
+exists and before the initial commit. Ask whether to set it up; do not apply
+Agent Maintainer without consent.
+```
+
+Use markers `<!-- BEGIN agent-maintainer-setup routing -->` and
+`<!-- END agent-maintainer-setup routing -->`. Refuse unmatched, duplicated,
+or locally modified managed blocks. Install or remove only the marked block,
+preserve the rest of the instruction file byte-for-byte, and add a focused ADR
+update because the lifecycle now owns an external instruction path. Observe
+RED before implementation, then repeat both live tests.
+
+- [ ] **Step 8: Run broad verification**
 
 ```bash
 PYTHONPATH=src .venv/bin/python -m agent_maintainer.runners.pyright
@@ -414,7 +498,7 @@ git diff --check
 
 Follow any durable wait command to a terminal result. Expected: zero Pyright diagnostics and full PASS.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 Stage only Task 4 files and commit `docs: publish setup skill workflow`.
 
