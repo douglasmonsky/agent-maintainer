@@ -72,6 +72,22 @@ def test_public_docs_contain_clear_onboarding_phrases() -> None:
     _assert_phrases_present(phrases)
 
 
+def test_setup_skill_docs_preserve_dual_client_consent_contract() -> None:
+    """Personal setup guidance keeps timing, modes, and trust boundary explicit."""
+    phrases = {
+        "docs/agent-maintainer-setup-skill.md": (
+            "python -m agent_maintainer skill install --client codex --client claude-code",
+            "before the initial commit",
+            "Recommended",
+            "Guided",
+            "Full control",
+            "does not add an MCP server",
+        ),
+    }
+
+    _assert_phrases_present(phrases)
+
+
 # docsync:evidence.start evidence.typescript.provider_docs_maturity_tests
 def test_provider_docs_contain_clear_maturity_phrases() -> None:
     """Provider docs must be clear about current maturity and limits."""

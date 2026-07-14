@@ -93,6 +93,7 @@ security-adjacent starter files.
 
 Read more:
 
+- [New-repository setup skill](agent-maintainer-setup-skill.md)
 - [Agent hooks](agent-client-hooks.md)
 - [Optional gates](optional-gates.md)
 - [Diagnostics repair loop](diagnostics-repair-loop.md)

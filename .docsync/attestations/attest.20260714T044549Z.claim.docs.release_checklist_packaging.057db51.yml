@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260714T044549Z.claim.docs.release_checklist_packaging.057db51
+  claim: claim.docs.release_checklist_packaging
+  doc_object: docs.release_checklist.overview
+  evidence:
+  - evidence.release.packaging_tests
+  reason: Extended clean-artifact smoke coverage for packaged setup-skill resources;
+    reviewed the release checklist and it remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-14T04:45:49Z'
+  base: HEAD
+  head: 057db51
+  evidence_fingerprints:
+    evidence.release.packaging_tests: sha256:0195bd59068b1cd8023213ed5254822921ead680846456e55f1dbb05fa82e2f0
+  evidence_anchor_fingerprints:
+    evidence.release.packaging_tests:
+    - sha256:2931c4ca6ca9f14b25bcdebf7135cb83abfbc972f5ab7fe66e5afbfaa931a62d
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
