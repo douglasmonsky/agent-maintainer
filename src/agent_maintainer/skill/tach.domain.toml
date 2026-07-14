@@ -1,0 +1,19 @@
+# Tach domain contract for the portable personal setup skill.
+[root]
+depends_on = []
+
+[[modules]]
+path = "cli"
+depends_on = ["lifecycle"]
+
+[[modules]]
+path = "lifecycle"
+depends_on = ["models", "resources"]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "resources"
+depends_on = ["models"]
