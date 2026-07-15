@@ -184,15 +184,21 @@ def test_build_fingerprint_normalizes_git_head(
 ) -> None:
     """Git's line terminator must not become part of the commit identity."""
 
+    def head_output(*_args: object) -> str:
+        return "abc123\n"
+
+    def constant_hash(*_args: object) -> str:
+        return "hash"
+
     monkeypatch.setattr(
         fingerprint_inputs,
         "git_output",
-        lambda *_args: "abc123\n",
+        head_output,
     )
-    monkeypatch.setattr(fingerprint_inputs, "git_hash", lambda *_args: "hash")
-    monkeypatch.setattr(fingerprint_inputs, "untracked_files_hash", lambda _root: "untracked")
-    monkeypatch.setattr(fingerprint_inputs, "files_hash", lambda *_args: "config")
-    monkeypatch.setattr(fingerprint_inputs, "environment_hash", lambda _env: "environment")
+    monkeypatch.setattr(fingerprint_inputs, "git_hash", constant_hash)
+    monkeypatch.setattr(fingerprint_inputs, "untracked_files_hash", constant_hash)
+    monkeypatch.setattr(fingerprint_inputs, "files_hash", constant_hash)
+    monkeypatch.setattr(fingerprint_inputs, "environment_hash", constant_hash)
 
     current = build_fingerprint(
         repo_root=tmp_path,
