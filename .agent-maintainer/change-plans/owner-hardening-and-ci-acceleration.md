@@ -1,7 +1,7 @@
 +++
 id = "owner-hardening-and-ci-acceleration"
 kind = "architecture-hardening"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-09-15
 allowed_paths = [
