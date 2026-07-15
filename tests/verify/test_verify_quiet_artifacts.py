@@ -28,7 +28,7 @@ def test_main_writes_artifacts_for_selected_profile(
     allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),
@@ -105,7 +105,7 @@ def test_failed_run_prints_snapshot_scoped_context_commands(
     allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),
@@ -160,7 +160,7 @@ def test_main_skips_artifacts_when_diagnostics_are_disabled(
     allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),

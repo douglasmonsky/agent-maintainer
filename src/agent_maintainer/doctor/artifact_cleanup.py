@@ -64,23 +64,38 @@ def generated_duplicate_files(repo_root: Path) -> tuple[Path, ...]:
 def generated_bytecode_paths(repo_root: Path) -> tuple[Path, ...]:
     """Return bytecode directories and standalone files from owned roots."""
 
-    directories: set[Path] = set()
-    standalone_files: set[Path] = set()
-    for relative in BYTECODE_ROOTS:
-        source_root = repo_root / relative
-        if not safe_generated_root(repo_root, source_root):
-            continue
-        for path in source_root.rglob("__pycache__"):
-            if path.is_dir() and safe_generated_path(repo_root, path):
-                directories.add(path)
-        for path in source_root.rglob("*.pyc"):
-            if (
-                path.is_file()
-                and not any(parent in directories for parent in path.parents)
-                and safe_generated_path(repo_root, path)
-            ):
-                standalone_files.add(path)
+    source_roots = tuple(
+        path
+        for relative in BYTECODE_ROOTS
+        if safe_generated_root(repo_root, path := repo_root / relative)
+    )
+    directories = {
+        path
+        for source_root in source_roots
+        for path in source_root.rglob("__pycache__")
+        if path.is_dir() and safe_generated_path(repo_root, path)
+    }
+    standalone_files = {
+        path
+        for source_root in source_roots
+        for path in source_root.rglob("*.pyc")
+        if standalone_bytecode_file(repo_root, path, directories)
+    }
     return tuple((*sorted(directories), *sorted(standalone_files)))
+
+
+def standalone_bytecode_file(
+    repo_root: Path,
+    path: Path,
+    bytecode_directories: set[Path],
+) -> bool:
+    """Return whether a bytecode file is outside a planned cache directory."""
+
+    return (
+        path.is_file()
+        and not any(parent in bytecode_directories for parent in path.parents)
+        and safe_generated_path(repo_root, path)
+    )
 
 
 def safe_generated_root(repo_root: Path, path: Path) -> bool:
@@ -111,11 +126,7 @@ def safe_generated_path(repo_root: Path, path: Path) -> bool:
 def is_duplicate_or_bytecode_artifact(path: Path) -> bool:
     """Return whether a path looks like duplicate or bytecode debris."""
 
-    return (
-        is_duplicate_named_artifact(path)
-        or path.name == "__pycache__"
-        or path.suffix == ".pyc"
-    )
+    return is_duplicate_named_artifact(path) or path.name == "__pycache__" or path.suffix == ".pyc"
 
 
 def is_duplicate_named_artifact(path: Path) -> bool:

@@ -48,9 +48,7 @@ def test_repository_policy_covers_all_owned_python_packages() -> None:
 
     assert "src/agent_waits" in maintainer["vulture_paths"]
     assert (
-        coverage["fail_under"]
-        == maintainer["coverage_fail_under"]
-        == REPOSITORY_COVERAGE_THRESHOLD
+        coverage["fail_under"] == maintainer["coverage_fail_under"] == REPOSITORY_COVERAGE_THRESHOLD
     )
 
 

@@ -68,6 +68,13 @@ path = "git_refs"
 depends_on = []
 
 [[modules]]
+path = "groups"
+depends_on = [
+  "//agent_maintainer.models",
+  "//agent_run_artifacts.verification_aggregate",
+]
+
+[[modules]]
 path = "history"
 depends_on = [
 "//agent_run_artifacts.history",
@@ -82,6 +89,16 @@ depends_on = [
 [[modules]]
 path = "locking"
 depends_on = []
+
+[[modules]]
+path = "partial_runs"
+depends_on = [
+  "//agent_maintainer.models",
+  "//agent_run_artifacts.history",
+  "//agent_run_artifacts.verification_aggregate",
+  "artifact_adapters",
+  "groups",
+]
 
 [[modules]]
 path = "pr_summary_support"
@@ -116,6 +133,7 @@ depends_on = [
   "async_jobs",
   "background_wait",
   "locking",
+  "partial_runs",
   "profile_overlap",
   "result_summary",
   "runtime_eventing",
@@ -138,6 +156,7 @@ depends_on = [
   "//agent_maintainer.core.executor",
   "//agent_maintainer.core.layout",
   "//agent_maintainer.models",
+  "artifact_adapters",
   "artifacts",
   "git_refs",
 ]

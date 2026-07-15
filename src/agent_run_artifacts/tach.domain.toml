@@ -76,5 +76,9 @@ depends_on = [
 ]
 
 [[modules]]
+path = "verification_aggregate"
+depends_on = []
+
+[[modules]]
 path = "structured_values"
 depends_on = []

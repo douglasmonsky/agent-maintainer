@@ -105,9 +105,7 @@ def git_status_result(stdout: str) -> DoctorResult:
     details = git_state_details(branch, changed_count=max(0, len(lines) - 1))
     if details:
         hint = (
-            "Set a new upstream or unset the stale tracking branch."
-            if "[gone]" in branch
-            else ""
+            "Set a new upstream or unset the stale tracking branch." if "[gone]" in branch else ""
         )
         return DoctorResult("git-state", WARNING, "; ".join(details), hint=hint)
     return DoctorResult("git-state", OK, branch.removeprefix("## "))

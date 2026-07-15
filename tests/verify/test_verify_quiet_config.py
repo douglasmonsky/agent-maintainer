@@ -34,6 +34,28 @@ def test_parse_repeated_values_preserves_tool_arguments() -> None:
     assert maintainer_args.parse_repeated_values(None) is None
 
 
+def test_cli_parses_partial_group_and_aggregate_inputs() -> None:
+    grouped = maintainer_args.parse_args(["--profile", "ci", "--group", "tests-and-coverage"])
+    aggregate = maintainer_args.parse_args(
+        [
+            "--profile",
+            "ci",
+            "--aggregate-partial",
+            "tests.json",
+            "--aggregate-partial",
+            "static.json",
+            "--aggregate-output",
+            "combined.json",
+        ]
+    )
+
+    assert grouped.group == "tests-and-coverage"
+    assert grouped.aggregate_partial is None
+    assert aggregate.group is None
+    assert aggregate.aggregate_partial == ["tests.json", "static.json"]
+    assert aggregate.aggregate_output == "combined.json"
+
+
 def test_cli_overrides_replace_config_values() -> None:
     args = maintainer_args.parse_args(
         [

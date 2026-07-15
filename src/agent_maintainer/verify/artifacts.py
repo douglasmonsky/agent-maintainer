@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, cast
 
 from agent_context import models as context_models
 from agent_context.budget import bound_text
@@ -188,7 +188,7 @@ def manifest_payload(
 
     artifact_results = artifact_check_results(results)
     artifact_config_dto = artifact_config(context.config)
-    return {
+    payload: dict[str, object] = {
         "version": 1,
         "run_id": context.run_id,
         "generated_at": verify_timing.utc_timestamp(),
@@ -212,6 +212,16 @@ def manifest_payload(
             for result in artifact_results
         ],
     }
+    if context.partial is not None:
+        payload["partial"] = {
+            "group": context.partial.group,
+            "required_groups": list(context.partial.required_groups),
+            "identity": {
+                key: list(cast(tuple[object, ...], value)) if isinstance(value, tuple) else value
+                for key, value in context.partial.identity.items()
+            },
+        }
+    return payload
 
 
 def write_last_failure(

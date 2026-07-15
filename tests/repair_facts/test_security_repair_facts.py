@@ -53,9 +53,12 @@ def test_pip_audit_artifact_ignores_empty_or_malformed_payloads() -> None:
 
     path = Path(".verify-logs/pip-audit.json")
 
-    assert registry.artifact_facts_from_text(
-        "pip-audit",
-        path,
-        '{"dependencies": []}',
-    ) == []
+    assert (
+        registry.artifact_facts_from_text(
+            "pip-audit",
+            path,
+            '{"dependencies": []}',
+        )
+        == []
+    )
     assert registry.artifact_facts_from_text("pip-audit", path, "{not-json") == []

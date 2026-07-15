@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer.core import args as maintainer_args
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.models import Check, CheckResult
 from agent_maintainer.verify import quiet as verify_quiet
@@ -42,7 +43,7 @@ def test_main_async_launches_background_verifier(
     monkeypatch.chdir(tmp_path)
     allow_foreground_verify(monkeypatch)
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),
@@ -76,7 +77,7 @@ def test_main_async_launch_failure_is_compact(
     monkeypatch.chdir(tmp_path)
     allow_foreground_verify(monkeypatch)
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),
@@ -108,7 +109,7 @@ def test_collect_results_stops_on_layout_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    args = verify_quiet.parse_args(["--profile", "precommit"])
+    args = maintainer_args.parse_args(["--profile", "precommit"])
     config = replace(MaintainerConfig(), source_roots=("missing",), package_paths=("missing",))
 
     results = verify_run_steps.collect_results(args, config, [])
@@ -123,7 +124,7 @@ def test_collect_results_stops_on_invalid_git_refs(
     """Invalid verifier refs fail before running selected checks."""
 
     monkeypatch.chdir(tmp_path)
-    args = verify_quiet.parse_args(["--profile", "ci"])
+    args = maintainer_args.parse_args(["--profile", "ci"])
     config = MaintainerConfig()
     monkeypatch.setattr(
         verify_run_steps,
@@ -176,7 +177,7 @@ def test_main_prints_success_with_warning_results(
     allow_foreground_verify(monkeypatch)
     (tmp_path / "scripts").mkdir()
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),
@@ -226,7 +227,7 @@ def test_main_prints_success_for_passing_selected_check(
     (tmp_path / "scripts").mkdir()
 
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),
@@ -253,6 +254,49 @@ def test_main_prints_success_for_passing_selected_check(
     assert "Duration: unknown (expected quick edit check)" in output
 
 
+def test_main_runs_only_requested_verification_group(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Grouped execution selects one complete partition and records it."""
+
+    monkeypatch.chdir(tmp_path)
+    allow_foreground_verify(monkeypatch)
+    (tmp_path / "scripts").mkdir()
+    config = replace(
+        MaintainerConfig(),
+        source_roots=("scripts",),
+        package_paths=("scripts",),
+        require_tests=False,
+        diagnostic_artifacts_dir=str(tmp_path / ".verify-logs"),
+    )
+    monkeypatch.setattr(verify_quiet.core_config, "load_config", lambda: config)
+    monkeypatch.setattr(
+        verify_quiet,
+        "make_checks",
+        constant_callback(
+            [
+                Check("ruff", ["ruff"], frozenset(("ci",))),
+                Check("pytest-coverage", ["pytest"], frozenset(("ci",))),
+            ]
+        ),
+    )
+    observed: list[str] = []
+
+    def record_check(check: Check, _log_dir: Path, _max_lines: int, _max_chars: int) -> CheckResult:
+        observed.append(check.name)
+        return CheckResult(check.name, passed=True)
+
+    monkeypatch.setattr(verify_run_steps, "run_check", record_check)
+
+    status = verify_quiet.main(["--profile", "ci", "--group", "tests-and-coverage"])
+
+    assert status == 0
+    assert observed == ["pytest-coverage"]
+    manifest = json.loads((tmp_path / ".verify-logs" / "manifest.json").read_text())
+    assert manifest["partial"]["group"] == "tests-and-coverage"
+    assert manifest["partial"]["identity"]["selected_checks"] == ["pytest-coverage"]
+
+
 def test_main_prints_profile_overlap_advisory(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -267,7 +311,7 @@ def test_main_prints_profile_overlap_advisory(
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),
@@ -308,7 +352,7 @@ def test_main_writes_runtime_profile_events_when_enabled(
     (tmp_path / "scripts").mkdir()
     event_dir = tmp_path / ".events"
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),

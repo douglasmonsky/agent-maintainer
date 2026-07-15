@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -10,6 +11,15 @@ from agent_maintainer.models import CheckResult
 from agent_run_artifacts import models as artifact_models
 
 ArtifactConfig = artifact_models.ArtifactConfig
+
+
+@dataclass(frozen=True)
+class PartialRunContext:
+    """Identity required to aggregate one grouped verifier run."""
+
+    group: str
+    required_groups: tuple[str, ...]
+    identity: Mapping[str, object]
 
 
 @dataclass(frozen=True)
@@ -23,6 +33,7 @@ class RunContext:
     staged: bool
     config: MaintainerConfig
     run_id: str
+    partial: PartialRunContext | None = None
 
 
 def artifact_config(config: MaintainerConfig) -> artifact_models.ArtifactConfig:

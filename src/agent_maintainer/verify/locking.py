@@ -49,6 +49,7 @@ class VerificationFingerprint:
     worktree_hash: str
     untracked_hash: str
     config_hash: str
+    group: str = ""
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-serializable fingerprint payload."""
@@ -63,6 +64,7 @@ class VerificationFingerprint:
             "worktree_hash": self.worktree_hash,
             "untracked_hash": self.untracked_hash,
             "config_hash": self.config_hash,
+            "group": self.group,
         }
 
 

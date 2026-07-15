@@ -17,19 +17,24 @@ Profiles:
 from __future__ import annotations
 
 import sys
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from agent_maintainer.catalogs.catalog import make_checks
-from agent_maintainer.core.args import apply_cli_overrides, parse_args
-from agent_maintainer.core.config import load_config
+from agent_maintainer.core import args as cli_args
+from agent_maintainer.core import config as core_config
 from agent_maintainer.verify import (
     async_jobs,
     background_wait,
+    partial_runs,
     profile_overlap,
     runtime_eventing,
 )
-from agent_maintainer.verify.locking import VerificationLock, build_fingerprint
+from agent_maintainer.verify.locking import (
+    VerificationFingerprint,
+    VerificationLock,
+    build_fingerprint,
+)
 from agent_maintainer.verify.result_summary import (
     apply_optional_skip_policy,
     context_log_dir,
@@ -43,22 +48,43 @@ from agent_maintainer.verify.run_steps import (
 )
 from agent_run_artifacts.history import build_run_id, run_snapshot_dir
 
+USAGE_ERROR_STATUS = partial_runs.USAGE_ERROR_STATUS
+
+
+@dataclass(frozen=True)
+class VerificationRun:
+    """State shared by one foreground verifier run."""
+
+    args: cli_args.ParsedArgs
+    config: core_config.MaintainerConfig
+    log_dir: Path
+    fingerprint: VerificationFingerprint
+    run_id: str
+
 
 def main(argv: list[str]) -> int:
     """Run selected verifier profile and print compact results."""
 
-    args = parse_args(argv)
-    config = apply_cli_overrides(load_config(), args)
+    args = cli_args.parse_args(argv)
+    if args.aggregate_partial is not None:
+        return partial_runs.aggregate_partial_results(args)
+    if not partial_runs.valid_group(args.group):
+        print(f"FAIL: unknown verification group: {args.group}", file=sys.stderr)
+        return USAGE_ERROR_STATUS
+    config = cli_args.apply_cli_overrides(core_config.load_config(), args)
     log_dir = log_dir_for(config)
-    fingerprint = build_fingerprint(
-        repo_root=Path.cwd(),
-        profile=args.profile,
-        base_ref=args.base_ref,
-        compare_branch=args.compare_branch,
-        staged=args.staged,
+    fingerprint = replace(
+        build_fingerprint(
+            repo_root=Path.cwd(),
+            profile=args.profile,
+            base_ref=args.base_ref,
+            compare_branch=args.compare_branch,
+            staged=args.staged,
+        ),
+        group=args.group or "",
     )
     run_id = args.run_id or build_run_id(args.profile, fingerprint.to_dict())
-    if _codex_background_verify(args):
+    if _codex_background_verify(args) or args.async_verify:
         return start_async_verifier(
             args.profile,
             argv,
@@ -66,97 +92,126 @@ def main(argv: list[str]) -> int:
             fingerprint.to_dict(),
             run_id,
         )
-    if args.async_verify:
-        return start_async_verifier(
-            args.profile,
-            argv,
-            log_dir,
-            fingerprint.to_dict(),
-            run_id,
+    return run_foreground_verifier(
+        VerificationRun(
+            args=args,
+            config=config,
+            log_dir=log_dir,
+            fingerprint=fingerprint,
+            run_id=run_id,
         )
+    )
+
+
+def run_foreground_verifier(run: VerificationRun) -> int:
+    """Coordinate lifecycle and locking for one foreground verifier run."""
 
     profile_events = runtime_eventing.ProfileRuntimeEvents.create(
-        config,
-        profile=args.profile,
-        run_id=run_id,
+        run.config,
+        profile=run.args.profile,
+        run_id=run.run_id,
     )
-    if args.profile == "manual":
+    if run.args.profile == "manual":
         runtime_eventing.manual_escalation(
             profile_events,
-            fingerprint=fingerprint.to_dict(),
+            fingerprint=run.fingerprint.to_dict(),
         )
     with VerificationLock(
-        log_dir=log_dir,
-        fingerprint=fingerprint,
-        reuse_result=not args.force,
-        run_id=run_id,
+        log_dir=run.log_dir,
+        fingerprint=run.fingerprint,
+        reuse_result=not run.args.force,
+        run_id=run.run_id,
     ) as verifier_lock:
         if verifier_lock.reused is not None:
             runtime_eventing.run_reused(
                 profile_events,
                 exit_code=verifier_lock.reused.exit_code,
-                log_dir=log_dir,
-                fingerprint=fingerprint.to_dict(),
+                log_dir=run.log_dir,
+                fingerprint=run.fingerprint.to_dict(),
             )
             profile_events.finished(
                 status="reused",
                 exit_code=verifier_lock.reused.exit_code,
-                log_dir=log_dir,
+                log_dir=run.log_dir,
             )
-            return print_reused_result(args.profile, log_dir, verifier_lock.reused.exit_code)
+            return print_reused_result(
+                run.args.profile,
+                run.log_dir,
+                verifier_lock.reused.exit_code,
+            )
+        return run_fresh_verifier(run, profile_events, verifier_lock)
 
-        execution_log_dir = run_snapshot_dir(log_dir, run_id)
-        profile_events.started(execution_log_dir)
-        runtime_eventing.run_fresh(
-            profile_events,
-            log_dir=execution_log_dir,
-            fingerprint=fingerprint.to_dict(),
-        )
-        execution_config = replace(
-            config,
-            diagnostic_artifacts_dir=str(execution_log_dir),
-        )
-        checks = make_checks(
-            execution_config,
-            args.base_ref,
-            args.compare_branch,
-            staged=args.staged,
-        )
-        results = collect_results(
-            args,
-            execution_config,
-            [check for check in checks if args.profile in check.profiles],
-            execution_log_dir,
-            runtime_events=profile_events,
-        )
-        results = apply_optional_skip_policy(results, args.fail_on_optional_skip)
-        write_artifacts_if_enabled(
-            args,
-            config,
-            log_dir,
-            results,
-            options=ArtifactWriteOptions(
-                run_id=run_id,
-                runtime_events=runtime_eventing.artifact_events_for(profile_events),
+
+def run_fresh_verifier(
+    run: VerificationRun,
+    profile_events: runtime_eventing.ProfileRuntimeEvents,
+    verifier_lock: VerificationLock,
+) -> int:
+    """Execute and record a fresh verifier selection."""
+
+    execution_log_dir = run_snapshot_dir(run.log_dir, run.run_id)
+    profile_events.started(execution_log_dir)
+    runtime_eventing.run_fresh(
+        profile_events,
+        log_dir=execution_log_dir,
+        fingerprint=run.fingerprint.to_dict(),
+    )
+    execution_config = replace(
+        run.config,
+        diagnostic_artifacts_dir=str(execution_log_dir),
+    )
+    checks = make_checks(
+        execution_config,
+        run.args.base_ref,
+        run.args.compare_branch,
+        staged=run.args.staged,
+    )
+    profile_checks = [check for check in checks if run.args.profile in check.profiles]
+    try:
+        selected_checks = partial_runs.select_checks(profile_checks, run.args.group)
+    except partial_runs.PartialRunSelectionError as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return USAGE_ERROR_STATUS
+    results = collect_results(
+        run.args,
+        execution_config,
+        selected_checks,
+        execution_log_dir,
+        runtime_events=profile_events,
+    )
+    results = apply_optional_skip_policy(results, run.args.fail_on_optional_skip)
+    write_artifacts_if_enabled(
+        run.args,
+        run.config,
+        run.log_dir,
+        results,
+        options=ArtifactWriteOptions(
+            run_id=run.run_id,
+            runtime_events=runtime_eventing.artifact_events_for(profile_events),
+            partial=partial_runs.partial_run_context(
+                run.args,
+                run.fingerprint.to_dict(),
+                selected_checks,
             ),
+        ),
+    )
+    exit_code = print_result_summary(
+        run.args.profile,
+        results,
+        context_log_dir_value=context_log_dir(run.config, run.log_dir, run.run_id),
+        run_id=run.run_id,
+    )
+    if exit_code == 0:
+        profile_overlap.print_profile_overlap_advisory(
+            profile_overlap.profile_overlap_advisory(run.args.profile, run.config),
         )
-        exit_code = print_result_summary(
-            args.profile,
-            results,
-            context_log_dir_value=context_log_dir(config, log_dir, run_id),
-            run_id=run_id,
-        )
-        if exit_code == 0:
-            profile_overlap.print_profile_overlap_advisory(
-                profile_overlap.profile_overlap_advisory(args.profile, config),
-            )
-        verifier_lock.write_result(exit_code)
-        profile_events.finished(
-            status="pass" if exit_code == 0 else "fail",
-            exit_code=exit_code,
-            log_dir=execution_log_dir,
-        )
-        return exit_code
+    verifier_lock.write_result(exit_code)
+    profile_events.finished(
+        status="pass" if exit_code == 0 else "fail",
+        exit_code=exit_code,
+        log_dir=execution_log_dir,
+    )
+    return exit_code
 
 
 def print_reused_result(profile: str, log_dir: Path, exit_code: int) -> int:

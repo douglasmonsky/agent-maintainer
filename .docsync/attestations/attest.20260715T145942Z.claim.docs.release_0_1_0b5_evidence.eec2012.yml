@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260715T145942Z.claim.docs.release_0_1_0b5_evidence.eec2012
+  claim: claim.docs.release_0_1_0b5_evidence
+  doc_object: docs.release_0_1_0b5.overview
+  evidence:
+  - evidence.release.packaging_tests
+  reason: Owner-contract marker and smoke coverage extend packaging evidence without
+    changing the documented 0.1.0b5 artifact behavior; release packaging tests passed.
+  reviewer: agent
+  reviewed_at: '2026-07-15T14:59:42Z'
+  base: HEAD
+  head: eec2012
+  evidence_fingerprints:
+    evidence.release.packaging_tests: sha256:d6c08ee820ac15765d614b756151c94d53cf5a91c68d25f9a60eb15e2569cfd2
+  evidence_anchor_fingerprints:
+    evidence.release.packaging_tests:
+    - sha256:410052ca41fd4dc9aa24d7efe0ec3e42fdc7792163c49d0ac654aefe5a4221c7
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

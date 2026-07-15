@@ -27,7 +27,7 @@ def test_codex_main_registers_background_verifier_wait(
     monkeypatch.setenv("CODEX_SHELL", "1")
     monkeypatch.delenv("AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT", raising=False)
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),
@@ -82,7 +82,7 @@ def test_codex_run_id_child_does_not_background_again(
     (tmp_path / "scripts").mkdir()
     monkeypatch.setenv("CODEX_SHELL", "1")
     monkeypatch.setattr(
-        verify_quiet,
+        verify_quiet.core_config,
         "load_config",
         lambda: replace(
             MaintainerConfig(),

@@ -12,6 +12,7 @@ from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.core.executor import run_check
 from agent_maintainer.core.layout import layout_failures
 from agent_maintainer.models import CI_PROFILE, Check, CheckResult
+from agent_maintainer.verify.artifact_adapters import PartialRunContext
 from agent_maintainer.verify.artifacts import RunContext, write_run_artifacts
 from agent_maintainer.verify.git_refs import ref_failures
 
@@ -56,6 +57,7 @@ class ArtifactWriteOptions(NamedTuple):
 
     run_id: str
     runtime_events: ArtifactRuntimeEvents | None = None
+    partial: PartialRunContext | None = None
 
 
 def log_dir_for(config: MaintainerConfig) -> Path:
@@ -183,6 +185,7 @@ def write_artifacts_if_enabled(
             staged=args.staged,
             config=config,
             run_id=options.run_id,
+            partial=options.partial,
         ),
         results,
         runtime_events=options.runtime_events,

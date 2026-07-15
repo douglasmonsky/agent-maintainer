@@ -95,6 +95,20 @@ def test_lock_skips_changed_repo_state(tmp_path: Path) -> None:
         assert (log_dir / LOCK_NAME).exists()
 
 
+def test_lock_does_not_reuse_another_verification_group(tmp_path: Path) -> None:
+    """Each partial group has a distinct same-state reuse identity."""
+
+    log_dir = tmp_path / ".verify-logs"
+    tests_group = replace(fingerprint(), group="tests-and-coverage")
+    static_group = replace(fingerprint(), group="static-and-policy")
+
+    with VerificationLock(log_dir=log_dir, fingerprint=tests_group) as lock:
+        lock.write_result(0)
+
+    with VerificationLock(log_dir=log_dir, fingerprint=static_group) as lock:
+        assert lock.reused is None
+
+
 def test_untracked_hash_changes(tmp_path: Path) -> None:
     """Untracked source files must affect verifier reuse identity."""
 
