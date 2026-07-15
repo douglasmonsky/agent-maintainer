@@ -9,6 +9,7 @@ from typing import cast
 
 import pytest
 
+from agent_maintainer.verify.fingerprint_inputs import environment_hash
 from agent_run_artifacts.verification_aggregate import (
     VerificationAggregateError,
     aggregate_partial_manifests,
@@ -91,6 +92,10 @@ def test_aggregate_is_deterministic_and_uses_group_order(tmp_path: Path) -> None
     assert forward["aggregate"] == {
         "groups": list(GROUPS),
         "partial_run_ids": ["run-tests-and-coverage", "run-static-and-policy"],
+        "environment_hashes": {
+            "tests-and-coverage": "environment-hash",
+            "static-and-policy": "environment-hash",
+        },
     }
 
 
@@ -139,7 +144,6 @@ def test_identity_mismatch_fails_closed(tmp_path: Path) -> None:
         ("index_hash", "changed-index"),
         ("worktree_hash", "changed-worktree"),
         ("untracked_hash", "changed-untracked"),
-        ("environment_hash", "changed-environment"),
     ),
 )
 def test_repository_state_identity_mismatch_fails_closed(
@@ -158,6 +162,33 @@ def test_repository_state_identity_mismatch_fails_closed(
 
     with pytest.raises(VerificationAggregateError, match="partial identity mismatch"):
         aggregate_partial_manifests([tests_path, static_path])
+
+
+def test_group_specific_environment_hashes_are_preserved(tmp_path: Path) -> None:
+    """Parallel groups may use different required tool paths without losing identity."""
+
+    tests_path, static_path = valid_paths(tmp_path)
+    tests = json.loads(tests_path.read_text(encoding="utf-8"))
+    static = json.loads(static_path.read_text(encoding="utf-8"))
+    tests_hash = environment_hash({"PATH": "/opt/python/bin:/usr/bin", "PYTHONPATH": "src"})
+    static_hash = environment_hash(
+        {
+            "PATH": "/opt/node/bin:/opt/gitleaks:/opt/python/bin:/usr/bin",
+            "PYTHONPATH": "src",
+        }
+    )
+    tests["partial"]["identity"]["environment_hash"] = tests_hash
+    static["partial"]["identity"]["environment_hash"] = static_hash
+    write_manifest(tests_path, tests)
+    write_manifest(static_path, static)
+
+    aggregate = aggregate_partial_manifests([tests_path, static_path])
+    aggregate_info = cast(dict[str, object], aggregate["aggregate"])
+
+    assert aggregate_info["environment_hashes"] == {
+        "tests-and-coverage": tests_hash,
+        "static-and-policy": static_hash,
+    }
 
 
 def test_top_level_staged_state_must_match_partial_identity(tmp_path: Path) -> None:

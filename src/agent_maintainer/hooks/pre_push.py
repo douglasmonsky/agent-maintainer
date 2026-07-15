@@ -33,15 +33,35 @@ def run_pre_push(
         )
         return USAGE_ERROR_STATUS
 
-    head = fingerprint_inputs.git_output(Path.cwd(), "rev-parse", "HEAD").strip()
-    if not head:
+    repo_root = Path.cwd()
+    head_output = fingerprint_inputs.git_output_checked(repo_root, "rev-parse", "HEAD")
+    if head_output is None or not head_output.strip():
         print("pre-push verification could not resolve HEAD", file=sys.stderr)
         return USAGE_ERROR_STATUS
+    head = head_output.strip()
     if head != to_ref:
         print(
             f"pre-push verification refuses a non-HEAD local ref; expected {to_ref}, found {head}",
             file=sys.stderr,
         )
+        return USAGE_ERROR_STATUS
+
+    status = fingerprint_inputs.git_output_checked(
+        repo_root,
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all",
+    )
+    if status is None or status.strip():
+        message = (
+            "pre-push verification could not inspect checkout state"
+            if status is None
+            else (
+                "pre-push verification requires a clean checkout so uncommitted state "
+                "cannot contaminate the outgoing commit range"
+            )
+        )
+        print(message, file=sys.stderr)
         return USAGE_ERROR_STATUS
 
     return verifier(

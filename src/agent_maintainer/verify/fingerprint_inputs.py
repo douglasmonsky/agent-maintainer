@@ -37,9 +37,15 @@ def git_hash(repo_root: Path, *args: str) -> str:
 def git_output(repo_root: Path, *args: str) -> str:
     """Return Git stdout or an empty string when Git is unavailable."""
 
+    return git_output_checked(repo_root, *args) or ""
+
+
+def git_output_checked(repo_root: Path, *args: str) -> str | None:
+    """Return Git stdout, or ``None`` when Git cannot produce it."""
+
     git_path = shutil.which("git")
     if git_path is None:
-        return ""
+        return None
     result = subprocess.run(  # nosec B603
         [git_path, *args],
         cwd=repo_root,
@@ -48,7 +54,7 @@ def git_output(repo_root: Path, *args: str) -> str:
         check=False,
     )
     if result.returncode != 0:
-        return ""
+        return None
     return result.stdout
 
 

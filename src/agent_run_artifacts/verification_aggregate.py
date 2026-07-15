@@ -28,7 +28,6 @@ _SHARED_IDENTITY_KEYS = (
     "worktree_hash",
     "untracked_hash",
     "config_hash",
-    "environment_hash",
 )
 _RUN_ID_DIGEST_LENGTH = 12
 REQUIRED_GROUPS = ("tests-and-coverage", "static-and-policy")
@@ -59,6 +58,7 @@ def aggregate_partial_manifests(paths: Sequence[Path]) -> dict[str, object]:
         "aggregate": {
             "groups": list(required_groups),
             "partial_run_ids": [_text(item, "run_id") for item in ordered],
+            "environment_hashes": _environment_hashes(ordered),
         },
     }
 
@@ -126,6 +126,7 @@ def _shared_identity(manifest: Mapping[str, Any]) -> tuple[object, ...]:
 
 def _validate_manifest_identity(manifest: Mapping[str, Any]) -> None:
     identity = _mapping(_mapping(manifest, "partial"), "identity")
+    _text(identity, "environment_hash")
     for key in ("profile", "base_ref", "compare_branch"):
         if manifest.get(key) != _text(identity, key):
             raise VerificationAggregateError("manifest identity mismatch")
@@ -134,6 +135,18 @@ def _validate_manifest_identity(manifest: Mapping[str, Any]) -> None:
         raise VerificationAggregateError("manifest identity mismatch")
     if manifest.get("staged") != _boolean(identity, "staged"):
         raise VerificationAggregateError("manifest identity mismatch")
+
+
+def _environment_hashes(manifests: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    """Return exact group-specific tool environment identities."""
+
+    return {
+        _text(_mapping(manifest, "partial"), "group"): _text(
+            _mapping(_mapping(manifest, "partial"), "identity"),
+            "environment_hash",
+        )
+        for manifest in manifests
+    }
 
 
 def _combined_checks(manifests: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:

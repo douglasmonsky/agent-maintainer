@@ -103,7 +103,7 @@ def test_pre_push_refuses_non_head_local_ref_without_invoking_verifier(
 
     monkeypatch.setattr(
         pre_push.fingerprint_inputs,
-        "git_output",
+        "git_output_checked",
         git_head,
     )
 
@@ -120,3 +120,46 @@ def test_pre_push_refuses_non_head_local_ref_without_invoking_verifier(
 
     assert status == pre_push.USAGE_ERROR_STATUS
     assert "expected other-local-sha, found checked-out-head" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("dirty_kind", ("staged", "unstaged", "untracked"))
+def test_pre_push_refuses_dirty_checkout_without_invoking_verifier(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    dirty_kind: str,
+) -> None:
+    """Uncommitted state must never contaminate outgoing-commit verification."""
+
+    repo_root = tmp_path / "repo"
+    tracked = repo_root / "tracked.txt"
+    repo_root.mkdir()
+    git(repo_root, "init", "-b", "main")
+    git(repo_root, "config", "user.email", "test@example.invalid")
+    git(repo_root, "config", "user.name", "Test User")
+    tracked.write_text("clean\n", encoding="utf-8")
+    git(repo_root, "add", "tracked.txt")
+    git(repo_root, "commit", "-m", "baseline")
+    head = git(repo_root, "rev-parse", "HEAD")
+    if dirty_kind == "untracked":
+        (repo_root / "untracked.txt").write_text("dirty\n", encoding="utf-8")
+    else:
+        tracked.write_text("dirty\n", encoding="utf-8")
+        if dirty_kind == "staged":
+            git(repo_root, "add", "tracked.txt")
+    monkeypatch.chdir(repo_root)
+    pre_push = importlib.import_module("agent_maintainer.hooks.pre_push")
+
+    def fail_verify(_argv: list[str]) -> int:
+        pytest.fail("verifier must not run from a dirty checkout")
+
+    status = pre_push.run_pre_push(
+        {
+            "PRE_COMMIT_FROM_REF": head,
+            "PRE_COMMIT_TO_REF": head,
+        },
+        verifier=fail_verify,
+    )
+
+    assert status == pre_push.USAGE_ERROR_STATUS
+    assert "requires a clean checkout" in capsys.readouterr().err
