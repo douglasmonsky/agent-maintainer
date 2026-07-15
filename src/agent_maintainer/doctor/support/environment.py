@@ -104,7 +104,12 @@ def git_status_result(stdout: str) -> DoctorResult:
     branch = lines[0] if lines else "## unknown"
     details = git_state_details(branch, changed_count=max(0, len(lines) - 1))
     if details:
-        return DoctorResult("git-state", WARNING, "; ".join(details))
+        hint = (
+            "Set a new upstream or unset the stale tracking branch."
+            if "[gone]" in branch
+            else ""
+        )
+        return DoctorResult("git-state", WARNING, "; ".join(details), hint=hint)
     return DoctorResult("git-state", OK, branch.removeprefix("## "))
 
 
@@ -112,7 +117,7 @@ def git_state_details(branch: str, *, changed_count: int) -> list[str]:
     """Return warning details for ahead, behind, or dirty Git state."""
 
     details: list[str] = []
-    if "[ahead" in branch or "[behind" in branch:
+    if "[ahead" in branch or "[behind" in branch or "[gone]" in branch:
         details.append(branch.removeprefix("## "))
     if changed_count > 0:
         details.append(f"{changed_count} changed path(s)")

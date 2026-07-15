@@ -5,9 +5,14 @@
 depends_on = []
 
 [[modules]]
+path = "artifact_cleanup"
+depends_on = []
+
+[[modules]]
 path = "cli"
 depends_on = [
   "//agent_maintainer.core.config",
+  "artifact_cleanup",
   "setup",
   "support.environment",
     "support.hook_audit",
@@ -24,6 +29,7 @@ depends_on = [
   "//agent_maintainer.core.config",
   "//agent_maintainer.core.guidance",
   "//agent_maintainer.core.layout",
+  "artifact_cleanup",
   "support.dogfood",
   "support.models",
   "support.setup_policy",

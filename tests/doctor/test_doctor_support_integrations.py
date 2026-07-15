@@ -20,7 +20,38 @@ def test_pre_commit_installed(tmp_path: Path) -> None:
     result = doctor_integrations.check_pre_commit(tmp_path)
 
     assert result.status == doctor_models.OK
-    assert result.message == ".git/hooks/pre-commit is installed."
+    assert result.message == "pre-commit hook is installed."
+
+
+def test_pre_commit_installed_in_linked_worktree(tmp_path: Path) -> None:
+    """Linked worktrees resolve hooks through their common Git directory."""
+
+    (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n", encoding=ENCODING)
+    common = tmp_path / "common.git"
+    worktree_git = common / "worktrees" / "feature"
+    worktree_git.mkdir(parents=True)
+    (worktree_git / "commondir").write_text("../..\n", encoding=ENCODING)
+    (tmp_path / ".git").write_text(f"gitdir: {worktree_git}\n", encoding=ENCODING)
+    hook_path = common / "hooks" / "pre-commit"
+    hook_path.parent.mkdir()
+    hook_path.write_text("#!/bin/sh\n", encoding=ENCODING)
+
+    result = doctor_integrations.check_pre_commit(tmp_path)
+
+    assert result.status == doctor_models.OK
+    assert result.message == "pre-commit hook is installed."
+
+
+def test_pre_commit_missing_hook_has_exact_install_command(tmp_path: Path) -> None:
+    """Missing hooks point to the explicit safe installer."""
+
+    (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n", encoding=ENCODING)
+    (tmp_path / ".git").mkdir()
+
+    result = doctor_integrations.check_pre_commit(tmp_path)
+
+    assert result.status == doctor_models.WARNING
+    assert result.hint == "Run python3 -m agent_maintainer install --target ."
 
 
 def test_codex_hooks_disabled(tmp_path: Path) -> None:

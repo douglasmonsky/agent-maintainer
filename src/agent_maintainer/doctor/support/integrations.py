@@ -39,7 +39,7 @@ def check_pre_commit(repo_root: Path) -> DoctorResult:
     """Report whether the pre-commit config and hook are installed."""
 
     config_path = repo_root / ".pre-commit-config.yaml"
-    hook_path = repo_root / ".git" / "hooks" / "pre-commit"
+    hook_path = pre_commit_hook_path(repo_root)
     if not config_path.exists():
         return DoctorResult(
             "pre-commit-hook",
@@ -53,9 +53,46 @@ def check_pre_commit(repo_root: Path) -> DoctorResult:
             WARNING,
             "pre-commit hook is not installed.",
             state=doctor_models.MISSING,
-            hint="Run python3 -m agent_maintainer install.",
+            hint="Run python3 -m agent_maintainer install --target .",
         )
-    return DoctorResult("pre-commit-hook", OK, ".git/hooks/pre-commit is installed.")
+    return DoctorResult("pre-commit-hook", OK, "pre-commit hook is installed.")
+
+
+def pre_commit_hook_path(repo_root: Path) -> Path:
+    """Return the shared hook path for a checkout or linked worktree."""
+
+    git_marker = repo_root / ".git"
+    if git_marker.is_dir():
+        return git_marker / "hooks" / "pre-commit"
+    git_dir = linked_worktree_git_dir(repo_root, git_marker)
+    common_dir = linked_worktree_common_dir(git_dir)
+    return common_dir / "hooks" / "pre-commit"
+
+
+def linked_worktree_git_dir(repo_root: Path, git_marker: Path) -> Path:
+    """Resolve the Git directory recorded by a linked-worktree marker."""
+
+    try:
+        marker = git_marker.read_text(encoding="utf-8").strip()
+    except OSError:
+        return git_marker
+    prefix = "gitdir:"
+    if not marker.startswith(prefix):
+        return git_marker
+    git_dir = Path(marker.removeprefix(prefix).strip())
+    return git_dir if git_dir.is_absolute() else repo_root / git_dir
+
+
+def linked_worktree_common_dir(git_dir: Path) -> Path:
+    """Resolve a linked worktree's common Git directory."""
+
+    commondir_path = git_dir / "commondir"
+    try:
+        value = commondir_path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return git_dir
+    common_dir = Path(value)
+    return common_dir if common_dir.is_absolute() else (git_dir / common_dir).resolve()
 
 
 def check_codex_hooks(repo_root: Path) -> DoctorResult:
