@@ -23,6 +23,7 @@
 ### Task 1: Policy consistency and pip-audit repair facts
 
 **Files:**
+
 - Modify: `pyproject.toml`
 - Create: `src/agent_repair_facts/parsers/security.py`
 - Modify: `src/agent_repair_facts/registry.py`
@@ -30,6 +31,7 @@
 - Modify: `tests/config/test_config_loading.py`
 
 **Interfaces:**
+
 - Produces: `pip_audit_facts(path: FactSource, check: str) -> list[dict[str, object]]`
 - Registers: artifact parser entry `("pip-audit", security.pip_audit_facts)`
 
@@ -45,6 +47,7 @@
 ### Task 2: Worktree doctor and safe artifact hygiene
 
 **Files:**
+
 - Modify: `src/agent_maintainer/doctor/support/environment.py`
 - Modify: `src/agent_maintainer/doctor/support/integrations.py`
 - Create: `src/agent_maintainer/doctor/artifact_cleanup.py`
@@ -54,6 +57,7 @@
 - Create: `tests/doctor/test_artifact_cleanup.py`
 
 **Interfaces:**
+
 - Produces: `artifact_cleanup_plan(repo_root: Path) -> tuple[Path, ...]`
 - Produces: `prune_generated_artifacts(repo_root: Path, *, apply: bool) -> tuple[Path, ...]`
 
@@ -69,11 +73,13 @@
 ### Task 3: Real-environment contract smokes
 
 **Files:**
+
 - Create: `tests/packaging/test_owner_contract_smoke.py`
 - Create: `tests/wait/test_durable_wait_contract_smoke.py`
 - Modify: `pyproject.toml`
 
 **Interfaces:**
+
 - Tests public CLI/process contracts only; no new production API.
 
 - [ ] Add a smoke that builds/installs the local wheel in an isolated environment and initializes a temporary Git repository.
@@ -88,12 +94,14 @@
 ### Task 4: Safe workflow caching
 
 **Files:**
+
 - Modify: `.github/workflows/verify.yml`
 - Modify: `.github/workflows/deep-verify.yml`
 - Modify: `.github/workflows/publish.yml`
 - Modify: `tests/packaging/test_github_actions_policy.py`
 
 **Interfaces:**
+
 - GitHub Actions cache keys include OS, Python version where applicable, and dependency/tool identity.
 
 - [ ] Change workflow-policy tests first to require pip lockfile caching, npm caching with `npm ci`, and checksum verification after external-tool cache restoration.
@@ -106,12 +114,14 @@
 ### Task 5: Parallel release evidence and concurrent build
 
 **Files:**
+
 - Modify: `.github/workflows/publish.yml`
 - Modify: `tests/packaging/test_publish_workflow.py`
 - Modify: `docs/release-checklist.md`
 - Modify: `docs/architecture/decisions/2026-07-10-exact-commit-release-evidence.md`
 
 **Interfaces:**
+
 - Matrix profiles: `full`, `ci`, `security`, `manual`, `release`
 - Aggregate job id remains `release-evidence`
 - Profile artifacts are named with both `github.sha` and profile.
@@ -128,6 +138,7 @@
 ### Task 6: Verifier-native partial manifests
 
 **Files:**
+
 - Create: `src/agent_maintainer/verify/groups.py`
 - Create: `src/agent_run_artifacts/verification_aggregate.py`
 - Modify: `src/agent_maintainer/verify/quiet.py`
@@ -137,6 +148,7 @@
 - Create: `tests/verify/test_verification_aggregate.py`
 
 **Interfaces:**
+
 - Produces: `checks_for_group(checks: Sequence[Check], group: str) -> list[Check]`
 - Produces: `aggregate_partial_manifests(paths: Sequence[Path]) -> dict[str, object]`
 - Partial identity includes profile, group, HEAD, base ref, compare branch, config hash, and selected check names.
@@ -152,11 +164,13 @@
 ### Task 7: Parallel PR and push verification
 
 **Files:**
+
 - Modify: `.github/workflows/verify.yml`
 - Modify: `tests/packaging/test_github_actions_policy.py`
 - Create: `tests/packaging/test_parallel_verify_workflow.py`
 
 **Interfaces:**
+
 - Component jobs: `tests-and-coverage`, `static-and-policy`
 - Protected conclusion remains job id `verify`.
 
@@ -170,6 +184,7 @@
 ### Task 8: Measured fast local commit path
 
 **Files:**
+
 - Modify: `pyproject.toml`
 - Modify: `.pre-commit-config.yaml`
 - Modify: `src/agent_maintainer/verify/locking.py`
@@ -177,6 +192,7 @@
 - Modify: `tests/packaging/test_precommit_config.py`
 
 **Interfaces:**
+
 - Reuse remains governed by `VerificationFingerprint`; no partial fingerprint matches.
 
 - [ ] Repair and rerun Agent Perf until a representative profile contains application hotspots; retain unprofiled timings.
@@ -191,12 +207,14 @@
 ### Task 9: Stability classification and bounded facade deletion
 
 **Files:**
+
 - Create: `docs/architecture/subsystem-stability.md`
 - Modify: `README.md`
 - Modify: repository-owned compatibility facade modules selected by reference analysis
 - Modify: importing source/tests for each selected facade
 
 **Interfaces:**
+
 - Stability labels are documentation metadata only: core, optional, experimental.
 - No new runtime registry or compatibility layer.
 
@@ -211,10 +229,12 @@
 ### Task 10: Final verification and branch completion
 
 **Files:**
+
 - Modify: `CHANGELOG.md`
 - Modify: `.agent-maintainer/change-plans/owner-hardening-and-ci-acceleration.md`
 
 **Interfaces:**
+
 - No new interface.
 
 - [ ] Regenerate guidance/DocSync artifacts only where source contracts require it.
