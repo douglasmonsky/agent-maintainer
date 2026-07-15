@@ -46,13 +46,18 @@ def vulnerability_fact(
     message = f"{package} {version}: {advisory}"
     aliases = text_values(vulnerability.get("aliases"))
     if aliases:
-        message += f" ({', '.join(aliases)})"
+        joined_aliases = ", ".join(aliases)
+        message = f"{message} ({joined_aliases})"
+    details: list[str] = []
     fixes = text_values(vulnerability.get("fix_versions"))
     if fixes:
-        message += f"; fix: {', '.join(fixes)}"
+        joined_fixes = ", ".join(fixes)
+        details.append(f"fix: {joined_fixes}")
     description = payloads.optional_text(vulnerability.get("description"))
     if description:
-        message += f"; {description}"
+        details.append(description)
+    if details:
+        message = "; ".join((message, *details))
     return payloads.fact_payload(
         {
             "check": check,

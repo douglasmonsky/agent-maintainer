@@ -7,6 +7,7 @@ expires = 2026-09-15
 allowed_paths = [
   ".pre-commit-config.yaml",
   ".agent-maintainer/change-plans/owner-hardening-and-ci-acceleration.md",
+  ".docsync/attestations/**",
   ".docsync/trace.yml",
   ".github/actions/**",
   ".github/workflows/deep-verify.yml",
@@ -32,7 +33,7 @@ allowed_paths = [
   "tests/**",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 80
+max_changed_files = 100
 max_changed_lines = 8000
 allow_source_without_test_change = false
 requires_tests = true

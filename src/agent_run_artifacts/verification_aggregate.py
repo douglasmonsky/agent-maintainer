@@ -20,7 +20,10 @@ _ALLOWED_CHECK_STATUSES = frozenset(
     )
 )
 _SHARED_IDENTITY_KEYS = ("profile", "head", "base_ref", "compare_branch", "config_hash")
+_RUN_ID_DIGEST_LENGTH = 12
 REQUIRED_GROUPS = ("tests-and-coverage", "static-and-policy")
+Manifest = dict[str, Any]
+ManifestIndex = dict[str, Manifest]
 
 
 class VerificationAggregateError(ValueError):
@@ -61,11 +64,11 @@ def _load_manifest(path: Path) -> dict[str, Any]:
 
 
 def _index_groups(
-    manifests: Sequence[dict[str, Any]],
-) -> tuple[dict[str, dict[str, Any]], tuple[str, ...]]:
+    manifests: Sequence[Manifest],
+) -> tuple[ManifestIndex, tuple[str, ...]]:
     if not manifests:
         raise VerificationAggregateError("no partial manifests provided")
-    by_group: dict[str, dict[str, Any]] = {}
+    by_group: ManifestIndex = {}
     for manifest in manifests:
         partial = _mapping(manifest, "partial")
         group = _text(partial, "group")
@@ -84,9 +87,13 @@ def _ordered_manifests(
     missing = [group for group in required_groups if group not in by_group]
     extra = [group for group in by_group if group not in required_groups]
     if missing:
-        raise VerificationAggregateError(f"missing groups: {', '.join(missing)}")
+        missing_text = ", ".join(missing)
+        raise VerificationAggregateError(f"missing groups: {missing_text}")
     if extra:
-        raise VerificationAggregateError(f"unexpected groups: {', '.join(sorted(extra))}")
+        extra_text = ", ".join(sorted(extra))
+        raise VerificationAggregateError(
+            f"unexpected groups: {extra_text}",
+        )
     return [by_group[group] for group in required_groups]
 
 
@@ -181,13 +188,14 @@ def _aggregate_run_id(manifests: Sequence[Mapping[str, Any]]) -> str:
         for item in manifests
     ]
     digest = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
-    return f"aggregate-{digest[:12]}"
+    short_digest = digest[:_RUN_ID_DIGEST_LENGTH]
+    return f"aggregate-{short_digest}"
 
 
 def _aggregate_timing(manifests: Sequence[Mapping[str, Any]]) -> dict[str, object]:
     timings = [_mapping(item, "timing") for item in manifests]
     return {
-        "duration_seconds": sum(float(item.get("duration_seconds", 0.0)) for item in timings),
+        "duration_seconds": sum(float(item.get("duration_seconds", 0)) for item in timings),
         "ended_at": max(_text(item, "ended_at") for item in timings),
         "started_at": min(_text(item, "started_at") for item in timings),
     }

@@ -62,3 +62,25 @@ def test_pip_audit_artifact_ignores_empty_or_malformed_payloads() -> None:
         == []
     )
     assert registry.artifact_facts_from_text("pip-audit", path, "{not-json") == []
+
+
+def test_pip_audit_fact_without_optional_details_keeps_base_message() -> None:
+    """A minimal vulnerability does not gain dangling separators."""
+
+    payload = {
+        "dependencies": [
+            {
+                "name": "demo",
+                "version": "1.0",
+                "vulns": [{"id": "PYSEC-2026-2"}],
+            }
+        ]
+    }
+
+    facts = registry.artifact_facts_from_text(
+        "pip-audit",
+        Path(".verify-logs/pip-audit.json"),
+        json.dumps(payload),
+    )
+
+    assert facts[0]["message"] == "demo 1.0: PYSEC-2026-2"

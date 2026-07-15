@@ -1,7 +1,5 @@
 """Verifier run steps shared by quiet CLI orchestration."""
 
-from __future__ import annotations
-
 import argparse
 from collections.abc import Sequence
 from pathlib import Path
