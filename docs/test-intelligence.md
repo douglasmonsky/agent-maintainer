@@ -44,6 +44,21 @@ warnings use the same mapping so source changes do not ignore likely relevant
 test changes. The warning stays non-blocking unless existing strict
 warning-as-error options are enabled.
 
+## Execute Affected Tests
+
+Run:
+
+```bash
+python -m agent_maintainer test-intel run-changed --base-ref HEAD --staged
+```
+
+This command executes directly changed Python tests plus existing tests mapped
+to changed Python source. It skips pytest entirely when no Python source or
+test changed, and it deliberately omits coverage collection. Generated
+pre-commit configuration pairs this focused command with the staged `fast`
+profile; the complete coverage, type, architecture, and documentation checks
+remain a required `pre-push` `precommit` profile.
+
 ## Hypothesis Candidate Guidance
 
 Run:

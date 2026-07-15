@@ -39,7 +39,7 @@ def check_pre_commit(repo_root: Path) -> DoctorResult:
     """Report whether the pre-commit config and hook are installed."""
 
     config_path = repo_root / ".pre-commit-config.yaml"
-    hook_path = pre_commit_hook_path(repo_root)
+    hook_paths = (pre_commit_hook_path(repo_root), pre_push_hook_path(repo_root))
     if not config_path.exists():
         return DoctorResult(
             "pre-commit-hook",
@@ -47,26 +47,40 @@ def check_pre_commit(repo_root: Path) -> DoctorResult:
             ".pre-commit-config.yaml is absent.",
             state=doctor_models.NOT_APPLICABLE,
         )
-    if not hook_path.exists():
+    missing = tuple(path.name for path in hook_paths if not path.exists())
+    if missing:
+        missing_text = ", ".join(missing)
         return DoctorResult(
             "pre-commit-hook",
             WARNING,
-            "pre-commit hook is not installed.",
+            f"Required Git hooks are not installed: {missing_text}.",
             state=doctor_models.MISSING,
             hint="Run python3 -m agent_maintainer install --target .",
         )
-    return DoctorResult("pre-commit-hook", OK, "pre-commit hook is installed.")
+    return DoctorResult("pre-commit-hook", OK, "pre-commit and pre-push hooks are installed.")
 
 
 def pre_commit_hook_path(repo_root: Path) -> Path:
     """Return the shared hook path for a checkout or linked worktree."""
 
+    return git_hook_path(repo_root, "pre-commit")
+
+
+def pre_push_hook_path(repo_root: Path) -> Path:
+    """Return the shared pre-push hook path for a checkout or linked worktree."""
+
+    return git_hook_path(repo_root, "pre-push")
+
+
+def git_hook_path(repo_root: Path, hook_name: str) -> Path:
+    """Return one shared hook path for a checkout or linked worktree."""
+
     git_marker = repo_root / ".git"
     if git_marker.is_dir():
-        return git_marker / "hooks" / "pre-commit"
+        return git_marker / "hooks" / hook_name
     git_dir = linked_worktree_git_dir(repo_root, git_marker)
     common_dir = linked_worktree_common_dir(git_dir)
-    return common_dir / "hooks" / "pre-commit"
+    return common_dir / "hooks" / hook_name
 
 
 def linked_worktree_git_dir(repo_root: Path, git_marker: Path) -> Path:

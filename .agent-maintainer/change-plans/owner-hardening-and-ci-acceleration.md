@@ -5,6 +5,7 @@ status = "active"
 base_ref = "origin/main"
 expires = 2026-09-15
 allowed_paths = [
+  ".pre-commit-config.yaml",
   ".agent-maintainer/change-plans/owner-hardening-and-ci-acceleration.md",
   ".docsync/trace.yml",
   ".github/actions/**",
@@ -13,11 +14,14 @@ allowed_paths = [
   ".github/workflows/verify.yml",
   "AGENTS.agent-maintainer.md",
   "CHANGELOG.md",
+  "README.md",
   "config/**",
+  "docs/architecture/subsystem-stability.md",
   "docs/architecture/decisions/**",
   "docs/release-checklist.md",
   "docs/superpowers/plans/2026-07-15-owner-hardening-and-ci-acceleration.md",
   "docs/superpowers/specs/2026-07-15-owner-hardening-and-ci-acceleration-design.md",
+  "docs/test-intelligence.md",
   "pyproject.toml",
   "src/agent_maintainer/**",
   "src/agent_repair_facts/**",

@@ -13,14 +13,15 @@ ENCODING = "utf-8"
 
 def test_pre_commit_installed(tmp_path: Path) -> None:
     (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n", encoding=ENCODING)
-    hook_path = tmp_path / ".git" / "hooks" / "pre-commit"
-    hook_path.parent.mkdir(parents=True)
-    hook_path.write_text("#!/bin/sh\n", encoding=ENCODING)
+    hooks_dir = tmp_path / ".git" / "hooks"
+    hooks_dir.mkdir(parents=True)
+    for hook_name in ("pre-commit", "pre-push"):
+        (hooks_dir / hook_name).write_text("#!/bin/sh\n", encoding=ENCODING)
 
     result = doctor_integrations.check_pre_commit(tmp_path)
 
     assert result.status == doctor_models.OK
-    assert result.message == "pre-commit hook is installed."
+    assert result.message == "pre-commit and pre-push hooks are installed."
 
 
 def test_pre_commit_installed_in_linked_worktree(tmp_path: Path) -> None:
@@ -32,14 +33,15 @@ def test_pre_commit_installed_in_linked_worktree(tmp_path: Path) -> None:
     worktree_git.mkdir(parents=True)
     (worktree_git / "commondir").write_text("../..\n", encoding=ENCODING)
     (tmp_path / ".git").write_text(f"gitdir: {worktree_git}\n", encoding=ENCODING)
-    hook_path = common / "hooks" / "pre-commit"
-    hook_path.parent.mkdir()
-    hook_path.write_text("#!/bin/sh\n", encoding=ENCODING)
+    hooks_dir = common / "hooks"
+    hooks_dir.mkdir()
+    for hook_name in ("pre-commit", "pre-push"):
+        (hooks_dir / hook_name).write_text("#!/bin/sh\n", encoding=ENCODING)
 
     result = doctor_integrations.check_pre_commit(tmp_path)
 
     assert result.status == doctor_models.OK
-    assert result.message == "pre-commit hook is installed."
+    assert result.message == "pre-commit and pre-push hooks are installed."
 
 
 def test_pre_commit_missing_hook_has_exact_install_command(tmp_path: Path) -> None:

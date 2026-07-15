@@ -6,13 +6,19 @@ import subprocess
 from dataclasses import replace
 from pathlib import Path
 
-from agent_maintainer.verify.locking import (
+import pytest
+
+from agent_maintainer.verify.fingerprint_inputs import (
     CONFIG_FINGERPRINT_PATHS,
+    environment_hash,
+    files_hash,
+    untracked_files_hash,
+)
+from agent_maintainer.verify.locking import (
     LOCK_NAME,
     VerificationFingerprint,
     VerificationLock,
-    files_hash,
-    untracked_files_hash,
+    build_fingerprint,
 )
 
 
@@ -29,6 +35,7 @@ def fingerprint() -> VerificationFingerprint:
         worktree_hash="worktree",
         untracked_hash="untracked",
         config_hash="config",
+        environment_hash="environment",
     )
 
 
@@ -95,6 +102,26 @@ def test_lock_skips_changed_repo_state(tmp_path: Path) -> None:
         assert (log_dir / LOCK_NAME).exists()
 
 
+def test_lock_reuse_invalidates_every_execution_identity_component(tmp_path: Path) -> None:
+    """Refs, inputs, configuration, and environment each invalidate reuse."""
+
+    current = fingerprint()
+    changed_states = (
+        replace(current, base_ref="other"),
+        replace(current, index_hash="other"),
+        replace(current, worktree_hash="other"),
+        replace(current, untracked_hash="other"),
+        replace(current, config_hash="other"),
+        replace(current, environment_hash="other"),
+    )
+    for index, changed in enumerate(changed_states):
+        log_dir = tmp_path / str(index)
+        with VerificationLock(log_dir=log_dir, fingerprint=current) as lock:
+            lock.write_result(0)
+        with VerificationLock(log_dir=log_dir, fingerprint=changed) as lock:
+            assert lock.reused is None
+
+
 def test_lock_does_not_reuse_another_verification_group(tmp_path: Path) -> None:
     """Each partial group has a distinct same-state reuse identity."""
 
@@ -138,3 +165,61 @@ def test_config_hash_includes_tool_config(tmp_path: Path) -> None:
     after = files_hash(tmp_path, CONFIG_FINGERPRINT_PATHS)
 
     assert before != after
+
+
+def test_environment_hash_tracks_tool_resolution_and_maintainer_overrides() -> None:
+    """Reuse cannot cross Python/tool paths or Agent Maintainer environment modes."""
+
+    base = {"PATH": "/tools/one", "PYTHONPATH": "src", "VIRTUAL_ENV": "/venv"}
+
+    assert environment_hash(base) != environment_hash({**base, "PATH": "/tools/two"})
+    assert environment_hash(base) != environment_hash(
+        {**base, "AGENT_MAINTAINER_ENABLE_PIP_AUDIT": "1"}
+    )
+
+
+@pytest.mark.parametrize("changed_path", ("src/example.py", "tests/test_example.py"))
+def test_build_fingerprint_tracks_staged_source_and_test_changes(
+    tmp_path: Path, changed_path: str
+) -> None:
+    """The index identity changes for staged source and test edits."""
+
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    path = tmp_path / changed_path
+    path.parent.mkdir(parents=True)
+    path.write_text("VALUE = 1\n", encoding="utf-8")
+    subprocess.run(["git", "add", changed_path], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Agent",
+            "-c",
+            "user.email=agent@example.invalid",
+            "commit",
+            "-m",
+            "initial",
+        ],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    before = build_fingerprint(
+        repo_root=tmp_path,
+        profile="fast",
+        base_ref="HEAD",
+        compare_branch="origin/main",
+        staged=True,
+    )
+    path.write_text("VALUE = 2\n", encoding="utf-8")
+    subprocess.run(["git", "add", changed_path], cwd=tmp_path, check=True, capture_output=True)
+
+    after = build_fingerprint(
+        repo_root=tmp_path,
+        profile="fast",
+        base_ref="HEAD",
+        compare_branch="origin/main",
+        staged=True,
+    )
+
+    assert before.index_hash != after.index_hash

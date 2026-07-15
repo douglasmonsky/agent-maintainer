@@ -1,10 +1,29 @@
 repos:
   - repo: local
     hooks:
-      - id: agent-maintainer-precommit
-        name: Agent Maintainer precommit
+      - id: agent-maintainer-fast
+        name: Agent Maintainer fast staged checks
         entry: >-
-          env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m agent_maintainer verify
-          --profile precommit --base-ref HEAD --staged
+          env AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1 PYTHONDONTWRITEBYTECODE=1
+          PYTHONPATH=src python3 -m agent_maintainer verify
+          --profile fast --base-ref HEAD --staged
         language: system
         pass_filenames: false
+        stages: [pre-commit]
+      - id: agent-maintainer-affected-tests
+        name: Agent Maintainer affected tests
+        entry: >-
+          env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m agent_maintainer test-intel
+          run-changed --base-ref HEAD --staged
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: agent-maintainer-prepush
+        name: Agent Maintainer complete pre-push checks
+        entry: >-
+          env AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1 PYTHONDONTWRITEBYTECODE=1
+          PYTHONPATH=src python3 -m agent_maintainer verify
+          --profile precommit --base-ref HEAD
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

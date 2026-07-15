@@ -136,6 +136,13 @@ initializer templates so downstream repos receive the config, workflow, hook,
 and metadata files for their adoption level without vendoring Agent Maintainer
 source.
 
+Generated hook configuration keeps commits responsive by running the `fast`
+staged profile plus mapped affected Python tests at `pre-commit`. It preserves
+the complete local safety gate by running the `precommit` profile at
+`pre-push`. `agent-maintainer install` installs both Git hook types, and doctor
+reports either missing hook instead of treating a partial installation as
+healthy.
+
 | Track | Best For | Writes |
 |---|---|---|
 | `core` | A minimum useful local CI maintenance loop. | Starter config, `config/dev-dependencies.txt`, pre-commit config, CI workflow. |

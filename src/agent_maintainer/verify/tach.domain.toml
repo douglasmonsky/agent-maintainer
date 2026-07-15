@@ -88,6 +88,10 @@ depends_on = [
 
 [[modules]]
 path = "locking"
+depends_on = ["fingerprint_inputs"]
+
+[[modules]]
+path = "fingerprint_inputs"
 depends_on = []
 
 [[modules]]
