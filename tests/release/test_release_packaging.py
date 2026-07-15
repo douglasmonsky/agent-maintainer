@@ -145,6 +145,7 @@ def test_release_extra_dependency_graph_installs(tmp_path: Path, extra: str) -> 
 
 @pytest.mark.release
 @pytest.mark.artifact_smoke
+@pytest.mark.owner_contract
 @release_only
 def test_release_builds_artifacts_and_installs_console_scripts(
     tmp_path: Path,

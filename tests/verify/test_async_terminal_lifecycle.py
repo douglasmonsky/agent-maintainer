@@ -21,6 +21,7 @@ PARENT_TIMEOUT_SECONDS = 15
 VERIFIER_TIMEOUT_SECONDS = 30
 
 
+@pytest.mark.owner_contract
 def test_async_verifier_survives_closed_parent_terminal(tmp_path: Path) -> None:
     """A real detached verifier owns stdin and reports its actual PASS result."""
 

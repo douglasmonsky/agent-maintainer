@@ -55,6 +55,7 @@ def write_profile_manifests(root: Path) -> list[Path]:
     return paths
 
 
+@pytest.mark.owner_contract
 def test_aggregate_and_validate_cli_round_trip(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
