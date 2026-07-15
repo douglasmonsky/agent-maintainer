@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from agent_repair_facts.parsers import docsync, lint, logs, pytest, typescript
+from agent_repair_facts.parsers import docsync, lint, logs, pytest, security, typescript
 from agent_repair_facts.payloads import FactSource, MemoryFactSource
 
 FactParser = Callable[[FactSource, str], list[dict[str, object]]]
@@ -15,6 +15,7 @@ ARTIFACT_FACT_PARSERS: tuple[FactParserEntry, ...] = (
     ("ruff", lint.ruff_facts),
     ("pyright", lint.pyright_facts),
     ("bandit", lint.bandit_facts),
+    ("pip-audit", security.pip_audit_facts),
     ("pytest-coverage", pytest.pytest_artifact_facts),
     ("typescript-test", typescript.typescript_test_artifact_facts),
     ("docsync", docsync.docsync_report_facts),

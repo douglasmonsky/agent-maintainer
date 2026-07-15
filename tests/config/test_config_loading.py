@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -34,6 +35,23 @@ CONFIG_MUTMUT_MIN_SCORE = 71
 CONFIG_TYPESCRIPT_SOURCE_WARN_FILES = 6
 CONFIG_TYPESCRIPT_SOURCE_WARN_LINES = 250
 CONFIG_TYPESCRIPT_BROAD_SUPPRESSION_WARN = 2
+REPOSITORY_COVERAGE_THRESHOLD = 90
+REPO_ROOT = Path(__file__).parents[2]
+
+
+def test_repository_policy_covers_all_owned_python_packages() -> None:
+    """Repository dead-code and coverage floors match the strict self-policy."""
+
+    payload = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    maintainer = payload["tool"]["agent_maintainer"]
+    coverage = payload["tool"]["coverage"]["report"]
+
+    assert "src/agent_waits" in maintainer["vulture_paths"]
+    assert (
+        coverage["fail_under"]
+        == maintainer["coverage_fail_under"]
+        == REPOSITORY_COVERAGE_THRESHOLD
+    )
 
 
 def set_envs(monkeypatch: pytest.MonkeyPatch, values: dict[str, str]) -> None:
