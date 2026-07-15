@@ -235,6 +235,7 @@ vulture_paths = [
   "src/agent_context",
   "src/agent_client_hooks",
   "src/agent_maintainer",
+  "src/agent_waits",
   "src/agent_repair_facts",
   "src/agent_run_artifacts",
   "src/archguard",
@@ -457,7 +458,7 @@ branch = true
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-fail_under = 80
+fail_under = 90
 exclude_lines = [
   "pragma: no cover",
   "if TYPE_CHECKING:",
@@ -470,6 +471,7 @@ testpaths = ["tests"]
 markers = [
   "release: release-only packaging checks that build artifacts and install extras",
   "artifact_smoke: build wheel and sdist, then run every advertised console script",
+  "owner_contract: real-environment owner workflow contract smokes",
 ]
 
 [tool.deptry]

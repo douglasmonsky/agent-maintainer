@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Owner verification now reports configuration drift consistently, diagnoses
+  linked-worktree hook and artifact health, and exercises real agent-client
+  command contracts without publishing or external smoke turns.
+- Pull-request and release verification now fan out verifier-owned groups and
+  aggregate exact-state partial manifests before the protected final result;
+  each specialized group retains its own tool-environment identity, while
+  cached tools and dependencies remain hash- and version-validated.
+- Local commits now run fast staged policy plus affected tests, while pre-push
+  verifies the exact outgoing commit range with the complete precommit profile
+  from a clean checkout. Unprofiled dogfood timings fell from roughly 31
+  seconds for the prior full-suite hook to 2.08 seconds for docs, 2.21 seconds
+  for tests, 6.97 seconds for source plus its required test, and 22.59 seconds
+  for the broad 21-file cross-package batch.
+- Public command stability is classified as core, optional, or experimental,
+  and the repository-unused run-artifact compatibility facades were deleted in
+  favor of the canonical `agent_run_artifacts` package.
 - Documentation: Recorded published 0.1.0b6 release evidence, package-index
   upgrade guidance, and completed Phase 176 smoke validation after the b6 tag.
 

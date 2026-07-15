@@ -18,6 +18,7 @@ from agent_maintainer.models import VALID_PROFILES
 DEFAULT_MAX_LINES_PER_FAILURE = 50
 DEFAULT_MAX_CHARS_PER_FAILURE = 8_000
 ACTION_APPEND = "append"
+ParsedArgs = argparse.Namespace
 ACTION_STORE_FALSE = "store_false"
 ACTION_STORE_TRUE = "store_true"
 
@@ -43,7 +44,7 @@ def parse_repeated_values(values: list[str] | None) -> tuple[str, ...] | None:
     return normalized or None
 
 
-def parse_args(argv: list[str]) -> argparse.Namespace:
+def parse_args(argv: list[str]) -> ParsedArgs:
     """Parse quiet verifier command-line options."""
     parser = argparse.ArgumentParser(
         description="Run repository quality checks with low-noise output."
@@ -74,6 +75,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Start verification in the background and print a wait command.",
     )
     parser.add_argument("--run-id", help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--group",
+        help="Run one fail-closed verifier check group and write a partial manifest.",
+    )
+    parser.add_argument(
+        "--aggregate-partial",
+        action=ACTION_APPEND,
+        help="Partial verifier manifest to aggregate. May be repeated.",
+    )
+    parser.add_argument(
+        "--aggregate-output",
+        default=".verify-logs/manifest.json",
+        help="Output path for aggregate-only verification.",
+    )
     parser.add_argument(
         "--mode",
         choices=sorted(VALID_MODES),

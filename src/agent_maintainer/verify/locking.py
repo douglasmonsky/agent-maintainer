@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 import contextlib
-import hashlib
 import json
 import os
-import shutil
-import subprocess  # nosec B404
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Self
+
+from agent_maintainer.verify import fingerprint_inputs
 
 LOCK_NAME = "agent-maintainer.lock"
 RESULT_NAME = "agent-maintainer-last-result.json"
@@ -21,19 +20,6 @@ SECONDS_PER_MINUTE = 60
 LOCK_STALE_SECONDS = LOCK_STALE_MINUTES * SECONDS_PER_MINUTE
 LOCK_WAIT_SECONDS = 45.0
 LOCK_POLL_SECONDS = 0.25
-CONFIG_FINGERPRINT_PATHS = (
-    "pyproject.toml",
-    "tach.toml",
-    ".pre-commit-config.yaml",
-    ".github/dependabot.yml",
-    ".github/workflows/verify.yml",
-    "semgrep.yml",
-    "osv-scanner.toml",
-    "config/dev-dependencies.txt",
-    "config/dev-lock.txt",
-    "package.json",
-    "package-lock.json",
-)
 
 
 @dataclass(frozen=True)
@@ -49,6 +35,8 @@ class VerificationFingerprint:
     worktree_hash: str
     untracked_hash: str
     config_hash: str
+    environment_hash: str
+    group: str = ""
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-serializable fingerprint payload."""
@@ -63,6 +51,8 @@ class VerificationFingerprint:
             "worktree_hash": self.worktree_hash,
             "untracked_hash": self.untracked_hash,
             "config_hash": self.config_hash,
+            "environment_hash": self.environment_hash,
+            "group": self.group,
         }
 
 
@@ -202,79 +192,13 @@ def build_fingerprint(
         base_ref=base_ref,
         compare_branch=compare_branch,
         staged=staged,
-        head=git_output(repo_root, "rev-parse", "HEAD"),
-        index_hash=git_hash(repo_root, "diff", "--cached", "--binary"),
-        worktree_hash=git_hash(repo_root, "diff", "--binary"),
-        untracked_hash=untracked_files_hash(repo_root),
-        config_hash=files_hash(repo_root, CONFIG_FINGERPRINT_PATHS),
-    )
-
-
-def git_hash(repo_root: Path, *args: str) -> str:
-    """Return stable hash for Git command output."""
-
-    output = git_output(repo_root, *args)
-    return hashlib.sha256(output.encode()).hexdigest()
-
-
-def git_output(repo_root: Path, *args: str) -> str:
-    """Return Git stdout or an empty string when Git is unavailable."""
-
-    git_path = shutil.which("git")
-    if git_path is None:
-        return ""
-    result = subprocess.run(  # nosec B603
-        [git_path, *args],
-        cwd=repo_root,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        return ""
-    return result.stdout
-
-
-def file_hash(path: Path) -> str:
-    """Return stable hash for one file."""
-
-    try:
-        content = path.read_bytes()
-    except OSError:
-        content = b""
-    return hashlib.sha256(content).hexdigest()
-
-
-def files_hash(repo_root: Path, paths: tuple[str, ...]) -> str:
-    """Return stable hash of verifier-relevant config files."""
-
-    digest = hashlib.sha256()
-    for relative_path in paths:
-        path = repo_root / relative_path
-        digest.update(relative_path.encode())
-        digest.update(b"\0")
-        digest.update(file_hash(path).encode())
-        digest.update(b"\0")
-    return digest.hexdigest()
-
-
-def untracked_files_hash(repo_root: Path) -> str:
-    """Return stable hash of untracked, non-ignored repository files."""
-
-    relative_paths = sorted(
-        path
-        for path in git_output(
+        head=fingerprint_inputs.git_output(repo_root, "rev-parse", "HEAD").strip(),
+        index_hash=fingerprint_inputs.git_hash(repo_root, "diff", "--cached", "--binary"),
+        worktree_hash=fingerprint_inputs.git_hash(repo_root, "diff", "--binary"),
+        untracked_hash=fingerprint_inputs.untracked_files_hash(repo_root),
+        config_hash=fingerprint_inputs.files_hash(
             repo_root,
-            "ls-files",
-            "--others",
-            "--exclude-standard",
-        ).splitlines()
-        if path
+            fingerprint_inputs.CONFIG_FINGERPRINT_PATHS,
+        ),
+        environment_hash=fingerprint_inputs.environment_hash(os.environ),
     )
-    digest = hashlib.sha256()
-    for relative_path in relative_paths:
-        digest.update(relative_path.encode())
-        digest.update(b"\0")
-        digest.update(file_hash(repo_root / relative_path).encode())
-        digest.update(b"\0")
-    return digest.hexdigest()

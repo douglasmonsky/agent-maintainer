@@ -12,19 +12,28 @@ depends_on = [
 ]
 
 [[modules]]
-path = "cli"
+path = "changed_report"
 depends_on = [
   "//agent_maintainer.config.loader",
   "changed",
   "coverage",
+  "mapping",
+  "models",
+  "reporting",
+]
+
+[[modules]]
+path = "cli"
+depends_on = [
+  "//agent_maintainer.config.loader",
+  "changed",
+  "changed_report",
   "crosshair_candidates",
   "crosshair_reporting",
   "hypothesis_candidates",
   "hypothesis_reporting",
-  "mapping",
-  "models",
   "mutation.cli",
-  "reporting",
+  "run_changed",
 ]
 
 [[modules]]
@@ -182,4 +191,12 @@ depends_on = [
 path = "reporting"
 depends_on = [
   "models",
+]
+
+[[modules]]
+path = "run_changed"
+depends_on = [
+  "//agent_maintainer.checks.change_budget",
+  "//agent_maintainer.config.schema",
+  "mapping",
 ]

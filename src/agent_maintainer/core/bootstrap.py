@@ -280,7 +280,14 @@ def install_pre_commit(repo_root: Path) -> int:
         return 1
 
     result = subprocess.run(  # nosec B603
-        [pre_commit, "install"],
+        [
+            pre_commit,
+            "install",
+            "--hook-type",
+            "pre-commit",
+            "--hook-type",
+            "pre-push",
+        ],
         cwd=repo_root,
         env=hardened_subprocess_env(),
         text=True,

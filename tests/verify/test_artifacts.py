@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
@@ -146,6 +147,43 @@ def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -
     assert "## Context Pack Path" in pr_summary
     assert "## Expansion Commands" in pr_summary
     assert "lint failed" in pr_summary
+
+
+def test_partial_manifest_records_complete_verification_identity(tmp_path: Path) -> None:
+    """Grouped runs identify their exact selection and shared repository state."""
+
+    context = run_context(tmp_path)
+    context = replace(
+        context,
+        partial=artifact_adapters.PartialRunContext(
+            group="tests-and-coverage",
+            required_groups=("tests-and-coverage", "static-and-policy"),
+            identity={
+                "profile": "ci",
+                "head": "abc123",
+                "base_ref": "origin/main",
+                "compare_branch": "origin/main",
+                "config_hash": "config-hash",
+                "selected_checks": ("pytest-coverage", "diff-cover"),
+            },
+        ),
+    )
+    results = [CheckResult("pytest-coverage", passed=True), CheckResult("diff-cover", passed=True)]
+
+    payload = artifacts.manifest_payload(context, results)
+
+    assert payload["partial"] == {
+        "group": "tests-and-coverage",
+        "required_groups": ["tests-and-coverage", "static-and-policy"],
+        "identity": {
+            "profile": "ci",
+            "head": "abc123",
+            "base_ref": "origin/main",
+            "compare_branch": "origin/main",
+            "config_hash": "config-hash",
+            "selected_checks": ["pytest-coverage", "diff-cover"],
+        },
+    }
 
 
 def test_run_artifacts_keep_stable_snapshot_and_prune_history(tmp_path: Path) -> None:

@@ -9,6 +9,7 @@ from pathlib import Path
 from agent_maintainer.core import config as maintainer_config
 from agent_maintainer.core import guidance as maintainer_guidance
 from agent_maintainer.core.layout import layout_failures
+from agent_maintainer.doctor import artifact_cleanup as maintainer_artifact_cleanup
 from agent_maintainer.doctor.support import dogfood as maintainer_doctor_dogfood
 from agent_maintainer.doctor.support import models as maintainer_doctor_models
 from agent_maintainer.doctor.support import setup_policy as maintainer_doctor_policy
@@ -121,7 +122,7 @@ def duplicate_artifacts_in_root(repo_root: Path, root: Path) -> list[str]:
     return [
         path.relative_to(repo_root).as_posix()
         for path in root.rglob("*")
-        if is_duplicate_or_bytecode_artifact(path)
+        if maintainer_artifact_cleanup.is_duplicate_or_bytecode_artifact(path)
     ]
 
 
@@ -133,19 +134,8 @@ def git_duplicate_artifact_paths(repo_root: Path) -> list[str]:
     return [
         path.relative_to(repo_root).as_posix()
         for path in git_root.iterdir()
-        if path.is_file() and is_duplicate_named_artifact(path)
+        if path.is_file() and maintainer_artifact_cleanup.is_duplicate_named_artifact(path)
     ]
-
-
-def is_duplicate_or_bytecode_artifact(path: Path) -> bool:
-    """Return whether path looks like accidental generated artifact debris."""
-    return is_duplicate_named_artifact(path) or path.name == "__pycache__" or path.suffix == ".pyc"
-
-
-def is_duplicate_named_artifact(path: Path) -> bool:
-    """Return whether a filename looks like an accidental Finder-style copy."""
-    name = path.name.lower()
-    return any(pattern in name for pattern in (" 2", " copy", " - copy"))
 
 
 def check_layout(config: maintainer_config.MaintainerConfig) -> DoctorResult:

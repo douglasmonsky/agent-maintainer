@@ -48,14 +48,16 @@ class BackgroundWaitRegistration:
     watcher_log: str = ""
 
 
-class HeartbeatBackoff(TypedDict):
-    """Structured exponential cadence guidance for fallback consumers."""
-
-    strategy: str
-    initial_interval_seconds: int
-    multiplier: int
-    max_interval_seconds: int
-    reset_on: str
+HeartbeatBackoff = TypedDict(  # noqa: UP013  # avoids Vulture field false positives
+    "HeartbeatBackoff",
+    {
+        "strategy": str,
+        "initial_interval_seconds": int,
+        "multiplier": int,
+        "max_interval_seconds": int,
+        "reset_on": str,
+    },
+)
 
 
 def codex_foreground_wait_allowed(env: Mapping[str, str] | None = None) -> bool:

@@ -6,13 +6,14 @@ from pathlib import Path
 
 PUBLISH_WORKFLOW = Path(".github/workflows/publish.yml")
 RELEASE_CHECKLIST = Path("docs/release-checklist.md")
-EVIDENCE_CONSUMER_JOB_COUNT = 4
+EVIDENCE_CONSUMER_JOB_COUNT = 3
 EVIDENCE_BOUND_PUBLISH_JOB_COUNT = 3
 EVIDENCE_SHA_USE_COUNT = 5
 DISTRIBUTION_CONSUMER_JOB_COUNT = 3
 DISTRIBUTION_PATH_COUNT = 4
 DISTRIBUTION_VERIFY_COUNT = 4
 INDEX_PUBLISH_JOB_COUNT = 2
+RELEASE_PROFILES = ("full", "ci", "security", "manual", "release")
 
 
 def test_publish_workflow_uses_trusted_publishing() -> None:
@@ -47,6 +48,9 @@ def test_release_checklist_documents_trusted_publisher_values() -> None:
     assert "workflow `publish.yml`" in normalized_text
     assert "environment `pypi`" in normalized_text
     assert "environment `testpypi`" in normalized_text
+    assert "five clean-checkout matrix jobs" in normalized_text
+    assert "Distribution construction runs independently in parallel" in normalized_text
+    assert "publish workflow intentionally avoids dependency caches" in normalized_text
 
 
 def test_publish_workflow_requires_exact_commit_release_evidence() -> None:
@@ -54,24 +58,41 @@ def test_publish_workflow_requires_exact_commit_release_evidence() -> None:
 
     text = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
 
+    assert "release-profile-evidence:" in text
     assert "release-evidence:" in text
-    for profile in ("full", "ci", "security", "manual"):
+    assert "profile: [full, ci, security, manual, release]" in text
+    for profile in RELEASE_PROFILES[:-1]:
         assert f"verify --profile {profile}" in text
         assert f'--manifest "$PROFILE_DIR/{profile}.json"' in text
     assert "release_evidence record" in text
     assert '--manifest "$PROFILE_DIR/release.json"' in text
+    assert "release-profile-${{ github.sha }}-${{ matrix.profile }}" in text
+    assert "pattern: release-profile-${{ github.sha }}-*" in text
+    assert "merge-multiple: true" in text
     assert "release-evidence-${{ github.sha }}" in text
     assert "release_evidence aggregate" in text
     assert text.count("Validate exact-commit release evidence") == EVIDENCE_CONSUMER_JOB_COUNT
     assert text.count("EXPECTED_SHA: ${{ github.sha }}") >= EVIDENCE_SHA_USE_COUNT
 
 
-def test_publish_jobs_depend_on_release_evidence() -> None:
-    """No build, attachment, or index publish job bypasses the evidence job."""
+def test_build_runs_in_parallel_with_release_evidence() -> None:
+    """Non-publishing distribution construction does not serialize on profiles."""
+
+    text = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+    build_start = text.index("  build:")
+    build_end = text.index("  # docsync:evidence.start", build_start)
+    build_job = text[build_start:build_end]
+
+    assert "\n    needs:" not in build_job
+    assert "Download exact-commit release evidence" not in build_job
+    assert "Validate exact-commit release evidence" not in build_job
+
+
+def test_terminal_publish_jobs_depend_on_evidence_and_build() -> None:
+    """Every externally mutating job validates both upstream artifacts."""
 
     text = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
 
-    assert "build:\n    name: build distributions\n    needs: release-evidence" in text
     assert text.count("needs: [release-evidence, build]") == EVIDENCE_BOUND_PUBLISH_JOB_COUNT
     for job_name in (
         "attach-github-release-artifacts",

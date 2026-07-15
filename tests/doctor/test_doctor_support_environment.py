@@ -113,3 +113,15 @@ def test_git_state_ahead_dirty(
 
     assert result.status == doctor_models.WARNING
     assert result.message == "main...origin/main [ahead 1]; 2 changed path(s)"
+
+
+def test_git_state_warns_when_upstream_is_gone() -> None:
+    """Deleted tracking branches are actionable instead of healthy."""
+
+    result = doctor_environment.git_status_result(
+        "## feature...origin/feature [gone]\n",
+    )
+
+    assert result.status == doctor_models.WARNING
+    assert result.message == "feature...origin/feature [gone]"
+    assert result.hint == "Set a new upstream or unset the stale tracking branch."

@@ -23,6 +23,7 @@ def fingerprint(profile: str = "fast") -> VerificationFingerprint:
         worktree_hash="worktree",
         untracked_hash="untracked",
         config_hash="config",
+        environment_hash="environment",
     )
 
 

@@ -228,13 +228,18 @@ def test_maintainer_install_pre_commit_success_and_path_fallback(
         "find_pre_commit",
         constant_callback("pre-commit"),
     )
-    monkeypatch.setattr(
-        maintainer_bootstrap.subprocess,
-        "run",
-        completed_process_callback(0),
-    )
+    commands: list[list[str]] = []
+
+    def record_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(maintainer_bootstrap.subprocess, "run", record_run)
 
     assert maintainer_bootstrap.install_pre_commit(tmp_path) == 0
+    assert commands == [
+        ["pre-commit", "install", "--hook-type", "pre-commit", "--hook-type", "pre-push"]
+    ]
 
 
 def test_maintainer_find_pre_commit_uses_path(

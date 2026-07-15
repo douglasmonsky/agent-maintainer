@@ -79,18 +79,20 @@ version/changelog alignment, public metadata URLs, Trusted Publisher environment
 names, and existing release evidence when present.
 
 The `publish` workflow does not trust these local runs as publish authorization.
-Its `release-evidence` job reruns full, CI, security, manual, and release checks
-from one clean checkout, embeds all five manifests in an exact-commit aggregate,
-and gives the aggregate a maximum 24-hour lifetime. Every downstream build,
-attachment, TestPyPI, and PyPI job validates that aggregate against its own
-clean checkout before acting. Every remote workflow action is pinned to a full
-commit SHA with updater metadata, and strict workflow validation covers verify,
-deep-verify, and publish. Superseded validation runs may cancel, while deep
-verification and publishing runs are non-canceling. The build job copies wheel
-and sdist files into an exact-commit distribution bundle with an exact inventory,
-sizes, and SHA-256 digests. Every attachment and index-publish job verifies that
-bundle after download against the manifest SHA-256 carried separately by the
-build job, then consumes only its verified `packages/` directory.
+It fans full, CI, security, manual, and release checks into five clean-checkout
+matrix jobs, then combines their artifacts into an exact-commit aggregate with
+a maximum 24-hour lifetime. Distribution construction runs independently in
+parallel. Every attachment, TestPyPI, and PyPI job requires both upstream jobs
+and validates the aggregate against its own clean checkout before acting. The
+publish workflow intentionally avoids dependency caches. Every remote workflow
+action is pinned to a full commit SHA with updater metadata, and strict workflow
+validation covers verify, deep-verify, and publish. Superseded validation runs
+may cancel, while deep verification and publishing runs are non-canceling. The
+build job copies wheel and sdist files into an exact-commit distribution bundle
+with an exact inventory, sizes, and SHA-256 digests. Every attachment and
+index-publish job verifies that bundle after download against the manifest
+SHA-256 carried separately by the build job, then consumes only its verified
+`packages/` directory.
 
 ## Publishing
 
@@ -98,8 +100,9 @@ build job, then consumes only its verified `packages/` directory.
 - [ ] Run `publish` workflow manually with target `testpypi`.
 - [ ] Confirm the `release-evidence-<commit>` artifact contains full, CI,
   security, manual, and release manifests for the workflow SHA.
-- [ ] Confirm the build job and selected publish job both report
-  `release evidence valid` before building or publishing.
+- [ ] Confirm all five release-profile matrix jobs passed before aggregation.
+- [ ] Confirm the selected publish job reports `release evidence valid` before
+  publishing or attaching artifacts.
 - [ ] Confirm Actionlint, workflow schema validation, and strict Zizmor pass for
   `verify.yml`, `deep-verify.yml`, and `publish.yml`.
 - [ ] Confirm the Python 3.11 through 3.14 compatibility matrix built and

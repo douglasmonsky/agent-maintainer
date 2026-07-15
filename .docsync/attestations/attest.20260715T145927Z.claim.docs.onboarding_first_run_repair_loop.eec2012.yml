@@ -1,0 +1,21 @@
+version: 1
+attestations:
+- id: attest.20260715T145927Z.claim.docs.onboarding_first_run_repair_loop.eec2012
+  claim: claim.docs.onboarding_first_run_repair_loop
+  doc_object: docs.onboarding_first_run.overview
+  evidence:
+  - evidence.readme.diagnostic_artifacts
+  reason: Grouped manifests add fail-closed partial identity while preserving the
+    documented first-run repair loop and diagnostic artifact paths; verifier artifact
+    tests passed.
+  reviewer: agent
+  reviewed_at: '2026-07-15T14:59:27Z'
+  base: HEAD
+  head: eec2012
+  evidence_fingerprints:
+    evidence.readme.diagnostic_artifacts: sha256:bae823247f480bce1f60d4084ac5d0180d6e8914474b2fe66590d35afb541700
+  evidence_anchor_fingerprints:
+    evidence.readme.diagnostic_artifacts:
+    - sha256:333107267e5e4c8a77e54f1ebe437080a6d1380a41c7038f0b3333ea975e3fe8
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

@@ -8,21 +8,17 @@ from pathlib import Path
 
 from agent_maintainer.config import loader
 from agent_maintainer.test_intel import (
+    changed_report,
     crosshair_candidates,
     crosshair_reporting,
     hypothesis_candidates,
     hypothesis_reporting,
 )
-from agent_maintainer.test_intel.changed import changed_source_paths
-from agent_maintainer.test_intel.coverage import coverage_for_changed_sources
-from agent_maintainer.test_intel.mapping import likely_tests_for_changes
-from agent_maintainer.test_intel.models import TestIntelReport
-from agent_maintainer.test_intel.mutation import cli as mutation_cli
-from agent_maintainer.test_intel.reporting import (
-    render_json,
-    render_text,
-    suggested_actions,
+from agent_maintainer.test_intel import (
+    run_changed as run_changed_tests,
 )
+from agent_maintainer.test_intel.changed import changed_source_paths
+from agent_maintainer.test_intel.mutation import cli as mutation_cli
 
 FORMAT_JSON = "json"
 FORMAT_TEXT = "text"
@@ -46,6 +42,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         choices=FORMAT_CHOICES,
         default=FORMAT_TEXT,
     )
+    run_changed_parser = subparsers.add_parser(
+        "run-changed",
+        help="Run tests affected by changed Python source and test files.",
+    )
+    run_changed_parser.add_argument("--base-ref", default="HEAD")
+    run_changed_parser.add_argument("--staged", action=ACTION_STORE_TRUE)
     hypothesis_parser = subparsers.add_parser(
         "hypothesis-candidates",
         help="Suggest advisory Hypothesis property-test candidates.",
@@ -90,6 +92,7 @@ def main(argv: list[str]) -> int:
     args = parse_args(argv)
     handlers = {
         "changed": run_changed,
+        "run-changed": run_changed_tests_from_cli,
         "hypothesis-candidates": run_hypothesis_candidates,
         "mutation-targets": mutation_cli.run_targets,
         "mutation-results": mutation_cli.run_results,
@@ -103,7 +106,7 @@ def run_changed(args: argparse.Namespace) -> int:
     """Run changed-source test-intelligence report."""
 
     try:
-        report = build_changed_report(
+        report = changed_report.build(
             base_ref=args.base_ref,
             staged=args.staged,
             repo_root=Path.cwd(),
@@ -111,28 +114,26 @@ def run_changed(args: argparse.Namespace) -> int:
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    print(render_report(report, args.format))
+    print(changed_report.render(report, args.format))
     return 0
 
 
-def build_changed_report(*, base_ref: str, staged: bool, repo_root: Path) -> TestIntelReport:
-    """Build changed-source test-intelligence report."""
+def run_changed_tests_from_cli(args: argparse.Namespace) -> int:
+    """Select and execute affected tests for a commit-time diff."""
 
+    repo_root = Path.cwd()
     config = loader.load_config()
-    changed_source = changed_source_paths(config, base_ref=base_ref, staged=staged)
-    matches = likely_tests_for_changes(changed_source, config, repo_root)
-    coverage = coverage_for_changed_sources(
-        repo_root,
-        changed_source,
-        base_ref=base_ref,
-        staged=staged,
-    )
-    return TestIntelReport(
-        changed_source=changed_source,
-        likely_tests=matches,
-        coverage=coverage,
-        suggested_actions=suggested_actions(matches),
-    )
+    try:
+        paths = run_changed_tests.selected_test_paths(
+            config,
+            base_ref=args.base_ref,
+            staged=args.staged,
+            repo_root=repo_root,
+        )
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    return run_changed_tests.run_selected_tests(paths, repo_root=repo_root)
 
 
 def run_hypothesis_candidates(args: argparse.Namespace) -> int:
@@ -207,11 +208,3 @@ def render_crosshair_report(
     if output_format == FORMAT_JSON:
         return crosshair_reporting.render_json(report)
     return crosshair_reporting.render_text(report)
-
-
-def render_report(report: TestIntelReport, output_format: str) -> str:
-    """Render report in selected output format."""
-
-    if output_format == FORMAT_JSON:
-        return render_json(report)
-    return render_text(report)

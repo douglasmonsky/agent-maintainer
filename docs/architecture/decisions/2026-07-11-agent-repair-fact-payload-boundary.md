@@ -37,6 +37,22 @@ The package remains reusable and imports no `agent_maintainer` modules. The
 declared TypeScript dependency matches the existing DocSync, lint, logs, and
 pytest parser dependency direction.
 
+## Pip-audit parser extension
+
+The reusable package now parses pip-audit JSON through
+`agent_repair_facts.parsers.security`. The module depends only on the existing
+package-local `payloads` boundary, and `registry` owns its exact check-name
+dispatch edge. This is a new explicit parser module, not a relaxation of the
+root contract.
+
+Parsing the JSON in Agent Maintainer's context or reporting layers was rejected
+because it would duplicate normalization and make structured repair facts
+depend on an application package. Parsing human pip-audit logs was also
+rejected because the catalog already emits a stable JSON artifact.
+
+The parser must remain standard-library-only, tolerate malformed artifacts by
+returning no facts, and never import `agent_maintainer`.
+
 ## Alternatives Considered
 
 - Keep casts in each parser. Rejected because they asserted nested shapes

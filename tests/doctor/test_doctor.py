@@ -297,13 +297,28 @@ def test_pre_commit_hook_warns_when_config_exists_but_hook_is_absent(tmp_path: P
 
 def test_pre_commit_hook_passes_when_installed(tmp_path: Path) -> None:
     (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n", encoding="utf-8")
+    hooks_dir = tmp_path / ".git" / "hooks"
+    hooks_dir.mkdir(parents=True)
+    for hook_name in ("pre-commit", "pre-push"):
+        (hooks_dir / hook_name).write_text("#!/bin/sh\n", encoding="utf-8")
+
+    result = maintainer_doctor.check_pre_commit(tmp_path)
+
+    assert result.status == maintainer_doctor.OK
+
+
+def test_pre_commit_hook_warns_when_prepush_gate_is_absent(tmp_path: Path) -> None:
+    """The fast commit hook is insufficient without its complete pre-push gate."""
+
+    (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n", encoding="utf-8")
     hook_path = tmp_path / ".git" / "hooks" / "pre-commit"
     hook_path.parent.mkdir(parents=True)
     hook_path.write_text("#!/bin/sh\n", encoding="utf-8")
 
     result = maintainer_doctor.check_pre_commit(tmp_path)
 
-    assert result.status == maintainer_doctor.OK
+    assert result.status == maintainer_doctor.WARNING
+    assert "pre-push" in result.message
 
 
 def test_codex_hooks_warn_and_pass(tmp_path: Path) -> None:

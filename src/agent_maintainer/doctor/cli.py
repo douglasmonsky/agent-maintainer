@@ -1,11 +1,10 @@
 """Setup health diagnostics for Agent Maintainer."""
 
-from __future__ import annotations
-
 import argparse
 from pathlib import Path
 
 from agent_maintainer.core import config as maintainer_config
+from agent_maintainer.doctor import artifact_cleanup as maintainer_artifact_cleanup
 from agent_maintainer.doctor import setup as maintainer_doctor_setup
 from agent_maintainer.doctor.support import environment as maintainer_doctor_environment
 from agent_maintainer.doctor.support import hook_audit as maintainer_doctor_hook_audit
@@ -70,7 +69,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=Path.cwd(),
         help="Repository root to inspect. Defaults to current directory.",
     )
-    return parser.parse_args(argv)
+    parser.add_argument(
+        "--prune-artifacts",
+        action="store_true",
+        help="List generated artifacts eligible for safe cleanup.",
+    )
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Apply --prune-artifacts instead of performing a dry run.",
+    )
+    args = parser.parse_args(argv)
+    if args.apply and not args.prune_artifacts:
+        parser.error("--apply requires --prune-artifacts")
+    return args
 
 
 def main(argv: list[str]) -> int:
@@ -78,6 +90,8 @@ def main(argv: list[str]) -> int:
 
     args = parse_args(argv)
     repo_root = args.root.resolve()
+    if args.prune_artifacts:
+        return run_artifact_cleanup(repo_root, apply=args.apply)
     config = maintainer_config.load_config(repo_root)
     results = run_doctor(repo_root, config)
     if args.json or args.format == "json":
@@ -85,6 +99,22 @@ def main(argv: list[str]) -> int:
     else:
         print_text(results)
     return status_code(results, strict=args.strict)
+
+
+def run_artifact_cleanup(repo_root: Path, *, apply: bool) -> int:
+    """Print or apply a safe generated-artifact cleanup plan."""
+
+    paths = maintainer_artifact_cleanup.prune_generated_artifacts(
+        repo_root,
+        apply=apply,
+    )
+    if not paths:
+        print("No generated artifacts eligible for cleanup.")
+        return 0
+    action = "REMOVED" if apply else "WOULD REMOVE"
+    for path in paths:
+        print(f"{action} {path.relative_to(repo_root)}")
+    return 0
 
 
 def run_doctor(
