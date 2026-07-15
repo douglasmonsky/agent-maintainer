@@ -36,6 +36,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
+          cache: pip
+          cache-dependency-path: |
+            config/dev-lock.txt
+            pyproject.toml
 
       - name: Install compatibility dependencies
         run: |
@@ -74,12 +78,17 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            config/dev-lock.txt
+            pyproject.toml
 
       - name: Set up Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "22"
-          package-manager-cache: false
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install Agent Maintainer dependencies
         run: |
@@ -90,31 +99,11 @@ jobs:
             python -m pip install -r config/dev-dependencies.txt
           fi
 
-      - name: Install external Agent Maintainer tools
-        run: |
-          npm ci
-          GITLEAKS_VERSION=8.30.1
-          GITLEAKS_ASSET="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          GITLEAKS_URL="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${GITLEAKS_ASSET}"
-          GITLEAKS_SHA256="551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
-          curl -sSL "$GITLEAKS_URL" -o "$RUNNER_TEMP/gitleaks.tar.gz"
-          ACTUAL_SHA256="$(sha256sum "$RUNNER_TEMP/gitleaks.tar.gz" | cut -d ' ' -f 1)"
-          test "$ACTUAL_SHA256" = "$GITLEAKS_SHA256"
-          mkdir -p "$RUNNER_TEMP/gitleaks"
-          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP/gitleaks" gitleaks
-          echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
+      - name: Install Node dependencies
+        run: npm ci
 
-          OSV_SCANNER_VERSION=2.4.0
-          OSV_SCANNER_ASSET="osv-scanner_linux_amd64"
-          OSV_SCANNER_URL="https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/${OSV_SCANNER_ASSET}"
-          OSV_SCANNER_SHA256="15314940c10d26af9c6649f150b8a47c1262e8fc7e17b1d1029b0e479e8ed8a0"
-          curl -sSL "$OSV_SCANNER_URL" -o "$RUNNER_TEMP/osv-scanner"
-          ACTUAL_SHA256="$(sha256sum "$RUNNER_TEMP/osv-scanner" | cut -d ' ' -f 1)"
-          test "$ACTUAL_SHA256" = "$OSV_SCANNER_SHA256"
-          chmod +x "$RUNNER_TEMP/osv-scanner"
-          mkdir -p "$RUNNER_TEMP/osv-scanner-bin"
-          mv "$RUNNER_TEMP/osv-scanner" "$RUNNER_TEMP/osv-scanner-bin/osv-scanner"
-          echo "$RUNNER_TEMP/osv-scanner-bin" >> "$GITHUB_PATH"
+      - name: Install external Agent Maintainer tools
+        uses: ./.github/actions/install-agent-maintainer-tools
 
       - name: Install project package if metadata exists
         run: |
