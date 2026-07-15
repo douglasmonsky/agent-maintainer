@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260715T173533Z.claim.docs.release_0_1_0b6_candidate_truth.ff2283b
+  claim: claim.docs.release_0_1_0b6_candidate_truth
+  doc_object: docs.release_0_1_0b6_candidate.overview
+  evidence:
+  - evidence.release.public_contract_tests
+  reason: The immutable 0.1.0b6 publication evidence remains unchanged while public
+    contract tests add the truthful 0.1.0b7 candidate state.
+  reviewer: agent
+  reviewed_at: '2026-07-15T17:35:33Z'
+  base: HEAD
+  head: ff2283b
+  evidence_fingerprints:
+    evidence.release.public_contract_tests: sha256:5af8f21b69335686baf31ba1224ba2a2d1e5b559f9f3768144abfa4bc9fe8961
+  evidence_anchor_fingerprints:
+    evidence.release.public_contract_tests:
+    - sha256:0c4ebafacd5158912e120f906b377d437bd601226500a66ba8fd241b41cf45b1
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

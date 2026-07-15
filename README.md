@@ -20,7 +20,9 @@ repositories.
 > Latest published package: `agent-maintainer==0.1.0b6`, with immutable
 > [release evidence](docs/releases/0.1.0b6.md). See the
 > [upgrade guide](docs/upgrading-to-0.1.0b6.md) for package-index adoption and
-> rollback guidance.
+> rollback guidance. This checkout targets the unpublished `0.1.0b7` release
+> candidate; see its [candidate notes](docs/releases/0.1.0b7.md) and
+> [evaluation guide](docs/upgrading-to-0.1.0b7.md).
 
 Agent Maintainer helps coding agents make smaller, safer, more reviewable code
 changes. It wraps your existing quality tools in low-noise profiles, adds
@@ -379,7 +381,9 @@ Read more:
 [troubleshooting](docs/troubleshooting.md),
 [release index](docs/releases/README.md),
 [0.1.0b6 release evidence](docs/releases/0.1.0b6.md),
-[0.1.0b6 upgrade guide](docs/upgrading-to-0.1.0b6.md).
+[0.1.0b6 upgrade guide](docs/upgrading-to-0.1.0b6.md),
+[0.1.0b7 candidate notes](docs/releases/0.1.0b7.md),
+[0.1.0b7 evaluation guide](docs/upgrading-to-0.1.0b7.md).
 
 ## Configuration
 

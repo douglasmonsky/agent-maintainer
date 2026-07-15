@@ -20,10 +20,14 @@ allowed_paths = [
   "docs/architecture/subsystem-stability.md",
   "docs/architecture/decisions/**",
   "docs/compatibility-shims.md",
+  "docs/ROADMAP.md",
   "docs/release-checklist.md",
+  "docs/releases/0.1.0b7.md",
+  "docs/releases/README.md",
   "docs/superpowers/plans/2026-07-15-owner-hardening-and-ci-acceleration.md",
   "docs/superpowers/specs/2026-07-15-owner-hardening-and-ci-acceleration-design.md",
   "docs/test-intelligence.md",
+  "docs/upgrading-to-0.1.0b7.md",
   "pyproject.toml",
   "src/agent_maintainer/**",
   "src/agent_repair_facts/**",
@@ -64,14 +68,18 @@ review unit so CI and local execution semantics can be compared end to end.
 Only verification policy, doctor diagnostics, safe artifact cleanup, structured
 repair facts, contract tests, CI/release workflows, verifier grouping and
 aggregation, local hook profile behavior, stability documentation, and
-repository-owned compatibility facades proven unused.
+repository-owned compatibility facades proven unused. After explicit release
+authorization, the same review unit may carry the narrowly scoped 0.1.0b7
+candidate metadata, public candidate notes, and release-contract tests.
 
 ## What must not change
 
-Do not publish, change credentials or environments, weaken coverage or security
-thresholds, accept unverified cached binaries, replace the authoritative
-aggregate verification result, add compatibility shims, or delete a public
-facade without proving repository consumers have migrated.
+Do not publish before one exact clean `main` commit passes the required local,
+hosted, TestPyPI, and package-index gates. Do not change credentials or
+environments, weaken coverage or security thresholds, accept unverified cached
+binaries, replace the authoritative aggregate verification result, add
+compatibility shims, or delete a public facade without proving repository
+consumers have migrated.
 
 ## Verification plan
 
