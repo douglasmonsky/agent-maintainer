@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer.verify import fingerprint_inputs
 from agent_maintainer.verify.fingerprint_inputs import (
     CONFIG_FINGERPRINT_PATHS,
     environment_hash,
@@ -176,6 +177,32 @@ def test_environment_hash_tracks_tool_resolution_and_maintainer_overrides() -> N
     assert environment_hash(base) != environment_hash(
         {**base, "AGENT_MAINTAINER_ENABLE_PIP_AUDIT": "1"}
     )
+
+
+def test_build_fingerprint_normalizes_git_head(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Git's line terminator must not become part of the commit identity."""
+
+    monkeypatch.setattr(
+        fingerprint_inputs,
+        "git_output",
+        lambda *_args: "abc123\n",
+    )
+    monkeypatch.setattr(fingerprint_inputs, "git_hash", lambda *_args: "hash")
+    monkeypatch.setattr(fingerprint_inputs, "untracked_files_hash", lambda _root: "untracked")
+    monkeypatch.setattr(fingerprint_inputs, "files_hash", lambda *_args: "config")
+    monkeypatch.setattr(fingerprint_inputs, "environment_hash", lambda _env: "environment")
+
+    current = build_fingerprint(
+        repo_root=tmp_path,
+        profile="ci",
+        base_ref="origin/main",
+        compare_branch="origin/main",
+        staged=False,
+    )
+
+    assert current.head == "abc123"
 
 
 @pytest.mark.parametrize("changed_path", ("src/example.py", "tests/test_example.py"))

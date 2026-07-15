@@ -192,7 +192,7 @@ def build_fingerprint(
         base_ref=base_ref,
         compare_branch=compare_branch,
         staged=staged,
-        head=fingerprint_inputs.git_output(repo_root, "rev-parse", "HEAD"),
+        head=fingerprint_inputs.git_output(repo_root, "rev-parse", "HEAD").strip(),
         index_hash=fingerprint_inputs.git_hash(repo_root, "diff", "--cached", "--binary"),
         worktree_hash=fingerprint_inputs.git_hash(repo_root, "diff", "--binary"),
         untracked_hash=fingerprint_inputs.untracked_files_hash(repo_root),
