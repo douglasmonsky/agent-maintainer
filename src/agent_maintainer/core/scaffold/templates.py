@@ -50,8 +50,7 @@ PRE_COMMIT_CONFIG = textwrap.dedent(
             name: Agent Maintainer complete pre-push checks
             entry: >-
               env AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1
-              PYTHONDONTWRITEBYTECODE=1 python3 -m agent_maintainer
-              verify --profile precommit --base-ref HEAD
+              PYTHONDONTWRITEBYTECODE=1 python3 -m agent_maintainer.hooks.pre_push
             language: system
             pass_filenames: false
             stages: [pre-push]

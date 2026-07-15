@@ -139,9 +139,11 @@ source.
 Generated hook configuration keeps commits responsive by running the `fast`
 staged profile plus mapped affected Python tests at `pre-commit`. It preserves
 the complete local safety gate by running the `precommit` profile at
-`pre-push`. `agent-maintainer install` installs both Git hook types, and doctor
-reports either missing hook instead of treating a partial installation as
-healthy.
+`pre-push`. That hook uses the exact outgoing SHAs supplied by pre-commit and
+fails closed if the pushed local SHA is not the checked-out `HEAD`; invoke it
+through `git push` rather than a ref-less manual hook-stage run.
+`agent-maintainer install` installs both Git hook types, and doctor reports
+either missing hook instead of treating a partial installation as healthy.
 
 | Track | Best For | Writes |
 |---|---|---|

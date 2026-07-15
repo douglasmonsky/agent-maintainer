@@ -33,9 +33,9 @@ def assert_fast_commit_contract(hooks: dict[str, dict[str, object]]) -> None:
     assert fast["stages"] == ["pre-commit"]
     assert "test-intel run-changed --base-ref HEAD --staged" in affected_entry
     assert affected["stages"] == ["pre-commit"]
-    assert "verify --profile precommit --base-ref HEAD" in prepush_entry
+    assert "python3 -m agent_maintainer.hooks.pre_push" in prepush_entry
     assert "AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1" in prepush_entry
-    assert "--staged" not in prepush_entry
+    assert "--base-ref HEAD" not in prepush_entry
     assert prepush["stages"] == ["pre-push"]
     assert all(hook["pass_filenames"] is False for hook in hooks.values())
 

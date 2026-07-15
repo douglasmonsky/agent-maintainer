@@ -19,7 +19,17 @@ _ALLOWED_CHECK_STATUSES = frozenset(
         "warning",
     )
 )
-_SHARED_IDENTITY_KEYS = ("profile", "head", "base_ref", "compare_branch", "config_hash")
+_SHARED_IDENTITY_KEYS = (
+    "profile",
+    "head",
+    "base_ref",
+    "compare_branch",
+    "index_hash",
+    "worktree_hash",
+    "untracked_hash",
+    "config_hash",
+    "environment_hash",
+)
 _RUN_ID_DIGEST_LENGTH = 12
 REQUIRED_GROUPS = ("tests-and-coverage", "static-and-policy")
 Manifest = dict[str, Any]
@@ -110,7 +120,8 @@ def _validate_shared_state(manifests: Sequence[dict[str, Any]]) -> None:
 
 def _shared_identity(manifest: Mapping[str, Any]) -> tuple[object, ...]:
     identity = _mapping(_mapping(manifest, "partial"), "identity")
-    return tuple(_text(identity, key) for key in _SHARED_IDENTITY_KEYS)
+    text_identity = tuple(_text(identity, key) for key in _SHARED_IDENTITY_KEYS)
+    return (*text_identity, _boolean(identity, "staged"))
 
 
 def _validate_manifest_identity(manifest: Mapping[str, Any]) -> None:
@@ -120,6 +131,8 @@ def _validate_manifest_identity(manifest: Mapping[str, Any]) -> None:
             raise VerificationAggregateError("manifest identity mismatch")
     git = _mapping(manifest, "git")
     if git.get("sha") != _text(identity, "head"):
+        raise VerificationAggregateError("manifest identity mismatch")
+    if manifest.get("staged") != _boolean(identity, "staged"):
         raise VerificationAggregateError("manifest identity mismatch")
 
 
@@ -212,6 +225,13 @@ def _text(payload: Mapping[str, Any], key: str) -> str:
     value = payload.get(key)
     if not isinstance(value, str) or not value:
         raise VerificationAggregateError(f"{key} must be a non-empty string")
+    return value
+
+
+def _boolean(payload: Mapping[str, Any], key: str) -> bool:
+    value = payload.get(key)
+    if not isinstance(value, bool):
+        raise VerificationAggregateError(f"{key} must be a boolean")
     return value
 
 

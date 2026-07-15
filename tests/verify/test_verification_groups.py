@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import argparse
+
 import pytest
 
 from agent_maintainer.catalogs.catalog import make_checks
@@ -12,6 +14,7 @@ from agent_maintainer.verify.groups import (
     VerificationGroupError,
     checks_for_group,
 )
+from agent_maintainer.verify.partial_runs import partial_run_context
 
 
 def check(name: str) -> Check:
@@ -70,3 +73,32 @@ def test_current_ci_catalog_is_completely_partitioned() -> None:
     grouped = [item for group in GROUP_NAMES for item in checks_for_group(ci_checks, group)]
 
     assert sorted(item.name for item in grouped) == sorted(item.name for item in ci_checks)
+
+
+def test_partial_context_binds_complete_repository_state_identity() -> None:
+    """Every state field from the verifier fingerprint reaches partial evidence."""
+
+    fingerprint: dict[str, object] = {
+        "profile": "ci",
+        "head": "abc123",
+        "base_ref": "origin/main",
+        "compare_branch": "origin/main",
+        "staged": False,
+        "index_hash": "index-hash",
+        "worktree_hash": "worktree-hash",
+        "untracked_hash": "untracked-hash",
+        "config_hash": "config-hash",
+        "environment_hash": "environment-hash",
+    }
+
+    context = partial_run_context(
+        argparse.Namespace(group="tests-and-coverage"),
+        fingerprint,
+        [check("pytest-coverage")],
+    )
+
+    assert context is not None
+    assert context.identity == {
+        **fingerprint,
+        "selected_checks": ("pytest-coverage",),
+    }

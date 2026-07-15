@@ -46,7 +46,12 @@ def partial_manifest(group: str, check_name: str) -> dict[str, object]:
                 "head": "abc123",
                 "base_ref": "origin/main",
                 "compare_branch": "origin/main",
+                "staged": False,
+                "index_hash": "index-hash",
+                "worktree_hash": "worktree-hash",
+                "untracked_hash": "untracked-hash",
                 "config_hash": "config-hash",
+                "environment_hash": "environment-hash",
                 "selected_checks": [check_name],
             },
         },
@@ -124,6 +129,46 @@ def test_identity_mismatch_fails_closed(tmp_path: Path) -> None:
     write_manifest(static_path, static)
 
     with pytest.raises(VerificationAggregateError, match="identity mismatch"):
+        aggregate_partial_manifests([tests_path, static_path])
+
+
+@pytest.mark.parametrize(
+    ("key", "changed_value"),
+    (
+        ("staged", True),
+        ("index_hash", "changed-index"),
+        ("worktree_hash", "changed-worktree"),
+        ("untracked_hash", "changed-untracked"),
+        ("environment_hash", "changed-environment"),
+    ),
+)
+def test_repository_state_identity_mismatch_fails_closed(
+    tmp_path: Path,
+    key: str,
+    changed_value: object,
+) -> None:
+    """Partial runs from different exact repository states cannot combine."""
+
+    tests_path, static_path = valid_paths(tmp_path)
+    static = json.loads(static_path.read_text(encoding="utf-8"))
+    static["partial"]["identity"][key] = changed_value
+    if key == "staged":
+        static["staged"] = changed_value
+    write_manifest(static_path, static)
+
+    with pytest.raises(VerificationAggregateError, match="partial identity mismatch"):
+        aggregate_partial_manifests([tests_path, static_path])
+
+
+def test_top_level_staged_state_must_match_partial_identity(tmp_path: Path) -> None:
+    """A manifest cannot contradict the staged mode bound into its identity."""
+
+    tests_path, static_path = valid_paths(tmp_path)
+    static = json.loads(static_path.read_text(encoding="utf-8"))
+    static["staged"] = True
+    write_manifest(static_path, static)
+
+    with pytest.raises(VerificationAggregateError, match="manifest identity mismatch"):
         aggregate_partial_manifests([tests_path, static_path])
 
 

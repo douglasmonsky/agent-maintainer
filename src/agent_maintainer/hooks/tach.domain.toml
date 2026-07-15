@@ -76,6 +76,13 @@ depends_on = [
 ]
 
 [[modules]]
+path = "pre_push"
+depends_on = [
+  "//agent_maintainer.verify.fingerprint_inputs",
+  "//agent_maintainer.verify.quiet",
+]
+
+[[modules]]
 path = "readiness"
 depends_on = [
   "//agent_maintainer.core.structured_values",

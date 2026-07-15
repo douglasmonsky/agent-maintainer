@@ -58,7 +58,12 @@ def partial_run_context(
         "head": fingerprint["head"],
         "base_ref": fingerprint["base_ref"],
         "compare_branch": fingerprint["compare_branch"],
+        "staged": fingerprint["staged"],
+        "index_hash": fingerprint["index_hash"],
+        "worktree_hash": fingerprint["worktree_hash"],
+        "untracked_hash": fingerprint["untracked_hash"],
         "config_hash": fingerprint["config_hash"],
+        "environment_hash": fingerprint["environment_hash"],
         "selected_checks": tuple(check.name for check in selected_checks),
     }
     return PartialRunContext(group=group, required_groups=GROUP_NAMES, identity=identity)

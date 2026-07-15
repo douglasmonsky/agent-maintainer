@@ -58,6 +58,8 @@ test changed, and it deliberately omits coverage collection. Generated
 pre-commit configuration pairs this focused command with the staged `fast`
 profile; the complete coverage, type, architecture, and documentation checks
 remain a required `pre-push` `precommit` profile.
+The pre-push adapter compares the exact remote and local SHAs supplied by
+pre-commit instead of comparing the completed commit to `HEAD`.
 
 ## Hypothesis Candidate Guidance
 

@@ -22,8 +22,7 @@ repos:
         name: Agent Maintainer complete pre-push checks
         entry: >-
           env AGENT_MAINTAINER_ALLOW_FOREGROUND_WAIT=1 PYTHONDONTWRITEBYTECODE=1
-          PYTHONPATH=src python3 -m agent_maintainer verify
-          --profile precommit --base-ref HEAD
+          PYTHONPATH=src python3 -m agent_maintainer.hooks.pre_push
         language: system
         pass_filenames: false
         stages: [pre-push]
