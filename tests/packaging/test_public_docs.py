@@ -128,7 +128,6 @@ def test_public_docs_define_pre_one_api_support() -> None:
         "Context extraction",
         "Hook extraction",
         "Repair-fact extraction",
-        "Run-artifact extraction",
         "Wait extraction",
     ):
         assert group in inventory

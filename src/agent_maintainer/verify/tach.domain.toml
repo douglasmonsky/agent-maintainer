@@ -27,12 +27,6 @@ depends_on = [
 ]
 
 [[modules]]
-path = "artifact_manifest"
-depends_on = [
-"//agent_run_artifacts.artifact_manifest",
-]
-
-[[modules]]
 path = "async_jobs"
 depends_on = [
   "async_state",
@@ -58,12 +52,6 @@ depends_on = [
 ]
 
 [[modules]]
-path = "git_state"
-depends_on = [
-  "//agent_run_artifacts.git_state",
-]
-
-[[modules]]
 path = "git_refs"
 depends_on = []
 
@@ -72,18 +60,6 @@ path = "groups"
 depends_on = [
   "//agent_maintainer.models",
   "//agent_run_artifacts.verification_aggregate",
-]
-
-[[modules]]
-path = "history"
-depends_on = [
-"//agent_run_artifacts.history",
-]
-
-[[modules]]
-path = "pr_summary"
-depends_on = [
-"//agent_run_artifacts.pr_summary",
 ]
 
 [[modules]]
@@ -102,12 +78,6 @@ depends_on = [
   "//agent_run_artifacts.verification_aggregate",
   "artifact_adapters",
   "groups",
-]
-
-[[modules]]
-path = "pr_summary_support"
-depends_on = [
-  "//agent_run_artifacts.pr_summary_support",
 ]
 
 [[modules]]
@@ -163,10 +133,4 @@ depends_on = [
   "artifact_adapters",
   "artifacts",
   "git_refs",
-]
-
-[[modules]]
-path = "timing"
-depends_on = [
-"//agent_run_artifacts.timing",
 ]

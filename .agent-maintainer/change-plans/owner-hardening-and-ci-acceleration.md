@@ -18,6 +18,7 @@ allowed_paths = [
   "config/**",
   "docs/architecture/subsystem-stability.md",
   "docs/architecture/decisions/**",
+  "docs/compatibility-shims.md",
   "docs/release-checklist.md",
   "docs/superpowers/plans/2026-07-15-owner-hardening-and-ci-acceleration.md",
   "docs/superpowers/specs/2026-07-15-owner-hardening-and-ci-acceleration-design.md",
