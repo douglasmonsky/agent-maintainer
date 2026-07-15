@@ -97,10 +97,14 @@ def test_pre_push_refuses_non_head_local_ref_without_invoking_verifier(
     """A pushed SHA other than checked-out HEAD must fail closed."""
 
     pre_push = importlib.import_module("agent_maintainer.hooks.pre_push")
+
+    def git_head(_repo_root: Path, *_args: str) -> str:
+        return "checked-out-head\n"
+
     monkeypatch.setattr(
         pre_push.fingerprint_inputs,
         "git_output",
-        lambda *_args: "checked-out-head\n",
+        git_head,
     )
 
     def fail_verify(_argv: list[str]) -> int:
