@@ -25,7 +25,7 @@ CLAUDE_SETTINGS_MARKERS = (
 )
 CANONICAL_COMMAND_EXPECTATIONS = (
     (".github/workflows/verify.yml", "python3 -m agent_maintainer verify"),
-    (".pre-commit-config.yaml", "python3 -m agent_maintainer verify --profile precommit"),
+    (".pre-commit-config.yaml", "python3 -m agent_maintainer.hooks.pre_push"),
     (".codex/hooks/post_edit_fast_gate.py", "agent_maintainer"),
     (".codex/hooks/stop_full_verify.py", "agent_maintainer"),
     (".claude/settings.json", ".claude/hooks"),

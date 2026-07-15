@@ -57,7 +57,7 @@ def test_canonical_commands_warn_for_missing_files(tmp_path: Path) -> None:
 def test_canonical_commands_pass_when_all_files_use_module_entrypoint(tmp_path: Path) -> None:
     files = {
         ".github/workflows/verify.yml": "python3 -m agent_maintainer verify\n",
-        ".pre-commit-config.yaml": "python3 -m agent_maintainer verify --profile precommit\n",
+        ".pre-commit-config.yaml": "python3 -m agent_maintainer.hooks.pre_push\n",
         ".codex/hooks/post_edit_fast_gate.py": "agent_maintainer\n",
         ".codex/hooks/stop_full_verify.py": "agent_maintainer\n",
         ".claude/settings.json": ".claude/hooks/post_tool_use.py\n",
@@ -78,11 +78,7 @@ def test_canonical_commands_pass_when_all_files_use_module_entrypoint(tmp_path: 
 def test_canonical_commands_pass_folded_yaml_entry(tmp_path: Path) -> None:
     files = {
         ".github/workflows/verify.yml": "python3 -m agent_maintainer verify\n",
-        ".pre-commit-config.yaml": (
-            "entry: >-\n"
-            "  python3 -m agent_maintainer verify\n"
-            "  --profile precommit --base-ref HEAD\n"
-        ),
+        ".pre-commit-config.yaml": ("entry: >-\n  python3 -m\n  agent_maintainer.hooks.pre_push\n"),
         ".codex/hooks/post_edit_fast_gate.py": "agent_maintainer\n",
         ".codex/hooks/stop_full_verify.py": "agent_maintainer\n",
         ".claude/settings.json": ".claude/hooks/post_tool_use.py\n",
