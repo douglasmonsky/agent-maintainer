@@ -7,10 +7,13 @@ import subprocess
 import tomllib
 from pathlib import Path
 
+from agent_maintainer.cli import command_handlers
+
 README = Path("README.md")
 API_SUPPORT_POLICY = Path("docs/api-support-policy.md")
 COMPATIBILITY_SHIMS = Path("docs/compatibility-shims.md")
 RELEASE_INDEX = Path("docs/releases/README.md")
+SUBSYSTEM_STABILITY = Path("docs/architecture/subsystem-stability.md")
 MIN_READ_MORE_LINKS = 8
 LATEST_PUBLISHED_LABEL = "Latest published release"
 
@@ -26,6 +29,26 @@ REQUIRED_README_LINKS = (
     "docs/technical-debt-score.md",
     "docs/release-checklist.md",
 )
+
+
+def test_subsystem_stability_labels_every_public_command_once() -> None:
+    """Stability metadata must cover the complete public command registry."""
+
+    text = SUBSYSTEM_STABILITY.read_text(encoding="utf-8")
+    rows = re.findall(
+        r"^\| `([^`]+)` \| `(core|optional|experimental)` \|",
+        text,
+        flags=re.MULTILINE,
+    )
+    labels = dict(rows)
+    expected = {f"agent-maintainer {command}" for command in command_handlers()}
+    expected.update({"archguard", "docsync"})
+
+    assert len(labels) == len(rows)
+    assert set(labels) == expected
+    assert "docs/architecture/subsystem-stability.md" in README.read_text(
+        encoding="utf-8",
+    )
 
 
 def _project_version() -> str:

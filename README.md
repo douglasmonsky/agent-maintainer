@@ -553,6 +553,7 @@ Read more:
 - [Support](SUPPORT.md)
 - [Contributing](CONTRIBUTING.md)
 - [Pre-1.0 API support](docs/api-support-policy.md)
+- [Subsystem stability](docs/architecture/subsystem-stability.md)
 - [Context compression](docs/context-compression.md)
 - [Cohesive change plans](docs/cohesive-change-plans.md)
 - [Roadmap blueprint index](docs/roadmap/full-roadmap-blueprint.md)
