@@ -88,3 +88,31 @@ def test_pre_push_requires_exact_refs_without_invoking_verifier(
 
     assert pre_push.run_pre_push({}, verifier=fail_verify) == pre_push.USAGE_ERROR_STATUS
     assert "requires PRE_COMMIT_FROM_REF" in capsys.readouterr().err
+
+
+def test_pre_push_refuses_non_head_local_ref_without_invoking_verifier(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A pushed SHA other than checked-out HEAD must fail closed."""
+
+    pre_push = importlib.import_module("agent_maintainer.hooks.pre_push")
+    monkeypatch.setattr(
+        pre_push.fingerprint_inputs,
+        "git_output",
+        lambda *_args: "checked-out-head\n",
+    )
+
+    def fail_verify(_argv: list[str]) -> int:
+        pytest.fail("verifier must not run for a non-HEAD local ref")
+
+    status = pre_push.run_pre_push(
+        {
+            "PRE_COMMIT_FROM_REF": "remote-sha",
+            "PRE_COMMIT_TO_REF": "other-local-sha",
+        },
+        verifier=fail_verify,
+    )
+
+    assert status == pre_push.USAGE_ERROR_STATUS
+    assert "expected other-local-sha, found checked-out-head" in capsys.readouterr().err

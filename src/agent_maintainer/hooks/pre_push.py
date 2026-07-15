@@ -39,8 +39,7 @@ def run_pre_push(
         return USAGE_ERROR_STATUS
     if head != to_ref:
         print(
-            "pre-push verification refuses a non-HEAD local ref; "
-            f"expected {to_ref}, found {head}",
+            f"pre-push verification refuses a non-HEAD local ref; expected {to_ref}, found {head}",
             file=sys.stderr,
         )
         return USAGE_ERROR_STATUS
