@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## Unreleased (target: 0.1.0b7)
+
+`0.1.0b7` is an unpublished release candidate. `0.1.0b6` remains the latest
+published package and its immutable release-evidence record remains
+authoritative until this candidate passes the complete exact-commit release
+matrix and package-index smokes.
 
 - Owner verification now reports configuration drift consistently, diagnoses
   linked-worktree hook and artifact health, and exercises real agent-client

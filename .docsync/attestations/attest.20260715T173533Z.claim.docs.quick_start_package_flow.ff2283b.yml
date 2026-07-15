@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260715T173533Z.claim.docs.quick_start_package_flow.ff2283b
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.package_metadata
+  reason: The standalone quick start intentionally keeps the latest published 0.1.0b6
+    install path during 0.1.0b7 qualification.
+  reviewer: agent
+  reviewed_at: '2026-07-15T17:35:33Z'
+  base: HEAD
+  head: ff2283b
+  evidence_fingerprints:
+    evidence.readme.package_metadata: sha256:bccae775e1196e396b7976e4cc88b24fdf25e5db32b812372edcb02c9af8796d
+  evidence_anchor_fingerprints:
+    evidence.readme.package_metadata:
+    - sha256:aeb3ae004f7aaf89ad6752d0dc517298010c31b3cc424d8fe247b3254ea63301
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

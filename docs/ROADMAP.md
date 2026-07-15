@@ -48,6 +48,17 @@ Current external release state:
       package indexes. Release evidence is recorded in
       [`docs/releases/0.1.0b6.md`](releases/0.1.0b6.md).
 
+Current source candidate state:
+
+- [x] The unpublished `0.1.0b7` release candidate is the package-metadata and
+      main-branch documentation target. Review the
+      [candidate notes](releases/0.1.0b7.md) and
+      [evaluation guide](upgrading-to-0.1.0b7.md).
+- [ ] `0.1.0b7` becomes the current external release only after the exact
+      candidate commit passes the complete release matrix, TestPyPI and PyPI
+      smokes pass, and publication evidence replaces candidate intent in the
+      [release index](releases/README.md).
+
 Current pre-case-study decision:
 
 - [x] Pre-case-study hardening complete; measured proof work promoted to
