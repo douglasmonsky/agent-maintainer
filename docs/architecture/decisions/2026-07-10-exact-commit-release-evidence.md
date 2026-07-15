@@ -14,9 +14,11 @@ for the source being published.
 
 ## Decision
 
-The publish workflow owns a dedicated release-evidence job. It runs the full,
-CI, security, manual, and release profiles from one checkout, then aggregates
-their verifier-compatible manifests into one self-contained JSON document.
+The publish workflow owns five independent release-profile matrix jobs for the
+full, CI, security, manual, and release profiles. Each clean checkout uploads
+one verifier-compatible manifest for the workflow commit. A dedicated
+release-evidence job downloads all five artifacts and aggregates them into one
+self-contained JSON document.
 
 The aggregate is eligible only when:
 
@@ -28,8 +30,10 @@ The aggregate is eligible only when:
 - the embedded canonical manifest matches its recorded SHA-256; and
 - the aggregate commit matches the clean checkout consuming it.
 
-The oldest profile controls aggregate expiry. Build, GitHub-release attachment,
-TestPyPI, and PyPI jobs download the upstream aggregate and validate it again
+The oldest profile controls aggregate expiry. Distribution construction runs
+in parallel with profile verification because it cannot publish or attach
+artifacts. GitHub-release attachment, TestPyPI, and PyPI jobs require both the
+aggregate and the verified distribution bundle, then validate both immediately
 before acting. They do not reconstruct profile evidence locally.
 
 Release-only packaging checks are recorded through
@@ -38,8 +42,10 @@ their actual terminal exit code participates in the same profile contract.
 
 ## Consequences
 
-- Publish runs are intentionally heavier because all release-blocking profiles
-  execute hermetically for the exact workflow commit.
+- Publish runs use more concurrent runners, but the release-blocking profiles
+  no longer serialize their wall-clock time.
+- Release workflows intentionally avoid dependency and tool-download caches so
+  less-trusted workflow runs cannot poison publication inputs.
 - Partial, duplicate, dirty, stale, malformed, failed, reordered, wrong-commit,
   and digest-mismatched evidence fails closed.
 - Local profile runs remain useful preflight evidence but cannot authorize a

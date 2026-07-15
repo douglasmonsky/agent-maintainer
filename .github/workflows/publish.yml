@@ -22,9 +22,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release-evidence:
-    name: verify exact-commit release evidence
+  release-profile-evidence:
+    name: verify release profile (${{ matrix.profile }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [full, ci, security, manual, release]
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONPATH: src
@@ -41,6 +45,7 @@ jobs:
           python-version: "3.13"
 
       - name: Set up Node
+        if: matrix.profile != 'release'
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "22"
@@ -57,12 +62,76 @@ jobs:
           python -m pip install -e .
 
       - name: Install Node dependencies
+        if: matrix.profile != 'release'
         run: npm ci
 
       - name: Install external Agent Maintainer tools
+        if: matrix.profile != 'release'
         uses: ./.github/actions/install-agent-maintainer-tools
         with:
           use-cache: "false"
+
+      - name: Prepare evidence directory
+        run: |
+          echo "PROFILE_DIR=$RUNNER_TEMP/release-evidence/profiles" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/release-evidence/profiles"
+
+      - name: Verify full profile
+        if: matrix.profile == 'full'
+        run: |
+          python -m agent_maintainer verify --profile full
+          cp .verify-logs/manifest.json "$PROFILE_DIR/full.json"
+
+      - name: Verify CI profile
+        if: matrix.profile == 'ci'
+        run: |
+          python -m agent_maintainer verify --profile ci --base-ref HEAD --compare-branch HEAD
+          cp .verify-logs/manifest.json "$PROFILE_DIR/ci.json"
+
+      - name: Verify security profile
+        if: matrix.profile == 'security'
+        run: |
+          python -m agent_maintainer verify --profile security
+          cp .verify-logs/manifest.json "$PROFILE_DIR/security.json"
+
+      - name: Verify manual profile
+        if: matrix.profile == 'manual'
+        run: |
+          python -m agent_maintainer verify --profile manual
+          cp .verify-logs/manifest.json "$PROFILE_DIR/manual.json"
+
+      - name: Verify release profile
+        if: matrix.profile == 'release'
+        run: |
+          python -m agent_maintainer.release_evidence record \
+            --output "$PROFILE_DIR/release.json" \
+            -- just release-check
+
+      - name: Upload release profile evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-profile-${{ github.sha }}-${{ matrix.profile }}
+          path: ${{ runner.temp }}/release-evidence/profiles/${{ matrix.profile }}.json
+          if-no-files-found: error
+          retention-days: 7
+
+  release-evidence:
+    name: aggregate exact-commit release evidence
+    needs: release-profile-evidence
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPATH: src
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
 
       - name: Prepare evidence directory
         run: |
@@ -70,31 +139,12 @@ jobs:
           echo "PROFILE_DIR=$RUNNER_TEMP/release-evidence/profiles" >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/release-evidence/profiles"
 
-      - name: Verify full profile
-        run: |
-          python -m agent_maintainer verify --profile full
-          cp .verify-logs/manifest.json "$PROFILE_DIR/full.json"
-
-      - name: Verify CI profile
-        run: |
-          python -m agent_maintainer verify --profile ci --base-ref HEAD --compare-branch HEAD
-          cp .verify-logs/manifest.json "$PROFILE_DIR/ci.json"
-
-      - name: Verify security profile
-        run: |
-          python -m agent_maintainer verify --profile security
-          cp .verify-logs/manifest.json "$PROFILE_DIR/security.json"
-
-      - name: Verify manual profile
-        run: |
-          python -m agent_maintainer verify --profile manual
-          cp .verify-logs/manifest.json "$PROFILE_DIR/manual.json"
-
-      - name: Verify release profile
-        run: |
-          python -m agent_maintainer.release_evidence record \
-            --output "$PROFILE_DIR/release.json" \
-            -- just release-check
+      - name: Download release profile evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: release-profile-${{ github.sha }}-*
+          path: ${{ runner.temp }}/release-evidence/profiles
+          merge-multiple: true
 
       - name: Aggregate exact-commit release evidence
         env:
@@ -119,7 +169,6 @@ jobs:
 
   build:
     name: build distributions
-    needs: release-evidence
     runs-on: ubuntu-latest
     outputs:
       distribution_manifest_sha256: ${{ steps.distribution_bundle.outputs.manifest_sha256 }}
@@ -136,20 +185,6 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
-
-      - name: Download exact-commit release evidence
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: release-evidence-${{ github.sha }}
-          path: ${{ runner.temp }}/release-evidence
-
-      - name: Validate exact-commit release evidence
-        env:
-          EXPECTED_SHA: ${{ github.sha }}
-        run: |
-          python -m agent_maintainer.release_evidence validate \
-            --expected-sha "$EXPECTED_SHA" \
-            --manifest "$RUNNER_TEMP/release-evidence/release-evidence.json"
 
       - name: Install release dependencies
         run: |
