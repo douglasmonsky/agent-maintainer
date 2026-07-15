@@ -18,6 +18,7 @@ INSTALL_TOOLS_ACTION = (
 ACTION_SOURCES = (*WORKFLOWS, INSTALL_TOOLS_ACTION)
 FULL_SHA = re.compile(r"[0-9a-f]{40}\Z")
 PINNED_EXTERNAL_TOOL_COUNT = 2
+VERIFY_HIDDEN_UPLOAD_COUNT = 3
 ACTION_PINS = {
     "actions/cache": ("55cc8345863c7cc4c66a329aec7e433d2d1c52a9", "v6.1.0"),
     "actions/checkout": ("9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", "v7"),
@@ -48,6 +49,16 @@ def test_verify_workflow_disables_python_bytecode_writes() -> None:
     workflow = VERIFY_WORKFLOW.read_text(encoding="utf-8")
 
     assert 'PYTHONDONTWRITEBYTECODE: "1"' in workflow
+
+
+def test_verification_uploads_include_allowlisted_hidden_logs() -> None:
+    """Artifact v7 must not silently omit explicitly selected dot-directory logs."""
+
+    verify = VERIFY_WORKFLOW.read_text(encoding="utf-8")
+    deep_verify = DEEP_VERIFY_WORKFLOW.read_text(encoding="utf-8")
+
+    assert verify.count("include-hidden-files: true") == VERIFY_HIDDEN_UPLOAD_COUNT
+    assert deep_verify.count("include-hidden-files: true") == 1
 
 
 def test_python_compatibility_matrix_smokes_built_distributions() -> None:

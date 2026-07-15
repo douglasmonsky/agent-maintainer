@@ -85,4 +85,5 @@ jobs:
             .verify-logs/*.log
             .verify-logs/*.json
             !.verify-logs/context/**
+          include-hidden-files: true
           if-no-files-found: ignore

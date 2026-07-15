@@ -39,6 +39,8 @@ def test_verify_workflow_runs_verifier_owned_groups_in_parallel() -> None:
     assert "Install external Agent Maintainer tools" in static_job
     assert "name: verify-tests-and-coverage-${{ github.sha }}" in tests_job
     assert "name: verify-static-and-policy-${{ github.sha }}" in static_job
+    assert tests_job.count("include-hidden-files: true") == 1
+    assert static_job.count("include-hidden-files: true") == 1
 
 
 def test_verify_aggregate_job_preserves_protected_job_name_and_fails_closed() -> None:
@@ -56,6 +58,7 @@ def test_verify_aggregate_job_preserves_protected_job_name_and_fails_closed() ->
     assert "--aggregate-partial partials/static-and-policy/manifest.json" in aggregate_job
     assert "--aggregate-output .verify-logs/manifest.json" in aggregate_job
     assert "name: verify-logs" in aggregate_job
+    assert aggregate_job.count("include-hidden-files: true") == 1
 
 
 def test_python_compatibility_matrix_remains_independent() -> None:

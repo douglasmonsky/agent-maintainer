@@ -119,6 +119,7 @@ jobs:
             .verify-logs/*.log
             .verify-logs/*.json
             !.verify-logs/context/**
+          include-hidden-files: true
           if-no-files-found: ignore
 
   static-and-policy:
@@ -192,6 +193,7 @@ jobs:
             .verify-logs/*.log
             .verify-logs/*.json
             !.verify-logs/context/**
+          include-hidden-files: true
           if-no-files-found: ignore
 
   verify:
@@ -259,4 +261,5 @@ jobs:
             partials/**/*.log
             partials/**/*.json
             !partials/**/context/**
+          include-hidden-files: true
           if-no-files-found: ignore
