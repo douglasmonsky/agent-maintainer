@@ -61,11 +61,72 @@ jobs:
             -q
           python -m pytest -m artifact_smoke tests/release/test_release_packaging.py -q
 
-  verify:
-    name: verify
+  tests-and-coverage:
+    name: tests and coverage
     runs-on: ubuntu-latest
     env:
       PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPATH: src
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            config/dev-lock.txt
+            pyproject.toml
+
+      - name: Install Agent Maintainer dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f config/dev-lock.txt ]; then
+            python -m pip install -r config/dev-lock.txt
+          else
+            python -m pip install -r config/dev-dependencies.txt
+          fi
+
+      - name: Verify tests and coverage
+        run: |
+          BASE_REF="origin/${GITHUB_BASE_REF:-main}"
+          python3 -m agent_maintainer verify --profile ci \
+            --group tests-and-coverage \
+            --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
+
+      - name: Append verification summary
+        if: always()
+        run: |
+          if [ -f .verify-logs/pr-summary.md ]; then
+            cat .verify-logs/pr-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload safe verification logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: verify-tests-and-coverage-${{ github.sha }}
+          path: |
+            .verify-logs/manifest.json
+            .verify-logs/LAST_FAILURE.md
+            .verify-logs/pr-summary.md
+            .verify-logs/*.log
+            .verify-logs/*.json
+            !.verify-logs/context/**
+          if-no-files-found: ignore
+
+  static-and-policy:
+    name: static analysis and policy
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPATH: src
 
     steps:
       - name: Checkout
@@ -105,30 +166,11 @@ jobs:
       - name: Install external Agent Maintainer tools
         uses: ./.github/actions/install-agent-maintainer-tools
 
-      - name: Install project package if metadata exists
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import subprocess
-          import sys
-          import tomllib
-
-          has_metadata = Path("setup.py").exists() or Path("setup.cfg").exists()
-          if Path("pyproject.toml").exists():
-              with Path("pyproject.toml").open("rb") as handle:
-                  data = tomllib.load(handle)
-              has_metadata = has_metadata or "project" in data or "build-system" in data
-
-          if has_metadata:
-              subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "."])
-          else:
-              print("No installable package metadata found; skipping editable install.")
-          PY
-
-      - name: Verify quietly
+      - name: Verify static analysis and policy
         run: |
           BASE_REF="origin/${GITHUB_BASE_REF:-main}"
           python3 -m agent_maintainer verify --profile ci \
+            --group static-and-policy \
             --base-ref "$BASE_REF" --compare-branch "$BASE_REF"
 
       - name: Append verification summary
@@ -142,7 +184,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: verify-logs
+          name: verify-static-and-policy-${{ github.sha }}
           path: |
             .verify-logs/manifest.json
             .verify-logs/LAST_FAILURE.md
@@ -150,4 +192,71 @@ jobs:
             .verify-logs/*.log
             .verify-logs/*.json
             !.verify-logs/context/**
+          if-no-files-found: ignore
+
+  verify:
+    name: verify
+    needs: [tests-and-coverage, static-and-policy]
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPATH: src
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+
+      - name: Install aggregate dependencies
+        run: python -m pip install -e .
+
+      - name: Download tests and coverage evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: verify-tests-and-coverage-${{ github.sha }}
+          path: partials/tests-and-coverage
+
+      - name: Download static analysis and policy evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: verify-static-and-policy-${{ github.sha }}
+          path: partials/static-and-policy
+
+      - name: Aggregate exact-run verification evidence
+        run: |
+          python -m agent_maintainer verify \
+            --aggregate-partial partials/tests-and-coverage/manifest.json \
+            --aggregate-partial partials/static-and-policy/manifest.json \
+            --aggregate-output .verify-logs/manifest.json
+
+      - name: Append partial verification summaries
+        if: always()
+        run: |
+          for summary in partials/*/pr-summary.md; do
+            if [ -f "$summary" ]; then
+              cat "$summary" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+
+      - name: Upload safe verification logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: verify-logs
+          path: |
+            .verify-logs/manifest.json
+            partials/**/*.md
+            partials/**/*.log
+            partials/**/*.json
+            !partials/**/context/**
           if-no-files-found: ignore
