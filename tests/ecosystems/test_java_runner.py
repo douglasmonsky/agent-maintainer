@@ -116,7 +116,7 @@ def test_main_invokes_subprocess_without_shell(
 
     def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         observed.update(command=command, **kwargs)
-        return subprocess.CompletedProcess(command, 0)
+        return subprocess.CompletedProcess(command, 0, stdout="> Task :test\n")
 
     monkeypatch.setattr(runner.subprocess, "run", fake_run)
     monkeypatch.chdir(repo)

@@ -26,6 +26,9 @@ provider registry or verifier catalog.
   validation and rendering of Spotless `ratchetFrom` in provider-owned build
   fragments. Setup and verification share it so neither can silently fetch or
   fall back to formatting an entire repository.
+- `agent_maintainer.ecosystems.java.observations` owns requested-task outcome
+  parsing and repository-confined pre-run report digests. Runner artifacts carry
+  that immutable evidence for later report validation and baseline decisions.
 - Java defaults and bundled templates remain Java-owned and are package data.
 - Later observation and bounded report modules may depend on the checked wrapper
   and Java configuration, but normal verification remains command-only.

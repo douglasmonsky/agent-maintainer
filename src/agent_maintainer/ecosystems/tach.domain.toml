@@ -75,6 +75,13 @@ path = "java.errors"
 depends_on = []
 
 [[modules]]
+path = "java.observations"
+depends_on = [
+  "java.errors",
+  "//agent_maintainer.config.java",
+]
+
+[[modules]]
 path = "java.provider"
 depends_on = [
   "java.errors",
@@ -89,6 +96,7 @@ depends_on = [
   "//agent_maintainer.core.artifact_environment",
   "java.artifacts",
   "java.errors",
+  "java.observations",
   "java.provider",
   "java.ratchets",
   "java.wrapper",

@@ -14,7 +14,7 @@ from pathlib import Path
 
 from agent_maintainer.config import loader
 from agent_maintainer.core import artifact_environment
-from agent_maintainer.ecosystems.java import artifacts, errors, provider, wrapper
+from agent_maintainer.ecosystems.java import artifacts, errors, observations, provider, wrapper
 from agent_maintainer.ecosystems.java.ratchets import validate_spotless_ratchet_ref
 
 
@@ -59,11 +59,22 @@ def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> RunO
         config.java.spotless_tasks,
         config.java.spotless_ratchet_ref,
     )
-    exit_code = _run_wrapper(
+    pre_run_reports = observations.snapshot_reports(
+        resolved_wrapper.gradle_root,
+        config.java.reports,
+        tasks,
+    )
+    completed = _run_wrapper(
         resolved_wrapper.executable,
         resolved_wrapper.gradle_root,
         config.java.gradle_args,
         tasks,
+    )
+    observation = observations.build_gradle_observation(
+        tasks,
+        completed.stdout,
+        completed.returncode,
+        pre_run_reports,
     )
     payload = artifacts.base_payload(group, profile)
     payload.update(
@@ -72,13 +83,14 @@ def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> RunO
             wrapper=resolved_wrapper,
             gradle_args=config.java.gradle_args,
             tasks=tasks,
-            exit_code=exit_code,
+            exit_code=completed.returncode,
         )
     )
+    payload["observation"] = observation.to_payload()
     return RunOutcome(
         artifacts.artifact_path(workspace, group, fallback_dir=config.diagnostic_artifacts_dir),
         payload,
-        exit_code,
+        completed.returncode,
     )
 
 
@@ -120,7 +132,7 @@ def _run_wrapper(
     gradle_root: Path,
     gradle_args: tuple[str, ...],
     tasks: tuple[str, ...],
-) -> int:
+) -> subprocess.CompletedProcess[str]:
     command = [os.fspath(executable), *gradle_args, *tasks]
     # Security: executable confinement and argv validation happen before this call.
     completed = subprocess.run(  # nosec B603
@@ -128,8 +140,13 @@ def _run_wrapper(
         cwd=gradle_root,
         shell=False,
         check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
     )
-    return completed.returncode
+    if completed.stdout:
+        print(completed.stdout, end="")
+    return completed
 
 
 def _configuration_error_outcome(

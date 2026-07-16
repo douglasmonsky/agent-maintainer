@@ -164,7 +164,12 @@ def configure_runner(
         )
     )
     resolved = runner.wrapper.ResolvedGradleWrapper(repo, repo, repo / "gradlew")
-    run_wrapper = Mock(return_value=0)
+    completed = runner.subprocess.CompletedProcess(
+        args=(),
+        returncode=0,
+        stdout=f"> Task :{task}\n",
+    )
+    run_wrapper = Mock(return_value=completed)
     monkeypatch.setattr(runner, "_load_java_config", lambda _workspace: config)
     monkeypatch.setattr(runner.wrapper, "resolve_gradle_wrapper", lambda *_args: resolved)
     monkeypatch.setattr(runner, "_run_wrapper", run_wrapper)
