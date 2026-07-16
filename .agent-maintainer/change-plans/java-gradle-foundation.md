@@ -1,7 +1,7 @@
 +++
 id = "java-gradle-foundation"
 kind = "feature"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-08-16
 allowed_paths = [
