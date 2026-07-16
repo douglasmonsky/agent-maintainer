@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Agent Maintainer Java rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+  <description>Non-format Java correctness, design, performance, and complexity rules.</description>
+  <rule ref="category/java/errorprone.xml"/>
+  <rule ref="category/java/bestpractices.xml"/>
+  <rule ref="category/java/performance.xml"/>
+  <rule ref="category/java/design.xml/CyclomaticComplexity">
+    <properties><property name="methodReportLevel"><value>@CYCLOMATIC_COMPLEXITY@</value></property></properties>
+  </rule>
+  <rule ref="category/java/design.xml/CognitiveComplexity">
+    <properties><property name="reportLevel"><value>@COGNITIVE_COMPLEXITY@</value></property></properties>
+  </rule>
+  <rule ref="category/java/design.xml/NPathComplexity">
+    <properties><property name="reportLevel"><value>@NPATH_COMPLEXITY@</value></property></properties>
+  </rule>
+  <rule ref="category/java/design.xml/ExcessiveClassLength">
+    <properties><property name="minimum"><value>@MAX_PHYSICAL_LINES@</value></property></properties>
+  </rule>
+</ruleset>

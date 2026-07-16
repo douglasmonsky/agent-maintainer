@@ -152,6 +152,11 @@ where = ["src"]
   "resources/agent-maintainer-setup/SKILL.md",
   "resources/agent-maintainer-setup/agents/openai.yaml",
 ]
+"agent_maintainer.ecosystems.java.templates" = [
+  "*.gradle",
+  "*.gradle.kts",
+  "*.xml",
+]
 
 [tool.agent_maintainer]
 mode = "fresh-strict"

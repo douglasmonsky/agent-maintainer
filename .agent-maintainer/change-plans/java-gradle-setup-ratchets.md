@@ -15,6 +15,7 @@ allowed_paths = [
   "docs/roadmap/overview.md",
   "docs/roadmap/polyglot-ecosystem-providers.md",
   "docs/setup-advisor.md",
+  "pyproject.toml",
   "src/agent_maintainer/assess/evidence.py",
   "src/agent_maintainer/assess/models.py",
   "src/agent_maintainer/assess/setup_advisor.py",
@@ -40,7 +41,7 @@ allowed_paths = [
   "tests/skill/test_interaction_contract.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 45
+max_changed_files = 46
 max_changed_lines = 6000
 allow_source_without_test_change = false
 requires_tests = true

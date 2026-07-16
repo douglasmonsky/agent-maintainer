@@ -55,6 +55,14 @@ depends_on = [
 ]
 
 [[modules]]
+path = "java.defaults"
+depends_on = []
+
+[[modules]]
+path = "java.templates"
+depends_on = ["java.defaults"]
+
+[[modules]]
 path = "java.artifacts"
 depends_on = [
   "//agent_maintainer.core.artifact_environment",

@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'com.diffplug.spotless' version '@SPOTLESS_PLUGIN_VERSION@'
+    id 'com.github.spotbugs' version '@SPOTBUGS_PLUGIN_VERSION@'
+    id 'checkstyle'
+    id 'pmd'
+    id 'jacoco'
+}
+
+spotless {
+    java {
+        googleJavaFormat('@GOOGLE_JAVA_FORMAT_VERSION@')
+        importOrder()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+spotbugs {
+    effort = com.github.spotbugs.snom.Effort.MAX
+    reportLevel = com.github.spotbugs.snom.Confidence.MEDIUM
+}
+
+checkstyle {
+    toolVersion = '@CHECKSTYLE_VERSION@'
+    configFile = file('config/checkstyle/checkstyle.xml')
+}
+
+pmd {
+    toolVersion = '@PMD_VERSION@'
+    ruleSets = []
+    ruleSetFiles = files('config/pmd/pmd.xml')
+}
+
+jacoco {
+    toolVersion = '@JACOCO_VERSION@'
+}
