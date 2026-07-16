@@ -1,7 +1,7 @@
 +++
 id = "beta7-release"
 kind = "release"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-08-15
 allowed_paths = [
