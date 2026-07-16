@@ -18,4 +18,5 @@ Start here:
 - [Split large legacy file](split-large-legacy-file.md)
 - [Context-safe ratchet repair](context-safe-ratchet-repair.md)
 - [Future-Call ROI loop dogfood](future-call-roi-loop.md)
+- [Java/Gradle provider calibration](java-gradle-provider-calibration.md)
 <!-- docsync:object.end docs.case_studies.overview -->

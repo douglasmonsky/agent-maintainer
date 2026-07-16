@@ -11,7 +11,7 @@ that keeps raw logs out of chat.
 |---|---|---|---|
 | Change control | Change budget, cohesive change plans, source-without-test policy | `fast`, `precommit`, `ci` | Keep edits small and explain intentionally large changes. |
 | Size and structure | File length, folder cohesion, suppression budget, provider-neutral per-path file ceilings | `fast`, `precommit`, `full`, advisory or blocking | Refactor high-branch functions before expanding features; prune improved ceilings explicitly. |
-| Java/Gradle evidence | Checked-wrapper task groups; Spotless/SpotBugs native ratchets; bounded Checkstyle, PMD, SpotBugs, JUnit, and JaCoCo reports | `precommit`, `full`, `ci` by configured group | Use complete, non-truncated runner artifacts for Java baseline lifecycle and exact repair facts; keep raw XML in Gradle build output. |
+| Java/Gradle evidence | Checked-wrapper task groups; Spotless/SpotBugs native ratchets; upward-only JaCoCo thresholds; bounded Checkstyle, PMD, SpotBugs, JUnit, and JaCoCo reports; separate project coverage labels | `precommit`, `full`, `ci` by configured group | Use complete, non-truncated runner artifacts for Java baseline lifecycle and exact repair facts; keep raw XML in Gradle build output. |
 | Python quality | Ruff, Pyright, Pylint, wemake, Xenon/Radon | `precommit`, `full`, `ci` | Fix design pressure before adding suppressions. |
 | Tests and coverage | pytest, coverage, diff-cover, release packaging checks | `precommit`, `full`, `ci`, release | Add focused tests before broader gates. |
 | Architecture | Tach, Import Linter, Archguard decision notes | `full`, `ci` | Respect module boundaries; add ADRs for boundary changes. |

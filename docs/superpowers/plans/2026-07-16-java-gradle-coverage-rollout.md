@@ -55,9 +55,9 @@
 
 **Files:** Create `docs/java-gradle-provider.md`; modify `README.md`, provider/setup/config/agent-use/roadmap docs, `.docsync/trace.yml`, and doc tests.
 
-- [ ] Write failing docs/DocSync tests requiring status, wrapper/config/setup modes, ratchets, baselines, topology, CI, limitations, and repair workflow.
-- [ ] Update public docs without parity claims, then run docs tests and DocSync until GREEN.
-- [ ] Commit: `docs: document experimental Java Gradle support`.
+- [x] Write failing docs/DocSync tests requiring status, wrapper/config/setup modes, ratchets, baselines, topology, CI, limitations, and repair workflow.
+- [x] Update public docs without parity claims, then run docs tests and DocSync until GREEN.
+- [x] Commit: `docs: document experimental Java Gradle support`.
 
 ### Task 6: Run promotion and completion audit
 

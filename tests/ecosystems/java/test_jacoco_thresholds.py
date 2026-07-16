@@ -15,6 +15,8 @@ LINE_PROPERTY = "agentMaintainer.jacoco.minimumLineCoverage"
 BRANCH_PROPERTY = "agentMaintainer.jacoco.minimumBranchCoverage"
 PROPERTY_NAMES = jacoco_thresholds.JacocoPropertyNames(LINE_PROPERTY, BRANCH_PROPERTY)
 
+# docsync:evidence.start evidence.java.coverage_rollout_tests
+
 
 def test_new_repository_defaults_and_established_floors_are_distinct() -> None:
     observed = JacocoCoverage(
@@ -145,3 +147,6 @@ def write_properties(repo: Path, *, line: str, branch: str) -> None:
 
 def git(repo: Path, *args: str) -> None:
     subprocess.run(("git", "-C", str(repo), *args), check=True, capture_output=True)  # nosec B603
+
+
+# docsync:evidence.end evidence.java.coverage_rollout_tests

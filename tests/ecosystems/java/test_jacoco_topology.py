@@ -22,6 +22,8 @@ from agent_maintainer.models import FULL_PROFILE
 
 JACOCO_REPORT_PATH = "build/reports/jacoco/test/jacocoTestReport.xml"
 
+# docsync:evidence.start evidence.java.coverage_rollout_tests
+
 
 def test_default_single_project_coverage_is_labeled_as_root_project() -> None:
     config = JavaGradleConfig(
@@ -251,3 +253,6 @@ def write_properties(repo: Path, *, line: str, branch: str) -> None:
 
 def git(repo: Path, *args: str) -> None:
     subprocess.run(("git", "-C", str(repo), *args), check=True, capture_output=True)  # nosec B603
+
+
+# docsync:evidence.end evidence.java.coverage_rollout_tests

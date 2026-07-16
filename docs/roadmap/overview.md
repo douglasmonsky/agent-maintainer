@@ -21,7 +21,8 @@ The product is currently Python-core with a provider architecture:
 
 - Python is the core/reference provider.
 - TypeScript/JavaScript is experimental and explicitly configured.
-- Java/Gradle has an experimental explicit-task foundation.
+- Java/Gradle coverage and live-CI rollout is implemented with exact ratchets,
+  truthful project labels, and controlled calibration; it remains experimental.
 - Go provider history is archived out of the active mainline.
 - Java priority for future repositories intentionally supersedes the former
   TypeScript-first sequence; further ecosystems still require low-noise evidence.

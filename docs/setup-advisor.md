@@ -131,11 +131,21 @@ Verification never creates or prunes Java findings or provider-neutral file
 ceiling baselines, and repair facts consume bounded runner artifacts rather
 than reopening raw Gradle XML.
 
+New repositories receive 80% line and 70% branch JaCoCo floors in
+`gradle.properties`. Established repositories keep an explicit upward-only base
+reference; setup never silently lowers their current floor. Multi-project
+coverage requires either one real aggregate report or explicit per-project
+coverage labels for every configured Gradle project. The advisor never combines
+module percentages into a synthetic total.
+
 For CI, preserve the repository's framework, JDK distribution, and JDK version.
 The reviewed GitHub Actions plan adds cached `static-and-policy` and
 `tests-and-coverage` jobs in a dedicated file and preserves existing
 repository-owned workflows. Unknown CI structures and differing managed paths
 are refused rather than overwritten.
+
+See the [Experimental Java/Gradle Provider](java-gradle-provider.md) for the
+complete configuration, wrapper-call budgets, repair workflow, and limitations.
 
 ## Relationship To Doctor
 

@@ -16,6 +16,7 @@ allowed_paths = [
   "config/agent-maintainer-capabilities.json",
   "docs/architecture/decisions/**",
   "docs/case-studies/java-gradle-provider-calibration.md",
+  "docs/case-studies/README.md",
   "docs/configuration-reference.md",
   "docs/java-gradle-provider.md",
   "docs/provider-contribution-guide.md",

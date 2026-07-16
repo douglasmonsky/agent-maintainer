@@ -1,3 +1,4 @@
+<!-- docsync:object docs.java_gradle_calibration.overview -->
 # Java/Gradle Provider Calibration
 
 This calibration records reproducible, sanitized fixture evidence for the
@@ -54,3 +55,4 @@ the multi-project fixture uses per-project reports rather than a real aggregate
 report. Broader external repositories remain useful future evidence, but they
 are not required to keep this provider useful for the maintainer's own new
 repositories.
+<!-- docsync:object.end docs.java_gradle_calibration.overview -->

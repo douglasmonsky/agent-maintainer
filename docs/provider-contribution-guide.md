@@ -15,6 +15,7 @@ Related reading:
 
 - [Polyglot Ecosystem Provider Roadmap](roadmap/polyglot-ecosystem-providers.md)
 - [Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
+- [Experimental Java/Gradle Provider](java-gradle-provider.md)
 - [Diagnostics and Repair Loop](diagnostics-repair-loop.md)
 - [Supported Scans and Agent Use](supported-scans-and-agent-use.md)
 
@@ -32,8 +33,9 @@ seam has survived real use outside this repository.
 The current registry contains the Python core/reference provider plus built-in
 experimental TypeScript/JavaScript and Java/Gradle providers. Java/Gradle is
 disabled by default and currently exposes explicit checked-wrapper groups,
-reviewed setup/native ratchets, and static doctor support; it is not a public
-provider API or a feature-parity claim.
+reviewed setup/native ratchets, truthful coverage topology, bounded structured
+evidence, and static doctor support; it is not a public provider API or a
+feature-parity claim.
 
 Provider additions should be small and phased:
 

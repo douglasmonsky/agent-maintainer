@@ -48,6 +48,14 @@ documents:
     path: docs/provider-status.md
     title: Ecosystem Provider Status
     audience: public
+  docs.java_gradle_provider:
+    path: docs/java-gradle-provider.md
+    title: Experimental Java/Gradle Provider
+    audience: public
+  docs.java_gradle_calibration:
+    path: docs/case-studies/java-gradle-provider-calibration.md
+    title: Java/Gradle Provider Calibration
+    audience: public
   docs.typescript_provider:
     path: docs/typescript-javascript-provider.md
     title: Experimental TypeScript/JavaScript Provider
@@ -346,6 +354,22 @@ objects:
     heading:
       level: 1
       text: Ecosystem Provider Status
+  docs.java_gradle_provider.overview:
+    document: docs.java_gradle_provider
+    kind: heading_section
+    path: docs/java-gradle-provider.md
+    marker: docs.java_gradle_provider.overview
+    heading:
+      level: 1
+      text: Experimental Java/Gradle Provider
+  docs.java_gradle_calibration.overview:
+    document: docs.java_gradle_calibration
+    kind: heading_section
+    path: docs/case-studies/java-gradle-provider-calibration.md
+    marker: docs.java_gradle_calibration.overview
+    heading:
+      level: 1
+      text: Java/Gradle Provider Calibration
   docs.typescript_provider.overview:
     document: docs.typescript_provider
     kind: heading_section
@@ -820,8 +844,8 @@ claims:
     text: Provider status docs describe experimental Java/Gradle checked-wrapper
       tasks, reviewed setup, static doctor behavior, native Spotless/SpotBugs
       ratchets, bounded structured report evidence, Java debt baselines, exact
-      repair facts, provider-neutral file ceilings, non-overwriting CI plans,
-      and deferred coverage thresholds.
+      repair facts, provider-neutral file ceilings, and non-overwriting CI
+      plans without claiming stable-provider parity.
     severity: high
     evidence:
       - evidence.java.provider_foundation
@@ -831,6 +855,27 @@ claims:
       - evidence.java.structured_evidence_tests
       - evidence.java.repair_fact_tests
       - evidence.file_baselines.provider_neutral
+  claim.docs.java_provider_coverage_rollout:
+    object: docs.java_gradle_provider.overview
+    text: Java provider docs describe exact upward-only JaCoCo thresholds,
+      truthful project or aggregate topology, bounded wrapper-call budgets,
+      cross-platform live fixtures, reviewed setup, repair workflow, and
+      explicit experimental limitations.
+    severity: high
+    evidence:
+      - evidence.java.provider_foundation
+      - evidence.java.reviewed_setup_tests
+      - evidence.java.coverage_rollout_tests
+      - evidence.java.live_workflow_tests
+      - evidence.java.calibration_tests
+  claim.docs.java_provider_calibration:
+    object: docs.java_gradle_calibration.overview
+    text: Java calibration docs report controlled sanitized Java-only, mixed,
+      and multi-project evidence without presenting it as external proof or a
+      provider promotion.
+    severity: high
+    evidence:
+      - evidence.java.calibration_tests
   claim.docs.typescript_provider_explicit_commands:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe disabled-by-default explicit
@@ -1289,6 +1334,33 @@ evidence:
       once and reject unsafe embedded paths without reopening raw Gradle XML.
     anchors:
       - path: tests/context/test_java_exact_facts.py
+        mode: explicit_region
+  evidence.java.coverage_rollout_tests:
+    type: test
+    description: Java coverage tests prove exact thresholds, downward-change
+      refusal, bounded real JaCoCo parsing, and truthful project topology.
+    anchors:
+      - path: tests/ecosystems/java/test_jacoco_thresholds.py
+        mode: explicit_region
+      - path: tests/ecosystems/java/test_jacoco_report.py
+        mode: explicit_region
+      - path: tests/ecosystems/java/test_jacoco_topology.py
+        mode: explicit_region
+  evidence.java.live_workflow_tests:
+    type: test
+    description: Java live workflow tests prove immutable wrapper validation,
+      bounded caching and timeouts, Linux/Windows DSL matrix coverage, and
+      protected aggregate isolation.
+    anchors:
+      - path: tests/packaging/test_parallel_verify_workflow.py
+        mode: explicit_region
+  evidence.java.calibration_tests:
+    type: test
+    description: Java calibration tests bind sanitized case evidence to current
+      setup previews, bounded runtimes, baseline stability, thresholds, and
+      parsable labeled coverage reports.
+    anchors:
+      - path: tests/assess/test_java_real_repo_calibration.py
         mode: explicit_region
   evidence.typescript.provider_command_tests:
     type: test

@@ -23,6 +23,8 @@ EXPECTED_CASES = {
 MAX_FALSE_POSITIVES = 1
 MAX_CALIBRATION_SECONDS = 120
 
+# docsync:evidence.start evidence.java.calibration_tests
+
 
 @pytest.fixture(scope="module")
 def evidence_by_case() -> dict[str, dict[str, object]]:
@@ -127,3 +129,6 @@ def test_case_study_reports_scope_results_and_limitations(
     assert "false positives" in normalized
     assert "baseline churn" in normalized
     assert "does not promote" in normalized
+
+
+# docsync:evidence.end evidence.java.calibration_tests

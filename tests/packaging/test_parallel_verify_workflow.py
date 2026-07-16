@@ -11,6 +11,8 @@ JAVA_LIVE_FIXTURES = REPO_ROOT / "tests" / "live" / "java_gradle"
 PARTIAL_GROUP_COUNT = 2
 WRAPPER_COMMAND_OCCURRENCES = 2
 
+# docsync:evidence.start evidence.java.live_workflow_tests
+
 
 def workflow_text() -> str:
     """Return the verified workflow source."""
@@ -148,3 +150,6 @@ def test_live_java_fixtures_are_real_checked_wrapper_projects() -> None:
         )
         assert "gradle-9.6.1-bin.zip" in properties
         assert "distributionSha256Sum=" in properties
+
+
+# docsync:evidence.end evidence.java.live_workflow_tests

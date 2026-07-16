@@ -13,6 +13,8 @@ from agent_maintainer.ecosystems.java.reports.xml import DEFAULT_MAX_XML_BYTES, 
 EXPECTED_COVERED_LINES = 3
 JACOCO_DOCTYPE = '<!DOCTYPE report PUBLIC "-//JACOCO//DTD Report 1.1//EN" "report.dtd">'
 
+# docsync:evidence.start evidence.java.coverage_rollout_tests
+
 
 def test_parses_report_level_line_and_branch_counters_exactly(tmp_path: Path) -> None:
     report = write_report(
@@ -106,3 +108,6 @@ def write_report(tmp_path: Path, payload: str) -> Path:
     report = tmp_path / "jacoco.xml"
     report.write_text(payload, encoding="utf-8")
     return report
+
+
+# docsync:evidence.end evidence.java.coverage_rollout_tests
