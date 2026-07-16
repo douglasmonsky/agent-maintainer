@@ -29,6 +29,13 @@ in the generic verifier or in native SpotBugs filter handling.
 - Java report adapters may depend on finding identity; the runner may later
   compose fresh report evidence with the comparator. Provider-neutral file
   ceilings and JaCoCo thresholds remain separate policies.
+- Checkstyle, PMD, SpotBugs, and JUnit share one bounded, entity-free XML input
+  primitive. Checkstyle, PMD, and SpotBugs expose normalized `JavaFinding`
+  records; SpotBugs exposes native-filter identities separately, while JUnit
+  exposes bounded totals plus failure/error details instead of debt findings.
+- Source paths emitted by quality tools are normalized beneath the configured
+  Gradle root. Published messages and test details are whitespace-normalized and
+  truncated independently of the XML parser's harder resource ceiling.
 
 The modules remain Java-owned. Core verification receives only bounded result
 artifacts and does not learn third-party report formats or Java baseline schema.
@@ -52,3 +59,5 @@ artifacts and does not learn third-party report formats or Java baseline schema.
   finding input as an empty baseline.
 - Do not persist source-line movement as debt identity.
 - Do not let baseline comparison override a failed Gradle execution.
+- Do not persist raw Gradle XML or treat truncated repair facts as the source of
+  truth for native tool output.

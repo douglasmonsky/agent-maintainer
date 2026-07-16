@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from defusedxml import ElementTree as DefusedET
@@ -15,7 +16,9 @@ DEFAULT_MAX_XML_BYTES = 5_242_880
 DEFAULT_MAX_XML_ELEMENTS = 50_000
 DEFAULT_MAX_FINDINGS = 10_000
 DEFAULT_MAX_MESSAGE_CHARS = 2_000
+MAX_REPAIR_TEXT_CHARS = 500
 XML_INDENT = "  "
+WINDOWS_DRIVE = re.compile(r"^[A-Za-z]:")
 type XmlElement = Any
 
 
@@ -50,6 +53,34 @@ def local_name(tag: str) -> str:
     return tag.rsplit("}", maxsplit=1)[-1]
 
 
+def bounded_report_text(value: str, *, fallback: str = "") -> str:
+    """Normalize report text and cap details published as repair facts."""
+    normalized = " ".join(value.split()) or fallback
+    if len(normalized) <= MAX_REPAIR_TEXT_CHARS:
+        return normalized
+    prefix = normalized[: MAX_REPAIR_TEXT_CHARS - 3]
+    return f"{prefix}..."
+
+
+def normalized_report_path(value: str, *, gradle_root: Path) -> str:
+    """Return a report source path confined beneath the Gradle root."""
+    normalized = value.strip().replace("\\", "/")
+    source_path = PurePosixPath(normalized)
+    if not normalized or WINDOWS_DRIVE.match(normalized) or ".." in source_path.parts:
+        raise JavaXmlError("Java report source path is not repository-relative")
+    root = gradle_root.resolve()
+    candidate = Path(normalized)
+    if not candidate.is_absolute():
+        candidate = root / candidate
+    try:
+        relative = candidate.resolve().relative_to(root)
+    except (OSError, ValueError) as exc:
+        raise JavaXmlError("Java report source path escapes Gradle root") from exc
+    if relative == Path("."):
+        raise JavaXmlError("Java report source path is not a file")
+    return relative.as_posix()
+
+
 def new_xml_element(tag: str) -> XmlElement:
     """Create one trusted internal XML element."""
     return DefusedET.fromstring(f"<{tag}/>")
@@ -74,10 +105,21 @@ def serialize_xml(root: XmlElement) -> str:
 
 def _read_xml_bytes(path: Path, limits: XmlLimits) -> bytes:
     try:
-        size, payload = path.stat().st_size, path.read_bytes()
+        report_size = path.stat().st_size
     except OSError as exc:
         raise JavaXmlError(f"cannot read Java XML report: {path.name}") from exc
-    if size > limits.max_bytes:
+    if report_size > limits.max_bytes:
+        raise JavaXmlError("Java XML report exceeds byte limit")
+    return _read_limited_bytes(path, limits.max_bytes)
+
+
+def _read_limited_bytes(path: Path, max_bytes: int) -> bytes:
+    try:
+        with path.open("rb") as report:
+            payload = report.read(max_bytes + 1)
+    except OSError as exc:
+        raise JavaXmlError(f"cannot read Java XML report: {path.name}") from exc
+    if len(payload) > max_bytes:
         raise JavaXmlError("Java XML report exceeds byte limit")
     return payload
 

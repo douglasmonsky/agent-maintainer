@@ -7,16 +7,23 @@ from pathlib import Path
 import pytest
 
 from agent_maintainer.ecosystems.java.reports.spotbugs import parse_spotbugs_report
-from agent_maintainer.ecosystems.java.reports.xml import JavaXmlError, XmlLimits
+from agent_maintainer.ecosystems.java.reports.xml import (
+    MAX_REPAIR_TEXT_CHARS,
+    JavaXmlError,
+    XmlLimits,
+)
 
 TEXT_ENCODING = "utf-8"
 TINY_BYTE_LIMIT = 16
+FINDING_LINE = 12
 VALID_REPORT = """<?xml version="1.0" encoding="UTF-8"?>
 <BugCollection>
   <Project projectName="demo"/>
-  <BugInstance type="NP_NULL_ON_SOME_PATH">
+  <BugInstance type="NP_NULL_ON_SOME_PATH" priority="1">
     <Class classname="example.App"/>
     <Method classname="example.App" name="run" signature="()V"/>
+    <SourceLine sourcepath="example/App.java" start="12"/>
+    <ShortMessage>Null pointer risk</ShortMessage>
     <LongMessage>Possible null value</LongMessage>
   </BugInstance>
   <Errors errors="0" missingClasses="0"/>
@@ -25,15 +32,38 @@ VALID_REPORT = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 def test_parser_extracts_native_filter_identity(tmp_path: Path) -> None:
-    """A valid report yields bounded SpotBugs native-filter identities."""
+    """A valid report yields native identities and normalized repair facts."""
     report = write_xml(tmp_path, VALID_REPORT)
 
-    parsed = parse_spotbugs_report(report)
+    parsed = parse_spotbugs_report(report, gradle_root=tmp_path)
 
-    assert len(parsed.findings) == 1
-    assert parsed.findings[0].bug_type == "NP_NULL_ON_SOME_PATH"
-    assert parsed.findings[0].class_name == "example.App"
-    assert parsed.findings[0].method_name == "run"
+    assert len(parsed.native_findings) == 1
+    assert parsed.native_findings[0].bug_type == "NP_NULL_ON_SOME_PATH"
+    assert parsed.native_findings[0].class_name == "example.App"
+    assert parsed.native_findings[0].method_name == "run"
+    finding = parsed.findings[0]
+    assert finding.path == "example/App.java"
+    assert finding.subject == "example.App#run()V"
+    assert finding.message == "Null pointer risk"
+    assert finding.severity == "error"
+    assert finding.line == FINDING_LINE
+
+
+def test_parser_derives_path_and_truncates_without_optional_location(tmp_path: Path) -> None:
+    """Class identity is a safe path fallback and long messages are bounded."""
+    payload = """<BugCollection><BugInstance type="TYPE_ONE">
+      <Class classname="example.App"/><LongMessage>{}</LongMessage>
+    </BugInstance></BugCollection>""".format("x" * 700)
+
+    finding = parse_spotbugs_report(
+        write_xml(tmp_path, payload),
+        gradle_root=tmp_path,
+    ).findings[0]
+
+    assert finding.path == "example/App.java"
+    assert finding.subject == "example.App"
+    assert finding.message.endswith("...")
+    assert len(finding.message) == MAX_REPAIR_TEXT_CHARS
 
 
 @pytest.mark.parametrize(
@@ -49,7 +79,7 @@ def test_parser_rejects_dtd_and_entities(tmp_path: Path, payload: str) -> None:
     report = write_xml(tmp_path, payload)
 
     with pytest.raises(JavaXmlError, match="DTD or entity"):
-        parse_spotbugs_report(report)
+        parse_spotbugs_report(report, gradle_root=tmp_path)
 
 
 @pytest.mark.parametrize(
@@ -81,7 +111,7 @@ def test_parser_enforces_resource_limits(
     report = write_xml(tmp_path, payload)
 
     with pytest.raises(JavaXmlError, match=message):
-        parse_spotbugs_report(report, limits=limits)
+        parse_spotbugs_report(report, gradle_root=tmp_path, limits=limits)
 
 
 @pytest.mark.parametrize(
@@ -97,6 +127,16 @@ def test_parser_enforces_resource_limits(
             "<BugCollection><Errors errors='1' missingClasses='0'/></BugCollection>",
             "incomplete",
         ),
+        (
+            "<BugCollection><BugInstance type='A' priority='high'>"
+            "<Class classname='A'/></BugInstance></BugCollection>",
+            "priority",
+        ),
+        (
+            "<BugCollection><BugInstance type='A'><Class classname='A'/>"
+            "<SourceLine start='zero'/></BugInstance></BugCollection>",
+            "source line",
+        ),
     ),
 )
 def test_parser_rejects_malformed_or_incomplete(
@@ -108,7 +148,7 @@ def test_parser_rejects_malformed_or_incomplete(
     report = write_xml(tmp_path, payload)
 
     with pytest.raises(JavaXmlError, match=message):
-        parse_spotbugs_report(report)
+        parse_spotbugs_report(report, gradle_root=tmp_path)
 
 
 def write_xml(root: Path, payload: str) -> Path:

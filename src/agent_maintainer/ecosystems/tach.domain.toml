@@ -129,9 +129,28 @@ path = "java.reports.xml"
 depends_on = ["java.errors"]
 
 [[modules]]
+path = "java.reports.checkstyle"
+depends_on = [
+  "java.findings",
+  "java.reports.xml",
+]
+
+[[modules]]
+path = "java.reports.junit"
+depends_on = ["java.reports.xml"]
+
+[[modules]]
+path = "java.reports.pmd"
+depends_on = [
+  "java.findings",
+  "java.reports.xml",
+]
+
+[[modules]]
 path = "java.reports.spotbugs"
 depends_on = [
   "java.errors",
+  "java.findings",
   "java.observations",
   "java.reports.xml",
   "//agent_maintainer.config.java",

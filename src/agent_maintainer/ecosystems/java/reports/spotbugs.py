@@ -7,21 +7,18 @@ from pathlib import Path
 
 from agent_maintainer.config.java import JavaReportExpectation
 from agent_maintainer.ecosystems.java.errors import JavaConfigurationError
+from agent_maintainer.ecosystems.java.findings import JavaFinding
 from agent_maintainer.ecosystems.java.observations import (
     GradleObservation,
     GradleTaskState,
     ReportSnapshot,
     snapshot_reports,
 )
+from agent_maintainer.ecosystems.java.reports import xml as java_xml
 from agent_maintainer.ecosystems.java.reports.xml import (
     JavaXmlError,
     XmlElement,
     XmlLimits,
-    append_xml_element,
-    local_name,
-    new_xml_element,
-    parse_bounded_xml,
-    serialize_xml,
 )
 
 
@@ -43,26 +40,32 @@ class SpotBugsFinding:
 class SpotBugsReport:
     """One validated SpotBugs report."""
 
-    findings: tuple[SpotBugsFinding, ...]
+    findings: tuple[JavaFinding, ...]
+    native_findings: tuple[SpotBugsFinding, ...]
 
 
 def parse_spotbugs_report(
     path: Path,
     *,
+    gradle_root: Path,
     limits: XmlLimits | None = None,
 ) -> SpotBugsReport:
-    """Parse the native-filter identity subset from a bounded SpotBugs report."""
+    """Parse canonical and native-filter findings from bounded XML."""
     selected_limits = limits or XmlLimits()
-    root = parse_bounded_xml(path, limits=selected_limits)
-    if local_name(root.tag) != "BugCollection":
+    root = java_xml.parse_bounded_xml(path, limits=selected_limits)
+    if java_xml.local_name(root.tag) != "BugCollection":
         raise JavaXmlError("unsupported SpotBugs report root")
     _validate_analysis_errors(root)
     bug_instances = tuple(
-        element for element in root.iter() if local_name(element.tag) == "BugInstance"
+        element for element in root.iter() if java_xml.local_name(element.tag) == "BugInstance"
     )
     if len(bug_instances) > selected_limits.max_findings:
         raise JavaXmlError("SpotBugs report exceeds finding limit")
-    return SpotBugsReport(tuple(_parse_finding(element) for element in bug_instances))
+    parsed = tuple(_parse_finding(element, gradle_root=gradle_root) for element in bug_instances)
+    return SpotBugsReport(
+        tuple(item[0] for item in parsed),
+        tuple(item[1] for item in parsed),
+    )
 
 
 def create_spotbugs_baseline(
@@ -74,8 +77,11 @@ def create_spotbugs_baseline(
     current = _validated_current_reports(gradle_root, expectation, observation)
     findings: set[SpotBugsFinding] = set()
     for snapshot in current:
-        report = parse_spotbugs_report(gradle_root / snapshot.path)
-        findings.update(report.findings)
+        report = parse_spotbugs_report(
+            gradle_root / snapshot.path,
+            gradle_root=gradle_root,
+        )
+        findings.update(report.native_findings)
     return _render_native_filter(tuple(sorted(findings)))
 
 
@@ -86,7 +92,13 @@ def validate_spotbugs_evidence(
 ) -> tuple[SpotBugsReport, ...]:
     """Validate current SpotBugs XML without creating or changing a baseline."""
     current = _validated_current_reports(gradle_root, expectation, observation)
-    return tuple(parse_spotbugs_report(gradle_root / snapshot.path) for snapshot in current)
+    return tuple(
+        parse_spotbugs_report(
+            gradle_root / snapshot.path,
+            gradle_root=gradle_root,
+        )
+        for snapshot in current
+    )
 
 
 def verification_payload(
@@ -138,11 +150,11 @@ def _expectation_states(
     expectation: JavaReportExpectation,
     observation: GradleObservation,
 ) -> set[GradleTaskState]:
-    expected = {_normalized_task(task) for task in expectation.tasks}
+    expected = {task.removeprefix(":") for task in expectation.tasks}
     states = {
         outcome.state
         for outcome in observation.task_outcomes
-        if _normalized_task(outcome.task) in expected
+        if outcome.task.removeprefix(":") in expected
     }
     if len(states) == 0:
         raise SpotBugsEvidenceError("SpotBugs task outcome evidence is incomplete")
@@ -161,7 +173,11 @@ def _reject_stale_success(
         raise SpotBugsEvidenceError("SpotBugs report evidence is stale after executed task success")
 
 
-def _parse_finding(element: XmlElement) -> SpotBugsFinding:
+def _parse_finding(
+    element: XmlElement,
+    *,
+    gradle_root: Path,
+) -> tuple[JavaFinding, SpotBugsFinding]:
     bug_type = element.attrib.get("type", "").strip()
     if not bug_type:
         raise JavaXmlError("SpotBugs BugInstance is missing type")
@@ -170,20 +186,88 @@ def _parse_finding(element: XmlElement) -> SpotBugsFinding:
     if not class_name:
         raise JavaXmlError("SpotBugs BugInstance is missing class identity")
     method = _first_child(element, "Method")
-    return SpotBugsFinding(
+    native = SpotBugsFinding(
         bug_type,
         class_name,
         "" if method is None else method.attrib.get("name", "").strip(),
         "" if method is None else method.attrib.get("signature", "").strip(),
     )
+    try:
+        finding = JavaFinding(
+            tool="spotbugs",
+            rule=bug_type,
+            path=_source_path(element, class_name, gradle_root=gradle_root),
+            subject=_subject(native),
+            message=_message(element, bug_type),
+            severity=_severity(element.attrib.get("priority")),
+            line=_source_line(element),
+        )
+    except ValueError as exc:
+        raise JavaXmlError("malformed SpotBugs finding") from exc
+    return finding, native
+
+
+def _source_path(element: XmlElement, class_name: str, *, gradle_root: Path) -> str:
+    source_line = _first_child(element, "SourceLine")
+    reported = "" if source_line is None else source_line.attrib.get("sourcepath", "")
+    class_path = class_name.split("$", maxsplit=1)[0].replace(".", "/")
+    fallback = f"{class_path}.java"
+    return java_xml.normalized_report_path(reported or fallback, gradle_root=gradle_root)
+
+
+def _source_line(element: XmlElement) -> int | None:
+    source_line = _first_child(element, "SourceLine")
+    value = None if source_line is None else source_line.attrib.get("start")
+    if value is None or not value.strip():
+        return None
+    try:
+        line = int(value)
+    except ValueError as exc:
+        raise JavaXmlError("malformed SpotBugs source line") from exc
+    if line < 1:
+        raise JavaXmlError("malformed SpotBugs source line")
+    return line
+
+
+def _subject(finding: SpotBugsFinding) -> str:
+    if not finding.method_name:
+        return finding.class_name
+    return f"{finding.class_name}#{finding.method_name}{finding.method_signature}"
+
+
+def _message(element: XmlElement, fallback: str) -> str:
+    for child_name in ("ShortMessage", "LongMessage"):
+        child = _first_child(element, child_name)
+        if child is not None and (child.text or "").strip():
+            return java_xml.bounded_report_text(child.text or "", fallback=fallback)
+    return fallback
+
+
+def _severity(value: str | None) -> str:
+    if value is None or not value.strip():
+        return "warning"
+    try:
+        priority = int(value)
+    except ValueError as exc:
+        raise JavaXmlError("malformed SpotBugs priority") from exc
+    severities = {1: "error", 2: "warning", 3: "info"}
+    if priority not in severities:
+        raise JavaXmlError("malformed SpotBugs priority")
+    return severities[priority]
 
 
 def _first_child(element: XmlElement, name: str) -> XmlElement | None:
-    return next((child for child in element if local_name(child.tag) == name), None)
+    return next(
+        (child for child in element if java_xml.local_name(child.tag) == name),
+        None,
+    )
 
 
 def _validate_analysis_errors(root: XmlElement) -> None:
-    errors = next((item for item in root.iter() if local_name(item.tag) == "Errors"), None)
+    errors = next(
+        (item for item in root.iter() if java_xml.local_name(item.tag) == "Errors"),
+        None,
+    )
     if errors is None:
         return
     error_count, missing_classes = _analysis_error_counts(errors)
@@ -199,19 +283,15 @@ def _analysis_error_counts(errors: XmlElement) -> tuple[int, int]:
 
 
 def _render_native_filter(findings: tuple[SpotBugsFinding, ...]) -> str:
-    root = new_xml_element("FindBugsFilter")
+    root = java_xml.new_xml_element("FindBugsFilter")
     for finding in findings:
-        match = append_xml_element(root, "Match", {})
-        append_xml_element(match, "Bug", {"pattern": finding.bug_type})
-        append_xml_element(match, "Class", {"name": finding.class_name})
+        match = java_xml.append_xml_element(root, "Match", {})
+        java_xml.append_xml_element(match, "Bug", {"pattern": finding.bug_type})
+        java_xml.append_xml_element(match, "Class", {"name": finding.class_name})
         if finding.method_name:
             attributes = {"name": finding.method_name}
             if finding.method_signature:
                 attributes["signature"] = finding.method_signature
-            append_xml_element(match, "Method", attributes)
-    body = serialize_xml(root)
+            java_xml.append_xml_element(match, "Method", attributes)
+    body = java_xml.serialize_xml(root)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{body}\n'
-
-
-def _normalized_task(task: str) -> str:
-    return task if task.startswith(":") else f":{task}"
