@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import math
+from dataclasses import fields, replace
 from typing import Any, TypeGuard
 
 from agent_maintainer.config import registry, schema, validation
+from agent_maintainer.config.java import JavaReportExpectation
 
 DEFAULT_CONFIG_SOURCE = "configuration"
 
@@ -303,7 +305,107 @@ def coerce_updates(
     file_baselines = raw.get("file_baselines")
     if file_baselines is not None:
         updates.update(coerce_file_baselines(file_baselines, source=source))
+    java = raw.get("java")
+    if java is not None:
+        updates["java"] = coerce_java(java, source=source)
     return updates
+
+
+def coerce_java(
+    raw_value: object,
+    *,
+    source: str = DEFAULT_CONFIG_SOURCE,
+) -> schema.JavaGradleConfig:
+    """Coerce the provider-owned Java table without shell-like shortcuts."""
+
+    raw = _config_table(raw_value, "java")
+    validation.validate_raw_config({"java": raw}, source=source)
+    defaults = schema.JavaGradleConfig()
+    updates = _java_tuple_updates(raw, defaults)
+    updates.update(_java_scalar_updates(raw))
+    if "reports" in raw:
+        updates["reports"] = _coerce_java_reports(raw["reports"], source=source)
+    return replace(defaults, **updates)
+
+
+def _java_tuple_updates(
+    raw: dict[str, object],
+    defaults: schema.JavaGradleConfig,
+) -> dict[str, object]:
+    tuple_fields = {
+        field.name for field in fields(defaults) if isinstance(getattr(defaults, field.name), tuple)
+    } - {"reports"}
+    return {
+        name: _java_string_tuple(raw[name], f"java.{name}")
+        for name in sorted(tuple_fields)
+        if name in raw
+    }
+
+
+def _java_scalar_updates(raw: dict[str, object]) -> dict[str, object]:
+    updates: dict[str, object] = {}
+    if "enabled" in raw:
+        value = raw["enabled"]
+        if not isinstance(value, bool):
+            raise TypeError("java.enabled must be a boolean")
+        updates["enabled"] = value
+    for name in (
+        "gradle_root",
+        "spotless_ratchet_ref",
+        "findings_baseline",
+        "spotbugs_baseline",
+        "jacoco_line_property",
+        "jacoco_branch_property",
+    ):
+        if name in raw:
+            value = raw[name]
+            allow_empty = name in {"spotless_ratchet_ref", "spotbugs_baseline"}
+            if not isinstance(value, str) or (not value and not allow_empty):
+                raise TypeError(f"java.{name} must be a string")
+            updates[name] = value
+    return updates
+
+
+def _coerce_java_reports(
+    reports: object,
+    *,
+    source: str,
+) -> tuple[JavaReportExpectation, ...]:
+    if not isinstance(reports, list):
+        raise TypeError("java.reports must be a list of tables")
+    return tuple(
+        _coerce_java_report(report, index=index, source=source)
+        for index, report in enumerate(reports)
+    )
+
+
+def _coerce_java_report(
+    raw_value: object,
+    *,
+    index: int,
+    source: str,
+) -> JavaReportExpectation:
+    prefix = f"java.reports.{index}"
+    raw = _config_table(raw_value, prefix)
+    validation.validate_raw_config({"java": {"reports": [raw]}}, source=source)
+    tool = raw.get("tool")
+    if not isinstance(tool, str) or not tool:
+        raise TypeError(f"{prefix}.tool must be a non-empty string")
+    required = raw.get("required", True)
+    if not isinstance(required, bool):
+        raise TypeError(f"{prefix}.required must be a boolean")
+    return JavaReportExpectation(
+        tool=tool,
+        tasks=_java_string_tuple(raw.get("tasks"), f"{prefix}.tasks"),
+        globs=_java_string_tuple(raw.get("globs"), f"{prefix}.globs"),
+        required=required,
+    )
+
+
+def _java_string_tuple(value: object, field_name: str) -> tuple[str, ...]:
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise TypeError(f"{field_name} must be a list of strings")
+    return tuple(value)
 
 
 def _raw_scalar_item(

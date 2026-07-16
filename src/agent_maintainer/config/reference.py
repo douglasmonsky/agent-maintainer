@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import asdict, is_dataclass
 from pathlib import Path
 from typing import cast
 
@@ -29,8 +30,11 @@ def capability_payload() -> dict[str, object]:
             "workspaces.*": sorted(registry.WORKSPACE_KEYS),
             "file_baselines": sorted(registry.FILE_BASELINE_KEYS),
             "file_baselines.groups.*": sorted(registry.FILE_BASELINE_GROUP_KEYS),
+            "java": sorted(registry.JAVA_KEYS),
+            "java.reports.*": sorted(registry.JAVA_REPORT_KEYS),
         },
         "runtime_environment": sorted(registry.NON_CONFIG_ENV_VARS),
+        "nested_environment": {"java.enabled": registry.JAVA_ENABLED_ENV},
         "fields": [_field_payload(spec) for spec in registry.FIELD_SPECS.values()],
     }
 
@@ -65,6 +69,10 @@ def _constraint_payload(spec: registry.ConfigFieldSpec) -> dict[str, object]:
 
 
 def _json_value(value: object) -> object:
+    if is_dataclass(value) and not isinstance(value, type):
+        return _json_value(asdict(value))
+    if isinstance(value, dict):
+        return {str(key): _json_value(item) for key, item in value.items()}
     if isinstance(value, tuple):
         values = cast(tuple[object, ...], value)
         return [_json_value(item) for item in values]

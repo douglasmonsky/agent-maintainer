@@ -30,6 +30,7 @@ def unknown_keys(raw: dict[str, object], *, prefix: str = TOOL_TABLE) -> tuple[s
     unknown.extend(_unknown_fixed_table(raw, "diagnostics", registry.DIAGNOSTIC_KEYS, prefix))
     unknown.extend(_unknown_dynamic_table(raw, "workspaces", registry.WORKSPACE_KEYS, prefix))
     unknown.extend(_unknown_file_baselines(raw, prefix=prefix))
+    unknown.extend(_unknown_java(raw, prefix=prefix))
     return tuple(sorted(unknown))
 
 
@@ -108,6 +109,23 @@ def _unknown_file_baselines(raw: dict[str, object], *, prefix: str) -> tuple[str
             if (nested := json_object(payload)) is not None
             for key in nested
             if key not in registry.FILE_BASELINE_GROUP_KEYS
+        )
+    return tuple(unknown)
+
+
+def _unknown_java(raw: dict[str, object], *, prefix: str) -> tuple[str, ...]:
+    value = json_object(raw.get("java"))
+    if value is None:
+        return ()
+    unknown = [f"{prefix}.java.{key}" for key in value if key not in registry.JAVA_KEYS]
+    reports = value.get("reports")
+    if isinstance(reports, list):
+        unknown.extend(
+            f"{prefix}.java.reports.{index}.{key}"
+            for index, report in enumerate(reports)
+            if (nested := json_object(report)) is not None
+            for key in nested
+            if key not in registry.JAVA_REPORT_KEYS
         )
     return tuple(unknown)
 

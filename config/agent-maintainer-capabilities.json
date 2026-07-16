@@ -1359,6 +1359,139 @@
         "repository_relative_path": false,
         "verification_profiles": false
       },
+      "default": {
+        "checks": [],
+        "checkstyle_profiles": [
+          "full",
+          "ci"
+        ],
+        "checkstyle_tasks": [],
+        "enabled": false,
+        "findings_baseline": ".agent-maintainer/java-findings-baseline.json",
+        "gradle_args": [
+          "--console=plain",
+          "--continue"
+        ],
+        "gradle_root": ".",
+        "jacoco_branch_property": "agentMaintainer.jacoco.minimumBranchCoverage",
+        "jacoco_line_property": "agentMaintainer.jacoco.minimumLineCoverage",
+        "jacoco_profiles": [
+          "full",
+          "ci"
+        ],
+        "jacoco_report_tasks": [],
+        "jacoco_verify_tasks": [],
+        "pmd_profiles": [
+          "full",
+          "ci"
+        ],
+        "pmd_tasks": [],
+        "reports": [
+          {
+            "globs": [
+              "build/reports/spotbugs/main.xml",
+              "build/reports/spotbugs/test.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "spotbugsMain",
+              "spotbugsTest"
+            ],
+            "tool": "spotbugs"
+          },
+          {
+            "globs": [
+              "build/reports/checkstyle/main.xml",
+              "build/reports/checkstyle/test.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "checkstyleMain",
+              "checkstyleTest"
+            ],
+            "tool": "checkstyle"
+          },
+          {
+            "globs": [
+              "build/reports/pmd/main.xml",
+              "build/reports/pmd/test.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "pmdMain",
+              "pmdTest"
+            ],
+            "tool": "pmd"
+          },
+          {
+            "globs": [
+              "build/test-results/test/*.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "test"
+            ],
+            "tool": "test"
+          },
+          {
+            "globs": [
+              "build/reports/jacoco/test/jacocoTestReport.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "jacocoTestReport"
+            ],
+            "tool": "jacoco"
+          }
+        ],
+        "source_roots": [
+          "src/main/java",
+          "**/src/main/java"
+        ],
+        "spotbugs_baseline": "",
+        "spotbugs_profiles": [
+          "full",
+          "ci"
+        ],
+        "spotbugs_tasks": [],
+        "spotless_profiles": [
+          "precommit",
+          "full",
+          "ci"
+        ],
+        "spotless_ratchet_ref": "",
+        "spotless_tasks": [],
+        "test_profiles": [
+          "full",
+          "ci"
+        ],
+        "test_roots": [
+          "src/test/java",
+          "**/src/test/java"
+        ],
+        "test_tasks": []
+      },
+      "description": "Configure java.",
+      "environment": null,
+      "environment_style": null,
+      "label": "Java",
+      "name": "java",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "java",
+      "value_kind": "java"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
       "default": false,
       "description": "Configure large change allow expired plans.",
       "environment": "AGENT_MAINTAINER_LARGE_CHANGE_ALLOW_EXPIRED_PLANS",
@@ -3032,6 +3165,9 @@
       "value_kind": "tuple"
     }
   ],
+  "nested_environment": {
+    "java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"
+  },
   "nested_tables": {
     "diagnostics": [
       "enabled",
@@ -3051,6 +3187,39 @@
       "max_nonblank_lines",
       "max_physical_lines",
       "role"
+    ],
+    "java": [
+      "checks",
+      "checkstyle_profiles",
+      "checkstyle_tasks",
+      "enabled",
+      "findings_baseline",
+      "gradle_args",
+      "gradle_root",
+      "jacoco_branch_property",
+      "jacoco_line_property",
+      "jacoco_profiles",
+      "jacoco_report_tasks",
+      "jacoco_verify_tasks",
+      "pmd_profiles",
+      "pmd_tasks",
+      "reports",
+      "source_roots",
+      "spotbugs_baseline",
+      "spotbugs_profiles",
+      "spotbugs_tasks",
+      "spotless_profiles",
+      "spotless_ratchet_ref",
+      "spotless_tasks",
+      "test_profiles",
+      "test_roots",
+      "test_tasks"
+    ],
+    "java.reports.*": [
+      "globs",
+      "required",
+      "tasks",
+      "tool"
     ],
     "workspaces.*": [
       "coverage_source",

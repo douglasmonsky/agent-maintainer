@@ -45,6 +45,7 @@ allowed_paths = [
   "tests/config/test_config_coercion.py",
   "tests/config/test_config_loading.py",
   "tests/config/test_config_registry_validation.py",
+  "tests/config/test_config_reference.py",
   "tests/config/test_config_validation.py",
   "tests/config/test_java_config.py",
   "tests/docsync/test_public_doc_trace.py",

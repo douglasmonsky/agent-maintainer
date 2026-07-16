@@ -19,6 +19,7 @@ ValueKind = Literal[
     "tuple",
     "workspaces",
     "file-baseline-groups",
+    "java",
 ]
 
 CLI_OVERRIDE_NONE = "none"
@@ -60,6 +61,7 @@ NESTED_FIELD_KINDS: Mapping[str, ValueKind] = MappingProxyType(
     {
         "workspaces": "workspaces",
         "file_baselines": "file-baseline-groups",
+        "java": "java",
     }
 )
 NESTED_TOML_KEYS = MappingProxyType(
@@ -117,6 +119,38 @@ FILE_BASELINE_GROUP_KEYS = frozenset(
         "changed_line_warn",
     )
 )
+JAVA_ENABLED_ENV = "AGENT_MAINTAINER_JAVA_ENABLED"
+NESTED_CONFIG_ENV_VARS = frozenset((JAVA_ENABLED_ENV,))
+JAVA_KEYS = frozenset(
+    (
+        "enabled",
+        "gradle_root",
+        "checks",
+        "gradle_args",
+        "source_roots",
+        "test_roots",
+        "spotless_tasks",
+        "spotbugs_tasks",
+        "checkstyle_tasks",
+        "pmd_tasks",
+        "test_tasks",
+        "jacoco_report_tasks",
+        "jacoco_verify_tasks",
+        "spotless_profiles",
+        "spotbugs_profiles",
+        "checkstyle_profiles",
+        "pmd_profiles",
+        "test_profiles",
+        "jacoco_profiles",
+        "spotless_ratchet_ref",
+        "findings_baseline",
+        "spotbugs_baseline",
+        "jacoco_line_property",
+        "jacoco_branch_property",
+        "reports",
+    )
+)
+JAVA_REPORT_KEYS = frozenset(("tool", "tasks", "globs", "required"))
 
 PERCENT_FIELDS = frozenset(
     ("coverage_fail_under", "diff_cover_fail_under", "interrogate_fail_under", "mutmut_min_score")
@@ -364,4 +398,8 @@ def env_specs() -> tuple[ConfigFieldSpec, ...]:
 def known_environment_names() -> frozenset[str]:
     """Return config and runtime environment names accepted by the product."""
 
-    return frozenset(spec.env_var for spec in env_specs()) | NON_CONFIG_ENV_VARS
+    return (
+        frozenset(spec.env_var for spec in env_specs())
+        | NESTED_CONFIG_ENV_VARS
+        | NON_CONFIG_ENV_VARS
+    )

@@ -36,7 +36,12 @@ def test_payload_covers_fields_and_tables() -> None:
         "diagnostics",
         "file_baselines",
         "file_baselines.groups.*",
+        "java",
+        "java.reports.*",
         "workspaces.*",
+    }
+    assert payload["nested_environment"] == {
+        "java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"
     }
 
 
