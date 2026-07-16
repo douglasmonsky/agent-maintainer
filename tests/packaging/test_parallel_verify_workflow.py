@@ -6,7 +6,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = REPO_ROOT / ".github" / "workflows" / "verify.yml"
+JAVA_LIVE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "java-gradle-live.yml"
+JAVA_LIVE_FIXTURES = REPO_ROOT / "tests" / "live" / "java_gradle"
 PARTIAL_GROUP_COUNT = 2
+WRAPPER_COMMAND_OCCURRENCES = 2
 
 
 def workflow_text() -> str:
@@ -69,3 +72,79 @@ def test_python_compatibility_matrix_remains_independent() -> None:
 
     assert 'python-version: ["3.11", "3.12", "3.13", "3.14"]' in compatibility
     assert "needs:" not in compatibility
+
+
+def test_live_java_workflow_is_separate_bounded_and_experimental() -> None:
+    """Live Gradle proof does not lengthen the protected aggregate verifier."""
+
+    text = JAVA_LIVE_WORKFLOW.read_text(encoding="utf-8")
+
+    assert "name: java-gradle-live" in text
+    assert "workflow_dispatch:" in text
+    assert "schedule:" in text
+    assert "pull_request:" in text
+    assert "push:" in text
+    assert "timeout-minutes: 20" in text
+    assert "fail-fast: false" in text
+    assert "os: [ubuntu-latest, windows-latest]" in text
+    assert "dsl: [groovy, kotlin]" in text
+    assert "runs-on: ${{ matrix.os }}" in text
+    assert "tests/live/java_gradle/${{ matrix.dsl }}" in text
+
+
+def test_live_java_workflow_validates_wrappers_and_uses_bounded_cache() -> None:
+    """Every matrix cell validates its checked wrapper and caches dependencies safely."""
+
+    text = JAVA_LIVE_WORKFLOW.read_text(encoding="utf-8")
+
+    assert "uses: actions/setup-java@" in text
+    assert "distribution: temurin" in text
+    assert 'java-version: "21"' in text
+    assert "uses: gradle/actions/setup-gradle@" in text
+    assert "cache-provider: basic" in text
+    assert "cache-read-only: ${{ github.ref != 'refs/heads/main' }}" in text
+    assert "validate-wrappers: true" in text
+    assert "./gradlew --no-daemon --console=plain --stacktrace check" in text
+    assert (
+        text.count("./gradlew --no-daemon --console=plain --stacktrace check")
+        == WRAPPER_COMMAND_OCCURRENCES
+    )
+    assert "wrapper-calls.txt" in text
+    assert "runtime-seconds.txt" in text
+
+
+def test_live_java_workflow_uploads_reports_for_every_matrix_cell() -> None:
+    text = JAVA_LIVE_WORKFLOW.read_text(encoding="utf-8")
+
+    assert "if: always()" in text
+    assert "uses: actions/upload-artifact@" in text
+    assert "java-gradle-live-${{ matrix.os }}-${{ matrix.dsl }}-${{ github.sha }}" in text
+    assert "build/reports/**" in text
+    assert "build/agent-maintainer-live/**" in text
+    assert "retention-days: 7" in text
+
+
+def test_live_java_fixtures_are_real_checked_wrapper_projects() -> None:
+    """Groovy and Kotlin DSL fixtures are self-contained apart from locked dependencies."""
+
+    required = (
+        "gradlew",
+        "gradlew.bat",
+        "gradle/wrapper/gradle-wrapper.jar",
+        "gradle/wrapper/gradle-wrapper.properties",
+        "gradle.properties",
+        "src/main/java/example/Calculator.java",
+        "src/test/java/example/CalculatorTest.java",
+    )
+    for dsl, build_file, settings_file in (
+        ("groovy", "build.gradle", "settings.gradle"),
+        ("kotlin", "build.gradle.kts", "settings.gradle.kts"),
+    ):
+        fixture = JAVA_LIVE_FIXTURES / dsl
+        for relative in (*required, build_file, settings_file):
+            assert (fixture / relative).is_file(), f"missing {dsl}/{relative}"
+        properties = (fixture / "gradle/wrapper/gradle-wrapper.properties").read_text(
+            encoding="utf-8"
+        )
+        assert "gradle-9.6.1-bin.zip" in properties
+        assert "distributionSha256Sum=" in properties

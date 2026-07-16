@@ -2,7 +2,7 @@
 id = "java-gradle-coverage-rollout"
 kind = "feature"
 status = "active"
-base_ref = "origin/main"
+base_ref = "fc65b29bc2ae8d9187a29cc1fb365f1eeac0d030"
 expires = 2026-07-30
 allowed_paths = [
   ".agent-maintainer/change-plans/java-gradle-coverage-rollout.md",
@@ -11,6 +11,8 @@ allowed_paths = [
   ".github/workflows/java-gradle-live.yml",
   ".github/workflows/verify.yml",
   "README.md",
+  "justfile",
+  "pyproject.toml",
   "config/agent-maintainer-capabilities.json",
   "docs/architecture/decisions/**",
   "docs/case-studies/java-gradle-provider-calibration.md",
@@ -36,6 +38,7 @@ allowed_paths = [
   "tests/fixtures/java_gradle/**",
   "tests/live/java_gradle/**",
   "tests/packaging/test_parallel_verify_workflow.py",
+  "tests/packaging/test_github_actions_policy.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
 max_changed_files = 90

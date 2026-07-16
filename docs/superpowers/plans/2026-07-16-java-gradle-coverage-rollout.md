@@ -37,10 +37,10 @@
 
 **Files:** Create `.github/workflows/java-gradle-live.yml`; modify `.github/workflows/{verify,deep-verify}.yml` only where group wiring requires it; modify `tests/packaging/test_parallel_verify_workflow.py`; create `tests/live/java_gradle/**`.
 
-- [ ] Write failing workflow tests for protected aggregate job `verify`, Java static/tests group placement, wrapper validation, dependency caching, offline-friendly fixtures, bounded timeouts, artifact upload, and explicit Linux/Windows matrix coverage.
-- [ ] Verify RED, add a separate cached experimental live workflow/nightly Linux/Windows matrix, then verify GREEN.
-- [ ] Run live Groovy and Kotlin DSL fixtures with the checked wrappers; record wrapper calls and runtime.
-- [ ] Commit: `ci: validate live Java Gradle fixtures in parallel`.
+- [x] Write failing workflow tests for protected aggregate job `verify`, Java static/tests group placement, wrapper validation, dependency caching, offline-friendly fixtures, bounded timeouts, artifact upload, and explicit Linux/Windows matrix coverage.
+- [x] Verify RED, add a separate cached experimental live workflow/nightly Linux/Windows matrix, then verify GREEN.
+- [x] Run live Groovy and Kotlin DSL fixtures with the checked wrappers; record wrapper calls and runtime.
+- [x] Commit: `ci: validate live Java Gradle fixtures in parallel`.
 
 ### Task 4: Calibrate on representative repositories
 

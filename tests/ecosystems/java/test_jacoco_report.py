@@ -11,6 +11,7 @@ from agent_maintainer.ecosystems.java.reports import jacoco
 from agent_maintainer.ecosystems.java.reports.xml import DEFAULT_MAX_XML_BYTES, JavaXmlError
 
 EXPECTED_COVERED_LINES = 3
+JACOCO_DOCTYPE = '<!DOCTYPE report PUBLIC "-//JACOCO//DTD Report 1.1//EN" "report.dtd">'
 
 
 def test_parses_report_level_line_and_branch_counters_exactly(tmp_path: Path) -> None:
@@ -28,6 +29,38 @@ def test_parses_report_level_line_and_branch_counters_exactly(tmp_path: Path) ->
     assert coverage.line.covered == EXPECTED_COVERED_LINES
     assert coverage.line.percentage == Decimal("75.0000")
     assert coverage.branch.percentage == Decimal("66.6667")
+
+
+def test_parses_the_exact_standard_jacoco_doctype_without_resolving_it(tmp_path: Path) -> None:
+    report = write_report(
+        tmp_path,
+        JACOCO_DOCTYPE
+        + """<report name="example">
+        <counter type="LINE" missed="1" covered="3"/>
+        <counter type="BRANCH" missed="1" covered="2"/>
+        </report>""",
+    )
+
+    coverage = jacoco.parse_jacoco_report(report)
+
+    assert coverage.line.percentage == Decimal("75.0000")
+
+
+@pytest.mark.parametrize(
+    "doctype",
+    (
+        '<!DOCTYPE report SYSTEM "https://example.invalid/report.dtd">',
+        JACOCO_DOCTYPE + '<!ENTITY x SYSTEM "file:///etc/passwd">',
+    ),
+)
+def test_rejects_nonstandard_or_entity_bearing_jacoco_declarations(
+    tmp_path: Path,
+    doctype: str,
+) -> None:
+    report = write_report(tmp_path, doctype + "<report/>")
+
+    with pytest.raises(JavaXmlError, match="DTD or entity"):
+        jacoco.parse_jacoco_report(report)
 
 
 def test_zero_denominator_is_zero_coverage(tmp_path: Path) -> None:

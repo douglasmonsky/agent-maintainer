@@ -1,0 +1,87 @@
+name: java-gradle-live
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/java-gradle-live.yml"
+      - "src/agent_maintainer/ecosystems/java/**"
+      - "src/agent_maintainer/config/java*.py"
+      - "tests/ecosystems/java/**"
+      - "tests/live/java_gradle/**"
+      - "tests/packaging/test_parallel_verify_workflow.py"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/java-gradle-live.yml"
+      - "src/agent_maintainer/ecosystems/java/**"
+      - "src/agent_maintainer/config/java*.py"
+      - "tests/ecosystems/java/**"
+      - "tests/live/java_gradle/**"
+      - "tests/packaging/test_parallel_verify_workflow.py"
+  workflow_dispatch:
+  schedule:
+    - cron: "41 7 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: java-gradle-live-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-gradle:
+    name: java ${{ matrix.dsl }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        dsl: [groovy, kotlin]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Validate wrapper and set up cached Gradle
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          cache-provider: basic
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          validate-wrappers: true
+
+      - name: Run checked Gradle wrapper
+        working-directory: tests/live/java_gradle/${{ matrix.dsl }}
+        shell: bash
+        run: |
+          chmod +x gradlew
+          SECONDS=0
+          set +e
+          ./gradlew --no-daemon --console=plain --stacktrace check
+          status=$?
+          set -e
+          mkdir -p build/agent-maintainer-live
+          printf '%s\n' './gradlew --no-daemon --console=plain --stacktrace check' \
+            > build/agent-maintainer-live/wrapper-calls.txt
+          printf '%s\n' "$SECONDS" > build/agent-maintainer-live/runtime-seconds.txt
+          exit "$status"
+
+      - name: Upload live Gradle evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: java-gradle-live-${{ matrix.os }}-${{ matrix.dsl }}-${{ github.sha }}
+          path: |
+            tests/live/java_gradle/${{ matrix.dsl }}/build/reports/**
+            tests/live/java_gradle/${{ matrix.dsl }}/build/agent-maintainer-live/**
+          if-no-files-found: warn
+          retention-days: 7

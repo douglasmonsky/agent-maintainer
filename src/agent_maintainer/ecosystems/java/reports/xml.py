@@ -36,10 +36,15 @@ class XmlLimits:
     max_message_chars: int = DEFAULT_MAX_MESSAGE_CHARS
 
 
-def parse_bounded_xml(path: Path, *, limits: XmlLimits) -> XmlElement:
+def parse_bounded_xml(
+    path: Path,
+    *,
+    limits: XmlLimits,
+    allowed_doctype: bytes | None = None,
+) -> XmlElement:
     """Read and parse XML after declaration and byte-size checks."""
     payload = _read_xml_bytes(path, limits)
-    _reject_declarations(payload)
+    _reject_declarations(payload, allowed_doctype)
     try:
         root = DefusedET.fromstring(payload)
     except (DefusedET.ParseError, DefusedXmlException) as exc:
@@ -124,8 +129,13 @@ def _read_limited_bytes(path: Path, max_bytes: int) -> bytes:
     return payload
 
 
-def _reject_declarations(payload: bytes) -> None:
+def _reject_declarations(payload: bytes, allowed_doctype: bytes | None) -> None:
     lowered = payload.lower()
+    if allowed_doctype is not None:
+        expected = allowed_doctype.lower()
+        if lowered.count(expected) > 1:
+            raise JavaXmlError("Java XML report contains repeated DTD declarations")
+        lowered = lowered.replace(expected, b"", 1)
     if b"<!doctype" in lowered or b"<!entity" in lowered:
         raise JavaXmlError("Java XML report contains a forbidden DTD or entity declaration")
 

@@ -11,6 +11,7 @@ from agent_maintainer.ecosystems.java.reports import xml as java_xml
 PERCENT_QUANTUM = Decimal("0.0001")
 PERCENT_MULTIPLIER = Decimal(100)
 REQUIRED_COUNTERS = ("LINE", "BRANCH")
+JACOCO_REPORT_DOCTYPE = b'<!DOCTYPE report PUBLIC "-//JACOCO//DTD Report 1.1//EN" "report.dtd">'
 
 
 @dataclass(frozen=True)
@@ -44,7 +45,11 @@ class JacocoCoverage:
 
 def parse_jacoco_report(path: Path) -> JacocoCoverage:
     """Parse required report-level LINE and BRANCH counters exactly once."""
-    root = java_xml.parse_bounded_xml(path, limits=java_xml.XmlLimits())
+    root = java_xml.parse_bounded_xml(
+        path,
+        limits=java_xml.XmlLimits(),
+        allowed_doctype=JACOCO_REPORT_DOCTYPE,
+    )
     if java_xml.local_name(root.tag) != "report":
         raise java_xml.JavaXmlError("unsupported JaCoCo report root")
     counters = _report_counters(root)
