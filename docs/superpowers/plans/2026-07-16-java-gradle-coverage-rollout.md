@@ -21,9 +21,9 @@
 
 **Files:** Create `src/agent_maintainer/ecosystems/java/reports/jacoco.py`; extend Java baseline policy; create `tests/ecosystems/java/test_{jacoco_report,jacoco_thresholds}.py`.
 
-- [ ] Write failing tests for counters, zero denominators, malformed/oversized XML, four-decimal-place `Decimal` percentages, default floors, established rounding, and rejection of downward `gradle.properties` changes.
-- [ ] Implement an explicit base-ref reader that loads the configured line/branch property names from current and base `gradle.properties`, fails when required base data is unavailable, and reports XML headroom separately. Keep this policy outside the Java findings baseline.
-- [ ] Commit: `feat: add JaCoCo coverage ratchets`.
+- [x] Write failing tests for counters, zero denominators, malformed/oversized XML, four-decimal-place `Decimal` percentages, default floors, established rounding, and rejection of downward `gradle.properties` changes.
+- [x] Implement an explicit base-ref reader that loads the configured line/branch property names from current and base `gradle.properties`, fails when required base data is unavailable, and reports XML headroom separately. Keep this policy outside the Java findings baseline.
+- [x] Commit: `feat: add JaCoCo coverage ratchets`.
 
 ### Task 2: Enforce truthful single/multi-project coverage
 

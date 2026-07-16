@@ -79,6 +79,13 @@ path = "java.findings"
 depends_on = []
 
 [[modules]]
+path = "java.jacoco_thresholds"
+depends_on = [
+  "java.errors",
+  "java.reports.jacoco",
+]
+
+[[modules]]
 path = "java.baseline"
 depends_on = ["java.findings"]
 
@@ -138,10 +145,10 @@ depends_on = [
   "java.provider",
   "java.report_outcomes",
   "java.reports.checkstyle",
+  "java.reports.jacoco",
   "java.reports.junit",
   "java.reports.pmd",
   "java.reports.spotbugs",
-  "java.reports.xml",
 ]
 
 [[modules]]
@@ -161,6 +168,10 @@ depends_on = [
 
 [[modules]]
 path = "java.reports.junit"
+depends_on = ["java.reports.xml"]
+
+[[modules]]
+path = "java.reports.jacoco"
 depends_on = ["java.reports.xml"]
 
 [[modules]]

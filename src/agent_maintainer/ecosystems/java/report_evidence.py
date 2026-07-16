@@ -15,8 +15,7 @@ from agent_maintainer.ecosystems.java.report_outcomes import (
     JavaReportEvidenceError,
     validate_report_outcomes,
 )
-from agent_maintainer.ecosystems.java.reports import checkstyle, junit, pmd, spotbugs
-from agent_maintainer.ecosystems.java.reports import xml as java_xml
+from agent_maintainer.ecosystems.java.reports import checkstyle, jacoco, junit, pmd, spotbugs
 
 MAX_ARTIFACT_FINDINGS = 12
 MAX_ARTIFACT_PROBLEMS = 6
@@ -149,7 +148,7 @@ def _dispatch_report(
     elif tool == "test":
         test_reports.append(junit.parse_junit_report(report_path))
     elif tool == "jacoco":
-        _validate_jacoco_report(report_path)
+        jacoco.parse_jacoco_report(report_path)
     else:
         raise JavaReportEvidenceError(f"unsupported Java report tool: {tool}")
 
@@ -170,12 +169,6 @@ def _parse_static_report(
         report_path,
         gradle_root=gradle_root,
     ).findings
-
-
-def _validate_jacoco_report(path: Path) -> None:
-    root = java_xml.parse_bounded_xml(path, limits=java_xml.XmlLimits())
-    if java_xml.local_name(root.tag) != "report":
-        raise JavaReportEvidenceError("unsupported JaCoCo report root")
 
 
 def _confined_report_path(gradle_root: Path, relative_path: str) -> Path:
