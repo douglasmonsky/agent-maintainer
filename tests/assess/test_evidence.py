@@ -93,3 +93,30 @@ def test_evidence_ignores_bad_package_data(tmp_path: Path) -> None:
     assert collect_evidence(malformed).package_scripts == ()
     assert collect_evidence(non_object).package_scripts == ()
     assert collect_evidence(non_mapping_scripts).package_scripts == ()
+
+
+def test_collect_evidence_reports_bounded_java_gradle_facts(tmp_path: Path) -> None:
+    paths = (
+        "gradlew",
+        "settings.gradle.kts",
+        "build.gradle.kts",
+        "gradle/libs.versions.toml",
+        "app/build.gradle.kts",
+        "app/src/main/java/com/acme/App.java",
+        "app/src/test/java/com/acme/AppTest.java",
+    )
+    for relative in paths:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("", encoding=TEXT_ENCODING)
+
+    evidence = collect_evidence(tmp_path)
+
+    assert evidence.has_gradle_wrapper is True
+    assert evidence.gradle_wrapper_paths == ("gradlew",)
+    assert evidence.gradle_settings_files == ("settings.gradle.kts",)
+    assert evidence.gradle_build_files == ("app/build.gradle.kts", "build.gradle.kts")
+    assert evidence.gradle_version_catalogs == ("gradle/libs.versions.toml",)
+    assert evidence.java_source_files == 1
+    assert evidence.java_test_files == 1
+    assert evidence.java_module_paths == ("app",)

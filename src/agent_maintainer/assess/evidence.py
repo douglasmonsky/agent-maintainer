@@ -9,7 +9,7 @@ import subprocess  # nosec B404
 import tomllib
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import cast
 
 from agent_maintainer.assess.models import RepoEvidence
@@ -57,6 +57,10 @@ def collect_evidence(
     scan = _scan_files(root, max_files=max_files)
     paths = scan.paths
     python_files = tuple(path for path in paths if path.suffix == ".py")
+    relative_paths = tuple(sorted(path.relative_to(root).as_posix() for path in paths))
+    java_files = tuple(path for path in relative_paths if path.endswith(".java"))
+    java_test_files = tuple(path for path in java_files if _is_java_test_path(path))
+    java_source_files = tuple(path for path in java_files if _is_java_source_path(path))
     test_files = tuple(path for path in python_files if _is_test_path(root, path))
     source_files = tuple(path for path in python_files if not _is_test_path(root, path))
     return RepoEvidence(
@@ -97,7 +101,52 @@ def collect_evidence(
         scanned_files=len(paths),
         scan_source=scan.source,
         scan_truncated=scan.truncated,
+        has_gradle_wrapper=any(
+            PurePath(path).name in {"gradlew", "gradlew.bat"} for path in relative_paths
+        ),
+        gradle_wrapper_paths=_matching_paths(relative_paths, ("gradlew", "gradlew.bat")),
+        gradle_settings_files=_matching_paths(
+            relative_paths,
+            ("settings.gradle", "settings.gradle.kts"),
+        ),
+        gradle_build_files=_matching_paths(
+            relative_paths,
+            ("build.gradle", "build.gradle.kts"),
+        ),
+        gradle_version_catalogs=tuple(
+            path for path in relative_paths if PurePath(path).name == "libs.versions.toml"
+        ),
+        java_source_files=len(java_source_files),
+        java_test_files=len(java_test_files),
+        java_module_paths=_java_module_paths(java_source_files, java_test_files),
     )
+
+
+def _matching_paths(paths: tuple[str, ...], names: tuple[str, ...]) -> tuple[str, ...]:
+    allowed = frozenset(names)
+    return tuple(path for path in paths if PurePath(path).name in allowed)
+
+
+def _is_java_source_path(path: str) -> bool:
+    return path.startswith("src/main/java/") or "/src/main/java/" in path
+
+
+def _is_java_test_path(path: str) -> bool:
+    return path.startswith("src/test/java/") or "/src/test/java/" in path
+
+
+def _java_module_paths(
+    source_files: tuple[str, ...],
+    test_files: tuple[str, ...],
+) -> tuple[str, ...]:
+    modules = {
+        prefix
+        for path in (*source_files, *test_files)
+        for marker in ("/src/main/java/", "/src/test/java/")
+        if marker in path
+        if (prefix := path.split(marker, 1)[0])
+    }
+    return tuple(sorted(modules))
 
 
 def _scan_files(root: Path, *, max_files: int) -> FileScan:

@@ -37,6 +37,14 @@ class RepoEvidence:
     scanned_files: int = 0
     scan_source: str = "unknown"
     scan_truncated: bool = False
+    has_gradle_wrapper: bool = False
+    gradle_wrapper_paths: tuple[str, ...] = ()
+    gradle_settings_files: tuple[str, ...] = ()
+    gradle_build_files: tuple[str, ...] = ()
+    gradle_version_catalogs: tuple[str, ...] = ()
+    java_source_files: int = 0
+    java_test_files: int = 0
+    java_module_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
