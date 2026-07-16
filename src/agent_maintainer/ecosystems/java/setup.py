@@ -13,6 +13,10 @@ from agent_maintainer.core.setup_plans import (
     render_reviewed_diff,
     reviewed_edit_digest,
 )
+from agent_maintainer.ecosystems.java.ratchets import (
+    render_spotless_ratchet,
+    validate_spotless_ratchet_ref,
+)
 from agent_maintainer.ecosystems.java.semantic_edits import (
     SemanticEditRequest,
     SemanticEditResult,
@@ -43,10 +47,20 @@ class JavaSetupPlan:
     review_digest: str
 
 
-def plan_java_setup(root: Path, *, dsl: str | None = None) -> JavaSetupPlan:
+def plan_java_setup(
+    root: Path,
+    *,
+    dsl: str | None = None,
+    spotless_ratchet_ref: str = "",
+) -> JavaSetupPlan:
     """Inspect a repository and return a non-mutating Java setup plan."""
 
     canonical_root = root.resolve(strict=True)
+    if spotless_ratchet_ref:
+        validation = validate_spotless_ratchet_ref(canonical_root, spotless_ratchet_ref)
+        if not validation.available:
+            reason = " ".join(filter(None, (validation.reason, validation.ci_fetch_guidance)))
+            return _plan(canonical_root, JavaSetupStatus.REFUSED, reason=reason)
     selected = _selected_build(canonical_root, dsl=dsl)
     if isinstance(selected, str):
         return _plan(canonical_root, JavaSetupStatus.REFUSED, reason=selected)
@@ -54,7 +68,12 @@ def plan_java_setup(root: Path, *, dsl: str | None = None) -> JavaSetupPlan:
     ruleset_edits = _ruleset_edits(canonical_root)
     if isinstance(ruleset_edits, str):
         return _plan(canonical_root, JavaSetupStatus.REFUSED, reason=ruleset_edits)
-    build_edit = _build_edit(canonical_root, build_path, build_dsl)
+    build_edit = _build_edit(
+        canonical_root,
+        build_path,
+        build_dsl,
+        spotless_ratchet_ref=spotless_ratchet_ref,
+    )
     if isinstance(build_edit, SemanticEditRequest):
         return _plan(
             canonical_root,
@@ -149,20 +168,27 @@ def _build_edit(
     root: Path,
     path: str,
     dsl: str,
+    *,
+    spotless_ratchet_ref: str,
 ) -> tuple[ReviewedFileEdit, ...] | SemanticEditRequest:
     expected = render_build_fragment(dsl)
+    if spotless_ratchet_ref:
+        expected = render_spotless_ratchet(expected, dsl, spotless_ratchet_ref)
     current = _read_optional(root / path)
     if current is None:
         return (ReviewedFileEdit(path, None, expected, "add pinned Java Gradle build"),)
     if current == expected:
         return ()
-    if current == _recognized_scaffold(dsl):
+    if current in {_recognized_scaffold(dsl), render_build_fragment(dsl)}:
         return (ReviewedFileEdit(path, current, expected, "expand recognized Java scaffold"),)
+    required_elements = ["pinned plugins", "Spotless", "SpotBugs", "Checkstyle", "PMD", "JaCoCo"]
+    if spotless_ratchet_ref:
+        required_elements.append(f"Spotless ratchetFrom `{spotless_ratchet_ref}`")
     return SemanticEditRequest(
         path=path,
         dsl=dsl,
         original_sha256=text_digest(current),
-        required_elements=("pinned plugins", "Spotless", "SpotBugs", "Checkstyle", "PMD", "JaCoCo"),
+        required_elements=tuple(required_elements),
         forbidden_changes=("preserve existing build behavior", "do not modify unrelated files"),
     )
 

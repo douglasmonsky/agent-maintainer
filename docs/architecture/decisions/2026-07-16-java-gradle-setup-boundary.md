@@ -22,6 +22,10 @@ provider registry or verifier catalog.
 - `agent_maintainer.ecosystems.java.semantic_edits` owns typed agent handoffs,
   returned validation evidence, and the second reviewed digest for arbitrary
   build edits.
+- `agent_maintainer.ecosystems.java.ratchets` owns read-only Git reference
+  validation and rendering of Spotless `ratchetFrom` in provider-owned build
+  fragments. Setup and verification share it so neither can silently fetch or
+  fall back to formatting an entire repository.
 - Java defaults and bundled templates remain Java-owned and are package data.
 - Later observation and bounded report modules may depend on the checked wrapper
   and Java configuration, but normal verification remains command-only.

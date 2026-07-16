@@ -15,6 +15,7 @@ from pathlib import Path
 from agent_maintainer.config import loader
 from agent_maintainer.core import artifact_environment
 from agent_maintainer.ecosystems.java import artifacts, errors, provider, wrapper
+from agent_maintainer.ecosystems.java.ratchets import validate_spotless_ratchet_ref
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,12 @@ def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> RunO
             f"Java group '{group}' has no selected tasks for profile '{profile}'"
         )
     resolved_wrapper = wrapper.resolve_gradle_wrapper(workspace, config.java.gradle_root)
+    _validate_spotless_execution(
+        resolved_wrapper.gradle_root,
+        tasks,
+        config.java.spotless_tasks,
+        config.java.spotless_ratchet_ref,
+    )
     exit_code = _run_wrapper(
         resolved_wrapper.executable,
         resolved_wrapper.gradle_root,
@@ -73,6 +80,32 @@ def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> RunO
         payload,
         exit_code,
     )
+
+
+def _validate_spotless_execution(
+    gradle_root: Path,
+    tasks: tuple[str, ...],
+    spotless_tasks: tuple[str, ...],
+    ratchet_ref: str,
+) -> None:
+    selected = tuple(task for task in tasks if task in spotless_tasks)
+    mutating = next((task for task in selected if _is_spotless_apply_task(task)), "")
+    if mutating:
+        raise provider.JavaProviderConfigurationError(
+            f"mutating Spotless task is forbidden during verification: {mutating}"
+        )
+    if not selected or not ratchet_ref:
+        return
+    validation = validate_spotless_ratchet_ref(gradle_root, ratchet_ref)
+    if validation.available:
+        return
+    message = " ".join(filter(None, (validation.reason, validation.ci_fetch_guidance)))
+    raise provider.JavaProviderConfigurationError(message)
+
+
+def _is_spotless_apply_task(task: str) -> bool:
+    name = task.rsplit(":", maxsplit=1)[-1]
+    return name.startswith("spotless") and name.endswith("Apply")
 
 
 def _load_java_config(workspace: Path):

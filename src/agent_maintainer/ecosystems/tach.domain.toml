@@ -90,6 +90,7 @@ depends_on = [
   "java.artifacts",
   "java.errors",
   "java.provider",
+  "java.ratchets",
   "java.wrapper",
   "//agent_maintainer.config.loader",
 ]
@@ -99,10 +100,15 @@ path = "java.semantic_edits"
 depends_on = ["//agent_maintainer.core.setup_plans"]
 
 [[modules]]
+path = "java.ratchets"
+depends_on = []
+
+[[modules]]
 path = "java.setup"
 depends_on = [
   "//agent_maintainer.core.setup_plans",
   "java.semantic_edits",
+  "java.ratchets",
   "java.templates",
 ]
 
