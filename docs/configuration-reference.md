@@ -16,6 +16,12 @@ Configuration precedence is defaults, mode preset, file, environment, then CLI.
 | `java` | `["checks","checkstyle_profiles","checkstyle_tasks","enabled","findings_baseline","gradle_args","gradle_root","jacoco_branch_property","jacoco_line_property","jacoco_profiles","jacoco_report_tasks","jacoco_verify_tasks","pmd_profiles","pmd_tasks","reports","source_roots","spotbugs_baseline","spotbugs_profiles","spotbugs_tasks","spotless_profiles","spotless_ratchet_ref","spotless_tasks","test_profiles","test_roots","test_tasks"]` |
 | `java.reports.*` | `["globs","required","tasks","tool"]` |
 
+## Nested Environment Overrides
+
+| TOML key | Environment |
+|---|---|
+| `java.enabled` | `AGENT_MAINTAINER_JAVA_ENABLED` |
+
 ## Fields
 
 | TOML key | Type | Default | Environment | CLI | Constraints | Stability |

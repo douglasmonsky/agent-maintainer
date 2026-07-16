@@ -12,6 +12,8 @@ from agent_maintainer.config.java import JavaGradleConfig, JavaReportExpectation
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.config.validation import ConfigValidationError
 
+OVERSIZED_INTEGER_DIGITS = 5_000
+
 
 def apply_java(raw: object) -> MaintainerConfig:
     """Apply one nested Java table through the public loader seam."""
@@ -32,13 +34,29 @@ def test_java_config_defaults_are_frozen_and_disabled() -> None:
     assert config.spotless_profiles == ("precommit", "full", "ci")
     assert config.test_profiles == ("full", "ci")
     assert config.findings_baseline == ".agent-maintainer/java-findings-baseline.json"
-    assert {report.tool for report in config.reports} == {
-        "spotbugs",
-        "checkstyle",
-        "pmd",
-        "test",
-        "jacoco",
-    }
+    assert config.reports == (
+        JavaReportExpectation(
+            "spotbugs",
+            ("spotbugsMain", "spotbugsTest"),
+            ("build/reports/spotbugs/main.xml", "build/reports/spotbugs/test.xml"),
+        ),
+        JavaReportExpectation(
+            "checkstyle",
+            ("checkstyleMain", "checkstyleTest"),
+            ("build/reports/checkstyle/main.xml", "build/reports/checkstyle/test.xml"),
+        ),
+        JavaReportExpectation(
+            "pmd",
+            ("pmdMain", "pmdTest"),
+            ("build/reports/pmd/main.xml", "build/reports/pmd/test.xml"),
+        ),
+        JavaReportExpectation("test", ("test",), ("build/test-results/test/*.xml",)),
+        JavaReportExpectation(
+            "jacoco",
+            ("jacocoTestReport",),
+            ("build/reports/jacoco/test/jacocoTestReport.xml",),
+        ),
+    )
 
     with pytest.raises(FrozenInstanceError):
         config.enabled = True  # type: ignore[misc]
@@ -196,6 +214,13 @@ def test_java_config_rejects_invalid_checks_profiles_and_tasks(
     ],
 )
 def test_java_config_rejects_gradle_arguments_outside_allowlist(argument: str) -> None:
+    with pytest.raises(ConfigValidationError, match=r"java\.gradle_args"):
+        apply_java({"gradle_args": [argument]})
+
+
+def test_java_config_rejects_oversized_worker_integer_deterministically() -> None:
+    argument = f"--max-workers={'9' * OVERSIZED_INTEGER_DIGITS}"
+
     with pytest.raises(ConfigValidationError, match=r"java\.gradle_args"):
         apply_java({"gradle_args": [argument]})
 

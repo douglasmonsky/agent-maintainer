@@ -103,6 +103,12 @@ def render_reference_markdown() -> str:
         "|---|---|",
         *_nested_table_rows(),
         "",
+        "## Nested Environment Overrides",
+        "",
+        "| TOML key | Environment |",
+        "|---|---|",
+        *_nested_environment_rows(),
+        "",
         "## Fields",
         "",
         "| TOML key | Type | Default | Environment | CLI | Constraints | Stability |",
@@ -125,6 +131,13 @@ def _nested_table_rows() -> list[str]:
     if nested is None:
         return []
     return [f"| `{table}` | {_markdown_value(keys)} |" for table, keys in nested.items()]
+
+
+def _nested_environment_rows() -> list[str]:
+    nested = json_object(capability_payload()["nested_environment"])
+    if nested is None:
+        return []
+    return [f"| `{key}` | `{value}` |" for key, value in nested.items()]
 
 
 def _field_markdown_row(spec: registry.ConfigFieldSpec) -> str:

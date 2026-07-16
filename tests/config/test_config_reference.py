@@ -64,3 +64,10 @@ def test_capability_json_is_stable() -> None:
 
     assert rendered == reference.render_capabilities_json()
     assert payload["schema_version"] == reference.CAPABILITY_SCHEMA_VERSION
+
+
+def test_human_reference_exposes_nested_environment_override() -> None:
+    rendered = reference.render_reference_markdown()
+
+    assert "## Nested Environment Overrides" in rendered
+    assert "| `java.enabled` | `AGENT_MAINTAINER_JAVA_ENABLED` |" in rendered

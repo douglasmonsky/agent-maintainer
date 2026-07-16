@@ -74,6 +74,7 @@ def validate_config(
 
 JAVA_TASK_PATTERN = re.compile(r"^:?[A-Za-z0-9][A-Za-z0-9_.-]*(?::[A-Za-z0-9][A-Za-z0-9_.-]*)*$")
 MAX_GRADLE_WORKERS = 4096
+MAX_GRADLE_WORKER_DIGITS = 4
 JAVA_TASK_FIELDS = (
     "spotless_tasks",
     "spotbugs_tasks",
@@ -166,7 +167,11 @@ def _java_arg_issues(args: tuple[str, ...], *, source: str) -> tuple[ConfigIssue
         )
         workers = re.fullmatch(r"--max-workers=([0-9]+)", argument)
         if workers is not None:
-            valid = 1 <= int(workers.group(1)) <= MAX_GRADLE_WORKERS
+            digits = workers.group(1)
+            valid = (
+                len(digits) <= MAX_GRADLE_WORKER_DIGITS
+                and 1 <= int(digits) <= MAX_GRADLE_WORKERS
+            )
         if not valid:
             issues.append(
                 ConfigIssue(source, "java.gradle_args", f"unsupported argument: {argument}")
