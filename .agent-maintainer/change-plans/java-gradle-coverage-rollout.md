@@ -9,6 +9,7 @@ allowed_paths = [
   ".docsync/**",
   ".github/workflows/**",
   ".gitignore",
+  "CHANGELOG.md",
   "README.md",
   "config/agent-maintainer-capabilities.json",
   "docs/**",
@@ -26,7 +27,7 @@ allowed_paths = [
   "tests/**",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 220
+max_changed_files = 235
 max_changed_lines = 18000
 allow_source_without_test_change = false
 requires_tests = true
@@ -43,6 +44,9 @@ structured evidence, exact JaCoCo policy, live cached Gradle validation,
 calibration evidence, and public maturity documentation. Earlier phase plans
 kept each implementation slice reviewable; this closeout plan records their
 combined branch envelope without changing repository-wide thresholds.
+The narrow file-count and documentation scope also cover the versioned release
+record that must travel through the same protected-branch PR; the line budget is
+unchanged and no second active exception is introduced.
 
 ## Why this should not be split smaller
 
@@ -54,8 +58,8 @@ the same contracts.
 ## What allowed to change
 
 Only the completed Java provider phases, the provider-neutral seams they
-deliberately extend, bounded fixtures/workflows, and directly traced
-documentation/tests may change.
+deliberately extend, bounded fixtures/workflows, directly traced
+documentation/tests, and the corresponding beta release record may change.
 
 ## What must not change
 

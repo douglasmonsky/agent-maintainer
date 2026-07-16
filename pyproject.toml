@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 # docsync:evidence.start evidence.readme.package_metadata
 [project]
 name = "agent-maintainer"
-version = "0.1.0b7"
+version = "0.1.0b8"
 description = "Repository maintenance checks and diagnostics for AI-assisted Python development."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -426,8 +426,10 @@ do_not_mutate = [
 ]
 pytest_add_cli_args_test_selection = [
   "tests/config/test_config_coercion.py",
+  "tests/config/test_config_coercion_extensions.py",
   "tests/config/test_config_loading.py",
   "tests/config/test_config_registry_validation.py",
+  "tests/config/test_java_config.py",
   "tests/config/test_workspace_config.py::test_coerce_updates_reads_workspace_tables",
   "tests/core/test_runtime.py",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_ranks_branchy_tested_logic",

@@ -1,11 +1,30 @@
 # Changelog
 
-## Unreleased (target: 0.1.0b7)
+## Unreleased (target: 0.1.0b8)
 
-`0.1.0b7` is an unpublished release candidate. `0.1.0b6` remains the latest
-published package and its immutable release-evidence record remains
-authoritative until this candidate passes the complete exact-commit release
-matrix and package-index smokes.
+`0.1.0b8` is an unpublished release candidate. `0.1.0b7` remains the latest
+published package, with published 0.1.0b7 release evidence authoritative until
+this candidate passes the complete exact-commit release matrix and package-index
+smokes.
+
+- Added an experimental Java/Gradle provider that requires a checked-in wrapper,
+  groups static analysis and test execution into two bounded wrapper calls, and
+  parses structured SpotBugs, Checkstyle, PMD, and JaCoCo evidence safely.
+- Added reviewed Groovy and Kotlin DSL setup for Spotless, SpotBugs, Checkstyle,
+  PMD, JaCoCo, provider-neutral file/finding baselines, and upward-only coverage
+  thresholds without silently lowering stored policy.
+- Added truthful multi-project topology, repair facts, bounded report failures,
+  cached live Gradle validation, and Linux/Windows workflow coverage. Java stays
+  experimental until hosted Windows proof and production-repository calibration
+  satisfy its promotion gates.
+- Fixed cohesive-change accounting for copied and renamed destinations so the
+  reviewed diff cannot undercount those paths.
+- Extended the mutation suite across Java config and file-baseline coercion,
+  preserving the 99% result ratchet with exact source-aware error coverage.
+
+## 0.1.0b7 - 2026-07-15
+
+Seventh beta release of Agent Maintainer.
 
 - Owner verification now reports configuration drift consistently, diagnoses
   linked-worktree hook and artifact health, and exercises real agent-client

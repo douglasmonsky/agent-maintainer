@@ -17,12 +17,12 @@ repositories.
 > files and defaults may change as it is tested across more Python repository
 > layouts.
 >
-> Latest published package: `agent-maintainer==0.1.0b6`, with immutable
-> [release evidence](docs/releases/0.1.0b6.md). See the
-> [upgrade guide](docs/upgrading-to-0.1.0b6.md) for package-index adoption and
-> rollback guidance. This checkout targets the unpublished `0.1.0b7` release
-> candidate; see its [candidate notes](docs/releases/0.1.0b7.md) and
-> [evaluation guide](docs/upgrading-to-0.1.0b7.md).
+> Latest published package: `agent-maintainer==0.1.0b7`, with immutable
+> [release evidence](docs/releases/0.1.0b7.md). See the
+> [upgrade guide](docs/upgrading-to-0.1.0b7.md) for package-index adoption and
+> rollback guidance. This checkout targets the unpublished `0.1.0b8` release
+> candidate; see its [candidate notes](docs/releases/0.1.0b8.md) and
+> [evaluation guide](docs/upgrading-to-0.1.0b8.md).
 
 Agent Maintainer helps coding agents make smaller, safer, more reviewable code
 changes. It wraps your existing quality tools in low-noise profiles, adds
@@ -61,11 +61,11 @@ raw evidence stays in run-scoped artifacts.
 Install the core toolset:
 
 ```bash
-python -m pip install "agent-maintainer[core]==0.1.0b6"
+python -m pip install "agent-maintainer[core]==0.1.0b7"
 ```
 
 That pin installs the latest published beta. Follow the
-[0.1.0b6 upgrade guide](docs/upgrading-to-0.1.0b6.md) for safe adoption and
+[0.1.0b7 upgrade guide](docs/upgrading-to-0.1.0b7.md) for safe adoption and
 rollback guidance.
 
 Initialize a repo:
@@ -381,10 +381,10 @@ Read more:
 [Release checklist](docs/release-checklist.md),
 [troubleshooting](docs/troubleshooting.md),
 [release index](docs/releases/README.md),
-[0.1.0b6 release evidence](docs/releases/0.1.0b6.md),
-[0.1.0b6 upgrade guide](docs/upgrading-to-0.1.0b6.md),
-[0.1.0b7 candidate notes](docs/releases/0.1.0b7.md),
-[0.1.0b7 evaluation guide](docs/upgrading-to-0.1.0b7.md).
+[0.1.0b7 release evidence](docs/releases/0.1.0b7.md),
+[0.1.0b7 upgrade guide](docs/upgrading-to-0.1.0b7.md),
+[0.1.0b8 candidate notes](docs/releases/0.1.0b8.md),
+[0.1.0b8 evaluation guide](docs/upgrading-to-0.1.0b8.md).
 
 ## Configuration
 

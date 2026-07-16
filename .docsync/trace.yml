@@ -194,7 +194,11 @@ documents:
     audience: public
   docs.release_0_1_0b7_candidate:
     path: docs/releases/0.1.0b7.md
-    title: Agent Maintainer 0.1.0b7 Candidate Notes
+    title: Agent Maintainer 0.1.0b7 Release Evidence
+    audience: public
+  docs.release_0_1_0b8_candidate:
+    path: docs/releases/0.1.0b8.md
+    title: Agent Maintainer 0.1.0b8 Candidate Notes
     audience: public
   docs.upgrade_0_1_0b6:
     path: docs/upgrading-to-0.1.0b6.md
@@ -203,6 +207,10 @@ documents:
   docs.upgrade_0_1_0b7:
     path: docs/upgrading-to-0.1.0b7.md
     title: Upgrading from 0.1.0b6 to 0.1.0b7
+    audience: public
+  docs.upgrade_0_1_0b8:
+    path: docs/upgrading-to-0.1.0b8.md
+    title: Upgrading from 0.1.0b7 to 0.1.0b8
     audience: public
 
   docs.future_call_roi_acceleration:
@@ -649,7 +657,15 @@ objects:
     marker: docs.release_0_1_0b7_candidate.overview
     heading:
       level: 1
-      text: Agent Maintainer 0.1.0b7 Candidate Notes
+      text: Agent Maintainer 0.1.0b7 Release Evidence
+  docs.release_0_1_0b8_candidate.overview:
+    document: docs.release_0_1_0b8_candidate
+    kind: heading_section
+    path: docs/releases/0.1.0b8.md
+    marker: docs.release_0_1_0b8_candidate.overview
+    heading:
+      level: 1
+      text: Agent Maintainer 0.1.0b8 Candidate Notes
   docs.upgrade_0_1_0b6.overview:
     document: docs.upgrade_0_1_0b6
     kind: heading_section
@@ -666,6 +682,14 @@ objects:
     heading:
       level: 1
       text: Upgrading from 0.1.0b6 to 0.1.0b7
+  docs.upgrade_0_1_0b8.overview:
+    document: docs.upgrade_0_1_0b8
+    kind: heading_section
+    path: docs/upgrading-to-0.1.0b8.md
+    marker: docs.upgrade_0_1_0b8.overview
+    heading:
+      level: 1
+      text: Upgrading from 0.1.0b7 to 0.1.0b8
 
   docs.future_call_roi_acceleration.overview:
     document: docs.future_call_roi_acceleration
@@ -1162,7 +1186,13 @@ claims:
       - evidence.release.public_contract_tests
   claim.docs.release_0_1_0b7_candidate_truth:
     object: docs.release_0_1_0b7_candidate.overview
-    text: Candidate notes identify 0.1.0b7 intent without claiming publication evidence.
+    text: Release evidence records exact 0.1.0b7 publication identifiers and artifact digests.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
+  claim.docs.release_0_1_0b8_candidate_truth:
+    object: docs.release_0_1_0b8_candidate.overview
+    text: Candidate notes identify 0.1.0b8 intent without claiming publication evidence.
     severity: high
     evidence:
       - evidence.release.public_contract_tests
@@ -1174,7 +1204,13 @@ claims:
       - evidence.release.public_contract_tests
   claim.docs.upgrade_0_1_0b7_safe_adoption:
     object: docs.upgrade_0_1_0b7.overview
-    text: Candidate upgrade guidance covers trusted evaluation, mutation preview, verification, and rollback to 0.1.0b6.
+    text: Upgrade guidance covers published 0.1.0b7 adoption, mutation preview, verification, and rollback to 0.1.0b6.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
+  claim.docs.upgrade_0_1_0b8_safe_adoption:
+    object: docs.upgrade_0_1_0b8.overview
+    text: Candidate upgrade guidance covers trusted evaluation, Java setup preview, verification, and rollback to 0.1.0b7.
     severity: high
     evidence:
       - evidence.release.public_contract_tests

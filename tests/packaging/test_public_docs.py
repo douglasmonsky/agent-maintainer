@@ -208,7 +208,7 @@ def test_changelog_unreleased_section_tracks_post_release_commits() -> None:
     unreleased = _unreleased_section(changelog)
     assert "No changes yet." not in unreleased
     assert f"`{_project_version()}` is an unpublished release candidate" in unreleased
-    assert "published 0.1.0b6 release evidence" in unreleased
+    assert "published 0.1.0b7 release evidence" in unreleased
 
 
 def test_changelog_b6_section_retains_release_topics() -> None:
@@ -245,6 +245,7 @@ def test_public_release_docs_distinguish_published_and_candidate() -> None:
     candidate_path = Path("docs/releases", candidate_target)
     readme = README.read_text(encoding="utf-8")
     roadmap = Path("docs/ROADMAP.md").read_text(encoding="utf-8")
+    published = published_path.read_text(encoding="utf-8")
     candidate = candidate_path.read_text(encoding="utf-8")
 
     assert candidate_version == _project_version()
@@ -253,6 +254,15 @@ def test_public_release_docs_distinguish_published_and_candidate() -> None:
     assert candidate_target == f"{candidate_version}.md"
     assert published_path.exists()
     assert candidate_path.exists()
+    assert f"# Agent Maintainer {published_version} Release Evidence" in published
+    assert f"- Version: `{published_version}`" in published
+    assert f"- Git tag: `v{published_version}`" in published
+    assert "- GitHub release:" in published
+    assert "- Hosted verification:" in published
+    assert "- TestPyPI workflow:" in published
+    assert "- PyPI workflow:" in published
+    assert f"agent_maintainer-{published_version}" in published
+    assert "sha256:" in published
     assert f"docs/releases/{published_version}.md" in readme
     assert f"docs/releases/{candidate_version}.md" in readme
     assert f"agent-maintainer=={published_version}" in roadmap
