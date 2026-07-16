@@ -10,10 +10,14 @@ allowed_paths = [
   "docs/superpowers/specs/2026-07-15-java-gradle-support-contracts.md",
   "docs/superpowers/specs/2026-07-15-java-gradle-support-design.md",
   "docs/superpowers/specs/2026-07-15-java-gradle-support-validation.md",
+  "docs/superpowers/plans/2026-07-16-java-gradle-foundation.md",
+  "docs/superpowers/plans/2026-07-16-java-gradle-setup-ratchets.md",
+  "docs/superpowers/plans/2026-07-16-java-gradle-structured-baselines.md",
+  "docs/superpowers/plans/2026-07-16-java-gradle-coverage-rollout.md",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 5
-max_changed_lines = 1000
+max_changed_files = 9
+max_changed_lines = 4000
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
@@ -37,8 +41,9 @@ each file below the repository's maintainability ceiling.
 
 ## What allowed to change
 
-Only the three Java/Gradle design documents, this scoped plan, and the completed
-beta release plan's status may change.
+Only the three Java/Gradle design documents, their four executable
+implementation plans, this scoped plan, and the completed beta release plan's
+status may change.
 
 ## What must not change
 
@@ -56,5 +61,5 @@ Revert the documentation commit. No runtime or external state requires cleanup.
 
 ## Follow-up ratchet work
 
-Convert the approved design into a decision-complete implementation plan only
-after the user reviews the committed specification.
+Execute the four approved implementation plans in order. Before runtime edits,
+complete this design plan and activate a phase-specific cohesive change plan.
