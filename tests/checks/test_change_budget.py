@@ -159,7 +159,8 @@ def test_run_git_numstat_does_not_double_count_copied_source(
         ["git"],
         0,
         stdout=(
-            "0\t1\tscripts/check_tool.py => src/agent_maintainer/checks/tool.py\n"
+            "0\t1\t{scripts => src/agent_maintainer/checks}/tool.py\n"
+            "1\t0\told/config.xml => tests/config.xml\n"
             "5\t300\tscripts/check_tool.py\n"
         ),
         stderr="",
@@ -167,7 +168,10 @@ def test_run_git_numstat_does_not_double_count_copied_source(
     name_status = subprocess.CompletedProcess(
         ["git"],
         0,
-        stdout="C099\tscripts/check_tool.py\tsrc/agent_maintainer/checks/tool.py\n",
+        stdout=(
+            "C099\tscripts/check_tool.py\tsrc/agent_maintainer/checks/tool.py\n"
+            "C099\told/config.xml\ttests/config.xml\n"
+        ),
         stderr="",
     )
     calls = [numstat, name_status]
@@ -187,11 +191,8 @@ def test_run_git_numstat_does_not_double_count_copied_source(
     changes = check_change_budget.run_git_numstat("HEAD", staged=False)
 
     assert changes == [
-        check_change_budget.FileChange(
-            "scripts/check_tool.py => src/agent_maintainer/checks/tool.py",
-            0,
-            1,
-        ),
+        check_change_budget.FileChange("src/agent_maintainer/checks/tool.py", 0, 1),
+        check_change_budget.FileChange("tests/config.xml", 1, 0),
         check_change_budget.FileChange("scripts/check_tool.py", 5, 0),
     ]
 

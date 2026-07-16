@@ -81,6 +81,37 @@ def test_downward_property_change_is_a_regression(tmp_path: Path) -> None:
     assert report.regressions == ("line",)
 
 
+def test_base_properties_are_addressed_from_git_root_for_nested_workspace(
+    tmp_path: Path,
+) -> None:
+    """Git object paths remain repository-relative when the workspace is nested."""
+
+    repo = tmp_path / "repo"
+    workspace = repo / "fixtures" / "groovy"
+    workspace.mkdir(parents=True)
+    git(repo, "init", "-q")
+    git(repo, "config", "user.email", "tests@example.com")
+    git(repo, "config", "user.name", "Tests")
+    write_properties(workspace, line="0.80", branch="0.70")
+    git(repo, "add", "fixtures/groovy/gradle.properties")
+    git(repo, "commit", "-qm", "base nested thresholds")
+    write_properties(workspace, line="0.81", branch="0.70")
+
+    report = jacoco_thresholds.evaluate_thresholds(
+        workspace,
+        gradle_root=Path("."),
+        base_ref="HEAD",
+        properties=PROPERTY_NAMES,
+        coverage=JacocoCoverage(
+            line=JacocoCounter(missed=15, covered=85),
+            branch=JacocoCounter(missed=30, covered=70),
+        ),
+    )
+
+    assert report.passed is True
+    assert report.base.line == Decimal("0.80")
+
+
 @pytest.mark.parametrize(
     ("base_ref", "base_payload"),
     (
@@ -137,7 +168,7 @@ def initialized_repo(tmp_path: Path, *, line: str, branch: str) -> Path:
 
 
 def write_properties(repo: Path, *, line: str, branch: str) -> None:
-    values = []
+    values: list[str] = []
     if line != "missing":
         values.append(f"{LINE_PROPERTY}={line}")
     if branch != "missing":

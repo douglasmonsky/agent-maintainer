@@ -14,6 +14,7 @@ from agent_maintainer.ecosystems.models import EcosystemCheckContext
 from agent_maintainer.models import CI_PROFILE, FULL_PROFILE, PRECOMMIT_PROFILE, Check
 
 JavaGroup = Literal["format", "static", "tests"]
+GRADLE_TASK_PREFIX = ":"
 
 
 @dataclass(frozen=True)
@@ -116,16 +117,20 @@ def plan_reports(
     requested_tasks: tuple[str, ...],
 ) -> tuple[JavaReportPlan, ...]:
     """Map configured report declarations to unambiguous single-task plans."""
-    requested = frozenset(task.removeprefix(":") for task in requested_tasks)
+    requested = frozenset(task.removeprefix(GRADLE_TASK_PREFIX) for task in requested_tasks)
     plans = tuple(
         plan
         for expectation in config.reports
         for plan in _expectation_report_plans(expectation)
-        if plan.task.removeprefix(":") in requested
+        if plan.task.removeprefix(GRADLE_TASK_PREFIX) in requested
     )
     _validate_required_report_plans(config, requested_tasks, plans)
     coverage_reports = tuple(plan.expectation() for plan in plans if plan.tool == "jacoco")
-    problem = jacoco_topology.topology_problem(config, coverage_reports)
+    problem = (
+        jacoco_topology.topology_problem(config, coverage_reports)
+        if jacoco_topology.requests_jacoco(config, requested)
+        else None
+    )
     if problem is not None:
         raise JavaProviderConfigurationError(problem)
     return plans
@@ -277,8 +282,8 @@ def _validate_required_report_plans(
     requested_tasks: tuple[str, ...],
     plans: tuple[JavaReportPlan, ...],
 ) -> None:
-    planned = {(plan.tool, plan.task.removeprefix(":")) for plan in plans}
-    requested = frozenset(task.removeprefix(":") for task in requested_tasks)
+    planned = {(plan.tool, plan.task.removeprefix(GRADLE_TASK_PREFIX)) for plan in plans}
+    requested = frozenset(task.removeprefix(GRADLE_TASK_PREFIX) for task in requested_tasks)
     required = _required_report_keys(config, requested)
     missing = tuple(sorted(required - planned))
     if missing:
@@ -295,16 +300,16 @@ def _required_report_keys(
     report_tools = frozenset(("spotbugs", "checkstyle", "pmd", "test"))
     selected_tools = report_tools.intersection(config.checks)
     required = {
-        (tool.name, task.removeprefix(":"))
+        (tool.name, task.removeprefix(GRADLE_TASK_PREFIX))
         for tool in _all_tool_plans(config)
         if tool.name in selected_tools
         for task in tool.tasks
-        if task.removeprefix(":") in requested
+        if task.removeprefix(GRADLE_TASK_PREFIX) in requested
     }
     if "jacoco" in config.checks:
         required.update(
-            ("jacoco", task.removeprefix(":"))
+            ("jacoco", task.removeprefix(GRADLE_TASK_PREFIX))
             for task in config.jacoco_report_tasks
-            if task.removeprefix(":") in requested
+            if task.removeprefix(GRADLE_TASK_PREFIX) in requested
         )
     return required

@@ -28,7 +28,7 @@ MAX_CALIBRATION_SECONDS = 120
 
 @pytest.fixture(scope="module")
 def evidence_by_case() -> dict[str, dict[str, object]]:
-    evidence = {}
+    evidence: dict[str, dict[str, object]] = {}
     for path in sorted(CALIBRATION_ROOT.glob("*.json")):
         payload = cast(dict[str, object], json.loads(path.read_text(encoding="utf-8")))
         evidence[cast(str, payload["case_id"])] = payload
@@ -85,7 +85,7 @@ def test_coverage_facts_match_real_sanitized_reports_without_synthetic_aggregati
 ) -> None:
     for case_id, evidence in evidence_by_case.items():
         facts = cast(list[dict[str, object]], evidence["coverage"])
-        labels = []
+        labels: list[str] = []
         for fact in facts:
             report_path = REPO_ROOT / cast(str, evidence["fixture"]) / cast(str, fact["report"])
             coverage = parse_jacoco_report(report_path)

@@ -52,6 +52,7 @@ def test_main_runs_wrapper_with_exact_args_and_gradle_root(
     ]
     artifact = _read_artifact(artifacts, "static")
     assert artifact["status"] == "passed"
+    assert artifact["wrapper_invocations"] == 1
     assert artifact["tasks"] == ["spotbugsMain", "sharedTask", "checkstyleMain"]
     assert artifact["reports_parsed"] is False
     assert artifact["evidence_status"] == "validated"

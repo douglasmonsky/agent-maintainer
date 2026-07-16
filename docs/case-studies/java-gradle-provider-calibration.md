@@ -10,9 +10,9 @@ promote Java support beyond experimental status.
 
 | Case | Setup preview | Wrapper calls | Runtime | False positives | Baseline churn | Coverage evidence |
 | --- | --- | ---: | ---: | ---: | --- | --- |
-| `java-only` | 4 files, 123 diff lines, 0 manual edits | 1 | 5 s | 0 | 0 entries changed on no-op | project `:` at 80% line / 70% branch |
-| `mixed-python-java` | 4 files, 123 diff lines, 0 manual edits | 1 | 5 s | 0 | 0 entries changed on no-op | project `:` at 90% line / 80% branch |
-| `multi-project` | 4 files, 123 diff lines, 0 manual edits | 1 | 7 s | 0 | 0 of 2 entries changed on no-op | separate `:` and `:app` facts |
+| `java-only` | 4 files, 146 diff lines, 0 manual edits | 1 | 5 s | 0 | 0 entries changed on no-op | project `:` at 80% line / 70% branch |
+| `mixed-python-java` | 4 files, 146 diff lines, 0 manual edits | 1 | 5 s | 0 | 0 entries changed on no-op | project `:` at 90% line / 80% branch |
+| `multi-project` | 4 files, 148 diff lines, 0 manual edits | 1 | 7 s | 0 | 0 of 2 entries changed on no-op | separate `:` and `:app` facts |
 
 All three setup previews were side-effect-free and reversible. None
 restructured the existing build. The mixed fixture retained its Python files,
@@ -26,7 +26,9 @@ sanitized project with `--no-daemon --console=plain`. Measurements were taken
 on macOS with JBR 25 and a warm Gradle distribution cache. The JSON evidence in
 `tests/fixtures/java_gradle/calibration/` records the exact relative commands,
 runtime, setup result, seeded repair-fact assessment, baseline churn, threshold
-mode, and coverage-report paths.
+mode, and coverage-report paths. Contract tests load those records through
+explicit typed mapping and list views before comparing them with current setup
+previews and parsed reports.
 
 The coverage percentages are parsed from bounded JaCoCo XML rather than copied
 from prose. Multi-project evidence remains two labeled project facts; it does
@@ -50,8 +52,9 @@ counts, and truthful coverage labels. They also prove that Java setup does not
 rewrite the Python side of a mixed repository.
 
 These are small sanitized repositories, not production workloads. Runtime is
-cache- and machine-dependent, Windows proof comes from the live CI matrix, and
-the multi-project fixture uses per-project reports rather than a real aggregate
+cache- and machine-dependent; Windows execution is configured in the live CI
+matrix but still requires a successful remote run as promotion evidence. The
+multi-project fixture uses per-project reports rather than a real aggregate
 report. Broader external repositories remain useful future evidence, but they
 are not required to keep this provider useful for the maintainer's own new
 repositories.

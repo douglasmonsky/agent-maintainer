@@ -192,9 +192,10 @@ machine-readable report, so its exit code and bounded console diff remain
 authoritative.
 
 Parsers enforce file-size, element-count, finding-count, and message-size
-limits. They reject DTDs, external entities, path escapes, malformed numeric
-values, and unsupported schema variants. They produce sanitized facts without
-source snippets or absolute checkout paths.
+limits. They reject external entities, arbitrary DTDs, path escapes, malformed
+numeric values, and unsupported schema variants. The JaCoCo adapter accepts
+only JaCoCo's exact standard report declaration and never resolves it. Parsers
+produce sanitized facts without source snippets or absolute checkout paths.
 
 A selected report-backed check that exits zero without a valid required report
 fails closed. This matters when an established repository configures

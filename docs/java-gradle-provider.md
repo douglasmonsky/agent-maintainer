@@ -148,12 +148,14 @@ and place Java static analysis in `static-and-policy` and tests/coverage in
 `tests-and-coverage`. They refuse unknown CI frameworks and never overwrite an
 unrecognized workflow.
 
-Agent Maintainer itself also runs checked Gradle 9.6.1 Groovy and Kotlin DSL
-fixtures on Linux and Windows. The path-filtered/nightly matrix validates every
-wrapper JAR, uses a bounded Gradle dependency cache, enforces a 20-minute job
-timeout, records wrapper calls/runtime, and uploads test and JaCoCo reports.
-This experimental workflow stays separate from the protected aggregate
-`verify` job.
+Agent Maintainer's path-filtered/nightly matrix is configured to run checked
+Gradle 9.6.1 Groovy and Kotlin DSL fixtures on Linux and Windows. It validates
+every wrapper JAR and executes the real static and tests groups through Agent
+Maintainer. The fixtures exercise native Spotless ratcheting, a SpotBugs native
+baseline, Checkstyle, PMD, JUnit, JaCoCo, and bounded XML evidence in exactly two
+wrapper calls. The workflow uses a bounded Gradle dependency cache, enforces a
+20-minute job timeout, records calls/runtime, and uploads reports plus sanitized
+runner artifacts. It stays separate from the protected aggregate `verify` job.
 
 ## Current limitations
 

@@ -1,5 +1,7 @@
 """Tests deterministic Gradle DSL fragments and curated Java rulesets."""
 
+from dataclasses import dataclass
+
 import pytest
 
 from agent_maintainer.ecosystems.java.templates.api import (
@@ -8,37 +10,50 @@ from agent_maintainer.ecosystems.java.templates.api import (
     ruleset_text,
 )
 
+MIN_XML_REQUIRED_OCCURRENCES = 3
+
+
+@dataclass(frozen=True)
+class _TemplateExpectation:
+    dsl: str
+    spotless_version: str
+    spotbugs_version: str
+    quote: str
+    confidence: str
+    spotbugs_xml: str
+
 
 @pytest.mark.parametrize(
-    ("dsl", "spotless_version", "spotbugs_version", "quote"),
+    "expected",
     (
-        (
+        _TemplateExpectation(
             "groovy",
             "com.diffplug.spotless' version '8.8.0",
             "com.github.spotbugs' version '6.5.9",
             "'",
+            "Confidence.valueOf('MEDIUM')",
+            "xml.required = true",
         ),
-        (
+        _TemplateExpectation(
             "kotlin",
             'com.diffplug.spotless") version "8.8.0',
             'com.github.spotbugs") version "6.5.9',
             '"',
+            "Confidence.MEDIUM",
+            'reports.create("xml")',
         ),
     ),
 )
 def test_build_fragments_pin_plugins_and_native_defaults(
-    dsl: str,
-    spotless_version: str,
-    spotbugs_version: str,
-    quote: str,
+    expected: _TemplateExpectation,
 ) -> None:
-    fragment = render_build_fragment(dsl)
+    fragment = render_build_fragment(expected.dsl)
 
-    assert spotless_version in fragment
-    assert spotbugs_version in fragment
-    assert f"googleJavaFormat({quote}1.35.0{quote})" in fragment
+    assert expected.spotless_version in fragment
+    assert expected.spotbugs_version in fragment
+    assert f"googleJavaFormat({expected.quote}1.35.0{expected.quote})" in fragment
     assert "Effort.MAX" in fragment
-    assert "Confidence.MEDIUM" in fragment
+    assert expected.confidence in fragment
     assert "13.8.0" in fragment
     assert "7.26.0" in fragment
     assert "0.8.15" in fragment
@@ -46,7 +61,11 @@ def test_build_fragments_pin_plugins_and_native_defaults(
     assert "agentMaintainer.jacoco.minimumBranchCoverage" in fragment
     assert "COVEREDRATIO" in fragment
     assert "jacocoTestReport" in fragment
-    assert "xml" in fragment
+    assert "SpotBugsTask" in fragment
+    assert expected.spotbugs_xml in fragment
+    assert fragment.count("xml.required") >= MIN_XML_REQUIRED_OCCURRENCES
+    assert "dependsOn" in fragment
+    assert "test" in fragment
     assert "@" not in fragment
 
 

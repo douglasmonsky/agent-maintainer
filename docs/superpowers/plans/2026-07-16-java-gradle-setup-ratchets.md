@@ -21,72 +21,72 @@
 
 **Files:** Create `src/agent_maintainer/ecosystems/java/defaults.py`; create `src/agent_maintainer/ecosystems/java/templates/**`; create `tests/ecosystems/java/test_{defaults,templates}.py`.
 
-- [ ] Write failing snapshot/semantic tests for pinned plugins, SpotBugs effort/confidence, non-format Checkstyle/PMD rules, complexity 10/15/200, file ceilings 500/375, and coverage 80/70.
-- [ ] Verify RED, implement immutable defaults and Groovy/Kotlin DSL fragments, then verify GREEN.
-- [ ] Commit: `feat: add deterministic Java Gradle defaults`.
+- [x] Write failing snapshot/semantic tests for pinned plugins, SpotBugs effort/confidence, non-format Checkstyle/PMD rules, complexity 10/15/200, file ceilings 500/375, and coverage 80/70.
+- [x] Verify RED, implement immutable defaults and Groovy/Kotlin DSL fragments, then verify GREEN.
+- [x] Commit: `feat: add deterministic Java Gradle defaults`.
 
 ### Task 2: Build safe Java setup plans and semantic-edit handoffs
 
 **Files:** Create `src/agent_maintainer/ecosystems/java/setup.py`; modify `src/agent_maintainer/core/setup_plans.py`; create `tests/ecosystems/java/test_setup.py`; create `tests/fixtures/java_gradle/{groovy_single,kotlin_multi}/**`.
 
-- [ ] Write failing tests for new Java-only, mixed, single/multi-project, recognized scaffold edits, idempotence, preview/apply parity, typed semantic-edit requests/results for arbitrary builds, displayed diffs, validation results, and safe refusal on ambiguity.
-- [ ] Verify RED, implement typed setup decisions, deterministic writes, and the agent-assisted handoff boundary; require a reviewed diff before applying any semantic-edit result, then verify GREEN.
-- [ ] Commit: `feat: plan Java Gradle setup safely`.
+- [x] Write failing tests for new Java-only, mixed, single/multi-project, recognized scaffold edits, idempotence, preview/apply parity, typed semantic-edit requests/results for arbitrary builds, displayed diffs, validation results, and safe refusal on ambiguity.
+- [x] Verify RED, implement typed setup decisions, deterministic writes, and the agent-assisted handoff boundary; require a reviewed diff before applying any semantic-edit result, then verify GREEN.
+- [x] Commit: `feat: plan Java Gradle setup safely`.
 
 ### Task 3: Integrate evidence, advisor, and setup skill
 
 **Files:** Modify `src/agent_maintainer/assess/{models,evidence,setup_advisor}.py`; modify `src/agent_maintainer/skill/resources/agent-maintainer-setup/SKILL.md`; modify `tests/assess/test_setup_advisor*.py`; modify `tests/skill/test_interaction_contract.py`.
 
-- [ ] Write failing tests showing Java recommendations require concrete wrapper/build/source evidence and that all three existing modes explain Java choices.
-- [ ] Verify RED, add bounded Gradle/module evidence and skill routing, then verify GREEN.
-- [ ] Commit: `feat: guide Java Gradle repository setup`.
+- [x] Write failing tests showing Java recommendations require concrete wrapper/build/source evidence and that all three existing modes explain Java choices.
+- [x] Verify RED, add bounded Gradle/module evidence and skill routing, then verify GREEN.
+- [x] Commit: `feat: guide Java Gradle repository setup`.
 
 ### Task 4: Validate Spotless native ratchets
 
 **Files:** Modify `src/agent_maintainer/ecosystems/java/{setup,runner}.py`; create `tests/ecosystems/java/test_spotless_ratchet.py`; create established-repo fixtures.
 
-- [ ] Write failing tests for explicit base refs, shallow/unavailable refs failing configuration, CI fetch guidance, and verification never applying formatting.
-- [ ] Verify RED, implement `ratchetFrom` configuration/validation, then verify GREEN.
-- [ ] Commit: `feat: enforce Spotless ratchet references`.
+- [x] Write failing tests for explicit base refs, shallow/unavailable refs failing configuration, CI fetch guidance, and verification never applying formatting.
+- [x] Verify RED, implement `ratchetFrom` configuration/validation, then verify GREEN.
+- [x] Commit: `feat: enforce Spotless ratchet references`.
 
 ### Task 5: Observe Gradle tasks and reports safely
 
 **Files:** Create `src/agent_maintainer/ecosystems/java/observations.py`; create `tests/ecosystems/java/test_gradle_observations.py`; modify `src/agent_maintainer/ecosystems/java/runner.py`.
 
-- [ ] Write failing tests for task-scoped requested-task outcomes and pre-run report snapshots, including symlinked report matches escaping `gradle_root`.
-- [ ] Verify RED, implement the shared `GradleObservation`/`ReportSnapshot` API used by all later report and baseline work, then verify GREEN.
-- [ ] Commit: `feat: observe Gradle task evidence safely`.
+- [x] Write failing tests for task-scoped requested-task outcomes and pre-run report snapshots, including symlinked report matches escaping `gradle_root`.
+- [x] Verify RED, implement the shared `GradleObservation`/`ReportSnapshot` API used by all later report and baseline work, then verify GREEN.
+- [x] Commit: `feat: observe Gradle task evidence safely`.
 
 ### Task 6: Parse and create SpotBugs native baselines safely
 
 **Files:** Create `src/agent_maintainer/ecosystems/java/reports/{__init__,xml,spotbugs}.py`; modify `src/agent_maintainer/ecosystems/java/{setup,runner}.py`; create `tests/ecosystems/java/test_{spotbugs_report,spotbugs_baseline,native_ratchet_runner}.py`.
 
-- [ ] Write failing tests for DTD/entity rejection, byte/element/finding/message limits, malformed/incomplete/stale/failed task-scoped evidence, deterministic native XML creation, and verification immutability.
-- [ ] Verify RED, implement bounded XML input and successful-complete-evidence baseline creation over the shared observation API, then verify GREEN.
-- [ ] Commit: `feat: add safe SpotBugs native baselines`.
+- [x] Write failing tests for DTD/entity rejection, byte/element/finding/message limits, malformed/incomplete/stale/failed task-scoped evidence, deterministic native XML creation, and verification immutability.
+- [x] Verify RED, implement bounded XML input and successful-complete-evidence baseline creation over the shared observation API, then verify GREEN.
+- [x] Commit: `feat: add safe SpotBugs native baselines`.
 
 ### Task 7: Orchestrate reviewed post-edit validation
 
 **Files:** Modify `src/agent_maintainer/ecosystems/java/setup.py` and setup skill; create `tests/ecosystems/java/test_setup_validation.py`.
 
-- [ ] Write failing tests for this exact opt-in sequence: wrapper/version check; show and approve `tasks --all`; observation-mode report tasks when baselining; baseline generation only after successful evidence; normal doctor; full verification.
-- [ ] Implement the ordered plan while proving normal doctor and verification never perform task discovery.
-- [ ] Commit: `feat: validate reviewed Java Gradle setup`.
+- [x] Write failing tests for this exact opt-in sequence: wrapper/version check; show and approve `tasks --all`; observation-mode report tasks when baselining; baseline generation only after successful evidence; normal doctor; full verification.
+- [x] Implement the ordered plan while proving normal doctor and verification never perform task discovery.
+- [x] Commit: `feat: validate reviewed Java Gradle setup`.
 
 ### Task 8: Generate repository CI plans
 
 **Files:** Extend Java setup/templates; create `tests/ecosystems/java/test_ci_setup.py`.
 
-- [ ] Write failing tests for cache-aware `static-and-policy` and `tests-and-coverage` jobs, preserving the repository's CI framework/JDK convention, displaying workflow diffs, and fetching the configured Spotless ref.
-- [ ] Implement reviewed workflow plans with safe refusal for unknown CI structures; do not overwrite arbitrary workflows.
-- [ ] Commit: `feat: plan Java Gradle verification CI`.
+- [x] Write failing tests for cache-aware `static-and-policy` and `tests-and-coverage` jobs, preserving the repository's CI framework/JDK convention, displaying workflow diffs, and fetching the configured Spotless ref.
+- [x] Implement reviewed workflow plans with safe refusal for unknown CI structures; do not overwrite arbitrary workflows.
+- [x] Commit: `feat: plan Java Gradle verification CI`.
 
 ### Task 9: Close the setup/native-ratchet gate
 
 **Files:** Modify relevant doctor/docs/config reference tests; add a phase-specific cohesive change plan.
 
-- [ ] Add doctor checks for ratchet refs and baseline paths without executing Gradle.
-- [ ] Update setup/config public docs and DocSync evidence for behavior introduced in this phase.
-- [ ] Run all Phase 2/3 focused tests, `just doctor`, and `just v`.
-- [ ] Confirm arbitrary existing builds are never regex-rewritten and no Checkstyle/PMD debt baseline appears yet.
-- [ ] Commit: `docs: complete Java setup and native ratchet gate`.
+- [x] Add doctor checks for ratchet refs and baseline paths without executing Gradle.
+- [x] Update setup/config public docs and DocSync evidence for behavior introduced in this phase.
+- [x] Run all Phase 2/3 focused tests, `just doctor`, and `just v`.
+- [x] Confirm arbitrary existing builds are never regex-rewritten and no Checkstyle/PMD debt baseline appears yet.
+- [x] Commit: `docs: complete Java setup and native ratchet gate`.

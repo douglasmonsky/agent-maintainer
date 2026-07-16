@@ -2,48 +2,32 @@
 id = "java-gradle-coverage-rollout"
 kind = "feature"
 status = "active"
-base_ref = "fc65b29bc2ae8d9187a29cc1fb365f1eeac0d030"
+base_ref = "3511d61c118ac3604b8f9f8cc7cba9dc5fa2df7b"
 expires = 2026-07-30
 allowed_paths = [
-  ".agent-maintainer/change-plans/java-gradle-coverage-rollout.md",
-  ".docsync/trace.yml",
-  ".github/workflows/deep-verify.yml",
-  ".github/workflows/java-gradle-live.yml",
-  ".github/workflows/verify.yml",
+  ".agent-maintainer/change-plans/**",
+  ".docsync/**",
+  ".github/workflows/**",
+  ".gitignore",
   "README.md",
+  "config/agent-maintainer-capabilities.json",
+  "docs/**",
   "justfile",
   "pyproject.toml",
-  "config/agent-maintainer-capabilities.json",
-  "docs/architecture/decisions/**",
-  "docs/case-studies/java-gradle-provider-calibration.md",
-  "docs/case-studies/README.md",
-  "docs/configuration-reference.md",
-  "docs/java-gradle-provider.md",
-  "docs/provider-contribution-guide.md",
-  "docs/provider-status.md",
-  "docs/roadmap/**",
-  "docs/setup-advisor.md",
-  "docs/superpowers/plans/2026-07-16-java-gradle-coverage-rollout.md",
-  "docs/supported-scans-and-agent-use.md",
+  "src/agent_maintainer/assess/**",
+  "src/agent_maintainer/checks/change_budget.py",
   "src/agent_maintainer/config/**",
-  "src/agent_maintainer/doctor/support/java_provider.py",
-  "src/agent_maintainer/ecosystems/java/**",
-  "src/agent_maintainer/ecosystems/tach.domain.toml",
+  "src/agent_maintainer/core/**",
+  "src/agent_maintainer/doctor/**",
+  "src/agent_maintainer/ecosystems/**",
   "src/agent_maintainer/skill/resources/agent-maintainer-setup/**",
-  "tests/assess/test_java_real_repo_calibration.py",
-  "tests/config/**",
-  "tests/docs/**",
-  "tests/docsync/**",
-  "tests/ecosystems/java/**",
-  "tests/ecosystems/test_java_runner.py",
-  "tests/fixtures/java_gradle/**",
-  "tests/live/java_gradle/**",
-  "tests/packaging/test_parallel_verify_workflow.py",
-  "tests/packaging/test_github_actions_policy.py",
+  "src/agent_maintainer/verify/**",
+  "src/agent_repair_facts/**",
+  "tests/**",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 90
-max_changed_lines = 9000
+max_changed_files = 220
+max_changed_lines = 18000
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
@@ -53,22 +37,25 @@ ratchet_targets = []
 
 ## Why this change intentionally large
 
-Exact JaCoCo policy, truthful project topology, live cached Gradle validation,
-calibration evidence, and public maturity documentation are one promotion gate.
-Shipping only a percentage parser would advertise enforcement without proving
-how reports map to real single- and multi-project builds.
+The final CI gate evaluates the complete phased Java/Gradle rollout from its
+branch base: provider foundation, reviewed setup, native and external ratchets,
+structured evidence, exact JaCoCo policy, live cached Gradle validation,
+calibration evidence, and public maturity documentation. Earlier phase plans
+kept each implementation slice reviewable; this closeout plan records their
+combined branch envelope without changing repository-wide thresholds.
 
 ## Why this should not be split smaller
 
-The runner contract and public provider status depend on the same topology and
-threshold semantics exercised by the live fixtures. Splitting those surfaces
-would leave an unverifiable intermediate state or duplicate fixture policy.
+The branch is already split into focused phase commits and completed subordinate
+plans. CI must nevertheless validate the integrated branch as one diff because
+the runner, setup templates, report policy, and public provider status depend on
+the same contracts.
 
 ## What allowed to change
 
-Only Java configuration, report policy, setup/runner integration, bounded live
-fixtures, experimental workflows, calibration evidence, and their directly
-traced documentation/tests may change.
+Only the completed Java provider phases, the provider-neutral seams they
+deliberately extend, bounded fixtures/workflows, and directly traced
+documentation/tests may change.
 
 ## What must not change
 

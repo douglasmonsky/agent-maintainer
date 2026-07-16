@@ -150,11 +150,22 @@ def _current_properties_path(workspace: Path, gradle_root: Path) -> Path:
 
 def _base_properties_path(workspace: Path, gradle_root: Path) -> PurePosixPath:
     current = _current_properties_path(workspace, gradle_root)
+    git_root = _git_root(workspace)
     try:
-        relative = current.relative_to(workspace.resolve(strict=True))
+        relative = current.relative_to(git_root)
     except ValueError as exc:
         raise JacocoThresholdError("Gradle coverage properties escape the repository") from exc
     return PurePosixPath(relative.as_posix())
+
+
+def _git_root(workspace: Path) -> Path:
+    completed = _run_git(workspace, "rev-parse", "--show-toplevel")
+    if completed.returncode != 0 or not completed.stdout.strip():
+        raise JacocoThresholdError("Git repository root is unavailable")
+    try:
+        return Path(completed.stdout.strip()).resolve(strict=True)
+    except OSError as exc:
+        raise JacocoThresholdError("Git repository root is unavailable") from exc
 
 
 def parse_thresholds(

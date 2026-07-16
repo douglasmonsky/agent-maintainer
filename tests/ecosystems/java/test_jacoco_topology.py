@@ -37,6 +37,19 @@ def test_default_single_project_coverage_is_labeled_as_root_project() -> None:
     assert [(plan.coverage_scope, plan.coverage_label) for plan in plans] == [("project", ":")]
 
 
+def test_non_coverage_group_does_not_require_jacoco_reports() -> None:
+    """Independent static execution must not validate an unrequested JaCoCo topology."""
+
+    config = JavaGradleConfig(
+        enabled=True,
+        checks=("spotless", "jacoco"),
+        spotless_tasks=("spotlessCheck",),
+        jacoco_report_tasks=("jacocoTestReport",),
+    )
+
+    assert provider.plan_reports(config, ("spotlessCheck",)) == ()
+
+
 def test_multi_project_aggregate_requires_one_explicit_real_report() -> None:
     aggregate = JavaReportExpectation(
         "jacoco",

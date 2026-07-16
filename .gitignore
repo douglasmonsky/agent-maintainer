@@ -1,6 +1,7 @@
 .coverage
 .coverage.*
 .coverage *
+.gradle/
 .idea/
 .mypy_cache/
 .pytest_cache/

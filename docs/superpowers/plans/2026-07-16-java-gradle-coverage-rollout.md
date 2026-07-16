@@ -39,7 +39,7 @@
 
 - [x] Write failing workflow tests for protected aggregate job `verify`, Java static/tests group placement, wrapper validation, dependency caching, offline-friendly fixtures, bounded timeouts, artifact upload, and explicit Linux/Windows matrix coverage.
 - [x] Verify RED, add a separate cached experimental live workflow/nightly Linux/Windows matrix, then verify GREEN.
-- [x] Run live Groovy and Kotlin DSL fixtures with the checked wrappers; record wrapper calls and runtime.
+- [x] Run live Groovy and Kotlin DSL fixtures through the grouped Agent Maintainer runner with the checked wrappers; prove native Spotless/SpotBugs wiring, report parsing, two-call full verification, and runtime.
 - [x] Commit: `ci: validate live Java Gradle fixtures in parallel`.
 
 ### Task 4: Calibrate on representative repositories
@@ -61,8 +61,28 @@
 
 ### Task 6: Run promotion and completion audit
 
-- [ ] Run the complete Phase 6 test list, `python -m docsync doctor`, `python -m docsync check --base origin/main`, `just doctor`, `just vc`, and `just v`.
-- [ ] Audit wrapper-call budgets, no `tasks --all`, no system Gradle fallback, no baseline mutation during verification, no unsafe XML, no compatibility shims, and clean provider ordering.
-- [ ] Perform one independent full-branch review against all three specs; fix findings test-first and rerun impacted/full gates.
-- [ ] Mark the implementation plan complete only when every promotion gate has current evidence; keep the provider experimental otherwise.
-- [ ] Commit: `feat: complete experimental Java Gradle rollout`.
+- [x] Run the complete Phase 6 test list, `python -m docsync doctor`, `python -m docsync check --base origin/main`, `just doctor`, `just vc`, and `just v`.
+- [x] Audit wrapper-call budgets, no `tasks --all`, no system Gradle fallback, no baseline mutation during verification, no unsafe XML, no compatibility shims, and clean provider ordering.
+- [x] Perform one independent full-branch review against all three specs; fix findings test-first and rerun impacted/full gates.
+- [x] Assess every promotion gate against current evidence and keep the provider experimental for every unmet gate. Implementation-plan completion does not itself promote the provider.
+- [x] Commit: `feat: complete experimental Java Gradle rollout`.
+
+### Promotion assessment
+
+| Gate | Current evidence | Result |
+| --- | --- | --- |
+| Both DSLs, hermetic and live | Hermetic suites plus local grouped live runs for Groovy and Kotlin | Proven locally |
+| Linux and Windows wrappers | Resolver tests and configured four-cell CI matrix | Remote matrix run still required |
+| Java-only and mixed setup/verification | Controlled sanitized setup/calibration fixtures | Proven for controlled fixtures |
+| Multi-project qualified tasks | Hermetic task/report tests and controlled `:app` evidence | Proven for controlled fixture |
+| Native and external ratchets | Regression suites plus changed-file Spotless and upward-threshold JaCoCo live probes against a distinct Git base | Proven |
+| Missing/malformed reports | Bounded parser and task-evidence failure suites | Proven |
+| Python and TypeScript unchanged | Provider/catalog/config/group characterization suites | Proven |
+| Reviewable reversible setup | Digest-bound preview/apply and ambiguity-refusal suites | Proven |
+| Two-call full verification and timing | Both local live DSL runs pass with one artifact-recorded wrapper invocation per group | Proven locally |
+| Real-repository false positives/churn | Sanitized calibration only | External evidence still required |
+| Accurate experimental docs | Public docs and DocSync explicitly avoid parity/promotion claims | Proven |
+
+Outcome: keep Java/Gradle experimental. Successful remote cross-platform runs
+and external production-scale repository calibration remain promotion evidence,
+not hidden implementation prerequisites or reasons to claim stable support.

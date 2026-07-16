@@ -1,5 +1,9 @@
 plugins {
     java
+    id("com.diffplug.spotless") version "8.8.0"
+    id("com.github.spotbugs") version "6.5.9"
+    checkstyle
+    pmd
     jacoco
 }
 
@@ -10,6 +14,34 @@ repositories {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.14.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.1")
+}
+
+spotless {
+    java {
+        ratchetFrom("agent-maintainer-live-base")
+        googleJavaFormat("1.35.0")
+        importOrder()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+spotbugs {
+    effort = com.github.spotbugs.snom.Effort.MAX
+    reportLevel = com.github.spotbugs.snom.Confidence.MEDIUM
+    baselineFile = file("config/spotbugs/baseline.xml")
+}
+
+checkstyle {
+    toolVersion = "13.8.0"
+    configFile = file("config/checkstyle/checkstyle.xml")
+}
+
+pmd {
+    toolVersion = "7.26.0"
+    ruleSets = emptyList()
+    ruleSetFiles = files("config/pmd/pmd.xml")
 }
 
 tasks.test {
@@ -29,6 +61,29 @@ tasks.withType<Test>().configureEach {
     testLogging {
         events("failed", "skipped")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
+    reports.create("xml") {
+        required.set(true)
+    }
+    reports.create("html") {
+        required.set(false)
+    }
+}
+
+tasks.withType<org.gradle.api.plugins.quality.Checkstyle>().configureEach {
+    reports {
+        xml.required.set(true)
+        html.required.set(false)
+    }
+}
+
+tasks.withType<org.gradle.api.plugins.quality.Pmd>().configureEach {
+    reports {
+        xml.required.set(true)
+        html.required.set(false)
     }
 }
 

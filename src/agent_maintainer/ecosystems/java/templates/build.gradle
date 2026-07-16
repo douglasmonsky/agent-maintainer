@@ -19,7 +19,7 @@ spotless {
 
 spotbugs {
     effort = com.github.spotbugs.snom.Effort.MAX
-    reportLevel = com.github.spotbugs.snom.Confidence.MEDIUM
+    reportLevel = com.github.spotbugs.snom.Confidence.valueOf('MEDIUM')
 }
 
 checkstyle {
@@ -31,6 +31,27 @@ pmd {
     toolVersion = '@PMD_VERSION@'
     ruleSets = []
     ruleSetFiles = files('config/pmd/pmd.xml')
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+tasks.withType(org.gradle.api.plugins.quality.Checkstyle).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+tasks.withType(org.gradle.api.plugins.quality.Pmd).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
 }
 
 jacoco {
@@ -45,12 +66,14 @@ def agentMaintainerMinimumBranchCoverage = providers.gradleProperty(
 ).get().toBigDecimal()
 
 tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
     reports {
         xml.required = true
     }
 }
 
 tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('test')
     violationRules {
         rule {
             limit {

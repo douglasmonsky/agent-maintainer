@@ -18,6 +18,7 @@ checks = ["spotless", "spotbugs", "checkstyle", "pmd", "test", "jacoco"]
 gradle_args = ["--console=plain", "--continue"]
 source_roots = ["src/main/java", "**/src/main/java"]
 test_roots = ["src/test/java", "**/src/test/java"]
+projects = [":"]
 
 spotless_tasks = ["spotlessCheck"]
 spotbugs_tasks = ["spotbugsMain", "spotbugsTest"]
@@ -37,6 +38,7 @@ jacoco_profiles = ["full", "ci"]
 spotless_ratchet_ref = "origin/main"
 findings_baseline = ".agent-maintainer/java-findings-baseline.json"
 spotbugs_baseline = "config/spotbugs/baseline.xml"
+jacoco_ratchet_ref = "origin/main"
 jacoco_line_property = "agentMaintainer.jacoco.minimumLineCoverage"
 jacoco_branch_property = "agentMaintainer.jacoco.minimumBranchCoverage"
 
@@ -59,14 +61,17 @@ The frozen `JavaGradleConfig` contains exactly:
 
 - `enabled`, `gradle_root`, `checks`, and `gradle_args`;
 - production and test root patterns;
+- the ordered Gradle project labels covered by project-scoped reports;
 - tasks and profiles for each supported tool;
 - Spotless ratchet reference and both baseline paths;
-- JaCoCo line and branch property names;
+- JaCoCo ratchet reference plus line and branch property names;
 - an ordered tuple of `JavaReportExpectation` values.
 
 Each report expectation contains `tool`, `tasks`, repository-confined `globs`,
-and `required`. The default single-project expectations cover SpotBugs,
-Checkstyle, PMD, JUnit, and JaCoCo XML. Spotless has no report expectation.
+`required`, `coverage_scope`, and `coverage_label`. Coverage fields are empty for
+non-JaCoCo reports. The default single-project expectations cover SpotBugs,
+Checkstyle, PMD, JUnit, and project-scoped JaCoCo XML labeled `:`. Spotless has
+no report expectation.
 
 `MaintainerConfig` owns one `java: JavaGradleConfig` field. Provider metadata
 keeps the enablement string `java.enabled`; `provider_enabled` resolves direct

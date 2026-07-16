@@ -74,9 +74,11 @@ running the wrapper. Setup-only `tasks --all` requires a displayed approval.
 Reviewed GitHub Actions plans preserve the chosen JDK convention, add separate
 cached `static-and-policy` and `tests-and-coverage` jobs, and refuse to overwrite
 an existing managed workflow or an unknown CI framework.
-The repository's live fixture workflow separately validates Groovy and Kotlin
-DSL checked wrappers on Linux and Windows without lengthening protected
-aggregate verification.
+The repository's live fixture workflow is configured to validate Groovy and
+Kotlin DSL checked wrappers on Linux and Windows. It runs both grouped Agent
+Maintainer checks, native Spotless/SpotBugs ratchets, Checkstyle, PMD, tests,
+JaCoCo, and bounded report parsing without lengthening protected aggregate
+verification.
 
 Successful Gradle executions validate bounded Checkstyle, PMD, SpotBugs, JUnit,
 and JaCoCo XML evidence against exact task outcomes, configured report paths,

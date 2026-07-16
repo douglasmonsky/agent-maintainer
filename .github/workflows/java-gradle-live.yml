@@ -52,6 +52,14 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+
+      - name: Install Agent Maintainer
+        run: python -m pip install --disable-pip-version-check .
+
       - name: Validate wrapper and set up cached Gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
@@ -59,21 +67,64 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           validate-wrappers: true
 
-      - name: Run checked Gradle wrapper
+      - name: Run Agent Maintainer grouped Gradle checks
         working-directory: tests/live/java_gradle/${{ matrix.dsl }}
         shell: bash
+        env:
+          _AGENT_MAINTAINER_VERIFY_PROFILE: full
+          AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR: build/agent-maintainer-live
         run: |
           chmod +x gradlew
+          git config user.name "Agent Maintainer live CI"
+          git config user.email "agent-maintainer-live@invalid.example"
+          base_commit=$(printf '%s\n' "Agent Maintainer live ratchet base" | \
+            git commit-tree 'HEAD^{tree}' -p HEAD)
+          git update-ref refs/heads/agent-maintainer-live-base "$base_commit"
+          printf '\n// Agent Maintainer live ratchet probe.\n' \
+            >> src/main/java/example/Calculator.java
+          sed -i 's/minimumLineCoverage=0.80/minimumLineCoverage=0.81/' \
+            gradle.properties
+          sed -i 's/minimumBranchCoverage=0.70/minimumBranchCoverage=0.71/' \
+            gradle.properties
           SECONDS=0
           set +e
-          ./gradlew --no-daemon --console=plain --stacktrace check
-          status=$?
+          python -m agent_maintainer.ecosystems.java.runner --group static
+          static_status=$?
+          python -m agent_maintainer.ecosystems.java.runner --group tests
+          tests_status=$?
           set -e
           mkdir -p build/agent-maintainer-live
-          printf '%s\n' './gradlew --no-daemon --console=plain --stacktrace check' \
+          static_calls=$(python -c '
+          import json
+          with open(
+              "build/agent-maintainer-live/java-gradle/java-gradle-static.json",
+              encoding="utf-8",
+          ) as artifact:
+              print(json.load(artifact)["wrapper_invocations"])
+          ')
+          tests_calls=$(python -c '
+          import json
+          with open(
+              "build/agent-maintainer-live/java-gradle/java-gradle-tests.json",
+              encoding="utf-8",
+          ) as artifact:
+              print(json.load(artifact)["wrapper_invocations"])
+          ')
+          printf '%s\n' \
+            'python -m agent_maintainer.ecosystems.java.runner --group static' \
+            'python -m agent_maintainer.ecosystems.java.runner --group tests' \
+            > build/agent-maintainer-live/runner-calls.txt
+          printf 'static: %s\ntests: %s\n' "$static_calls" "$tests_calls" \
             > build/agent-maintainer-live/wrapper-calls.txt
           printf '%s\n' "$SECONDS" > build/agent-maintainer-live/runtime-seconds.txt
-          exit "$status"
+          if [ "$static_calls" -ne 1 ] || [ "$tests_calls" -ne 1 ]; then
+            echo "expected exactly one Gradle wrapper invocation per runner group" >&2
+            exit 1
+          fi
+          if [ "$static_status" -ne 0 ]; then
+            exit "$static_status"
+          fi
+          exit "$tests_status"
 
       - name: Upload live Gradle evidence
         if: always()

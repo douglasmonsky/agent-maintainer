@@ -142,6 +142,7 @@ def _execution_payload(
             exit_code=exit_code,
         )
     )
+    payload["wrapper_invocations"] = 1
     return payload
 
 

@@ -33,6 +33,29 @@ pmd {
     ruleSetFiles = files("config/pmd/pmd.xml")
 }
 
+tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
+    reports.create("xml") {
+        required.set(true)
+    }
+    reports.create("html") {
+        required.set(false)
+    }
+}
+
+tasks.withType<org.gradle.api.plugins.quality.Checkstyle>().configureEach {
+    reports {
+        xml.required.set(true)
+        html.required.set(false)
+    }
+}
+
+tasks.withType<org.gradle.api.plugins.quality.Pmd>().configureEach {
+    reports {
+        xml.required.set(true)
+        html.required.set(false)
+    }
+}
+
 jacoco {
     toolVersion = "@JACOCO_VERSION@"
 }
@@ -45,12 +68,14 @@ val agentMaintainerMinimumBranchCoverage = providers.gradleProperty(
 ).get().toBigDecimal()
 
 tasks.jacocoTestReport {
+    dependsOn(tasks.test)
     reports {
         xml.required.set(true)
     }
 }
 
 tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.test)
     violationRules {
         rule {
             limit {
