@@ -49,6 +49,12 @@ test roots from the scaffold, enable compatible local hooks and CI, and leave
 heavy, experimental, or ecosystem-specific gates disabled unless concrete
 repository evidence supports them.
 
+Recommended Java setup requires concrete Gradle wrapper, build file, and Java source evidence.
+When all three are present, enable Java with the repository wrapper, preserve
+the existing Gradle DSL and module layout, and use deterministic edits only for
+a recognized scaffold. Route every arbitrary existing build through a
+reviewed semantic-edit handoff; never regex-rewrite Gradle files.
+
 Show one concise summary containing the version, dependency strategy, track,
 preset, roots, clients, hooks, CI, and optional gates. Choosing Recommended
 already authorizes applying that summary; do not ask a routine third question.
@@ -70,7 +76,14 @@ topic only when repository evidence leaves it unresolved:
 - generated, vendored, fixture, or migration exclusions;
 - optional DocSync or advanced agent behavior;
 - experimental TypeScript support and each explicit TypeScript command;
+- Java setup details listed below;
 - the tool environment when no Python dependency convention exists.
+
+Ask Java questions only when the repository leaves them unresolved: Gradle DSL and module ownership,
+existing formatting or analysis plugins, the Spotless ratchet reference,
+native SpotBugs baseline creation, coverage thresholds, and CI/JDK conventions.
+Show the recommended answer and the concrete wrapper, build, source, or CI
+evidence supporting it.
 
 For every question, give the recommended answer, the evidence for it, and the
 consequence of each choice. Do not repeat settled decisions.
@@ -81,6 +94,10 @@ Walk through every supported installation, track, preset, path, hook, CI,
 architecture, quality, security, provider, and optional-component setting.
 Explain the default and trade-off for each. Collect every decision before writing repository files;
 do not expose an unexplained dump of CLI flags.
+
+For Java, cover every supported plugin version, ruleset, ratchet reference,
+native baseline, coverage, and CI choice. Preview the complete Gradle, ruleset,
+baseline, and workflow diff before applying any approved change.
 
 ## Install an exact version
 

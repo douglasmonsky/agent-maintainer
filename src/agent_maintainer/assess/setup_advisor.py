@@ -45,7 +45,7 @@ def build_setup_report(evidence: RepoEvidence) -> SetupAdvisorReport:
 
 def _recommended_track(evidence: RepoEvidence) -> str:
     """Return core, agent, hardening, or inspect track."""
-    if not _has_python_surface(evidence):
+    if not _has_supported_surface(evidence):
         return "inspect"
     if evidence.has_codex_hooks or evidence.has_claude_hooks or evidence.has_agent_guidance:
         return "agent"
@@ -56,14 +56,14 @@ def _recommended_track(evidence: RepoEvidence) -> str:
 
 def _recommended_preset(evidence: RepoEvidence) -> str:
     """Return initializer preset recommendation."""
-    if not _has_python_surface(evidence):
+    if not _has_supported_surface(evidence):
         return "manual-review"
     if (
-        evidence.source_files <= SMALL_REPO_FILE_LIMIT
-        and evidence.test_files <= SMALL_REPO_FILE_LIMIT
+        _source_file_count(evidence) <= SMALL_REPO_FILE_LIMIT
+        and _test_file_count(evidence) <= SMALL_REPO_FILE_LIMIT
     ):
         return "strict-new-repo"
-    if not evidence.has_tests and evidence.source_files >= LARGE_SOURCE_FILE_COUNT:
+    if _test_file_count(evidence) == 0 and _source_file_count(evidence) >= LARGE_SOURCE_FILE_COUNT:
         return "legacy-ratchet"
     if evidence.has_agent_guidance:
         return "ai-agent-heavy"
@@ -72,16 +72,16 @@ def _recommended_preset(evidence: RepoEvidence) -> str:
 
 def _confidence(evidence: RepoEvidence) -> str:
     """Return confidence level based on available repo signals."""
-    if not _has_python_surface(evidence) or evidence.scan_truncated:
+    if not _has_supported_surface(evidence) or evidence.scan_truncated:
         return "low"
     signal_count = sum(
         (
-            evidence.has_pyproject,
+            evidence.has_pyproject or _has_java_gradle_surface(evidence),
             evidence.has_git,
-            evidence.has_tests,
+            _test_file_count(evidence) > 0,
             evidence.has_src,
             evidence.has_ci,
-            evidence.source_files > 0,
+            _source_file_count(evidence) > 0,
         ),
     )
     if signal_count >= HIGH_CONFIDENCE_SIGNALS:
@@ -100,7 +100,7 @@ def _reasons(evidence: RepoEvidence, track: str, preset: str) -> tuple[str, ...]
     ]
     if evidence.scan_truncated:
         reasons.append("Evidence scan was truncated; review recommendations manually.")
-    if not _has_python_surface(evidence):
+    if not _has_supported_surface(evidence):
         reasons.append(
             "No Python package or source files detected; inspect repo type before init.",
         )
@@ -113,6 +113,11 @@ def _reasons(evidence: RepoEvidence, track: str, preset: str) -> tuple[str, ...]
         reasons.append("No test tree detected; require_tests may need staged adoption.")
     if evidence.has_pre_commit:
         reasons.append("Detected pre-commit configuration for local verification.")
+    if _has_java_gradle_surface(evidence):
+        reasons.append(
+            "Detected a Gradle wrapper, Gradle build file, and "
+            f"{evidence.java_source_files} Java source files.",
+        )
     return tuple(reasons)
 
 
@@ -164,6 +169,7 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
                 profiles=("precommit", "full", "ci"),
             ),
         )
+    gates.extend(_java_gate_recommendations(evidence))
     if evidence.has_container_or_iac:
         gates.append(
             GateRecommendation(
@@ -199,22 +205,31 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
 
 def _agent_prompts(evidence: RepoEvidence) -> tuple[str, ...]:
     """Return follow-up prompts for an AI agent adopting the repo."""
-    if not _has_python_surface(evidence):
+    if not _has_supported_surface(evidence):
         return (
             "Identify the repo language, package manager, test command, and CI command.",
             "Confirm Agent Maintainer is appropriate before writing starter files.",
-            "Run only a dry-run initializer until Python surfaces are confirmed.",
+            "Run only a dry-run initializer until a supported surface is confirmed.",
         )
-    prompts = [
-        "Identify generated, vendored, migration, and fixture paths checks should ignore.",
-        "Map source modules into likely architecture boundaries before enabling strict Tach.",
-        "List commands that are already the repo's real test, lint, type, and build gates.",
-    ]
-    if not evidence.has_tests:
+    prompts = ["List commands that are already the repo's real test, lint, type, and build gates."]
+    if _has_python_surface(evidence):
+        prompts.extend(
+            (
+                "Identify generated, vendored, migration, and fixture paths checks should ignore.",
+                "Map source modules into likely architecture boundaries before "
+                "enabling strict Tach.",
+            ),
+        )
+    if _test_file_count(evidence) == 0:
         prompts.append("Find the smallest behavior surface where tests should be added first.")
-    if evidence.source_files >= LARGE_SOURCE_FILE_COUNT:
+    if _source_file_count(evidence) >= LARGE_SOURCE_FILE_COUNT:
         prompts.append(
             "Group large folders by responsibility before tightening file-count gates.",
+        )
+    if _has_java_gradle_surface(evidence):
+        prompts.append(
+            "Create a reviewed Java Gradle setup plan; use deterministic scaffold edits or "
+            "a reviewed semantic-edit handoff for an arbitrary existing build.",
         )
     if _typescript_script_signals(evidence):
         prompts.append(
@@ -246,6 +261,50 @@ def _next_commands(track: str, preset: str) -> tuple[str, ...]:
 def _has_python_surface(evidence: RepoEvidence) -> bool:
     """Return whether evidence looks like a Python repository."""
     return evidence.has_pyproject or evidence.source_files > 0 or evidence.test_files > 0
+
+
+def _has_java_gradle_surface(evidence: RepoEvidence) -> bool:
+    """Return whether concrete evidence supports Java/Gradle recommendations."""
+    return (
+        evidence.has_gradle_wrapper
+        and bool(evidence.gradle_build_files)
+        and evidence.java_source_files > 0
+    )
+
+
+def _has_supported_surface(evidence: RepoEvidence) -> bool:
+    """Return whether a supported repository surface has complete evidence."""
+    return _has_python_surface(evidence) or _has_java_gradle_surface(evidence)
+
+
+def _source_file_count(evidence: RepoEvidence) -> int:
+    """Return source files across supported repository surfaces."""
+    return evidence.source_files + evidence.java_source_files
+
+
+def _test_file_count(evidence: RepoEvidence) -> int:
+    """Return test files across supported repository surfaces."""
+    return evidence.test_files + evidence.java_test_files
+
+
+def _java_gate_recommendations(
+    evidence: RepoEvidence,
+) -> tuple[GateRecommendation, ...]:
+    """Return Java provider guidance only for complete concrete evidence."""
+    if not _has_java_gradle_surface(evidence):
+        return ()
+    return (
+        GateRecommendation(
+            name="java-gradle-provider",
+            recommendation="enable",
+            reason=(
+                f"Gradle wrapper `{evidence.gradle_wrapper_paths[0]}`, build file "
+                f"`{evidence.gradle_build_files[0]}`, and Java source evidence are present."
+            ),
+            config_key="enable_java",
+            profiles=("precommit", "full", "ci"),
+        ),
+    )
 
 
 def _typescript_script_signals(evidence: RepoEvidence) -> tuple[str, ...]:
