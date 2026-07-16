@@ -117,11 +117,19 @@ def provider_status(metadata: ProviderMetadata, config: MaintainerConfig) -> str
     return f"{status} ({metadata.docs_path})"
 
 
+def config_field_value(config: MaintainerConfig, field_path: str) -> object:
+    """Resolve a direct or dotted configuration field path."""
+    value: object = config
+    for field_name in field_path.split("."):
+        value = getattr(value, field_name)
+    return value
+
+
 def provider_enabled(metadata: ProviderMetadata, config: MaintainerConfig) -> bool:
     """Return whether provider is enabled for this config."""
     if metadata.enabled_field is None:
         return metadata.enabled_by_default
-    return bool(getattr(config, metadata.enabled_field))
+    return bool(config_field_value(config, metadata.enabled_field))
 
 
 def provider_row_name(metadata: ProviderMetadata) -> str:

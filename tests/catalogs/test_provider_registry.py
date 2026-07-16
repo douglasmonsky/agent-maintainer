@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import fields
 from pathlib import Path
 
+from agent_maintainer.config.java import JavaGradleConfig
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.doctor.support.providers import provider_enabled
 from agent_maintainer.ecosystems.models import ProviderMaturity
@@ -22,9 +23,10 @@ def test_provider_metadata_names_and_maturity() -> None:
     # docsync:evidence.start evidence.provider_registry.active_providers
     providers = {metadata.name: metadata for metadata in builtin_provider_metadata()}
 
-    assert tuple(providers) == ("python", "typescript")
+    assert tuple(providers) == ("python", "typescript", "java")
     assert providers["python"].maturity == ProviderMaturity.CORE
     assert providers["typescript"].maturity == ProviderMaturity.EXPERIMENTAL
+    assert providers["java"].maturity == ProviderMaturity.EXPERIMENTAL
     # docsync:evidence.end evidence.provider_registry.active_providers
 
 
@@ -35,8 +37,14 @@ def test_provider_metadata_enabled_fields() -> None:
     assert providers["python"].enabled_by_default is True
     assert providers["python"].enabled_field is None
     assert providers["typescript"].enabled_field == "enable_typescript"
+    assert providers["java"].enabled_field == "java.enabled"
     assert MaintainerConfig().enable_typescript is False
     assert provider_enabled(providers["typescript"], MaintainerConfig(enable_typescript=True))
+    assert provider_enabled(providers["java"], MaintainerConfig()) is False
+    assert provider_enabled(
+        providers["java"],
+        MaintainerConfig(java=JavaGradleConfig(enabled=True)),
+    )
 
 
 def test_configured_provider_command_fields() -> None:
@@ -74,6 +82,7 @@ def test_registry_provider_order() -> None:
     assert python_provider().name == "python"
     assert [provider.name for provider in experimental_check_providers()] == [
         "typescript",
+        "java",
     ]
 
 
@@ -91,6 +100,11 @@ def test_registry_owns_classification_dispatch() -> None:
     assert [candidate.ecosystem for candidate in python_candidates] == ["python"]
     assert disabled_candidates == ()
     assert [candidate.ecosystem for candidate in enabled_candidates] == ["typescript"]
+    java_candidates = classification_candidates(
+        Path("src/main/java/App.java"),
+        MaintainerConfig(java=JavaGradleConfig(enabled=True)),
+    )
+    assert [candidate.ecosystem for candidate in java_candidates] == ["java"]
 
 
 def test_registry_owns_advisory_suppression_dispatch() -> None:

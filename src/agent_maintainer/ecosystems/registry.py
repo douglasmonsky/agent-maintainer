@@ -7,6 +7,7 @@ from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.ecosystems.java import classification as java_classification
+from agent_maintainer.ecosystems.java.provider import JavaProvider
 from agent_maintainer.ecosystems.models import (
     FileClassification,
     ProviderCommandSpec,
@@ -65,9 +66,19 @@ TYPESCRIPT_PROVIDER = ProviderMetadata(
     ),
 )
 
+JAVA_PROVIDER = ProviderMetadata(
+    name="java",
+    display_name="Java/Gradle",
+    maturity=ProviderMaturity.EXPERIMENTAL,
+    docs_path="docs/java-gradle-provider.md",
+    capabilities=("format", "static-analysis", "test", "coverage", "classification"),
+    enabled_field="java.enabled",
+)
+
 BUILTIN_PROVIDER_METADATA = (
     PYTHON_PROVIDER,
     TYPESCRIPT_PROVIDER,
+    JAVA_PROVIDER,
 )
 
 
@@ -81,9 +92,9 @@ def python_provider() -> PythonProvider:
     return PythonProvider()
 
 
-def experimental_check_providers() -> tuple[TypeScriptProvider]:
+def experimental_check_providers() -> tuple[TypeScriptProvider | JavaProvider, ...]:
     """Return experimental providers appended after stable Python checks."""
-    return (TypeScriptProvider(),)
+    return (TypeScriptProvider(), JavaProvider())
 
 
 def classification_candidates(
@@ -146,7 +157,8 @@ def java_classification_candidate(
 
     if not config.java.enabled:
         return None
-    return java_classification.classify_path(path, config.java)
+    normalized_path = path.as_posix() if isinstance(path, Path) else path
+    return java_classification.classify_path(normalized_path, config.java)
 
 
 CLASSIFICATION_PROVIDERS: tuple[ClassificationProvider, ...] = (
