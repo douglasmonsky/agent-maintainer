@@ -18,6 +18,8 @@ allowed_paths = [
   "src/agent_maintainer/assess/models.py",
   "src/agent_maintainer/config/coercion.py",
   "src/agent_maintainer/config/java.py",
+  "src/agent_maintainer/config/java_coercion.py",
+  "src/agent_maintainer/config/java_validation.py",
   "src/agent_maintainer/config/loader.py",
   "src/agent_maintainer/config/reference.py",
   "src/agent_maintainer/config/registry.py",
@@ -25,11 +27,16 @@ allowed_paths = [
   "src/agent_maintainer/config/schema_fields.py",
   "src/agent_maintainer/config/source_validation.py",
   "src/agent_maintainer/config/validation.py",
+  "src/agent_maintainer/config/tach.domain.toml",
   "src/agent_maintainer/doctor/cli.py",
   "src/agent_maintainer/doctor/support/policy.py",
+  "src/agent_maintainer/doctor/support/java_provider.py",
   "src/agent_maintainer/doctor/support/providers.py",
+  "src/agent_maintainer/doctor/tach.domain.toml",
   "src/agent_maintainer/ecosystems/java/__init__.py",
+  "src/agent_maintainer/ecosystems/java/artifacts.py",
   "src/agent_maintainer/ecosystems/java/classification.py",
+  "src/agent_maintainer/ecosystems/java/errors.py",
   "src/agent_maintainer/ecosystems/java/provider.py",
   "src/agent_maintainer/ecosystems/java/runner.py",
   "src/agent_maintainer/ecosystems/java/wrapper.py",
@@ -37,6 +44,8 @@ allowed_paths = [
   "src/agent_maintainer/ecosystems/tach.domain.toml",
   "src/agent_maintainer/verify/groups.py",
   "src/agent_maintainer/verify/run_steps.py",
+  "src/agent_maintainer/verify/tach.domain.toml",
+  "src/agent_maintainer/core/artifact_environment.py",
   "tests/archguard/test_decision_notes.py",
   "tests/assess/test_evidence.py",
   "tests/catalogs/test_global_catalog_characterization.py",
@@ -64,7 +73,7 @@ allowed_paths = [
   "tests/verify/test_run_steps.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 47
+max_changed_files = 56
 max_changed_lines = 4500
 allow_source_without_test_change = false
 requires_tests = true
@@ -91,9 +100,10 @@ tasks while exact paths and phase gates prevent later report/baseline scope.
 
 ## What allowed to change
 
-Only the Phase 1 configuration, evidence,
-classification, provider, wrapper, runner, doctor, architecture, documentation,
-fixtures, and focused tests listed above.
+Only the Phase 1 configuration, evidence, classification, provider, wrapper,
+runner, doctor, architecture, documentation, fixtures, and focused tests listed
+above. Java-specific config, doctor, artifact, and error modules may be split
+from shared modules when required by the existing cohesion gates.
 
 ## What must not change
 

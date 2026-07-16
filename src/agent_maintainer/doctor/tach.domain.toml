@@ -117,6 +117,7 @@ depends_on = [
  "//agent_maintainer.core.config",
  "support.context_artifacts",
  "support.context_health",
+ "support.java_provider",
  "support.models",
  "support.providers",
  "//agent_maintainer.models",
@@ -129,6 +130,17 @@ depends_on = [
  "//agent_maintainer.ecosystems.models",
  "//agent_maintainer.ecosystems.registry",
  "support.models",
+]
+
+[[modules]]
+path = "support.java_provider"
+depends_on = [
+ "//agent_maintainer.config.java",
+ "//agent_maintainer.config.schema",
+ "//agent_maintainer.ecosystems.java.provider",
+ "//agent_maintainer.ecosystems.java.wrapper",
+ "support.models",
+ "support.providers",
 ]
 
 [[modules]]

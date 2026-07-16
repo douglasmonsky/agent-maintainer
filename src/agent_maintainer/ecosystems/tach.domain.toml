@@ -31,6 +31,8 @@ depends_on = []
 
 path = "registry"
 depends_on = [
+ "java.classification",
+ "java.provider",
  "models",
  "python.classification",
  "python.provider",
@@ -39,6 +41,54 @@ depends_on = [
  "typescript.suppressions",
  "//agent_maintainer.config.schema",
 ]
+
+
+[[modules]]
+path = "java"
+depends_on = []
+
+[[modules]]
+path = "java.classification"
+depends_on = [
+  "models",
+  "//agent_maintainer.config.java",
+]
+
+[[modules]]
+path = "java.artifacts"
+depends_on = [
+  "//agent_maintainer.core.artifact_environment",
+  "java.provider",
+  "java.wrapper",
+]
+
+[[modules]]
+path = "java.errors"
+depends_on = []
+
+[[modules]]
+path = "java.provider"
+depends_on = [
+  "java.errors",
+  "models",
+  "//agent_maintainer.config.java",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "java.runner"
+depends_on = [
+  "//agent_maintainer.core.artifact_environment",
+  "java.artifacts",
+  "java.errors",
+  "java.provider",
+  "java.wrapper",
+  "//agent_maintainer.config.loader",
+]
+
+[[modules]]
+path = "java.wrapper"
+depends_on = ["java.errors"]
 
 
 [[modules]]

@@ -72,7 +72,8 @@ def _json_value(value: object) -> object:
     if is_dataclass(value) and not isinstance(value, type):
         return _json_value(asdict(value))
     if isinstance(value, dict):
-        return {str(key): _json_value(item) for key, item in value.items()}
+        raw = cast(dict[object, object], value)
+        return {str(key): _json_value(item) for key, item in raw.items()}
     if isinstance(value, tuple):
         values = cast(tuple[object, ...], value)
         return [_json_value(item) for item in values]

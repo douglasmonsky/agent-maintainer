@@ -60,6 +60,7 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.ratcheting_command_surface",
     "claim.docs.provider_status_python_core",
     "claim.docs.provider_status_no_active_go",
+    "claim.docs.java_provider_foundation",
     "claim.docs.typescript_provider_explicit_commands",
     "claim.docs.typescript_provider_repair_facts",
     "claim.docs.typescript_provider_unsupported_surface",

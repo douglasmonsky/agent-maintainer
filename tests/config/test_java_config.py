@@ -179,11 +179,7 @@ def test_java_config_rejects_invalid_nested_types(raw: object, message: str) -> 
         ({"test_tasks": ["--scan"]}, "java.test_tasks"),
         ({"test_tasks": ["test", "test"]}, "java.test_tasks"),
         (
-            {
-                "reports": [
-                    {"tool": "spotless", "tasks": ["spotlessCheck"], "globs": ["x"]}
-                ]
-            },
+            {"reports": [{"tool": "spotless", "tasks": ["spotlessCheck"], "globs": ["x"]}]},
             "java.reports.0.tool",
         ),
     ],

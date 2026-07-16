@@ -11,7 +11,9 @@ TESTS_AND_COVERAGE_GROUP = "tests-and-coverage"
 STATIC_AND_POLICY_GROUP = "static-and-policy"
 GROUP_NAMES = REQUIRED_GROUPS
 
-_TEST_CHECK_NAMES = frozenset(("diff-cover", "mutmut-target-ratchet", "pytest-coverage"))
+_TEST_CHECK_NAMES = frozenset(
+    ("diff-cover", "java-gradle-tests", "mutmut-target-ratchet", "pytest-coverage")
+)
 _STATIC_CHECK_NAMES = frozenset(
     (
         "actionlint",
@@ -24,6 +26,8 @@ _STATIC_CHECK_NAMES = frozenset(
         "file-length",
         "import-linter",
         "interrogate",
+        "java-gradle-format",
+        "java-gradle-static",
         "license-check",
         "markdownlint",
         "mutmut",

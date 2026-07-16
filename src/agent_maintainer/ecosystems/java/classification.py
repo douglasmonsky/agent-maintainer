@@ -20,6 +20,7 @@ BUILD_CONFIG_NAMES = frozenset(
 )
 DEPENDENCY_NAMES = frozenset(("gradlew", "gradlew.bat", "gradle.lockfile"))
 IGNORED_PARTS = frozenset((".gradle", ".idea", "build", "out"))
+CONFIG_PATH_PARTS = ("/config/checkstyle/", "/config/pmd/", "/config/spotbugs/")
 
 
 def classify_path(path: str | PurePosixPath, config: JavaGradleConfig) -> FileClassification:
@@ -32,7 +33,8 @@ def classify_path(path: str | PurePosixPath, config: JavaGradleConfig) -> FileCl
     special = _special_role(pure)
     if special is None:
         role = _owned_role(normalized, pure, config)
-        generated = ignored = False
+        generated = False
+        ignored = False
     else:
         role, generated, ignored = special
     return _result(normalized, role, generated=generated, ignored=ignored)
@@ -48,12 +50,17 @@ def _special_role(pure: PurePosixPath) -> tuple[FileRole, bool, bool] | None:
 
 
 def _owned_role(path: str, pure: PurePosixPath, config: JavaGradleConfig) -> FileRole:
+    role = FileRole.UNKNOWN
     if _is_dependency_path(path, pure.name):
-        return FileRole.DEPENDENCY
-    if _is_config_path(path, pure.name):
-        return FileRole.CONFIG
-    if pure.suffix != ".java":
-        return FileRole.UNKNOWN
+        role = FileRole.DEPENDENCY
+    elif _is_config_path(path, pure.name):
+        role = FileRole.CONFIG
+    elif pure.suffix == ".java":
+        role = _java_source_role(path, config)
+    return role
+
+
+def _java_source_role(path: str, config: JavaGradleConfig) -> FileRole:
     if _matches_roots(path, config.test_roots):
         return FileRole.TEST
     if _matches_roots(path, config.source_roots):
@@ -70,12 +77,11 @@ def _is_dependency_path(path: str, name: str) -> bool:
 
 
 def _is_config_path(path: str, name: str) -> bool:
+    framed = f"/{path}"
     return (
         name in BUILD_CONFIG_NAMES
         or path.endswith("gradle/libs.versions.toml")
-        or "/config/checkstyle/" in f"/{path}"
-        or "/config/pmd/" in f"/{path}"
-        or "/config/spotbugs/" in f"/{path}"
+        or any(part in framed for part in CONFIG_PATH_PARTS)
     )
 
 

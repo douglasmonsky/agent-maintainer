@@ -1,12 +1,10 @@
 """Verifier run steps shared by quiet CLI orchestration."""
 
 import argparse
-import contextlib
-import os
-from collections.abc import Generator, Sequence
+import typing
 from pathlib import Path
-from typing import NamedTuple, Protocol
 
+from agent_maintainer.core.artifact_environment import verification_profile_environment
 from agent_maintainer.core.check_run import utc_timestamp
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.core.executor import run_check
@@ -16,27 +14,11 @@ from agent_maintainer.verify.artifact_adapters import PartialRunContext
 from agent_maintainer.verify.artifacts import RunContext, write_run_artifacts
 from agent_maintainer.verify.git_refs import ref_failures
 
-VERIFY_PROFILE_ENV = "_AGENT_MAINTAINER_VERIFY_PROFILE"
 
-
-@contextlib.contextmanager
-def verification_profile_environment(profile: str) -> Generator[None, None, None]:
-    """Expose the selected verifier profile to command-only provider runners."""
-    previous = os.environ.get(VERIFY_PROFILE_ENV)
-    os.environ[VERIFY_PROFILE_ENV] = profile
-    try:
-        yield
-    finally:
-        if previous is None:
-            os.environ.pop(VERIFY_PROFILE_ENV, None)
-        else:
-            os.environ[VERIFY_PROFILE_ENV] = previous
-
-
-class CheckRuntimeEvents(Protocol):
+class CheckRuntimeEvents(typing.Protocol):
     """Check-level runtime event reporter used by verifier steps."""
 
-    def selected(self, checks: Sequence[Check]) -> None:
+    def selected(self, checks: typing.Sequence[Check]) -> None:
         """Record selected checks."""
 
     def check_started(self, check: Check) -> None:
@@ -49,7 +31,7 @@ class CheckRuntimeEvents(Protocol):
         """Record check exception."""
 
 
-class ArtifactRuntimeEvents(Protocol):
+class ArtifactRuntimeEvents(typing.Protocol):
     """Artifact runtime event reporter used by verifier steps."""
 
     def artifact_written(self, *, path: str, kind: str) -> None:
@@ -68,7 +50,7 @@ class ArtifactRuntimeEvents(Protocol):
         """Record run artifact retention pruning."""
 
 
-class ArtifactWriteOptions(NamedTuple):
+class ArtifactWriteOptions(typing.NamedTuple):
     """Options for writing verifier artifacts."""
 
     run_id: str

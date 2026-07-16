@@ -811,6 +811,15 @@ claims:
     severity: medium
     evidence:
       - evidence.provider_registry.no_active_go
+  claim.docs.java_provider_foundation:
+    object: docs.provider_status.overview
+    text: Provider status docs describe the Java/Gradle experimental foundation,
+      explicit checked-wrapper tasks, static doctor behavior, and deferred setup,
+      report, baseline, repair-fact, and coverage-ratchet surfaces.
+    severity: high
+    evidence:
+      - evidence.java.provider_foundation
+      - evidence.java.provider_foundation_tests
   claim.docs.typescript_provider_explicit_commands:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe disabled-by-default explicit
@@ -1224,6 +1233,20 @@ evidence:
       and optional skips when commands are empty.
     anchors:
       - path: src/agent_maintainer/ecosystems/typescript/provider.py
+        mode: explicit_region
+  evidence.java.provider_foundation:
+    type: code
+    description: Java provider builds explicit profile-aware grouped checks and
+      reports selected tools without configured tasks.
+    anchors:
+      - path: src/agent_maintainer/ecosystems/java/provider.py
+        mode: explicit_region
+  evidence.java.provider_foundation_tests:
+    type: test
+    description: Java doctor tests cover disabled silence, static wrapper/runtime/
+      task readiness, successful foundation state, and no Gradle execution.
+    anchors:
+      - path: tests/doctor/test_java_doctor.py
         mode: explicit_region
   evidence.typescript.provider_command_tests:
     type: test

@@ -40,9 +40,7 @@ def test_payload_covers_fields_and_tables() -> None:
         "java.reports.*",
         "workspaces.*",
     }
-    assert payload["nested_environment"] == {
-        "java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"
-    }
+    assert payload["nested_environment"] == {"java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"}
 
 
 def test_reference_cli_writes_and_detects_drift(tmp_path: Path) -> None:

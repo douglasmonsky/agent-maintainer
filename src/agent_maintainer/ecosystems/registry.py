@@ -70,7 +70,7 @@ JAVA_PROVIDER = ProviderMetadata(
     name="java",
     display_name="Java/Gradle",
     maturity=ProviderMaturity.EXPERIMENTAL,
-    docs_path="docs/java-gradle-provider.md",
+    docs_path="docs/provider-status.md",
     capabilities=("format", "static-analysis", "test", "coverage", "classification"),
     enabled_field="java.enabled",
 )

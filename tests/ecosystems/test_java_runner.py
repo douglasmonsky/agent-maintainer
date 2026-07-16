@@ -10,6 +10,7 @@ from typing import Any
 
 import pytest
 
+from agent_maintainer.ecosystems.java import artifacts as java_artifacts
 from agent_maintainer.ecosystems.java import runner
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "java_gradle"
@@ -79,11 +80,13 @@ def test_main_fails_selected_tool_without_tasks_before_execution(
     records, artifacts = _runner_environment(tmp_path, monkeypatch)
     monkeypatch.chdir(repo)
 
-    assert runner.main(["--group", "static"]) == runner.CONFIGURATION_EXIT_CODE
+    assert runner.main(["--group", "static"]) == java_artifacts.CONFIGURATION_EXIT_CODE
     assert not (records / "argv.txt").exists()
     artifact = _read_artifact(artifacts, "static")
     assert artifact["status"] == "configuration-error"
-    assert "java.spotbugs_tasks" in artifact["error"]
+    error = artifact["error"]
+    assert isinstance(error, str)
+    assert "java.spotbugs_tasks" in error
 
 
 def test_main_sanitizes_missing_wrapper_error(
@@ -95,7 +98,7 @@ def test_main_sanitizes_missing_wrapper_error(
     _, artifacts = _runner_environment(tmp_path, monkeypatch)
     monkeypatch.chdir(repo)
 
-    assert runner.main(["--group", "tests"]) == runner.CONFIGURATION_EXIT_CODE
+    assert runner.main(["--group", "tests"]) == java_artifacts.CONFIGURATION_EXIT_CODE
     artifact_path = _artifact_path(artifacts, "tests")
     artifact_text = artifact_path.read_text(encoding="utf-8")
     assert str(repo) not in artifact_text
@@ -137,7 +140,7 @@ def test_artifact_is_bounded_when_task_list_is_large(
     assert runner.main(["--group", "tests"]) == 0
     artifact_path = _artifact_path(artifacts, "tests")
     artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
-    assert artifact_path.stat().st_size <= runner.MAX_ARTIFACT_BYTES
+    assert artifact_path.stat().st_size <= java_artifacts.MAX_ARTIFACT_BYTES
     assert artifact["task_count"] == LARGE_TASK_COUNT
     assert artifact["tasks_truncated"] is True
 

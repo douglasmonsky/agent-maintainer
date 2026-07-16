@@ -21,9 +21,10 @@ The product is currently Python-core with a provider architecture:
 
 - Python is the core/reference provider.
 - TypeScript/JavaScript is experimental and explicitly configured.
+- Java/Gradle has an experimental explicit-task foundation.
 - Go provider history is archived out of the active mainline.
-- Additional ecosystems should wait until TypeScript evidence proves low-noise
-  advisory value.
+- Java priority for future repositories intentionally supersedes the former
+  TypeScript-first sequence; further ecosystems still require low-noise evidence.
 
 ## Current Baseline
 
@@ -69,7 +70,7 @@ Agent Maintainer
   Planned-change layer
     cohesive change plans, integration branch series
   Ecosystem-provider layer
-    Python core provider, experimental TypeScript/JavaScript provider
+    Python core provider, experimental TypeScript/JavaScript and Java/Gradle providers
   Documentation-trace layer
     DocSync evidence regions, claims, attestations, review packets
   Reporting/proof layer

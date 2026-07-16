@@ -6,7 +6,7 @@ from collections.abc import Mapping
 
 from agent_maintainer.config import registry
 from agent_maintainer.config.issues import ConfigIssue, ConfigValidationError
-from agent_maintainer.core.structured_values import json_object
+from agent_maintainer.core.structured_values import json_array, json_object
 
 TOOL_TABLE = "tool.agent_maintainer"
 
@@ -118,8 +118,8 @@ def _unknown_java(raw: dict[str, object], *, prefix: str) -> tuple[str, ...]:
     if value is None:
         return ()
     unknown = [f"{prefix}.java.{key}" for key in value if key not in registry.JAVA_KEYS]
-    reports = value.get("reports")
-    if isinstance(reports, list):
+    reports = json_array(value.get("reports"))
+    if reports is not None:
         unknown.extend(
             f"{prefix}.java.reports.{index}.{key}"
             for index, report in enumerate(reports)

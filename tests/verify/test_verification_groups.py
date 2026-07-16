@@ -23,6 +23,22 @@ def check(name: str) -> Check:
     return Check(name, [name], CI_ONLY_PROFILES)
 
 
+def test_java_groups_map_to_parallel_verification_boundaries() -> None:
+    checks = [
+        check("java-gradle-format"),
+        check("java-gradle-static"),
+        check("java-gradle-tests"),
+    ]
+
+    assert [item.name for item in checks_for_group(checks, "static-and-policy")] == [
+        "java-gradle-format",
+        "java-gradle-static",
+    ]
+    assert [item.name for item in checks_for_group(checks, "tests-and-coverage")] == [
+        "java-gradle-tests"
+    ]
+
+
 def test_group_selection_preserves_catalog_order() -> None:
     checks = [
         check("ruff"),
@@ -62,9 +78,6 @@ def test_duplicate_check_names_fail_closed() -> None:
 def test_unassigned_catalog_check_fails_closed() -> None:
     with pytest.raises(VerificationGroupError, match="unassigned check: future-check"):
         checks_for_group([check("future-check")], "static-and-policy")
-
-    with pytest.raises(VerificationGroupError, match="unassigned check: java-gradle-static"):
-        checks_for_group([check("java-gradle-static")], "static-and-policy")
 
 
 def test_current_ci_catalog_is_completely_partitioned() -> None:

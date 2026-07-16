@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import math
-import re
 from collections.abc import Mapping
 from pathlib import PurePosixPath
 from typing import cast
@@ -11,7 +10,7 @@ from typing import cast
 from agent_maintainer import models
 from agent_maintainer.config import registry, schema, source_validation, value_types
 from agent_maintainer.config.issues import ConfigIssue, ConfigValidationError
-from agent_maintainer.config.java import JAVA_TOOLS, REPORT_TOOLS
+from agent_maintainer.config.java_validation import java_issues
 
 TOOL_TABLE = source_validation.TOOL_TABLE
 
@@ -65,141 +64,11 @@ def validate_config(
     ]
     issues.extend(_workspace_issues(config, source=source))
     issues.extend(_file_baseline_issues(config, source=source))
-    issues.extend(_java_issues(config.java, source=source))
+    issues.extend(java_issues(config.java, source=source))
     issues.extend(_cross_field_issues(config, source=source))
     if issues:
         raise ConfigValidationError(tuple(issues))
     return config
-
-
-JAVA_TASK_PATTERN = re.compile(r"^:?[A-Za-z0-9][A-Za-z0-9_.-]*(?::[A-Za-z0-9][A-Za-z0-9_.-]*)*$")
-MAX_GRADLE_WORKERS = 4096
-MAX_GRADLE_WORKER_DIGITS = 4
-JAVA_TASK_FIELDS = (
-    "spotless_tasks",
-    "spotbugs_tasks",
-    "checkstyle_tasks",
-    "pmd_tasks",
-    "test_tasks",
-    "jacoco_report_tasks",
-    "jacoco_verify_tasks",
-)
-JAVA_PROFILE_RULES = {
-    "spotless_profiles": frozenset(("precommit", "full", "ci")),
-    "spotbugs_profiles": frozenset(("full", "ci")),
-    "checkstyle_profiles": frozenset(("full", "ci")),
-    "pmd_profiles": frozenset(("full", "ci")),
-    "test_profiles": frozenset(("full", "ci")),
-    "jacoco_profiles": frozenset(("full", "ci")),
-}
-
-
-def _java_issues(
-    java: schema.JavaGradleConfig,
-    *,
-    source: str,
-) -> tuple[ConfigIssue, ...]:
-    issues: list[ConfigIssue] = []
-    issues.extend(_java_choice_issues(java.checks, JAVA_TOOLS, "java.checks", source))
-    for name, allowed in JAVA_PROFILE_RULES.items():
-        issues.extend(_java_choice_issues(getattr(java, name), allowed, f"java.{name}", source))
-    for name in JAVA_TASK_FIELDS:
-        issues.extend(_java_task_issues(getattr(java, name), f"java.{name}", source))
-    issues.extend(_java_arg_issues(java.gradle_args, source=source))
-    for name in (
-        "gradle_root",
-        "source_roots",
-        "test_roots",
-        "findings_baseline",
-        "spotbugs_baseline",
-    ):
-        values = getattr(java, name)
-        items = values if isinstance(values, tuple) else (values,)
-        if name == "spotbugs_baseline":
-            items = tuple(item for item in items if item)
-        issues.extend(_java_path_issues(items, f"java.{name}", source))
-    for index, report in enumerate(java.reports):
-        prefix = f"java.reports.{index}"
-        issues.extend(_java_choice_issues((report.tool,), REPORT_TOOLS, f"{prefix}.tool", source))
-        issues.extend(_java_task_issues(report.tasks, f"{prefix}.tasks", source))
-        if not report.tasks:
-            issues.append(ConfigIssue(source, f"{prefix}.tasks", "must not be empty"))
-        if not report.globs:
-            issues.append(ConfigIssue(source, f"{prefix}.globs", "must not be empty"))
-        issues.extend(_java_path_issues(report.globs, f"{prefix}.globs", source))
-    return tuple(issues)
-
-
-def _java_choice_issues(
-    values: tuple[str, ...],
-    allowed: frozenset[str],
-    key: str,
-    source: str,
-) -> tuple[ConfigIssue, ...]:
-    return tuple(
-        ConfigIssue(source, key, f"unsupported value: {value}")
-        for value in values
-        if value not in allowed
-    )
-
-
-def _java_task_issues(
-    tasks: tuple[str, ...],
-    key: str,
-    source: str,
-) -> tuple[ConfigIssue, ...]:
-    issues = [
-        ConfigIssue(source, key, f"invalid Gradle task: {task}")
-        for task in tasks
-        if JAVA_TASK_PATTERN.fullmatch(task) is None
-    ]
-    if len(tasks) != len(set(tasks)):
-        issues.append(ConfigIssue(source, key, "task names must be unique"))
-    return tuple(issues)
-
-
-def _java_arg_issues(args: tuple[str, ...], *, source: str) -> tuple[ConfigIssue, ...]:
-    fixed = frozenset(("--console=plain", "--continue", "--stacktrace", "--offline"))
-    issues: list[ConfigIssue] = []
-    for argument in args:
-        valid = argument in fixed or re.fullmatch(
-            r"--warning-mode=(?:all|fail|summary|none)", argument
-        )
-        workers = re.fullmatch(r"--max-workers=([0-9]+)", argument)
-        if workers is not None:
-            digits = workers.group(1)
-            valid = (
-                len(digits) <= MAX_GRADLE_WORKER_DIGITS
-                and 1 <= int(digits) <= MAX_GRADLE_WORKERS
-            )
-        if not valid:
-            issues.append(
-                ConfigIssue(source, "java.gradle_args", f"unsupported argument: {argument}")
-            )
-    return tuple(issues)
-
-
-def _java_path_issues(
-    values: tuple[str, ...],
-    key: str,
-    source: str,
-) -> tuple[ConfigIssue, ...]:
-    return tuple(
-        ConfigIssue(source, key, f"path must be relative and confined: {value}")
-        for value in values
-        if _unsafe_java_path(value)
-    )
-
-
-def _unsafe_java_path(value: str) -> bool:
-    normalized = value.replace("\\", "/")
-    path = PurePosixPath(normalized)
-    return (
-        not value
-        or path.is_absolute()
-        or ".." in path.parts
-        or bool(re.match(r"^[A-Za-z]:", normalized))
-    )
 
 
 def validate_field_value(

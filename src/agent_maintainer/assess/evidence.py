@@ -56,25 +56,20 @@ def collect_evidence(
     root = target.resolve()
     scan = _scan_files(root, max_files=max_files)
     paths = scan.paths
-    python_files = tuple(path for path in paths if path.suffix == ".py")
-    relative_paths = tuple(sorted(path.relative_to(root).as_posix() for path in paths))
-    java_files = tuple(path for path in relative_paths if path.endswith(".java"))
-    java_test_files = tuple(path for path in java_files if _is_java_test_path(path))
-    java_source_files = tuple(path for path in java_files if _is_java_source_path(path))
-    test_files = tuple(path for path in python_files if _is_test_path(root, path))
-    source_files = tuple(path for path in python_files if not _is_test_path(root, path))
+    python_files, source_files, test_files = _python_file_groups(root, paths)
+    relative_paths = _relative_paths(root, paths)
+    java_source_files, java_test_files = _java_file_groups(relative_paths)
+    gradle_wrapper_paths = _matching_paths(relative_paths, ("gradlew", "gradlew.bat"))
     return RepoEvidence(
         target=str(root),
         has_agent_config=_has_agent_config(root),
         has_pyproject=(root / "pyproject.toml").exists(),
         has_git=(root / ".git").exists(),
-        has_tests=any((root / name).exists() for name in ("tests", "test")),
+        has_tests=_any_exists(root, ("tests", "test")),
         has_src=(root / "src").exists(),
         has_ci=(root / ".github" / "workflows").exists(),
         has_pre_commit=(root / ".pre-commit-config.yaml").exists(),
-        has_agent_guidance=any(
-            (root / name).exists() for name in ("AGENTS.md", "AGENTS.agent-maintainer.md")
-        ),
+        has_agent_guidance=_any_exists(root, ("AGENTS.md", "AGENTS.agent-maintainer.md")),
         has_codex_hooks=(root / ".codex" / "hooks").exists(),
         has_claude_hooks=(root / ".claude" / "hooks").exists(),
         has_tach=(root / "tach.toml").exists(),
@@ -101,10 +96,8 @@ def collect_evidence(
         scanned_files=len(paths),
         scan_source=scan.source,
         scan_truncated=scan.truncated,
-        has_gradle_wrapper=any(
-            PurePath(path).name in {"gradlew", "gradlew.bat"} for path in relative_paths
-        ),
-        gradle_wrapper_paths=_matching_paths(relative_paths, ("gradlew", "gradlew.bat")),
+        has_gradle_wrapper=bool(gradle_wrapper_paths),
+        gradle_wrapper_paths=gradle_wrapper_paths,
         gradle_settings_files=_matching_paths(
             relative_paths,
             ("settings.gradle", "settings.gradle.kts"),
@@ -120,6 +113,27 @@ def collect_evidence(
         java_test_files=len(java_test_files),
         java_module_paths=_java_module_paths(java_source_files, java_test_files),
     )
+
+
+def _python_file_groups(
+    root: Path,
+    paths: tuple[Path, ...],
+) -> tuple[tuple[Path, ...], tuple[Path, ...], tuple[Path, ...]]:
+    python_files = tuple(path for path in paths if path.suffix == ".py")
+    test_files = tuple(path for path in python_files if _is_test_path(root, path))
+    source_files = tuple(path for path in python_files if not _is_test_path(root, path))
+    return python_files, source_files, test_files
+
+
+def _relative_paths(root: Path, paths: tuple[Path, ...]) -> tuple[str, ...]:
+    return tuple(sorted(path.relative_to(root).as_posix() for path in paths))
+
+
+def _java_file_groups(paths: tuple[str, ...]) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    java_files = tuple(path for path in paths if path.endswith(".java"))
+    source_files = tuple(path for path in java_files if _is_java_source_path(path))
+    test_files = tuple(path for path in java_files if _is_java_test_path(path))
+    return source_files, test_files
 
 
 def _matching_paths(paths: tuple[str, ...], names: tuple[str, ...]) -> tuple[str, ...]:
@@ -139,14 +153,19 @@ def _java_module_paths(
     source_files: tuple[str, ...],
     test_files: tuple[str, ...],
 ) -> tuple[str, ...]:
-    modules = {
-        prefix
-        for path in (*source_files, *test_files)
-        for marker in ("/src/main/java/", "/src/test/java/")
-        if marker in path
-        if (prefix := path.split(marker, 1)[0])
-    }
+    modules: set[str] = set()
+    for path in (*source_files, *test_files):
+        prefix = _java_module_prefix(path)
+        if prefix:
+            modules.add(prefix)
     return tuple(sorted(modules))
+
+
+def _java_module_prefix(path: str) -> str:
+    for marker in ("/src/main/java/", "/src/test/java/"):
+        if marker in path:
+            return path.split(marker, 1)[0]
+    return ""
 
 
 def _scan_files(root: Path, *, max_files: int) -> FileScan:

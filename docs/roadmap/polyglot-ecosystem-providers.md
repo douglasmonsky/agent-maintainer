@@ -104,13 +104,18 @@ TypeScriptProvider.capabilities = {
 }
 ```
 
-The next provider-maturation pass should use TypeScript and React as the primary
-evidence target. React should be treated as a framework-heavy
+TypeScript and React remain a provider-maturation evidence target. React should
+be treated as a framework-heavy
 TypeScript/JavaScript repository shape, not as a separate ecosystem provider:
 fixture and external-repository evidence should cover React components, TSX
 tests, Vite, Next.js, workspace package managers, generated build outputs,
 coverage artifacts, and structured test facts before any blocking gate is
 promoted.
+
+Java/Gradle is the second built-in experimental priority because it is the
+maintainer's target for new repositories. That decision supersedes the former
+TypeScript-before-any-second-provider sequence, but it does not lower either
+provider's promotion bar or make the internal provider seam public.
 
 The provider API should not require symmetry between providers. Missing capabilities should produce clear not-applicable or disabled states, not fake checks.
 
@@ -387,14 +392,17 @@ Acceptance criteria:
 
 Scope:
 
-- Add a second experimental non-Python provider to validate the abstraction
-  outside Node after TypeScript/JavaScript has stronger evidence.
+- Add Java/Gradle as the second built-in experimental provider to validate the
+  abstraction outside Node.
+- Start with explicit checked-wrapper tasks, static doctor diagnostics, and
+  execution-only artifacts before setup, report, baseline, and coverage phases.
 
 Acceptance criteria:
 
 - Provider interface survives a second ecosystem without major conceptual contortions.
 - Any interface changes are documented as internal.
 - Community contribution model is refined.
+- Python and TypeScript behavior remains characterized and unchanged.
 
 ### Phase 11: Public Provider API Decision
 
