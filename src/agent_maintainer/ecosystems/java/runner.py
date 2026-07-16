@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 
 # Security: this module executes only a repository-confined checked wrapper.
 import subprocess  # nosec B404
@@ -104,7 +105,9 @@ def run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artif
     )
     payload["observation"] = observation.to_payload()
     if report_plans:
-        payload["reports"] = evidence.to_payload()
+        reports_payload = evidence.to_payload()
+        reports_payload["source_commit"] = _repository_head(workspace)
+        payload["reports"] = reports_payload
         payload["reports_parsed"] = evidence.report_count > 0
         payload["evidence_status"] = "validated" if evidence.passed else "regression"
     spotbugs_payload = evidence.spotbugs_payload()
@@ -174,6 +177,20 @@ def _run_wrapper(
     if completed.stdout:
         print(completed.stdout, end="")
     return completed
+
+
+def _repository_head(workspace: Path) -> str:
+    """Return the current immutable Git identity without failing verification."""
+    completed = subprocess.run(  # nosec B603
+        ("git", "-C", os.fspath(workspace), "rev-parse", "HEAD"),
+        check=False,
+        capture_output=True,
+        text=True,
+        shell=False,
+    )
+    head = completed.stdout.strip().lower()
+    valid = completed.returncode == 0 and re.fullmatch(r"[0-9a-f]{7,64}", head)
+    return head if valid else "unknown"
 
 
 def _configuration_error_outcome(

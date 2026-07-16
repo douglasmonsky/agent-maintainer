@@ -54,9 +54,9 @@
 
 **Files:** Modify `src/agent_maintainer/assess/cli.py`; create `tests/assess/test_java_baseline_cli.py`; update configuration reference docs.
 
-- [ ] Write failing CLI tests for `assess java-baseline create|inspect|prune`, successful-evidence requirement, dry-run output, deterministic writes, and nonzero invalid/stale input.
-- [ ] Verify RED, route the commands to Java baseline operations without aliases, then verify GREEN.
-- [ ] Commit: `feat: manage Java finding baselines explicitly`.
+- [x] Write failing CLI tests for `assess java-baseline create|inspect|prune`, successful-evidence requirement, dry-run output, deterministic writes, and nonzero invalid/stale input.
+- [x] Verify RED, route the commands to Java baseline operations without aliases, then verify GREEN.
+- [x] Commit: `feat: manage Java finding baselines explicitly`.
 
 ### Task 6: Extend provider-neutral per-path file ceilings
 

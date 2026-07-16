@@ -38,6 +38,7 @@ def test_runner_compares_fresh_findings_and_emits_sanitized_facts(
     assert outcome.exit_code == 0
     reports = outcome.payload["reports"]
     assert isinstance(reports, dict)
+    assert reports["source_commit"] == SOURCE_COMMIT
     assert reports["baseline"]["new_occurrences"] == 0
     assert reports["findings"][0]["rule"] == "Naming"
     assert "<checkstyle" not in json.dumps(outcome.payload)
@@ -137,6 +138,7 @@ def configure_runner(
     resolved = runner.wrapper.ResolvedGradleWrapper(repo, repo, repo / "gradlew")
     monkeypatch.setattr(runner, "_load_java_config", Mock(return_value=config))
     monkeypatch.setattr(runner.wrapper, "resolve_gradle_wrapper", Mock(return_value=resolved))
+    monkeypatch.setattr(runner, "_repository_head", Mock(return_value=SOURCE_COMMIT))
     output = stdout if stdout is not None else f"> Task :{TASK}\n"
     monkeypatch.setattr(
         runner,

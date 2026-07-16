@@ -110,6 +110,28 @@ def render_reference_markdown() -> str:
         "|---|---|",
         *_nested_environment_rows(),
         "",
+        "## Java Findings Baseline Lifecycle",
+        "",
+        "`java.findings_baseline` names the reviewed, repository-relative debt file. "
+        "Agent Maintainer never changes the baseline during verification.",
+        "Create or prune it only from a complete Java static-check artifact produced "
+        "successfully at the current clean Git `HEAD`; inspect is read-only.",
+        "",
+        "```bash",
+        "python -m agent_maintainer assess java-baseline create --target . "
+        "--artifact .verify-logs/java-gradle/java-gradle-static.json --dry-run",
+        "python -m agent_maintainer assess java-baseline create --target . "
+        "--artifact .verify-logs/java-gradle/java-gradle-static.json",
+        "python -m agent_maintainer assess java-baseline inspect --target . --json",
+        "python -m agent_maintainer assess java-baseline prune --target . "
+        "--artifact .verify-logs/java-gradle/java-gradle-static.json --dry-run",
+        "python -m agent_maintainer assess java-baseline prune --target . "
+        "--artifact .verify-logs/java-gradle/java-gradle-static.json",
+        "```",
+        "",
+        "`create` refuses an existing baseline. `prune` may only remove findings or lower "
+        "numeric ceilings. Both commands reject failed, stale, malformed, or truncated evidence.",
+        "",
         "## Fields",
         "",
         "| TOML key | Type | Default | Environment | CLI | Constraints | Stability |",

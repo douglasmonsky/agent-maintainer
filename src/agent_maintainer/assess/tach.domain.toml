@@ -13,6 +13,7 @@ depends_on = [
   "efficacy_reporting",
   "evidence",
   "file_baselines",
+  "java_baselines",
   "models",
 "repair_fact_coverage",
 "repair_fact_coverage_reporting",
@@ -92,6 +93,15 @@ depends_on = [
   "//agent_maintainer.config.schema",
   "//agent_maintainer.ecosystems.git_changes",
   "models",
+]
+
+[[modules]]
+path = "java_baselines"
+depends_on = [
+  "//agent_maintainer.ecosystems.java.artifacts",
+  "//agent_maintainer.ecosystems.java.baseline",
+  "//agent_maintainer.ecosystems.java.findings",
+  "//agent_maintainer.ecosystems.java.report_evidence",
 ]
 
 [[modules]]

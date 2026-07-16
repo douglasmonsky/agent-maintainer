@@ -19,6 +19,7 @@ allowed_paths = [
   "docs/supported-scans-and-agent-use.md",
   "src/agent_maintainer/assess/cli.py",
   "src/agent_maintainer/assess/file_baselines.py",
+  "src/agent_maintainer/assess/java_baselines.py",
   "src/agent_maintainer/assess/tach.domain.toml",
   "src/agent_maintainer/config/coercion.py",
   "src/agent_maintainer/config/reference.py",

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from pathlib import Path
@@ -12,6 +13,7 @@ from agent_maintainer.assess import (
     debt_score,
     efficacy,
     file_baselines,
+    java_baselines,
     repair_fact_coverage,
     repair_fact_coverage_reporting,
     reporting,
@@ -33,6 +35,8 @@ def main(argv: list[str] | None = None) -> int:
     """Run assessment subcommands."""
     args = parse_args([] if argv is None else argv)
     target = args.target.resolve()
+    if args.command == "java-baseline":
+        return _run_java_baseline(args, target)
     repo_evidence = assess_evidence.collect_evidence(target, max_files=args.max_files)
     status = 1
     if args.command == "setup":
@@ -109,6 +113,35 @@ def _run_file_baselines(args: argparse.Namespace, target: Path) -> int:
         else reporting.render_file_baselines_text(report),
     )
     return 0
+
+
+def _run_java_baseline(args: argparse.Namespace, target: Path) -> int:
+    """Run one explicit Java findings baseline lifecycle operation."""
+    try:
+        config = config_loader.load_config(target)
+        configured_path = config.java.findings_baseline
+        if args.java_baseline_operation == "inspect":
+            summary = java_baselines.inspect_configured(target, configured_path)
+            print(java_baselines.render_summary(summary, json_output=args.json), end="")
+            return 0
+        operation = (
+            java_baselines.create_from_artifact
+            if args.java_baseline_operation == "create"
+            else java_baselines.prune_from_artifact
+        )
+        destination, candidate = operation(target, configured_path, args.artifact)
+        rendered = java_baselines.render_candidate(candidate)
+        if not args.dry_run:
+            java_baselines.write_candidate(
+                destination,
+                candidate,
+                overwrite=args.java_baseline_operation == "prune",
+            )
+        print(rendered, end="")
+        return 0
+    except (OSError, TypeError, ValueError) as exc:
+        print(f"java-baseline: {exc}", file=sys.stderr)
+        return 2
 
 
 def _run_repair_fact_coverage(args: argparse.Namespace, target: Path) -> int:
@@ -194,6 +227,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     file_baselines_parser.add_argument("--json", action=STORE_TRUE)
     file_baselines_parser.add_argument("--base-ref", default="origin/main")
     file_baselines_parser.add_argument("--staged", action=STORE_TRUE)
+    _add_java_baseline_parser(subparsers.add_parser)
     repair_fact_parser = subparsers.add_parser(
         "repair-fact-coverage",
         help="Assess structured repair facts for recent failures.",
@@ -210,6 +244,29 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     repair_fact_parser.add_argument("--run-limit", type=int, default=10)
     _add_efficacy_parser(subparsers.add_parser)
     return parser.parse_args(argv)
+
+
+def _add_java_baseline_parser(
+    add_parser: Callable[..., argparse.ArgumentParser],
+) -> None:
+    """Add explicit Java findings baseline lifecycle parsers."""
+    lifecycle = add_parser(
+        "java-baseline",
+        help="Create, inspect, or prune the Java findings baseline.",
+    )
+    operations = lifecycle.add_subparsers(dest="java_baseline_operation", required=True)
+    for name in ("create", "prune"):
+        operation = operations.add_parser(name)
+        operation.add_argument("--target", type=Path, default=DEFAULT_TARGET)
+        operation.add_argument(
+            "--artifact",
+            type=Path,
+            default=Path(".verify-logs/java-gradle/java-gradle-static.json"),
+        )
+        operation.add_argument("--dry-run", action=STORE_TRUE)
+    inspect = operations.add_parser("inspect")
+    inspect.add_argument("--target", type=Path, default=DEFAULT_TARGET)
+    inspect.add_argument("--json", action=STORE_TRUE)
 
 
 def _add_efficacy_parser(

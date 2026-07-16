@@ -69,3 +69,13 @@ def test_human_reference_exposes_nested_environment_override() -> None:
 
     assert "## Nested Environment Overrides" in rendered
     assert "| `java.enabled` | `AGENT_MAINTAINER_JAVA_ENABLED` |" in rendered
+
+
+def test_human_reference_documents_explicit_java_baseline_lifecycle() -> None:
+    """The generated reference gives operators the safe lifecycle commands."""
+    rendered = reference.render_reference_markdown()
+
+    assert "assess java-baseline create" in rendered
+    assert "assess java-baseline inspect" in rendered
+    assert "assess java-baseline prune" in rendered
+    assert "never changes the baseline during verification" in rendered
