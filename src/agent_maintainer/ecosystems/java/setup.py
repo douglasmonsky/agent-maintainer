@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path, PurePath
 
-from agent_maintainer.config.java import JavaReportExpectation
+from agent_maintainer.config.java import JavaGradleConfig, JavaReportExpectation
 from agent_maintainer.core.setup_plans import (
     ReviewedFileEdit,
     SetupReviewError,
@@ -14,6 +14,7 @@ from agent_maintainer.core.setup_plans import (
     render_reviewed_diff,
     reviewed_edit_digest,
 )
+from agent_maintainer.ecosystems.java import jacoco_thresholds
 from agent_maintainer.ecosystems.java.observations import GradleObservation
 from agent_maintainer.ecosystems.java.ratchets import (
     render_spotless_ratchet,
@@ -32,6 +33,7 @@ from agent_maintainer.ecosystems.java.semantic_edits import (
 from agent_maintainer.ecosystems.java.templates.api import (
     render_build_fragment,
     render_ci_workflow,
+    render_gradle_properties,
     ruleset_text,
 )
 
@@ -89,9 +91,9 @@ def plan_java_setup(
     if isinstance(selected, str):
         return _plan(canonical_root, JavaSetupStatus.REFUSED, reason=selected)
     build_path, build_dsl = selected
-    ruleset_edits = _ruleset_edits(canonical_root)
-    if isinstance(ruleset_edits, str):
-        return _plan(canonical_root, JavaSetupStatus.REFUSED, reason=ruleset_edits)
+    managed_edits = _managed_edits(canonical_root)
+    if isinstance(managed_edits, str):
+        return _plan(canonical_root, JavaSetupStatus.REFUSED, reason=managed_edits)
     build_edit = _build_edit(
         canonical_root,
         build_path,
@@ -102,11 +104,11 @@ def plan_java_setup(
         return _plan(
             canonical_root,
             JavaSetupStatus.SEMANTIC_EDIT,
-            edits=ruleset_edits,
+            edits=managed_edits,
             semantic_edit=build_edit,
             reason="existing Gradle build requires a reviewed semantic edit",
         )
-    edits = (*build_edit, *ruleset_edits)
+    edits = (*build_edit, *managed_edits)
     status = JavaSetupStatus.READY if edits else JavaSetupStatus.UNCHANGED
     reason = "review deterministic Java setup edits" if edits else "Java setup already current"
     return _plan(canonical_root, status, edits=edits, reason=reason)
@@ -286,6 +288,68 @@ def _ruleset_edits(root: Path) -> tuple[ReviewedFileEdit, ...] | str:
         elif current != expected:
             return f"existing managed ruleset differs and will not be overwritten: {path}"
     return tuple(edits)
+
+
+def _managed_edits(root: Path) -> tuple[ReviewedFileEdit, ...] | str:
+    properties = _coverage_properties_edit(root)
+    if isinstance(properties, str):
+        return properties
+    rulesets = _ruleset_edits(root)
+    if isinstance(rulesets, str):
+        return rulesets
+    return (*properties, *rulesets)
+
+
+def _coverage_properties_edit(root: Path) -> tuple[ReviewedFileEdit, ...] | str:
+    path = "gradle.properties"
+    expected = render_gradle_properties()
+    current = _read_optional(root / path)
+    if current is None:
+        return (
+            ReviewedFileEdit(
+                path,
+                None,
+                expected,
+                "add explicit JaCoCo coverage floors",
+            ),
+        )
+    configured = _configured_property_keys(current)
+    expected_lines = tuple(
+        line for line in expected.splitlines() if line.split("=", 1)[0] not in configured
+    )
+    if expected_lines:
+        separator = "" if current.endswith("\n") else "\n"
+        rendered_lines = "\n".join(expected_lines)
+        candidate = f"{current}{separator}{rendered_lines}\n"
+    else:
+        candidate = current
+    defaults = JavaGradleConfig()
+    property_names = jacoco_thresholds.JacocoPropertyNames(
+        defaults.jacoco_line_property,
+        defaults.jacoco_branch_property,
+    )
+    try:
+        jacoco_thresholds.parse_thresholds(candidate, property_names)
+    except jacoco_thresholds.JacocoThresholdError as exc:
+        return f"existing gradle.properties has invalid coverage thresholds: {exc}"
+    if candidate == current:
+        return ()
+    return (
+        ReviewedFileEdit(
+            path,
+            current,
+            candidate,
+            "add explicit JaCoCo coverage floors",
+        ),
+    )
+
+
+def _configured_property_keys(text: str) -> frozenset[str]:
+    return frozenset(
+        line.split("=", maxsplit=1)[0].strip()
+        for raw in text.splitlines()
+        if (line := raw.strip()) and not line.startswith(("#", "!")) and "=" in line
+    )
 
 
 def _build_edit(

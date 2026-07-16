@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Literal
 
 from agent_maintainer.config.java import JavaGradleConfig, JavaReportExpectation
+from agent_maintainer.ecosystems.java import jacoco_topology
 from agent_maintainer.ecosystems.java.errors import JavaConfigurationError
 from agent_maintainer.ecosystems.models import EcosystemCheckContext
 from agent_maintainer.models import CI_PROFILE, FULL_PROFILE, PRECOMMIT_PROFILE, Check
@@ -29,10 +30,19 @@ class JavaReportPlan:
     task: str
     globs: tuple[str, ...]
     required: bool
+    coverage_scope: str = ""
+    coverage_label: str = ""
 
     def expectation(self) -> JavaReportExpectation:
         """Return the single-task expectation used by report snapshots."""
-        return JavaReportExpectation(self.tool, (self.task,), self.globs, self.required)
+        return JavaReportExpectation(
+            self.tool,
+            (self.task,),
+            self.globs,
+            self.required,
+            self.coverage_scope,
+            self.coverage_label,
+        )
 
 
 _GROUP_PROFILES: tuple[_GroupSpec, ...] = (
@@ -114,6 +124,10 @@ def plan_reports(
         if plan.task.removeprefix(":") in requested
     )
     _validate_required_report_plans(config, requested_tasks, plans)
+    coverage_reports = tuple(plan.expectation() for plan in plans if plan.tool == "jacoco")
+    problem = jacoco_topology.topology_problem(config, coverage_reports)
+    if problem is not None:
+        raise JavaProviderConfigurationError(problem)
     return plans
 
 
@@ -237,6 +251,8 @@ def _expectation_report_plans(
                 expectation.tasks[0],
                 expectation.globs,
                 expectation.required,
+                expectation.coverage_scope,
+                expectation.coverage_label,
             ),
         )
     if len(expectation.tasks) != len(expectation.globs):
@@ -244,7 +260,14 @@ def _expectation_report_plans(
             "Java report tasks and globs do not have an unambiguous mapping"
         )
     return tuple(
-        JavaReportPlan(expectation.tool, task, (report_glob,), expectation.required)
+        JavaReportPlan(
+            expectation.tool,
+            task,
+            (report_glob,),
+            expectation.required,
+            expectation.coverage_scope,
+            expectation.coverage_label,
+        )
         for task, report_glob in zip(expectation.tasks, expectation.globs, strict=True)
     )
 

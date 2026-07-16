@@ -86,6 +86,10 @@ depends_on = [
 ]
 
 [[modules]]
+path = "java.jacoco_topology"
+depends_on = ["//agent_maintainer.config.java"]
+
+[[modules]]
 path = "java.baseline"
 depends_on = ["java.findings"]
 
@@ -100,6 +104,7 @@ depends_on = [
 path = "java.provider"
 depends_on = [
   "java.errors",
+  "java.jacoco_topology",
   "models",
   "//agent_maintainer.config.java",
   "//agent_maintainer.models",
@@ -111,6 +116,7 @@ depends_on = [
   "//agent_maintainer.core.artifact_environment",
   "java.artifacts",
   "java.errors",
+  "java.jacoco_thresholds",
   "java.observations",
   "java.provider",
   "java.ratchets",
@@ -196,6 +202,7 @@ path = "java.setup"
 depends_on = [
   "//agent_maintainer.core.setup_plans",
   "//agent_maintainer.config.java",
+  "java.jacoco_thresholds",
   "java.observations",
   "java.reports.spotbugs",
   "java.semantic_edits",

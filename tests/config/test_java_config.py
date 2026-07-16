@@ -31,9 +31,11 @@ def test_java_config_defaults_are_frozen_and_disabled() -> None:
     assert config.gradle_args == ("--console=plain", "--continue")
     assert config.source_roots == ("src/main/java", "**/src/main/java")
     assert config.test_roots == ("src/test/java", "**/src/test/java")
+    assert config.projects == (":",)
     assert config.spotless_profiles == ("precommit", "full", "ci")
     assert config.test_profiles == ("full", "ci")
     assert config.findings_baseline == ".agent-maintainer/java-findings-baseline.json"
+    assert config.jacoco_ratchet_ref == "origin/main"
     assert config.reports == (
         JavaReportExpectation(
             "spotbugs",
@@ -55,6 +57,8 @@ def test_java_config_defaults_are_frozen_and_disabled() -> None:
             "jacoco",
             ("jacocoTestReport",),
             ("build/reports/jacoco/test/jacocoTestReport.xml",),
+            coverage_scope="project",
+            coverage_label=":",
         ),
     )
 
@@ -71,6 +75,7 @@ def test_complete_java_table_is_coerced_without_shell_parsing() -> None:
             "gradle_args": ["--console=plain", "--max-workers=4", "--warning-mode=fail"],
             "source_roots": ["backend/src/main/java", "modules/*/src/main/java"],
             "test_roots": ["backend/src/test/java"],
+            "projects": [":app"],
             "spotless_tasks": ["spotlessCheck"],
             "spotbugs_tasks": ["spotbugsMain", "spotbugsTest"],
             "checkstyle_tasks": ["checkstyleMain"],
@@ -89,12 +94,15 @@ def test_complete_java_table_is_coerced_without_shell_parsing() -> None:
             "spotbugs_baseline": "config/spotbugs/baseline.xml",
             "jacoco_line_property": "coverage.line",
             "jacoco_branch_property": "coverage.branch",
+            "jacoco_ratchet_ref": "upstream/trunk",
             "reports": [
                 {
                     "tool": "checkstyle",
                     "tasks": ["checkstyleMain"],
                     "globs": ["build/reports/checkstyle/main.xml"],
                     "required": False,
+                    "coverage_scope": "",
+                    "coverage_label": "",
                 }
             ],
         }
@@ -103,6 +111,8 @@ def test_complete_java_table_is_coerced_without_shell_parsing() -> None:
     assert config.enabled is True
     assert config.gradle_root == "backend"
     assert config.pmd_tasks == (":quality:pmdMain",)
+    assert config.projects == (":app",)
+    assert config.jacoco_ratchet_ref == "upstream/trunk"
     assert config.gradle_args == (
         "--console=plain",
         "--max-workers=4",

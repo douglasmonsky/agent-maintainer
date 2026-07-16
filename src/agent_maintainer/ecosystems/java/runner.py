@@ -16,6 +16,7 @@ from agent_maintainer.core import artifact_environment
 from agent_maintainer.ecosystems.java import (
     artifacts,
     errors,
+    jacoco_thresholds,
     observations,
     provider,
     report_evidence,
@@ -32,11 +33,20 @@ class _RunPlan:
     gradle_args: tuple[str, ...]
     findings_baseline: str
     spotbugs_baseline: str
+    jacoco_ratchet_ref: str
+    jacoco_line_property: str
+    jacoco_branch_property: str
     diagnostic_artifacts_dir: str
     tasks: tuple[str, ...]
     wrapper: wrapper.ResolvedGradleWrapper
     reports: tuple[provider.JavaReportPlan, ...]
     pre_run_reports: tuple[observations.ReportSnapshot, ...]
+
+
+@dataclass(frozen=True)
+class _CoverageThresholds:
+    payloads: tuple[dict[str, object], ...]
+    passed: bool
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -104,6 +114,9 @@ def _plan_run(workspace: Path, group: provider.JavaGroup, profile: str) -> _RunP
         config.java.gradle_args,
         config.java.findings_baseline,
         config.java.spotbugs_baseline,
+        config.java.jacoco_ratchet_ref,
+        config.java.jacoco_line_property,
+        config.java.jacoco_branch_property,
         config.diagnostic_artifacts_dir,
         tasks,
         resolved_wrapper,
@@ -152,17 +165,21 @@ def _successful_outcome(
         observation,
         plan.findings_baseline,
     )
+    coverage_thresholds = _coverage_threshold_reports(workspace, plan, evidence)
     payload["observation"] = observation.to_payload()
     if plan.reports:
         reports_payload = evidence.to_payload()
+        if coverage_thresholds.payloads:
+            reports_payload["coverage_thresholds"] = coverage_thresholds.payloads
         reports_payload["source_commit"] = _repository_head(workspace)
         payload["reports"] = reports_payload
         payload["reports_parsed"] = evidence.report_count > 0
-        payload["evidence_status"] = "validated" if evidence.passed else "regression"
+        evidence_passed = evidence.passed and coverage_thresholds.passed
+        payload["evidence_status"] = "validated" if evidence_passed else "regression"
     spotbugs_payload = evidence.spotbugs_payload()
     if plan.spotbugs_baseline and spotbugs_payload is not None:
         payload["spotbugs"] = spotbugs_payload
-    policy_exit_code = 0 if evidence.passed else 1
+    policy_exit_code = 0 if evidence.passed and coverage_thresholds.passed else 1
     if policy_exit_code != 0:
         payload["status"] = "report-failed"
         payload["exit_code"] = policy_exit_code
@@ -175,6 +192,51 @@ def _successful_outcome(
         payload,
         policy_exit_code,
     )
+
+
+def _coverage_threshold_reports(
+    workspace: Path,
+    plan: _RunPlan,
+    evidence: report_evidence.JavaReportEvidence,
+) -> _CoverageThresholds:
+    properties = jacoco_thresholds.JacocoPropertyNames(
+        plan.jacoco_line_property,
+        plan.jacoco_branch_property,
+    )
+    reports = tuple(
+        (
+            fact,
+            jacoco_thresholds.evaluate_thresholds(
+                workspace,
+                gradle_root=plan.wrapper.gradle_root,
+                base_ref=plan.jacoco_ratchet_ref,
+                properties=properties,
+                coverage=fact.coverage,
+            ),
+        )
+        for fact in evidence.coverage
+    )
+    return _CoverageThresholds(
+        payloads=tuple(_coverage_threshold_payload(fact, report) for fact, report in reports),
+        passed=all(report.passed for _fact, report in reports),
+    )
+
+
+def _coverage_threshold_payload(
+    fact: report_evidence.JacocoCoverageFact,
+    report: jacoco_thresholds.JacocoThresholdReport,
+) -> dict[str, object]:
+    return {
+        "scope": fact.scope,
+        "label": fact.label,
+        "current_line": str(report.current.line),
+        "current_branch": str(report.current.branch),
+        "base_line": str(report.base.line),
+        "base_branch": str(report.base.branch),
+        "line_headroom": str(report.line_headroom),
+        "branch_headroom": str(report.branch_headroom),
+        "regressions": report.regressions,
+    }
 
 
 def _validate_spotless_execution(

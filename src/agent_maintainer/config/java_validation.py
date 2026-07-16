@@ -6,9 +6,19 @@ import re
 from pathlib import PurePosixPath
 
 from agent_maintainer.config.issues import ConfigIssue
-from agent_maintainer.config.java import JAVA_TOOLS, REPORT_TOOLS, JavaGradleConfig
+from agent_maintainer.config.java import (
+    JAVA_TOOLS,
+    REPORT_TOOLS,
+    JavaGradleConfig,
+    JavaReportExpectation,
+)
 
 JAVA_TASK_PATTERN = re.compile(r"^:?[A-Za-z0-9][A-Za-z0-9_.-]*(?::[A-Za-z0-9][A-Za-z0-9_.-]*)*$")
+JAVA_PROJECT_PATTERN = re.compile(
+    r"^:(?:[A-Za-z0-9][A-Za-z0-9_.-]*(?::[A-Za-z0-9][A-Za-z0-9_.-]*)*)?$"
+)
+COVERAGE_SCOPES = frozenset(("project", "aggregate"))
+MAX_COVERAGE_LABEL_CHARS = 120
 MAX_GRADLE_WORKERS = 4096
 MAX_GRADLE_WORKER_DIGITS = 4
 JAVA_PROFILE_RULES = (
@@ -102,6 +112,7 @@ def java_issues(
     issues.extend(_java_choice_issues(java.checks, JAVA_TOOLS, "java.checks", source))
     issues.extend(_java_profile_issues(java, source))
     issues.extend(_java_configured_task_issues(java, source))
+    issues.extend(_java_project_issues(java.projects, source))
     issues.extend(_java_arg_issues(java.gradle_args, source=source))
     issues.extend(_java_configured_path_issues(java, source))
     issues.extend(_java_report_issues(java, source))
@@ -163,6 +174,19 @@ def _java_configured_path_issues(
     )
 
 
+def _java_project_issues(projects: tuple[str, ...], source: str) -> tuple[ConfigIssue, ...]:
+    issues = [
+        ConfigIssue(source, "java.projects", f"invalid Gradle project: {project}")
+        for project in projects
+        if JAVA_PROJECT_PATTERN.fullmatch(project) is None
+    ]
+    if not projects:
+        issues.append(ConfigIssue(source, "java.projects", "must not be empty"))
+    if len(projects) != len(set(projects)):
+        issues.append(ConfigIssue(source, "java.projects", "project names must be unique"))
+    return tuple(issues)
+
+
 def _java_report_issues(java: JavaGradleConfig, source: str) -> tuple[ConfigIssue, ...]:
     issues: list[ConfigIssue] = []
     for index, report in enumerate(java.reports):
@@ -174,4 +198,33 @@ def _java_report_issues(java: JavaGradleConfig, source: str) -> tuple[ConfigIssu
         if not report.globs:
             issues.append(ConfigIssue(source, f"{prefix}.globs", "must not be empty"))
         issues.extend(_java_path_issues(report.globs, f"{prefix}.globs", source))
+        issues.extend(_coverage_report_issues(report, prefix, source))
     return tuple(issues)
+
+
+def _coverage_report_issues(
+    report: JavaReportExpectation,
+    prefix: str,
+    source: str,
+) -> tuple[ConfigIssue, ...]:
+    if report.tool != "jacoco":
+        if report.coverage_scope or report.coverage_label:
+            return (ConfigIssue(source, prefix, "coverage metadata is only valid for JaCoCo"),)
+        return ()
+    issues: list[ConfigIssue] = []
+    if report.coverage_scope not in COVERAGE_SCOPES:
+        issues.append(
+            ConfigIssue(source, f"{prefix}.coverage_scope", "must be project or aggregate")
+        )
+    if _invalid_coverage_label(report.coverage_label):
+        issues.append(ConfigIssue(source, f"{prefix}.coverage_label", "must be a bounded label"))
+    if (
+        report.coverage_scope == "project"
+        and JAVA_PROJECT_PATTERN.fullmatch(report.coverage_label) is None
+    ):
+        issues.append(ConfigIssue(source, f"{prefix}.coverage_label", "must name a Gradle project"))
+    return tuple(issues)
+
+
+def _invalid_coverage_label(label: str) -> bool:
+    return not label or "\n" in label or len(label) > MAX_COVERAGE_LABEL_CHARS

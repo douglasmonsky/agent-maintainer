@@ -14,6 +14,7 @@ JAVA_TUPLE_FIELDS = (
     "gradle_args",
     "source_roots",
     "test_roots",
+    "projects",
     "spotless_tasks",
     "spotbugs_tasks",
     "checkstyle_tasks",
@@ -55,12 +56,23 @@ def _coerce_java_report(
     required = _value_or_default(raw, "required", True)
     if not isinstance(required, bool):
         raise TypeError(f"{prefix}.required must be a boolean")
+    coverage_scope = _report_string(raw, prefix, "coverage_scope")
+    coverage_label = _report_string(raw, prefix, "coverage_label")
     return JavaReportExpectation(
         tool=tool,
         tasks=_java_string_tuple(_value_or_default(raw, "tasks", None), f"{prefix}.tasks"),
         globs=_java_string_tuple(_value_or_default(raw, "globs", None), f"{prefix}.globs"),
         required=required,
+        coverage_scope=coverage_scope,
+        coverage_label=coverage_label,
     )
+
+
+def _report_string(raw: dict[str, object], prefix: str, key: str) -> str:
+    value = _value_or_default(raw, key, "")
+    if not isinstance(value, str):
+        raise TypeError(f"{prefix}.{key} must be a string")
+    return value
 
 
 def _coerce_java_reports(
@@ -89,6 +101,7 @@ def _java_scalar_updates(raw: dict[str, object]) -> dict[str, object]:
         "spotless_ratchet_ref",
         "findings_baseline",
         "spotbugs_baseline",
+        "jacoco_ratchet_ref",
         "jacoco_line_property",
         "jacoco_branch_property",
     ):

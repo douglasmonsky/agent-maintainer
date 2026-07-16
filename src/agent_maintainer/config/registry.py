@@ -130,6 +130,7 @@ JAVA_KEYS = frozenset(
         "gradle_args",
         "source_roots",
         "test_roots",
+        "projects",
         "spotless_tasks",
         "spotbugs_tasks",
         "checkstyle_tasks",
@@ -146,12 +147,15 @@ JAVA_KEYS = frozenset(
         "spotless_ratchet_ref",
         "findings_baseline",
         "spotbugs_baseline",
+        "jacoco_ratchet_ref",
         "jacoco_line_property",
         "jacoco_branch_property",
         "reports",
     )
 )
-JAVA_REPORT_KEYS = frozenset(("tool", "tasks", "globs", "required"))
+JAVA_REPORT_KEYS = frozenset(
+    ("tool", "tasks", "globs", "required", "coverage_scope", "coverage_label")
+)
 
 PERCENT_FIELDS = frozenset(
     ("coverage_fail_under", "diff_cover_fail_under", "interrogate_fail_under", "mutmut_min_score")

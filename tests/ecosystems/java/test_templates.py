@@ -4,6 +4,7 @@ import pytest
 
 from agent_maintainer.ecosystems.java.templates.api import (
     render_build_fragment,
+    render_gradle_properties,
     ruleset_text,
 )
 
@@ -41,7 +42,19 @@ def test_build_fragments_pin_plugins_and_native_defaults(
     assert "13.8.0" in fragment
     assert "7.26.0" in fragment
     assert "0.8.15" in fragment
+    assert "agentMaintainer.jacoco.minimumLineCoverage" in fragment
+    assert "agentMaintainer.jacoco.minimumBranchCoverage" in fragment
+    assert "COVEREDRATIO" in fragment
+    assert "jacocoTestReport" in fragment
+    assert "xml" in fragment
     assert "@" not in fragment
+
+
+def test_new_repository_coverage_properties_use_strict_defaults() -> None:
+    assert render_gradle_properties() == (
+        "agentMaintainer.jacoco.minimumLineCoverage=0.80\n"
+        "agentMaintainer.jacoco.minimumBranchCoverage=0.70\n"
+    )
 
 
 def test_checkstyle_ruleset_leaves_formatting_to_spotless() -> None:

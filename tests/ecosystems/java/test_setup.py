@@ -55,6 +55,7 @@ def test_recognized_scaffolds_have_deterministic_reviewed_edits(
     assert "com.diffplug.spotless" in preview
     assert "config/checkstyle/checkstyle.xml" in {edit.path for edit in plan.edits}
     assert "config/pmd/pmd.xml" in {edit.path for edit in plan.edits}
+    assert "gradle.properties" in {edit.path for edit in plan.edits}
 
 
 def test_new_mixed_repository_uses_kotlin_default_without_touching_python(
@@ -86,6 +87,23 @@ def test_preview_and_apply_have_parity_and_second_plan_is_idempotent(tmp_path: P
     assert repeated.edits == ()
 
 
+def test_existing_gradle_properties_are_preserved_when_coverage_floors_are_added(
+    tmp_path: Path,
+) -> None:
+    repo = _copy_fixture(tmp_path, "groovy_single")
+    properties = repo / "gradle.properties"
+    properties.write_text("org.gradle.parallel=true\n", encoding="utf-8")
+
+    plan = plan_java_setup(repo)
+    edit = next(item for item in plan.edits if item.path == "gradle.properties")
+
+    assert edit.before == "org.gradle.parallel=true\n"
+    assert edit.after is not None
+    assert edit.after.startswith("org.gradle.parallel=true\n")
+    assert "agentMaintainer.jacoco.minimumLineCoverage=0.80" in edit.after
+    assert "agentMaintainer.jacoco.minimumBranchCoverage=0.70" in edit.after
+
+
 def test_arbitrary_build_returns_typed_semantic_edit_handoff(tmp_path: Path) -> None:
     build_file = tmp_path / "build.gradle.kts"
     build_file.write_text(
@@ -99,6 +117,7 @@ def test_arbitrary_build_returns_typed_semantic_edit_handoff(tmp_path: Path) -> 
     assert {edit.path for edit in plan.edits} == {
         "config/checkstyle/checkstyle.xml",
         "config/pmd/pmd.xml",
+        "gradle.properties",
     }
     assert plan.semantic_edit is not None
     assert plan.semantic_edit.path == "build.gradle.kts"

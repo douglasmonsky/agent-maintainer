@@ -17,7 +17,7 @@ MAX_GRADLE_OUTPUT_CHARS = 1_000_000
 MAX_SNAPSHOT_BYTES = 20_971_520
 DIGEST_CHUNK_BYTES = 65_536
 TASK_LINE = re.compile(r"^> Task (?P<task>:\S+?)(?: (?P<state>[A-Z][A-Z-]*))?$")
-SnapshotKey = tuple[str, tuple[str, ...], str, str]
+SnapshotKey = tuple[str, tuple[str, ...], str, str, str, str]
 
 
 class GradleTaskState(StrEnum):
@@ -62,6 +62,8 @@ class ReportSnapshot:
     sha256: str
     size: int
     mtime_ns: int
+    coverage_scope: str = ""
+    coverage_label: str = ""
 
 
 @dataclass(frozen=True)
@@ -112,7 +114,14 @@ def snapshot_reports(
             _validate_report_glob(pattern)
             for candidate in sorted(gradle_root.glob(pattern)):
                 snapshot = _snapshot_candidate(canonical_root, candidate, expectation, pattern)
-                key = (snapshot.tool, snapshot.tasks, snapshot.glob, snapshot.path)
+                key = (
+                    snapshot.tool,
+                    snapshot.tasks,
+                    snapshot.glob,
+                    snapshot.path,
+                    snapshot.coverage_scope,
+                    snapshot.coverage_label,
+                )
                 snapshots[key] = snapshot
     return tuple(snapshots[key] for key in sorted(snapshots))
 
@@ -199,6 +208,8 @@ def _snapshot_candidate(
         digest,
         size,
         mtime_ns,
+        expectation.coverage_scope,
+        expectation.coverage_label,
     )
 
 

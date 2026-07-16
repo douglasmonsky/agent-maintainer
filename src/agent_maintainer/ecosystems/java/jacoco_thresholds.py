@@ -88,7 +88,7 @@ def read_current_thresholds(
         text = properties_path.read_text(encoding="utf-8")
     except OSError as exc:
         raise JacocoThresholdError("current Gradle coverage properties are unavailable") from exc
-    return _parse_thresholds(text, properties)
+    return parse_thresholds(text, properties)
 
 
 def evaluate_thresholds(
@@ -135,7 +135,7 @@ def _read_base_thresholds(
     completed = _run_git(workspace, "show", f"{base_ref}:{relative_path.as_posix()}")
     if completed.returncode != 0:
         raise JacocoThresholdError("base Gradle coverage properties are unavailable")
-    return _parse_thresholds(completed.stdout, properties)
+    return parse_thresholds(completed.stdout, properties)
 
 
 def _current_properties_path(workspace: Path, gradle_root: Path) -> Path:
@@ -157,10 +157,11 @@ def _base_properties_path(workspace: Path, gradle_root: Path) -> PurePosixPath:
     return PurePosixPath(relative.as_posix())
 
 
-def _parse_thresholds(
+def parse_thresholds(
     text: str,
     properties: JacocoPropertyNames,
 ) -> JacocoThresholds:
+    """Parse required configured ratios from Gradle properties text."""
     values = _properties(text)
     return JacocoThresholds(
         _required_ratio(values, properties.line),

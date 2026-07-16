@@ -1401,6 +1401,7 @@
           "full",
           "ci"
         ],
+        "jacoco_ratchet_ref": "origin/main",
         "jacoco_report_tasks": [],
         "jacoco_verify_tasks": [],
         "pmd_profiles": [
@@ -1408,8 +1409,13 @@
           "ci"
         ],
         "pmd_tasks": [],
+        "projects": [
+          ":"
+        ],
         "reports": [
           {
+            "coverage_label": "",
+            "coverage_scope": "",
             "globs": [
               "build/reports/spotbugs/main.xml",
               "build/reports/spotbugs/test.xml"
@@ -1422,6 +1428,8 @@
             "tool": "spotbugs"
           },
           {
+            "coverage_label": "",
+            "coverage_scope": "",
             "globs": [
               "build/reports/checkstyle/main.xml",
               "build/reports/checkstyle/test.xml"
@@ -1434,6 +1442,8 @@
             "tool": "checkstyle"
           },
           {
+            "coverage_label": "",
+            "coverage_scope": "",
             "globs": [
               "build/reports/pmd/main.xml",
               "build/reports/pmd/test.xml"
@@ -1446,6 +1456,8 @@
             "tool": "pmd"
           },
           {
+            "coverage_label": "",
+            "coverage_scope": "",
             "globs": [
               "build/test-results/test/*.xml"
             ],
@@ -1456,6 +1468,8 @@
             "tool": "test"
           },
           {
+            "coverage_label": ":",
+            "coverage_scope": "project",
             "globs": [
               "build/reports/jacoco/test/jacocoTestReport.xml"
             ],
@@ -3222,10 +3236,12 @@
       "jacoco_branch_property",
       "jacoco_line_property",
       "jacoco_profiles",
+      "jacoco_ratchet_ref",
       "jacoco_report_tasks",
       "jacoco_verify_tasks",
       "pmd_profiles",
       "pmd_tasks",
+      "projects",
       "reports",
       "source_roots",
       "spotbugs_baseline",
@@ -3239,6 +3255,8 @@
       "test_tasks"
     ],
     "java.reports.*": [
+      "coverage_label",
+      "coverage_scope",
       "globs",
       "required",
       "tasks",

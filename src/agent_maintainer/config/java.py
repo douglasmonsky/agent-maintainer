@@ -17,6 +17,8 @@ class JavaReportExpectation:
     tasks: tuple[str, ...]
     globs: tuple[str, ...]
     required: bool = True
+    coverage_scope: str = ""
+    coverage_label: str = ""
 
 
 DEFAULT_REPORTS = (
@@ -40,6 +42,8 @@ DEFAULT_REPORTS = (
         "jacoco",
         ("jacocoTestReport",),
         ("build/reports/jacoco/test/jacocoTestReport.xml",),
+        coverage_scope="project",
+        coverage_label=":",
     ),
 )
 
@@ -54,6 +58,7 @@ class JavaGradleConfig:
     gradle_args: tuple[str, ...] = ("--console=plain", "--continue")
     source_roots: tuple[str, ...] = ("src/main/java", "**/src/main/java")
     test_roots: tuple[str, ...] = ("src/test/java", "**/src/test/java")
+    projects: tuple[str, ...] = (":",)
     spotless_tasks: tuple[str, ...] = ()
     spotbugs_tasks: tuple[str, ...] = ()
     checkstyle_tasks: tuple[str, ...] = ()
@@ -70,6 +75,7 @@ class JavaGradleConfig:
     spotless_ratchet_ref: str = ""
     findings_baseline: str = ".agent-maintainer/java-findings-baseline.json"
     spotbugs_baseline: str = ""
+    jacoco_ratchet_ref: str = "origin/main"
     jacoco_line_property: str = "agentMaintainer.jacoco.minimumLineCoverage"
     jacoco_branch_property: str = "agentMaintainer.jacoco.minimumBranchCoverage"
     reports: tuple[JavaReportExpectation, ...] = DEFAULT_REPORTS

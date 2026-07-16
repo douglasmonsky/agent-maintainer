@@ -7,6 +7,11 @@ from importlib import resources
 
 from agent_maintainer.ecosystems.java.defaults import JAVA_DEFAULTS, JAVA_TOOL_VERSIONS
 
+
+def _coverage_ratio(percentage: int) -> str:
+    return format(percentage / 100, ".2f")
+
+
 _VERSION_REPLACEMENTS = (
     ("@SPOTLESS_PLUGIN_VERSION@", JAVA_TOOL_VERSIONS.spotless_plugin),
     ("@SPOTBUGS_PLUGIN_VERSION@", JAVA_TOOL_VERSIONS.spotbugs_plugin),
@@ -20,6 +25,8 @@ _POLICY_REPLACEMENTS = (
     ("@COGNITIVE_COMPLEXITY@", str(JAVA_DEFAULTS.cognitive_complexity)),
     ("@NPATH_COMPLEXITY@", str(JAVA_DEFAULTS.npath_complexity)),
     ("@MAX_PHYSICAL_LINES@", str(JAVA_DEFAULTS.max_physical_lines)),
+    ("@MINIMUM_LINE_COVERAGE_RATIO@", _coverage_ratio(JAVA_DEFAULTS.minimum_line_coverage)),
+    ("@MINIMUM_BRANCH_COVERAGE_RATIO@", _coverage_ratio(JAVA_DEFAULTS.minimum_branch_coverage)),
 )
 SAFE_CI_VALUE = re.compile(r"[A-Za-z0-9._/-]+")
 SAFE_GRADLE_TASK = re.compile(r":?[A-Za-z0-9_.-]+(?::[A-Za-z0-9_.-]+)*")
@@ -55,6 +62,11 @@ def render_build_fragment(dsl: str) -> str:
     if filename is None:
         raise ValueError(f"unsupported Gradle DSL: {dsl}")
     return _replace_tokens(_template_text(filename), _VERSION_REPLACEMENTS)
+
+
+def render_gradle_properties() -> str:
+    """Render strict new-repository JaCoCo property floors."""
+    return _replace_tokens(_template_text("gradle.properties"), _POLICY_REPLACEMENTS)
 
 
 def render_ci_workflow(

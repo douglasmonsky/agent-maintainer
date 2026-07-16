@@ -29,9 +29,9 @@
 
 **Files:** Modify Java defaults/templates/setup/runner; add single aggregate and multi-project/per-project fixtures; create `tests/ecosystems/java/test_jacoco_topology.py`.
 
-- [ ] Write failing tests for aggregate evidence, explicit per-project reports, missing modules, labels, report expectations, and task ordering.
-- [ ] Verify RED, implement topology validation with no synthetic repository-wide percentage, then verify GREEN.
-- [ ] Commit: `feat: report Gradle project coverage truthfully`.
+- [x] Write failing tests for aggregate evidence, explicit per-project reports, missing modules, labels, report expectations, and task ordering.
+- [x] Verify RED, implement topology validation with no synthetic repository-wide percentage, then verify GREEN.
+- [x] Commit: `feat: report Gradle project coverage truthfully`.
 
 ### Task 3: Split and cache live Java CI
 

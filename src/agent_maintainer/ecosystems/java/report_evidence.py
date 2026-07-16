@@ -31,6 +31,7 @@ class JavaReportEvidence:
     report_counts: tuple[tuple[str, int], ...]
     findings: tuple[JavaFinding, ...]
     tests: junit.JUnitReport | None
+    coverage: tuple[JacocoCoverageFact, ...]
     debt: baseline.FindingDebtReport | None
     baseline_present: bool
 
@@ -66,6 +67,8 @@ class JavaReportEvidence:
         }
         if self.tests is not None:
             payload["tests"] = _tests_payload(self.tests)
+        if self.coverage:
+            payload["coverage"] = tuple(_coverage_payload(item) for item in self.coverage)
         if self.debt is not None:
             payload["baseline"] = _debt_payload(self.debt, self.baseline_present)
         return payload
@@ -94,6 +97,7 @@ def collect_report_evidence(
         counts,
         parsed.findings,
         parsed.tests,
+        parsed.coverage,
         debt,
         baseline_present,
     )
@@ -103,6 +107,16 @@ def collect_report_evidence(
 class _ParsedReports:
     findings: tuple[JavaFinding, ...]
     tests: junit.JUnitReport | None
+    coverage: tuple[JacocoCoverageFact, ...]
+
+
+@dataclass(frozen=True)
+class JacocoCoverageFact:
+    """One real report's explicit aggregate or project coverage label."""
+
+    scope: str
+    label: str
+    coverage: jacoco.JacocoCoverage
 
 
 def _parse_reports(
@@ -111,6 +125,7 @@ def _parse_reports(
 ) -> _ParsedReports:
     findings: list[JavaFinding] = []
     test_reports: list[junit.JUnitReport] = []
+    coverage_facts: list[JacocoCoverageFact] = []
     seen: set[tuple[str, str]] = set()
     for snapshot in snapshots:
         identity = snapshot.tool, snapshot.path
@@ -118,9 +133,18 @@ def _parse_reports(
             continue
         seen.add(identity)
         report_path = _confined_report_path(gradle_root, snapshot.path)
-        _parse_report(snapshot.tool, report_path, gradle_root, findings, test_reports)
+        coverage = _parse_report(snapshot.tool, report_path, gradle_root, findings, test_reports)
+        if coverage is not None:
+            coverage_facts.append(
+                JacocoCoverageFact(
+                    snapshot.coverage_scope,
+                    snapshot.coverage_label,
+                    coverage,
+                )
+            )
     ordered = tuple(sorted(findings, key=_finding_sort_key))
-    return _ParsedReports(ordered, _aggregate_tests(test_reports))
+    ordered_coverage = tuple(sorted(coverage_facts, key=lambda item: (item.scope, item.label)))
+    return _ParsedReports(ordered, _aggregate_tests(test_reports), ordered_coverage)
 
 
 def _parse_report(
@@ -129,9 +153,9 @@ def _parse_report(
     gradle_root: Path,
     findings: list[JavaFinding],
     test_reports: list[junit.JUnitReport],
-) -> None:
+) -> jacoco.JacocoCoverage | None:
     try:
-        _dispatch_report(tool, report_path, gradle_root, findings, test_reports)
+        return _dispatch_report(tool, report_path, gradle_root, findings, test_reports)
     except JavaConfigurationError as exc:
         raise JavaReportEvidenceError(str(exc)) from exc
 
@@ -142,15 +166,16 @@ def _dispatch_report(
     gradle_root: Path,
     findings: list[JavaFinding],
     test_reports: list[junit.JUnitReport],
-) -> None:
+) -> jacoco.JacocoCoverage | None:
     if tool in SUPPORTED_STATIC_TOOLS:
         findings.extend(_parse_static_report(tool, report_path, gradle_root))
-    elif tool == "test":
+        return None
+    if tool == "test":
         test_reports.append(junit.parse_junit_report(report_path))
-    elif tool == "jacoco":
-        jacoco.parse_jacoco_report(report_path)
-    else:
-        raise JavaReportEvidenceError(f"unsupported Java report tool: {tool}")
+        return None
+    if tool == "jacoco":
+        return jacoco.parse_jacoco_report(report_path)
+    raise JavaReportEvidenceError(f"unsupported Java report tool: {tool}")
 
 
 def _parse_static_report(
@@ -259,6 +284,15 @@ def _tests_payload(report: junit.JUnitReport) -> dict[str, object]:
         "skipped": report.skipped,
         "problems": problems[:MAX_ARTIFACT_PROBLEMS],
         "problems_truncated": len(problems) > MAX_ARTIFACT_PROBLEMS,
+    }
+
+
+def _coverage_payload(fact: JacocoCoverageFact) -> dict[str, str]:
+    return {
+        "scope": fact.scope,
+        "label": fact.label,
+        "line_percentage": str(fact.coverage.line.percentage),
+        "branch_percentage": str(fact.coverage.branch.percentage),
     }
 
 

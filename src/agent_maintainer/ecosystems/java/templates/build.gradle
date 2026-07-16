@@ -36,3 +36,37 @@ pmd {
 jacoco {
     toolVersion = '@JACOCO_VERSION@'
 }
+
+def agentMaintainerMinimumLineCoverage = providers.gradleProperty(
+    'agentMaintainer.jacoco.minimumLineCoverage'
+).get().toBigDecimal()
+def agentMaintainerMinimumBranchCoverage = providers.gradleProperty(
+    'agentMaintainer.jacoco.minimumBranchCoverage'
+).get().toBigDecimal()
+
+tasks.named('jacocoTestReport') {
+    reports {
+        xml.required = true
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = agentMaintainerMinimumLineCoverage
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = agentMaintainerMinimumBranchCoverage
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestReport'), tasks.named('jacocoTestCoverageVerification')
+}
