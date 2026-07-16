@@ -57,7 +57,6 @@ allowed_paths = [
   "tests/ecosystems/test_java_runner.py",
   "tests/ecosystems/test_java_wrapper.py",
   "tests/ecosystems/test_python_classification.py",
-  "tests/ecosystems/test_typescript_*.py",
   "tests/fixtures/java_gradle/**",
   "tests/verify/test_verification_groups.py",
 ]

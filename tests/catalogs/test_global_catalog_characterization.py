@@ -34,12 +34,20 @@ def test_experimental_checks_follow_the_python_catalog() -> None:
     config = MaintainerConfig(
         enable_typescript=True,
         typescript_lint_command=("npm", "run", "lint"),
+        typescript_typecheck_command=("npm", "run", "typecheck"),
+        typescript_test_command=("npm", "test"),
     )
 
     names = [check.name for check in make_checks(config, "HEAD", "origin/main")]
+    start = names.index("typescript-lint")
 
-    assert names.index("ruff") < names.index("typescript-lint")
-    assert names.index("typescript-lint") < names.index("actionlint")
+    assert names[start - 1 : start + 4] == [
+        "secret-scan-history",
+        "typescript-lint",
+        "typescript-typecheck",
+        "typescript-test",
+        "actionlint",
+    ]
 
 
 def test_reviewability_checks_call_python_policy_modules() -> None:

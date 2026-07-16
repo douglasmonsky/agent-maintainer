@@ -6,6 +6,7 @@ from dataclasses import fields
 from pathlib import Path
 
 from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.doctor.support.providers import provider_enabled
 from agent_maintainer.ecosystems.models import ProviderMaturity
 from agent_maintainer.ecosystems.registry import (
     advisory_suppression_findings,
@@ -35,6 +36,7 @@ def test_provider_metadata_enabled_fields() -> None:
     assert providers["python"].enabled_field is None
     assert providers["typescript"].enabled_field == "enable_typescript"
     assert MaintainerConfig().enable_typescript is False
+    assert provider_enabled(providers["typescript"], MaintainerConfig(enable_typescript=True))
 
 
 def test_configured_provider_command_fields() -> None:
