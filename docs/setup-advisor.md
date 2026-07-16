@@ -124,6 +124,13 @@ to validate the reviewed configuration. Native SpotBugs baseline creation must
 follow successful, complete, fresh report observation. Normal doctor and
 verification never run `tasks --all`.
 
+Checkstyle, PMD, and normalized SpotBugs debt use the explicit
+`assess java-baseline create|inspect|prune` lifecycle after a successful,
+complete, non-truncated static runner artifact at the current clean Git commit.
+Verification never creates or prunes Java findings or provider-neutral file
+ceiling baselines, and repair facts consume bounded runner artifacts rather
+than reopening raw Gradle XML.
+
 For CI, preserve the repository's framework, JDK distribution, and JDK version.
 The reviewed GitHub Actions plan adds cached `static-and-policy` and
 `tests-and-coverage` jobs in a dedicated file and preserves existing

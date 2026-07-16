@@ -19,6 +19,7 @@ ENCODING = "utf-8"
 EXPECTED_INITIAL_ENTRIES = 2
 
 
+# docsync:evidence.start evidence.java.structured_evidence_tests
 def test_create_dry_run_and_write_are_deterministic(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
@@ -140,6 +141,9 @@ def test_create_rejects_invalid_or_stale_evidence(
     assert status != 0
     assert not (repo / BASELINE_PATH).exists()
     assert captured.err
+
+
+# docsync:evidence.end evidence.java.structured_evidence_tests
 
 
 def initialized_repo(tmp_path: Path) -> Path:

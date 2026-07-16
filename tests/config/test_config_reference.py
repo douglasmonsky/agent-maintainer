@@ -79,3 +79,7 @@ def test_human_reference_documents_explicit_java_baseline_lifecycle() -> None:
     assert "assess java-baseline inspect" in rendered
     assert "assess java-baseline prune" in rendered
     assert "never changes the baseline during verification" in rendered
+    assert "assess file-baselines create" in rendered
+    assert "assess file-baselines inspect" in rendered
+    assert "assess file-baselines prune" in rendered
+    assert "Renamed paths never inherit" in rendered

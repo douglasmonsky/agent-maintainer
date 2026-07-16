@@ -37,6 +37,20 @@ python -m agent_maintainer assess java-baseline prune --target . --artifact .ver
 
 `create` refuses an existing baseline. `prune` may only remove findings or lower numeric ceilings. Both commands reject failed, stale, malformed, or truncated evidence.
 
+## Provider-Neutral File Ceiling Lifecycle
+
+`file_baselines.baseline` names the reviewed versioned per-path ceiling file. New paths use group physical/nonblank defaults; established oversized paths may hold steady or shrink but may not grow. Renamed paths never inherit an allowance.
+
+```bash
+python -m agent_maintainer assess file-baselines create --dry-run
+python -m agent_maintainer assess file-baselines create
+python -m agent_maintainer assess file-baselines inspect --json
+python -m agent_maintainer assess file-baselines prune --dry-run
+python -m agent_maintainer assess file-baselines prune
+```
+
+Create and prune require a clean Git worktree. Verification and inspect are read-only; prune refuses new or regressed paths and only lowers or removes entries.
+
 ## Fields
 
 | TOML key | Type | Default | Environment | CLI | Constraints | Stability |

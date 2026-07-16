@@ -26,9 +26,9 @@ in the generic verifier or in native SpotBugs filter handling.
   cannot create a false regression.
 - Baseline creation and pruning are explicit lifecycle operations. Verification
   is comparison-only and may never create, overwrite, or prune a baseline.
-- Java report adapters may depend on finding identity; the runner may later
-  compose fresh report evidence with the comparator. Provider-neutral file
-  ceilings and JaCoCo thresholds remain separate policies.
+- Java report adapters depend on finding identity, and the runner composes fresh
+  report evidence with the comparator only after a successful Gradle process.
+  Provider-neutral file ceilings and JaCoCo thresholds remain separate policies.
 - Checkstyle, PMD, SpotBugs, and JUnit share one bounded, entity-free XML input
   primitive. Checkstyle, PMD, and SpotBugs expose normalized `JavaFinding`
   records; SpotBugs exposes native-filter identities separately, while JUnit
@@ -43,12 +43,20 @@ in the generic verifier or in native SpotBugs filter handling.
 - A failed Gradle process remains authoritative. Successful runs then apply, in
   order, task outcome checks, report confinement and freshness, parser
   completeness, findings debt comparison, and bounded artifact publication.
+- Static runner artifacts record the producing Git commit. Explicit baseline
+  create/prune accepts only complete, non-truncated evidence from that exact
+  current commit and a clean worktree; inspect remains read-only.
 
 The modules remain Java-owned. Core verification receives only bounded result
 artifacts and does not learn third-party report formats or Java baseline schema.
 Repair-fact parsing consumes that already-bounded artifact through the shared
 single-read context budget; it never reopens raw Gradle XML or follows an
 artifact-provided path.
+
+The provider-neutral file-ceiling subsystem has its own versioned group/path
+schema and create/inspect/prune lifecycle. It applies the same defaults,
+established floors, rename behavior, and prune rules to Java, Python, and other
+configured groups without importing Java finding identity or report formats.
 
 ## Alternatives considered
 

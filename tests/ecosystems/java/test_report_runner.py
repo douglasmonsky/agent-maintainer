@@ -24,6 +24,7 @@ TEXT_ENCODING = "utf-8"
 SOURCE_COMMIT = "a" * 40
 
 
+# docsync:evidence.start evidence.java.structured_evidence_tests
 def test_runner_compares_fresh_findings_and_emits_sanitized_facts(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -114,6 +115,9 @@ def test_runner_caps_finding_facts_before_artifact_fallback(
     assert len(finding_facts) == report_evidence.MAX_ARTIFACT_FINDINGS
     assert reports["findings_truncated"] is True
     assert len(json.dumps(outcome.payload).encode()) < artifacts.MAX_ARTIFACT_BYTES
+
+
+# docsync:evidence.end evidence.java.structured_evidence_tests
 
 
 def configure_runner(

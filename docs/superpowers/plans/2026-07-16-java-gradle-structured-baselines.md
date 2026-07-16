@@ -68,7 +68,7 @@
 
 ### Task 7: Close the structured-evidence gate
 
-- [ ] Update baseline/report/artifact public docs and DocSync evidence for this phase.
-- [ ] Run all Java ecosystem tests, file-baseline/check-file tests, config nested-table tests, exact-fact safety tests, `just doctor`, and `just v`.
-- [ ] Confirm raw Gradle XML remains in build output, persisted artifacts are bounded/sanitized, and findings/file baselines remain separate.
-- [ ] Commit the phase plan completion and verification evidence.
+- [x] Update baseline/report/artifact public docs and DocSync evidence for this phase.
+- [x] Run all Java ecosystem tests, file-baseline/check-file tests, config nested-table tests, exact-fact safety tests, `just doctor`, and `just v`.
+- [x] Confirm raw Gradle XML remains in build output, persisted artifacts are bounded/sanitized, and findings/file baselines remain separate.
+- [x] Commit the phase plan completion and verification evidence.

@@ -13,7 +13,7 @@ behind explicit configuration.
 |---|---|---|---|
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security and dependency checks, doctor support, repair facts, and starter templates. | External plugin API. |
 | TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, and Istanbul/LCOV repair facts; format-aware doctor setup and repair-fact output guidance rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters, and blocking reviewability gates. |
-| Java/Gradle | Experimental setup/native ratchets | Explicit checked-wrapper task groups; classification; reviewed setup for recognized and arbitrary builds; bounded task and SpotBugs report evidence; Spotless and native SpotBugs ratchets; static doctor checks; reviewed parallel CI plans. | Cross-tool structured findings baselines, repair facts, provider-neutral file ceilings, JaCoCo threshold ratchets, live CI fixtures, and calibration evidence. |
+| Java/Gradle | Experimental structured ratchets | Explicit checked-wrapper task groups; reviewed setup; Spotless and native SpotBugs ratchets; bounded cross-tool XML evidence; Java finding debt baselines; exact repair facts; provider-neutral file ceilings; static doctor checks; reviewed parallel CI plans. | JaCoCo threshold ratchets, live CI fixtures, and calibration evidence. |
 
 There is no active Go provider on `main`. Go remains archived historical work
 until active experimental providers have stronger evidence and the provider
@@ -28,7 +28,7 @@ TypeScript-before-any-other-provider sequence without promoting either provider.
 TypeScript still must satisfy the bar in
 [TypeScript Provider Maturation Notes](case-studies/typescript-provider-maturation.md).
 
-## Java/Gradle Setup And Native Ratchets
+## Java/Gradle Setup, Native Ratchets, And Structured Evidence
 
 The provider runs only explicit tasks already owned by the repository:
 
@@ -48,6 +48,7 @@ jacoco_verify_tasks = ["jacocoTestCoverageVerification"]
 # Established repositories may enable these after reviewed setup evidence.
 spotless_ratchet_ref = "origin/main"
 spotbugs_baseline = "config/spotbugs/baseline.xml"
+findings_baseline = ".agent-maintainer/java-findings-baseline.json"
 ```
 
 The checked-in wrapper at `gradle_root` is mandatory; Agent Maintainer never
@@ -66,10 +67,22 @@ running the wrapper. Setup-only `tasks --all` requires a displayed approval.
 
 Reviewed GitHub Actions plans preserve the chosen JDK convention, add separate
 cached `static-and-policy` and `tests-and-coverage` jobs, and refuse to overwrite
-an existing managed workflow or an unknown CI framework. Checkstyle and PMD
-findings baselines remain deferred. Structured repair facts and JaCoCo threshold
-ratchets remain deferred as well. The complete nested key inventory and sole
-environment override are in the
+an existing managed workflow or an unknown CI framework.
+
+Successful Gradle executions validate bounded Checkstyle, PMD, SpotBugs, JUnit,
+and JaCoCo XML evidence against exact task outcomes, configured report paths,
+freshness, and parser limits. The runner publishes only sanitized bounded facts
+and never persists raw Gradle XML. Java exact repair facts consume that one
+runner artifact and never reopen report paths.
+
+The Java findings baseline lifecycle is explicit through
+`assess java-baseline create|inspect|prune`. Create and prune require a clean
+worktree plus a complete, non-truncated static runner artifact produced at the
+current Git commit; verification never mutates the baseline. Checkstyle, PMD,
+and normalized SpotBugs findings use multiset counts, while numeric complexity
+measurements use per-occurrence ceilings. Provider-neutral file ceilings remain
+a separate baseline and command surface. JaCoCo threshold ratchets remain
+deferred. The complete nested key inventory and environment overrides are in the
 [configuration reference](configuration-reference.md).
 
 DocSync is not an ecosystem provider. It is a repository documentation
@@ -109,6 +122,8 @@ In the current beta:
 - TypeScript/JavaScript does not yet receive blocking change-budget,
   suppression-budget, file-length, structure-cohesion, or test-relevance gates.
 - Java/Gradle contributes explicit grouped verification, provider
-  classification, reviewed setup, and native Spotless/SpotBugs ratchets; its
-  broader structured reviewability ratchets remain deferred.
+  classification, reviewed setup, native Spotless/SpotBugs ratchets, structured
+  report evidence, exact repair facts, and blocking provider-neutral per-path
+  file ceilings. Broader change-budget, suppression, cohesion, test-relevance,
+  and coverage-threshold ratchets remain deferred.
 <!-- docsync:object.end docs.provider_status.overview -->

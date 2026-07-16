@@ -785,17 +785,21 @@ claims:
       scan workflow.
     severity: high
     evidence:
-    - evidence.readme.catalog_composition
-    - evidence.readme.python_provider_checks
-    - evidence.readme.docs_config_checks
-    - evidence.readme.security_catalog_checks
-    - evidence.readme.secret_scan_checks
+      - evidence.readme.catalog_composition
+      - evidence.readme.python_provider_checks
+      - evidence.readme.docs_config_checks
+      - evidence.readme.security_catalog_checks
+      - evidence.readme.secret_scan_checks
+      - evidence.java.structured_evidence_tests
+      - evidence.file_baselines.provider_neutral
   claim.docs.ratcheting_command_surface:
     object: docs.ratcheting.overview
     text: Ratcheting docs document the ratchet command surface exposed by Agent Maintainer.
     severity: medium
     evidence:
-    - evidence.readme.command_registry
+      - evidence.readme.command_registry
+      - evidence.java.structured_evidence_tests
+      - evidence.file_baselines.provider_neutral
   claim.docs.provider_status_python_core:
     object: docs.provider_status.overview
     text: Provider status docs describe Python as the core/reference provider and
@@ -815,13 +819,18 @@ claims:
     object: docs.provider_status.overview
     text: Provider status docs describe experimental Java/Gradle checked-wrapper
       tasks, reviewed setup, static doctor behavior, native Spotless/SpotBugs
-      ratchets, non-overwriting CI plans, and deferred structured/coverage surfaces.
+      ratchets, bounded structured report evidence, Java debt baselines, exact
+      repair facts, provider-neutral file ceilings, non-overwriting CI plans,
+      and deferred coverage thresholds.
     severity: high
     evidence:
       - evidence.java.provider_foundation
       - evidence.java.provider_foundation_tests
       - evidence.java.reviewed_setup_tests
       - evidence.java.ci_setup_tests
+      - evidence.java.structured_evidence_tests
+      - evidence.java.repair_fact_tests
+      - evidence.file_baselines.provider_neutral
   claim.docs.typescript_provider_explicit_commands:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe disabled-by-default explicit
@@ -1264,6 +1273,23 @@ evidence:
     anchors:
       - path: tests/ecosystems/java/test_ci_setup.py
         mode: explicit_region
+  evidence.java.structured_evidence_tests:
+    type: test
+    description: Java structured-evidence tests cover task outcomes, report
+      freshness and confinement, bounded parsers, sanitized runner artifacts,
+      and explicit findings-baseline lifecycle refusal paths.
+    anchors:
+      - path: tests/ecosystems/java/test_report_runner.py
+        mode: explicit_region
+      - path: tests/assess/test_java_baseline_cli.py
+        mode: explicit_region
+  evidence.java.repair_fact_tests:
+    type: test
+    description: Java exact repair-fact tests consume bounded runner artifacts
+      once and reject unsafe embedded paths without reopening raw Gradle XML.
+    anchors:
+      - path: tests/context/test_java_exact_facts.py
+        mode: explicit_region
   evidence.typescript.provider_command_tests:
     type: test
     description: TypeScript provider tests cover disabled default behavior,
@@ -1559,7 +1585,11 @@ evidence:
         mode: explicit_region
   evidence.file_baselines.provider_neutral:
     type: test
-    description: Provider-neutral file baseline tests cover non-Python file groups such as TSX, docs, and config files.
+    description: Provider-neutral file baseline tests cover non-Python groups,
+      versioned Java/Python per-path ceilings, defaults, established floors,
+      blocking regressions, rename/removal behavior, and explicit lifecycle.
     anchors:
       - path: tests/assess/test_file_baselines.py
+        mode: explicit_region
+      - path: tests/assess/test_file_ceiling_baseline.py
         mode: explicit_region

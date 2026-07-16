@@ -27,6 +27,7 @@ ENCODING = "utf-8"
 EXPECTED_BASELINE_ENTRIES = 2
 
 
+# docsync:evidence.start evidence.file_baselines.provider_neutral
 def test_physical_and_nonblank_defaults_can_be_enabled_independently() -> None:
     """A disabled physical ceiling does not invalidate a nonblank-only group."""
     observation = FileCeilingObservation(
@@ -224,6 +225,9 @@ def test_prune_rejects_regressions(
     assert status != 0
     assert "new or regressed" in capsys.readouterr().err
     assert baseline_path.read_bytes() == before
+
+
+# docsync:evidence.end evidence.file_baselines.provider_neutral
 
 
 def initialized_repo(tmp_path: Path, files: dict[str, str]) -> Path:

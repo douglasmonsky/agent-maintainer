@@ -180,13 +180,35 @@ def test_java_setup_docs_pin_native_ratchet_boundaries() -> None:
             "Spotless `ratchetFrom`",
             "native SpotBugs `FindBugsFilter`",
             "Normal doctor remains static and never executes Gradle.",
-            "Checkstyle and PMD findings baselines remain deferred.",
+            "Java findings baseline lifecycle is explicit",
         ),
         "docs/setup-advisor.md": (
             "Recommended, Guided, or Full control",
             "never regex-rewrites an arbitrary Gradle build",
             "Normal doctor and verification never run `tasks --all`.",
             "preserves existing repository-owned workflows",
+        ),
+    }
+
+    _assert_phrases_present(phrases)
+
+
+def test_java_structured_evidence_docs_pin_bounded_lifecycle_contracts() -> None:
+    """Public docs describe structured evidence without overstating coverage rollout."""
+    phrases = {
+        "docs/provider-status.md": (
+            "bounded Checkstyle, PMD, SpotBugs, JUnit, and JaCoCo XML evidence",
+            "never persists raw Gradle XML",
+            "`assess java-baseline create|inspect|prune`",
+        ),
+        "docs/ratcheting.md": (
+            "`assess file-baselines create|inspect|prune`",
+            "Renamed paths do not inherit an oversized-file allowance.",
+            "Verification is comparison-only",
+        ),
+        "docs/supported-scans-and-agent-use.md": (
+            "provider-neutral per-path file ceilings",
+            "complete, non-truncated runner artifacts",
         ),
     }
 

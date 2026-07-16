@@ -5,7 +5,7 @@ from __future__ import annotations
 from fnmatch import fnmatch
 from pathlib import Path
 
-from agent_maintainer.assess import file_baseline_state
+from agent_maintainer.assess import file_baseline_codec, file_baseline_state
 from agent_maintainer.assess.models import (
     FileBaselineFinding,
     FileBaselineGroupSummary,
@@ -302,7 +302,7 @@ def _read_optional_baseline(
     if not path.exists():
         return None
     try:
-        return file_baseline_state.read_baseline(path)
+        return file_baseline_codec.read_baseline(path)
     except (OSError, ValueError) as exc:
         raise FileBaselineLifecycleError(f"invalid file ceiling baseline: {exc}") from exc
 

@@ -2,18 +2,14 @@
 
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass
-from pathlib import Path, PurePosixPath
-from typing import Any, cast
+from pathlib import PurePosixPath
 
 BASELINE_VERSION = 1
-MAX_BASELINE_BYTES = 2_000_000
 MAX_BASELINE_ENTRIES = 20_000
-COMMIT_PATTERN = re.compile(r"[0-9a-f]{7,64}")
 WINDOWS_DRIVE = re.compile(r"^[A-Za-z]:")
-ENTRY_FIELDS = frozenset(("group", "nonblank_ceiling", "path", "physical_ceiling"))
+COMMIT_PATTERN = re.compile(r"[0-9a-f]{7,64}")
 
 
 @dataclass(frozen=True)
@@ -71,15 +67,18 @@ class FileCeilingBaseline:
 
     def __post_init__(self) -> None:
         """Reject unsupported, duplicate, or noncanonical documents."""
-        if self.version != BASELINE_VERSION:
-            raise ValueError(f"unsupported file ceiling baseline version: {self.version}")
-        if COMMIT_PATTERN.fullmatch(self.source_commit) is None:
-            raise ValueError("file ceiling baseline source_commit must be hexadecimal")
+        self._validate_header()
         keys = tuple(entry.key for entry in self.entries)
         if keys != tuple(sorted(keys)):
             raise ValueError("file ceiling baseline entries must be group/path sorted")
         if len(keys) != len(set(keys)):
             raise ValueError("file ceiling baseline contains duplicate group/path entries")
+
+    def _validate_header(self) -> None:
+        if self.version != BASELINE_VERSION:
+            raise ValueError(f"unsupported file ceiling baseline version: {self.version}")
+        if COMMIT_PATTERN.fullmatch(self.source_commit) is None:
+            raise ValueError("file ceiling baseline source_commit must be hexadecimal")
 
 
 @dataclass(frozen=True)
@@ -201,92 +200,18 @@ def inspect_baseline(baseline: FileCeilingBaseline) -> FileCeilingBaselineSummar
     )
 
 
-def render_baseline(baseline: FileCeilingBaseline) -> str:
-    """Render canonical newline-terminated JSON."""
-    payload = {
-        "entries": [
-            {
-                "group": entry.group,
-                "nonblank_ceiling": entry.nonblank_ceiling,
-                "path": entry.path,
-                "physical_ceiling": entry.physical_ceiling,
-            }
-            for entry in baseline.entries
-        ],
-        "source_commit": baseline.source_commit,
-        "version": baseline.version,
-    }
-    return f"{json.dumps(payload, indent=2, sort_keys=True)}\n"
-
-
-def parse_baseline(text: str) -> FileCeilingBaseline:
-    """Parse one bounded strict file ceiling baseline document."""
-    if len(text.encode("utf-8")) > MAX_BASELINE_BYTES:
-        raise ValueError("file ceiling baseline exceeds the size limit")
-    try:
-        payload: Any = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise ValueError("file ceiling baseline is malformed JSON") from exc
-    root = _object(payload, "file ceiling baseline")
-    if set(root) != {"entries", "source_commit", "version"}:
-        raise ValueError("file ceiling baseline has unexpected fields")
-    version = _integer(root["version"], "version")
-    source_commit = _string(root["source_commit"], "source_commit")
-    raw_entries = root["entries"]
-    if not isinstance(raw_entries, list):
-        raise ValueError("file ceiling baseline entries must be an array")
-    items = cast(list[Any], raw_entries)
-    if len(items) > MAX_BASELINE_ENTRIES:
-        raise ValueError("file ceiling baseline contains too many entries")
-    entries = tuple(_parse_entry(item) for item in items)
-    return FileCeilingBaseline(version, source_commit, entries)
-
-
-def read_baseline(path: Path) -> FileCeilingBaseline:
-    """Read one bounded file ceiling baseline."""
-    if path.stat().st_size > MAX_BASELINE_BYTES:
-        raise ValueError("file ceiling baseline exceeds the size limit")
-    return parse_baseline(path.read_text(encoding="utf-8"))
-
-
-def write_baseline(
-    path: Path,
-    baseline: FileCeilingBaseline,
-    *,
-    force: bool = False,
-) -> None:
-    """Write canonical JSON, refusing an unapproved overwrite."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    mode = "w" if force else "x"
-    try:
-        with path.open(mode, encoding="utf-8", newline="\n") as handle:
-            handle.write(render_baseline(baseline))
-    except FileExistsError as exc:
-        raise FileExistsError(f"baseline already exists: {path}") from exc
-
-
 def _current_delta(
     observation: FileCeilingObservation,
     entry: FileCeilingEntry | None,
 ) -> FileCeilingDelta | None:
-    physical_ceiling = observation.default_physical
-    nonblank_ceiling = observation.default_nonblank
-    if entry is not None:
-        physical_ceiling = max(physical_ceiling, entry.physical_ceiling)
-        nonblank_ceiling = max(nonblank_ceiling, entry.nonblank_ceiling)
-    physical_regression = observation.default_physical > 0 and _exceeds(
-        observation.physical,
+    physical_ceiling, nonblank_ceiling = _active_ceilings(observation, entry)
+    physical_regression, nonblank_regression = _regression_flags(
+        observation,
         physical_ceiling,
-    )
-    nonblank_regression = observation.default_nonblank > 0 and _exceeds(
-        observation.nonblank,
         nonblank_ceiling,
     )
-    improved = entry is not None and (
-        (observation.default_physical > 0 and observation.physical < entry.physical_ceiling)
-        or (observation.default_nonblank > 0 and observation.nonblank < entry.nonblank_ceiling)
-    )
-    if not physical_regression and not nonblank_regression and not improved:
+    improved = _is_improved(observation, entry)
+    if not any((physical_regression, nonblank_regression, improved)):
         return None
     return FileCeilingDelta(
         observation.group,
@@ -302,6 +227,40 @@ def _current_delta(
     )
 
 
+def _active_ceilings(
+    observation: FileCeilingObservation,
+    entry: FileCeilingEntry | None,
+) -> tuple[int, int]:
+    if entry is None:
+        return observation.default_physical, observation.default_nonblank
+    return (
+        max(observation.default_physical, entry.physical_ceiling),
+        max(observation.default_nonblank, entry.nonblank_ceiling),
+    )
+
+
+def _regression_flags(
+    observation: FileCeilingObservation,
+    physical_ceiling: int,
+    nonblank_ceiling: int,
+) -> tuple[bool, bool]:
+    return (
+        observation.default_physical > 0 and observation.physical > physical_ceiling,
+        observation.default_nonblank > 0 and observation.nonblank > nonblank_ceiling,
+    )
+
+
+def _is_improved(
+    observation: FileCeilingObservation,
+    entry: FileCeilingEntry | None,
+) -> bool:
+    if entry is None:
+        return False
+    physical = observation.default_physical > 0 and observation.physical < entry.physical_ceiling
+    nonblank = observation.default_nonblank > 0 and observation.nonblank < entry.nonblank_ceiling
+    return physical or nonblank
+
+
 def _oversized(observation: FileCeilingObservation) -> bool:
     return _exceeds(observation.physical, observation.default_physical) or _exceeds(
         observation.nonblank,
@@ -310,40 +269,9 @@ def _oversized(observation: FileCeilingObservation) -> bool:
 
 
 def _exceeds(value: int, ceiling: int) -> bool:
-    return ceiling > 0 and value > ceiling
-
-
-def _parse_entry(payload: Any) -> FileCeilingEntry:
-    raw = _object(payload, "file ceiling entry")
-    if frozenset(raw) != ENTRY_FIELDS:
-        raise ValueError("file ceiling entry has unexpected fields")
-    return FileCeilingEntry(
-        _string(raw["group"], "entry.group"),
-        _string(raw["path"], "entry.path"),
-        _integer(raw["physical_ceiling"], "entry.physical_ceiling"),
-        _integer(raw["nonblank_ceiling"], "entry.nonblank_ceiling"),
-    )
-
-
-def _object(payload: Any, label: str) -> dict[str, Any]:
-    if not isinstance(payload, dict):
-        raise ValueError(f"{label} must be an object")
-    raw = cast(dict[object, Any], payload)
-    if any(not isinstance(key, str) for key in raw):
-        raise ValueError(f"{label} must use string keys")
-    return cast(dict[str, Any], raw)
-
-
-def _string(payload: Any, label: str) -> str:
-    if not isinstance(payload, str):
-        raise ValueError(f"{label} must be a string")
-    return payload
-
-
-def _integer(payload: Any, label: str) -> int:
-    if not isinstance(payload, int) or isinstance(payload, bool):
-        raise ValueError(f"{label} must be an integer")
-    return payload
+    if ceiling <= 0:
+        return False
+    return value > ceiling
 
 
 def _validate_group(value: str) -> None:
@@ -354,24 +282,26 @@ def _validate_group(value: str) -> None:
 def _validate_path(value: str) -> None:
     normalized = value.strip().replace("\\", "/")
     path = PurePosixPath(normalized)
-    if (
-        not normalized
-        or path.is_absolute()
-        or ".." in path.parts
-        or WINDOWS_DRIVE.match(normalized) is not None
-        or path.as_posix() != normalized
-    ):
+    invalid = (
+        not normalized,
+        path.is_absolute(),
+        ".." in path.parts,
+        WINDOWS_DRIVE.match(normalized) is not None,
+        path.as_posix() != normalized,
+    )
+    if any(invalid):
         raise ValueError("file ceiling path must be normalized and repository-relative")
 
 
 def _validate_counts(physical: int, nonblank: int, label: str) -> None:
-    if (
-        isinstance(physical, bool)
-        or isinstance(nonblank, bool)
-        or physical < 0
-        or nonblank < 0
-        or nonblank > physical
-    ):
+    invalid = (
+        isinstance(physical, bool),
+        isinstance(nonblank, bool),
+        physical < 0,
+        nonblank < 0,
+        nonblank > physical,
+    )
+    if any(invalid):
         raise ValueError(f"file ceiling {label} counts are invalid")
 
 

@@ -149,7 +149,9 @@ Warnings should be actionable. Avoid inventorying disabled tools.
 
 ## Structured Parser Expectations
 
-Structured parsers should convert tool output into compact repair facts:
+Separate authoritative report validation from downstream repair-fact parsing.
+An authoritative report adapter should convert one declared, repository-confined
+tool report into bounded normalized evidence:
 
 - file path;
 - line and column when present;
@@ -157,8 +159,20 @@ Structured parsers should convert tool output into compact repair facts:
 - severity;
 - short message.
 
-Parsers should tolerate malformed output and fall back to the normal bounded
-raw-log summary. They must not print full raw logs into agent-facing summaries.
+- stable semantic identity when findings participate in a debt baseline;
+- completeness/truncation state and aggregate counts;
+- the producing task outcome and report origin.
+
+Selected authoritative reports fail closed when missing, stale, malformed,
+oversized, truncated, or path-escaping. A failed provider process remains
+authoritative. Persist sanitized facts in the normal bounded runner artifact,
+not the raw third-party report.
+
+Repair-fact parsers consume that already-bounded artifact once. They may fall
+back to the normal bounded raw-log summary when their input is malformed, but
+must never reopen an artifact-provided report path or print full raw logs into
+agent-facing summaries. Baseline create/prune must remain an explicit command;
+normal verification is comparison-only.
 
 ## Tests
 
@@ -173,6 +187,9 @@ Required tests:
 - Optional skip behavior when commands are missing or disabled.
 - Doctor pass/warn cases.
 - Structured parser sample outputs when parsers exist.
+- Missing/stale/malformed/oversized/truncated authoritative report refusal.
+- Deterministic baseline create/inspect/prune tests when debt ratchets exist.
+- Proof that persisted artifacts omit raw third-party report bodies and checkout paths.
 - Fixture or scaffold smoke coverage for the smallest meaningful repo layout.
 
 Regression tests should protect Python behavior when provider internals change.

@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
 
 # Security: this module executes only a repository-confined checked wrapper.
 import subprocess  # nosec B404
 import sys
-import tomllib
+from dataclasses import dataclass
 from pathlib import Path
 
 from agent_maintainer.config import loader
@@ -23,6 +22,21 @@ from agent_maintainer.ecosystems.java import (
     wrapper,
 )
 from agent_maintainer.ecosystems.java.ratchets import validate_spotless_ratchet_ref
+
+MIN_GIT_HASH_LENGTH = 7
+MAX_GIT_HASH_LENGTH = 64
+
+
+@dataclass(frozen=True)
+class _RunPlan:
+    gradle_args: tuple[str, ...]
+    findings_baseline: str
+    spotbugs_baseline: str
+    diagnostic_artifacts_dir: str
+    tasks: tuple[str, ...]
+    wrapper: wrapper.ResolvedGradleWrapper
+    reports: tuple[provider.JavaReportPlan, ...]
+    pre_run_reports: tuple[observations.ReportSnapshot, ...]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -40,6 +54,28 @@ def main(argv: list[str] | None = None) -> int:
 
 def run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artifacts.RunOutcome:
     """Run one explicit Java group and return its bounded artifact outcome."""
+    plan = _plan_run(workspace, group, profile)
+    completed = _run_wrapper(
+        plan.wrapper.executable,
+        plan.wrapper.gradle_root,
+        plan.gradle_args,
+        plan.tasks,
+    )
+    payload = _execution_payload(workspace, group, profile, plan, completed.returncode)
+    if completed.returncode != 0:
+        return artifacts.RunOutcome(
+            artifacts.artifact_path(
+                workspace,
+                group,
+                fallback_dir=plan.diagnostic_artifacts_dir,
+            ),
+            payload,
+            completed.returncode,
+        )
+    return _successful_outcome(workspace, group, plan, completed.stdout, payload)
+
+
+def _plan_run(workspace: Path, group: provider.JavaGroup, profile: str) -> _RunPlan:
     if not profile:
         profile_field = artifact_environment.VERIFY_PROFILE_ENV
         raise provider.JavaProviderConfigurationError(
@@ -64,61 +100,78 @@ def run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artif
         tuple(plan.expectation() for plan in report_plans),
         tasks,
     )
-    completed = _run_wrapper(
-        resolved_wrapper.executable,
-        resolved_wrapper.gradle_root,
+    return _RunPlan(
         config.java.gradle_args,
+        config.java.findings_baseline,
+        config.java.spotbugs_baseline,
+        config.diagnostic_artifacts_dir,
         tasks,
+        resolved_wrapper,
+        report_plans,
+        pre_run_reports,
     )
+
+
+def _execution_payload(
+    workspace: Path,
+    group: provider.JavaGroup,
+    profile: str,
+    plan: _RunPlan,
+    exit_code: int,
+) -> dict[str, object]:
     payload = artifacts.base_payload(group, profile)
     payload.update(
         artifacts.execution_payload(
             workspace=workspace,
-            wrapper=resolved_wrapper,
-            gradle_args=config.java.gradle_args,
-            tasks=tasks,
-            exit_code=completed.returncode,
+            wrapper=plan.wrapper,
+            gradle_args=plan.gradle_args,
+            tasks=plan.tasks,
+            exit_code=exit_code,
         )
     )
-    if completed.returncode != 0:
-        return artifacts.RunOutcome(
-            artifacts.artifact_path(
-                workspace,
-                group,
-                fallback_dir=config.diagnostic_artifacts_dir,
-            ),
-            payload,
-            completed.returncode,
-        )
+    return payload
+
+
+def _successful_outcome(
+    workspace: Path,
+    group: provider.JavaGroup,
+    plan: _RunPlan,
+    output: str,
+    payload: dict[str, object],
+) -> artifacts.RunOutcome:
     observation = observations.build_gradle_observation(
-        tasks,
-        completed.stdout,
-        completed.returncode,
-        pre_run_reports,
+        plan.tasks,
+        output,
+        0,
+        plan.pre_run_reports,
     )
     evidence = report_evidence.collect_report_evidence(
         workspace,
-        resolved_wrapper.gradle_root,
-        report_plans,
+        plan.wrapper.gradle_root,
+        plan.reports,
         observation,
-        config.java.findings_baseline,
+        plan.findings_baseline,
     )
     payload["observation"] = observation.to_payload()
-    if report_plans:
+    if plan.reports:
         reports_payload = evidence.to_payload()
         reports_payload["source_commit"] = _repository_head(workspace)
         payload["reports"] = reports_payload
         payload["reports_parsed"] = evidence.report_count > 0
         payload["evidence_status"] = "validated" if evidence.passed else "regression"
     spotbugs_payload = evidence.spotbugs_payload()
-    if config.java.spotbugs_baseline and spotbugs_payload is not None:
+    if plan.spotbugs_baseline and spotbugs_payload is not None:
         payload["spotbugs"] = spotbugs_payload
     policy_exit_code = 0 if evidence.passed else 1
     if policy_exit_code != 0:
         payload["status"] = "report-failed"
         payload["exit_code"] = policy_exit_code
     return artifacts.RunOutcome(
-        artifacts.artifact_path(workspace, group, fallback_dir=config.diagnostic_artifacts_dir),
+        artifacts.artifact_path(
+            workspace,
+            group,
+            fallback_dir=plan.diagnostic_artifacts_dir,
+        ),
         payload,
         policy_exit_code,
     )
@@ -153,7 +206,7 @@ def _is_spotless_apply_task(task: str) -> bool:
 def _load_java_config(workspace: Path):
     try:
         return loader.load_config(workspace)
-    except (TypeError, tomllib.TOMLDecodeError) as exc:
+    except (TypeError, ValueError) as exc:
         raise errors.JavaConfigurationError(str(exc)) from exc
 
 
@@ -189,7 +242,11 @@ def _repository_head(workspace: Path) -> str:
         shell=False,
     )
     head = completed.stdout.strip().lower()
-    valid = completed.returncode == 0 and re.fullmatch(r"[0-9a-f]{7,64}", head)
+    valid = (
+        completed.returncode == 0
+        and MIN_GIT_HASH_LENGTH <= len(head) <= MAX_GIT_HASH_LENGTH
+        and set(head) <= set("0123456789abcdef")
+    )
     return head if valid else "unknown"
 
 

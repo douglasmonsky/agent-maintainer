@@ -20,6 +20,7 @@ CHECK = "java-gradle-static"
 FINDING_LINE = 9
 
 
+# docsync:evidence.start evidence.java.repair_fact_tests
 def test_registry_discovers_java_findings_and_test_problems(tmp_path: Path) -> None:
     """Both Java check groups dispatch their bounded artifact facts."""
     payload = java_payload()
@@ -121,6 +122,9 @@ def test_java_parser_caps_facts_and_rejects_malformed_artifacts(tmp_path: Path) 
         )
         == []
     )
+
+
+# docsync:evidence.end evidence.java.repair_fact_tests
 
 
 def java_payload() -> dict[str, object]:

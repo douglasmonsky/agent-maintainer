@@ -106,11 +106,12 @@ def plan_reports(
     requested_tasks: tuple[str, ...],
 ) -> tuple[JavaReportPlan, ...]:
     """Map configured report declarations to unambiguous single-task plans."""
+    requested = frozenset(task.removeprefix(":") for task in requested_tasks)
     plans = tuple(
         plan
         for expectation in config.reports
         for plan in _expectation_report_plans(expectation)
-        if _task_selected(plan.task, requested_tasks)
+        if plan.task.removeprefix(":") in requested
     )
     _validate_required_report_plans(config, requested_tasks, plans)
     return plans
@@ -254,18 +255,8 @@ def _validate_required_report_plans(
     plans: tuple[JavaReportPlan, ...],
 ) -> None:
     planned = {(plan.tool, plan.task.removeprefix(":")) for plan in plans}
-    required = {
-        (tool.name, task.removeprefix(":"))
-        for tool in _all_tool_plans(config)
-        if tool.name in {"spotbugs", "checkstyle", "pmd", "test"} and tool.name in config.checks
-        for task in tool.tasks
-        if _task_selected(task, requested_tasks)
-    }
-    required.update(
-        ("jacoco", task.removeprefix(":"))
-        for task in config.jacoco_report_tasks
-        if "jacoco" in config.checks and _task_selected(task, requested_tasks)
-    )
+    requested = frozenset(task.removeprefix(":") for task in requested_tasks)
+    required = _required_report_keys(config, requested)
     missing = tuple(sorted(required - planned))
     if missing:
         tool, task = missing[0]
@@ -274,6 +265,23 @@ def _validate_required_report_plans(
         )
 
 
-def _task_selected(task: str, requested_tasks: tuple[str, ...]) -> bool:
-    normalized = task.removeprefix(":")
-    return normalized in {item.removeprefix(":") for item in requested_tasks}
+def _required_report_keys(
+    config: JavaGradleConfig,
+    requested: frozenset[str],
+) -> set[tuple[str, str]]:
+    report_tools = frozenset(("spotbugs", "checkstyle", "pmd", "test"))
+    selected_tools = report_tools.intersection(config.checks)
+    required = {
+        (tool.name, task.removeprefix(":"))
+        for tool in _all_tool_plans(config)
+        if tool.name in selected_tools
+        for task in tool.tasks
+        if task.removeprefix(":") in requested
+    }
+    if "jacoco" in config.checks:
+        required.update(
+            ("jacoco", task.removeprefix(":"))
+            for task in config.jacoco_report_tasks
+            if task.removeprefix(":") in requested
+        )
+    return required
