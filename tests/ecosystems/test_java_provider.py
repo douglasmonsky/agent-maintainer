@@ -86,6 +86,24 @@ def test_plan_group_orders_and_deduplicates_selected_tasks() -> None:
     )
 
 
+def test_java_provider_uses_configured_artifact_directory() -> None:
+    config = replace(
+        MaintainerConfig(),
+        diagnostic_artifacts_dir=".custom-logs",
+        java=JavaGradleConfig(
+            enabled=True,
+            checks=("test",),
+            test_tasks=("test",),
+        ),
+    )
+
+    checks = JavaProvider().checks_by_name(_context(config))
+
+    assert checks["java-gradle-tests"].artifact_paths == (
+        ".custom-logs/java-gradle/java-gradle-tests.json",
+    )
+
+
 def test_plan_group_omits_tools_not_assigned_to_profile() -> None:
     config = JavaGradleConfig(
         enabled=True,

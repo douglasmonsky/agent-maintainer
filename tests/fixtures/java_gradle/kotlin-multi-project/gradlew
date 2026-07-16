@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+record_dir="${JAVA_RUNNER_TEST_RECORD_DIR:?}"
+mkdir -p "$record_dir"
+pwd > "$record_dir/cwd.txt"
+printf '%s\n' "$@" > "$record_dir/argv.txt"
+exit "${JAVA_RUNNER_TEST_EXIT_CODE:-0}"

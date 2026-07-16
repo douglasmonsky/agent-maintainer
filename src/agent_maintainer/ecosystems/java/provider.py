@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 from agent_maintainer.config.java import JavaGradleConfig
@@ -46,7 +47,7 @@ class JavaProvider:
         if not config.enabled:
             return []
         return [
-            _group_check(group, profiles)
+            _group_check(group, profiles, context.config.diagnostic_artifacts_dir)
             for group in _GROUP_PROFILES
             if (profiles := _selected_group_profiles(config, group))
         ]
@@ -72,8 +73,13 @@ def plan_group(
     return tuple(tasks)
 
 
-def _group_check(group: JavaGroup, profiles: frozenset[str]) -> Check:
+def _group_check(
+    group: JavaGroup,
+    profiles: frozenset[str],
+    artifacts_dir: str,
+) -> Check:
     check_name = f"java-gradle-{group}"
+    artifact_path = Path(artifacts_dir) / "java-gradle" / f"{check_name}.json"
     return Check(
         check_name,
         [
@@ -84,7 +90,7 @@ def _group_check(group: JavaGroup, profiles: frozenset[str]) -> Check:
             group,
         ],
         profiles,
-        artifact_paths=(f".verify-logs/java-gradle/{check_name}.json",),
+        artifact_paths=(artifact_path.as_posix(),),
     )
 
 

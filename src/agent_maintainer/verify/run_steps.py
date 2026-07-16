@@ -1,7 +1,9 @@
 """Verifier run steps shared by quiet CLI orchestration."""
 
 import argparse
-from collections.abc import Sequence
+import contextlib
+import os
+from collections.abc import Generator, Sequence
 from pathlib import Path
 from typing import NamedTuple, Protocol
 
@@ -13,6 +15,22 @@ from agent_maintainer.models import CI_PROFILE, Check, CheckResult
 from agent_maintainer.verify.artifact_adapters import PartialRunContext
 from agent_maintainer.verify.artifacts import RunContext, write_run_artifacts
 from agent_maintainer.verify.git_refs import ref_failures
+
+VERIFY_PROFILE_ENV = "_AGENT_MAINTAINER_VERIFY_PROFILE"
+
+
+@contextlib.contextmanager
+def verification_profile_environment(profile: str) -> Generator[None, None, None]:
+    """Expose the selected verifier profile to command-only provider runners."""
+    previous = os.environ.get(VERIFY_PROFILE_ENV)
+    os.environ[VERIFY_PROFILE_ENV] = profile
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop(VERIFY_PROFILE_ENV, None)
+        else:
+            os.environ[VERIFY_PROFILE_ENV] = previous
 
 
 class CheckRuntimeEvents(Protocol):
@@ -151,7 +169,8 @@ def _run_one_check(
     if runtime_events is not None:
         runtime_events.check_started(check)
     try:
-        result = run_check(check, selected_log_dir, args.max_lines, args.max_chars)
+        with verification_profile_environment(args.profile):
+            result = run_check(check, selected_log_dir, args.max_lines, args.max_chars)
     except Exception as exc:
         if runtime_events is not None:
             runtime_events.check_exception(check, exc)

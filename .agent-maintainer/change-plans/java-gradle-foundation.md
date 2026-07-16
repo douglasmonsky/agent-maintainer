@@ -36,6 +36,7 @@ allowed_paths = [
   "src/agent_maintainer/ecosystems/registry.py",
   "src/agent_maintainer/ecosystems/tach.domain.toml",
   "src/agent_maintainer/verify/groups.py",
+  "src/agent_maintainer/verify/run_steps.py",
   "tests/archguard/test_decision_notes.py",
   "tests/assess/test_evidence.py",
   "tests/catalogs/test_global_catalog_characterization.py",
@@ -60,9 +61,10 @@ allowed_paths = [
   "tests/ecosystems/test_python_classification.py",
   "tests/fixtures/java_gradle/**",
   "tests/verify/test_verification_groups.py",
+  "tests/verify/test_run_steps.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 45
+max_changed_files = 47
 max_changed_lines = 4500
 allow_source_without_test_change = false
 requires_tests = true
