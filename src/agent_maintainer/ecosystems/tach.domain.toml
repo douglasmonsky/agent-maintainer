@@ -75,6 +75,14 @@ path = "java.errors"
 depends_on = []
 
 [[modules]]
+path = "java.findings"
+depends_on = []
+
+[[modules]]
+path = "java.baseline"
+depends_on = ["java.findings"]
+
+[[modules]]
 path = "java.observations"
 depends_on = [
   "java.errors",
