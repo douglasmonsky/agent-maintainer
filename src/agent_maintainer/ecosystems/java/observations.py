@@ -17,7 +17,7 @@ MAX_GRADLE_OUTPUT_CHARS = 1_000_000
 MAX_SNAPSHOT_BYTES = 20_971_520
 DIGEST_CHUNK_BYTES = 65_536
 TASK_LINE = re.compile(r"^> Task (?P<task>:\S+?)(?: (?P<state>[A-Z][A-Z-]*))?$")
-SnapshotKey = tuple[str, tuple[str, ...], str]
+SnapshotKey = tuple[str, tuple[str, ...], str, str]
 
 
 class GradleTaskState(StrEnum):
@@ -61,6 +61,7 @@ class ReportSnapshot:
     path: str
     sha256: str
     size: int
+    mtime_ns: int
 
 
 @dataclass(frozen=True)
@@ -73,8 +74,13 @@ class GradleObservation:
     exit_code: int
 
     def to_payload(self) -> dict[str, Any]:
-        """Return a JSON-serializable artifact payload."""
-        return asdict(self)
+        """Return bounded outcomes without publishing report digests or timestamps."""
+        return {
+            "requested_tasks": self.requested_tasks,
+            "task_outcomes": tuple(asdict(outcome) for outcome in self.task_outcomes),
+            "pre_run_report_count": len(self.pre_run_reports),
+            "exit_code": self.exit_code,
+        }
 
 
 def build_gradle_observation(
@@ -106,7 +112,7 @@ def snapshot_reports(
             _validate_report_glob(pattern)
             for candidate in sorted(gradle_root.glob(pattern)):
                 snapshot = _snapshot_candidate(canonical_root, candidate, expectation, pattern)
-                key = (snapshot.tool, snapshot.tasks, snapshot.path)
+                key = (snapshot.tool, snapshot.tasks, snapshot.glob, snapshot.path)
                 snapshots[key] = snapshot
     return tuple(snapshots[key] for key in sorted(snapshots))
 
@@ -184,26 +190,47 @@ def _snapshot_candidate(
         raise JavaConfigurationError(
             f"Java report match escapes Gradle root: {candidate.name}"
         ) from exc
-    if not resolved.is_file():
-        raise JavaConfigurationError(f"Java report match is not a file: {relative.as_posix()}")
-    size = resolved.stat().st_size
-    if size > MAX_SNAPSHOT_BYTES:
-        raise JavaConfigurationError(f"Java report exceeds snapshot limit: {relative.as_posix()}")
+    size, mtime_ns, digest = _snapshot_metadata(resolved, relative)
     return ReportSnapshot(
         expectation.tool,
         expectation.tasks,
         pattern,
         relative.as_posix(),
-        _file_digest(resolved),
+        digest,
         size,
+        mtime_ns,
     )
+
+
+def _snapshot_metadata(path: Path, relative: Path) -> tuple[int, int, str]:
+    if not path.is_file():
+        raise JavaConfigurationError(f"Java report match is not a file: {relative.as_posix()}")
+    before = path.stat()
+    size = before.st_size
+    if size > MAX_SNAPSHOT_BYTES:
+        raise JavaConfigurationError(f"Java report exceeds snapshot limit: {relative.as_posix()}")
+    digest = _file_digest(path)
+    after = path.stat()
+    if _snapshot_changed(before, after):
+        raise JavaConfigurationError(f"Java report changed during snapshot: {relative.as_posix()}")
+    return size, after.st_mtime_ns, digest
 
 
 def _file_digest(path: Path) -> str:
     digest = hashlib.sha256()
+    total = 0
     with path.open("rb") as handle:
         chunk = handle.read(DIGEST_CHUNK_BYTES)
         while chunk:
+            total += len(chunk)
+            if total > MAX_SNAPSHOT_BYTES:
+                raise JavaConfigurationError(f"Java report exceeds snapshot limit: {path.name}")
             digest.update(chunk)
             chunk = handle.read(DIGEST_CHUNK_BYTES)
     return digest.hexdigest()
+
+
+def _snapshot_changed(before: Any, after: Any) -> bool:
+    identity_before = (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns)
+    identity_after = (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)
+    return identity_before != identity_after

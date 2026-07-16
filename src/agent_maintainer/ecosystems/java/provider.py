@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from agent_maintainer.config.java import JavaGradleConfig
+from agent_maintainer.config.java import JavaGradleConfig, JavaReportExpectation
 from agent_maintainer.ecosystems.java.errors import JavaConfigurationError
 from agent_maintainer.ecosystems.models import EcosystemCheckContext
 from agent_maintainer.models import CI_PROFILE, FULL_PROFILE, PRECOMMIT_PROFILE, Check
@@ -19,6 +19,20 @@ JavaGroup = Literal["format", "static", "tests"]
 class _GroupSpec:
     name: JavaGroup
     values: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class JavaReportPlan:
+    """One tool report contract scoped to exactly one requested task."""
+
+    tool: str
+    task: str
+    globs: tuple[str, ...]
+    required: bool
+
+    def expectation(self) -> JavaReportExpectation:
+        """Return the single-task expectation used by report snapshots."""
+        return JavaReportExpectation(self.tool, (self.task,), self.globs, self.required)
 
 
 _GROUP_PROFILES: tuple[_GroupSpec, ...] = (
@@ -85,6 +99,21 @@ def plan_group(
             )
         tasks.update(dict.fromkeys(tool.tasks))
     return tuple(tasks)
+
+
+def plan_reports(
+    config: JavaGradleConfig,
+    requested_tasks: tuple[str, ...],
+) -> tuple[JavaReportPlan, ...]:
+    """Map configured report declarations to unambiguous single-task plans."""
+    plans = tuple(
+        plan
+        for expectation in config.reports
+        for plan in _expectation_report_plans(expectation)
+        if _task_selected(plan.task, requested_tasks)
+    )
+    _validate_required_report_plans(config, requested_tasks, plans)
+    return plans
 
 
 def missing_selected_task_fields(config: JavaGradleConfig) -> tuple[str, ...]:
@@ -193,3 +222,58 @@ def _group_profiles(group: JavaGroup) -> tuple[str, ...]:
 
 def _group_tools(group: JavaGroup) -> tuple[str, ...]:
     return next(spec.values for spec in _GROUP_TOOLS if spec.name == group)
+
+
+def _expectation_report_plans(
+    expectation: JavaReportExpectation,
+) -> tuple[JavaReportPlan, ...]:
+    if not expectation.tasks or not expectation.globs:
+        raise JavaProviderConfigurationError("Java report tasks and globs must not be empty")
+    if len(expectation.tasks) == 1:
+        return (
+            JavaReportPlan(
+                expectation.tool,
+                expectation.tasks[0],
+                expectation.globs,
+                expectation.required,
+            ),
+        )
+    if len(expectation.tasks) != len(expectation.globs):
+        raise JavaProviderConfigurationError(
+            "Java report tasks and globs do not have an unambiguous mapping"
+        )
+    return tuple(
+        JavaReportPlan(expectation.tool, task, (report_glob,), expectation.required)
+        for task, report_glob in zip(expectation.tasks, expectation.globs, strict=True)
+    )
+
+
+def _validate_required_report_plans(
+    config: JavaGradleConfig,
+    requested_tasks: tuple[str, ...],
+    plans: tuple[JavaReportPlan, ...],
+) -> None:
+    planned = {(plan.tool, plan.task.removeprefix(":")) for plan in plans}
+    required = {
+        (tool.name, task.removeprefix(":"))
+        for tool in _all_tool_plans(config)
+        if tool.name in {"spotbugs", "checkstyle", "pmd", "test"} and tool.name in config.checks
+        for task in tool.tasks
+        if _task_selected(task, requested_tasks)
+    }
+    required.update(
+        ("jacoco", task.removeprefix(":"))
+        for task in config.jacoco_report_tasks
+        if "jacoco" in config.checks and _task_selected(task, requested_tasks)
+    )
+    missing = tuple(sorted(required - planned))
+    if missing:
+        tool, task = missing[0]
+        raise JavaProviderConfigurationError(
+            f"selected Java report task has no declaration: {tool} {task}"
+        )
+
+
+def _task_selected(task: str, requested_tasks: tuple[str, ...]) -> bool:
+    normalized = task.removeprefix(":")
+    return normalized in {item.removeprefix(":") for item in requested_tasks}

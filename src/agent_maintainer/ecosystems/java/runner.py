@@ -13,9 +13,15 @@ from pathlib import Path
 
 from agent_maintainer.config import loader
 from agent_maintainer.core import artifact_environment
-from agent_maintainer.ecosystems.java import artifacts, errors, observations, provider, wrapper
+from agent_maintainer.ecosystems.java import (
+    artifacts,
+    errors,
+    observations,
+    provider,
+    report_evidence,
+    wrapper,
+)
 from agent_maintainer.ecosystems.java.ratchets import validate_spotless_ratchet_ref
-from agent_maintainer.ecosystems.java.reports import spotbugs
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -51,9 +57,10 @@ def run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artif
         config.java.spotless_tasks,
         config.java.spotless_ratchet_ref,
     )
+    report_plans = provider.plan_reports(config.java, tasks)
     pre_run_reports = observations.snapshot_reports(
         resolved_wrapper.gradle_root,
-        config.java.reports,
+        tuple(plan.expectation() for plan in report_plans),
         tasks,
     )
     completed = _run_wrapper(
@@ -61,18 +68,6 @@ def run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artif
         resolved_wrapper.gradle_root,
         config.java.gradle_args,
         tasks,
-    )
-    observation = observations.build_gradle_observation(
-        tasks,
-        completed.stdout,
-        completed.returncode,
-        pre_run_reports,
-    )
-    spotbugs_payload = spotbugs.verification_payload(
-        resolved_wrapper.gradle_root,
-        config.java.spotbugs_baseline,
-        config.java.reports,
-        observation,
     )
     payload = artifacts.base_payload(group, profile)
     payload.update(
@@ -84,13 +79,45 @@ def run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artif
             exit_code=completed.returncode,
         )
     )
+    if completed.returncode != 0:
+        return artifacts.RunOutcome(
+            artifacts.artifact_path(
+                workspace,
+                group,
+                fallback_dir=config.diagnostic_artifacts_dir,
+            ),
+            payload,
+            completed.returncode,
+        )
+    observation = observations.build_gradle_observation(
+        tasks,
+        completed.stdout,
+        completed.returncode,
+        pre_run_reports,
+    )
+    evidence = report_evidence.collect_report_evidence(
+        workspace,
+        resolved_wrapper.gradle_root,
+        report_plans,
+        observation,
+        config.java.findings_baseline,
+    )
     payload["observation"] = observation.to_payload()
-    if spotbugs_payload is not None:
+    if report_plans:
+        payload["reports"] = evidence.to_payload()
+        payload["reports_parsed"] = evidence.report_count > 0
+        payload["evidence_status"] = "validated" if evidence.passed else "regression"
+    spotbugs_payload = evidence.spotbugs_payload()
+    if config.java.spotbugs_baseline and spotbugs_payload is not None:
         payload["spotbugs"] = spotbugs_payload
+    policy_exit_code = 0 if evidence.passed else 1
+    if policy_exit_code != 0:
+        payload["status"] = "report-failed"
+        payload["exit_code"] = policy_exit_code
     return artifacts.RunOutcome(
         artifacts.artifact_path(workspace, group, fallback_dir=config.diagnostic_artifacts_dir),
         payload,
-        completed.returncode,
+        policy_exit_code,
     )
 
 

@@ -36,6 +36,13 @@ in the generic verifier or in native SpotBugs filter handling.
 - Source paths emitted by quality tools are normalized beneath the configured
   Gradle root. Published messages and test details are whitespace-normalized and
   truncated independently of the XML parser's harder resource ceiling.
+- Provider report declarations are resolved to one task per evidence plan.
+  Executed tasks require a newly written snapshot; cached and up-to-date tasks
+  may reuse complete reports; no-source tasks require report absence and cannot
+  satisfy required tests. All other or ambiguous outcomes fail closed.
+- A failed Gradle process remains authoritative. Successful runs then apply, in
+  order, task outcome checks, report confinement and freshness, parser
+  completeness, findings debt comparison, and bounded artifact publication.
 
 The modules remain Java-owned. Core verification receives only bounded result
 artifacts and does not learn third-party report formats or Java baseline schema.

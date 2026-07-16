@@ -15,6 +15,7 @@ allowed_paths = [
   "docs/provider-status.md",
   "docs/ratcheting.md",
   "docs/setup-advisor.md",
+  "docs/superpowers/plans/2026-07-16-java-gradle-structured-baselines.md",
   "docs/supported-scans-and-agent-use.md",
   "src/agent_maintainer/assess/cli.py",
   "src/agent_maintainer/assess/file_baselines.py",
@@ -45,6 +46,7 @@ allowed_paths = [
   "tests/docsync/test_public_doc_trace.py",
   "tests/doctor/test_java_doctor.py",
   "tests/ecosystems/java/**",
+  "tests/ecosystems/test_java_runner.py",
   "tests/fixtures/java_gradle/**",
   "tests/packaging/test_package_metadata.py",
 ]

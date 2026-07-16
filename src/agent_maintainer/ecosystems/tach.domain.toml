@@ -107,7 +107,7 @@ depends_on = [
   "java.observations",
   "java.provider",
   "java.ratchets",
-  "java.reports.spotbugs",
+  "java.report_evidence",
   "java.wrapper",
   "//agent_maintainer.config.loader",
 ]
@@ -119,6 +119,30 @@ depends_on = ["//agent_maintainer.core.setup_plans"]
 [[modules]]
 path = "java.ratchets"
 depends_on = []
+
+[[modules]]
+path = "java.report_outcomes"
+depends_on = [
+  "java.errors",
+  "java.observations",
+  "java.provider",
+]
+
+[[modules]]
+path = "java.report_evidence"
+depends_on = [
+  "java.baseline",
+  "java.errors",
+  "java.findings",
+  "java.observations",
+  "java.provider",
+  "java.report_outcomes",
+  "java.reports.checkstyle",
+  "java.reports.junit",
+  "java.reports.pmd",
+  "java.reports.spotbugs",
+  "java.reports.xml",
+]
 
 [[modules]]
 path = "java.reports"

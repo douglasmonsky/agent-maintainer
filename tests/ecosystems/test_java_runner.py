@@ -54,7 +54,7 @@ def test_main_runs_wrapper_with_exact_args_and_gradle_root(
     assert artifact["status"] == "passed"
     assert artifact["tasks"] == ["spotbugsMain", "sharedTask", "checkstyleMain"]
     assert artifact["reports_parsed"] is False
-    assert artifact["evidence_status"] == "execution-only"
+    assert artifact["evidence_status"] == "validated"
 
 
 def test_main_propagates_gradle_exit_code(
@@ -163,7 +163,39 @@ def _write_config(
         f"checks = {json.dumps(checks)}",
     ]
     lines.extend(f"{field} = {json.dumps(tasks)}" for field, tasks in task_fields.items())
+    lines.extend(_optional_report_tables(checks, task_fields))
     (repo / "pyproject.toml").write_text("\n".join(lines), encoding="utf-8")
+
+
+def _optional_report_tables(
+    checks: tuple[str, ...],
+    task_fields: dict[str, tuple[str, ...]],
+) -> list[str]:
+    """Return explicit optional evidence declarations for execution-only tests."""
+    field_by_tool = {
+        "spotbugs": "spotbugs_tasks",
+        "checkstyle": "checkstyle_tasks",
+        "pmd": "pmd_tasks",
+        "test": "test_tasks",
+        "jacoco": "jacoco_report_tasks",
+    }
+    lines: list[str] = []
+    for tool in checks:
+        field = field_by_tool.get(tool)
+        tasks = () if field is None else task_fields.get(field, ())
+        if not tasks:
+            continue
+        globs = tuple(f"build/optional-reports/{tool}/{index}.xml" for index, _ in enumerate(tasks))
+        lines.extend(
+            (
+                "[[tool.agent_maintainer.java.reports]]",
+                f"tool = {json.dumps(tool)}",
+                f"tasks = {json.dumps(tasks)}",
+                f"globs = {json.dumps(globs)}",
+                "required = false",
+            )
+        )
+    return lines
 
 
 def _runner_environment(

@@ -21,26 +21,26 @@
 
 **Files:** Create `src/agent_maintainer/ecosystems/java/{findings,baseline}.py`; create `tests/ecosystems/java/test_{findings,finding_baseline}.py`.
 
-- [ ] Write failing tests for normalization, stable fingerprints across line moves, semantic changes, duplicates, deterministic JSON, provenance, create/inspect/prune, and numeric complexity ceilings.
-- [ ] Verify RED, implement frozen `JavaFinding`, SHA-256 identity, `Counter` comparison, and versioned baseline I/O, then verify GREEN.
-- [ ] Commit: `feat: add Java finding debt baselines`.
+- [x] Write failing tests for normalization, stable fingerprints across line moves, semantic changes, duplicates, deterministic JSON, provenance, create/inspect/prune, and numeric complexity ceilings.
+- [x] Verify RED, implement frozen `JavaFinding`, SHA-256 identity, `Counter` comparison, and versioned baseline I/O, then verify GREEN.
+- [x] Commit: `feat: add Java finding debt baselines`.
 
 ### Task 2: Add bounded Checkstyle, PMD, SpotBugs, and JUnit adapters
 
 **Files:** Create `reports/{checkstyle,pmd,junit}.py`; modify `reports/spotbugs.py`; create `tests/ecosystems/java/test_{checkstyle,pmd,junit,spotbugs_report}.py`; add malicious/malformed fixtures.
 
-- [ ] Write failing parser tests for valid dialects, warnings/errors, modules, absent optional fields, truncation, DTD/entities, oversized input, and malformed/incomplete reports.
-- [ ] Verify RED, implement adapters over the single bounded XML primitive, then verify GREEN.
-- [ ] Commit: `feat: parse bounded Java quality reports`.
+- [x] Write failing parser tests for valid dialects, warnings/errors, modules, absent optional fields, truncation, DTD/entities, oversized input, and malformed/incomplete reports.
+- [x] Verify RED, implement adapters over the single bounded XML primitive, then verify GREEN.
+- [x] Commit: `feat: parse bounded Java quality reports`.
 
 ### Task 3: Enforce report expectations and freshness in the runner
 
 **Files:** Modify `src/agent_maintainer/ecosystems/java/runner.py`; modify `src/agent_maintainer/ecosystems/java/provider.py`; create `tests/ecosystems/java/test_report_outcomes.py` and `test_report_runner.py`.
 
-- [ ] Write failing task-scoped matrix tests: `EXECUTED` requires newly written reports; `FROM-CACHE`/`UP-TO-DATE` accept existing complete reports; `NO-SOURCE` requires no report but still fails when configured tests are required; `SKIPPED`, absent requested tasks, unknown, and ambiguous outcomes fail closed. Include required globs, unmatched globs, pre-run snapshots, stale reports, and missing evidence.
-- [ ] Add symlink-escape tests proving every glob match is resolved beneath `gradle_root` before parsing; unsafe or escaped matches fail closed.
-- [ ] Reuse and extend the shared observation API, applying precedence: Gradle failure first, then requested-task outcome, confinement/freshness, parser completeness, findings comparison, and sanitized artifact emission.
-- [ ] Commit: `feat: validate Java Gradle report evidence`.
+- [x] Write failing task-scoped matrix tests: `EXECUTED` requires newly written reports; `FROM-CACHE`/`UP-TO-DATE` accept existing complete reports; `NO-SOURCE` requires no report but still fails when configured tests are required; `SKIPPED`, absent requested tasks, unknown, and ambiguous outcomes fail closed. Include required globs, unmatched globs, pre-run snapshots, stale reports, and missing evidence.
+- [x] Add symlink-escape tests proving every glob match is resolved beneath `gradle_root` before parsing; unsafe or escaped matches fail closed.
+- [x] Reuse and extend the shared observation API, applying precedence: Gradle failure first, then requested-task outcome, confinement/freshness, parser completeness, findings comparison, and sanitized artifact emission.
+- [x] Commit: `feat: validate Java Gradle report evidence`.
 
 ### Task 4: Publish exact repair facts
 

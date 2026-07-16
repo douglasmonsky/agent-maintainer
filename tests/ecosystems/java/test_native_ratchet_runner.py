@@ -10,14 +10,17 @@ import pytest
 
 from agent_maintainer.config.java import JavaGradleConfig, JavaReportExpectation
 from agent_maintainer.core.config import MaintainerConfig
+from agent_maintainer.ecosystems.java import baseline as finding_baseline
 from agent_maintainer.ecosystems.java import runner
-from agent_maintainer.ecosystems.java.reports.spotbugs import SpotBugsEvidenceError
+from agent_maintainer.ecosystems.java.findings import JavaFinding
+from agent_maintainer.ecosystems.java.report_outcomes import JavaReportEvidenceError
 from agent_maintainer.models import FULL_PROFILE
 
 BASELINE_PATH = "config/spotbugs/baseline.xml"
 REPORT_PATH = "build/reports/spotbugs/main.xml"
 SPOTBUGS_TASK = "spotbugsMain"
 TEXT_ENCODING = "utf-8"
+FINDINGS_BASELINE_PATH = ".agent-maintainer/java-findings-baseline.json"
 
 
 def test_verification_never_changes_baseline(
@@ -26,6 +29,7 @@ def test_verification_never_changes_baseline(
 ) -> None:
     """Fresh report validation is read-only for the committed native filter."""
     baseline = write_baseline(tmp_path)
+    write_findings_baseline(tmp_path)
     before = baseline.read_bytes()
     configure_runner(monkeypatch, tmp_path, write_report=True)
 
@@ -42,10 +46,11 @@ def test_verification_refuses_stale_report(
 ) -> None:
     """Executed success cannot reuse an unchanged pre-run report."""
     write_baseline(tmp_path)
+    write_findings_baseline(tmp_path)
     write_spotbugs_report(tmp_path)
     configure_runner(monkeypatch, tmp_path, write_report=False)
 
-    with pytest.raises(SpotBugsEvidenceError, match="stale"):
+    with pytest.raises(JavaReportEvidenceError, match="stale"):
         runner.run_group(tmp_path, "static", FULL_PROFILE)
 
 
@@ -62,6 +67,7 @@ def configure_runner(
             enabled=True,
             checks=("spotbugs",),
             spotbugs_tasks=(SPOTBUGS_TASK,),
+            findings_baseline=FINDINGS_BASELINE_PATH,
             spotbugs_baseline=BASELINE_PATH,
             reports=(expectation,),
         )
@@ -107,3 +113,18 @@ def write_spotbugs_report(root: Path) -> Path:
         encoding=TEXT_ENCODING,
     )
     return report
+
+
+def write_findings_baseline(root: Path) -> None:
+    """Write the reviewed normalized finding allowed by this native-filter test."""
+    finding = JavaFinding(
+        "spotbugs",
+        "NP_NULL",
+        "example/App.java",
+        "example.App",
+        "NP_NULL",
+    )
+    finding_baseline.write_baseline(
+        root / FINDINGS_BASELINE_PATH,
+        finding_baseline.create_baseline((finding,), source_commit="a" * 40),
+    )

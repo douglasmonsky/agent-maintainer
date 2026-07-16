@@ -85,43 +85,6 @@ def create_spotbugs_baseline(
     return _render_native_filter(tuple(sorted(findings)))
 
 
-def validate_spotbugs_evidence(
-    gradle_root: Path,
-    expectation: JavaReportExpectation,
-    observation: GradleObservation,
-) -> tuple[SpotBugsReport, ...]:
-    """Validate current SpotBugs XML without creating or changing a baseline."""
-    current = _validated_current_reports(gradle_root, expectation, observation)
-    return tuple(
-        parse_spotbugs_report(
-            gradle_root / snapshot.path,
-            gradle_root=gradle_root,
-        )
-        for snapshot in current
-    )
-
-
-def verification_payload(
-    gradle_root: Path,
-    baseline_path: str,
-    expectations: tuple[JavaReportExpectation, ...],
-    observation: GradleObservation,
-) -> dict[str, int] | None:
-    """Return read-only native-ratchet evidence for runner artifacts."""
-    if not baseline_path or observation.exit_code != 0:
-        return None
-    reports: list[SpotBugsReport] = []
-    for expectation in expectations:
-        if expectation.tool == "spotbugs":
-            reports.extend(validate_spotbugs_evidence(gradle_root, expectation, observation))
-    if not reports:
-        raise SpotBugsEvidenceError("required SpotBugs report expectation is missing")
-    return {
-        "reports": len(reports),
-        "findings": sum(len(report.findings) for report in reports),
-    }
-
-
 def _validated_current_reports(
     gradle_root: Path,
     expectation: JavaReportExpectation,
@@ -168,8 +131,14 @@ def _reject_stale_success(
 ) -> None:
     if GradleTaskState.SUCCESS not in states:
         return
-    previous = {(snapshot.tool, snapshot.path): snapshot.sha256 for snapshot in pre_run}
-    if any(previous.get((snapshot.tool, snapshot.path)) == snapshot.sha256 for snapshot in current):
+    previous = {(snapshot.tool, snapshot.path): snapshot for snapshot in pre_run}
+    unchanged = any(
+        (prior.sha256, prior.size, prior.mtime_ns)
+        == (snapshot.sha256, snapshot.size, snapshot.mtime_ns)
+        for snapshot in current
+        if (prior := previous.get((snapshot.tool, snapshot.path))) is not None
+    )
+    if unchanged:
         raise SpotBugsEvidenceError("SpotBugs report evidence is stale after executed task success")
 
 
