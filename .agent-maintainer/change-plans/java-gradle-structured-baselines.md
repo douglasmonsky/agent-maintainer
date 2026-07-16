@@ -42,6 +42,7 @@ allowed_paths = [
   "tests/assess/test_java_baseline_cli.py",
   "tests/config/**",
   "tests/context/test_java_exact_facts.py",
+  "tests/core/test_structured_artifact_summaries.py",
   "tests/docs/test_first_touch_docs.py",
   "tests/docsync/test_public_doc_trace.py",
   "tests/doctor/test_java_doctor.py",

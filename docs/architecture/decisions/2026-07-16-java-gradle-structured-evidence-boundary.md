@@ -46,6 +46,9 @@ in the generic verifier or in native SpotBugs filter handling.
 
 The modules remain Java-owned. Core verification receives only bounded result
 artifacts and does not learn third-party report formats or Java baseline schema.
+Repair-fact parsing consumes that already-bounded artifact through the shared
+single-read context budget; it never reopens raw Gradle XML or follows an
+artifact-provided path.
 
 ## Alternatives considered
 

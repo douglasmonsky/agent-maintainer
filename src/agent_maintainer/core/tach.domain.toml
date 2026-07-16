@@ -144,6 +144,7 @@ path = "structured_artifacts"
 depends_on = [
 "structured_pytest",
 "structured_security",
+"structured_values",
 ]
 
 [[modules]]

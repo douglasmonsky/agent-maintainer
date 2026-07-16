@@ -46,9 +46,9 @@
 
 **Files:** Create `src/agent_repair_facts/parsers/java.py`; modify `src/agent_repair_facts/registry.py`; modify `src/agent_maintainer/core/structured_artifacts.py`; create `tests/context/test_java_exact_facts.py`.
 
-- [ ] Write failing tests for registry discovery, one bounded artifact read, concise findings/test summaries, path confinement, truncation, and malformed artifacts.
-- [ ] Verify RED, register the Java artifact parser and summary, then verify GREEN.
-- [ ] Commit: `feat: expose Java repair facts`.
+- [x] Write failing tests for registry discovery, one bounded artifact read, concise findings/test summaries, path confinement, truncation, and malformed artifacts.
+- [x] Verify RED, register the Java artifact parser and summary, then verify GREEN.
+- [x] Commit: `feat: expose Java repair facts`.
 
 ### Task 5: Add explicit Java baseline lifecycle CLI
 
