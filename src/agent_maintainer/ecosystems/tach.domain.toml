@@ -95,6 +95,18 @@ depends_on = [
 ]
 
 [[modules]]
+path = "java.semantic_edits"
+depends_on = ["//agent_maintainer.core.setup_plans"]
+
+[[modules]]
+path = "java.setup"
+depends_on = [
+  "//agent_maintainer.core.setup_plans",
+  "java.semantic_edits",
+  "java.templates",
+]
+
+[[modules]]
 path = "java.wrapper"
 depends_on = ["java.errors"]
 

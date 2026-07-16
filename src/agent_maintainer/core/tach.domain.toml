@@ -28,7 +28,11 @@ depends_on = ["bootstrap"]
 
 [[modules]]
 path = "setup_plans"
-depends_on = []
+depends_on = [
+  "scaffold.planning",
+  "scaffold.templates",
+  "scaffold.transaction",
+]
 
 [[modules]]
 path = "artifact_environment"
