@@ -31,7 +31,7 @@
 
 - [ ] Add assertions fixing current Python/TypeScript catalog order, direct `enable_typescript` behavior, and fail-closed verification grouping.
 - [ ] Run the four tests and observe GREEN; characterization must not require production changes.
-- [ ] Mark the design plan complete and create one active foundation plan listing only Task 2–7 paths, a 30-file/3000-line ceiling, tests, Tach, and ADR.
+- [ ] Mark the design plan complete and create one active foundation plan listing only Task 2–7 paths, a 45-file/4500-line branch ceiling, tests, Tach, and ADR. This includes generated reference/DocSync outputs while completed design artifacts remain governed by the completed design plan.
 - [ ] Commit: `test: characterize provider foundation seams`.
 
 ### Task 2: Add frozen nested Java configuration

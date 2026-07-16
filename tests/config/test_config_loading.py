@@ -125,7 +125,7 @@ run_history_limit = 7
 
     assert loaded.source_roots == ("lib",)
     assert loaded.test_roots == ("specs",)
-    assert loaded.require_tests is True
+    assert (loaded.require_tests, loaded.enable_typescript) == (True, False)
     assert loaded.enable_pip_audit is True
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True

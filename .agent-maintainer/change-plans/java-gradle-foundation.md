@@ -5,24 +5,34 @@ status = "active"
 base_ref = "origin/main"
 expires = 2026-08-16
 allowed_paths = [
-  ".agent-maintainer/change-plans/beta7-release.md",
-  ".agent-maintainer/change-plans/java-gradle-support-design.md",
   ".agent-maintainer/change-plans/java-gradle-foundation.md",
   ".docsync/trace.yml",
+  "config/agent-maintainer-capabilities.json",
   "docs/architecture/decisions/2026-07-16-java-gradle-provider-boundary.md",
   "docs/configuration-reference.md",
   "docs/provider-status.md",
   "docs/roadmap/overview.md",
   "docs/roadmap/polyglot-ecosystem-providers.md",
-  "docs/superpowers/plans/2026-07-16-java-gradle-*.md",
-  "docs/superpowers/specs/2026-07-15-java-gradle-support-*.md",
+  "docs/superpowers/plans/2026-07-16-java-gradle-foundation.md",
   "src/agent_maintainer/assess/evidence.py",
   "src/agent_maintainer/assess/models.py",
-  "src/agent_maintainer/config/*.py",
+  "src/agent_maintainer/config/coercion.py",
+  "src/agent_maintainer/config/java.py",
+  "src/agent_maintainer/config/loader.py",
+  "src/agent_maintainer/config/reference.py",
+  "src/agent_maintainer/config/registry.py",
+  "src/agent_maintainer/config/schema.py",
+  "src/agent_maintainer/config/schema_fields.py",
+  "src/agent_maintainer/config/source_validation.py",
+  "src/agent_maintainer/config/validation.py",
   "src/agent_maintainer/doctor/cli.py",
   "src/agent_maintainer/doctor/support/policy.py",
   "src/agent_maintainer/doctor/support/providers.py",
-  "src/agent_maintainer/ecosystems/java/**",
+  "src/agent_maintainer/ecosystems/java/__init__.py",
+  "src/agent_maintainer/ecosystems/java/classification.py",
+  "src/agent_maintainer/ecosystems/java/provider.py",
+  "src/agent_maintainer/ecosystems/java/runner.py",
+  "src/agent_maintainer/ecosystems/java/wrapper.py",
   "src/agent_maintainer/ecosystems/registry.py",
   "src/agent_maintainer/ecosystems/tach.domain.toml",
   "src/agent_maintainer/verify/groups.py",
@@ -32,21 +42,28 @@ allowed_paths = [
   "tests/catalogs/test_java_catalog.py",
   "tests/catalogs/test_provider_registry.py",
   "tests/catalogs/test_typescript_catalog.py",
-  "tests/config/test_*.py",
+  "tests/config/test_config_coercion.py",
+  "tests/config/test_config_loading.py",
+  "tests/config/test_config_registry_validation.py",
+  "tests/config/test_config_validation.py",
+  "tests/config/test_java_config.py",
   "tests/docsync/test_public_doc_trace.py",
   "tests/doctor/test_doctor.py",
   "tests/doctor/test_java_doctor.py",
   "tests/doctor/test_typescript_doctor.py",
   "tests/ecosystems/test_file_changes.py",
-  "tests/ecosystems/test_java_*.py",
+  "tests/ecosystems/test_java_classification.py",
+  "tests/ecosystems/test_java_provider.py",
+  "tests/ecosystems/test_java_runner.py",
+  "tests/ecosystems/test_java_wrapper.py",
   "tests/ecosystems/test_python_classification.py",
   "tests/ecosystems/test_typescript_*.py",
   "tests/fixtures/java_gradle/**",
   "tests/verify/test_verification_groups.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 60
-max_changed_lines = 6000
+max_changed_files = 45
+max_changed_lines = 4500
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
@@ -72,7 +89,7 @@ tasks while exact paths and phase gates prevent later report/baseline scope.
 
 ## What allowed to change
 
-Only the approved Java design/plans and the Phase 1 configuration, evidence,
+Only the Phase 1 configuration, evidence,
 classification, provider, wrapper, runner, doctor, architecture, documentation,
 fixtures, and focused tests listed above.
 

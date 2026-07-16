@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from agent_maintainer.catalogs.catalog import make_checks
 from agent_maintainer.catalogs.global_checks import (
     architecture_checks,
     reviewability_checks,
@@ -27,7 +28,18 @@ def test_global_reviewability_checks_preserve_names_and_profiles() -> None:
     assert checks[0].profiles == {FAST_PROFILE, "precommit", FULL_PROFILE, CI_PROFILE}
     assert "--staged" in checks[2].command
     assert checks[-1].required_paths == (".git",)
-    assert all(not check.name.startswith("typescript-") for check in checks)
+
+
+def test_experimental_checks_follow_the_python_catalog() -> None:
+    config = MaintainerConfig(
+        enable_typescript=True,
+        typescript_lint_command=("npm", "run", "lint"),
+    )
+
+    names = [check.name for check in make_checks(config, "HEAD", "origin/main")]
+
+    assert names.index("ruff") < names.index("typescript-lint")
+    assert names.index("typescript-lint") < names.index("actionlint")
 
 
 def test_reviewability_checks_call_python_policy_modules() -> None:
