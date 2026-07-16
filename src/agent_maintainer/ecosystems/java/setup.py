@@ -29,7 +29,13 @@ from agent_maintainer.ecosystems.java.semantic_edits import (
     text_digest,
     validated_semantic_edit,
 )
-from agent_maintainer.ecosystems.java.templates.api import render_build_fragment, ruleset_text
+from agent_maintainer.ecosystems.java.templates.api import (
+    render_build_fragment,
+    render_ci_workflow,
+    ruleset_text,
+)
+
+JAVA_CI_WORKFLOW_PATH = ".github/workflows/agent-maintainer-java.yml"
 
 
 class JavaSetupStatus(StrEnum):
@@ -51,6 +57,18 @@ class JavaSetupPlan:
     semantic_edit: SemanticEditRequest | None
     reason: str
     review_digest: str
+
+
+@dataclass(frozen=True)
+class JavaCiConvention:
+    """Explicit repository-owned CI and JDK choices preserved by setup."""
+
+    framework: str
+    jdk_distribution: str
+    jdk_version: str
+    static_tasks: tuple[str, ...]
+    test_tasks: tuple[str, ...]
+    spotless_ratchet_ref: str = ""
 
 
 def plan_java_setup(
@@ -168,6 +186,52 @@ def plan_spotbugs_baseline(
     )
     status = JavaSetupStatus.READY if edits else JavaSetupStatus.UNCHANGED
     reason = "review native SpotBugs baseline" if edits else "SpotBugs baseline already current"
+    return _plan(canonical_root, status, edits=edits, reason=reason)
+
+
+def plan_java_ci_setup(
+    root: Path,
+    convention: JavaCiConvention,
+) -> JavaSetupPlan:
+    """Plan one dedicated CI workflow without editing repository-owned workflows."""
+    canonical_root = root.resolve(strict=True)
+    if convention.framework != "github-actions":
+        return _plan(
+            canonical_root,
+            JavaSetupStatus.REFUSED,
+            reason=f"unsupported CI framework: {convention.framework}",
+        )
+    try:
+        expected = render_ci_workflow(
+            jdk_distribution=convention.jdk_distribution,
+            jdk_version=convention.jdk_version,
+            static_tasks=convention.static_tasks,
+            test_tasks=convention.test_tasks,
+            spotless_ratchet_ref=convention.spotless_ratchet_ref,
+        )
+    except ValueError as exc:
+        return _plan(canonical_root, JavaSetupStatus.REFUSED, reason=str(exc))
+    current = _read_optional(canonical_root / JAVA_CI_WORKFLOW_PATH)
+    if current is not None and current != expected:
+        return _plan(
+            canonical_root,
+            JavaSetupStatus.REFUSED,
+            reason="existing Agent Maintainer Java workflow will not be overwritten",
+        )
+    edits = (
+        ()
+        if current == expected
+        else (
+            ReviewedFileEdit(
+                JAVA_CI_WORKFLOW_PATH,
+                None,
+                expected,
+                "add parallel cached Java verification jobs",
+            ),
+        )
+    )
+    status = JavaSetupStatus.READY if edits else JavaSetupStatus.UNCHANGED
+    reason = "review Java verification workflow" if edits else "Java CI workflow already current"
     return _plan(canonical_root, status, edits=edits, reason=reason)
 
 
