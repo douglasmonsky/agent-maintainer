@@ -29,6 +29,8 @@ from agent_maintainer.ecosystems.java.setup import (
 
 FIXTURES = Path(__file__).parents[2] / "fixtures" / "java_gradle"
 
+# docsync:evidence.start evidence.java.reviewed_setup_tests
+
 
 @pytest.mark.parametrize(
     ("fixture", "build_path"),
@@ -185,3 +187,6 @@ def test_reviewed_edits_refuse_stale_or_unconfined_sources(tmp_path: Path) -> No
 
 def _copy_fixture(tmp_path: Path, name: str) -> Path:
     return Path(shutil.copytree(FIXTURES / name, tmp_path / "repo"))
+
+
+# docsync:evidence.end evidence.java.reviewed_setup_tests

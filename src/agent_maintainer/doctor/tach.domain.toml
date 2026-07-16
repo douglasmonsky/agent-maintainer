@@ -138,6 +138,8 @@ depends_on = [
  "//agent_maintainer.config.java",
  "//agent_maintainer.config.schema",
  "//agent_maintainer.ecosystems.java.provider",
+ "//agent_maintainer.ecosystems.java.ratchets",
+ "//agent_maintainer.ecosystems.java.reports.xml",
  "//agent_maintainer.ecosystems.java.wrapper",
  "support.models",
  "support.providers",

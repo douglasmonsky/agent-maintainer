@@ -29,7 +29,7 @@ def test_verification_never_changes_baseline(
     before = baseline.read_bytes()
     configure_runner(monkeypatch, tmp_path, write_report=True)
 
-    outcome = runner._run_group(tmp_path, "static", FULL_PROFILE)
+    outcome = runner.run_group(tmp_path, "static", FULL_PROFILE)
 
     assert outcome.exit_code == 0
     assert outcome.payload["spotbugs"] == {"reports": 1, "findings": 1}
@@ -46,7 +46,7 @@ def test_verification_refuses_stale_report(
     configure_runner(monkeypatch, tmp_path, write_report=False)
 
     with pytest.raises(SpotBugsEvidenceError, match="stale"):
-        runner._run_group(tmp_path, "static", FULL_PROFILE)
+        runner.run_group(tmp_path, "static", FULL_PROFILE)
 
 
 def configure_runner(
@@ -68,7 +68,7 @@ def configure_runner(
     )
     resolved = runner.wrapper.ResolvedGradleWrapper(repo, repo, repo / "gradlew")
 
-    monkeypatch.setattr(runner, "_load_java_config", lambda _workspace: config)
+    monkeypatch.setattr(runner, "_load_java_config", Mock(return_value=config))
     monkeypatch.setattr(runner.wrapper, "resolve_gradle_wrapper", Mock(return_value=resolved))
     monkeypatch.setattr(runner, "_run_wrapper", partial(run_wrapper, repo, write_report))
 

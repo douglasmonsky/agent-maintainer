@@ -99,6 +99,11 @@ For Java, cover every supported plugin version, ruleset, ratchet reference,
 native baseline, coverage, and CI choice. Preview the complete Gradle, ruleset,
 baseline, and workflow diff before applying any approved change.
 
+When planning Java CI, preserve the repository's framework and explicit JDK
+distribution/version. Add a dedicated workflow only after review; preserve
+repository-owned workflows and refuse unknown CI structures or a differing
+existing managed workflow.
+
 ## Install an exact version
 
 Use the repository's existing development or tool dependency convention and
@@ -151,7 +156,9 @@ Run this setup-only sequence after the reviewed Java edits:
 6. Run `agent-maintainer verify --profile full`.
 
 Stop at the first failed or unapproved step. Normal doctor and verification never perform task discovery;
-`tasks --all` belongs only to this reviewed setup sequence.
+`tasks --all` belongs only to this reviewed setup sequence. Normal doctor may
+read the configured Git ratchet ref and bounded native baseline XML, but it
+never invokes the wrapper.
 
 ## Verify and report
 

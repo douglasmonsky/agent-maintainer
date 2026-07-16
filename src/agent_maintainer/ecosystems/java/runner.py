@@ -25,13 +25,14 @@ def main(argv: list[str] | None = None) -> int:
     workspace = Path.cwd().resolve(strict=True)
     profile = os.environ.get(artifact_environment.VERIFY_PROFILE_ENV, "")
     try:
-        outcome = _run_group(workspace, group, profile)
+        outcome = run_group(workspace, group, profile)
     except (errors.JavaConfigurationError, OSError) as exc:
         outcome = _configuration_error_outcome(workspace, group, profile, exc)
     return _write_outcome(outcome, workspace)
 
 
-def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artifacts.RunOutcome:
+def run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artifacts.RunOutcome:
+    """Run one explicit Java group and return its bounded artifact outcome."""
     if not profile:
         profile_field = artifact_environment.VERIFY_PROFILE_ENV
         raise provider.JavaProviderConfigurationError(

@@ -18,7 +18,9 @@ provider registry or verifier catalog.
   diff digests, repository confinement, stale-source checks, and delegation to
   the existing transactional initializer.
 - `agent_maintainer.ecosystems.java.setup` owns recognized Gradle scaffold
-  planning and deterministic Java ruleset writes.
+  planning, deterministic Java ruleset writes, and dedicated reviewed CI plans
+  that preserve explicit repository JDK conventions and never overwrite
+  repository-owned workflows.
 - `agent_maintainer.ecosystems.java.semantic_edits` owns typed agent handoffs,
   returned validation evidence, and the second reviewed digest for arbitrary
   build edits.
@@ -37,6 +39,9 @@ provider registry or verifier catalog.
   post-edit wrapper, discovery, observation, baseline, doctor, and full-verify
   sequence. It is data-only; normal doctor and verification cannot invoke its
   setup-only task discovery action.
+- Java doctor support may depend on the Java ratchet and bounded XML modules to
+  validate an explicitly configured Git ref and native baseline path. Those
+  checks are read-only and cannot invoke the wrapper.
 - Java defaults and bundled templates remain Java-owned and are package data.
 - Later observation and bounded report modules may depend on the checked wrapper
   and Java configuration, but normal verification remains command-only.

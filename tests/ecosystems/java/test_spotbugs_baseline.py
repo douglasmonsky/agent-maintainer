@@ -12,6 +12,7 @@ from agent_maintainer.ecosystems.java.observations import (
     GradleObservation,
     GradleTaskOutcome,
     GradleTaskState,
+    ReportSnapshot,
     snapshot_reports,
 )
 from agent_maintainer.ecosystems.java.reports.spotbugs import (
@@ -102,7 +103,7 @@ def test_refused_baseline_plan_cannot_apply(tmp_path: Path) -> None:
 def successful_observation(
     *,
     exit_code: int = 0,
-    pre_run=(),
+    pre_run: tuple[ReportSnapshot, ...] = (),
 ) -> GradleObservation:
     """Return successful task-scoped SpotBugs evidence."""
     outcome = GradleTaskOutcome(SPOTBUGS_TASK, f":{SPOTBUGS_TASK}", GradleTaskState.SUCCESS)

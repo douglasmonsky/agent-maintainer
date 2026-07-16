@@ -7,6 +7,7 @@ import re
 from dataclasses import asdict, dataclass
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
+from types import MappingProxyType
 from typing import Any
 
 from agent_maintainer.config.java import JavaReportExpectation
@@ -28,6 +29,17 @@ class GradleTaskState(StrEnum):
     NO_SOURCE = "no-source"
     SKIPPED = "skipped"
     FAILED = "failed"
+
+
+_TASK_STATES = MappingProxyType(
+    {
+        "FROM-CACHE": GradleTaskState.FROM_CACHE,
+        "UP-TO-DATE": GradleTaskState.UP_TO_DATE,
+        "NO-SOURCE": GradleTaskState.NO_SOURCE,
+        "SKIPPED": GradleTaskState.SKIPPED,
+        "FAILED": GradleTaskState.FAILED,
+    },
+)
 
 
 @dataclass(frozen=True)
@@ -115,8 +127,8 @@ def _task_state(value: str | None) -> GradleTaskState:
     if value is None:
         return GradleTaskState.SUCCESS
     try:
-        return GradleTaskState(value.lower())
-    except ValueError as exc:
+        return _TASK_STATES[value]
+    except KeyError as exc:
         raise JavaConfigurationError(f"unsupported Gradle task outcome: {value}") from exc
 
 

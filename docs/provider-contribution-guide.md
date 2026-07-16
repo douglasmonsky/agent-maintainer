@@ -29,6 +29,12 @@ decision is recorded in
 Built-in experimental providers remain the contribution path until the internal
 seam has survived real use outside this repository.
 
+The current registry contains the Python core/reference provider plus built-in
+experimental TypeScript/JavaScript and Java/Gradle providers. Java/Gradle is
+disabled by default and currently exposes explicit checked-wrapper groups,
+reviewed setup/native ratchets, and static doctor support; it is not a public
+provider API or a feature-parity claim.
+
 Provider additions should be small and phased:
 
 1. Classify files and document unsupported layouts.

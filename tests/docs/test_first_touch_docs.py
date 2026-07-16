@@ -173,6 +173,26 @@ def test_setup_advisor_docs_include_workspace_command_example() -> None:
     _assert_phrases_present(phrases)
 
 
+def test_java_setup_docs_pin_native_ratchet_boundaries() -> None:
+    """Java setup docs state the reviewed and static safety boundaries."""
+    phrases = {
+        "docs/provider-status.md": (
+            "Spotless `ratchetFrom`",
+            "native SpotBugs `FindBugsFilter`",
+            "Normal doctor remains static and never executes Gradle.",
+            "Checkstyle and PMD findings baselines remain deferred.",
+        ),
+        "docs/setup-advisor.md": (
+            "Recommended, Guided, or Full control",
+            "never regex-rewrites an arbitrary Gradle build",
+            "Normal doctor and verification never run `tasks --all`.",
+            "preserves existing repository-owned workflows",
+        ),
+    }
+
+    _assert_phrases_present(phrases)
+
+
 def test_codex_wait_docs_disclose_smoke_and_model_turn_boundaries() -> None:
     """Codex wait docs keep diagnostic, fallback, and spend boundaries explicit."""
     phrases = {

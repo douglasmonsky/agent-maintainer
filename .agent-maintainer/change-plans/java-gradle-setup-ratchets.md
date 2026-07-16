@@ -1,16 +1,18 @@
 +++
 id = "java-gradle-setup-ratchets"
 kind = "feature"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-08-16
 allowed_paths = [
   ".agent-maintainer/change-plans/java-gradle-foundation.md",
   ".agent-maintainer/change-plans/java-gradle-setup-ratchets.md",
+  ".agent-maintainer/change-plans/java-gradle-structured-baselines.md",
   ".docsync/trace.yml",
   "config/agent-maintainer-capabilities.json",
   "docs/architecture/decisions/2026-07-16-java-gradle-setup-boundary.md",
   "docs/configuration-reference.md",
+  "docs/provider-contribution-guide.md",
   "docs/provider-status.md",
   "docs/roadmap/overview.md",
   "docs/roadmap/polyglot-ecosystem-providers.md",
@@ -38,6 +40,7 @@ allowed_paths = [
   "tests/ecosystems/java/**",
   "tests/ecosystems/test_java_runner.py",
   "tests/fixtures/java_gradle/**",
+  "tests/packaging/test_package_metadata.py",
   "tests/skill/test_interaction_contract.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]

@@ -813,13 +813,15 @@ claims:
       - evidence.provider_registry.no_active_go
   claim.docs.java_provider_foundation:
     object: docs.provider_status.overview
-    text: Provider status docs describe the Java/Gradle experimental foundation,
-      explicit checked-wrapper tasks, static doctor behavior, and deferred setup,
-      report, baseline, repair-fact, and coverage-ratchet surfaces.
+    text: Provider status docs describe experimental Java/Gradle checked-wrapper
+      tasks, reviewed setup, static doctor behavior, native Spotless/SpotBugs
+      ratchets, non-overwriting CI plans, and deferred structured/coverage surfaces.
     severity: high
     evidence:
       - evidence.java.provider_foundation
       - evidence.java.provider_foundation_tests
+      - evidence.java.reviewed_setup_tests
+      - evidence.java.ci_setup_tests
   claim.docs.typescript_provider_explicit_commands:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe disabled-by-default explicit
@@ -1244,9 +1246,23 @@ evidence:
   evidence.java.provider_foundation_tests:
     type: test
     description: Java doctor tests cover disabled silence, static wrapper/runtime/
-      task readiness, successful foundation state, and no Gradle execution.
+      task readiness, configured ratchet/baseline health, and no Gradle execution.
     anchors:
       - path: tests/doctor/test_java_doctor.py
+        mode: explicit_region
+  evidence.java.reviewed_setup_tests:
+    type: test
+    description: Java setup tests cover deterministic recognized scaffolds,
+      reviewed semantic handoffs, conflict refusal, and stale-source confinement.
+    anchors:
+      - path: tests/ecosystems/java/test_setup.py
+        mode: explicit_region
+  evidence.java.ci_setup_tests:
+    type: test
+    description: Java CI setup tests cover parallel cached jobs, explicit JDK
+      conventions, existing workflow preservation, and unknown-structure refusal.
+    anchors:
+      - path: tests/ecosystems/java/test_ci_setup.py
         mode: explicit_region
   evidence.typescript.provider_command_tests:
     type: test

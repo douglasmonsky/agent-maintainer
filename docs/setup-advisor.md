@@ -105,6 +105,31 @@ commands or workspace managers.
 Keep TypeScript reviewability policy advisory until fixture or real-repo
 evidence proves low-noise thresholds.
 
+## Java/Gradle Advice
+
+When the advisor finds a checked-in Gradle wrapper, a Groovy or Kotlin build,
+and Java source, it may recommend the experimental Java provider. Choose
+Recommended, Guided, or Full control through the Agent Maintainer setup skill:
+Recommended applies evidence-backed defaults, Guided asks only unresolved
+questions, and Full control walks through every supported choice and trade-off.
+
+Recognized new-repository scaffolds can receive deterministic provider-owned
+build fragments and rulesets. Existing builds use a typed semantic-edit handoff
+with a displayed diff and validation evidence. Agent Maintainer never
+regex-rewrites an arbitrary Gradle build. It also never falls back to system
+Gradle; every check uses the repository-confined wrapper and explicit task names.
+
+Task discovery is setup-only. Show and approve `tasks --all`, then run it only
+to validate the reviewed configuration. Native SpotBugs baseline creation must
+follow successful, complete, fresh report observation. Normal doctor and
+verification never run `tasks --all`.
+
+For CI, preserve the repository's framework, JDK distribution, and JDK version.
+The reviewed GitHub Actions plan adds cached `static-and-policy` and
+`tests-and-coverage` jobs in a dedicated file and preserves existing
+repository-owned workflows. Unknown CI structures and differing managed paths
+are refused rather than overwritten.
+
 ## Relationship To Doctor
 
 `doctor` answers: is the configured setup healthy?

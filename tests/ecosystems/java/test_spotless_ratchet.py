@@ -83,7 +83,7 @@ def test_runner_refuses_unavailable_ref(
     run_wrapper = configure_runner(monkeypatch, repo, "origin/missing", "spotlessCheck")
 
     with pytest.raises(JavaProviderConfigurationError, match="CI must fetch"):
-        runner._run_group(repo, "format", PRECOMMIT_PROFILE)
+        runner.run_group(repo, "format", PRECOMMIT_PROFILE)
 
     run_wrapper.assert_not_called()
 
@@ -98,7 +98,7 @@ def test_runner_never_applies_formatting(
     run_wrapper = configure_runner(monkeypatch, repo, RATCHET_REF, ":app:spotlessApply")
 
     with pytest.raises(JavaProviderConfigurationError, match="mutating Spotless task"):
-        runner._run_group(repo, "format", PRECOMMIT_PROFILE)
+        runner.run_group(repo, "format", PRECOMMIT_PROFILE)
 
     run_wrapper.assert_not_called()
 
@@ -112,7 +112,7 @@ def test_runner_executes_check_only(
     initialize_git(repo)
     run_wrapper = configure_runner(monkeypatch, repo, RATCHET_REF, "spotlessCheck")
 
-    outcome = runner._run_group(repo, "format", PRECOMMIT_PROFILE)
+    outcome = runner.run_group(repo, "format", PRECOMMIT_PROFILE)
 
     assert outcome.exit_code == 0
     assert run_wrapper.call_args.args[-1] == ("spotlessCheck",)
@@ -170,7 +170,7 @@ def configure_runner(
         stdout=f"> Task :{task}\n",
     )
     run_wrapper = Mock(return_value=completed)
-    monkeypatch.setattr(runner, "_load_java_config", lambda _workspace: config)
-    monkeypatch.setattr(runner.wrapper, "resolve_gradle_wrapper", lambda *_args: resolved)
+    monkeypatch.setattr(runner, "_load_java_config", Mock(return_value=config))
+    monkeypatch.setattr(runner.wrapper, "resolve_gradle_wrapper", Mock(return_value=resolved))
     monkeypatch.setattr(runner, "_run_wrapper", run_wrapper)
     return run_wrapper

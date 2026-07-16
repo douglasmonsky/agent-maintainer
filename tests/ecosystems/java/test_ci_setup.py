@@ -17,6 +17,8 @@ TEST_TASKS = ("test", "jacocoTestReport", "jacocoTestCoverageVerification")
 TEXT_ENCODING = "utf-8"
 WORKFLOW_PATH = ".github/workflows/agent-maintainer-java.yml"
 
+# docsync:evidence.start evidence.java.ci_setup_tests
+
 
 def test_ci_plan_adds_parallel_cached_jobs(tmp_path: Path) -> None:
     """Known GitHub/JDK conventions produce two independent cached jobs."""
@@ -96,3 +98,6 @@ def ci_convention(
         TEST_TASKS,
         spotless_ratchet_ref,
     )
+
+
+# docsync:evidence.end evidence.java.ci_setup_tests

@@ -53,8 +53,8 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     )
 
 
-def test_setup_skill_resources_are_declared_as_package_data() -> None:
-    """Built distributions retain both portable setup skill resources."""
+def test_package_data_declares_bundled_resources() -> None:
+    """Built distributions retain setup skill and Java template resources."""
 
     with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
         metadata = tomllib.load(handle)
@@ -63,7 +63,12 @@ def test_setup_skill_resources_are_declared_as_package_data() -> None:
         "agent_maintainer.skill": [
             "resources/agent-maintainer-setup/SKILL.md",
             "resources/agent-maintainer-setup/agents/openai.yaml",
-        ]
+        ],
+        "agent_maintainer.ecosystems.java.templates": [
+            "*.gradle",
+            "*.gradle.kts",
+            "*.xml",
+        ],
     }
 
 
