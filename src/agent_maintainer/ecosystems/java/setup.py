@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
-from pathlib import Path
+from pathlib import Path, PurePath
 
+from agent_maintainer.config.java import JavaReportExpectation
 from agent_maintainer.core.setup_plans import (
     ReviewedFileEdit,
     SetupReviewError,
@@ -13,9 +14,14 @@ from agent_maintainer.core.setup_plans import (
     render_reviewed_diff,
     reviewed_edit_digest,
 )
+from agent_maintainer.ecosystems.java.observations import GradleObservation
 from agent_maintainer.ecosystems.java.ratchets import (
     render_spotless_ratchet,
     validate_spotless_ratchet_ref,
+)
+from agent_maintainer.ecosystems.java.reports.spotbugs import (
+    SpotBugsEvidenceError,
+    create_spotbugs_baseline,
 )
 from agent_maintainer.ecosystems.java.semantic_edits import (
     SemanticEditRequest,
@@ -120,6 +126,60 @@ def apply_semantic_edit_result(
     edit = validated_semantic_edit(request, result)
     edits = (edit, *plan.edits)
     return apply_reviewed_edits(plan.root, edits, approved_digest=approved_digest)
+
+
+def plan_spotbugs_baseline(
+    root: Path,
+    *,
+    gradle_root: Path,
+    expectation: JavaReportExpectation,
+    observation: GradleObservation,
+    baseline_path: str,
+) -> JavaSetupPlan:
+    """Plan one explicit native baseline write from successful evidence."""
+    canonical_root = root.resolve(strict=True)
+    if PurePath(baseline_path).is_absolute() or ".." in PurePath(baseline_path).parts:
+        return _plan(
+            canonical_root,
+            JavaSetupStatus.REFUSED,
+            reason="SpotBugs baseline path must stay inside the repository",
+        )
+    try:
+        expected = _spotbugs_baseline_text(
+            canonical_root,
+            gradle_root,
+            expectation,
+            observation,
+        )
+    except (OSError, ValueError, SpotBugsEvidenceError) as exc:
+        return _plan(canonical_root, JavaSetupStatus.REFUSED, reason=str(exc))
+    current = _read_optional(canonical_root / baseline_path)
+    edits = (
+        ()
+        if current == expected
+        else (
+            ReviewedFileEdit(
+                baseline_path,
+                current,
+                expected,
+                "create native SpotBugs baseline from successful report evidence",
+            ),
+        )
+    )
+    status = JavaSetupStatus.READY if edits else JavaSetupStatus.UNCHANGED
+    reason = "review native SpotBugs baseline" if edits else "SpotBugs baseline already current"
+    return _plan(canonical_root, status, edits=edits, reason=reason)
+
+
+def _spotbugs_baseline_text(
+    canonical_root: Path,
+    gradle_root: Path,
+    expectation: JavaReportExpectation,
+    observation: GradleObservation,
+) -> str:
+    canonical_gradle = gradle_root.resolve(strict=True)
+    canonical_gradle.relative_to(canonical_root)
+    return create_spotbugs_baseline(canonical_gradle, expectation, observation)
 
 
 def _selected_build(root: Path, *, dsl: str | None) -> tuple[str, str] | str:

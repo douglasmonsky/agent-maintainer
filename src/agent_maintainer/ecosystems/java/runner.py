@@ -9,22 +9,13 @@ import os
 import subprocess  # nosec B404
 import sys
 import tomllib
-from dataclasses import dataclass
 from pathlib import Path
 
 from agent_maintainer.config import loader
 from agent_maintainer.core import artifact_environment
 from agent_maintainer.ecosystems.java import artifacts, errors, observations, provider, wrapper
 from agent_maintainer.ecosystems.java.ratchets import validate_spotless_ratchet_ref
-
-
-@dataclass(frozen=True)
-class RunOutcome:
-    """Artifact path, payload, and exit status for one grouped execution."""
-
-    artifact_path: Path
-    payload: dict[str, object]
-    exit_code: int
+from agent_maintainer.ecosystems.java.reports import spotbugs
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -40,7 +31,7 @@ def main(argv: list[str] | None = None) -> int:
     return _write_outcome(outcome, workspace)
 
 
-def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> RunOutcome:
+def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> artifacts.RunOutcome:
     if not profile:
         profile_field = artifact_environment.VERIFY_PROFILE_ENV
         raise provider.JavaProviderConfigurationError(
@@ -76,6 +67,12 @@ def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> RunO
         completed.returncode,
         pre_run_reports,
     )
+    spotbugs_payload = spotbugs.verification_payload(
+        resolved_wrapper.gradle_root,
+        config.java.spotbugs_baseline,
+        config.java.reports,
+        observation,
+    )
     payload = artifacts.base_payload(group, profile)
     payload.update(
         artifacts.execution_payload(
@@ -87,7 +84,9 @@ def _run_group(workspace: Path, group: provider.JavaGroup, profile: str) -> RunO
         )
     )
     payload["observation"] = observation.to_payload()
-    return RunOutcome(
+    if spotbugs_payload is not None:
+        payload["spotbugs"] = spotbugs_payload
+    return artifacts.RunOutcome(
         artifacts.artifact_path(workspace, group, fallback_dir=config.diagnostic_artifacts_dir),
         payload,
         completed.returncode,
@@ -154,21 +153,21 @@ def _configuration_error_outcome(
     group: provider.JavaGroup,
     profile: str,
     exc: Exception,
-) -> RunOutcome:
+) -> artifacts.RunOutcome:
     payload = artifacts.base_payload(group, profile)
     payload.update(
         status="configuration-error",
         exit_code=artifacts.CONFIGURATION_EXIT_CODE,
         error=artifacts.sanitize_text(str(exc), workspace),
     )
-    return RunOutcome(
+    return artifacts.RunOutcome(
         artifacts.artifact_path(workspace, group),
         payload,
         artifacts.CONFIGURATION_EXIT_CODE,
     )
 
 
-def _write_outcome(outcome: RunOutcome, workspace: Path) -> int:
+def _write_outcome(outcome: artifacts.RunOutcome, workspace: Path) -> int:
     try:
         artifacts.write_artifact(outcome.artifact_path, outcome.payload)
     except OSError as exc:

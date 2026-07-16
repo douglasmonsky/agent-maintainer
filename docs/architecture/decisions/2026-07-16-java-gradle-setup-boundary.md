@@ -29,6 +29,10 @@ provider registry or verifier catalog.
 - `agent_maintainer.ecosystems.java.observations` owns requested-task outcome
   parsing and repository-confined pre-run report digests. Runner artifacts carry
   that immutable evidence for later report validation and baseline decisions.
+- `agent_maintainer.ecosystems.java.reports` owns bounded third-party input;
+  its SpotBugs adapter may render a native filter only from successful,
+  task-scoped, complete, and fresh observation evidence. Verification calls the
+  same validator but never calls baseline creation or writes the filter.
 - Java defaults and bundled templates remain Java-owned and are package data.
 - Later observation and bounded report modules may depend on the checked wrapper
   and Java configuration, but normal verification remains command-only.

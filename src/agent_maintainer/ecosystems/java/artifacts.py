@@ -6,6 +6,7 @@ import contextlib
 import json
 import os
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 from agent_maintainer.core.artifact_environment import DIAGNOSTIC_ARTIFACTS_DIR_ENV
@@ -16,6 +17,15 @@ CONFIGURATION_EXIT_CODE = 2
 MAX_ARTIFACT_BYTES = 32_768
 MAX_ARTIFACT_TASKS = 128
 MAX_ARTIFACT_TEXT = 128
+
+
+@dataclass(frozen=True)
+class RunOutcome:
+    """Artifact path, payload, and exit status for one grouped execution."""
+
+    artifact_path: Path
+    payload: dict[str, object]
+    exit_code: int
 
 
 def _bounded_text(value: str) -> str:
