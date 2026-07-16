@@ -64,18 +64,18 @@ def _owned_role(path: str, pure: PurePosixPath, config: JavaGradleConfig) -> Fil
 def _is_dependency_path(path: str, name: str) -> bool:
     return (
         name in DEPENDENCY_NAMES
-        or path.startswith("gradle/wrapper/")
-        or path.startswith("gradle/verification-metadata")
+        or "/gradle/wrapper/" in f"/{path}"
+        or "/gradle/verification-metadata" in f"/{path}"
     )
 
 
 def _is_config_path(path: str, name: str) -> bool:
     return (
         name in BUILD_CONFIG_NAMES
-        or path == "gradle/libs.versions.toml"
-        or path.startswith("config/checkstyle/")
-        or path.startswith("config/pmd/")
-        or path.startswith("config/spotbugs/")
+        or path.endswith("gradle/libs.versions.toml")
+        or "/config/checkstyle/" in f"/{path}"
+        or "/config/pmd/" in f"/{path}"
+        or "/config/spotbugs/" in f"/{path}"
     )
 
 
