@@ -142,6 +142,10 @@ depends_on = [
 ]
 
 [[modules]]
+path = "java.setup_validation"
+depends_on = []
+
+[[modules]]
 path = "java.wrapper"
 depends_on = ["java.errors"]
 

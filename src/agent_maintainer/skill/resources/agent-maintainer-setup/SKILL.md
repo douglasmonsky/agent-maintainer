@@ -137,6 +137,22 @@ Do not change credentials, environment files, production settings, private
 data, or unrelated repository content. Do not lower thresholds, add broad
 suppressions, or disable checks to make setup pass.
 
+## Validate reviewed Java edits
+
+Run this setup-only sequence after the reviewed Java edits:
+
+1. Run the repository wrapper with `--version`.
+2. Show and approve `tasks --all` before running that discovery command.
+3. When native baselining was selected, run only the approved report tasks in
+   observation mode.
+4. Create the requested baseline only from that successful, complete, fresh
+   evidence. Only successful observation evidence may create a native baseline.
+5. Run normal `agent-maintainer doctor`.
+6. Run `agent-maintainer verify --profile full`.
+
+Stop at the first failed or unapproved step. Normal doctor and verification never perform task discovery;
+`tasks --all` belongs only to this reviewed setup sequence.
+
 ## Verify and report
 
 Run:

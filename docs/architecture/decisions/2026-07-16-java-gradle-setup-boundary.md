@@ -33,6 +33,10 @@ provider registry or verifier catalog.
   its SpotBugs adapter may render a native filter only from successful,
   task-scoped, complete, and fresh observation evidence. Verification calls the
   same validator but never calls baseline creation or writes the filter.
+- `agent_maintainer.ecosystems.java.setup_validation` describes the opt-in
+  post-edit wrapper, discovery, observation, baseline, doctor, and full-verify
+  sequence. It is data-only; normal doctor and verification cannot invoke its
+  setup-only task discovery action.
 - Java defaults and bundled templates remain Java-owned and are package data.
 - Later observation and bounded report modules may depend on the checked wrapper
   and Java configuration, but normal verification remains command-only.
