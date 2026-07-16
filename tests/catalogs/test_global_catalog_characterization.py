@@ -27,6 +27,7 @@ def test_global_reviewability_checks_preserve_names_and_profiles() -> None:
     assert checks[0].profiles == {FAST_PROFILE, "precommit", FULL_PROFILE, CI_PROFILE}
     assert "--staged" in checks[2].command
     assert checks[-1].required_paths == (".git",)
+    assert all(not check.name.startswith("typescript-") for check in checks)
 
 
 def test_reviewability_checks_call_python_policy_modules() -> None:

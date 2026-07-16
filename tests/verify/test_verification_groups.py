@@ -63,6 +63,9 @@ def test_unassigned_catalog_check_fails_closed() -> None:
     with pytest.raises(VerificationGroupError, match="unassigned check: future-check"):
         checks_for_group([check("future-check")], "static-and-policy")
 
+    with pytest.raises(VerificationGroupError, match="unassigned check: java-gradle-static"):
+        checks_for_group([check("java-gradle-static")], "static-and-policy")
+
 
 def test_current_ci_catalog_is_completely_partitioned() -> None:
     """Catalog evolution must update the explicit grouping contract."""

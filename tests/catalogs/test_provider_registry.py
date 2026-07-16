@@ -34,6 +34,7 @@ def test_provider_metadata_enabled_fields() -> None:
     assert providers["python"].enabled_by_default is True
     assert providers["python"].enabled_field is None
     assert providers["typescript"].enabled_field == "enable_typescript"
+    assert MaintainerConfig().enable_typescript is False
 
 
 def test_configured_provider_command_fields() -> None:
