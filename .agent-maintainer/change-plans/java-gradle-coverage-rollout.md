@@ -51,36 +51,43 @@ ratchet_targets = []
 # Cohesive Change Plan: java-gradle-coverage-rollout
 
 ## Why this change intentionally large
+
 Exact JaCoCo policy, truthful project topology, live cached Gradle validation,
 calibration evidence, and public maturity documentation are one promotion gate.
 Shipping only a percentage parser would advertise enforcement without proving
 how reports map to real single- and multi-project builds.
 
 ## Why this should not be split smaller
+
 The runner contract and public provider status depend on the same topology and
 threshold semantics exercised by the live fixtures. Splitting those surfaces
 would leave an unverifiable intermediate state or duplicate fixture policy.
 
 ## What allowed to change
+
 Only Java configuration, report policy, setup/runner integration, bounded live
 fixtures, experimental workflows, calibration evidence, and their directly
 traced documentation/tests may change.
 
 ## What must not change
+
 Do not add system-Gradle fallbacks, synthetic aggregate percentages, verifier
 baseline mutation, compatibility aliases, unsafe XML parsing, parity claims,
 or changes to unrelated providers and release behavior.
 
 ## Verification plan
+
 Implement each plan task test-first. Run focused Java/config/workflow/docs tests,
 exact Tach and canonical Pyright, DocSync, live checked-wrapper fixtures, doctor,
 commit verification, and the full verifier before promotion closeout.
 
 ## Rollback plan
+
 Revert the phase commits in reverse order. Threshold policy remains separate
 from Java findings/file baselines, so rollback does not require data migration.
 
 ## Follow-up ratchet work
+
 Keep the provider experimental until every promotion gate passes. Any live
 repository-specific tuning must be explicit and must never lower stored floors
 silently.

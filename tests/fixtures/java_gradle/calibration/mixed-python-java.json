@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "case_id": "mixed-python-java",
+  "repository_shape": "single-project Groovy DSL Java repository with Python source",
+  "fixture": "tests/fixtures/java_gradle/mixed_python_java",
+  "sanitized": true,
+  "external_repository_claim": false,
+  "setup": {
+    "status": "ready",
+    "changed_files": 4,
+    "manual_edits": 0,
+    "diff_lines": 123,
+    "restructures_build": false
+  },
+  "verification": {
+    "command": "tests/live/java_gradle/groovy/gradlew -p tests/fixtures/java_gradle/mixed_python_java --no-daemon --console=plain check",
+    "wrapper_calls": 1,
+    "runtime_seconds": 5,
+    "environment": "macOS, JBR 25, Gradle 9.6.1 distribution cache warm"
+  },
+  "false_positives": 0,
+  "repair_facts": {
+    "seeded_failures": 1,
+    "actionable_facts": 1,
+    "useful": true,
+    "fact_kinds": ["java-static-finding"]
+  },
+  "baseline_churn": {
+    "initial_entries": 0,
+    "entries_changed_on_noop": 0,
+    "pruned_entries": 0,
+    "silent_threshold_lowering": false
+  },
+  "thresholds": {
+    "mode": "new-repository",
+    "current_line": "0.80",
+    "current_branch": "0.70",
+    "base_line": null,
+    "base_branch": null
+  },
+  "coverage": [
+    {
+      "scope": "project",
+      "label": ":",
+      "report": "calibration/jacoco.xml",
+      "line_percentage": "90.0000",
+      "branch_percentage": "80.0000"
+    }
+  ],
+  "limitations": [
+    "Controlled fixture rather than an external production repository.",
+    "The Gradle run proves Java isolation but does not rerun Python verification."
+  ]
+}

@@ -46,10 +46,10 @@
 
 **Files:** Create `docs/case-studies/java-gradle-provider-calibration.md`; create sanitized Java-only, mixed Python/Java, and multi-project evidence fixtures; create `tests/assess/test_java_real_repo_calibration.py`.
 
-- [ ] Capture sanitized false positives, setup diff/manual edits, runtime/wrapper calls, repair-fact usefulness, baseline churn, and coverage labeling for Java-only, mixed Python/Java, and multi-project repositories.
-- [ ] Add failing tests for the evidence schema and required cases, then implement fixtures/report until GREEN.
-- [ ] Tune new-repo defaults separately from established ratchets; never silently lower enforcement.
-- [ ] Commit: `test: calibrate Java Gradle provider behavior`.
+- [x] Capture sanitized false positives, setup diff/manual edits, runtime/wrapper calls, repair-fact usefulness, baseline churn, and coverage labeling for Java-only, mixed Python/Java, and multi-project repositories.
+- [x] Add failing tests for the evidence schema and required cases, then implement fixtures/report until GREEN.
+- [x] Tune new-repo defaults separately from established ratchets; never silently lower enforcement.
+- [x] Commit: `test: calibrate Java Gradle provider behavior`.
 
 ### Task 5: Document and trace the experimental provider
 
