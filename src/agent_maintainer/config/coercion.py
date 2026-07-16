@@ -175,6 +175,12 @@ def coerce_file_baselines(
             "file_baselines.mode",
             schema.VALID_FILE_BASELINE_MODES,
         )
+    baseline_path = raw_table.get("baseline")
+    if baseline_path is not None:
+        updates["file_baselines_baseline"] = as_str(
+            baseline_path,
+            "file_baselines.baseline",
+        )
     groups = raw_table.get("groups")
     if groups is not None:
         group_table = _config_table(groups, "file_baselines.groups")

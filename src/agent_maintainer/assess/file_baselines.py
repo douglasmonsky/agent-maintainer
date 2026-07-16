@@ -1,10 +1,11 @@
-"""Provider-neutral advisory file baseline assessment."""
+"""Provider-neutral file assessment against defaults and per-path ceilings."""
 
 from __future__ import annotations
 
 from fnmatch import fnmatch
 from pathlib import Path
 
+from agent_maintainer.assess import file_baseline_state
 from agent_maintainer.assess.models import (
     FileBaselineFinding,
     FileBaselineGroupSummary,
@@ -17,6 +18,10 @@ BRACE_OPEN = "{"
 BRACE_CLOSE = "}"
 
 
+class FileBaselineLifecycleError(ValueError):
+    """One invalid or unsafe file ceiling baseline lifecycle request."""
+
+
 def build_file_baseline_report(
     target: Path,
     config: MaintainerConfig,
@@ -24,7 +29,7 @@ def build_file_baseline_report(
     base_ref: str,
     staged: bool,
 ) -> FileBaselineReport:
-    """Build advisory file baseline report for configured groups."""
+    """Build a provider-neutral report against defaults and established ceilings."""
     if not config.file_baselines_enabled:
         return FileBaselineReport(
             target=str(target),
@@ -33,27 +38,33 @@ def build_file_baseline_report(
             groups=(),
             findings=(),
             next_commands=("Enable [tool.agent_maintainer.file_baselines] to assess file groups.",),
+            passed=True,
         )
+    observations = collect_observations(target, config.file_baselines)
+    stored = _read_optional_baseline(target, config.file_baselines_baseline)
+    comparison = file_baseline_state.compare_baseline(stored, observations)
+    deltas = {(delta.group, delta.path): delta for delta in comparison.deltas}
     changes = _read_changes(base_ref, staged=staged)
     summaries: list[FileBaselineGroupSummary] = []
     findings: list[FileBaselineFinding] = []
     for group in config.file_baselines:
-        group_files = tuple(_matching_files(target, group))
+        group_observations = tuple(item for item in observations if item.group == group.name)
         group_changes = tuple(
             change for change in changes if _matches_group(Path(change.path), group)
         )
-        group_findings = _group_findings(group, group_files, group_changes, target)
+        group_findings = _group_findings(group, group_observations, group_changes, deltas)
         summaries.append(
             FileBaselineGroupSummary(
                 name=group.name,
                 role=group.role,
-                matched_files=len(group_files),
+                matched_files=len(group_observations),
                 changed_files=len(group_changes),
                 changed_lines=sum(change.changed for change in group_changes),
                 findings=len(group_findings),
             ),
         )
         findings.extend(group_findings)
+    findings.extend(_removed_findings(comparison))
     return FileBaselineReport(
         target=str(target),
         enabled=True,
@@ -61,6 +72,7 @@ def build_file_baseline_report(
         groups=tuple(summaries),
         findings=tuple(findings),
         next_commands=_next_commands(findings),
+        passed=comparison.passed,
     )
 
 
@@ -88,48 +100,115 @@ def _matching_files(
     )
 
 
+def collect_observations(
+    target: Path,
+    groups: tuple[FileBaselineGroupConfig, ...],
+) -> tuple[file_baseline_state.FileCeilingObservation, ...]:
+    """Collect deterministic provider-neutral counts for configured group/path pairs."""
+    observations: list[file_baseline_state.FileCeilingObservation] = []
+    for group in groups:
+        for path in _matching_files(target, group):
+            physical, nonblank = _line_counts(path)
+            observations.append(
+                file_baseline_state.FileCeilingObservation(
+                    group.name,
+                    path.relative_to(target).as_posix(),
+                    physical,
+                    nonblank,
+                    group.max_physical_lines,
+                    group.max_nonblank_lines,
+                )
+            )
+    return tuple(sorted(observations, key=lambda item: item.key))
+
+
 def _group_findings(
     group: FileBaselineGroupConfig,
-    files: tuple[Path, ...],
+    observations: tuple[file_baseline_state.FileCeilingObservation, ...],
     changes: tuple[FileChange, ...],
-    target: Path,
+    deltas: dict[tuple[str, str], file_baseline_state.FileCeilingDelta],
 ) -> tuple[FileBaselineFinding, ...]:
     """Return findings for one group."""
     findings: list[FileBaselineFinding] = []
-    for path in files:
-        findings.extend(_line_findings(group, path, target))
+    for observation in observations:
+        delta = deltas.get(observation.key)
+        if delta is not None:
+            findings.extend(_ceiling_findings(group, delta))
     findings.extend(_change_findings(group, changes))
     return tuple(findings)
 
 
-def _line_findings(
+def _ceiling_findings(
     group: FileBaselineGroupConfig,
-    path: Path,
-    target: Path,
+    delta: file_baseline_state.FileCeilingDelta,
 ) -> tuple[FileBaselineFinding, ...]:
-    """Return line-count findings for one file."""
-    physical, nonblank = _line_counts(path)
-    relative_path = path.relative_to(target)
+    """Return regression or improvement findings for one observed path."""
+    relative_path = Path(delta.path)
     findings: list[FileBaselineFinding] = []
-    if group.max_physical_lines and physical > group.max_physical_lines:
+    if delta.physical_regression:
+        description = (
+            f"{delta.physical} physical lines makes this a new oversized file; "
+            f"default is {delta.physical_ceiling}"
+            if delta.new_path
+            else f"{delta.physical} physical lines exceeds baseline ceiling "
+            f"{delta.physical_ceiling}"
+        )
         findings.append(
             _finding(
                 group,
                 relative_path,
                 "physical-lines",
-                f"{physical} physical lines exceeds {group.max_physical_lines}",
+                description,
+                blocking=True,
             ),
         )
-    if group.max_nonblank_lines and nonblank > group.max_nonblank_lines:
+    if delta.nonblank_regression:
+        description = (
+            f"{delta.nonblank} nonblank lines makes this a new oversized file; "
+            f"default is {delta.nonblank_ceiling}"
+            if delta.new_path
+            else f"{delta.nonblank} nonblank lines exceeds baseline ceiling "
+            f"{delta.nonblank_ceiling}"
+        )
         findings.append(
             _finding(
                 group,
                 relative_path,
                 "nonblank-lines",
-                f"{nonblank} nonblank lines exceeds {group.max_nonblank_lines}",
+                description,
+                blocking=True,
             ),
         )
+    if delta.improved:
+        findings.append(
+            _finding(
+                group,
+                relative_path,
+                "baseline-improvement",
+                f"{delta.physical} physical/{delta.nonblank} nonblank lines improved "
+                "and are eligible for prune",
+            )
+        )
     return tuple(findings)
+
+
+def _removed_findings(
+    comparison: file_baseline_state.FileCeilingComparison,
+) -> tuple[FileBaselineFinding, ...]:
+    """Return explicit prune suggestions for absent baseline paths."""
+    return tuple(
+        FileBaselineFinding(
+            group=delta.group,
+            path=delta.path,
+            kind="baseline-removed",
+            message="baseline path is absent and eligible for prune",
+            recommendation=(
+                "Review a rename as a new path, then prune the removed ceiling explicitly."
+            ),
+        )
+        for delta in comparison.deltas
+        if delta.removed
+    )
 
 
 def _change_findings(
@@ -174,6 +253,8 @@ def _finding(
     path: Path,
     kind: str,
     message: str,
+    *,
+    blocking: bool = False,
 ) -> FileBaselineFinding:
     """Build one file-specific finding."""
     return FileBaselineFinding(
@@ -182,6 +263,7 @@ def _finding(
         kind=kind,
         message=message,
         recommendation=f"Inspect {path.as_posix()} or split the {group.role} surface.",
+        blocking=blocking,
     )
 
 
@@ -204,7 +286,36 @@ def _next_commands(findings: list[FileBaselineFinding]) -> tuple[str, ...]:
     """Return compact follow-up commands."""
     if not findings:
         return ("python -m agent_maintainer assess file-baselines",)
+    if any(finding.kind.startswith("baseline-") for finding in findings):
+        return (
+            "python -m agent_maintainer assess file-baselines prune --dry-run",
+            "python -m agent_maintainer assess file-baselines --json",
+        )
     return ("python -m agent_maintainer assess file-baselines --json",)
+
+
+def _read_optional_baseline(
+    target: Path,
+    configured_path: str,
+) -> file_baseline_state.FileCeilingBaseline | None:
+    path = configured_baseline_path(target, configured_path)
+    if not path.exists():
+        return None
+    try:
+        return file_baseline_state.read_baseline(path)
+    except (OSError, ValueError) as exc:
+        raise FileBaselineLifecycleError(f"invalid file ceiling baseline: {exc}") from exc
+
+
+def configured_baseline_path(target: Path, configured_path: str) -> Path:
+    candidate = (target / configured_path).resolve(strict=False)
+    try:
+        candidate.relative_to(target)
+    except ValueError as exc:
+        raise FileBaselineLifecycleError(
+            "file ceiling baseline path escapes the target repository"
+        ) from exc
+    return candidate
 
 
 def _matches_group(path: Path, group: FileBaselineGroupConfig) -> bool:

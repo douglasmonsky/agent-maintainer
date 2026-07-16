@@ -1146,6 +1146,28 @@
         "maximum": null,
         "minimum": null,
         "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": ".agent-maintainer/file-baselines.json",
+      "description": "Configure file baselines baseline.",
+      "environment": "AGENT_MAINTAINER_FILE_BASELINES_BASELINE",
+      "environment_style": "standard",
+      "label": "File Baselines Baseline",
+      "name": "file_baselines_baseline",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "file_baselines.baseline",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
         "repository_relative_path": false,
         "verification_profiles": false
       },
@@ -3175,6 +3197,7 @@
       "run_history_limit"
     ],
     "file_baselines": [
+      "baseline",
       "enabled",
       "groups",
       "mode"

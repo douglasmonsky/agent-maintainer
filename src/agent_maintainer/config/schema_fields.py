@@ -140,6 +140,7 @@ STR_FIELDS = frozenset(
         "pyright_type_checking_mode",
         "pyright_strict_baseline",
         "file_length_baseline",
+        "file_baselines_baseline",
         "diagnostic_artifacts_dir",
         "runtime_events_dir",
         "runtime_event_level",

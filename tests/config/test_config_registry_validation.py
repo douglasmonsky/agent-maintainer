@@ -13,7 +13,7 @@ import pytest
 from agent_maintainer.config import coercion, loader, registry, schema, validation
 from agent_maintainer.core import args as core_args
 
-EXPECTED_CONFIG_FIELD_COUNT = 131
+EXPECTED_CONFIG_FIELD_COUNT = 132
 
 
 def assert_issue(
@@ -310,6 +310,10 @@ def test_cross_field_contradictions_are_rejected(
         ({"test_roots": ["../tests"]}, "test_roots"),
         ({"file_length_baseline": "~/baseline.json"}, "file_length_baseline"),
         ({"ratchet_baseline_path": r"C:\temp\baseline.json"}, "ratchet_baseline_path"),
+        (
+            {"file_baselines": {"baseline": "../file-baselines.json"}},
+            "file_baselines.baseline",
+        ),
         ({"workspaces": {"api": {"source_roots": ["../api"]}}}, "workspaces.api.source_roots"),
         (
             {"file_baselines": {"groups": {"docs": {"include": ["../docs/**"]}}}},

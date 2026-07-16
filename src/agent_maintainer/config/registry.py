@@ -71,6 +71,7 @@ NESTED_TOML_KEYS = MappingProxyType(
         "diagnostic_run_history_limit": "diagnostics.run_history_limit",
         "file_baselines_enabled": "file_baselines.enabled",
         "file_baselines_mode": "file_baselines.mode",
+        "file_baselines_baseline": "file_baselines.baseline",
         "file_baselines": "file_baselines.groups",
     }
 )
@@ -107,7 +108,7 @@ WORKSPACE_KEYS = frozenset(
     )
 )
 WORKSPACE_PATH_KEYS = frozenset(("source_roots", "test_roots", "package_paths", "coverage_source"))
-FILE_BASELINE_KEYS = frozenset(("enabled", "mode", "groups"))
+FILE_BASELINE_KEYS = frozenset(("baseline", "enabled", "mode", "groups"))
 FILE_BASELINE_GROUP_KEYS = frozenset(
     (
         "include",
@@ -190,6 +191,7 @@ PATH_FIELDS = frozenset(
         "yamllint_paths",
         "taplo_paths",
         "file_length_baseline",
+        "file_baselines_baseline",
         "pyright_strict_baseline",
         "ratchet_baseline_path",
         "ratchet_guidance_path",

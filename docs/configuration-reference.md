@@ -11,7 +11,7 @@ Configuration precedence is defaults, mode preset, file, environment, then CLI.
 |---|---|
 | `diagnostics` | `["enabled","log_dir","run_history_limit"]` |
 | `workspaces.*` | `["coverage_source","package_paths","source_roots","test_roots","typescript_lint_command","typescript_test_command","typescript_typecheck_command"]` |
-| `file_baselines` | `["enabled","groups","mode"]` |
+| `file_baselines` | `["baseline","enabled","groups","mode"]` |
 | `file_baselines.groups.*` | `["changed_file_warn","changed_line_warn","exclude","include","max_nonblank_lines","max_physical_lines","role"]` |
 | `java` | `["checks","checkstyle_profiles","checkstyle_tasks","enabled","findings_baseline","gradle_args","gradle_root","jacoco_branch_property","jacoco_line_property","jacoco_profiles","jacoco_report_tasks","jacoco_verify_tasks","pmd_profiles","pmd_tasks","reports","source_roots","spotbugs_baseline","spotbugs_profiles","spotbugs_tasks","spotless_profiles","spotless_ratchet_ref","spotless_tasks","test_profiles","test_roots","test_tasks"]` |
 | `java.reports.*` | `["globs","required","tasks","tool"]` |
@@ -92,6 +92,7 @@ python -m agent_maintainer assess java-baseline prune --target . --artifact .ver
 | `enable_wemake` | bool | `false` | `AGENT_MAINTAINER_ENABLE_WEMAKE` | verify | — | beta |
 | `enable_yamllint` | bool | `false` | `AGENT_MAINTAINER_ENABLE_YAMLLINT` | verify | — | beta |
 | `file_baselines.groups` | file-baseline-groups | `[]` | — | none | — | beta |
+| `file_baselines.baseline` | str | `".agent-maintainer/file-baselines.json"` | `AGENT_MAINTAINER_FILE_BASELINES_BASELINE` | none | repository-relative path | beta |
 | `file_baselines.enabled` | bool | `false` | — | none | aliases: file_baselines_enabled | beta |
 | `file_baselines.mode` | choice | `"advisory"` | — | none | choices: advisory, blocking; aliases: file_baselines_mode | beta |
 | `file_length_baseline` | str | `""` | `AGENT_MAINTAINER_FILE_LENGTH_BASELINE` | verify | repository-relative path | stable |

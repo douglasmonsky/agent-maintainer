@@ -186,6 +186,7 @@ class FileBaselineFinding:
     kind: str
     message: str
     recommendation: str
+    blocking: bool = False
 
 
 @dataclass(frozen=True)
@@ -202,7 +203,7 @@ class FileBaselineGroupSummary:
 
 @dataclass(frozen=True)
 class FileBaselineReport:
-    """Advisory provider-neutral file baseline report."""
+    """Provider-neutral file ceiling and change-budget report."""
 
     target: str
     enabled: bool
@@ -210,6 +211,7 @@ class FileBaselineReport:
     groups: tuple[FileBaselineGroupSummary, ...]
     findings: tuple[FileBaselineFinding, ...]
     next_commands: tuple[str, ...]
+    passed: bool = True
 
 
 def to_dict(value: object) -> object:

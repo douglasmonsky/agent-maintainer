@@ -12,6 +12,7 @@ from pathlib import Path
 from agent_maintainer.assess import (
     debt_score,
     efficacy,
+    file_baseline_lifecycle,
     file_baselines,
     java_baselines,
     repair_fact_coverage,
@@ -26,6 +27,7 @@ from agent_maintainer.assess import (
 from agent_maintainer.assess.efficacy_reporting import render_text as render_efficacy_text
 from agent_maintainer.assess.models import RepoEvidence
 from agent_maintainer.config import loader as config_loader
+from agent_maintainer.config.schema import MaintainerConfig
 
 DEFAULT_TARGET = Path(".")
 STORE_TRUE = "store_true"
@@ -37,6 +39,8 @@ def main(argv: list[str] | None = None) -> int:
     target = args.target.resolve()
     if args.command == "java-baseline":
         return _run_java_baseline(args, target)
+    if args.command == "file-baselines":
+        return _run_file_baselines(args, target)
     repo_evidence = assess_evidence.collect_evidence(target, max_files=args.max_files)
     status = 1
     if args.command == "setup":
@@ -45,8 +49,6 @@ def main(argv: list[str] | None = None) -> int:
         status = _run_debt(args, target, repo_evidence)
     if args.command == "reviewability":
         status = _run_reviewability(args, target)
-    if args.command == "file-baselines":
-        status = _run_file_baselines(args, target)
     if args.command == "repair-fact-coverage":
         status = _run_repair_fact_coverage(args, target)
     if args.command == "efficacy":
@@ -99,19 +101,54 @@ def _run_reviewability(args: argparse.Namespace, target: Path) -> int:
 
 def _run_file_baselines(args: argparse.Namespace, target: Path) -> int:
     """Run provider-neutral file baseline assessment."""
-    with _working_directory(target):
-        config = config_loader.load_config()
-        report = file_baselines.build_file_baseline_report(
-            target,
-            config,
-            base_ref=args.base_ref,
-            staged=args.staged,
-        )
+    try:
+        with _working_directory(target):
+            config = config_loader.load_config()
+            if args.file_baseline_operation != "report":
+                return _run_file_baseline_lifecycle(args, target, config)
+            if args.dry_run:
+                raise ValueError("--dry-run requires file-baselines create or prune")
+            report = file_baselines.build_file_baseline_report(
+                target,
+                config,
+                base_ref=args.base_ref,
+                staged=args.staged,
+            )
+    except (OSError, TypeError, ValueError) as exc:
+        print(f"file-baselines: {exc}", file=sys.stderr)
+        return 2
     print(
         reporting.render_json(report)
         if args.json
         else reporting.render_file_baselines_text(report),
     )
+    return 1 if report.mode == "blocking" and not report.passed else 0
+
+
+def _run_file_baseline_lifecycle(
+    args: argparse.Namespace,
+    target: Path,
+    config: MaintainerConfig,
+) -> int:
+    """Run explicit create, inspect, or prune for per-path file ceilings."""
+    if args.file_baseline_operation == "inspect":
+        summary = file_baseline_lifecycle.inspect_configured(target, config)
+        print(file_baseline_lifecycle.render_summary(summary, json_output=args.json), end="")
+        return 0
+    operation = (
+        file_baseline_lifecycle.create_candidate
+        if args.file_baseline_operation == "create"
+        else file_baseline_lifecycle.prune_candidate
+    )
+    destination, candidate = operation(target, config)
+    rendered = file_baseline_lifecycle.render_candidate(candidate)
+    if not args.dry_run:
+        file_baseline_lifecycle.write_candidate(
+            destination,
+            candidate,
+            overwrite=args.file_baseline_operation == "prune",
+        )
+    print(rendered, end="")
     return 0
 
 
@@ -217,6 +254,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "file-baselines",
         help="Render advisory provider-neutral file baseline summary.",
     )
+    file_baselines_parser.add_argument(
+        "file_baseline_operation",
+        nargs="?",
+        choices=("report", "create", "inspect", "prune"),
+        default="report",
+    )
     file_baselines_parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     file_baselines_parser.add_argument(
         "--max-files",
@@ -227,6 +270,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     file_baselines_parser.add_argument("--json", action=STORE_TRUE)
     file_baselines_parser.add_argument("--base-ref", default="origin/main")
     file_baselines_parser.add_argument("--staged", action=STORE_TRUE)
+    file_baselines_parser.add_argument("--dry-run", action=STORE_TRUE)
     _add_java_baseline_parser(subparsers.add_parser)
     repair_fact_parser = subparsers.add_parser(
         "repair-fact-coverage",

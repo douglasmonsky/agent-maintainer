@@ -62,9 +62,9 @@
 
 **Files:** Modify `src/agent_maintainer/config/{schema,registry,coercion,source_validation,validation,reference}.py`; modify `src/agent_maintainer/assess/file_baselines.py`; modify `tests/assess/test_file_baselines.py` and affected config tests.
 
-- [ ] Write failing tests for versioned per-path physical/nonblank ceilings, new-file defaults, established floors, regression blocking, improvement suggestions, renamed/removed paths, create/inspect/prune, and Java/Python neutrality.
-- [ ] Verify RED, implement the single provider-neutral comparator/lifecycle, then verify GREEN.
-- [ ] Commit: `feat: enforce provider-neutral file ceilings`.
+- [x] Write failing tests for versioned per-path physical/nonblank ceilings, new-file defaults, established floors, regression blocking, improvement suggestions, renamed/removed paths, create/inspect/prune, and Java/Python neutrality.
+- [x] Verify RED, implement the single provider-neutral comparator/lifecycle, then verify GREEN.
+- [x] Commit: `feat: enforce provider-neutral file ceilings`.
 
 ### Task 7: Close the structured-evidence gate
 
