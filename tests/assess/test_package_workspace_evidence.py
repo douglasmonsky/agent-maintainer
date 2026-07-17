@@ -91,6 +91,7 @@ def test_reports_unsupported_invalid_and_conflicting_managers(tmp_path: Path) ->
         "invalid-package-manager-declaration",
         "unsupported-package-manager",
     }
+    assert evidence.issues == tuple(sorted(evidence.issues))
     assert evidence.unambiguous_manager == ""
     assert evidence.ambiguous is True
 

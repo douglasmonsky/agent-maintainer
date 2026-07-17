@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import tomllib
-from collections.abc import Mapping
 from pathlib import Path
 from typing import cast
 
@@ -16,7 +15,9 @@ from agent_maintainer.assess.models import (
     PackageWorkspaceIssue,
     WorkspaceDeclaration,
 )
+from agent_maintainer.core.structured_values import json_object
 
+PACKAGE_JSON = "package.json"
 SUPPORTED_MANAGERS = frozenset(("npm", "pnpm", "yarn", "bun"))
 LOCKFILE_MANAGERS = (
     ("bun.lock", "bun"),
@@ -38,25 +39,63 @@ AMBIGUOUS_MANAGER_ISSUES = frozenset(
 def collect_package_workspace_evidence(root: Path) -> PackageWorkspaceEvidence:
     """Return fixed-root advisory package-manager and workspace facts."""
     package_data, package_issues = _load_package_json(root)
-    signals = [*_lockfile_signals(root)]
-    issues = [*package_issues]
+    signals, manager_issues = _collect_manager_evidence(root, package_data)
+    declarations, workspace_issues = _collect_workspace_evidence(root, package_data)
+    issues = list(package_issues)
+    issues.extend(manager_issues)
+    issues.extend(workspace_issues)
+    issues.extend(_manager_conflict_issues(signals))
+    return _ordered_evidence(signals, declarations, issues)
+
+
+def _collect_manager_evidence(
+    root: Path,
+    package_data: dict[str, object] | None,
+) -> tuple[list[PackageManagerSignal], list[PackageWorkspaceIssue]]:
+    signals = list(_lockfile_signals(root))
+    issues: list[PackageWorkspaceIssue] = []
     if package_data is not None:
         declared_signals, declared_issues = _package_manager_signals(package_data)
         signals.extend(declared_signals)
         issues.extend(declared_issues)
+    return signals, issues
+
+
+def _collect_workspace_evidence(
+    root: Path,
+    package_data: dict[str, object] | None,
+) -> tuple[list[WorkspaceDeclaration], list[PackageWorkspaceIssue]]:
     declarations: list[WorkspaceDeclaration] = []
+    issues: list[PackageWorkspaceIssue] = []
     if package_data is not None:
-        package_declarations, workspace_issues = _package_workspace_declarations(package_data)
-        declarations.extend(package_declarations)
-        issues.extend(workspace_issues)
-    pnpm_declarations, pnpm_issues = _pnpm_workspace_declarations(root)
-    agent_declarations, agent_issues = _agent_workspace_declarations(root)
-    declarations.extend((*pnpm_declarations, *agent_declarations))
-    issues.extend((*pnpm_issues, *agent_issues))
-    issues.extend(_manager_conflict_issues(signals))
-    ordered_signals = tuple(sorted(signals, key=_signal_key))
-    ordered_declarations = tuple(sorted(declarations, key=_declaration_key))
-    ordered_issues = tuple(sorted(issues, key=_issue_key))
+        _extend_workspace_result(
+            declarations,
+            issues,
+            _package_workspace_declarations(package_data),
+        )
+    _extend_workspace_result(declarations, issues, _pnpm_workspace_declarations(root))
+    _extend_workspace_result(declarations, issues, _agent_workspace_declarations(root))
+    return declarations, issues
+
+
+def _extend_workspace_result(
+    declarations: list[WorkspaceDeclaration],
+    issues: list[PackageWorkspaceIssue],
+    result: tuple[list[WorkspaceDeclaration], list[PackageWorkspaceIssue]],
+) -> None:
+    new_declarations, new_issues = result
+    declarations.extend(new_declarations)
+    issues.extend(new_issues)
+
+
+def _ordered_evidence(
+    signals: list[PackageManagerSignal],
+    declarations: list[WorkspaceDeclaration],
+    issues: list[PackageWorkspaceIssue],
+) -> PackageWorkspaceEvidence:
+    ordered_signals = tuple(sorted(signals))
+    ordered_declarations = tuple(sorted(declarations))
+    ordered_issues = tuple(sorted(issues))
     managers = frozenset(signal.manager for signal in ordered_signals)
     ambiguous = len(managers) > 1 or any(
         issue.kind in AMBIGUOUS_MANAGER_ISSUES for issue in ordered_issues
@@ -73,42 +112,41 @@ def collect_package_workspace_evidence(root: Path) -> PackageWorkspaceEvidence:
 
 def _load_package_json(
     root: Path,
-) -> tuple[Mapping[str, object] | None, tuple[PackageWorkspaceIssue, ...]]:
-    path = root / "package.json"
+) -> tuple[dict[str, object] | None, tuple[PackageWorkspaceIssue, ...]]:
+    path = root / PACKAGE_JSON
     if not path.is_file():
         return None, ()
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError, RecursionError) as exc:
-        return None, (_issue("malformed-package-json", "package.json", "", str(exc)),)
-    if not isinstance(payload, dict):
+        return None, (_issue("malformed-package-json", PACKAGE_JSON, "", str(exc)),)
+    package_data = json_object(payload)
+    if package_data is None:
         return None, (
             _issue(
                 "malformed-package-json",
-                "package.json",
+                PACKAGE_JSON,
                 "",
                 "package.json root must be an object.",
             ),
         )
-    return cast(Mapping[str, object], payload), ()
+    return package_data, ()
 
 
 def _package_manager_signals(
-    data: Mapping[str, object],
+    data: dict[str, object],
 ) -> tuple[list[PackageManagerSignal], list[PackageWorkspaceIssue]]:
     signals: list[PackageManagerSignal] = []
     issues: list[PackageWorkspaceIssue] = []
     if "packageManager" in data:
-        signal, issue = _top_level_manager_signal(data["packageManager"])
+        signal, issue = _top_level_manager_signal(data.get("packageManager"))
         if signal is not None:
             signals.append(signal)
         if issue is not None:
             issues.append(issue)
-    dev_engines = data.get("devEngines")
-    if isinstance(dev_engines, dict) and "packageManager" in dev_engines:
-        signal, issue = _dev_engines_manager_signal(
-            cast(Mapping[str, object], dev_engines)["packageManager"],
-        )
+    dev_engines = json_object(data.get("devEngines"))
+    if dev_engines is not None and "packageManager" in dev_engines:
+        signal, issue = _dev_engines_manager_signal(dev_engines.get("packageManager"))
         if signal is not None:
             signals.append(signal)
         if issue is not None:
@@ -117,45 +155,66 @@ def _package_manager_signals(
 
 
 def _package_workspace_declarations(
-    data: Mapping[str, object],
+    data: dict[str, object],
 ) -> tuple[list[WorkspaceDeclaration], list[PackageWorkspaceIssue]]:
     if "workspaces" not in data:
         return [], []
-    raw = data["workspaces"]
+    raw = data.get("workspaces")
     field = "workspaces"
-    if isinstance(raw, dict):
-        workspace_data = cast(Mapping[str, object], raw)
+    workspace_data = json_object(raw)
+    if workspace_data is not None:
         if "packages" not in workspace_data:
-            return [], [_invalid_workspace_issue("package.json", field)]
+            return [], [_invalid_workspace_issue(PACKAGE_JSON, field)]
         raw = workspace_data["packages"]
         field = "workspaces.packages"
-    patterns, issues = _literal_patterns(raw, "package.json", field)
+    patterns, issues = _literal_patterns(raw, PACKAGE_JSON, field)
     if patterns is None:
         return [], issues
-    return [WorkspaceDeclaration("package-json", "", "package.json", field, patterns)], issues
+    return [WorkspaceDeclaration("package-json", "", PACKAGE_JSON, field, patterns)], issues
 
 
 def _pnpm_workspace_declarations(
     root: Path,
 ) -> tuple[list[WorkspaceDeclaration], list[PackageWorkspaceIssue]]:
+    data, issues = _load_pnpm_workspace(root)
+    if data is None:
+        return [], issues
+    if "packages" not in data:
+        return [], []
+    patterns, pattern_issues = _literal_patterns(
+        data.get("packages"),
+        "pnpm-workspace.yaml",
+        "packages",
+    )
+    if patterns is None:
+        return [], pattern_issues
+    return [
+        WorkspaceDeclaration(
+            "pnpm-workspace",
+            "",
+            "pnpm-workspace.yaml",
+            "packages",
+            patterns,
+        ),
+    ], pattern_issues
+
+
+def _load_pnpm_workspace(
+    root: Path,
+) -> tuple[dict[str, object] | None, list[PackageWorkspaceIssue]]:
     path = root / "pnpm-workspace.yaml"
     if not path.is_file():
-        return [], []
+        return None, []
     try:
         payload = yaml.safe_load(path.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError, RecursionError) as exc:
-        return [], [
+        return None, [
             _issue("malformed-pnpm-workspace", path.name, "", str(exc)),
         ]
-    if not isinstance(payload, dict):
-        return [], [_invalid_workspace_issue(path.name, "packages")]
-    data = cast(Mapping[str, object], payload)
-    if "packages" not in data:
-        return [], []
-    patterns, issues = _literal_patterns(data["packages"], path.name, "packages")
-    if patterns is None:
-        return [], issues
-    return [WorkspaceDeclaration("pnpm-workspace", "", path.name, "packages", patterns)], issues
+    data = json_object(payload)
+    if data is None:
+        return None, [_invalid_workspace_issue(path.name, "packages")]
+    return data, []
 
 
 def _agent_workspace_declarations(
@@ -170,30 +229,29 @@ def _agent_workspace_declarations(
         return [], [
             _issue("malformed-agent-maintainer-config", path.name, "", str(exc)),
         ]
-    return _configured_agent_workspace_declarations(payload, path.name)
+    return _configured_agent_workspace_declarations(json_object(payload) or {}, path.name)
 
 
 def _configured_agent_workspace_declarations(
-    payload: Mapping[str, object],
+    payload: dict[str, object],
     filename: str,
 ) -> tuple[list[WorkspaceDeclaration], list[PackageWorkspaceIssue]]:
-    tool = payload.get("tool")
-    if not isinstance(tool, dict):
+    tool = json_object(payload.get("tool"))
+    if tool is None:
         return [], []
-    maintainer = cast(Mapping[str, object], tool).get("agent_maintainer")
-    if not isinstance(maintainer, dict):
+    maintainer = json_object(tool.get("agent_maintainer"))
+    if maintainer is None:
         return [], []
-    maintainer_data = cast(Mapping[str, object], maintainer)
-    if "workspaces" not in maintainer_data:
+    if "workspaces" not in maintainer:
         return [], []
-    workspaces = maintainer_data["workspaces"]
-    if not isinstance(workspaces, dict):
+    workspaces = json_object(maintainer.get("workspaces"))
+    if workspaces is None:
         return [], [_invalid_workspace_issue(filename, "tool.agent_maintainer.workspaces")]
     declarations: list[WorkspaceDeclaration] = []
     issues: list[PackageWorkspaceIssue] = []
-    for name, value in sorted(cast(Mapping[str, object], workspaces).items()):
+    for name, value in sorted(workspaces.items()):
         field = f"tool.agent_maintainer.workspaces.{name}"
-        if not isinstance(value, dict):
+        if json_object(value) is None:
             issues.append(_invalid_workspace_issue(filename, field))
             continue
         declarations.append(WorkspaceDeclaration("agent-maintainer", name, filename, field, ()))
@@ -227,10 +285,17 @@ def _top_level_manager_signal(
 ) -> tuple[PackageManagerSignal | None, PackageWorkspaceIssue | None]:
     field = "packageManager"
     if not isinstance(value, str):
-        return None, _invalid_manager_issue(field, "packageManager must be a string.")
+        return None, _issue(
+            "invalid-package-manager-declaration",
+            PACKAGE_JSON,
+            field,
+            "packageManager must be a string.",
+        )
     name, separator, descriptor = value.partition("@")
     if not separator or not name or not descriptor:
-        return None, _invalid_manager_issue(
+        return None, _issue(
+            "invalid-package-manager-declaration",
+            PACKAGE_JSON,
             field,
             "packageManager must use a non-empty name@descriptor value.",
         )
@@ -241,13 +306,20 @@ def _dev_engines_manager_signal(
     value: object,
 ) -> tuple[PackageManagerSignal | None, PackageWorkspaceIssue | None]:
     field = "devEngines.packageManager"
-    if not isinstance(value, dict):
-        return None, _invalid_manager_issue(field, f"{field} must be an object.")
-    manager = cast(Mapping[str, object], value)
+    manager = json_object(value)
+    if manager is None:
+        return None, _issue(
+            "invalid-package-manager-declaration",
+            PACKAGE_JSON,
+            field,
+            f"{field} must be an object.",
+        )
     name = manager.get("name")
     version = manager.get("version")
     if not isinstance(name, str) or not name or not isinstance(version, str) or not version:
-        return None, _invalid_manager_issue(
+        return None, _issue(
+            "invalid-package-manager-declaration",
+            PACKAGE_JSON,
             field,
             f"{field} requires non-empty string name and version fields.",
         )
@@ -269,7 +341,7 @@ def _recognized_manager_signal(
     if normalized not in SUPPORTED_MANAGERS:
         return None, _issue(
             "unsupported-package-manager",
-            "package.json",
+            PACKAGE_JSON,
             field,
             f"Unsupported package manager declaration: {name}.",
         )
@@ -277,7 +349,7 @@ def _recognized_manager_signal(
         PackageManagerSignal(
             manager=normalized,
             kind=kind,
-            source_path="package.json",
+            source_path=PACKAGE_JSON,
             source_field=field,
             value=value,
         ),
@@ -299,45 +371,16 @@ def _manager_conflict_issues(
     managers = tuple(sorted({signal.manager for signal in signals}))
     if len(managers) <= 1:
         return ()
+    manager_names = ", ".join(managers)
     return (
         _issue(
             "conflicting-package-managers",
             ".",
             "",
-            f"Conflicting package-manager signals: {', '.join(managers)}.",
+            f"Conflicting package-manager signals: {manager_names}.",
         ),
     )
 
 
-def _invalid_manager_issue(field: str, message: str) -> PackageWorkspaceIssue:
-    return _issue("invalid-package-manager-declaration", "package.json", field, message)
-
-
 def _issue(kind: str, path: str, field: str, message: str) -> PackageWorkspaceIssue:
     return PackageWorkspaceIssue(kind, path, field, message)
-
-
-def _signal_key(signal: PackageManagerSignal) -> tuple[str, str, str, str, str]:
-    return (
-        signal.manager,
-        signal.kind,
-        signal.source_path,
-        signal.source_field,
-        signal.value,
-    )
-
-
-def _issue_key(issue: PackageWorkspaceIssue) -> tuple[str, str, str, str]:
-    return (issue.kind, issue.source_path, issue.source_field, issue.message)
-
-
-def _declaration_key(
-    declaration: WorkspaceDeclaration,
-) -> tuple[str, str, str, str, tuple[str, ...]]:
-    return (
-        declaration.kind,
-        declaration.name,
-        declaration.source_path,
-        declaration.source_field,
-        declaration.patterns,
-    )

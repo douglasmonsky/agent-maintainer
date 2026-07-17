@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, cast
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class PackageManagerSignal:
     """One provenance-bearing package-manager observation."""
 
@@ -17,7 +17,7 @@ class PackageManagerSignal:
     value: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class WorkspaceDeclaration:
     """One literal workspace declaration without inferred ownership."""
 
@@ -28,7 +28,7 @@ class WorkspaceDeclaration:
     patterns: tuple[str, ...]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class PackageWorkspaceIssue:
     """One advisory package or workspace evidence issue."""
 
