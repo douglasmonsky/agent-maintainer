@@ -29,6 +29,7 @@ enable_typescript = true
 typescript_lint_command = ["pnpm", "run", "lint"]
 typescript_typecheck_command = ["pnpm", "run", "typecheck"]
 typescript_test_command = ["pnpm", "run", "test"]
+typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]
 ```
 
 For Vite/Vitest projects, prefer repository scripts over inferred commands:
@@ -51,6 +52,7 @@ Profile membership is configurable:
 typescript_lint_profiles = ["precommit", "full", "ci"]
 typescript_typecheck_profiles = ["full", "ci"]
 typescript_test_profiles = ["full", "ci"]
+typescript_knip_profiles = ["full", "ci"]
 ```
 
 Default profiles are:
@@ -60,6 +62,10 @@ Default profiles are:
 | `typescript-lint` | `precommit`, `full`, `ci` |
 | `typescript-typecheck` | `full`, `ci` |
 | `typescript-test` | `full`, `ci` |
+| `typescript-knip` | `full`, `ci` |
+
+`typescript_knip_profiles` defaults to `full` and `ci`. Knip stays out of
+`precommit` by default because it normally analyzes the whole repository.
 
 If `enable_typescript = true` but a command is empty, the corresponding check is
 reported as an optional skip. Agent Maintainer will not guess the package
@@ -85,7 +91,23 @@ configured-command output:
 - `typescript-lint`: ESLint JSON formatter output;
 - `typescript-test`: Jest-compatible JSON output with `testResults` and
   `assertionResults`, Vitest task-style JSON fixtures, Istanbul
-  `coverage-summary.json`, and LCOV `lcov.info` artifacts.
+  `coverage-summary.json`, and LCOV `lcov.info` artifacts;
+- `typescript-knip`: Knip `--reporter json` output for unused files, exports,
+  types, dependencies, binaries, unlisted dependencies, and unresolved imports
+  or binaries.
+
+Knip findings are sorted before Agent Maintainer retains at most 500 normalized
+findings. Compact failed-check summaries contain at most 50 total lines,
+including an omission marker when needed; exact context packs keep their
+existing 20-fact-per-check bound. Line and column values are preserved exactly
+as Knip reports them. Cycles, duplicates, catalogs, enum members, and
+namespace/class member categories are ignored in this phase.
+
+Agent Maintainer honors the configured Knip command's exit status. Exit `0`
+passes, while exits `1` and `2` fail through the normal check runner. It does
+not add `--no-exit-code`, thresholds, reporter flags, or version enforcement.
+Pin Knip through the repository's exact dependency or lockfile and include
+`--reporter json` in the explicit command when structured facts are wanted.
 
 These parsers are repair-loop helpers. They do not require new config fields,
 and malformed output falls back to the normal bounded raw-log summary.
@@ -132,13 +154,15 @@ when they intentionally cover packages you want Agent Maintainer to verify. For
 package-specific checks, add commands under
 `[tool.agent_maintainer.workspaces.<name>]`; Agent Maintainer will run only the
 workspace TypeScript commands you configure and will not infer nested package
-commands.
+commands. Workspace Knip commands use the root `typescript_knip_profiles`
+selection and stable names such as `typescript-knip:web`.
 
 Coverage summaries and LCOV files can improve `typescript-test` repair facts
-when a repository already produces those artifacts, but TypeScript coverage
-enforcement, dependency/security, mutation, and blocking reviewability adapters
-are not implemented yet. The provider should remain experimental until these
-surfaces have fixture and real-repo evidence.
+when a repository already produces those artifacts, and Knip can now improve
+unused-code and dependency repair facts. TypeScript coverage enforcement,
+dependency security/audit, mutation, and blocking reviewability adapters are not
+implemented yet. The provider should remain experimental until these surfaces
+have fixture and real-repo evidence.
 
 ## Limitations
 
@@ -146,8 +170,8 @@ surfaces have fixture and real-repo evidence.
 - No generated starter files yet.
 - No structured parser for arbitrary human-oriented test or coverage
   transcripts.
-- No TypeScript coverage command adapter, mutation, dependency, or security
-  adapter.
+- No TypeScript coverage command adapter, mutation adapter, or dependency
+  security/audit adapter.
 - No public plugin API.
 - No TypeScript reviewability gate is blocking by default.
 

@@ -163,3 +163,4 @@
 | 176 | [Codex Terminal Rewake Hardening](phases/phase-176-codex-terminal-rewake-hardening.md) |
 | 177 | [TypeScript/React Parity Roadmap](phases/phase-177-typescript-react-parity-roadmap.md) |
 | 178 | [Advisory Package-Manager And Workspace Detection](phases/phase-178-advisory-package-manager-workspace-detection.md) |
+| 179 | [TypeScript Knip Unused-Code And Dependency Facts](phases/phase-179-typescript-knip-unused-code-dependency-facts.md) |

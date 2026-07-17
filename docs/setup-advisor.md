@@ -80,6 +80,7 @@ enable_typescript = true
 typescript_lint_command = ["npm", "run", "lint"]
 typescript_typecheck_command = ["npm", "run", "typecheck"]
 typescript_test_command = ["npm", "test"]
+typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]
 
 [tool.agent_maintainer.workspaces.web]
 source_roots = ["packages/web/src"]
@@ -87,6 +88,7 @@ test_roots = ["packages/web/tests"]
 typescript_lint_command = ["pnpm", "--filter", "web", "lint"]
 typescript_typecheck_command = ["pnpm", "--filter", "web", "typecheck"]
 typescript_test_command = ["pnpm", "--filter", "web", "test"]
+typescript_knip_command = ["pnpm", "--filter", "web", "exec", "knip", "--reporter", "json"]
 ```
 
 Common script shapes that should keep explicit command mapping include pnpm
@@ -99,7 +101,8 @@ ownership stays explicit: configure root commands only when they cover intended
 packages, or add package-owned commands under
 `[tool.agent_maintainer.workspaces.<name>]` with
 `typescript_lint_command`, `typescript_typecheck_command`, and
-`typescript_test_command`. Setup advisor still does not infer nested package
+`typescript_test_command`; Knip uses the same explicit ownership model through
+`typescript_knip_command`. Setup advisor still does not infer nested package
 commands or workspace managers.
 
 ### Advisory package-manager and workspace evidence

@@ -17,6 +17,7 @@ TYPESCRIPT_PARITY_PHASE = PHASES_DIR / "phase-177-typescript-react-parity-roadma
 TYPESCRIPT_PACKAGE_WORKSPACE_PHASE = (
     PHASES_DIR / "phase-178-advisory-package-manager-workspace-detection.md"
 )
+TYPESCRIPT_KNIP_PHASE = PHASES_DIR / "phase-179-typescript-knip-unused-code-dependency-facts.md"
 MAX_ACTIVE_ROADMAP_LINES = 180
 MAX_INDEX_OVERHEAD_LINES = 4
 MAX_PHASE_LINES = 500
@@ -106,7 +107,8 @@ def test_typescript_parity_roadmap_keeps_execution_explicit_and_phased() -> None
     for phrase in (
         "focused pull requests to `main`",
         "Phase 178: advisory package-manager and workspace detection is complete.",
-        "Knip unused-code and dependency facts",
+        "Phase 179: Knip unused-code and dependency facts are complete.",
+        "OSV dependency scanning is next.",
         "Repository evidence must never become subprocess arguments.",
         "at least two external real-repository comparisons",
         "TypeScript/React blocking-gate promotion assessment",
@@ -126,6 +128,22 @@ def test_typescript_package_workspace_phase_is_complete_and_advisory() -> None:
     assert "Knip unused-code and dependency facts" in phase
 
 
+def test_typescript_knip_phase_is_complete_and_bounded() -> None:
+    """Phase 179 records explicit commands, parser bounds, and public evidence."""
+
+    phase = TYPESCRIPT_KNIP_PHASE.read_text(encoding="utf-8")
+
+    assert phase.startswith("# Phase 179: TypeScript Knip Unused-Code And Dependency Facts")
+    assert "Status: complete" in phase
+    assert "typescript_knip_command" in phase
+    assert "500 normalized findings" in phase
+    assert "50 total lines" in phase
+    assert "TanStack Query" in phase
+    assert "Astro" in phase
+    assert "TypeScript/JavaScript remains experimental" in phase
+    assert "OSV dependency scanning" in phase
+
+
 def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     """The active tracker does not revive completed strict-typing debt."""
 
@@ -141,6 +159,7 @@ def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     assert "Phase 176: Codex Terminal Rewake Hardening" in text
     assert "Phase 177: TypeScript/React Parity Roadmap" in text
     assert "Phase 178: Advisory Package-Manager And Workspace Detection" in text
+    assert "Phase 179: TypeScript Knip Unused-Code And Dependency Facts" in text
     assert "(roadmap/typescript-react-parity-roadmap.md)" in text
 
 

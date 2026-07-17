@@ -57,7 +57,15 @@ TYPESCRIPT_PROVIDER = ProviderMetadata(
     display_name="TypeScript/JavaScript",
     maturity=ProviderMaturity.EXPERIMENTAL,
     docs_path="docs/typescript-javascript-provider.md",
-    capabilities=("lint", "typecheck", "test", "classification", "repair-facts"),
+    capabilities=(
+        "lint",
+        "typecheck",
+        "test",
+        "classification",
+        "repair-facts",
+        "dead-code",
+        "dependency-hygiene",
+    ),
     enabled_field="enable_typescript",
     command_specs=(
         ProviderCommandSpec("typescript-lint", "typescript_lint_command"),
