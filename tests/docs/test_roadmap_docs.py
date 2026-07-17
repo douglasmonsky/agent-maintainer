@@ -13,9 +13,7 @@ ROADMAP_INDEX = ROADMAP_ROOT / "full-roadmap-blueprint.md"
 ROADMAP_OVERVIEW = ROADMAP_ROOT / "overview.md"
 PHASES_DIR = ROADMAP_ROOT / "phases"
 TYPESCRIPT_PARITY_ROADMAP = ROADMAP_ROOT / "typescript-react-parity-roadmap.md"
-TYPESCRIPT_PARITY_PHASE = (
-    PHASES_DIR / "phase-177-typescript-react-parity-roadmap.md"
-)
+TYPESCRIPT_PARITY_PHASE = PHASES_DIR / "phase-177-typescript-react-parity-roadmap.md"
 MAX_ACTIVE_ROADMAP_LINES = 180
 MAX_INDEX_OVERHEAD_LINES = 4
 MAX_PHASE_LINES = 500
