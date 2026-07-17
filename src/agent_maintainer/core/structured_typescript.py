@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from agent_repair_facts.parsers import typescript_checks, typescript_knip
 from agent_repair_facts.parsers.typescript_coverage import (
     parse_coverage_summary_json,
     parse_lcov_info,
@@ -16,6 +17,7 @@ from agent_repair_facts.parsers.typescript_diagnostics import (
 from agent_repair_facts.parsers.typescript_tests import parse_vitest_json
 
 TYPESCRIPT_DIAGNOSTIC_LIMIT = 50
+KNIP_SUMMARY_LINE_LIMIT = 50
 
 
 def summarize_typescript_lint(raw_output: str) -> str | None:
@@ -38,14 +40,35 @@ def summarize_typescript_test(raw_output: str) -> str | None:
     )
 
 
+def summarize_typescript_knip(raw_output: str) -> str | None:
+    """Return a compact bounded summary for Knip JSON output."""
+
+    parse_result = typescript_knip.parse_knip_json_result(raw_output)
+    findings = parse_result.findings
+    if not findings:
+        return None
+    visible_limit = KNIP_SUMMARY_LINE_LIMIT
+    if len(findings) > KNIP_SUMMARY_LINE_LIMIT:
+        visible_limit -= 1
+    visible = findings[:visible_limit]
+    lines = [typescript_knip.format_knip_finding(finding) for finding in visible]
+    omitted = parse_result.supported_count - len(visible)
+    if omitted:
+        lines.append(f"... {omitted} more Knip findings omitted. See .verify-logs/")
+    return "\n".join(lines)
+
+
 def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:
     """Return compact TypeScript provider summary when output is structured."""
-    if check_name == "typescript-lint":
+    check_family = typescript_checks.check_family(check_name)
+    if check_family == "typescript-lint":
         return summarize_typescript_lint(raw_output)
-    if check_name == "typescript-typecheck":
+    if check_family == "typescript-typecheck":
         return summarize_typescript_typecheck(raw_output)
-    if check_name == "typescript-test":
+    if check_family == "typescript-test":
         return summarize_typescript_test(raw_output)
+    if check_family == "typescript-knip":
+        return summarize_typescript_knip(raw_output)
     return None
 
 

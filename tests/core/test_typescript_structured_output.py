@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from agent_maintainer.core import reporting, structured_typescript
 from agent_maintainer.ecosystems.typescript import diagnostics
 
 APP_PATH = "src/app.ts"
 EXPECTED_VITEST_FAILURES = 2
 EXPECTED_FLOAT_VALUE = 75.5
+KNIP_SUMMARY_LINE_LIMIT = 50
 
 
 # docsync:evidence.start evidence.typescript.structured_output_tests
@@ -46,6 +49,33 @@ def test_typescript_lint_output_summarizes_eslint_json() -> None:
 
     assert summary == f"{APP_PATH}:7:3: error: no-unused-vars: Unused variable"
     assert reporting.summarize_check("typescript-lint", raw_output, 5, 500) == summary
+
+
+def test_typescript_workspace_lint_uses_the_root_structured_summary() -> None:
+    """Workspace suffixes do not disable TypeScript structured parsing."""
+
+    raw_output = json.dumps(
+        [
+            {
+                "filePath": APP_PATH,
+                "messages": [
+                    {
+                        "line": 7,
+                        "column": 3,
+                        "ruleId": "no-unused-vars",
+                        "severity": 2,
+                        "message": "Unused variable",
+                    }
+                ],
+            }
+        ]
+    )
+
+    summary = structured_typescript.summarize_typescript_check(
+        "typescript-lint:web", raw_output
+    )
+
+    assert summary == f"{APP_PATH}:7:3: error: no-unused-vars: Unused variable"
 
 
 def test_typescript_test_output_summarizes_jest_json() -> None:
@@ -145,6 +175,71 @@ def test_typescript_test_output_summarizes_lcov() -> None:
     assert summary == (
         "apps/web/src/App.tsx:8:1: error: typescript-coverage: 2 uncovered line(s) in file."
     )
+
+
+# docsync:evidence.start evidence.typescript.knip_summary_tests
+def test_typescript_knip_output_summarizes_supported_findings() -> None:
+    """Knip JSON output produces deterministic editor-style summaries."""
+
+    raw_output = json.dumps(
+        {
+            "issues": [
+                {
+                    "file": "src/api.ts",
+                    "exports": [{"name": "unusedExport", "line": 8, "col": 3}],
+                    "cycles": [{"name": "ignored"}],
+                },
+                {"file": "src/unused.ts", "files": [{"name": "src/unused.ts"}]},
+            ]
+        }
+    )
+
+    summary = structured_typescript.summarize_typescript_check(
+        "typescript-knip:web", raw_output
+    )
+
+    assert summary == (
+        "src/api.ts:8:3: error: knip-unused-export: Unused export: unusedExport\n"
+        "src/unused.ts: error: knip-unused-file: Unused file: src/unused.ts"
+    )
+    assert reporting.summarize_check("typescript-knip:web", raw_output, 5, 500) == summary
+
+
+def test_typescript_knip_summary_is_bounded_with_omission_marker() -> None:
+    """Knip summaries reserve the fiftieth line for the omission marker."""
+
+    exports = [{"name": f"export-{index:03d}"} for index in range(51)]
+    raw_output = json.dumps({"issues": [{"file": "src/api.ts", "exports": exports}]})
+
+    summary = structured_typescript.summarize_typescript_check("typescript-knip", raw_output)
+
+    assert summary is not None
+    lines = summary.splitlines()
+    assert len(lines) == KNIP_SUMMARY_LINE_LIMIT
+    assert lines[0].endswith("Unused export: export-000")
+    assert lines[-1] == "... 2 more Knip findings omitted. See .verify-logs/"
+
+
+def test_typescript_knip_summary_counts_findings_beyond_the_fact_cap() -> None:
+    """The omission count includes findings dropped by the 500-fact cap."""
+
+    exports = [{"name": f"export-{index:03d}"} for index in range(501)]
+    raw_output = json.dumps({"issues": [{"file": "src/api.ts", "exports": exports}]})
+
+    summary = structured_typescript.summarize_typescript_check("typescript-knip", raw_output)
+
+    assert summary is not None
+    lines = summary.splitlines()
+    assert len(lines) == KNIP_SUMMARY_LINE_LIMIT
+    assert lines[-1] == "... 452 more Knip findings omitted. See .verify-logs/"
+
+
+@pytest.mark.parametrize("raw_output", ["{not-json", "[]", "{}", '{"issues": {}}'])
+def test_typescript_knip_invalid_output_has_no_structured_summary(raw_output: str) -> None:
+    """Invalid Knip output falls back to the normal bounded raw-output path."""
+
+    assert structured_typescript.summarize_typescript_check("typescript-knip", raw_output) is None
+# docsync:evidence.end evidence.typescript.knip_summary_tests
 
 
 def test_vitest_parser_handles_error_fallbacks_and_invalid_payloads() -> None:

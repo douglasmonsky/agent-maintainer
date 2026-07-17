@@ -23,6 +23,8 @@ depends_on = [
   "parsers.pytest",
   "parsers.security",
   "parsers.typescript",
+  "parsers.typescript_checks",
+  "parsers.typescript_knip",
   "payloads",
 ]
 
@@ -87,6 +89,20 @@ depends_on = [
   "parsers.typescript_coverage",
   "parsers.typescript_diagnostics",
   "parsers.typescript_tests",
+  "payloads",
+]
+
+
+[[modules]]
+
+path = "parsers.typescript_checks"
+depends_on = []
+
+
+[[modules]]
+
+path = "parsers.typescript_knip"
+depends_on = [
   "payloads",
 ]
 

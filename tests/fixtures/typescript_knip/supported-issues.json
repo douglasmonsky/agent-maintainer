@@ -1,0 +1,52 @@
+{
+  "issues": [
+    {
+      "file": "src/unused.ts",
+      "files": [
+        {"name": "src/unused.ts"}
+      ]
+    },
+    {
+      "file": "src/api.ts",
+      "exports": [
+        {"name": "unusedExport", "line": 8, "col": 3}
+      ],
+      "nsExports": [
+        {"name": "unusedNamespaceExport", "line": 9, "col": 2}
+      ],
+      "types": [
+        {"name": "UnusedType", "line": 12, "col": 1}
+      ],
+      "nsTypes": [
+        {"name": "UnusedNamespaceType", "line": 13, "col": 4}
+      ],
+      "dependencies": [
+        {"name": "left-pad", "line": 2, "col": 5}
+      ],
+      "devDependencies": [
+        {"name": "vitest"}
+      ],
+      "optionalPeerDependencies": [
+        {"name": "react-dom"}
+      ],
+      "unlisted": [
+        {"specifier": "missing-package", "line": 3, "col": 7}
+      ],
+      "binaries": [
+        {"name": "tsx"}
+      ],
+      "unresolved": [
+        {"specifier": "./missing", "line": 21, "col": 9}
+      ],
+      "cycles": [
+        {"name": "src/a.ts -> src/b.ts"}
+      ],
+      "duplicates": [
+        {"name": "duplicate"}
+      ],
+      "enumMembers": [
+        {"name": "UnusedMember"}
+      ]
+    }
+  ]
+}

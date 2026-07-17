@@ -210,13 +210,14 @@ git commit -m "feat: add explicit TypeScript Knip checks"
 
 ### Step 1: Add authoritative synthetic Knip fixtures
 
-- [ ] Create `supported-issues.json` using Knip's current top-level `issues` object grouped by file. Include one supported item from each family:
+- [ ] Create `supported-issues.json` using Knip's current top-level `issues` array of file groups. Include one supported item from each family:
 
 ```json
 {
-  "issues": {
-    "src/unused.ts": {"files": [{"name": "src/unused.ts"}]},
-    "src/api.ts": {
+  "issues": [
+    {"file": "src/unused.ts", "files": [{"name": "src/unused.ts"}]},
+    {
+      "file": "src/api.ts",
       "exports": [{"name": "unusedExport", "line": 8, "col": 3}],
       "types": [{"name": "UnusedType", "line": 12, "col": 1}],
       "dependencies": [{"name": "left-pad", "line": 2, "col": 5}],
@@ -229,7 +230,7 @@ git commit -m "feat: add explicit TypeScript Knip checks"
       "duplicates": [{"name": "duplicate"}],
       "enumMembers": [{"name": "UnusedMember"}]
     }
-  }
+  ]
 }
 ```
 
@@ -261,7 +262,7 @@ assert [fact["symbol"] for fact in facts] == [
 - [ ] Assert deterministic ordering by `(path, category, name, line-or--1, column-or--1)` rather than fixture insertion order.
 - [ ] Assert every payload has the original check name, normalized path, preserved line/column, stable symbol, concise message, and severity `error`.
 - [ ] Assert ignored categories emit no facts.
-- [ ] Assert malformed JSON, non-object JSON, missing `issues`, non-object `issues`, malformed file groups, and malformed issue entries return `[]`.
+- [ ] Assert malformed JSON, non-object JSON, missing `issues`, non-array `issues`, malformed file groups, and malformed issue entries return `[]`.
 - [ ] Generate 501 supported findings in memory and assert the sorted result is truncated to exactly 500.
 - [ ] Run:
 
@@ -381,7 +382,7 @@ Expected: PASS.
   - malformed JSON fallback;
   - a 51-finding payload truncated to 50 lines;
   - existing workspace lint/typecheck/test summaries now recognized.
-- [ ] Assert the first line records total supported findings and retained display count, followed by no more than 50 editor-style fact lines.
+- [ ] Assert the summary contains at most 50 total lines and reserves the final line for an omission marker when more than 50 findings are retained.
 - [ ] Run:
 
 ```bash
@@ -394,7 +395,7 @@ Expected: FAIL because `summarize_typescript_check` does not recognize Knip or s
 
 - [ ] In `structured_typescript.py`, normalize the check with `typescript.check_family(check_name)`.
 - [ ] Reuse `parse_knip_json` and its normalized findings rather than reparsing Knip independently.
-- [ ] For Knip, return `None` for invalid/unavailable payloads; otherwise return one count line and at most 50 formatted finding lines. Keep the summary under the existing reporting contract and preserve original locations.
+- [ ] For Knip, return `None` for invalid/unavailable payloads; otherwise return at most 50 total lines, using the final line as an omission marker when necessary. Keep the summary under the existing reporting contract and preserve original locations.
 - [ ] Add the precise core-to-parser Tach dependency and an architecture decision note in Task 3 if the domain policy requires one.
 - [ ] Run:
 
@@ -476,7 +477,7 @@ pnpm exec knip --reporter json
   - repository URL and exact commit;
   - package manager and runtime versions;
   - exact Knip command and process exit code;
-  - stdout JSON or `{ "issues": {} }` when the successful tool emits no JSON;
+  - stdout JSON or `{ "issues": [] }` when the successful tool emits no JSON;
   - supported and retained normalized counts;
   - SHA-256 of the Knip config and lockfile used.
 - [ ] Do not commit clones, dependency trees, caches, absolute temporary paths, or environment values.
