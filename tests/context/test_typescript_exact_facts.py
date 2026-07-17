@@ -9,6 +9,8 @@ from agent_context.failures import FailureRecord
 from agent_maintainer.context.pack import exact_facts
 
 APP_PATH = "src/app.ts"
+EXPECTED_CONTEXT_FACTS = 5
+INPUT_KNIP_FACTS = 7
 
 
 # docsync:evidence.start evidence.typescript.repair_fact_tests
@@ -275,6 +277,37 @@ def test_typescript_malformed_logs_fall_back_to_generic_fact(tmp_path: Path) -> 
             "message": "typescript-lint failed with exit code 1",
             "severity": "error",
         },
+    ]
+
+
+def test_typescript_knip_context_uses_existing_five_fact_limit(tmp_path: Path) -> None:
+    """Knip facts retain the context pack's existing per-check bound."""
+
+    log_path = tmp_path / "typescript-knip.log"
+    log_path.write_text(
+        json.dumps(
+            {
+                "issues": [
+                    {
+                        "file": "src/api.ts",
+                        "exports": [
+                            {"name": f"export-{index}"} for index in range(INPUT_KNIP_FACTS)
+                        ],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    facts = exact_facts.repair_facts(
+        tmp_path,
+        (record("typescript-knip", log_path),),
+    )
+
+    assert len(facts) == EXPECTED_CONTEXT_FACTS
+    assert [fact["message"] for fact in facts] == [
+        f"Unused export: export-{index}" for index in range(EXPECTED_CONTEXT_FACTS)
     ]
 
 

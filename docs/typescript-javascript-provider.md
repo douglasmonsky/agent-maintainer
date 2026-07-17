@@ -99,9 +99,12 @@ configured-command output:
 Knip findings are sorted before Agent Maintainer retains at most 500 normalized
 findings. Compact failed-check summaries contain at most 50 total lines,
 including an omission marker when needed; exact context packs keep their
-existing 20-fact-per-check bound. Line and column values are preserved exactly
+existing 5-fact-per-check bound. Line and column values are preserved exactly
 as Knip reports them. Cycles, duplicates, catalogs, enum members, and
 namespace/class member categories are ignored in this phase.
+
+Only repository-relative paths are emitted. Absolute and parent-traversal paths
+are rejected so local machine paths cannot enter summaries or repair context.
 
 Agent Maintainer honors the configured Knip command's exit status. Exit `0`
 passes, while exits `1` and `2` fail through the normal check runner. It does

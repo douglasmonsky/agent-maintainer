@@ -124,6 +124,8 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "Agent Maintainer honors the configured Knip command's exit status",
             "at most 500 normalized findings",
             "at most 50 total lines",
+            "existing 5-fact-per-check bound",
+            "Absolute and parent-traversal paths are rejected",
             "Configure root TypeScript commands only when they intentionally "
             "cover packages you want Agent Maintainer to verify.",
             "Agent Maintainer will run only the workspace TypeScript commands "

@@ -14,8 +14,8 @@ from agent_repair_facts.parsers import (
     security,
     typescript,
     typescript_checks,
-    typescript_knip,
 )
+from agent_repair_facts.parsers.typescript_knip import knip_facts
 from agent_repair_facts.payloads import FactSource, MemoryFactSource
 
 FactParser = Callable[[FactSource, str], list[dict[str, object]]]
@@ -42,7 +42,7 @@ LOG_FACT_PARSERS: tuple[FactParserEntry, ...] = (
     ("typescript-lint", typescript.typescript_lint_facts),
     ("typescript-typecheck", typescript.typescript_typecheck_facts),
     ("typescript-test", typescript.typescript_test_facts),
-    ("typescript-knip", typescript_knip.knip_facts),
+    ("typescript-knip", knip_facts),
     ("vulture", logs.vulture_facts),
     ("wemake", logs.wemake_facts),
     ("xenon-complexity-gate", logs.xenon_complexity_facts),

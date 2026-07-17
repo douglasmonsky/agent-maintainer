@@ -12,6 +12,7 @@ from agent_repair_facts import registry
 FIXTURE_ROOT = Path(__file__).parents[1] / "fixtures" / "typescript_knip"
 EXPECTED_SUPPORTED_FINDINGS = 11
 KNIP_FACT_LIMIT = 500
+FALLBACK_COLUMN = 7
 
 
 def log_facts(check: str, raw_output: str) -> list[dict[str, object]]:
@@ -75,14 +76,33 @@ def test_knip_supported_categories_emit_deterministic_facts() -> None:
 def test_knip_workspace_check_preserves_full_check_name() -> None:
     """Workspace Knip facts keep the stable suffixed check name."""
 
-    raw_output = json.dumps(
-        {"issues": [{"file": "apps/web/src/a.ts", "exports": [{"name": "a"}]}]}
-    )
+    raw_output = json.dumps({"issues": [{"file": "apps/web/src/a.ts", "exports": [{"name": "a"}]}]})
 
     facts = log_facts("typescript-knip:web", raw_output)
 
     assert facts[0]["check"] == "typescript-knip:web"
     assert facts[0]["path"] == "apps/web/src/a.ts"
+
+
+def test_knip_top_level_files_emit_unused_file_facts() -> None:
+    """Current Knip top-level file entries produce unused-file facts."""
+
+    facts = log_facts(
+        "typescript-knip",
+        json.dumps({"files": ["src/dead.ts"], "issues": []}),
+    )
+
+    assert facts == [
+        {
+            "check": "typescript-knip",
+            "path": "src/dead.ts",
+            "line": None,
+            "column": None,
+            "symbol": "knip-unused-file",
+            "message": "Unused file: src/dead.ts",
+            "severity": "error",
+        }
+    ]
 
 
 @pytest.mark.parametrize(
@@ -120,6 +140,47 @@ def test_knip_malformed_items_do_not_hide_valid_neighbors() -> None:
     assert len(facts) == 1
     assert facts[0]["message"] == "Unused export: valid"
     assert facts[0]["line"] is None
+
+
+def test_knip_rejects_non_repository_paths_without_hiding_valid_groups() -> None:
+    """Absolute and parent-traversal paths cannot enter repair context."""
+
+    raw_output = json.dumps(
+        {
+            "files": ["/Users/alice/private.ts", "../../private.ts", "src/dead.ts"],
+            "issues": [
+                {"file": "/Users/alice/private.ts", "exports": [{"name": "private"}]},
+                {"file": "../../private.ts", "exports": [{"name": "traversal"}]},
+                {"file": "src/api.ts", "exports": [{"name": "valid"}]},
+            ],
+        }
+    )
+
+    facts = log_facts("typescript-knip", raw_output)
+
+    assert [(fact["path"], fact["message"]) for fact in facts] == [
+        ("src/api.ts", "Unused export: valid"),
+        ("src/dead.ts", "Unused file: src/dead.ts"),
+    ]
+
+
+def test_knip_invalid_col_uses_valid_column_fallback() -> None:
+    """Malformed current location fields do not hide compatible locations."""
+
+    raw_output = json.dumps(
+        {
+            "issues": [
+                {
+                    "file": "src/api.ts",
+                    "exports": [{"name": "valid", "col": "bad", "column": FALLBACK_COLUMN}],
+                }
+            ]
+        }
+    )
+
+    facts = log_facts("typescript-knip", raw_output)
+
+    assert facts[0]["column"] == FALLBACK_COLUMN
 
 
 def test_knip_facts_sort_before_the_retention_limit() -> None:
@@ -202,4 +263,6 @@ def test_check_family_normalization_does_not_broaden_other_checks() -> None:
     """Only known TypeScript check families accept workspace suffixes."""
 
     assert log_facts("ruff:web", "[]") == []
+
+
 # docsync:evidence.end evidence.typescript.knip_fact_tests

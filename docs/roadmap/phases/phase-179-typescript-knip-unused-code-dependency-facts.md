@@ -20,7 +20,7 @@ the provider.
   test, and Knip facts.
 - Deterministic sorting before retaining at most 500 normalized findings.
 - Compact summaries bounded to 50 total lines and exact context packs retaining
-  their existing 20-fact-per-check limit.
+  their existing 5-fact-per-check limit.
 
 ## Command And Error Boundary
 
@@ -30,6 +30,8 @@ the provider.
   exits `1` and `2` fail normally.
 - Malformed JSON or unsupported shapes produce no structured facts; the normal
   bounded raw log remains authoritative.
+- Absolute and parent-traversal paths are rejected; only normalized
+  repository-relative paths can enter repair context.
 - No Agent Maintainer thresholds, `--no-exit-code`, autofix, or Knip version
   enforcement are added.
 

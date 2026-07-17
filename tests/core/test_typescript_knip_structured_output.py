@@ -17,20 +17,18 @@ def test_typescript_knip_output_summarizes_supported_findings() -> None:
 
     raw_output = json.dumps(
         {
+            "files": ["src/unused.ts"],
             "issues": [
                 {
                     "file": "src/api.ts",
                     "exports": [{"name": "unusedExport", "line": 8, "col": 3}],
                     "cycles": [{"name": "ignored"}],
                 },
-                {"file": "src/unused.ts", "files": [{"name": "src/unused.ts"}]},
-            ]
+            ],
         }
     )
 
-    summary = structured_typescript.summarize_typescript_check(
-        "typescript-knip:web", raw_output
-    )
+    summary = structured_typescript.summarize_typescript_check("typescript-knip:web", raw_output)
 
     assert summary == (
         "src/api.ts:8:3: error: knip-unused-export: Unused export: unusedExport\n"
@@ -73,4 +71,6 @@ def test_typescript_knip_invalid_output_has_no_structured_summary(raw_output: st
     """Invalid Knip output falls back to the normal bounded raw-output path."""
 
     assert structured_typescript.summarize_typescript_check("typescript-knip", raw_output) is None
+
+
 # docsync:evidence.end evidence.typescript.knip_summary_tests

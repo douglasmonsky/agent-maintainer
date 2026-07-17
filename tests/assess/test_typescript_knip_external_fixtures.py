@@ -69,4 +69,6 @@ def test_public_knip_fixtures_contain_no_temporary_paths() -> None:
         serialized = json.dumps(load_fixture(name), sort_keys=True)
         assert "/private/tmp/" not in serialized
         assert "/Users/" not in serialized
+
+
 # docsync:evidence.end evidence.typescript.knip_external_fixtures

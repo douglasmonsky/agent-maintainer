@@ -17,7 +17,7 @@
 - Support only unused files, exports, types, dependencies, binaries, unlisted dependencies, and unresolved imports.
 - Keep cycles, duplicates, catalogs, enum members, namespace/class members, and other categories out of scope.
 - Sort normalized findings before retaining at most 500 facts.
-- Emit at most 50 Knip lines in the compact report; the context pack's existing 20-fact bound remains unchanged.
+- Emit at most 50 Knip lines in the compact report; the context pack's existing 5-fact bound remains unchanged.
 - Preserve Knip line and column values exactly as reported.
 - Treat malformed, non-object, or unsupported JSON as zero exact facts and an unavailable structured summary, never as a parser exception.
 - Keep TypeScript experimental in every public document.
@@ -214,8 +214,8 @@ git commit -m "feat: add explicit TypeScript Knip checks"
 
 ```json
 {
+  "files": ["src/unused.ts"],
   "issues": [
-    {"file": "src/unused.ts", "files": [{"name": "src/unused.ts"}]},
     {
       "file": "src/api.ts",
       "exports": [{"name": "unusedExport", "line": 8, "col": 3}],
@@ -262,6 +262,7 @@ assert [fact["symbol"] for fact in facts] == [
 - [ ] Assert deterministic ordering by `(path, category, name, line-or--1, column-or--1)` rather than fixture insertion order.
 - [ ] Assert every payload has the original check name, normalized path, preserved line/column, stable symbol, concise message, and severity `error`.
 - [ ] Assert ignored categories emit no facts.
+- [ ] Assert absolute and parent-traversal paths are rejected while valid neighboring paths remain available.
 - [ ] Assert malformed JSON, non-object JSON, missing `issues`, non-array `issues`, malformed file groups, and malformed issue entries return `[]`.
 - [ ] Generate 501 supported findings in memory and assert the sorted result is truncated to exactly 500.
 - [ ] Run:

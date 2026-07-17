@@ -1,11 +1,8 @@
 {
+  "files": [
+    "src/unused.ts"
+  ],
   "issues": [
-    {
-      "file": "src/unused.ts",
-      "files": [
-        {"name": "src/unused.ts"}
-      ]
-    },
     {
       "file": "src/api.ts",
       "exports": [

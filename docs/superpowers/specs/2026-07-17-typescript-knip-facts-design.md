@@ -108,16 +108,18 @@ retained as raw check output.
 
 ## JSON Input Contract
 
-The parser accepts a JSON object with an `issues` array. Each issue group must
-have a string `file` and may contain arrays for recognized categories. Current
-Knip records may include `name`, `namespace`, `kind`, `specifier`, `line`,
-`col`, and `pos`; only validated fields are consumed.
+The parser accepts a JSON object with an `issues` array and an optional
+top-level `files` array of unused-file paths. Each issue group must have a
+string `file` and may contain arrays for recognized categories. Current Knip
+records may include `name`, `namespace`, `kind`, `specifier`, `line`, `col`,
+and `pos`; only validated fields are consumed. Absolute paths and paths with
+parent traversal are rejected so facts remain repository-relative.
 
 Phase 179 recognizes:
 
 | Knip category | Normalized fact |
 |---|---|
-| `files` | unused file |
+| top-level `files` | unused file |
 | `exports`, `nsExports` | unused export |
 | `types`, `nsTypes` | unused type |
 | `dependencies`, `devDependencies`, `optionalPeerDependencies` | unused dependency |
@@ -144,7 +146,7 @@ summary or facts; the raw log and command result remain authoritative.
 Valid findings are sorted by path, category, name, line, and column, then capped
 at 500 normalized findings from one payload. Compact failed-check output shows
 at most 50 lines and reports the omitted count. Exact context packs retain the
-existing maximum of 20 facts per check.
+existing maximum of 5 facts per check.
 
 These limits bound context and rendering work after JSON decoding. Existing
 verifier log-size and exact-fact read budgets remain the outer input boundary.

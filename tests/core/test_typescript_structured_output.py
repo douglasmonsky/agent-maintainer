@@ -68,9 +68,7 @@ def test_typescript_workspace_lint_uses_the_root_structured_summary() -> None:
         ]
     )
 
-    summary = structured_typescript.summarize_typescript_check(
-        "typescript-lint:web", raw_output
-    )
+    summary = structured_typescript.summarize_typescript_check("typescript-lint:web", raw_output)
 
     assert summary == f"{APP_PATH}:7:3: error: no-unused-vars: Unused variable"
 
