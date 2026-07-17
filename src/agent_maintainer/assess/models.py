@@ -2,8 +2,51 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Any, cast
+
+
+@dataclass(frozen=True)
+class PackageManagerSignal:
+    """One provenance-bearing package-manager observation."""
+
+    manager: str
+    kind: str
+    source_path: str
+    source_field: str
+    value: str
+
+
+@dataclass(frozen=True)
+class WorkspaceDeclaration:
+    """One literal workspace declaration without inferred ownership."""
+
+    kind: str
+    name: str
+    source_path: str
+    source_field: str
+    patterns: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PackageWorkspaceIssue:
+    """One advisory package or workspace evidence issue."""
+
+    kind: str
+    source_path: str
+    source_field: str
+    message: str
+
+
+@dataclass(frozen=True)
+class PackageWorkspaceEvidence:
+    """Advisory root package-manager and workspace evidence."""
+
+    manager_signals: tuple[PackageManagerSignal, ...] = ()
+    workspace_declarations: tuple[WorkspaceDeclaration, ...] = ()
+    issues: tuple[PackageWorkspaceIssue, ...] = ()
+    unambiguous_manager: str = ""
+    ambiguous: bool = False
 
 
 @dataclass(frozen=True)
@@ -45,6 +88,9 @@ class RepoEvidence:
     java_source_files: int = 0
     java_test_files: int = 0
     java_module_paths: tuple[str, ...] = ()
+    package_workspace: PackageWorkspaceEvidence = field(
+        default_factory=PackageWorkspaceEvidence,
+    )
 
 
 @dataclass(frozen=True)

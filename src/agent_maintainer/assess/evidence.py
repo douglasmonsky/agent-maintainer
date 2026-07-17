@@ -13,6 +13,9 @@ from pathlib import Path, PurePath
 from typing import cast
 
 from agent_maintainer.assess.models import RepoEvidence
+from agent_maintainer.assess.package_workspace_evidence import (
+    collect_package_workspace_evidence,
+)
 from agent_maintainer.core.structured_values import json_object
 
 DEFAULT_MAX_EVIDENCE_FILES = 5_000
@@ -54,6 +57,7 @@ def collect_evidence(
 ) -> RepoEvidence:
     """Collect cheap bounded repository evidence."""
     root = target.resolve()
+    package_workspace = collect_package_workspace_evidence(root)
     scan = _scan_files(root, max_files=max_files)
     paths = scan.paths
     python_files, source_files, test_files = _python_file_groups(root, paths)
@@ -112,6 +116,7 @@ def collect_evidence(
         java_source_files=len(java_source_files),
         java_test_files=len(java_test_files),
         java_module_paths=_java_module_paths(java_source_files, java_test_files),
+        package_workspace=package_workspace,
     )
 
 
