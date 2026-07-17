@@ -207,8 +207,9 @@ def _literal_patterns(
 ) -> tuple[tuple[str, ...] | None, list[PackageWorkspaceIssue]]:
     if not isinstance(value, list):
         return None, [_invalid_workspace_issue(path, field)]
-    patterns = tuple(sorted(item for item in value if isinstance(item, str)))
-    issues = [] if len(patterns) == len(value) else [_invalid_workspace_issue(path, field)]
+    items = cast(list[object], value)
+    patterns = tuple(sorted(item for item in items if isinstance(item, str)))
+    issues = [] if len(patterns) == len(items) else [_invalid_workspace_issue(path, field)]
     return patterns, issues
 
 

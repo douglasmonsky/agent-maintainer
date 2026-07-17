@@ -128,8 +128,11 @@ source_roots = ["apps/api/src"]
     assert evidence.workspace_declarations[3].patterns == ("packages/*", "tools/*")
 
 
-def test_keeps_valid_patterns_and_reports_invalid_entries(tmp_path: Path) -> None:
-    write_json(tmp_path / "package.json", {"workspaces": ["apps/*", 7]})
+def test_keeps_typed_string_patterns_and_reports_invalid_entries(tmp_path: Path) -> None:
+    write_json(
+        tmp_path / "package.json",
+        {"workspaces": ["apps/*", 7, None, {"unexpected": "value"}]},
+    )
     (tmp_path / "pnpm-workspace.yaml").write_text(
         "packages:\n  - packages/*\n  - false\n",
         encoding=TEXT_ENCODING,
@@ -141,6 +144,11 @@ def test_keeps_valid_patterns_and_reports_invalid_entries(tmp_path: Path) -> Non
         ("apps/*",),
         ("packages/*",),
     ]
+    assert all(
+        isinstance(pattern, str)
+        for declaration in evidence.workspace_declarations
+        for pattern in declaration.patterns
+    )
     assert [issue.kind for issue in evidence.issues] == [
         "invalid-workspace-declaration",
         "invalid-workspace-declaration",
