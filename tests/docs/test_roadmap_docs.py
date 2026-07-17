@@ -12,6 +12,8 @@ ROADMAP_ARCHIVE = ROADMAP_ROOT / "archive"
 ROADMAP_INDEX = ROADMAP_ROOT / "full-roadmap-blueprint.md"
 ROADMAP_OVERVIEW = ROADMAP_ROOT / "overview.md"
 PHASES_DIR = ROADMAP_ROOT / "phases"
+TYPESCRIPT_PARITY_ROADMAP = ROADMAP_ROOT / "typescript-react-parity-roadmap.md"
+TYPESCRIPT_PARITY_PHASE = PHASES_DIR / "phase-177-typescript-react-parity-roadmap.md"
 MAX_ACTIVE_ROADMAP_LINES = 180
 MAX_INDEX_OVERHEAD_LINES = 4
 MAX_PHASE_LINES = 500
@@ -91,6 +93,26 @@ def test_roadmap_overview_describes_current_state() -> None:
     assert "Master implementation blueprint" not in normalized_text
 
 
+def test_typescript_parity_roadmap_keeps_execution_explicit_and_phased() -> None:
+    """Parity planning stays advisory, evidence-backed, and independently merged."""
+
+    roadmap = TYPESCRIPT_PARITY_ROADMAP.read_text(encoding="utf-8")
+    phase = TYPESCRIPT_PARITY_PHASE.read_text(encoding="utf-8")
+    normalized_roadmap = " ".join(roadmap.split())
+
+    for phrase in (
+        "focused pull requests to `main`",
+        "Phase 178: advisory package-manager and workspace detection.",
+        "Repository evidence must never become subprocess arguments.",
+        "at least two external real-repository comparisons",
+        "TypeScript/React blocking-gate promotion assessment",
+    ):
+        assert phrase in normalized_roadmap
+    assert phase.startswith("# Phase 177: TypeScript/React Parity Roadmap")
+    assert "Status: complete" in phase
+    assert "No provider runtime behavior changes." in phase
+
+
 def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     """The active tracker does not revive completed strict-typing debt."""
 
@@ -103,6 +125,10 @@ def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     assert "[x] Publish exact-installed-version expectations" in text
     assert "[x] Guarantee changed, failed, exact-fact" in text
     assert "[x] Validate attention schema version" in text
+    assert "Phase 176: Codex Terminal Rewake Hardening" in text
+    assert "Phase 177: TypeScript/React Parity Roadmap" in text
+    assert "Phase 178: Advisory Package-Manager And Workspace Detection" in text
+    assert "(roadmap/typescript-react-parity-roadmap.md)" in text
 
 
 def test_phase_specs_are_split_and_bounded() -> None:
