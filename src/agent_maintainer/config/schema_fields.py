@@ -28,6 +28,8 @@ TUPLE_FIELDS = frozenset(
         "typescript_typecheck_profiles",
         "typescript_test_command",
         "typescript_test_profiles",
+        "typescript_knip_command",
+        "typescript_knip_profiles",
         "sbom_args",
         "sbom_profiles",
         "license_check_args",

@@ -24,6 +24,14 @@ def test_pyproject_loads_typescript_provider_config() -> None:
             "typescript_typecheck_profiles": ["full"],
             "typescript_test_command": ["npm", "test"],
             "typescript_test_profiles": ["manual"],
+            "typescript_knip_command": [
+                "pnpm",
+                "exec",
+                "knip",
+                "--reporter",
+                "json",
+            ],
+            "typescript_knip_profiles": ["full", "ci"],
         },
     )
 
@@ -34,6 +42,14 @@ def test_pyproject_loads_typescript_provider_config() -> None:
     assert loaded.typescript_typecheck_profiles == ("full",)
     assert loaded.typescript_test_command == ("npm", "test")
     assert loaded.typescript_test_profiles == ("manual",)
+    assert loaded.typescript_knip_command == (
+        "pnpm",
+        "exec",
+        "knip",
+        "--reporter",
+        "json",
+    )
+    assert loaded.typescript_knip_profiles == ("full", "ci")
 
 
 def test_env_overrides_typescript_provider_config(
@@ -59,6 +75,11 @@ def test_env_overrides_typescript_provider_config(
     )
     monkeypatch.setenv("AGENT_MAINTAINER_TYPESCRIPT_TEST_COMMAND", "pnpm,test")
     monkeypatch.setenv("AGENT_MAINTAINER_TYPESCRIPT_TEST_PROFILES", "manual")
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_KNIP_COMMAND",
+        "pnpm,exec,knip,--reporter,json",
+    )
+    monkeypatch.setenv("AGENT_MAINTAINER_TYPESCRIPT_KNIP_PROFILES", "full,ci")
 
     loaded = loader.apply_env(MaintainerConfig())
 
@@ -69,6 +90,23 @@ def test_env_overrides_typescript_provider_config(
     assert loaded.typescript_typecheck_profiles == ("full", "ci")
     assert loaded.typescript_test_command == ("pnpm", "test")
     assert loaded.typescript_test_profiles == ("manual",)
+    assert loaded.typescript_knip_command == (
+        "pnpm",
+        "exec",
+        "knip",
+        "--reporter",
+        "json",
+    )
+    assert loaded.typescript_knip_profiles == ("full", "ci")
+
+
+def test_typescript_knip_defaults_to_full_and_ci_profiles() -> None:
+    """Knip stays out of the fast and precommit profiles by default."""
+
+    loaded = MaintainerConfig()
+
+    assert loaded.typescript_knip_command == ()
+    assert loaded.typescript_knip_profiles == ("full", "ci")
 
 
 # docsync:evidence.start evidence.typescript.advisory_threshold_config_tests

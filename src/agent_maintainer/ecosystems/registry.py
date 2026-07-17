@@ -63,6 +63,7 @@ TYPESCRIPT_PROVIDER = ProviderMetadata(
         ProviderCommandSpec("typescript-lint", "typescript_lint_command"),
         ProviderCommandSpec("typescript-typecheck", "typescript_typecheck_command"),
         ProviderCommandSpec("typescript-test", "typescript_test_command"),
+        ProviderCommandSpec("typescript-knip", "typescript_knip_command"),
     ),
 )
 

@@ -55,6 +55,7 @@ def test_configured_provider_command_fields() -> None:
         "typescript_lint_command",
         "typescript_typecheck_command",
         "typescript_test_command",
+        "typescript_knip_command",
     ]
 
 
