@@ -15,3 +15,33 @@ ignoreUntil = 2026-07-28
 id = "GHSA-47fr-3ffg-hgmw"
 reason = "DR-005-click-command-injection: alias of PYSEC-2026-2132 under the same time-bounded Semgrep constraint."
 ignoreUntil = 2026-07-28
+
+[[IgnoredVulns]]
+id = "CVE-2026-52869"
+reason = "DR-006-semgrep-mcp-vulnerabilities: Semgrep 1.170.0 pins MCP 1.23.3; Agent Maintainer does not expose MCP server transports."
+ignoreUntil = 2026-07-31
+
+[[IgnoredVulns]]
+id = "GHSA-jpw9-pfvf-9f58"
+reason = "DR-006-semgrep-mcp-vulnerabilities: alias of CVE-2026-52869 under the same time-bounded Semgrep constraint."
+ignoreUntil = 2026-07-31
+
+[[IgnoredVulns]]
+id = "CVE-2026-52870"
+reason = "DR-006-semgrep-mcp-vulnerabilities: Semgrep 1.170.0 pins MCP 1.23.3; Agent Maintainer does not enable experimental MCP tasks."
+ignoreUntil = 2026-07-31
+
+[[IgnoredVulns]]
+id = "GHSA-hvrp-rf83-w775"
+reason = "DR-006-semgrep-mcp-vulnerabilities: alias of CVE-2026-52870 under the same time-bounded Semgrep constraint."
+ignoreUntil = 2026-07-31
+
+[[IgnoredVulns]]
+id = "CVE-2026-59950"
+reason = "DR-006-semgrep-mcp-vulnerabilities: Semgrep 1.170.0 pins MCP 1.23.3; Agent Maintainer does not expose the deprecated MCP WebSocket transport."
+ignoreUntil = 2026-07-31
+
+[[IgnoredVulns]]
+id = "GHSA-vj7q-gjh5-988w"
+reason = "DR-006-semgrep-mcp-vulnerabilities: alias of CVE-2026-59950 under the same time-bounded Semgrep constraint."
+ignoreUntil = 2026-07-31

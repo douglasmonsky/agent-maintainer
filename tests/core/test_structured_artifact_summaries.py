@@ -61,6 +61,42 @@ def test_structured_artifact_summary_handles_pytest_coverage(tmp_path: Path) -> 
     assert "src/example.py: 50%, 2 missing (3, 4)" in summary
 
 
+def test_structured_artifact_summary_handles_java_reports(tmp_path: Path) -> None:
+    """Java artifacts summarize debt and test totals without raw XML."""
+    artifact = tmp_path / "java-gradle-static.json"
+    artifact.write_text(
+        json.dumps(
+            {
+                "provider": "java-gradle",
+                "reports": {
+                    "finding_count": 3,
+                    "baseline": {
+                        "new_occurrences": 1,
+                        "metric_regressions": [{"current": 12, "ceiling": 10}],
+                    },
+                    "tests": {
+                        "tests": 5,
+                        "failures": 1,
+                        "errors": 0,
+                        "skipped": 2,
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    summary = maintainer_reporting.structured_artifact_summary(
+        "java-gradle-static",
+        (str(artifact),),
+    )
+
+    assert summary == (
+        "java findings: 3 reported, 1 new, 1 metric regressions\n"
+        "java tests: 5 run, 1 failures, 0 errors, 2 skipped"
+    )
+
+
 def test_structured_artifact_summary_handles_security_json_artifacts(
     tmp_path: Path,
 ) -> None:

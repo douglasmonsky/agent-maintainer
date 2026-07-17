@@ -8,9 +8,10 @@ import tomllib
 from tests.support.paths import REPO_ROOT
 
 DEEP_VERIFY_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "deep-verify.yml"
+JAVA_LIVE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "java-gradle-live.yml"
 VERIFY_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "verify.yml"
 PUBLISH_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "publish.yml"
-WORKFLOWS = (VERIFY_WORKFLOW, DEEP_VERIFY_WORKFLOW, PUBLISH_WORKFLOW)
+WORKFLOWS = (VERIFY_WORKFLOW, DEEP_VERIFY_WORKFLOW, JAVA_LIVE_WORKFLOW, PUBLISH_WORKFLOW)
 CACHEABLE_WORKFLOWS = (VERIFY_WORKFLOW, DEEP_VERIFY_WORKFLOW)
 INSTALL_TOOLS_ACTION = (
     REPO_ROOT / ".github" / "actions" / "install-agent-maintainer-tools" / "action.yml"
@@ -25,7 +26,9 @@ ACTION_PINS = {
     "actions/download-artifact": ("3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c", "v8"),
     "actions/setup-python": ("ece7cb06caefa5fff74198d8649806c4678c61a1", "v6.3.0"),
     "actions/setup-node": ("48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", "v6.4.0"),
+    "actions/setup-java": ("0f481fcb613427c0f801b606911222b5b6f3083a", "v5.5.0"),
     "actions/upload-artifact": ("043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", "v7"),
+    "gradle/actions/setup-gradle": ("3f131e8634966bd73d06cc69884922b02e6faf92", "v6.2.0"),
     "pypa/gh-action-pypi-publish": (
         "cef221092ed1bacb1cc03d23a2d87d1d172e277b",
         "release/v1",
@@ -40,9 +43,17 @@ def test_verify_workflow_declares_read_only_contents_permission() -> None:
 
 
 def test_checkout_does_not_persist_credentials() -> None:
-    workflow = VERIFY_WORKFLOW.read_text(encoding="utf-8")
+    for workflow_path in WORKFLOWS:
+        workflow = workflow_path.read_text(encoding="utf-8")
+        assert "persist-credentials: false" in workflow
 
-    assert "persist-credentials: false" in workflow
+
+def test_live_java_workflow_is_read_only_and_uses_validated_basic_gradle_cache() -> None:
+    workflow = JAVA_LIVE_WORKFLOW.read_text(encoding="utf-8")
+
+    assert "\npermissions:\n  contents: read\n" in workflow
+    assert "cache-provider: basic" in workflow
+    assert "validate-wrappers: true" in workflow
 
 
 def test_verify_workflow_disables_python_bytecode_writes() -> None:

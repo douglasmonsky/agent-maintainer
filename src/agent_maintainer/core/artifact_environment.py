@@ -35,3 +35,20 @@ def restore_environment_value(name: str, value: str | None) -> None:
         os.environ.pop(name, None)
         return
     os.environ[name] = value
+
+
+VERIFY_PROFILE_ENV = "_AGENT_MAINTAINER_VERIFY_PROFILE"
+
+
+@contextlib.contextmanager
+def verification_profile_environment(profile: str) -> Generator[None, None, None]:
+    """Expose the selected verifier profile to command-only provider runners."""
+    previous = os.environ.get(VERIFY_PROFILE_ENV)
+    os.environ[VERIFY_PROFILE_ENV] = profile
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop(VERIFY_PROFILE_ENV, None)
+        else:
+            os.environ[VERIFY_PROFILE_ENV] = previous

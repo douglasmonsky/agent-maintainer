@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 # docsync:evidence.start evidence.readme.package_metadata
 [project]
 name = "agent-maintainer"
-version = "0.1.0b7"
+version = "0.1.0b8"
 description = "Repository maintenance checks and diagnostics for AI-assisted Python development."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["PyYAML>=6.0.3"]
+dependencies = ["defusedxml>=0.7.1", "PyYAML>=6.0.3"]
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Doug Monsky" }]
@@ -152,6 +152,11 @@ where = ["src"]
   "resources/agent-maintainer-setup/SKILL.md",
   "resources/agent-maintainer-setup/agents/openai.yaml",
 ]
+"agent_maintainer.ecosystems.java.templates" = [
+  "*.gradle",
+  "*.gradle.kts",
+  "*.xml",
+]
 
 [tool.agent_maintainer]
 mode = "fresh-strict"
@@ -279,6 +284,12 @@ pip_audit_args = [
   "config/dev-lock.txt",
   "--ignore-vuln",
   "PYSEC-2026-2132",
+  "--ignore-vuln",
+  "CVE-2026-52869",
+  "--ignore-vuln",
+  "CVE-2026-52870",
+  "--ignore-vuln",
+  "CVE-2026-59950",
   "--no-deps",
   "--disable-pip",
   "--progress-spinner",
@@ -359,6 +370,7 @@ check_jsonschema_args = [
   "vendor.github-workflows",
   ".github/workflows/verify.yml",
   ".github/workflows/deep-verify.yml",
+  ".github/workflows/java-gradle-live.yml",
   ".github/workflows/publish.yml",
 ]
 runtime_events_enabled = true
@@ -420,8 +432,10 @@ do_not_mutate = [
 ]
 pytest_add_cli_args_test_selection = [
   "tests/config/test_config_coercion.py",
+  "tests/config/test_config_coercion_extensions.py",
   "tests/config/test_config_loading.py",
   "tests/config/test_config_registry_validation.py",
+  "tests/config/test_java_config.py",
   "tests/config/test_workspace_config.py::test_coerce_updates_reads_workspace_tables",
   "tests/core/test_runtime.py",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_ranks_branchy_tested_logic",

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE report PUBLIC "-//JACOCO//DTD Report 1.1//EN" "report.dtd">
+<report name="sanitized-java-only">
+  <counter type="LINE" missed="2" covered="8"/>
+  <counter type="BRANCH" missed="3" covered="7"/>
+</report>

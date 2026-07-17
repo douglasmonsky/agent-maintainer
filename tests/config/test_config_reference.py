@@ -36,8 +36,11 @@ def test_payload_covers_fields_and_tables() -> None:
         "diagnostics",
         "file_baselines",
         "file_baselines.groups.*",
+        "java",
+        "java.reports.*",
         "workspaces.*",
     }
+    assert payload["nested_environment"] == {"java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"}
 
 
 def test_reference_cli_writes_and_detects_drift(tmp_path: Path) -> None:
@@ -59,3 +62,24 @@ def test_capability_json_is_stable() -> None:
 
     assert rendered == reference.render_capabilities_json()
     assert payload["schema_version"] == reference.CAPABILITY_SCHEMA_VERSION
+
+
+def test_human_reference_exposes_nested_environment_override() -> None:
+    rendered = reference.render_reference_markdown()
+
+    assert "## Nested Environment Overrides" in rendered
+    assert "| `java.enabled` | `AGENT_MAINTAINER_JAVA_ENABLED` |" in rendered
+
+
+def test_human_reference_documents_explicit_java_baseline_lifecycle() -> None:
+    """The generated reference gives operators the safe lifecycle commands."""
+    rendered = reference.render_reference_markdown()
+
+    assert "assess java-baseline create" in rendered
+    assert "assess java-baseline inspect" in rendered
+    assert "assess java-baseline prune" in rendered
+    assert "never changes the baseline during verification" in rendered
+    assert "assess file-baselines create" in rendered
+    assert "assess file-baselines inspect" in rendered
+    assert "assess file-baselines prune" in rendered
+    assert "Renamed paths never inherit" in rendered

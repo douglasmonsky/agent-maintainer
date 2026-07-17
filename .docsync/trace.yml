@@ -48,6 +48,14 @@ documents:
     path: docs/provider-status.md
     title: Ecosystem Provider Status
     audience: public
+  docs.java_gradle_provider:
+    path: docs/java-gradle-provider.md
+    title: Experimental Java/Gradle Provider
+    audience: public
+  docs.java_gradle_calibration:
+    path: docs/case-studies/java-gradle-provider-calibration.md
+    title: Java/Gradle Provider Calibration
+    audience: public
   docs.typescript_provider:
     path: docs/typescript-javascript-provider.md
     title: Experimental TypeScript/JavaScript Provider
@@ -186,7 +194,11 @@ documents:
     audience: public
   docs.release_0_1_0b7_candidate:
     path: docs/releases/0.1.0b7.md
-    title: Agent Maintainer 0.1.0b7 Candidate Notes
+    title: Agent Maintainer 0.1.0b7 Release Evidence
+    audience: public
+  docs.release_0_1_0b8_candidate:
+    path: docs/releases/0.1.0b8.md
+    title: Agent Maintainer 0.1.0b8 Candidate Notes
     audience: public
   docs.upgrade_0_1_0b6:
     path: docs/upgrading-to-0.1.0b6.md
@@ -195,6 +207,10 @@ documents:
   docs.upgrade_0_1_0b7:
     path: docs/upgrading-to-0.1.0b7.md
     title: Upgrading from 0.1.0b6 to 0.1.0b7
+    audience: public
+  docs.upgrade_0_1_0b8:
+    path: docs/upgrading-to-0.1.0b8.md
+    title: Upgrading from 0.1.0b7 to 0.1.0b8
     audience: public
 
   docs.future_call_roi_acceleration:
@@ -346,6 +362,22 @@ objects:
     heading:
       level: 1
       text: Ecosystem Provider Status
+  docs.java_gradle_provider.overview:
+    document: docs.java_gradle_provider
+    kind: heading_section
+    path: docs/java-gradle-provider.md
+    marker: docs.java_gradle_provider.overview
+    heading:
+      level: 1
+      text: Experimental Java/Gradle Provider
+  docs.java_gradle_calibration.overview:
+    document: docs.java_gradle_calibration
+    kind: heading_section
+    path: docs/case-studies/java-gradle-provider-calibration.md
+    marker: docs.java_gradle_calibration.overview
+    heading:
+      level: 1
+      text: Java/Gradle Provider Calibration
   docs.typescript_provider.overview:
     document: docs.typescript_provider
     kind: heading_section
@@ -625,7 +657,15 @@ objects:
     marker: docs.release_0_1_0b7_candidate.overview
     heading:
       level: 1
-      text: Agent Maintainer 0.1.0b7 Candidate Notes
+      text: Agent Maintainer 0.1.0b7 Release Evidence
+  docs.release_0_1_0b8_candidate.overview:
+    document: docs.release_0_1_0b8_candidate
+    kind: heading_section
+    path: docs/releases/0.1.0b8.md
+    marker: docs.release_0_1_0b8_candidate.overview
+    heading:
+      level: 1
+      text: Agent Maintainer 0.1.0b8 Candidate Notes
   docs.upgrade_0_1_0b6.overview:
     document: docs.upgrade_0_1_0b6
     kind: heading_section
@@ -642,6 +682,14 @@ objects:
     heading:
       level: 1
       text: Upgrading from 0.1.0b6 to 0.1.0b7
+  docs.upgrade_0_1_0b8.overview:
+    document: docs.upgrade_0_1_0b8
+    kind: heading_section
+    path: docs/upgrading-to-0.1.0b8.md
+    marker: docs.upgrade_0_1_0b8.overview
+    heading:
+      level: 1
+      text: Upgrading from 0.1.0b7 to 0.1.0b8
 
   docs.future_call_roi_acceleration.overview:
     document: docs.future_call_roi_acceleration
@@ -785,17 +833,21 @@ claims:
       scan workflow.
     severity: high
     evidence:
-    - evidence.readme.catalog_composition
-    - evidence.readme.python_provider_checks
-    - evidence.readme.docs_config_checks
-    - evidence.readme.security_catalog_checks
-    - evidence.readme.secret_scan_checks
+      - evidence.readme.catalog_composition
+      - evidence.readme.python_provider_checks
+      - evidence.readme.docs_config_checks
+      - evidence.readme.security_catalog_checks
+      - evidence.readme.secret_scan_checks
+      - evidence.java.structured_evidence_tests
+      - evidence.file_baselines.provider_neutral
   claim.docs.ratcheting_command_surface:
     object: docs.ratcheting.overview
     text: Ratcheting docs document the ratchet command surface exposed by Agent Maintainer.
     severity: medium
     evidence:
-    - evidence.readme.command_registry
+      - evidence.readme.command_registry
+      - evidence.java.structured_evidence_tests
+      - evidence.file_baselines.provider_neutral
   claim.docs.provider_status_python_core:
     object: docs.provider_status.overview
     text: Provider status docs describe Python as the core/reference provider and
@@ -811,6 +863,43 @@ claims:
     severity: medium
     evidence:
       - evidence.provider_registry.no_active_go
+  claim.docs.java_provider_foundation:
+    object: docs.provider_status.overview
+    text: Provider status docs describe experimental Java/Gradle checked-wrapper
+      tasks, reviewed setup, static doctor behavior, native Spotless/SpotBugs
+      ratchets, bounded structured report evidence, Java debt baselines, exact
+      repair facts, provider-neutral file ceilings, and non-overwriting CI
+      plans without claiming stable-provider parity.
+    severity: high
+    evidence:
+      - evidence.java.provider_foundation
+      - evidence.java.provider_foundation_tests
+      - evidence.java.reviewed_setup_tests
+      - evidence.java.ci_setup_tests
+      - evidence.java.structured_evidence_tests
+      - evidence.java.repair_fact_tests
+      - evidence.file_baselines.provider_neutral
+  claim.docs.java_provider_coverage_rollout:
+    object: docs.java_gradle_provider.overview
+    text: Java provider docs describe exact upward-only JaCoCo thresholds,
+      truthful project or aggregate topology, bounded wrapper-call budgets,
+      cross-platform live fixtures, reviewed setup, repair workflow, and
+      explicit experimental limitations.
+    severity: high
+    evidence:
+      - evidence.java.provider_foundation
+      - evidence.java.reviewed_setup_tests
+      - evidence.java.coverage_rollout_tests
+      - evidence.java.live_workflow_tests
+      - evidence.java.calibration_tests
+  claim.docs.java_provider_calibration:
+    object: docs.java_gradle_calibration.overview
+    text: Java calibration docs report controlled sanitized Java-only, mixed,
+      and multi-project evidence without presenting it as external proof or a
+      provider promotion.
+    severity: high
+    evidence:
+      - evidence.java.calibration_tests
   claim.docs.typescript_provider_explicit_commands:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe disabled-by-default explicit
@@ -1097,7 +1186,13 @@ claims:
       - evidence.release.public_contract_tests
   claim.docs.release_0_1_0b7_candidate_truth:
     object: docs.release_0_1_0b7_candidate.overview
-    text: Candidate notes identify 0.1.0b7 intent without claiming publication evidence.
+    text: Release evidence records exact 0.1.0b7 publication identifiers and artifact digests.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
+  claim.docs.release_0_1_0b8_candidate_truth:
+    object: docs.release_0_1_0b8_candidate.overview
+    text: Candidate notes identify 0.1.0b8 intent without claiming publication evidence.
     severity: high
     evidence:
       - evidence.release.public_contract_tests
@@ -1109,7 +1204,13 @@ claims:
       - evidence.release.public_contract_tests
   claim.docs.upgrade_0_1_0b7_safe_adoption:
     object: docs.upgrade_0_1_0b7.overview
-    text: Candidate upgrade guidance covers trusted evaluation, mutation preview, verification, and rollback to 0.1.0b6.
+    text: Upgrade guidance covers published 0.1.0b7 adoption, mutation preview, verification, and rollback to 0.1.0b6.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
+  claim.docs.upgrade_0_1_0b8_safe_adoption:
+    object: docs.upgrade_0_1_0b8.overview
+    text: Candidate upgrade guidance covers trusted evaluation, Java setup preview, verification, and rollback to 0.1.0b7.
     severity: high
     evidence:
       - evidence.release.public_contract_tests
@@ -1224,6 +1325,78 @@ evidence:
       and optional skips when commands are empty.
     anchors:
       - path: src/agent_maintainer/ecosystems/typescript/provider.py
+        mode: explicit_region
+  evidence.java.provider_foundation:
+    type: code
+    description: Java provider builds explicit profile-aware grouped checks and
+      reports selected tools without configured tasks.
+    anchors:
+      - path: src/agent_maintainer/ecosystems/java/provider.py
+        mode: explicit_region
+  evidence.java.provider_foundation_tests:
+    type: test
+    description: Java doctor tests cover disabled silence, static wrapper/runtime/
+      task readiness, configured ratchet/baseline health, and no Gradle execution.
+    anchors:
+      - path: tests/doctor/test_java_doctor.py
+        mode: explicit_region
+  evidence.java.reviewed_setup_tests:
+    type: test
+    description: Java setup tests cover deterministic recognized scaffolds,
+      reviewed semantic handoffs, conflict refusal, and stale-source confinement.
+    anchors:
+      - path: tests/ecosystems/java/test_setup.py
+        mode: explicit_region
+  evidence.java.ci_setup_tests:
+    type: test
+    description: Java CI setup tests cover parallel cached jobs, explicit JDK
+      conventions, existing workflow preservation, and unknown-structure refusal.
+    anchors:
+      - path: tests/ecosystems/java/test_ci_setup.py
+        mode: explicit_region
+  evidence.java.structured_evidence_tests:
+    type: test
+    description: Java structured-evidence tests cover task outcomes, report
+      freshness and confinement, bounded parsers, sanitized runner artifacts,
+      and explicit findings-baseline lifecycle refusal paths.
+    anchors:
+      - path: tests/ecosystems/java/test_report_runner.py
+        mode: explicit_region
+      - path: tests/assess/test_java_baseline_cli.py
+        mode: explicit_region
+  evidence.java.repair_fact_tests:
+    type: test
+    description: Java exact repair-fact tests consume bounded runner artifacts
+      once and reject unsafe embedded paths without reopening raw Gradle XML.
+    anchors:
+      - path: tests/context/test_java_exact_facts.py
+        mode: explicit_region
+  evidence.java.coverage_rollout_tests:
+    type: test
+    description: Java coverage tests prove exact thresholds, downward-change
+      refusal, bounded real JaCoCo parsing, and truthful project topology.
+    anchors:
+      - path: tests/ecosystems/java/test_jacoco_thresholds.py
+        mode: explicit_region
+      - path: tests/ecosystems/java/test_jacoco_report.py
+        mode: explicit_region
+      - path: tests/ecosystems/java/test_jacoco_topology.py
+        mode: explicit_region
+  evidence.java.live_workflow_tests:
+    type: test
+    description: Java live workflow tests prove immutable wrapper validation,
+      bounded caching and timeouts, Linux/Windows DSL matrix coverage, and
+      protected aggregate isolation.
+    anchors:
+      - path: tests/packaging/test_parallel_verify_workflow.py
+        mode: explicit_region
+  evidence.java.calibration_tests:
+    type: test
+    description: Java calibration tests bind sanitized case evidence to current
+      setup previews, bounded runtimes, baseline stability, thresholds, and
+      parsable labeled coverage reports.
+    anchors:
+      - path: tests/assess/test_java_real_repo_calibration.py
         mode: explicit_region
   evidence.typescript.provider_command_tests:
     type: test
@@ -1520,7 +1693,11 @@ evidence:
         mode: explicit_region
   evidence.file_baselines.provider_neutral:
     type: test
-    description: Provider-neutral file baseline tests cover non-Python file groups such as TSX, docs, and config files.
+    description: Provider-neutral file baseline tests cover non-Python groups,
+      versioned Java/Python per-path ceilings, defaults, established floors,
+      blocking regressions, rename/removal behavior, and explicit lifecycle.
     anchors:
       - path: tests/assess/test_file_baselines.py
+        mode: explicit_region
+      - path: tests/assess/test_file_ceiling_baseline.py
         mode: explicit_region

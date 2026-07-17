@@ -43,18 +43,18 @@ example repos, and the first cohesive-change budget exception.
 
 Current external release state:
 
-- [x] `agent-maintainer==0.1.0b6` is published to TestPyPI and PyPI,
-      attached to GitHub prerelease `v0.1.0b6`, and smoke-tested from both
+- [x] `agent-maintainer==0.1.0b7` is published to TestPyPI and PyPI,
+      attached to GitHub prerelease `v0.1.0b7`, and smoke-tested from both
       package indexes. Release evidence is recorded in
-      [`docs/releases/0.1.0b6.md`](releases/0.1.0b6.md).
+      [`docs/releases/0.1.0b7.md`](releases/0.1.0b7.md).
 
 Current source candidate state:
 
-- [x] The unpublished `0.1.0b7` release candidate is the package-metadata and
+- [x] The unpublished `0.1.0b8` release candidate is the package-metadata and
       main-branch documentation target. Review the
-      [candidate notes](releases/0.1.0b7.md) and
-      [evaluation guide](upgrading-to-0.1.0b7.md).
-- [ ] `0.1.0b7` becomes the current external release only after the exact
+      [candidate notes](releases/0.1.0b8.md) and
+      [evaluation guide](upgrading-to-0.1.0b8.md).
+- [ ] `0.1.0b8` becomes the current external release only after the exact
       candidate commit passes the complete release matrix, TestPyPI and PyPI
       smokes pass, and publication evidence replaces candidate intent in the
       [release index](releases/README.md).
@@ -73,7 +73,7 @@ implementation and release-readiness contract is:
 [`docs/roadmap/critical-stabilization.md`](roadmap/critical-stabilization.md).
 
 The program used focused commits on its dedicated integration branch and passed
-the required local and hosted verification. External `0.1.0b6` publication is
+the required local and hosted verification. External `0.1.0b7` publication is
 recorded in the release evidence above.
 
 ## Completed Phase Archive
@@ -160,8 +160,8 @@ baseline are retired.
 - Continue adding section-level DocSync claims as public docs materially change,
   especially where a claim can point to durable implementation or test evidence.
 
-- Avoid adding new ecosystems until TypeScript/JavaScript satisfies the
-  promotion bar in
+- Avoid adding additional ecosystems until TypeScript/JavaScript and Java/Gradle
+  satisfy their documented promotion bars, including
 
   [`docs/case-studies/typescript-provider-maturation.md`](case-studies/typescript-provider-maturation.md).
 

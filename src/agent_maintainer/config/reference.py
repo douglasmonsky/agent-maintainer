@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import asdict, is_dataclass
 from pathlib import Path
 from typing import cast
 
@@ -29,8 +30,11 @@ def capability_payload() -> dict[str, object]:
             "workspaces.*": sorted(registry.WORKSPACE_KEYS),
             "file_baselines": sorted(registry.FILE_BASELINE_KEYS),
             "file_baselines.groups.*": sorted(registry.FILE_BASELINE_GROUP_KEYS),
+            "java": sorted(registry.JAVA_KEYS),
+            "java.reports.*": sorted(registry.JAVA_REPORT_KEYS),
         },
         "runtime_environment": sorted(registry.NON_CONFIG_ENV_VARS),
+        "nested_environment": {"java.enabled": registry.JAVA_ENABLED_ENV},
         "fields": [_field_payload(spec) for spec in registry.FIELD_SPECS.values()],
     }
 
@@ -65,6 +69,11 @@ def _constraint_payload(spec: registry.ConfigFieldSpec) -> dict[str, object]:
 
 
 def _json_value(value: object) -> object:
+    if is_dataclass(value) and not isinstance(value, type):
+        return _json_value(asdict(value))
+    if isinstance(value, dict):
+        raw = cast(dict[object, object], value)
+        return {str(key): _json_value(item) for key, item in raw.items()}
     if isinstance(value, tuple):
         values = cast(tuple[object, ...], value)
         return [_json_value(item) for item in values]
@@ -95,6 +104,51 @@ def render_reference_markdown() -> str:
         "|---|---|",
         *_nested_table_rows(),
         "",
+        "## Nested Environment Overrides",
+        "",
+        "| TOML key | Environment |",
+        "|---|---|",
+        *_nested_environment_rows(),
+        "",
+        "## Java Findings Baseline Lifecycle",
+        "",
+        "`java.findings_baseline` names the reviewed, repository-relative debt file. "
+        "Agent Maintainer never changes the baseline during verification.",
+        "Create or prune it only from a complete Java static-check artifact produced "
+        "successfully at the current clean Git `HEAD`; inspect is read-only.",
+        "",
+        "```bash",
+        "python -m agent_maintainer assess java-baseline create --target . "
+        "--artifact .verify-logs/java-gradle/java-gradle-static.json --dry-run",
+        "python -m agent_maintainer assess java-baseline create --target . "
+        "--artifact .verify-logs/java-gradle/java-gradle-static.json",
+        "python -m agent_maintainer assess java-baseline inspect --target . --json",
+        "python -m agent_maintainer assess java-baseline prune --target . "
+        "--artifact .verify-logs/java-gradle/java-gradle-static.json --dry-run",
+        "python -m agent_maintainer assess java-baseline prune --target . "
+        "--artifact .verify-logs/java-gradle/java-gradle-static.json",
+        "```",
+        "",
+        "`create` refuses an existing baseline. `prune` may only remove findings or lower "
+        "numeric ceilings. Both commands reject failed, stale, malformed, or truncated evidence.",
+        "",
+        "## Provider-Neutral File Ceiling Lifecycle",
+        "",
+        "`file_baselines.baseline` names the reviewed versioned per-path ceiling file. "
+        "New paths use group physical/nonblank defaults; established oversized paths may "
+        "hold steady or shrink but may not grow. Renamed paths never inherit an allowance.",
+        "",
+        "```bash",
+        "python -m agent_maintainer assess file-baselines create --dry-run",
+        "python -m agent_maintainer assess file-baselines create",
+        "python -m agent_maintainer assess file-baselines inspect --json",
+        "python -m agent_maintainer assess file-baselines prune --dry-run",
+        "python -m agent_maintainer assess file-baselines prune",
+        "```",
+        "",
+        "Create and prune require a clean Git worktree. Verification and inspect are read-only; "
+        "prune refuses new or regressed paths and only lowers or removes entries.",
+        "",
         "## Fields",
         "",
         "| TOML key | Type | Default | Environment | CLI | Constraints | Stability |",
@@ -117,6 +171,13 @@ def _nested_table_rows() -> list[str]:
     if nested is None:
         return []
     return [f"| `{table}` | {_markdown_value(keys)} |" for table, keys in nested.items()]
+
+
+def _nested_environment_rows() -> list[str]:
+    nested = json_object(capability_payload()["nested_environment"])
+    if nested is None:
+        return []
+    return [f"| `{key}` | `{value}` |" for key, value in nested.items()]
 
 
 def _field_markdown_row(spec: registry.ConfigFieldSpec) -> str:

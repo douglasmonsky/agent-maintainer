@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260716T180011Z.claim.docs.upgrade_0_1_0b6_safe_adoption.f8ece56
+  claim: claim.docs.upgrade_0_1_0b6_safe_adoption
+  doc_object: docs.upgrade_0_1_0b6.overview
+  evidence:
+  - evidence.release.public_contract_tests
+  reason: The generic public-release contract was strengthened for 0.1.0b7; the published
+    0.1.0b6 adoption and rollback guide remains unchanged.
+  reviewer: agent
+  reviewed_at: '2026-07-16T18:00:11Z'
+  base: HEAD
+  head: f8ece56
+  evidence_fingerprints:
+    evidence.release.public_contract_tests: sha256:1d642bc32e1a127b25b63b04e189b95d4a6c14233e425058ad93f3c55fb78eec
+  evidence_anchor_fingerprints:
+    evidence.release.public_contract_tests:
+    - sha256:1ceac3ae5addae752cf9a99ba3277d207363900e0c73528bb2cc42da4530f6c0
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

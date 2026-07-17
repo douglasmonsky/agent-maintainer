@@ -105,3 +105,34 @@ mitigations = [
   "Do not add any Agent Maintainer use of click.edit() while this risk is accepted.",
   "Keep Semgrep limited to development and CI scanning of repository content.",
 ]
+
+[[risks]]
+id = "DR-006-semgrep-mcp-vulnerabilities"
+status = "accepted"
+category = "known-vulnerability"
+ecosystems = ["python"]
+artifacts = [
+  "pyproject.toml",
+  "config/dev-lock.txt",
+  "osv-scanner.toml",
+  "docs/dependency-risk-register.md",
+]
+advisories = [
+  "CVE-2026-52869",
+  "GHSA-jpw9-pfvf-9f58",
+  "CVE-2026-52870",
+  "GHSA-hvrp-rf83-w775",
+  "CVE-2026-59950",
+  "GHSA-vj7q-gjh5-988w",
+]
+owner = "release-maintainer"
+accepted_on = 2026-07-17
+expires_on = 2026-07-31
+rationale = "Semgrep 1.170.0 is the latest available release and still pins MCP 1.23.3, while the three advisories require MCP 1.27.2 or 1.28.1. Agent Maintainer invokes only the Semgrep CLI and does not expose MCP HTTP, WebSocket, or experimental task server APIs."
+review_trigger = "Semgrep publishes a release that permits MCP 1.28.1 or newer, or this record reaches its expiry date."
+resolution_condition = "Upgrade Semgrep to a release using MCP 1.28.1 or newer, remove the pip-audit and OSV ignores, refresh the development lock, and pass the complete security profile."
+mitigations = [
+  "Ignore only the six exact CVE and GHSA identifiers while retaining all other dependency findings as blocking failures.",
+  "Keep Semgrep limited to development and CI scanning of repository content.",
+  "Do not add Agent Maintainer use of MCP server transports or experimental task APIs while this risk is accepted.",
+]

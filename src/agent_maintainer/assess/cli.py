@@ -9,9 +9,9 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from agent_maintainer.assess import (
+    baseline_cli,
     debt_score,
     efficacy,
-    file_baselines,
     repair_fact_coverage,
     repair_fact_coverage_reporting,
     reporting,
@@ -33,6 +33,10 @@ def main(argv: list[str] | None = None) -> int:
     """Run assessment subcommands."""
     args = parse_args([] if argv is None else argv)
     target = args.target.resolve()
+    if args.command == "java-baseline":
+        return baseline_cli.run_java_baseline(args, target)
+    if args.command == "file-baselines":
+        return baseline_cli.run_file_baselines(args, target)
     repo_evidence = assess_evidence.collect_evidence(target, max_files=args.max_files)
     status = 1
     if args.command == "setup":
@@ -41,8 +45,6 @@ def main(argv: list[str] | None = None) -> int:
         status = _run_debt(args, target, repo_evidence)
     if args.command == "reviewability":
         status = _run_reviewability(args, target)
-    if args.command == "file-baselines":
-        status = _run_file_baselines(args, target)
     if args.command == "repair-fact-coverage":
         status = _run_repair_fact_coverage(args, target)
     if args.command == "efficacy":
@@ -93,24 +95,6 @@ def _run_reviewability(args: argparse.Namespace, target: Path) -> int:
     return 0
 
 
-def _run_file_baselines(args: argparse.Namespace, target: Path) -> int:
-    """Run provider-neutral file baseline assessment."""
-    with _working_directory(target):
-        config = config_loader.load_config()
-        report = file_baselines.build_file_baseline_report(
-            target,
-            config,
-            base_ref=args.base_ref,
-            staged=args.staged,
-        )
-    print(
-        reporting.render_json(report)
-        if args.json
-        else reporting.render_file_baselines_text(report),
-    )
-    return 0
-
-
 def _run_repair_fact_coverage(args: argparse.Namespace, target: Path) -> int:
     """Run repair-fact coverage assessment."""
 
@@ -148,7 +132,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse assessment arguments."""
     parser = argparse.ArgumentParser(prog="python -m agent_maintainer assess")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    setup = subparsers.add_parser("setup", help="Recommend track, preset, and gates.")
+    add_parser = subparsers.add_parser
+    _add_primary_assessment_parsers(add_parser)
+    _add_file_baselines_parser(add_parser)
+    _add_java_baseline_parser(add_parser)
+    _add_repair_fact_parser(add_parser)
+    _add_efficacy_parser(add_parser)
+    return parser.parse_args(argv)
+
+
+def _add_primary_assessment_parsers(
+    add_parser: Callable[..., argparse.ArgumentParser],
+) -> None:
+    """Add setup, debt, and reviewability parsers."""
+    setup = add_parser("setup", help="Recommend track, preset, and gates.")
     setup.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     setup.add_argument(
         "--max-files",
@@ -156,7 +153,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=assess_evidence.DEFAULT_MAX_EVIDENCE_FILES,
     )
     setup.add_argument("--json", action=STORE_TRUE)
-    debt = subparsers.add_parser("debt", help="Render advisory Technical Debt Score.")
+    debt = add_parser("debt", help="Render advisory Technical Debt Score.")
     debt.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     debt.add_argument(
         "--max-files",
@@ -166,7 +163,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     debt.add_argument("--json", action=STORE_TRUE)
     debt.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     debt.add_argument("--no-write", action=STORE_TRUE)
-    reviewability_parser = subparsers.add_parser(
+    reviewability_parser = add_parser(
         "reviewability",
         help="Render advisory changed-file reviewability summary.",
     )
@@ -180,9 +177,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     reviewability_parser.add_argument("--base-ref", default="origin/main")
     reviewability_parser.add_argument("--staged", action=STORE_TRUE)
 
-    file_baselines_parser = subparsers.add_parser(
+
+def _add_file_baselines_parser(
+    add_parser: Callable[..., argparse.ArgumentParser],
+) -> None:
+    """Add provider-neutral file ceiling arguments."""
+    file_baselines_parser = add_parser(
         "file-baselines",
         help="Render advisory provider-neutral file baseline summary.",
+    )
+    file_baselines_parser.add_argument(
+        "file_baseline_operation",
+        nargs="?",
+        choices=("report", "create", "inspect", "prune"),
+        default="report",
     )
     file_baselines_parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     file_baselines_parser.add_argument(
@@ -194,7 +202,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     file_baselines_parser.add_argument("--json", action=STORE_TRUE)
     file_baselines_parser.add_argument("--base-ref", default="origin/main")
     file_baselines_parser.add_argument("--staged", action=STORE_TRUE)
-    repair_fact_parser = subparsers.add_parser(
+    file_baselines_parser.add_argument("--dry-run", action=STORE_TRUE)
+
+
+def _add_repair_fact_parser(
+    add_parser: Callable[..., argparse.ArgumentParser],
+) -> None:
+    """Add repair-fact coverage arguments."""
+    repair_fact_parser = add_parser(
         "repair-fact-coverage",
         help="Assess structured repair facts for recent failures.",
     )
@@ -208,8 +223,29 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     repair_fact_parser.add_argument("--json", action=STORE_TRUE)
     repair_fact_parser.add_argument("--log-dir", type=Path, default=Path(".verify-logs"))
     repair_fact_parser.add_argument("--run-limit", type=int, default=10)
-    _add_efficacy_parser(subparsers.add_parser)
-    return parser.parse_args(argv)
+
+
+def _add_java_baseline_parser(
+    add_parser: Callable[..., argparse.ArgumentParser],
+) -> None:
+    """Add explicit Java findings baseline lifecycle parsers."""
+    lifecycle = add_parser(
+        "java-baseline",
+        help="Create, inspect, or prune the Java findings baseline.",
+    )
+    operations = lifecycle.add_subparsers(dest="java_baseline_operation", required=True)
+    for name in ("create", "prune"):
+        operation = operations.add_parser(name)
+        operation.add_argument("--target", type=Path, default=DEFAULT_TARGET)
+        operation.add_argument(
+            "--artifact",
+            type=Path,
+            default=Path(".verify-logs/java-gradle/java-gradle-static.json"),
+        )
+        operation.add_argument("--dry-run", action=STORE_TRUE)
+    inspect = operations.add_parser("inspect")
+    inspect.add_argument("--target", type=Path, default=DEFAULT_TARGET)
+    inspect.add_argument("--json", action=STORE_TRUE)
 
 
 def _add_efficacy_parser(

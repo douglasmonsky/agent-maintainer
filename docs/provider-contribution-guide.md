@@ -15,6 +15,7 @@ Related reading:
 
 - [Polyglot Ecosystem Provider Roadmap](roadmap/polyglot-ecosystem-providers.md)
 - [Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
+- [Experimental Java/Gradle Provider](java-gradle-provider.md)
 - [Diagnostics and Repair Loop](diagnostics-repair-loop.md)
 - [Supported Scans and Agent Use](supported-scans-and-agent-use.md)
 
@@ -28,6 +29,13 @@ decision is recorded in
 [`2026-07-02-provider-api-stability.md`](architecture/decisions/2026-07-02-provider-api-stability.md).
 Built-in experimental providers remain the contribution path until the internal
 seam has survived real use outside this repository.
+
+The current registry contains the Python core/reference provider plus built-in
+experimental TypeScript/JavaScript and Java/Gradle providers. Java/Gradle is
+disabled by default and currently exposes explicit checked-wrapper groups,
+reviewed setup/native ratchets, truthful coverage topology, bounded structured
+evidence, and static doctor support; it is not a public provider API or a
+feature-parity claim.
 
 Provider additions should be small and phased:
 
@@ -143,7 +151,9 @@ Warnings should be actionable. Avoid inventorying disabled tools.
 
 ## Structured Parser Expectations
 
-Structured parsers should convert tool output into compact repair facts:
+Separate authoritative report validation from downstream repair-fact parsing.
+An authoritative report adapter should convert one declared, repository-confined
+tool report into bounded normalized evidence:
 
 - file path;
 - line and column when present;
@@ -151,8 +161,20 @@ Structured parsers should convert tool output into compact repair facts:
 - severity;
 - short message.
 
-Parsers should tolerate malformed output and fall back to the normal bounded
-raw-log summary. They must not print full raw logs into agent-facing summaries.
+- stable semantic identity when findings participate in a debt baseline;
+- completeness/truncation state and aggregate counts;
+- the producing task outcome and report origin.
+
+Selected authoritative reports fail closed when missing, stale, malformed,
+oversized, truncated, or path-escaping. A failed provider process remains
+authoritative. Persist sanitized facts in the normal bounded runner artifact,
+not the raw third-party report.
+
+Repair-fact parsers consume that already-bounded artifact once. They may fall
+back to the normal bounded raw-log summary when their input is malformed, but
+must never reopen an artifact-provided report path or print full raw logs into
+agent-facing summaries. Baseline create/prune must remain an explicit command;
+normal verification is comparison-only.
 
 ## Tests
 
@@ -167,6 +189,9 @@ Required tests:
 - Optional skip behavior when commands are missing or disabled.
 - Doctor pass/warn cases.
 - Structured parser sample outputs when parsers exist.
+- Missing/stale/malformed/oversized/truncated authoritative report refusal.
+- Deterministic baseline create/inspect/prune tests when debt ratchets exist.
+- Proof that persisted artifacts omit raw third-party report bodies and checkout paths.
 - Fixture or scaffold smoke coverage for the smallest meaningful repo layout.
 
 Regression tests should protect Python behavior when provider internals change.

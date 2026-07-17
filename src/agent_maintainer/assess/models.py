@@ -37,6 +37,14 @@ class RepoEvidence:
     scanned_files: int = 0
     scan_source: str = "unknown"
     scan_truncated: bool = False
+    has_gradle_wrapper: bool = False
+    gradle_wrapper_paths: tuple[str, ...] = ()
+    gradle_settings_files: tuple[str, ...] = ()
+    gradle_build_files: tuple[str, ...] = ()
+    gradle_version_catalogs: tuple[str, ...] = ()
+    java_source_files: int = 0
+    java_test_files: int = 0
+    java_module_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -178,6 +186,7 @@ class FileBaselineFinding:
     kind: str
     message: str
     recommendation: str
+    blocking: bool = False
 
 
 @dataclass(frozen=True)
@@ -194,7 +203,7 @@ class FileBaselineGroupSummary:
 
 @dataclass(frozen=True)
 class FileBaselineReport:
-    """Advisory provider-neutral file baseline report."""
+    """Provider-neutral file ceiling and change-budget report."""
 
     target: str
     enabled: bool
@@ -202,6 +211,7 @@ class FileBaselineReport:
     groups: tuple[FileBaselineGroupSummary, ...]
     findings: tuple[FileBaselineFinding, ...]
     next_commands: tuple[str, ...]
+    passed: bool = True
 
 
 def to_dict(value: object) -> object:

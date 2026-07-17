@@ -1,0 +1,41 @@
+[tool.agent_maintainer.java]
+enabled = true
+checks = ["spotless", "spotbugs", "checkstyle", "pmd", "test", "jacoco"]
+gradle_args = ["--console=plain", "--stacktrace"]
+spotless_tasks = ["spotlessCheck"]
+spotbugs_tasks = ["spotbugsMain"]
+checkstyle_tasks = ["checkstyleMain"]
+pmd_tasks = ["pmdMain"]
+test_tasks = ["test"]
+jacoco_report_tasks = ["jacocoTestReport"]
+jacoco_verify_tasks = ["jacocoTestCoverageVerification"]
+spotless_ratchet_ref = "agent-maintainer-live-base"
+spotbugs_baseline = "config/spotbugs/baseline.xml"
+jacoco_ratchet_ref = "agent-maintainer-live-base"
+
+[[tool.agent_maintainer.java.reports]]
+tool = "spotbugs"
+tasks = ["spotbugsMain"]
+globs = ["build/reports/spotbugs/main.xml"]
+
+[[tool.agent_maintainer.java.reports]]
+tool = "checkstyle"
+tasks = ["checkstyleMain"]
+globs = ["build/reports/checkstyle/main.xml"]
+
+[[tool.agent_maintainer.java.reports]]
+tool = "pmd"
+tasks = ["pmdMain"]
+globs = ["build/reports/pmd/main.xml"]
+
+[[tool.agent_maintainer.java.reports]]
+tool = "test"
+tasks = ["test"]
+globs = ["build/test-results/test/*.xml"]
+
+[[tool.agent_maintainer.java.reports]]
+tool = "jacoco"
+tasks = ["jacocoTestReport"]
+globs = ["build/reports/jacoco/test/jacocoTestReport.xml"]
+coverage_scope = "project"
+coverage_label = ":"

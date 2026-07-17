@@ -7,9 +7,29 @@ depends_on = []
 [[modules]]
 path = "coercion"
 depends_on = [
+  "java_coercion",
   "registry",
   "schema",
   "validation",
+]
+
+[[modules]]
+path = "java"
+depends_on = []
+
+[[modules]]
+path = "java_coercion"
+depends_on = [
+  "//agent_maintainer.core.structured_values",
+  "java",
+  "validation",
+]
+
+[[modules]]
+path = "java_validation"
+depends_on = [
+  "issues",
+  "java",
 ]
 
 [[modules]]
@@ -47,6 +67,7 @@ depends_on = [
 [[modules]]
 path = "schema"
 depends_on = [
+  "java",
   "schema_fields",
   "structure_defaults",
   "workspaces",
@@ -96,6 +117,7 @@ path = "validation"
 depends_on = [
   "//agent_maintainer.models",
   "issues",
+  "java_validation",
   "registry",
   "schema",
   "source_validation",

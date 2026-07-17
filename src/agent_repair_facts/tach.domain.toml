@@ -17,6 +17,7 @@ depends_on = []
 path = "registry"
 depends_on = [
   "parsers.docsync",
+  "parsers.java",
   "parsers.lint",
   "parsers.logs",
   "parsers.pytest",
@@ -35,6 +36,13 @@ depends_on = []
 [[modules]]
 
 path = "parsers.docsync"
+depends_on = [
+  "payloads",
+]
+
+[[modules]]
+
+path = "parsers.java"
 depends_on = [
   "payloads",
 ]

@@ -1,0 +1,1 @@
+"""Bounded Java report adapters."""

@@ -96,6 +96,7 @@ cyclonedx-python-lib==11.11.0
 defusedxml==0.7.1
     # via
     #   -r config/dev-dependencies.in
+    #   agent-maintainer (pyproject.toml)
     #   py-serializable
 deptry==0.25.1
     # via -r config/dev-dependencies.in

@@ -1,10 +1,10 @@
 """Verifier run steps shared by quiet CLI orchestration."""
 
 import argparse
-from collections.abc import Sequence
+import typing
 from pathlib import Path
-from typing import NamedTuple, Protocol
 
+from agent_maintainer.core.artifact_environment import verification_profile_environment
 from agent_maintainer.core.check_run import utc_timestamp
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.core.executor import run_check
@@ -15,10 +15,10 @@ from agent_maintainer.verify.artifacts import RunContext, write_run_artifacts
 from agent_maintainer.verify.git_refs import ref_failures
 
 
-class CheckRuntimeEvents(Protocol):
+class CheckRuntimeEvents(typing.Protocol):
     """Check-level runtime event reporter used by verifier steps."""
 
-    def selected(self, checks: Sequence[Check]) -> None:
+    def selected(self, checks: typing.Sequence[Check]) -> None:
         """Record selected checks."""
 
     def check_started(self, check: Check) -> None:
@@ -31,7 +31,7 @@ class CheckRuntimeEvents(Protocol):
         """Record check exception."""
 
 
-class ArtifactRuntimeEvents(Protocol):
+class ArtifactRuntimeEvents(typing.Protocol):
     """Artifact runtime event reporter used by verifier steps."""
 
     def artifact_written(self, *, path: str, kind: str) -> None:
@@ -50,7 +50,7 @@ class ArtifactRuntimeEvents(Protocol):
         """Record run artifact retention pruning."""
 
 
-class ArtifactWriteOptions(NamedTuple):
+class ArtifactWriteOptions(typing.NamedTuple):
     """Options for writing verifier artifacts."""
 
     run_id: str
@@ -151,7 +151,8 @@ def _run_one_check(
     if runtime_events is not None:
         runtime_events.check_started(check)
     try:
-        result = run_check(check, selected_log_dir, args.max_lines, args.max_chars)
+        with verification_profile_environment(args.profile):
+            result = run_check(check, selected_log_dir, args.max_lines, args.max_chars)
     except Exception as exc:
         if runtime_events is not None:
             runtime_events.check_exception(check, exc)

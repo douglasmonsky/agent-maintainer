@@ -125,12 +125,13 @@ def render_reviewability_text(report: ReviewabilityReport) -> str:
 
 
 def render_file_baselines_text(report: FileBaselineReport) -> str:
-    """Render advisory provider-neutral file baseline summary."""
+    """Render provider-neutral file ceiling and change-budget summary."""
     lines = [
         "File Baseline Assessment",
         f"Target: {report.target}",
         f"Mode: {report.mode}",
         f"Enabled: {report.enabled}",
+        f"Passed: {report.passed}",
         "",
         "Groups:",
     ]

@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 from typing import cast
 
 import pytest
 
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.core import artifact_environment
 from agent_maintainer.models import Check, CheckResult
 from agent_maintainer.runtime_events.sinks import InMemoryRuntimeEventSink
 from agent_maintainer.verify import run_steps
@@ -48,6 +50,38 @@ def test_collect_results_events(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
     assert {record["run_id"] for record in sink.records} == {"run-1"}
     assert sink.records[2]["status"] == "fail"
     assert sink.records[2]["exit_code"] == FAIL_EXIT_CODE
+
+
+def test_collect_results_scopes_verification_profile_environment(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Commands receive the active profile and the caller environment is restored."""
+    observed: list[str | None] = []
+    delegate = FailingCheckRunner(tmp_path)
+
+    def observe_profile(
+        check: Check,
+        log_dir: Path,
+        max_lines: int,
+        max_chars: int,
+    ) -> CheckResult:
+        observed.append(os.environ.get(artifact_environment.VERIFY_PROFILE_ENV))
+        return delegate(check, log_dir, max_lines, max_chars)
+
+    _stub_validation(monkeypatch)
+    monkeypatch.setenv(artifact_environment.VERIFY_PROFILE_ENV, "caller-value")
+    monkeypatch.setattr(run_steps, "run_check", observe_profile)
+
+    run_steps.collect_results(
+        _args(),
+        _config(tmp_path),
+        [Check("sample-check", ["sample"], frozenset(("precommit",)))],
+        tmp_path,
+    )
+
+    assert observed == ["precommit"]
+    assert os.environ[artifact_environment.VERIFY_PROFILE_ENV] == "caller-value"
 
 
 def test_collect_results_exception(

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import os
 import shutil
 import subprocess  # nosec B404
@@ -27,7 +28,7 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
         metadata = tomllib.load(handle)
 
     assert metadata["project"]["name"] == "agent-maintainer"
-    assert metadata["project"]["version"] == "0.1.0b7"
+    assert metadata["project"]["version"] == "0.1.0b8"
     assert metadata["project"]["description"] == (
         "Repository maintenance checks and diagnostics for AI-assisted Python development."
     )
@@ -53,8 +54,27 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     )
 
 
-def test_setup_skill_resources_are_declared_as_package_data() -> None:
-    """Built distributions retain both portable setup skill resources."""
+def test_runtime_dependencies_cover_imported_xml_parser() -> None:
+    """A base install includes the parser imported by Java report modules."""
+
+    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
+        metadata = tomllib.load(handle)
+
+    assert "defusedxml>=0.7.1" in metadata["project"]["dependencies"]
+
+
+def test_packaged_python_sources_parse_on_minimum_supported_version() -> None:
+    """Packaged source syntax remains compatible with declared Python 3.11."""
+
+    source_paths = sorted((REPO_ROOT / "src").rglob("*.py"))
+    assert source_paths
+    for path in source_paths:
+        source = path.read_text(encoding="utf-8")
+        ast.parse(source, filename=str(path), feature_version=(3, 11))
+
+
+def test_package_data_declares_bundled_resources() -> None:
+    """Built distributions retain setup skill and Java template resources."""
 
     with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
         metadata = tomllib.load(handle)
@@ -63,7 +83,12 @@ def test_setup_skill_resources_are_declared_as_package_data() -> None:
         "agent_maintainer.skill": [
             "resources/agent-maintainer-setup/SKILL.md",
             "resources/agent-maintainer-setup/agents/openai.yaml",
-        ]
+        ],
+        "agent_maintainer.ecosystems.java.templates": [
+            "*.gradle",
+            "*.gradle.kts",
+            "*.xml",
+        ],
     }
 
 

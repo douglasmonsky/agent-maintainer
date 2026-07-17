@@ -10,7 +10,8 @@ that keeps raw logs out of chat.
 | Area | Tools / Checks | Typical Profile | Agent Use |
 |---|---|---|---|
 | Change control | Change budget, cohesive change plans, source-without-test policy | `fast`, `precommit`, `ci` | Keep edits small and explain intentionally large changes. |
-| Size and structure | File length, folder cohesion, suppression budget, advisory file baselines | `fast`, `precommit`, `full`, advisory | Refactor high-branch functions before expanding features. |
+| Size and structure | File length, folder cohesion, suppression budget, provider-neutral per-path file ceilings | `fast`, `precommit`, `full`, advisory or blocking | Refactor high-branch functions before expanding features; prune improved ceilings explicitly. |
+| Java/Gradle evidence | Checked-wrapper task groups; Spotless/SpotBugs native ratchets; upward-only JaCoCo thresholds; bounded Checkstyle, PMD, SpotBugs, JUnit, and JaCoCo reports; separate project coverage labels | `precommit`, `full`, `ci` by configured group | Use complete, non-truncated runner artifacts for Java baseline lifecycle and exact repair facts; keep raw XML in Gradle build output. |
 | Python quality | Ruff, Pyright, Pylint, wemake, Xenon/Radon | `precommit`, `full`, `ci` | Fix design pressure before adding suppressions. |
 | Tests and coverage | pytest, coverage, diff-cover, release packaging checks | `precommit`, `full`, `ci`, release | Add focused tests before broader gates. |
 | Architecture | Tach, Import Linter, Archguard decision notes | `full`, `ci` | Respect module boundaries; add ADRs for boundary changes. |
@@ -54,8 +55,16 @@ python3 -m agent_maintainer assess debt
 python3 -m agent_maintainer assess debt --json
 python3 -m agent_maintainer assess file-baselines
 python3 -m agent_maintainer assess file-baselines --json
+python3 -m agent_maintainer assess file-baselines create --dry-run
+python3 -m agent_maintainer assess file-baselines inspect --json
+python3 -m agent_maintainer assess file-baselines prune --dry-run
+python3 -m agent_maintainer assess java-baseline create --dry-run
+python3 -m agent_maintainer assess java-baseline inspect --json
+python3 -m agent_maintainer assess java-baseline prune --dry-run
 ```
 
-These commands are advisory. They should guide configuration and repair plans,
-not replace tests or reviewer judgment.
+Setup and debt assessments remain advisory. File-baseline reports return
+nonzero for ceiling regressions when configured in blocking mode. Lifecycle
+commands are explicit local writes unless `--dry-run` or `inspect` is used; they
+do not replace tests or reviewer judgment.
 <!-- docsync:object.end docs.supported_scans.overview -->

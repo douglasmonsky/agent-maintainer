@@ -8,11 +8,11 @@ depends_on = []
 path = "cli"
 depends_on = [
   "//agent_maintainer.config.loader",
+  "baseline_cli",
   "debt_score",
   "efficacy",
   "efficacy_reporting",
   "evidence",
-  "file_baselines",
   "models",
 "repair_fact_coverage",
 "repair_fact_coverage_reporting",
@@ -20,6 +20,22 @@ depends_on = [
 "reviewability",
 "setup_advisor",
 ]
+
+[[modules]]
+path = "baseline_cli"
+depends_on = [
+  "//agent_maintainer.config.loader",
+  "//agent_maintainer.config.schema",
+  "file_baseline_lifecycle",
+  "file_baselines",
+  "java_baselines",
+  "models",
+  "reporting",
+]
+
+[[modules]]
+path = "baseline_repository"
+depends_on = []
 
 [[modules]]
 path = "debt_score"
@@ -87,11 +103,49 @@ depends_on = [
 ]
 
 [[modules]]
+path = "file_baseline_lifecycle"
+depends_on = [
+  "//agent_maintainer.config.schema",
+  "baseline_repository",
+  "file_baseline_codec",
+  "file_baseline_state",
+  "file_baselines",
+]
+
+[[modules]]
+path = "file_baseline_codec"
+depends_on = ["file_baseline_state"]
+
+[[modules]]
 path = "file_baselines"
 depends_on = [
+  "file_baseline_codec",
+  "file_baseline_state",
   "//agent_maintainer.config.schema",
   "//agent_maintainer.ecosystems.git_changes",
   "models",
+]
+
+[[modules]]
+path = "file_baseline_state"
+depends_on = []
+
+[[modules]]
+path = "java_baselines"
+depends_on = [
+  "baseline_repository",
+  "//agent_maintainer.ecosystems.java.baseline",
+  "java_baseline_evidence",
+]
+
+[[modules]]
+path = "java_baseline_evidence"
+depends_on = [
+  "baseline_repository",
+  "//agent_maintainer.ecosystems.java.artifacts",
+  "//agent_maintainer.ecosystems.java.baseline",
+  "//agent_maintainer.ecosystems.java.findings",
+  "//agent_maintainer.ecosystems.java.report_evidence",
 ]
 
 [[modules]]

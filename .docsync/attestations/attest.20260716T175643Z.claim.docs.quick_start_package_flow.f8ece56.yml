@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260716T175643Z.claim.docs.quick_start_package_flow.f8ece56
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.package_metadata
+  reason: The version bump preserves the unversioned package-first quick-start contract;
+    the standalone guide requires no content change.
+  reviewer: agent
+  reviewed_at: '2026-07-16T17:56:43Z'
+  base: HEAD
+  head: f8ece56
+  evidence_fingerprints:
+    evidence.readme.package_metadata: sha256:4d6352590298481bfa9f52d6e91c04463ee398b99c453a14e6b8a12880eb50d9
+  evidence_anchor_fingerprints:
+    evidence.readme.package_metadata:
+    - sha256:1e6c5112180611015161d5562c01011abe8050723eb6c8b752baa084a10eff05
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

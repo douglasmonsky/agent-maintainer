@@ -19,6 +19,7 @@ ValueKind = Literal[
     "tuple",
     "workspaces",
     "file-baseline-groups",
+    "java",
 ]
 
 CLI_OVERRIDE_NONE = "none"
@@ -60,6 +61,7 @@ NESTED_FIELD_KINDS: Mapping[str, ValueKind] = MappingProxyType(
     {
         "workspaces": "workspaces",
         "file_baselines": "file-baseline-groups",
+        "java": "java",
     }
 )
 NESTED_TOML_KEYS = MappingProxyType(
@@ -69,6 +71,7 @@ NESTED_TOML_KEYS = MappingProxyType(
         "diagnostic_run_history_limit": "diagnostics.run_history_limit",
         "file_baselines_enabled": "file_baselines.enabled",
         "file_baselines_mode": "file_baselines.mode",
+        "file_baselines_baseline": "file_baselines.baseline",
         "file_baselines": "file_baselines.groups",
     }
 )
@@ -105,7 +108,7 @@ WORKSPACE_KEYS = frozenset(
     )
 )
 WORKSPACE_PATH_KEYS = frozenset(("source_roots", "test_roots", "package_paths", "coverage_source"))
-FILE_BASELINE_KEYS = frozenset(("enabled", "mode", "groups"))
+FILE_BASELINE_KEYS = frozenset(("baseline", "enabled", "mode", "groups"))
 FILE_BASELINE_GROUP_KEYS = frozenset(
     (
         "include",
@@ -116,6 +119,42 @@ FILE_BASELINE_GROUP_KEYS = frozenset(
         "changed_file_warn",
         "changed_line_warn",
     )
+)
+JAVA_ENABLED_ENV = "AGENT_MAINTAINER_JAVA_ENABLED"
+NESTED_CONFIG_ENV_VARS = frozenset((JAVA_ENABLED_ENV,))
+JAVA_KEYS = frozenset(
+    (
+        "enabled",
+        "gradle_root",
+        "checks",
+        "gradle_args",
+        "source_roots",
+        "test_roots",
+        "projects",
+        "spotless_tasks",
+        "spotbugs_tasks",
+        "checkstyle_tasks",
+        "pmd_tasks",
+        "test_tasks",
+        "jacoco_report_tasks",
+        "jacoco_verify_tasks",
+        "spotless_profiles",
+        "spotbugs_profiles",
+        "checkstyle_profiles",
+        "pmd_profiles",
+        "test_profiles",
+        "jacoco_profiles",
+        "spotless_ratchet_ref",
+        "findings_baseline",
+        "spotbugs_baseline",
+        "jacoco_ratchet_ref",
+        "jacoco_line_property",
+        "jacoco_branch_property",
+        "reports",
+    )
+)
+JAVA_REPORT_KEYS = frozenset(
+    ("tool", "tasks", "globs", "required", "coverage_scope", "coverage_label")
 )
 
 PERCENT_FIELDS = frozenset(
@@ -156,6 +195,7 @@ PATH_FIELDS = frozenset(
         "yamllint_paths",
         "taplo_paths",
         "file_length_baseline",
+        "file_baselines_baseline",
         "pyright_strict_baseline",
         "ratchet_baseline_path",
         "ratchet_guidance_path",
@@ -364,4 +404,8 @@ def env_specs() -> tuple[ConfigFieldSpec, ...]:
 def known_environment_names() -> frozenset[str]:
     """Return config and runtime environment names accepted by the product."""
 
-    return frozenset(spec.env_var for spec in env_specs()) | NON_CONFIG_ENV_VARS
+    return (
+        frozenset(spec.env_var for spec in env_specs())
+        | NESTED_CONFIG_ENV_VARS
+        | NON_CONFIG_ENV_VARS
+    )

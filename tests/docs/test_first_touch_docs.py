@@ -173,6 +173,48 @@ def test_setup_advisor_docs_include_workspace_command_example() -> None:
     _assert_phrases_present(phrases)
 
 
+def test_java_setup_docs_pin_native_ratchet_boundaries() -> None:
+    """Java setup docs state the reviewed and static safety boundaries."""
+    phrases = {
+        "docs/provider-status.md": (
+            "Spotless `ratchetFrom`",
+            "native SpotBugs `FindBugsFilter`",
+            "Normal doctor remains static and never executes Gradle.",
+            "Java findings baseline lifecycle is explicit",
+        ),
+        "docs/setup-advisor.md": (
+            "Recommended, Guided, or Full control",
+            "never regex-rewrites an arbitrary Gradle build",
+            "Normal doctor and verification never run `tasks --all`.",
+            "preserves existing repository-owned workflows",
+        ),
+    }
+
+    _assert_phrases_present(phrases)
+
+
+def test_java_structured_evidence_docs_pin_bounded_lifecycle_contracts() -> None:
+    """Public docs describe structured evidence without overstating coverage rollout."""
+    phrases = {
+        "docs/provider-status.md": (
+            "bounded Checkstyle, PMD, SpotBugs, JUnit, and JaCoCo XML evidence",
+            "never persists raw Gradle XML",
+            "`assess java-baseline create|inspect|prune`",
+        ),
+        "docs/ratcheting.md": (
+            "`assess file-baselines create|inspect|prune`",
+            "Renamed paths do not inherit an oversized-file allowance.",
+            "Verification is comparison-only",
+        ),
+        "docs/supported-scans-and-agent-use.md": (
+            "provider-neutral per-path file ceilings",
+            "complete, non-truncated runner artifacts",
+        ),
+    }
+
+    _assert_phrases_present(phrases)
+
+
 def test_codex_wait_docs_disclose_smoke_and_model_turn_boundaries() -> None:
     """Codex wait docs keep diagnostic, fallback, and spend boundaries explicit."""
     phrases = {

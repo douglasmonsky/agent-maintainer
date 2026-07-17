@@ -209,8 +209,14 @@ def apply_env(
     updates = {
         spec.field_name: _coerce_env_value(spec, current[spec.env_var])
         for spec in registry.env_specs()
-        if spec.field_name != "mode" and spec.env_var in current
+        if spec.field_name not in {"mode", "java"} and spec.env_var in current
     }
+    java_enabled = current.get(registry.JAVA_ENABLED_ENV)
+    if java_enabled is not None:
+        updates["java"] = replace(
+            config.java,
+            enabled=coercion.as_bool(java_enabled, registry.JAVA_ENABLED_ENV),
+        )
     resolved = replace(config, **updates)
     return validation.validate_config(resolved, source="merged file/environment configuration")
 

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "case_id": "multi-project",
+  "repository_shape": "root and app Kotlin DSL Gradle projects",
+  "fixture": "tests/fixtures/java_gradle/kotlin_multi",
+  "sanitized": true,
+  "external_repository_claim": false,
+  "setup": {
+    "status": "ready",
+    "changed_files": 4,
+    "manual_edits": 0,
+    "diff_lines": 148,
+    "restructures_build": false
+  },
+  "verification": {
+    "command": "tests/live/java_gradle/groovy/gradlew -p tests/fixtures/java_gradle/kotlin_multi --no-daemon --console=plain check :app:check",
+    "wrapper_calls": 1,
+    "runtime_seconds": 7,
+    "environment": "macOS, JBR 25, Gradle 9.6.1 distribution cache warm"
+  },
+  "false_positives": 0,
+  "repair_facts": {
+    "seeded_failures": 2,
+    "actionable_facts": 2,
+    "useful": true,
+    "fact_kinds": ["java-static-finding", "jacoco-project-coverage"]
+  },
+  "baseline_churn": {
+    "initial_entries": 2,
+    "entries_changed_on_noop": 0,
+    "pruned_entries": 0,
+    "silent_threshold_lowering": false
+  },
+  "thresholds": {
+    "mode": "established-ratchet",
+    "current_line": "0.80",
+    "current_branch": "0.70",
+    "base_line": "0.80",
+    "base_branch": "0.70"
+  },
+  "coverage": [
+    {
+      "scope": "project",
+      "label": ":",
+      "report": "calibration/root-jacoco.xml",
+      "line_percentage": "100.0000",
+      "branch_percentage": "75.0000"
+    },
+    {
+      "scope": "project",
+      "label": ":app",
+      "report": "calibration/app-jacoco.xml",
+      "line_percentage": "80.0000",
+      "branch_percentage": "70.0000"
+    }
+  ],
+  "limitations": [
+    "Controlled fixture rather than an external production repository.",
+    "Per-project coverage facts prove labeling, not a real aggregate report."
+  ]
+}

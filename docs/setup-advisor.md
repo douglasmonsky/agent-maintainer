@@ -105,6 +105,48 @@ commands or workspace managers.
 Keep TypeScript reviewability policy advisory until fixture or real-repo
 evidence proves low-noise thresholds.
 
+## Java/Gradle Advice
+
+When the advisor finds a checked-in Gradle wrapper, a Groovy or Kotlin build,
+and Java source, it may recommend the experimental Java provider. Choose
+Recommended, Guided, or Full control through the Agent Maintainer setup skill:
+Recommended applies evidence-backed defaults, Guided asks only unresolved
+questions, and Full control walks through every supported choice and trade-off.
+
+Recognized new-repository scaffolds can receive deterministic provider-owned
+build fragments and rulesets. Existing builds use a typed semantic-edit handoff
+with a displayed diff and validation evidence. Agent Maintainer never
+regex-rewrites an arbitrary Gradle build. It also never falls back to system
+Gradle; every check uses the repository-confined wrapper and explicit task names.
+
+Task discovery is setup-only. Show and approve `tasks --all`, then run it only
+to validate the reviewed configuration. Native SpotBugs baseline creation must
+follow successful, complete, fresh report observation. Normal doctor and
+verification never run `tasks --all`.
+
+Checkstyle, PMD, and normalized SpotBugs debt use the explicit
+`assess java-baseline create|inspect|prune` lifecycle after a successful,
+complete, non-truncated static runner artifact at the current clean Git commit.
+Verification never creates or prunes Java findings or provider-neutral file
+ceiling baselines, and repair facts consume bounded runner artifacts rather
+than reopening raw Gradle XML.
+
+New repositories receive 80% line and 70% branch JaCoCo floors in
+`gradle.properties`. Established repositories keep an explicit upward-only base
+reference; setup never silently lowers their current floor. Multi-project
+coverage requires either one real aggregate report or explicit per-project
+coverage labels for every configured Gradle project. The advisor never combines
+module percentages into a synthetic total.
+
+For CI, preserve the repository's framework, JDK distribution, and JDK version.
+The reviewed GitHub Actions plan adds cached `static-and-policy` and
+`tests-and-coverage` jobs in a dedicated file and preserves existing
+repository-owned workflows. Unknown CI structures and differing managed paths
+are refused rather than overwritten.
+
+See the [Experimental Java/Gradle Provider](java-gradle-provider.md) for the
+complete configuration, wrapper-call budgets, repair workflow, and limitations.
+
 ## Relationship To Doctor
 
 `doctor` answers: is the configured setup healthy?

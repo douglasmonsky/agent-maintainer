@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from agent_maintainer.config import schema_fields
+from agent_maintainer.config.java import JavaGradleConfig
 from agent_maintainer.config.structure_defaults import (
     DEFAULT_STRUCTURE_HINT_PATTERNS,
     DEFAULT_STRUCTURE_IGNORE_PATHS,
@@ -42,6 +43,7 @@ DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES = 4
 DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES = 200
 DEFAULT_TS_ADVISORY_BROAD_SUPPRESSION_WARN = 1
 DEFAULT_FILE_BASELINE_MODE = "advisory"
+DEFAULT_FILE_BASELINE_PATH = ".agent-maintainer/file-baselines.json"
 DEFAULT_SBOM_ARGS = (
     "requirements",
     "config/dev-lock.txt",
@@ -113,6 +115,7 @@ class MaintainerConfig:
     """Resolved verifier settings after presets and overrides are applied."""
 
     mode: str = CUSTOM_MODE
+    java: JavaGradleConfig = field(default_factory=JavaGradleConfig)
     workspaces: tuple[WorkspaceConfig, ...] = ()
     source_roots: tuple[str, ...] = DEFAULT_SOURCE_ROOTS
     test_roots: tuple[str, ...] = DEFAULT_TEST_ROOTS
@@ -122,6 +125,7 @@ class MaintainerConfig:
     vulture_paths: tuple[str, ...] = DEFAULT_VULTURE_PATHS
     file_baselines_enabled: bool = False
     file_baselines_mode: str = DEFAULT_FILE_BASELINE_MODE
+    file_baselines_baseline: str = DEFAULT_FILE_BASELINE_PATH
     file_baselines: tuple[FileBaselineGroupConfig, ...] = ()
     require_tests: bool = True
     coverage_fail_under: int = 80

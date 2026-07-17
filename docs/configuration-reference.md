@@ -11,8 +11,45 @@ Configuration precedence is defaults, mode preset, file, environment, then CLI.
 |---|---|
 | `diagnostics` | `["enabled","log_dir","run_history_limit"]` |
 | `workspaces.*` | `["coverage_source","package_paths","source_roots","test_roots","typescript_lint_command","typescript_test_command","typescript_typecheck_command"]` |
-| `file_baselines` | `["enabled","groups","mode"]` |
+| `file_baselines` | `["baseline","enabled","groups","mode"]` |
 | `file_baselines.groups.*` | `["changed_file_warn","changed_line_warn","exclude","include","max_nonblank_lines","max_physical_lines","role"]` |
+| `java` | `["checks","checkstyle_profiles","checkstyle_tasks","enabled","findings_baseline","gradle_args","gradle_root","jacoco_branch_property","jacoco_line_property","jacoco_profiles","jacoco_ratchet_ref","jacoco_report_tasks","jacoco_verify_tasks","pmd_profiles","pmd_tasks","projects","reports","source_roots","spotbugs_baseline","spotbugs_profiles","spotbugs_tasks","spotless_profiles","spotless_ratchet_ref","spotless_tasks","test_profiles","test_roots","test_tasks"]` |
+| `java.reports.*` | `["coverage_label","coverage_scope","globs","required","tasks","tool"]` |
+
+## Nested Environment Overrides
+
+| TOML key | Environment |
+|---|---|
+| `java.enabled` | `AGENT_MAINTAINER_JAVA_ENABLED` |
+
+## Java Findings Baseline Lifecycle
+
+`java.findings_baseline` names the reviewed, repository-relative debt file. Agent Maintainer never changes the baseline during verification.
+Create or prune it only from a complete Java static-check artifact produced successfully at the current clean Git `HEAD`; inspect is read-only.
+
+```bash
+python -m agent_maintainer assess java-baseline create --target . --artifact .verify-logs/java-gradle/java-gradle-static.json --dry-run
+python -m agent_maintainer assess java-baseline create --target . --artifact .verify-logs/java-gradle/java-gradle-static.json
+python -m agent_maintainer assess java-baseline inspect --target . --json
+python -m agent_maintainer assess java-baseline prune --target . --artifact .verify-logs/java-gradle/java-gradle-static.json --dry-run
+python -m agent_maintainer assess java-baseline prune --target . --artifact .verify-logs/java-gradle/java-gradle-static.json
+```
+
+`create` refuses an existing baseline. `prune` may only remove findings or lower numeric ceilings. Both commands reject failed, stale, malformed, or truncated evidence.
+
+## Provider-Neutral File Ceiling Lifecycle
+
+`file_baselines.baseline` names the reviewed versioned per-path ceiling file. New paths use group physical/nonblank defaults; established oversized paths may hold steady or shrink but may not grow. Renamed paths never inherit an allowance.
+
+```bash
+python -m agent_maintainer assess file-baselines create --dry-run
+python -m agent_maintainer assess file-baselines create
+python -m agent_maintainer assess file-baselines inspect --json
+python -m agent_maintainer assess file-baselines prune --dry-run
+python -m agent_maintainer assess file-baselines prune
+```
+
+Create and prune require a clean Git worktree. Verification and inspect are read-only; prune refuses new or regressed paths and only lowers or removes entries.
 
 ## Fields
 
@@ -69,6 +106,7 @@ Configuration precedence is defaults, mode preset, file, environment, then CLI.
 | `enable_wemake` | bool | `false` | `AGENT_MAINTAINER_ENABLE_WEMAKE` | verify | — | beta |
 | `enable_yamllint` | bool | `false` | `AGENT_MAINTAINER_ENABLE_YAMLLINT` | verify | — | beta |
 | `file_baselines.groups` | file-baseline-groups | `[]` | — | none | — | beta |
+| `file_baselines.baseline` | str | `".agent-maintainer/file-baselines.json"` | `AGENT_MAINTAINER_FILE_BASELINES_BASELINE` | none | repository-relative path | beta |
 | `file_baselines.enabled` | bool | `false` | — | none | aliases: file_baselines_enabled | beta |
 | `file_baselines.mode` | choice | `"advisory"` | — | none | choices: advisory, blocking; aliases: file_baselines_mode | beta |
 | `file_length_baseline` | str | `""` | `AGENT_MAINTAINER_FILE_LENGTH_BASELINE` | verify | repository-relative path | stable |
@@ -78,6 +116,7 @@ Configuration precedence is defaults, mode preset, file, environment, then CLI.
 | `folder_file_block` | int | `40` | `AGENT_MAINTAINER_FOLDER_FILE_BLOCK` | none | >= 0 | beta |
 | `folder_file_warn` | int | `20` | `AGENT_MAINTAINER_FOLDER_FILE_WARN` | none | >= 0 | beta |
 | `interrogate_fail_under` | int | `80` | `AGENT_MAINTAINER_INTERROGATE_FAIL_UNDER` | verify | >= 0; <= 100 | beta |
+| `java` | java | `{"checks":[],"checkstyle_profiles":["full","ci"],"checkstyle_tasks":[],"enabled":false,"findings_baseline":".agent-maintainer/java-findings-baseline.json","gradle_args":["--console=plain","--continue"],"gradle_root":".","jacoco_branch_property":"agentMaintainer.jacoco.minimumBranchCoverage","jacoco_line_property":"agentMaintainer.jacoco.minimumLineCoverage","jacoco_profiles":["full","ci"],"jacoco_ratchet_ref":"origin/main","jacoco_report_tasks":[],"jacoco_verify_tasks":[],"pmd_profiles":["full","ci"],"pmd_tasks":[],"projects":[":"],"reports":[{"coverage_label":"","coverage_scope":"","globs":["build/reports/spotbugs/main.xml","build/reports/spotbugs/test.xml"],"required":true,"tasks":["spotbugsMain","spotbugsTest"],"tool":"spotbugs"},{"coverage_label":"","coverage_scope":"","globs":["build/reports/checkstyle/main.xml","build/reports/checkstyle/test.xml"],"required":true,"tasks":["checkstyleMain","checkstyleTest"],"tool":"checkstyle"},{"coverage_label":"","coverage_scope":"","globs":["build/reports/pmd/main.xml","build/reports/pmd/test.xml"],"required":true,"tasks":["pmdMain","pmdTest"],"tool":"pmd"},{"coverage_label":"","coverage_scope":"","globs":["build/test-results/test/*.xml"],"required":true,"tasks":["test"],"tool":"test"},{"coverage_label":":","coverage_scope":"project","globs":["build/reports/jacoco/test/jacocoTestReport.xml"],"required":true,"tasks":["jacocoTestReport"],"tool":"jacoco"}],"source_roots":["src/main/java","**/src/main/java"],"spotbugs_baseline":"","spotbugs_profiles":["full","ci"],"spotbugs_tasks":[],"spotless_profiles":["precommit","full","ci"],"spotless_ratchet_ref":"","spotless_tasks":[],"test_profiles":["full","ci"],"test_roots":["src/test/java","**/src/test/java"],"test_tasks":[]}` | — | none | — | beta |
 | `large_change_allow_expired_plans` | bool | `false` | `AGENT_MAINTAINER_LARGE_CHANGE_ALLOW_EXPIRED_PLANS` | none | — | beta |
 | `large_change_fail_out_of_plan_paths` | bool | `true` | `AGENT_MAINTAINER_LARGE_CHANGE_FAIL_OUT_OF_PLAN_PATHS` | none | — | beta |
 | `large_change_max_active_plans` | non-negative-int | `1` | `AGENT_MAINTAINER_LARGE_CHANGE_MAX_ACTIVE_PLANS` | none | >= 1 | beta |

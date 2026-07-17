@@ -31,6 +31,8 @@ depends_on = []
 
 path = "registry"
 depends_on = [
+ "java.classification",
+ "java.provider",
  "models",
  "python.classification",
  "python.provider",
@@ -39,6 +41,182 @@ depends_on = [
  "typescript.suppressions",
  "//agent_maintainer.config.schema",
 ]
+
+
+[[modules]]
+path = "java"
+depends_on = []
+
+[[modules]]
+path = "java.classification"
+depends_on = [
+  "models",
+  "//agent_maintainer.config.java",
+]
+
+[[modules]]
+path = "java.defaults"
+depends_on = []
+
+[[modules]]
+path = "java.templates"
+depends_on = ["java.defaults"]
+
+[[modules]]
+path = "java.artifacts"
+depends_on = [
+  "//agent_maintainer.core.artifact_environment",
+  "java.provider",
+  "java.wrapper",
+]
+
+[[modules]]
+path = "java.errors"
+depends_on = []
+
+[[modules]]
+path = "java.findings"
+depends_on = []
+
+[[modules]]
+path = "java.jacoco_thresholds"
+depends_on = [
+  "java.errors",
+  "java.reports.jacoco",
+]
+
+[[modules]]
+path = "java.jacoco_topology"
+depends_on = ["//agent_maintainer.config.java"]
+
+[[modules]]
+path = "java.baseline"
+depends_on = ["java.findings"]
+
+[[modules]]
+path = "java.observations"
+depends_on = [
+  "java.errors",
+  "//agent_maintainer.config.java",
+]
+
+[[modules]]
+path = "java.provider"
+depends_on = [
+  "java.errors",
+  "java.jacoco_topology",
+  "models",
+  "//agent_maintainer.config.java",
+  "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "java.runner"
+depends_on = [
+  "//agent_maintainer.core.artifact_environment",
+  "java.artifacts",
+  "java.errors",
+  "java.jacoco_thresholds",
+  "java.observations",
+  "java.provider",
+  "java.ratchets",
+  "java.report_evidence",
+  "java.wrapper",
+  "//agent_maintainer.config.loader",
+]
+
+[[modules]]
+path = "java.semantic_edits"
+depends_on = ["//agent_maintainer.core.setup_plans"]
+
+[[modules]]
+path = "java.ratchets"
+depends_on = []
+
+[[modules]]
+path = "java.report_outcomes"
+depends_on = [
+  "java.errors",
+  "java.observations",
+  "java.provider",
+]
+
+[[modules]]
+path = "java.report_evidence"
+depends_on = [
+  "java.baseline",
+  "java.errors",
+  "java.findings",
+  "java.observations",
+  "java.provider",
+  "java.report_outcomes",
+  "java.reports.checkstyle",
+  "java.reports.jacoco",
+  "java.reports.junit",
+  "java.reports.pmd",
+  "java.reports.spotbugs",
+]
+
+[[modules]]
+path = "java.reports"
+depends_on = []
+
+[[modules]]
+path = "java.reports.xml"
+depends_on = ["java.errors"]
+
+[[modules]]
+path = "java.reports.checkstyle"
+depends_on = [
+  "java.findings",
+  "java.reports.xml",
+]
+
+[[modules]]
+path = "java.reports.junit"
+depends_on = ["java.reports.xml"]
+
+[[modules]]
+path = "java.reports.jacoco"
+depends_on = ["java.reports.xml"]
+
+[[modules]]
+path = "java.reports.pmd"
+depends_on = [
+  "java.findings",
+  "java.reports.xml",
+]
+
+[[modules]]
+path = "java.reports.spotbugs"
+depends_on = [
+  "java.errors",
+  "java.findings",
+  "java.observations",
+  "java.reports.xml",
+  "//agent_maintainer.config.java",
+]
+
+[[modules]]
+path = "java.setup"
+depends_on = [
+  "//agent_maintainer.core.setup_plans",
+  "//agent_maintainer.config.java",
+  "java.jacoco_thresholds",
+  "java.observations",
+  "java.reports.spotbugs",
+  "java.semantic_edits",
+  "java.ratchets",
+  "java.templates",
+]
+
+[[modules]]
+path = "java.setup_validation"
+depends_on = []
+
+[[modules]]
+path = "java.wrapper"
+depends_on = ["java.errors"]
 
 
 [[modules]]

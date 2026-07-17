@@ -10,6 +10,7 @@ from typing import cast
 from agent_maintainer import models
 from agent_maintainer.config import registry, schema, source_validation, value_types
 from agent_maintainer.config.issues import ConfigIssue, ConfigValidationError
+from agent_maintainer.config.java_validation import java_issues
 
 TOOL_TABLE = source_validation.TOOL_TABLE
 
@@ -63,6 +64,7 @@ def validate_config(
     ]
     issues.extend(_workspace_issues(config, source=source))
     issues.extend(_file_baseline_issues(config, source=source))
+    issues.extend(java_issues(config.java, source=source))
     issues.extend(_cross_field_issues(config, source=source))
     if issues:
         raise ConfigValidationError(tuple(issues))

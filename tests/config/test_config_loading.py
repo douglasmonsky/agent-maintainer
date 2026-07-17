@@ -67,6 +67,7 @@ def test_read_pyproject_loads_ai_maintainer_config(tmp_path: Path) -> None:
 source_roots = ["lib"]
 test_roots = ["specs"]
 require_tests = true
+enable_typescript = true
 enable_pip_audit = true
 pip_audit_args = ["-r", "requirements.txt"]
 enable_mutmut = true
@@ -125,7 +126,7 @@ run_history_limit = 7
 
     assert loaded.source_roots == ("lib",)
     assert loaded.test_roots == ("specs",)
-    assert loaded.require_tests is True
+    assert (loaded.require_tests, loaded.enable_typescript) == (True, True)
     assert loaded.enable_pip_audit is True
     assert loaded.pip_audit_args == ("-r", "requirements.txt")
     assert loaded.enable_mutmut is True

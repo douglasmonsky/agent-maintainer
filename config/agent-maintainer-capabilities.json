@@ -1146,6 +1146,28 @@
         "maximum": null,
         "minimum": null,
         "minimum_exclusive": false,
+        "repository_relative_path": true,
+        "verification_profiles": false
+      },
+      "default": ".agent-maintainer/file-baselines.json",
+      "description": "Configure file baselines baseline.",
+      "environment": "AGENT_MAINTAINER_FILE_BASELINES_BASELINE",
+      "environment_style": "standard",
+      "label": "File Baselines Baseline",
+      "name": "file_baselines_baseline",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "file_baselines.baseline",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
         "repository_relative_path": false,
         "verification_profiles": false
       },
@@ -1347,6 +1369,153 @@
       "toml_aliases": [],
       "toml_key": "interrogate_fail_under",
       "value_kind": "int"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": {
+        "checks": [],
+        "checkstyle_profiles": [
+          "full",
+          "ci"
+        ],
+        "checkstyle_tasks": [],
+        "enabled": false,
+        "findings_baseline": ".agent-maintainer/java-findings-baseline.json",
+        "gradle_args": [
+          "--console=plain",
+          "--continue"
+        ],
+        "gradle_root": ".",
+        "jacoco_branch_property": "agentMaintainer.jacoco.minimumBranchCoverage",
+        "jacoco_line_property": "agentMaintainer.jacoco.minimumLineCoverage",
+        "jacoco_profiles": [
+          "full",
+          "ci"
+        ],
+        "jacoco_ratchet_ref": "origin/main",
+        "jacoco_report_tasks": [],
+        "jacoco_verify_tasks": [],
+        "pmd_profiles": [
+          "full",
+          "ci"
+        ],
+        "pmd_tasks": [],
+        "projects": [
+          ":"
+        ],
+        "reports": [
+          {
+            "coverage_label": "",
+            "coverage_scope": "",
+            "globs": [
+              "build/reports/spotbugs/main.xml",
+              "build/reports/spotbugs/test.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "spotbugsMain",
+              "spotbugsTest"
+            ],
+            "tool": "spotbugs"
+          },
+          {
+            "coverage_label": "",
+            "coverage_scope": "",
+            "globs": [
+              "build/reports/checkstyle/main.xml",
+              "build/reports/checkstyle/test.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "checkstyleMain",
+              "checkstyleTest"
+            ],
+            "tool": "checkstyle"
+          },
+          {
+            "coverage_label": "",
+            "coverage_scope": "",
+            "globs": [
+              "build/reports/pmd/main.xml",
+              "build/reports/pmd/test.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "pmdMain",
+              "pmdTest"
+            ],
+            "tool": "pmd"
+          },
+          {
+            "coverage_label": "",
+            "coverage_scope": "",
+            "globs": [
+              "build/test-results/test/*.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "test"
+            ],
+            "tool": "test"
+          },
+          {
+            "coverage_label": ":",
+            "coverage_scope": "project",
+            "globs": [
+              "build/reports/jacoco/test/jacocoTestReport.xml"
+            ],
+            "required": true,
+            "tasks": [
+              "jacocoTestReport"
+            ],
+            "tool": "jacoco"
+          }
+        ],
+        "source_roots": [
+          "src/main/java",
+          "**/src/main/java"
+        ],
+        "spotbugs_baseline": "",
+        "spotbugs_profiles": [
+          "full",
+          "ci"
+        ],
+        "spotbugs_tasks": [],
+        "spotless_profiles": [
+          "precommit",
+          "full",
+          "ci"
+        ],
+        "spotless_ratchet_ref": "",
+        "spotless_tasks": [],
+        "test_profiles": [
+          "full",
+          "ci"
+        ],
+        "test_roots": [
+          "src/test/java",
+          "**/src/test/java"
+        ],
+        "test_tasks": []
+      },
+      "description": "Configure java.",
+      "environment": null,
+      "environment_style": null,
+      "label": "Java",
+      "name": "java",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "java",
+      "value_kind": "java"
     },
     {
       "cli_override": "none",
@@ -3032,6 +3201,9 @@
       "value_kind": "tuple"
     }
   ],
+  "nested_environment": {
+    "java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"
+  },
   "nested_tables": {
     "diagnostics": [
       "enabled",
@@ -3039,6 +3211,7 @@
       "run_history_limit"
     ],
     "file_baselines": [
+      "baseline",
       "enabled",
       "groups",
       "mode"
@@ -3051,6 +3224,43 @@
       "max_nonblank_lines",
       "max_physical_lines",
       "role"
+    ],
+    "java": [
+      "checks",
+      "checkstyle_profiles",
+      "checkstyle_tasks",
+      "enabled",
+      "findings_baseline",
+      "gradle_args",
+      "gradle_root",
+      "jacoco_branch_property",
+      "jacoco_line_property",
+      "jacoco_profiles",
+      "jacoco_ratchet_ref",
+      "jacoco_report_tasks",
+      "jacoco_verify_tasks",
+      "pmd_profiles",
+      "pmd_tasks",
+      "projects",
+      "reports",
+      "source_roots",
+      "spotbugs_baseline",
+      "spotbugs_profiles",
+      "spotbugs_tasks",
+      "spotless_profiles",
+      "spotless_ratchet_ref",
+      "spotless_tasks",
+      "test_profiles",
+      "test_roots",
+      "test_tasks"
+    ],
+    "java.reports.*": [
+      "coverage_label",
+      "coverage_scope",
+      "globs",
+      "required",
+      "tasks",
+      "tool"
     ],
     "workspaces.*": [
       "coverage_source",

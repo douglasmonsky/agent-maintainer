@@ -6,6 +6,7 @@ import math
 from typing import Any, TypeGuard
 
 from agent_maintainer.config import registry, schema, validation
+from agent_maintainer.config.java_coercion import coerce_java
 
 DEFAULT_CONFIG_SOURCE = "configuration"
 
@@ -174,6 +175,12 @@ def coerce_file_baselines(
             "file_baselines.mode",
             schema.VALID_FILE_BASELINE_MODES,
         )
+    baseline_path = raw_table.get("baseline")
+    if baseline_path is not None:
+        updates["file_baselines_baseline"] = as_str(
+            baseline_path,
+            "file_baselines.baseline",
+        )
     groups = raw_table.get("groups")
     if groups is not None:
         group_table = _config_table(groups, "file_baselines.groups")
@@ -303,6 +310,9 @@ def coerce_updates(
     file_baselines = raw.get("file_baselines")
     if file_baselines is not None:
         updates.update(coerce_file_baselines(file_baselines, source=source))
+    java = raw.get("java")
+    if java is not None:
+        updates["java"] = coerce_java(java, source=source)
     return updates
 
 

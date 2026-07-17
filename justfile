@@ -89,7 +89,7 @@ verify-full-output:
     markdownlint-cli2 "**/*.md"
     yamllint .github/workflows .pre-commit-config.yaml .markdownlint-cli2.yaml .yamllint zizmor.yml
     taplo fmt --check pyproject.toml tach.toml config/*.toml
-    check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/verify.yml .github/workflows/deep-verify.yml .github/workflows/publish.yml
+    check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/verify.yml .github/workflows/deep-verify.yml .github/workflows/java-gradle-live.yml .github/workflows/publish.yml
     pip-audit -r config/dev-lock.txt
 
 clean-verify-logs:

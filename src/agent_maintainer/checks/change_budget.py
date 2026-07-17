@@ -9,7 +9,7 @@ variables, or CLI flags.
 from __future__ import annotations
 
 import argparse
-import shutil
+import re
 import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass
@@ -118,8 +118,7 @@ def is_python_test(path: str, test_roots: tuple[str, ...]) -> bool:
 def git_numstat_command(base_ref: str, *, staged: bool) -> list[str]:
     """Build copy-aware numstat command for staged or ref-based comparison."""
 
-    git = shutil.which("git") or "git"
-    command = [git, "diff", "--numstat", "-C", "--find-copies-harder"]
+    command = ["git", "diff", "--numstat", "-C", "--find-copies-harder"]
     command.extend(["--cached"] if staged else [base_ref])
     command.append("--")
     return command
@@ -128,8 +127,7 @@ def git_numstat_command(base_ref: str, *, staged: bool) -> list[str]:
 def git_name_status_command(base_ref: str, *, staged: bool) -> list[str]:
     """Build copy-aware name-status command for diff accounting."""
 
-    git = shutil.which("git") or "git"
-    command = [git, "diff", "--name-status", "-C", "--find-copies-harder"]
+    command = ["git", "diff", "--name-status", "-C", "--find-copies-harder"]
     command.extend(["--cached"] if staged else [base_ref])
     command.append("--")
     return command
@@ -185,7 +183,8 @@ def run_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
         parts = line.split("	")
         if len(parts) != NUMSTAT_FIELD_COUNT:
             continue
-        added_raw, deleted_raw, path = parts
+        added_raw, deleted_raw, raw_path = parts
+        path = re.sub(r"^(?:(.*)\{)?[^{}]* => ([^{}]*)(?:\})?(.*)$", r"\1\2\3", raw_path)
         if added_raw == "-" or deleted_raw == "-" or should_exclude(path):
             continue
         deleted = 0 if path in copied_sources else int(deleted_raw)

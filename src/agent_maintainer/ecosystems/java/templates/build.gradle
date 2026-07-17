@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'com.diffplug.spotless' version '@SPOTLESS_PLUGIN_VERSION@'
+    id 'com.github.spotbugs' version '@SPOTBUGS_PLUGIN_VERSION@'
+    id 'checkstyle'
+    id 'pmd'
+    id 'jacoco'
+}
+
+spotless {
+    java {
+        googleJavaFormat('@GOOGLE_JAVA_FORMAT_VERSION@')
+        importOrder()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+spotbugs {
+    effort = com.github.spotbugs.snom.Effort.MAX
+    reportLevel = com.github.spotbugs.snom.Confidence.valueOf('MEDIUM')
+}
+
+checkstyle {
+    toolVersion = '@CHECKSTYLE_VERSION@'
+    configFile = file('config/checkstyle/checkstyle.xml')
+}
+
+pmd {
+    toolVersion = '@PMD_VERSION@'
+    ruleSets = []
+    ruleSetFiles = files('config/pmd/pmd.xml')
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+tasks.withType(org.gradle.api.plugins.quality.Checkstyle).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+tasks.withType(org.gradle.api.plugins.quality.Pmd).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+jacoco {
+    toolVersion = '@JACOCO_VERSION@'
+}
+
+def agentMaintainerMinimumLineCoverage = providers.gradleProperty(
+    'agentMaintainer.jacoco.minimumLineCoverage'
+).get().toBigDecimal()
+def agentMaintainerMinimumBranchCoverage = providers.gradleProperty(
+    'agentMaintainer.jacoco.minimumBranchCoverage'
+).get().toBigDecimal()
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('test')
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = agentMaintainerMinimumLineCoverage
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = agentMaintainerMinimumBranchCoverage
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestReport'), tasks.named('jacocoTestCoverageVerification')
+}

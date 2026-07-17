@@ -17,6 +17,25 @@ SCENARIOS = {
         "Do not guess",
         "explicit TypeScript command",
     ),
+    "java_recommended": (
+        "Recommended Java setup requires concrete Gradle wrapper, build file, and Java "
+        "source evidence",
+        "reviewed semantic-edit handoff",
+    ),
+    "java_guided": (
+        "Ask Java questions only when the repository leaves them unresolved",
+        "Gradle DSL and module ownership",
+    ),
+    "java_full_control": (
+        "For Java, cover every supported plugin version, ruleset, ratchet reference",
+        "native baseline, coverage, and CI choice",
+    ),
+    "java_validation": (
+        "Run this setup-only sequence after the reviewed Java edits",
+        "approve `tasks --all`",
+        "Only successful observation evidence may create a native baseline",
+        "Normal doctor and verification never perform task discovery",
+    ),
     "escalation": ("continue in Guided or Full control",),
     "guided": (
         "Ask only questions",

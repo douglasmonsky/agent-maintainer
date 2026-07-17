@@ -89,6 +89,43 @@ Current stale signals:
 - baseline paths no longer exist
 - baseline findings are no longer present in current findings
 
+## Java Findings And Provider-Neutral File Ceilings
+
+Java finding debt and provider-neutral file ceilings use separate strict,
+versioned JSON baselines. They do not reuse the older multi-check ratchet file.
+Verification is comparison-only: it never creates, overwrites, or prunes either
+baseline.
+
+Use `assess java-baseline create|inspect|prune` only after the Java static group
+has produced a complete, non-truncated artifact from a successful Gradle process
+at the current clean Git commit:
+
+```bash
+python3 -m agent_maintainer assess java-baseline create --dry-run
+python3 -m agent_maintainer assess java-baseline create
+python3 -m agent_maintainer assess java-baseline inspect --json
+python3 -m agent_maintainer assess java-baseline prune --dry-run
+python3 -m agent_maintainer assess java-baseline prune
+```
+
+Use `assess file-baselines create|inspect|prune` for configured file groups in
+any ecosystem:
+
+```bash
+python3 -m agent_maintainer assess file-baselines create --dry-run
+python3 -m agent_maintainer assess file-baselines create
+python3 -m agent_maintainer assess file-baselines inspect --json
+python3 -m agent_maintainer assess file-baselines prune --dry-run
+python3 -m agent_maintainer assess file-baselines prune
+```
+
+New files use each group's physical and nonblank defaults. An established
+oversized path may hold steady or shrink but may not grow. Improvements and
+removed paths produce prune suggestions; prune refuses new or regressed debt.
+Renamed paths do not inherit an oversized-file allowance. Review dry-run output,
+commit the baseline explicitly, and keep Java finding debt separate from file
+size policy.
+
 ## Planned Follow-Up
 
 Planned capabilities include changed-code discipline, generated agent guidance in

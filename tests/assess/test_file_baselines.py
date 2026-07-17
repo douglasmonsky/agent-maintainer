@@ -38,6 +38,7 @@ def test_config_loads_nested_baselines(tmp_path: Path) -> None:
 [tool.agent_maintainer.file_baselines]
 enabled = true
 mode = "advisory"
+baseline = ".agent-maintainer/file-baselines.json"
 
 [tool.agent_maintainer.file_baselines.groups.typescript_source]
 include = ["src/**/*.{ts,tsx}"]
@@ -58,6 +59,7 @@ changed_line_warn = 400
 
     assert config.file_baselines_enabled is True
     assert config.file_baselines_mode == "advisory"
+    assert config.file_baselines_baseline == ".agent-maintainer/file-baselines.json"
     assert config.file_baselines == (
         FileBaselineGroupConfig(
             name="typescript_source",
@@ -211,9 +213,11 @@ def test_text_renders_findings() -> None:
                 ),
             ),
             next_commands=("python -m agent_maintainer assess file-baselines --json",),
+            passed=False,
         ),
     )
 
+    assert "Passed: False" in finding_text
     assert "- docs (docs): matched=2, changed=1 files/30 lines, findings=1" in finding_text
     assert "docs/physical-lines: docs/guide.md: 701 physical lines exceeds 700" in finding_text
     assert "Split the file by topic." in finding_text
