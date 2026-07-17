@@ -80,8 +80,12 @@ jobs:
           base_commit=$(printf '%s\n' "Agent Maintainer live ratchet base" | \
             git commit-tree 'HEAD^{tree}' -p HEAD)
           git update-ref refs/heads/agent-maintainer-live-base "$base_commit"
-          printf '\n// Agent Maintainer live ratchet probe.\n' \
-            >> src/main/java/example/Calculator.java
+          python -c '
+          from pathlib import Path
+          path = Path("src/main/java/example/Calculator.java")
+          path.write_text(path.read_text(encoding="utf-8") +
+              "\n// Agent Maintainer live ratchet probe.\n", encoding="utf-8")
+          '
           sed -i 's/minimumLineCoverage=0.80/minimumLineCoverage=0.81/' \
             gradle.properties
           sed -i 's/minimumBranchCoverage=0.70/minimumBranchCoverage=0.71/' \

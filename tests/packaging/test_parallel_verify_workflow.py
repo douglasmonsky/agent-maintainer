@@ -125,6 +125,15 @@ def test_live_java_workflow_validates_wrappers_and_uses_bounded_cache() -> None:
     assert "runtime-seconds.txt" in text
 
 
+def test_live_java_workflow_uses_platform_native_probe_newlines() -> None:
+    """The ratchet probe does not mix LF text into Windows CRLF checkouts."""
+
+    text = JAVA_LIVE_WORKFLOW.read_text(encoding="utf-8")
+
+    assert 'path.write_text(path.read_text(encoding="utf-8")' in text
+    assert "printf '\\n// Agent Maintainer live ratchet probe.\\n'" not in text
+
+
 def test_live_java_workflow_uploads_reports_for_every_matrix_cell() -> None:
     text = JAVA_LIVE_WORKFLOW.read_text(encoding="utf-8")
 

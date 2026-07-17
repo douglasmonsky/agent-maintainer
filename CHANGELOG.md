@@ -14,9 +14,10 @@ smokes.
   PMD, JaCoCo, provider-neutral file/finding baselines, and upward-only coverage
   thresholds without silently lowering stored policy.
 - Added truthful multi-project topology, repair facts, bounded report failures,
-  cached live Gradle validation, and Linux/Windows workflow coverage. Java stays
-  experimental until hosted Windows proof and production-repository calibration
-  satisfy its promotion gates.
+  cached live Gradle validation, and Linux/Windows workflow coverage with
+  platform-native ratchet probe line endings. Java stays experimental until
+  hosted Windows proof and production-repository calibration satisfy its
+  promotion gates.
 - Fixed cohesive-change accounting for copied and renamed destinations so the
   reviewed diff cannot undercount those paths.
 - Extended the mutation suite across Java config and file-baseline coercion,

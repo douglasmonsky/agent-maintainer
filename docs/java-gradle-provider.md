@@ -155,7 +155,9 @@ Maintainer. The fixtures exercise native Spotless ratcheting, a SpotBugs native
 baseline, Checkstyle, PMD, JUnit, JaCoCo, and bounded XML evidence in exactly two
 wrapper calls. The workflow uses a bounded Gradle dependency cache, enforces a
 20-minute job timeout, records calls/runtime, and uploads reports plus sanitized
-runner artifacts. It stays separate from the protected aggregate `verify` job.
+runner artifacts. Ratchet probes use platform-native line endings so Spotless
+sees a consistently formatted source file on both LF and CRLF checkouts. The
+workflow stays separate from the protected aggregate `verify` job.
 
 ## Current limitations
 
