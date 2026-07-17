@@ -21,11 +21,16 @@ seam has settled.
 
 ## Current Focus
 
-TypeScript/JavaScript remains the first maturation evidence track. Java/Gradle
-is now the second built-in experimental priority for the maintainer's future
-repositories; that priority intentionally supersedes the former
-TypeScript-before-any-other-provider sequence without promoting either provider.
-TypeScript still must satisfy the bar in
+TypeScript/JavaScript is again the active parity track. TypeScript/React parity
+work now advances through focused pull requests to `main`. The
+[TypeScript/React Parity Roadmap](roadmap/typescript-react-parity-roadmap.md)
+keeps the provider experimental while evidence accumulates. Phase 178 observes
+package-manager and workspace evidence for advisory setup facts only. Detected
+evidence never creates or executes a command.
+
+Java/Gradle remains the second built-in experimental priority. Neither provider
+is promoted by this sequencing decision. TypeScript still must satisfy the bar
+in
 [TypeScript Provider Maturation Notes](case-studies/typescript-provider-maturation.md).
 Java's current contract is in the
 [Experimental Java/Gradle Provider](java-gradle-provider.md), with measured

@@ -159,6 +159,21 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
 # docsync:evidence.end evidence.typescript.provider_docs_maturity_tests
 
 
+def test_provider_status_tracks_typescript_parity_roadmap() -> None:
+    """Provider status exposes the current parity track without command inference."""
+
+    phrases = {
+        "docs/provider-status.md": (
+            "TypeScript/React parity work now advances through focused pull "
+            "requests to `main`.",
+            "Phase 178 observes package-manager and workspace evidence for "
+            "advisory setup facts only.",
+            "Detected evidence never creates or executes a command.",
+        ),
+    }
+    _assert_phrases_present(phrases)
+
+
 def test_setup_advisor_docs_include_workspace_command_example() -> None:
     """Setup advisor docs keep explicit workspace command ownership concrete."""
     phrases = {

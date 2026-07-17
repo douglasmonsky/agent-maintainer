@@ -300,6 +300,7 @@ files.
 
 - Modify: `docs/ROADMAP.md`
 - Modify: `docs/provider-status.md`
+- Modify: `docs/superpowers/plans/2026-07-17-typescript-react-parity-roadmap-refresh.md`
 - Test: `tests/docs/test_roadmap_docs.py`
 - Test: `tests/docs/test_first_touch_docs.py`
 
@@ -321,16 +322,26 @@ Add these assertions to
     assert "(roadmap/typescript-react-parity-roadmap.md)" in text
 ```
 
-Add these phrases to the `docs/provider-status.md` tuple in
-`test_provider_docs_contain_clear_maturity_phrases` in
-`tests/docs/test_first_touch_docs.py`:
+The existing TypeScript maturity test is a versioned DocSync evidence span with
+an older attestation. Do not change that span or delete its attestation. Add
+this dedicated test immediately after the
+`# docsync:evidence.end evidence.typescript.provider_docs_maturity_tests`
+marker in `tests/docs/test_first_touch_docs.py`:
 
 ```python
+def test_provider_status_tracks_typescript_parity_roadmap() -> None:
+    """Provider status exposes the current parity track without command inference."""
+
+    phrases = {
+        "docs/provider-status.md": (
             "TypeScript/React parity work now advances through focused pull "
             "requests to `main`.",
             "Phase 178 observes package-manager and workspace evidence for "
             "advisory setup facts only.",
             "Detected evidence never creates or executes a command.",
+        ),
+    }
+    _assert_phrases_present(phrases)
 ```
 
 - [ ] **Step 2: Run both contracts and verify the red state**
@@ -338,7 +349,7 @@ Add these phrases to the `docs/provider-status.md` tuple in
 Run:
 
 ```bash
-.venv/bin/pytest -q tests/docs/test_roadmap_docs.py::test_active_roadmap_reports_current_strict_and_api_state tests/docs/test_first_touch_docs.py::test_provider_docs_contain_clear_maturity_phrases
+.venv/bin/pytest -q tests/docs/test_roadmap_docs.py::test_active_roadmap_reports_current_strict_and_api_state tests/docs/test_first_touch_docs.py::test_provider_status_tracks_typescript_parity_roadmap
 ```
 
 Expected: FAIL because the Phase 177/178 current-state lines and new
@@ -414,11 +425,11 @@ Expected: `docs/ROADMAP.md` reports no more than 180 lines and
 Run:
 
 ```bash
-git add -- docs/ROADMAP.md docs/provider-status.md tests/docs/test_roadmap_docs.py tests/docs/test_first_touch_docs.py
+git add -- docs/ROADMAP.md docs/provider-status.md docs/superpowers/plans/2026-07-17-typescript-react-parity-roadmap-refresh.md tests/docs/test_roadmap_docs.py tests/docs/test_first_touch_docs.py
 git commit -m "docs: activate TypeScript parity roadmap"
 ```
 
-Expected: commit hooks pass and the commit contains exactly the four listed
+Expected: commit hooks pass and the commit contains exactly the five listed
 files.
 
 ### Task 3: Verify, Publish, And Merge Phase 177

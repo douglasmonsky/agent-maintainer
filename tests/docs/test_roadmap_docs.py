@@ -127,6 +127,10 @@ def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     assert "[x] Publish exact-installed-version expectations" in text
     assert "[x] Guarantee changed, failed, exact-fact" in text
     assert "[x] Validate attention schema version" in text
+    assert "Phase 176: Codex Terminal Rewake Hardening" in text
+    assert "Phase 177: TypeScript/React Parity Roadmap" in text
+    assert "Phase 178: Advisory Package-Manager And Workspace Detection" in text
+    assert "(roadmap/typescript-react-parity-roadmap.md)" in text
 
 
 def test_phase_specs_are_split_and_bounded() -> None:
