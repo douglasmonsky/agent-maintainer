@@ -25,11 +25,12 @@ Already landed:
 - TypeScript compiler, ESLint JSON, Jest/Vitest JSON, Istanbul summary, and LCOV
   repair facts.
 - TypeScript/React doctor and setup-advisor guidance.
+- Advisory package-manager and workspace detection with file-and-field
+  provenance.
 
 Still missing before a promotion assessment:
 
 - Blocking TypeScript/React reviewability gates.
-- Advisory package-manager and workspace detection.
 - First-class dead-code, dependency, security, architecture, changed-line
   coverage, mutation, and generated-file adapters.
 - Broader external evidence across React, Vite, Next.js, and workspace layouts.
@@ -61,7 +62,7 @@ Still missing before a promotion assessment:
 
 ## Implementation Sequence
 
-1. Phase 178: advisory package-manager and workspace detection.
+1. Phase 178: advisory package-manager and workspace detection is complete.
 2. Knip unused-code and dependency facts.
 3. OSV and package-manager audit facts.
 4. Dependency-cruiser architecture-boundary facts, followed by declared Nx
@@ -77,7 +78,7 @@ slice has an approved design and implementation plan.
 
 ## Phase 178 Safety Boundary
 
-Phase 178 may observe root `package.json` metadata, the `packageManager` field,
+Phase 178 observes root `package.json` metadata, the `packageManager` field,
 Corepack-related declarations, npm/pnpm/Yarn/Bun lockfiles, workspace manifests,
 script names, and explicit Agent Maintainer workspace configuration.
 
@@ -86,7 +87,7 @@ conflicting declarations, and unsupported workspace shapes remain visible as
 bounded advisory ambiguity. Agent Maintainer does not select a preferred package
 manager, fall back to npm, or infer nested package ownership.
 
-Doctor and setup-advisor may explain the evidence and show reviewed
+Setup advisor explains the evidence and shows reviewed
 configuration choices. The provider executor continues to use only explicit
 root or workspace command arrays. Repository evidence must never become
 subprocess arguments.

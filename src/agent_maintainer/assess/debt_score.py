@@ -10,7 +10,14 @@ from agent_maintainer.assess.debt_categories import (
     build_debt_categories,
     risk_label,
 )
-from agent_maintainer.assess.models import DebtCategory, DebtScoreReport, RepoEvidence
+from agent_maintainer.assess.models import (
+    DebtCategory,
+    DebtScoreReport,
+    RepoEvidence,
+)
+from agent_maintainer.assess.models import (
+    to_dict as model_to_dict,
+)
 from agent_maintainer.config.schema import MaintainerConfig
 
 DEBT_SCORE_JSON = "technical-debt-score.json"
@@ -186,5 +193,5 @@ def _to_json(report: DebtScoreReport) -> dict[str, object]:
         ],
         "next_actions": list(report.next_actions),
         "artifact_paths": list(report.artifact_paths),
-        "evidence": report.evidence.__dict__,
+        "evidence": model_to_dict(report.evidence),
     }

@@ -131,7 +131,7 @@ Follow the [parity roadmap](roadmap/typescript-react-parity-roadmap.md). Phase 1
 refreshes the plan; Phase 178 adds advisory package-manager/workspace detection.
 
 - [x] Phase 177: TypeScript/React Parity Roadmap
-- [ ] Phase 178: Advisory Package-Manager And Workspace Detection
+- [x] Phase 178: Advisory Package-Manager And Workspace Detection
 
 ## Active: External Proof And Architecture Hardening
 

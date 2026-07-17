@@ -73,6 +73,20 @@ def test_collect_evidence_reads_package_scripts(tmp_path: Path) -> None:
     assert evidence.package_scripts == ("lint", "test", "typecheck")
 
 
+def test_collect_evidence_includes_package_workspace_facts(tmp_path: Path) -> None:
+    (tmp_path / "package.json").write_text(
+        json.dumps({"packageManager": "pnpm@9.15.0", "workspaces": ["packages/*"]}),
+        encoding=TEXT_ENCODING,
+    )
+    (tmp_path / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding=TEXT_ENCODING)
+
+    evidence = collect_evidence(tmp_path)
+
+    assert evidence.package_workspace.unambiguous_manager == "pnpm"
+    assert evidence.package_workspace.workspace_declarations[0].patterns == ("packages/*",)
+    assert evidence.package_scripts == ()
+
+
 def test_evidence_ignores_bad_package_data(tmp_path: Path) -> None:
     """Invalid package.json shapes are ignored by setup evidence."""
     malformed = tmp_path / "malformed"

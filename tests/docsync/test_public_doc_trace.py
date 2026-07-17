@@ -85,6 +85,10 @@ PUBLIC_DOC_CLAIMS = {
     "claim.docs.upgrade_0_1_0b6_safe_adoption",
 }
 
+PUBLIC_DOC_EVIDENCE = {
+    "evidence.typescript.package_workspace_detection_tests",
+}
+
 ACTIVE_DOC_PATHS = {
     "README.md",
     "docs/agent-client-hooks.md",
@@ -164,6 +168,7 @@ def test_public_docs_claims_are_traced() -> None:
 
     assert set(objects) >= PUBLIC_DOC_OBJECTS
     assert set(claims) >= PUBLIC_DOC_CLAIMS
+    assert set(evidence) >= PUBLIC_DOC_EVIDENCE
 
     for claim_id in PUBLIC_DOC_CLAIMS:
         claim = claims[claim_id]

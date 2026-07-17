@@ -159,18 +159,19 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
 # docsync:evidence.end evidence.typescript.provider_docs_maturity_tests
 
 
-def test_provider_status_tracks_typescript_parity_roadmap() -> None:
-    """Provider status exposes the current parity track without command inference."""
-
-    phrases = {
-        "docs/provider-status.md": (
-            "TypeScript/React parity work now advances through focused pull requests to `main`.",
-            "Phase 178 observes package-manager and workspace evidence for "
-            "advisory setup facts only.",
-            "Detected evidence never creates or executes a command.",
-        ),
-    }
-    _assert_phrases_present(phrases)
+def test_provider_status_tracks_typescript_package_workspace_evidence() -> None:
+    """Provider status records completed advisory detection and the next parity slice."""
+    text = Path("docs/provider-status.md").read_text(encoding="utf-8")
+    for expected in (
+        "Phase 178 package-manager and workspace evidence is advisory only.",
+        "preserves file-and-field provenance",
+        "never selects a manager",
+        "expands workspace globs",
+        "creates a command",
+        "Knip unused-code and dependency facts",
+        "next parity slice",
+    ):
+        assert expected in text
 
 
 def test_setup_advisor_docs_include_workspace_command_example() -> None:
@@ -185,6 +186,23 @@ def test_setup_advisor_docs_include_workspace_command_example() -> None:
         ),
     }
     _assert_phrases_present(phrases)
+
+
+def test_setup_advisor_docs_explain_package_workspace_evidence() -> None:
+    """Setup advisor docs explain facts, ambiguity, and explicit ownership."""
+    text = Path("docs/setup-advisor.md").read_text(encoding="utf-8")
+    for expected in (
+        "`packageManager` and `devEngines.packageManager`",
+        "`package-lock.json`",
+        "`npm-shrinkwrap.json`",
+        "`pnpm-lock.yaml`",
+        "`yarn.lock`",
+        "`bun.lock`",
+        "`bun.lockb`",
+        "Workspace patterns remain literal and unexpanded.",
+        "Detected evidence never becomes a subprocess argument.",
+    ):
+        assert expected in text
 
 
 def test_java_setup_docs_pin_native_ratchet_boundaries() -> None:

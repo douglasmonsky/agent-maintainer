@@ -7,12 +7,14 @@ import os
 import shutil
 import subprocess  # nosec B404
 import tomllib
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from dataclasses import dataclass
-from pathlib import Path, PurePath
-from typing import cast
+from pathlib import Path
 
 from agent_maintainer.assess.models import RepoEvidence
+from agent_maintainer.assess.package_workspace_evidence import (
+    collect_package_workspace_evidence,
+)
 from agent_maintainer.core.structured_values import json_object
 
 DEFAULT_MAX_EVIDENCE_FILES = 5_000
@@ -54,6 +56,7 @@ def collect_evidence(
 ) -> RepoEvidence:
     """Collect cheap bounded repository evidence."""
     root = target.resolve()
+    package_workspace = collect_package_workspace_evidence(root)
     scan = _scan_files(root, max_files=max_files)
     paths = scan.paths
     python_files, source_files, test_files = _python_file_groups(root, paths)
@@ -107,11 +110,12 @@ def collect_evidence(
             ("build.gradle", "build.gradle.kts"),
         ),
         gradle_version_catalogs=tuple(
-            path for path in relative_paths if PurePath(path).name == "libs.versions.toml"
+            path for path in relative_paths if Path(path).name == "libs.versions.toml"
         ),
         java_source_files=len(java_source_files),
         java_test_files=len(java_test_files),
         java_module_paths=_java_module_paths(java_source_files, java_test_files),
+        package_workspace=package_workspace,
     )
 
 
@@ -138,7 +142,7 @@ def _java_file_groups(paths: tuple[str, ...]) -> tuple[tuple[str, ...], tuple[st
 
 def _matching_paths(paths: tuple[str, ...], names: tuple[str, ...]) -> tuple[str, ...]:
     allowed = frozenset(names)
-    return tuple(path for path in paths if PurePath(path).name in allowed)
+    return tuple(path for path in paths if Path(path).name in allowed)
 
 
 def _is_java_source_path(path: str) -> bool:
@@ -253,14 +257,14 @@ def _package_scripts(root: Path) -> tuple[str, ...]:
     except (OSError, json.JSONDecodeError):
         return ()
 
-    if not isinstance(data, dict):
+    package_data = json_object(data)
+    if package_data is None:
         return ()
-    package_data = cast(Mapping[str, object], data)
     scripts = package_data.get("scripts")
-    if not isinstance(scripts, dict):
+    script_data = json_object(scripts)
+    if script_data is None:
         return ()
-    script_data = cast(Mapping[object, object], scripts)
-    return tuple(sorted(key for key in script_data if isinstance(key, str)))
+    return tuple(sorted(script_data))
 
 
 def _is_test_path(root: Path, path: Path) -> bool:

@@ -162,3 +162,4 @@
 | 175 | [Setup Advisor Workspace Command Example](phases/phase-175-setup-advisor-workspace-command-example.md) |
 | 176 | [Codex Terminal Rewake Hardening](phases/phase-176-codex-terminal-rewake-hardening.md) |
 | 177 | [TypeScript/React Parity Roadmap](phases/phase-177-typescript-react-parity-roadmap.md) |
+| 178 | [Advisory Package-Manager And Workspace Detection](phases/phase-178-advisory-package-manager-workspace-detection.md) |

@@ -14,6 +14,9 @@ ROADMAP_OVERVIEW = ROADMAP_ROOT / "overview.md"
 PHASES_DIR = ROADMAP_ROOT / "phases"
 TYPESCRIPT_PARITY_ROADMAP = ROADMAP_ROOT / "typescript-react-parity-roadmap.md"
 TYPESCRIPT_PARITY_PHASE = PHASES_DIR / "phase-177-typescript-react-parity-roadmap.md"
+TYPESCRIPT_PACKAGE_WORKSPACE_PHASE = (
+    PHASES_DIR / "phase-178-advisory-package-manager-workspace-detection.md"
+)
 MAX_ACTIVE_ROADMAP_LINES = 180
 MAX_INDEX_OVERHEAD_LINES = 4
 MAX_PHASE_LINES = 500
@@ -102,7 +105,8 @@ def test_typescript_parity_roadmap_keeps_execution_explicit_and_phased() -> None
 
     for phrase in (
         "focused pull requests to `main`",
-        "Phase 178: advisory package-manager and workspace detection.",
+        "Phase 178: advisory package-manager and workspace detection is complete.",
+        "Knip unused-code and dependency facts",
         "Repository evidence must never become subprocess arguments.",
         "at least two external real-repository comparisons",
         "TypeScript/React blocking-gate promotion assessment",
@@ -111,6 +115,15 @@ def test_typescript_parity_roadmap_keeps_execution_explicit_and_phased() -> None
     assert phase.startswith("# Phase 177: TypeScript/React Parity Roadmap")
     assert "Status: complete" in phase
     assert "No provider runtime behavior changes." in phase
+
+
+def test_typescript_package_workspace_phase_is_complete_and_advisory() -> None:
+    """Phase 178 records the delivered evidence and preserves command ownership."""
+    phase = TYPESCRIPT_PACKAGE_WORKSPACE_PHASE.read_text(encoding="utf-8")
+    assert phase.startswith("# Phase 178: Advisory Package-Manager And Workspace Detection")
+    assert "Status: complete" in phase
+    assert "No inferred command execution" in phase
+    assert "Knip unused-code and dependency facts" in phase
 
 
 def test_active_roadmap_reports_current_strict_and_api_state() -> None:

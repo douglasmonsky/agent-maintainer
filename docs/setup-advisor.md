@@ -102,6 +102,21 @@ packages, or add package-owned commands under
 `typescript_test_command`. Setup advisor still does not infer nested package
 commands or workspace managers.
 
+### Advisory package-manager and workspace evidence
+
+Setup assessment JSON reports recognized root `packageManager` and `devEngines.packageManager`
+declarations plus `package-lock.json`,
+`npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, and `bun.lockb`
+signals. It also reports root `package.json` workspaces, pnpm workspace patterns,
+and explicit `[tool.agent_maintainer.workspaces.<name>]` tables with
+file-and-field provenance.
+
+Agreement is corroborating evidence; conflicting, unsupported, malformed, and
+invalid declarations remain advisory issues.
+Workspace patterns remain literal and unexpanded. Nested packages are not scanned to infer ownership.
+Detected evidence never becomes a subprocess argument. It never enables a provider or replaces
+the explicit root and workspace command arrays shown above.
+
 Keep TypeScript reviewability policy advisory until fixture or real-repo
 evidence proves low-noise thresholds.
 
