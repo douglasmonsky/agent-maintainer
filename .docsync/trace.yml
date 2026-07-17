@@ -991,10 +991,11 @@ claims:
       - evidence.agent_guidance.compact_sidecar_tests
   claim.docs.setup_advisor_recommendations:
     object: docs.setup_advisor.overview
-    text: "Setup advisor docs describe advisory local recommendations, root package TypeScript command mapping from existing scripts, parser-friendly repair-fact outputs, common pnpm/Vite/Next.js script shapes, nested workspace package limitations, explicit workspace command ownership examples, and dry-run first adoption flow."
+    text: "Setup advisor docs describe advisory local recommendations, provenance-rich package-manager and workspace evidence, root package TypeScript command mapping from existing scripts, parser-friendly repair-fact outputs, common pnpm/Vite/Next.js script shapes, nested workspace package limitations, explicit workspace command ownership examples, and dry-run first adoption flow."
     severity: medium
     evidence:
       - evidence.setup_advisor.recommendation_tests
+      - evidence.typescript.package_workspace_detection_tests
   claim.docs.agent_maintainer_setup_dual_client:
     object: docs.agent_maintainer_setup_skill.overview
     text: The packaged personal setup skill offers consent-based new-repository adoption with Recommended, Guided, and Full control modes for Codex and Claude Code.
@@ -1490,6 +1491,12 @@ evidence:
     description: "Setup advisor tests assert advisory TypeScript script recommendations, fixture-backed pnpm/Vite/Next.js script shapes, root-only package script evidence, workspace command guidance, repair-fact output guidance, and false-positive TypeScript provider avoidance."
     anchors:
       - path: tests/assess/test_setup_advisor.py
+        mode: explicit_region
+  evidence.typescript.package_workspace_detection_tests:
+    type: test
+    description: Package and workspace detector tests cover npm, pnpm, Yarn, and Bun signals, Corepack declarations, literal workspace manifests, provenance, malformed metadata, conflicts, and nested-package non-inference.
+    anchors:
+      - path: tests/assess/test_package_workspace_evidence.py
         mode: explicit_region
   evidence.skill.portable_resource_tests:
     type: test

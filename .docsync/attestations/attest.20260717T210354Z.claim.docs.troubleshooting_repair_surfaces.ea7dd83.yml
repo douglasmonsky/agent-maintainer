@@ -1,0 +1,21 @@
+version: 1
+attestations:
+- id: attest.20260717T210354Z.claim.docs.troubleshooting_repair_surfaces.ea7dd83
+  claim: claim.docs.troubleshooting_repair_surfaces
+  doc_object: docs.troubleshooting.overview
+  evidence:
+  - evidence.setup_advisor.recommendation_tests
+  reason: Reviewed Phase 178 setup-advisor tests; troubleshooting repair guidance
+    remains accurate because package-manager and workspace evidence stays advisory
+    and introduces no new repair command.
+  reviewer: agent
+  reviewed_at: '2026-07-17T21:03:54Z'
+  base: HEAD
+  head: ea7dd83
+  evidence_fingerprints:
+    evidence.setup_advisor.recommendation_tests: sha256:b3d99fec63cae326afa81d92d7c7ee8955bfa60f0f7aa61626b4fef423aca16b
+  evidence_anchor_fingerprints:
+    evidence.setup_advisor.recommendation_tests:
+    - sha256:680f8b1e65a93defbb580ddd8af03ccdeff116e7d72cca57b1c7f26a1670be15
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

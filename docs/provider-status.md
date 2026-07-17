@@ -12,7 +12,7 @@ behind explicit configuration.
 | Ecosystem | Maturity | Current Support | Not Yet |
 |---|---|---|---|
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security and dependency checks, doctor support, repair facts, and starter templates. | External plugin API. |
-| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, and Istanbul/LCOV repair facts; format-aware doctor setup and repair-fact output guidance rows. | Package-manager autodetection, starter files, coverage adapters, mutation testing, dependency/security adapters, and blocking reviewability gates. |
+| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, and Istanbul/LCOV repair facts; format-aware doctor setup and repair-fact output guidance rows. Advisory package-manager and workspace evidence. | Starter files, coverage adapters, mutation testing, dependency/security adapters, and blocking reviewability gates. |
 | Java/Gradle | Experimental calibrated ratchets | Explicit checked-wrapper task groups; reviewed setup; Spotless/native SpotBugs ratchets; exact upward-only JaCoCo thresholds; truthful project coverage; bounded XML evidence; Java debt baselines; exact repair facts; live Linux/Windows Gradle fixtures; static doctor checks. | Maven, automatic aggregate coverage, broad Java-specific blocking reviewability, production-scale calibration, and stable-provider guarantees. |
 
 There is no active Go provider on `main`. Go remains archived historical work
@@ -24,9 +24,13 @@ seam has settled.
 TypeScript/JavaScript is again the active parity track. TypeScript/React parity
 work now advances through focused pull requests to `main`. The
 [TypeScript/React Parity Roadmap](roadmap/typescript-react-parity-roadmap.md)
-keeps the provider experimental while evidence accumulates. Phase 178 observes
-package-manager and workspace evidence for advisory setup facts only. Detected
-evidence never creates or executes a command.
+keeps the provider experimental while evidence accumulates.
+
+Phase 178 package-manager and workspace evidence is advisory only. The setup
+assessment JSON preserves file-and-field provenance for recognized declarations,
+lockfiles, and workspace manifests, but never selects a manager, expands workspace globs,
+or creates a command. Knip unused-code and dependency facts are
+the next parity slice; TypeScript/JavaScript remains experimental.
 
 Java/Gradle remains the second built-in experimental priority. Neither provider
 is promoted by this sequencing decision. TypeScript still must satisfy the bar
