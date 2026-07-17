@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260717T184728Z.claim.docs.quick_start_package_flow.7926700
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.package_metadata
+  reason: The base runtime dependency fix is installed automatically and does not
+    change the documented quick-start package flow.
+  reviewer: agent
+  reviewed_at: '2026-07-17T18:47:28Z'
+  base: HEAD
+  head: '7926700'
+  evidence_fingerprints:
+    evidence.readme.package_metadata: sha256:5e9bb0341cdb678db6b5746c4f63d6b663a2901ed4203e2ef23d0467ac06e000
+  evidence_anchor_fingerprints:
+    evidence.readme.package_metadata:
+    - sha256:64ba5ff6d7ff40c9564f6159da1ac4dd83988cd81da68905554d8f069a5c243b
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

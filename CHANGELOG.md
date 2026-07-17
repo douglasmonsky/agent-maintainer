@@ -21,6 +21,8 @@ smokes.
   reviewed diff cannot undercount those paths.
 - Extended the mutation suite across Java config and file-baseline coercion,
   preserving the 99% result ratchet with exact source-aware error coverage.
+- Fixed Java provider packaging so base installs include the secure XML parser,
+  and kept all packaged source syntax compatible with Python 3.11 through 3.14.
 
 ## 0.1.0b7 - 2026-07-15
 

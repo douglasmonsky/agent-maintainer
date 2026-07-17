@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import os
 import shutil
 import subprocess  # nosec B404
@@ -51,6 +52,25 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
     assert {"core", "agent", "hardening", "manual", "compression", "mcp", "all"} <= set(
         metadata["project"]["optional-dependencies"]
     )
+
+
+def test_runtime_dependencies_cover_imported_xml_parser() -> None:
+    """A base install includes the parser imported by Java report modules."""
+
+    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
+        metadata = tomllib.load(handle)
+
+    assert "defusedxml>=0.7.1" in metadata["project"]["dependencies"]
+
+
+def test_packaged_python_sources_parse_on_minimum_supported_version() -> None:
+    """Packaged source syntax remains compatible with declared Python 3.11."""
+
+    source_paths = sorted((REPO_ROOT / "src").rglob("*.py"))
+    assert source_paths
+    for path in source_paths:
+        source = path.read_text(encoding="utf-8")
+        ast.parse(source, filename=str(path), feature_version=(3, 11))
 
 
 def test_package_data_declares_bundled_resources() -> None:

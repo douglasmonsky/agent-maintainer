@@ -19,7 +19,7 @@ DEFAULT_MAX_MESSAGE_CHARS = 2_000
 MAX_REPAIR_TEXT_CHARS = 500
 XML_INDENT = "  "
 WINDOWS_DRIVE = re.compile(r"^[A-Za-z]:")
-type XmlElement = Any
+XmlElement = Any
 
 
 class JavaXmlError(JavaConfigurationError):

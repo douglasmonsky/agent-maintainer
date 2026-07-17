@@ -15,7 +15,7 @@ STRICT_TYPE_CHECKING_MODE = "strict"
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 TOP_SUMMARY_LIMIT = 10
 
-type PairCounts = dict[str, dict[str, int]]
+PairCounts = dict[str, dict[str, int]]
 
 
 @dataclass(frozen=True)
