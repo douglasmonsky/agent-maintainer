@@ -12,8 +12,10 @@ allowed_paths = [
   "CHANGELOG.md",
   "README.md",
   "config/agent-maintainer-capabilities.json",
+  "config/dependency-risks.toml",
   "docs/**",
   "justfile",
+  "osv-scanner.toml",
   "pyproject.toml",
   "src/agent_maintainer/assess/**",
   "src/agent_maintainer/checks/change_budget.py",
@@ -27,7 +29,7 @@ allowed_paths = [
   "tests/**",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 235
+max_changed_files = 240
 max_changed_lines = 18000
 allow_source_without_test_change = false
 requires_tests = true
@@ -46,7 +48,10 @@ kept each implementation slice reviewable; this closeout plan records their
 combined branch envelope without changing repository-wide thresholds.
 The narrow file-count and documentation scope also cover the versioned release
 record that must travel through the same protected-branch PR; the line budget is
-unchanged and no second active exception is introduced.
+unchanged and no unrelated exception is introduced.
+The final verification pass also surfaced newly published MCP advisories in
+Semgrep's exact transitive pin. The same closeout records the narrow, expiring
+dependency-risk exception required until Semgrep permits the fixed MCP release.
 
 ## Why this should not be split smaller
 

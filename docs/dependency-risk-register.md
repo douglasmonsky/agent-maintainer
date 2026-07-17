@@ -18,12 +18,14 @@ an exception existed and what closed it.
 | `DR-003-python-lock-without-hashes` | `release-maintainer` | 2026-08-31 | The complete development environment is exactly pinned but not hash-locked. Keep the existing audit, SBOM, license, and exact-artifact digest mitigations while cross-platform pip hash enforcement is designed. |
 | `DR-004-build-system-lower-bounds` | `release-maintainer` | 2026-08-31 | Isolated builds still resolve lower-bounded build requirements. Continue exact-commit dual-artifact builds and digest verification while a pinned build-toolchain provenance contract is designed. |
 | `DR-005-click-command-injection` | `release-maintainer` | 2026-07-28 | Semgrep 1.169.0 requires Click 8.1.x while `PYSEC-2026-2132` is fixed in Click 8.3.3. Agent Maintainer does not import Click or call the vulnerable `click.edit()` API; ignore only this advisory until Semgrep permits the fixed Click release. |
+| `DR-006-semgrep-mcp-vulnerabilities` | `release-maintainer` | 2026-07-31 | Semgrep 1.170.0 pins MCP 1.23.3. Agent Maintainer invokes only the Semgrep CLI and does not expose the affected MCP server transports or experimental task APIs; ignore only the six exact advisory identifiers until Semgrep permits MCP 1.28.1 or newer. |
 
 The risk must be resolved or explicitly re-reviewed before expiry. Resolution
 means generating compatible distribution hashes for `DR-003` and a pinned,
 provenance-recorded build toolchain for `DR-004`, not merely extending their
-dates. `DR-005` must be removed as soon as Semgrep permits Click 8.3.3 or newer;
-its short expiry must not be extended without a new compatibility review.
+dates. `DR-005` must be removed as soon as Semgrep permits Click 8.3.3 or newer.
+`DR-006` must be removed as soon as Semgrep permits MCP 1.28.1 or newer. Their
+short expiries must not be extended without a new compatibility review.
 
 ## Resolved Decisions
 
@@ -40,7 +42,10 @@ Run the ecosystem-native checks after any dependency or risk-record change:
 npm ci
 npm audit
 .venv/bin/pip-audit -r config/dev-lock.txt \
-  --ignore-vuln PYSEC-2026-2132 --no-deps --disable-pip \
+  --ignore-vuln PYSEC-2026-2132 \
+  --ignore-vuln CVE-2026-52869 \
+  --ignore-vuln CVE-2026-52870 \
+  --ignore-vuln CVE-2026-59950 --no-deps --disable-pip \
   --progress-spinner off --timeout 20
 osv-scanner scan source -r . --config osv-scanner.toml
 ```
