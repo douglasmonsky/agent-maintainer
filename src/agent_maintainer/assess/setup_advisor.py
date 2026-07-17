@@ -98,6 +98,7 @@ def _reasons(evidence: RepoEvidence, track: str, preset: str) -> tuple[str, ...]
         f"Recommended preset `{preset}` from source/test size and adoption state.",
         f"Evidence scan `{evidence.scan_source}` inspected {evidence.scanned_files} files.",
     ]
+    reasons.extend(_package_workspace_reasons(evidence))
     if evidence.scan_truncated:
         reasons.append("Evidence scan was truncated; review recommendations manually.")
     if not _has_supported_surface(evidence):
@@ -119,6 +120,47 @@ def _reasons(evidence: RepoEvidence, track: str, preset: str) -> tuple[str, ...]
             f"{evidence.java_source_files} Java source files.",
         )
     return tuple(reasons)
+
+
+def _package_workspace_reasons(evidence: RepoEvidence) -> tuple[str, ...]:
+    """Return concise advisory package-manager and workspace reasons."""
+    facts = evidence.package_workspace
+    reasons: list[str] = []
+    if facts.unambiguous_manager:
+        sources = ", ".join(
+            _evidence_source(signal.source_path, signal.source_field)
+            for signal in facts.manager_signals
+        )
+        reasons.append(
+            f"Observed advisory package-manager evidence for `{facts.unambiguous_manager}` "
+            f"from {sources}.",
+        )
+    elif facts.manager_signals:
+        managers = ", ".join(sorted({signal.manager for signal in facts.manager_signals}))
+        reasons.append(
+            f"Observed ambiguous advisory package-manager evidence for {managers}; "
+            "no package manager was selected.",
+        )
+    if facts.workspace_declarations:
+        sources = ", ".join(
+            _evidence_source(item.source_path, item.source_field)
+            for item in facts.workspace_declarations
+        )
+        reasons.append(
+            f"Observed {len(facts.workspace_declarations)} workspace declaration(s) from "
+            f"{sources}; patterns remain advisory and unexpanded.",
+        )
+    if facts.issues:
+        kinds = ", ".join(sorted({issue.kind for issue in facts.issues}))
+        reasons.append(
+            f"Package/workspace evidence reported advisory issue(s): {kinds}.",
+        )
+    return tuple(reasons)
+
+
+def _evidence_source(path: str, field: str) -> str:
+    """Return one compact file-and-field provenance label."""
+    return f"`{path}#{field}`" if field else f"`{path}`"
 
 
 def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
@@ -206,11 +248,12 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
 def _agent_prompts(evidence: RepoEvidence) -> tuple[str, ...]:
     """Return follow-up prompts for an AI agent adopting the repo."""
     if not _has_supported_surface(evidence):
-        return (
+        prompts = (
             "Identify the repo language, package manager, test command, and CI command.",
             "Confirm Agent Maintainer is appropriate before writing starter files.",
             "Run only a dry-run initializer until a supported surface is confirmed.",
         )
+        return (*prompts, *_package_workspace_prompts(evidence))
     prompts = ["List commands that are already the repo's real test, lint, type, and build gates."]
     if _has_python_surface(evidence):
         prompts.extend(
@@ -238,6 +281,22 @@ def _agent_prompts(evidence: RepoEvidence) -> tuple[str, ...]:
         )
         prompts.append(
             f"When mapping TypeScript scripts, {TYPESCRIPT_REPAIR_FACT_OUTPUT_GUIDANCE}.",
+        )
+    return (*prompts, *_package_workspace_prompts(evidence))
+
+
+def _package_workspace_prompts(evidence: RepoEvidence) -> tuple[str, ...]:
+    """Return review prompts without inferring commands or ownership."""
+    facts = evidence.package_workspace
+    prompts: list[str] = []
+    if facts.ambiguous:
+        prompts.append(
+            "Resolve package-manager evidence conflicts before choosing reviewed setup commands.",
+        )
+    if facts.manager_signals or facts.workspace_declarations:
+        prompts.append(
+            "Review detected declarations, then map existing scripts to explicit root or "
+            "workspace commands; do not infer a package manager or package ownership.",
         )
     return tuple(prompts)
 

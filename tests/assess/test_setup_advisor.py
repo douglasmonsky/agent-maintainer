@@ -64,6 +64,13 @@ def test_setup_advisor_json_cli(
     assert payload["track"] == "core"
     assert payload["preset"] == "strict-new-repo"
     assert payload["evidence"]["has_agent_config"] is True
+    assert payload["evidence"]["package_workspace"] == {
+        "manager_signals": [],
+        "workspace_declarations": [],
+        "issues": [],
+        "unambiguous_manager": "",
+        "ambiguous": False,
+    }
 
 
 def test_setup_advisor_inspects_non_python_repo(tmp_path: Path) -> None:
@@ -180,6 +187,53 @@ def test_setup_advisor_ignores_irrelevant_scripts(tmp_path: Path) -> None:
     assert "typescript-provider" not in gate_names
 
 
+def test_setup_advisor_explains_corroborated_package_workspace_evidence(
+    tmp_path: Path,
+) -> None:
+    write_package_script_commands(
+        tmp_path,
+        {
+            "lint": "eslint .",
+            "typecheck": "tsc --noEmit",
+            "test": "vitest run",
+        },
+        package_manager="pnpm@9.15.0",
+        workspaces=("packages/*",),
+    )
+    (tmp_path / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding=TEXT_ENCODING)
+
+    report = build_setup_report(collect_evidence(tmp_path))
+
+    assert report.track == "inspect"
+    assert report.preset == "manual-review"
+    assert any(
+        "advisory package-manager evidence for `pnpm`" in reason for reason in report.reasons
+    )
+    assert any(
+        "workspace declaration" in reason and "unexpanded" in reason for reason in report.reasons
+    )
+    assert any("explicit root or workspace commands" in prompt for prompt in report.agent_prompts)
+
+
+def test_setup_advisor_keeps_conflicting_manager_evidence_advisory(tmp_path: Path) -> None:
+    write_package_script_commands(
+        tmp_path,
+        {"test": "vitest run"},
+        package_manager="pnpm@9.15.0",
+    )
+    (tmp_path / "yarn.lock").write_text("", encoding=TEXT_ENCODING)
+
+    report = build_setup_report(collect_evidence(tmp_path))
+
+    assert report.track == "inspect"
+    assert report.evidence.package_workspace.ambiguous is True
+    assert any("no package manager was selected" in reason for reason in report.reasons)
+    assert any(
+        "Resolve package-manager evidence conflicts" in prompt for prompt in report.agent_prompts
+    )
+    assert {gate.name for gate in report.optional_gates} >= {"typescript-provider"}
+
+
 # docsync:evidence.end evidence.setup_advisor.recommendation_tests
 
 
@@ -248,9 +302,17 @@ def write_package_scripts(root: Path, script_names: tuple[str, ...]) -> None:
     write_package_script_commands(root, {name: f"echo {name}" for name in script_names})
 
 
-def write_package_script_commands(root: Path, scripts: dict[str, str]) -> None:
-    """Write package.json script commands."""
-    (root / "package.json").write_text(
-        json.dumps({"scripts": scripts}),
-        encoding=TEXT_ENCODING,
-    )
+def write_package_script_commands(
+    root: Path,
+    scripts: dict[str, str],
+    *,
+    package_manager: str = "",
+    workspaces: tuple[str, ...] = (),
+) -> None:
+    """Write root package metadata used by setup-advisor tests."""
+    payload: dict[str, object] = {"scripts": scripts}
+    if package_manager:
+        payload["packageManager"] = package_manager
+    if workspaces:
+        payload["workspaces"] = list(workspaces)
+    (root / "package.json").write_text(json.dumps(payload), encoding=TEXT_ENCODING)
