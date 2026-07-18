@@ -167,3 +167,4 @@
 | 180 | [TypeScript OSV Dependency Facts](phases/phase-180-typescript-osv-dependency-facts.md) |
 | 181 | [TypeScript Dependency-Cruiser Facts](phases/phase-181-typescript-dependency-cruiser-facts.md) |
 | 182 | [TypeScript LCOV Changed-Line Facts](phases/phase-182-typescript-lcov-changed-line-facts.md) |
+| 183 | [Diff-Aware Verification Planning And Declarative Path-Risk Policy](phases/phase-183-diff-aware-verification-planning.md) |

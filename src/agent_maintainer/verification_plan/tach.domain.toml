@@ -1,0 +1,60 @@
+# Tach domain contract for agent_maintainer.verification_plan.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "matching"
+depends_on = ["//agent_maintainer.core.repo_paths"]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "policy"
+depends_on = [
+  "matching",
+  "models",
+]
+
+[[modules]]
+path = "units"
+depends_on = [
+  "//agent_maintainer.assess.models",
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.core.repo_paths",
+  "//agent_maintainer.ecosystems.git_changes",
+  "//agent_maintainer.ecosystems.models",
+  "matching",
+  "models",
+]
+
+[[modules]]
+path = "planner"
+depends_on = [
+  "//agent_maintainer.assess.evidence",
+  "//agent_maintainer.catalogs.catalog",
+  "//agent_maintainer.config.loader",
+  "//agent_maintainer.ecosystems.file_changes",
+  "//agent_maintainer.ecosystems.git_changes",
+  "//agent_maintainer.ecosystems.models",
+  "//agent_maintainer.models",
+  "matching",
+  "models",
+  "policy",
+  "units",
+]
+
+[[modules]]
+path = "reporting"
+depends_on = ["models"]
+
+[[modules]]
+path = "cli"
+depends_on = [
+  "//agent_maintainer.config.issues",
+  "planner",
+  "policy",
+  "reporting",
+]

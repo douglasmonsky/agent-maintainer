@@ -132,6 +132,7 @@ Follow the [parity roadmap](roadmap/typescript-react-parity-roadmap.md). Phase 1
 - [x] Phase 178: Advisory Package-Manager And Workspace Detection
 - [x] Phase 179: TypeScript Knip Unused-Code And Dependency Facts
 - [x] Phase 180: TypeScript OSV Dependency Facts; Phase 181: TypeScript Dependency-Cruiser Facts
+- [x] Phase 182: TypeScript LCOV Changed-Line Facts
 
 ## Active: External Proof And Architecture Hardening
 
@@ -141,11 +142,10 @@ coding-agent tasks, and measure activation time, initializer conflicts,
 false-positive review findings, repair iterations, context expansions, review
 cost, and four-week retained use.
 
-Strict Pyright cutover complete: zero diagnostics and the former ratchet
-baseline are retired.
+Strict Pyright cutover complete: zero diagnostics and the former ratchet baseline are retired.
 
-- [ ] External proof: run the three-to-five-repository cohort and retain its
-      activation and use evidence.
+- [ ] Phase 183: Diff-Aware Verification Planning And Declarative Path-Risk Policy — implementation and local verification are in progress.
+- [ ] External proof: run the three-to-five-repository cohort and retain its activation and use evidence.
 - [x] Strict Pyright cutover complete: zero diagnostics; baseline retired.
 - [x] Reclassify top-level help and public docs into stable workflow, repair and
       inspection, optional local intelligence, experimental integrations, and

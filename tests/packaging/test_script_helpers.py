@@ -18,6 +18,7 @@ BOOTSTRAP_STATUS = 11
 DOCTOR_STATUS = 14
 INSTALL_STATUS = 12
 VERIFY_STATUS = 13
+VERIFY_PLAN_STATUS = 18
 GUIDANCE_STATUS = 15
 INIT_STATUS = 16
 RATCHET_STATUS = 17
@@ -68,6 +69,11 @@ def test_maintainer_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> Non
         constant_callback(RATCHET_STATUS),
     )
     monkeypatch.setattr(maintainer_cli, "verify_main", constant_callback(VERIFY_STATUS))
+    monkeypatch.setattr(
+        maintainer_cli,
+        "verify_plan_command",
+        constant_callback(VERIFY_PLAN_STATUS),
+    )
 
     assert maintainer_cli.main(["bootstrap"]) == BOOTSTRAP_STATUS
     assert maintainer_cli.main(["doctor", "--strict"]) == DOCTOR_STATUS
@@ -76,6 +82,7 @@ def test_maintainer_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> Non
     assert maintainer_cli.main(["install"]) == INSTALL_STATUS
     assert maintainer_cli.main(["ratchet", "status"]) == RATCHET_STATUS
     assert maintainer_cli.main(["verify", "--profile", "fast"]) == VERIFY_STATUS
+    assert maintainer_cli.main(["verify-plan", "--json"]) == VERIFY_PLAN_STATUS
     assert maintainer_cli.main(["unknown"]) == UNKNOWN_COMMAND_STATUS
 
 
@@ -97,6 +104,7 @@ def test_maintainer_package_entrypoint_help() -> None:
 
     assert result.returncode == 0
     assert "python -m agent_maintainer doctor" in result.stdout
+    assert "verify-plan" in result.stdout
     assert "python -m agent_maintainer <command> [options]" in result.stdout
     for heading in (
         "Stable workflows:\n",

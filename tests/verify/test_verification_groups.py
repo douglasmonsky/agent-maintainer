@@ -58,11 +58,20 @@ def test_group_selection_preserves_catalog_order() -> None:
 
 
 def test_static_group_receives_non_test_catalog_checks() -> None:
-    checks = [check("ruff"), check("pytest-coverage"), check("typescript-typecheck:web")]
+    checks = [
+        check("ruff"),
+        check("pytest-coverage"),
+        check("typescript-typecheck:web"),
+        check("verification-plan-policy"),
+    ]
 
     selected = checks_for_group(checks, "static-and-policy")
 
-    assert [item.name for item in selected] == ["ruff", "typescript-typecheck:web"]
+    assert [item.name for item in selected] == [
+        "ruff",
+        "typescript-typecheck:web",
+        "verification-plan-policy",
+    ]
 
 
 def test_unknown_group_fails_closed() -> None:

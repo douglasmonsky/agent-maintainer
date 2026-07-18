@@ -52,6 +52,17 @@ def test_subsystem_stability_labels_every_public_command_once() -> None:
     )
 
 
+def test_verify_plan_public_contract_is_documented() -> None:
+    """Diff-aware planning documents its policy, schema, and safe boundary."""
+    readme = README.read_text(encoding="utf-8")
+
+    assert "agent-maintainer verify-plan" in readme
+    assert ".agent-maintainer/path-risk.toml" in readme
+    assert "schema_version = 1" in readme
+    assert "--enforce" in readme
+    assert "never suppresses existing verifier gates" in readme
+
+
 def _project_version() -> str:
     """Return the declared package version."""
 

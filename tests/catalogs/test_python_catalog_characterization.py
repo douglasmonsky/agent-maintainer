@@ -95,6 +95,7 @@ def test_default_catalog_profile_membership_is_characterized() -> None:
         "structure-cohesion",
         "change-budget",
         "suppression-budget",
+        "verification-plan-policy",
         "ruff",
     ]
     assert _profile_names(checks, PRECOMMIT_PROFILE) == [
@@ -102,6 +103,7 @@ def test_default_catalog_profile_membership_is_characterized() -> None:
         "structure-cohesion",
         "change-budget",
         "suppression-budget",
+        "verification-plan-policy",
         "ruff-format",
         "ruff",
         "pyright",
@@ -114,6 +116,7 @@ def test_default_catalog_profile_membership_is_characterized() -> None:
         "structure-cohesion",
         "change-budget",
         "suppression-budget",
+        "verification-plan-policy",
         "ruff-format",
         "ruff",
         "pyright",
@@ -144,6 +147,7 @@ def test_default_catalog_profile_membership_is_characterized() -> None:
         "structure-cohesion",
         "change-budget",
         "suppression-budget",
+        "verification-plan-policy",
         "ruff-format",
         "ruff",
         "pyright",

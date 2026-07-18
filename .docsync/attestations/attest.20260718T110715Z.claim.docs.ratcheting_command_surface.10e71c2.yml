@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T110715Z.claim.docs.ratcheting_command_surface.10e71c2
+  claim: claim.docs.ratcheting_command_surface
+  doc_object: docs.ratcheting.overview
+  evidence:
+  - evidence.readme.command_registry
+  reason: Reviewed the target-aware verify-plan registry route; ratcheting command
+    guidance remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-18T11:07:15Z'
+  base: HEAD
+  head: 10e71c2
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:4db83222330fa775bcfeccaea4d8829657b6db075ecb7a372ebf380d6394d1de
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:3f982753d649dd7f33e19ec0da762cc0e6d61ebd0283182c68dacbed3f30436a
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

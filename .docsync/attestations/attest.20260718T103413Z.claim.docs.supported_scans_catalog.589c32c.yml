@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T103413Z.claim.docs.supported_scans_catalog.589c32c
+  claim: claim.docs.supported_scans_catalog
+  doc_object: docs.supported_scans.overview
+  evidence:
+  - evidence.readme.catalog_composition
+  reason: Reviewed the optional verification-plan policy gate; supported scan guidance
+    remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-18T10:34:13Z'
+  base: HEAD
+  head: 589c32c
+  evidence_fingerprints:
+    evidence.readme.catalog_composition: sha256:bbe585432f1d5324901ca38e6837017d7c8ce4d2a6bf7013688ed1000bcf3843
+  evidence_anchor_fingerprints:
+    evidence.readme.catalog_composition:
+    - sha256:9410863c7d77b5efa6fb7a6afe7cdc3b4a2244d14c34c14a102309f2d780eaf6
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

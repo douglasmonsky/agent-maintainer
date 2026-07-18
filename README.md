@@ -233,6 +233,61 @@ Read more:
 [verification cadence](docs/agent-maintainer-guidance.md).
 
 <!-- docsync:object.end docs.readme.run_profiles -->
+<!-- docsync:object docs.readme.verification_planning -->
+## Diff-Aware Verification Planning
+
+Use `agent-maintainer verify-plan` to map the current diff to affected package
+or workspace units, matched repository-risk rules, named evidence, review
+categories, configured checks, and canonical verifier commands. Planning is
+advisory by default:
+
+```bash
+agent-maintainer verify-plan --base-ref origin/main
+```
+
+Repositories opt into declarative enforcement with
+`.agent-maintainer/path-risk.toml`. Add `--enforce` when required missing
+evidence should return exit status `1`:
+
+```bash
+agent-maintainer verify-plan --base-ref origin/main --enforce
+```
+
+A minimal versioned policy names a rule, its triggering paths, existing
+profiles or checks, review categories, and optional changed-path evidence:
+
+```toml
+version = 1
+
+[[rules]]
+id = "architecture"
+paths = ["tach.toml", "src/**/tach.domain.toml"]
+mode = "required"
+profiles = ["full"]
+checks = ["tach"]
+review_categories = ["architecture"]
+
+[[rules.evidence]]
+id = "decision"
+kind = "changed-path"
+paths = ["docs/architecture/decisions/*.md"]
+minimum = 1
+message = "Add or update an architecture decision."
+```
+
+Patterns are repository-relative and segment-aware: `*` matches within one
+path segment, while `**` is valid only as a complete segment and crosses
+directories. Unknown fields, duplicate identifiers, unsafe paths, and unknown
+configured profile or check names fail closed.
+
+Use `--staged` for an exact staged-diff plan and `--json` for the deterministic
+`schema_version = 1` report. Invalid policy, configuration, or Git refs return
+exit status `2`. The planner recommends evidence and existing profiles; it
+never suppresses existing verifier gates or executes a reduced test set.
+
+See the [tool map](docs/tool-map.md) and
+[path-risk policy decision](docs/architecture/decisions/2026-07-18-diff-aware-verification-planning.md).
+<!-- docsync:object.end docs.readme.verification_planning -->
 <!-- docsync:object docs.readme.supported_checks -->
 ## Supported Checks And Scans
 
