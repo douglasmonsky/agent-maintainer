@@ -101,6 +101,47 @@ def test_baseline_rejects_unsupported_document_identity(
         parse_baseline(json.dumps(payload), source="baseline.json")
 
 
+def test_baseline_rejects_deep_descriptor_body_with_typed_error() -> None:
+    """A bounded but deeply nested body cannot escape as RecursionError."""
+    body: dict[str, object] = {}
+    cursor = body
+    for _ in range(66):
+        child: dict[str, object] = {}
+        cursor["nested"] = child
+        cursor = child
+    descriptor = replace(_descriptor(), body=body)
+    semantic = {
+        "body": descriptor.body,
+        "contract_id": descriptor.contract_id,
+        "kind": descriptor.kind,
+        "owner": descriptor.owner,
+        "revision": descriptor.revision,
+        "sources": list(descriptor.sources),
+        "stability": descriptor.stability,
+    }
+    descriptor = replace(descriptor, fingerprint=fingerprint(semantic))
+    rendered = render_baseline(
+        ContractBaseline(package_version="0.1.0b10", descriptors=(descriptor,)),
+    )
+
+    with pytest.raises(BaselineError, match="maximum depth"):
+        parse_baseline(rendered, source="deep.json")
+
+
+def test_baseline_wraps_decoder_recursion_as_typed_invalid_input(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Decoder recursion cannot escape the baseline error contract."""
+
+    def recurse(*_args: object, **_kwargs: object) -> object:
+        raise RecursionError
+
+    monkeypatch.setattr("agent_maintainer.contracts.baseline.json.loads", recurse)
+
+    with pytest.raises(BaselineError, match="invalid contract baseline"):
+        parse_baseline("{}", source="deep.json")
+
+
 def test_baseline_rejects_duplicate_contracts() -> None:
     """A contract identity appears exactly once in generated evidence."""
     payload = json.loads(render_baseline(_baseline()))

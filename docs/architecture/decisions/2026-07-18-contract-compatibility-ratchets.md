@@ -51,6 +51,12 @@ bounded UTF-8 content only through that resolved identity. Service orchestration
 proves current baseline freshness before comparing base descriptors with live
 descriptors, reads structured Git path facts once, and evaluates revision,
 package-version, and migration obligations independently.
+Staged verification uses a separate index-state boundary: bounded Git readers
+accept only one regular stage-zero blob per declared path, and a controlled
+temporary root materializes only policy, baseline, package version, and contract
+sources. The service keeps historical Git access rooted in the real repository
+and uses the cached diff for migration evidence. Tach records the new
+`index_state`, shared validation, and Git path dependencies explicitly.
 Enforcement and advisory checks reject stale current evidence before historical
 comparison. Snapshot mode alone treats that staleness as the prospective write,
 but still compares base descriptors directly with live extraction and permits

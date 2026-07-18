@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import json
-import math
 from collections.abc import Mapping
 from pathlib import Path
 from typing import cast
 
 from agent_maintainer.contracts.baseline import canonical_json, fingerprint
-from agent_maintainer.contracts.limits import MAX_DEPTH, MAX_MEMBERS
+from agent_maintainer.contracts.limits import MAX_MEMBERS
 from agent_maintainer.contracts.models import ContractSpec, Descriptor, ExtractionError
 from agent_maintainer.contracts.paths import read_confined_text
+from agent_maintainer.contracts.validation import validate_json_value as _validate_json_value
 
 FIRST_SAFE_CODEPOINT = ord(" ")
 
@@ -141,36 +141,7 @@ def sorted_json_scalars(value: object, *, label: str) -> list[object]:
 def validate_json_value(value: object, *, depth: int = 0) -> None:
     """Reject noncanonical, excessive, or non-finite JSON-compatible values."""
 
-    if depth > MAX_DEPTH:
-        raise ExtractionError("JSON value exceeds maximum depth")
-    if value is None or isinstance(value, (bool, int, str)):
-        return
-    if isinstance(value, float):
-        if not math.isfinite(value):
-            raise ExtractionError("JSON numbers must be finite")
-        return
-    if isinstance(value, list):
-        _validate_array(cast(list[object], value), depth=depth)
-        return
-    if isinstance(value, dict):
-        _validate_object(cast(dict[object, object], value), depth=depth)
-        return
-    raise ExtractionError("value must be canonical JSON")
-
-
-def _validate_array(values: list[object], *, depth: int) -> None:
-    if len(values) > MAX_MEMBERS:
-        raise ExtractionError("JSON array must be bounded")
-    for item in values:
-        validate_json_value(item, depth=depth + 1)
-
-
-def _validate_object(mapping: dict[object, object], *, depth: int) -> None:
-    if len(mapping) > MAX_MEMBERS or not all(isinstance(key, str) for key in mapping):
-        raise ExtractionError("JSON object must be bounded with text keys")
-    for key, item in mapping.items():
-        safe_text(key, label="JSON object key")
-        validate_json_value(item, depth=depth + 1)
+    _validate_json_value(value, error_type=ExtractionError, depth=depth)
 
 
 def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:

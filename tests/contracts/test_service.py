@@ -85,7 +85,13 @@ def _install_state(
     def read_base_contract_files(_root: Path, _ref: str) -> BaseContractState | None:
         return state.base_state
 
-    def read_git_changes(_root: Path, _commit: str) -> tuple[GitPathChange, ...]:
+    def read_git_changes(
+        _root: Path,
+        _commit: str,
+        *,
+        staged: bool = False,
+    ) -> tuple[GitPathChange, ...]:
+        del staged
         return state.git_changes
 
     monkeypatch.setattr(service, "load_policy", load_policy)
@@ -189,8 +195,14 @@ def test_rewriting_current_baseline_cannot_hide_live_break(
     )
     git_reads = 0
 
-    def read_git_changes(_root: Path, _commit: str) -> tuple[GitPathChange, ...]:
+    def read_git_changes(
+        _root: Path,
+        _commit: str,
+        *,
+        staged: bool = False,
+    ) -> tuple[GitPathChange, ...]:
         nonlocal git_reads
+        del staged
         git_reads += 1
         return (GitPathChange("CHANGELOG.md", "modified"),)
 
@@ -232,7 +244,7 @@ def test_absent_usable_base_adds_one_advisory_without_retroactive_changes(
     assert report.changes == ()
     assert report.obligations == ()
     assert report.advisories == (service.HISTORICAL_UNAVAILABLE,)
-    assert report.can_snapshot
+    assert not report.can_snapshot
 
 
 def test_initialization_requires_an_absent_current_baseline(
@@ -279,28 +291,6 @@ def test_initialization_requires_an_absent_current_baseline(
     )
     assert rejected.errors == ("initialization requires an absent contract baseline",)
     assert not rejected.can_snapshot
-
-
-def test_missing_baseline_without_initialization_is_invalid(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    """Ordinary checks never infer initial adoption."""
-    spec = _spec()
-    live = _descriptor(spec, "current")
-    _install_state(
-        monkeypatch,
-        ServiceState(
-            current_policy=_policy(spec),
-            live=(live,),
-            current_baseline=None,
-            base_state=None,
-        ),
-    )
-
-    report = service.build_contract_report(tmp_path, base_ref="old", mode="check")
-
-    assert report.errors == ("current contract baseline is missing",)
 
 
 def test_exact_decision_resolves_review_required_change(

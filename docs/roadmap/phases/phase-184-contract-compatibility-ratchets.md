@@ -22,6 +22,8 @@ version, decision, and migration evidence needed for intentional changes.
   migration-evidence obligations.
 - Expose deterministic `contract diff`, `contract check`, and explicit
   `contract snapshot --write` commands with exact exit statuses.
+- Make staged pre-commit checks index-authoritative for policy, baseline,
+  package version, sources, and migration diffs.
 - Add the conditional `contract-compatibility` verifier gate.
 - Dogfood five Agent Maintainer beta contracts.
 
@@ -48,6 +50,8 @@ version, decision, and migration evidence needed for intentional changes.
 ## Acceptance Criteria
 
 - Policy and baseline inputs fail closed and remain repository-confined.
+- Deep baseline bodies, non-regular staged blobs, ambiguous index entries, and
+  pre-adoption snapshot replacement fail closed with typed invalid reports.
 - All extractor families emit deterministic common descriptors.
 - Exact semantic findings independently enforce revision, version, decision,
   and migration obligations.

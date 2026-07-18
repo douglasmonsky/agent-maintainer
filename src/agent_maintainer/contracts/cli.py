@@ -28,12 +28,24 @@ def main(argv: list[str] | None = None) -> int:
         print("snapshot requires --write", file=sys.stderr)
         return INVALID
     target = args.target.resolve()
-    report = build_contract_report(
-        target,
-        base_ref=args.base_ref,
-        mode=args.command,
-        initialize=bool(getattr(args, "initialize", False)),
-    )
+    base_ref = str(args.base_ref)
+    mode = str(args.command)
+    initialize = bool(getattr(args, "initialize", False))
+    if bool(getattr(args, "staged", False)):
+        report = build_contract_report(
+            target,
+            base_ref=base_ref,
+            mode=mode,
+            initialize=initialize,
+            staged=True,
+        )
+    else:
+        report = build_contract_report(
+            target,
+            base_ref=base_ref,
+            mode=mode,
+            initialize=initialize,
+        )
     sys.stdout.write(render_json(report) if args.json else render_text(report))
     status = _status(args.command, report)
     if args.command != "snapshot" or status != SUCCESS:
@@ -50,8 +62,10 @@ def _parser() -> argparse.ArgumentParser:
     common.add_argument("--target", type=Path, default=Path("."))
     common.add_argument("--base-ref", default=DEFAULT_BASE_REF)
     common.add_argument("--json", action="store_true")
-    subparsers.add_parser("diff", parents=(common,))
-    subparsers.add_parser("check", parents=(common,))
+    diff = subparsers.add_parser("diff", parents=(common,))
+    check = subparsers.add_parser("check", parents=(common,))
+    diff.add_argument("--staged", action="store_true")
+    check.add_argument("--staged", action="store_true")
     snapshot = subparsers.add_parser("snapshot", parents=(common,))
     snapshot.add_argument("--write", action="store_true")
     snapshot.add_argument("--initialize", action="store_true")

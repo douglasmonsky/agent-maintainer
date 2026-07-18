@@ -8,7 +8,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import cast
 
-from agent_maintainer.contracts.baseline import canonical_json
+from agent_maintainer.contracts.baseline import canonical_json, fingerprint
 from agent_maintainer.contracts.limits import MAX_DEPTH, MAX_MEMBERS
 from agent_maintainer.contracts.models import ContractSpec, Descriptor, ExtractionError
 from agent_maintainer.contracts.normalization import (
@@ -367,7 +367,8 @@ def _sorted_unique_json(value: object, *, label: str) -> list[object]:
 def _record_unsupported(schema: dict[str, object], *, context: _Context, path: str) -> None:
     for keyword in COMPOSITION_KEYS:
         if keyword in schema:
-            context.unsupported.add(_pointer(path, keyword))
+            pointer = _pointer(path, keyword)
+            context.unsupported.add(f"{pointer}#{fingerprint(schema.get(keyword))}")
 
 
 def _pointer(path: str, *parts: str) -> str:

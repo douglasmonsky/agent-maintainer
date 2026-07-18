@@ -6,6 +6,7 @@ from typing import cast
 
 import pytest
 
+from agent_maintainer.contracts.comparison import compare_descriptors
 from agent_maintainer.contracts.extractors import json_schema
 from agent_maintainer.contracts.extractors.json_schema import extract_json_schema
 from agent_maintainer.contracts.models import ContractSpec, ExtractionError
@@ -152,7 +153,23 @@ def test_schema_composition_emits_review_required_paths(tmp_path: Path) -> None:
         },
     )
 
-    assert body["unsupported_semantics"] == ["/properties/value/oneOf"]
+    unsupported = cast(list[str], body["unsupported_semantics"])
+    assert len(unsupported) == 1
+    assert unsupported[0].startswith("/properties/value/oneOf#sha256:")
+
+
+def test_unsupported_composition_payload_changes_require_review(tmp_path: Path) -> None:
+    """Unsupported semantics retain a digest, not only their JSON pointer."""
+    _write(tmp_path, {"oneOf": [{"type": "string"}]})
+    before = extract_json_schema(tmp_path, _spec())
+    _write(tmp_path, {"oneOf": [{"type": "integer"}]})
+    after = extract_json_schema(tmp_path, _spec())
+
+    changes = compare_descriptors((before,), (after,), ())
+
+    assert len(changes) == 1
+    assert changes[0].operation == "unsupported-semantic-change"
+    assert changes[0].classification == "review-required"
 
 
 @pytest.mark.parametrize(

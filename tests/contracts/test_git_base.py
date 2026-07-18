@@ -195,3 +195,61 @@ def test_git_runner_never_uses_a_shell(monkeypatch: pytest.MonkeyPatch, tmp_path
     assert observed["cwd"] == tmp_path.resolve()
     assert observed["timeout_seconds"] == git_base.GIT_TIMEOUT_SECONDS
     assert observed["output_limit_bytes"] == git_base.MAX_REF_OUTPUT
+
+
+def test_index_reader_rejects_unsafe_path(tmp_path: Path) -> None:
+    """Index selectors remain repository-relative before Git execution."""
+    with pytest.raises(GitContractError, match="staged contract path"):
+        git_base.read_index_text(tmp_path, "../contract.json")
+
+
+def test_index_reader_returns_none_for_absent_path(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """A missing stage-zero path is distinct from an unsafe or invalid entry."""
+    monkeypatch.setattr(git_base, "run_git", RecordingGitRunner((b"",)))
+
+    assert git_base.read_index_text(tmp_path, POLICY_PATH) is None
+
+
+@pytest.mark.parametrize(
+    ("entry", "message"),
+    (
+        (f"120000 {'a' * 40} 0\t{POLICY_PATH}\0".encode(), "regular blob"),
+        (f"100644 {'a' * 40} 2\t{POLICY_PATH}\0".encode(), "ambiguous"),
+        (f"100644 {'a' * 40} 0\t".encode() + b"\xff\0", "invalid index state"),
+    ),
+)
+def test_index_reader_rejects_nonregular_ambiguous_or_non_utf8_entries(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    entry: bytes,
+    message: str,
+) -> None:
+    """Only one regular UTF-8 stage-zero entry can become contract input."""
+    monkeypatch.setattr(git_base, "run_git", RecordingGitRunner((entry,)))
+
+    with pytest.raises(GitContractError, match=message):
+        git_base.read_index_text(tmp_path, POLICY_PATH)
+
+
+@pytest.mark.parametrize(
+    ("blob", "message"),
+    (
+        (GitContractError("synthetic failure"), "could not read staged"),
+        (b"\xff", "could not read staged"),
+    ),
+)
+def test_index_reader_wraps_blob_failures_without_echoing_content(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    blob: bytes | BaseException,
+    message: str,
+) -> None:
+    """Blob command and UTF-8 failures expose only the normalized path."""
+    entry = f"100644 {'a' * 40} 0\t{POLICY_PATH}\0".encode()
+    monkeypatch.setattr(git_base, "run_git", RecordingGitRunner((entry, blob)))
+
+    with pytest.raises(GitContractError, match=message):
+        git_base.read_index_text(tmp_path, POLICY_PATH)

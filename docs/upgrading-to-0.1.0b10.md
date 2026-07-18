@@ -24,9 +24,16 @@ normal package-index installation until the release index moves.
 
 ## Review Candidate Scope
 
-No user-facing `0.1.0b10` changes are recorded yet. Before evaluating a later
-candidate state, review the Unreleased changelog and candidate notes for exact
-behavior, configuration, and generated-file changes.
+`0.1.0b10` adds opt-in semantic contract ratchets. Existing repositories are
+unchanged unless they add `.agent-maintainer/contracts.toml` and a generated
+`.agent-maintainer/contracts-baseline.json`. Repositories that opt in should
+review declared owners, stability, revisions, migration paths, and exact
+review-decision fingerprints before enabling the verifier gate.
+
+Pre-commit verification reads contract inputs from the Git index. Keep policy,
+baseline, package-version, source, and migration evidence staged together for
+intentional contract changes; unstaged worktree content is deliberately ignored
+by that gate.
 
 Preview every repository mutation before applying it:
 

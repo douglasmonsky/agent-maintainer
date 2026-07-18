@@ -60,12 +60,13 @@ def test_contract_check_is_optional_and_exact() -> None:
     assert check.artifact_paths == (".verify-logs/contract-compatibility.json",)
 
 
-def test_staged_catalog_does_not_invent_unsupported_contract_flag() -> None:
-    """Catalog uses the public base-ref surface until staged mode is public."""
+def test_staged_catalog_uses_index_authoritative_contract_flag() -> None:
+    """Precommit contract checks inspect the index rather than the worktree."""
     check = _contract_check(staged=True)
 
-    assert "--staged" not in check.command
-    assert check.command[-5:] == ["contract", "check", "--base-ref", "HEAD", "--json"]
+    assert "--staged" in check.command
+    assert "--base-ref" not in check.command
+    assert check.command[-2:] == ["--staged", "--json"]
 
 
 def test_contract_check_order_is_stable_after_verification_plan() -> None:

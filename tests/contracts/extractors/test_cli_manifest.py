@@ -6,6 +6,7 @@ from typing import cast
 
 import pytest
 
+from agent_maintainer.contracts.comparison import compare_descriptors
 from agent_maintainer.contracts.extractors.cli_manifest import extract_cli_manifest
 from agent_maintainer.contracts.models import ContractSpec, ExtractionError
 
@@ -23,7 +24,7 @@ def _spec() -> ContractSpec:
 
 def _write(tmp_path: Path, document: object) -> None:
     path = tmp_path / "config/cli.json"
-    path.parent.mkdir()
+    path.parent.mkdir(exist_ok=True)
     path.write_text(json.dumps(document), encoding="utf-8")
 
 
@@ -103,6 +104,23 @@ def test_cli_options_arguments_and_commands_are_normalized(tmp_path: Path) -> No
     }
     assert arguments[0]["name"] == "target"
     assert arguments[0]["aliases"] == []
+
+
+def test_cli_positional_argument_reordering_is_breaking(tmp_path: Path) -> None:
+    """Authored positional order survives extraction and reaches comparison."""
+    prototype = cast(list[dict[str, object]], _command(["copy"])["arguments"])[0]
+    source = {**prototype, "name": "source"}
+    destination = {**prototype, "name": "destination"}
+    _write(tmp_path, _document([_command(["copy"], arguments=[source, destination])]))
+    before = extract_cli_manifest(tmp_path, _spec())
+    _write(tmp_path, _document([_command(["copy"], arguments=[destination, source])]))
+    after = extract_cli_manifest(tmp_path, _spec())
+
+    changes = compare_descriptors((before,), (after,), ())
+
+    assert len(changes) == 1
+    assert changes[0].path.endswith("/arguments/order")
+    assert changes[0].classification == "breaking"
 
 
 @pytest.mark.parametrize(

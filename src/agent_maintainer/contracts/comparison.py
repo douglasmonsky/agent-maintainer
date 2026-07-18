@@ -23,6 +23,7 @@ from agent_maintainer.contracts.models import (
 )
 
 ATOMIC_MAPPINGS = frozenset(("const", "default", "value"))
+SHA256_HEX_LENGTH = 64
 
 
 def change_fingerprint(
@@ -166,6 +167,8 @@ def _diff_value(
     *,
     path: str,
 ) -> list[SemanticDelta]:
+    if key == "unsupported_semantics" and _legacy_unsupported_upgrade(before, after):
+        return []
     if key == "properties":
         return diff_member_mapping(
             _mapping_or_empty(before, label="properties"),
@@ -194,6 +197,43 @@ def _diff_value(
             after,
         )
     ]
+
+
+def _legacy_unsupported_upgrade(before: object | None, after: object | None) -> bool:
+    """Treat first-time payload digests as evidence enrichment, not schema drift."""
+
+    old_paths = _legacy_unsupported_paths(before)
+    new_paths = _digested_unsupported_paths(after)
+    return old_paths is not None and new_paths is not None and old_paths == new_paths
+
+
+def _legacy_unsupported_paths(value: object | None) -> tuple[str, ...] | None:
+    if not isinstance(value, list):
+        return None
+    values = cast(list[object], value)
+    paths = tuple(item for item in values if isinstance(item, str) and "#sha256:" not in item)
+    return paths if len(paths) == len(values) else None
+
+
+def _digested_unsupported_paths(value: object | None) -> tuple[str, ...] | None:
+    if not isinstance(value, list):
+        return None
+    values = cast(list[object], value)
+    markers = tuple(_unsupported_marker(item) for item in values if isinstance(item, str))
+    if len(markers) != len(values) or any(marker is None for marker in markers):
+        return None
+    return tuple(cast(tuple[str, str], marker)[0] for marker in markers)
+
+
+def _unsupported_marker(value: str) -> tuple[str, str] | None:
+    path, separator, digest = value.rpartition("#sha256:")
+    if (
+        not separator
+        or len(digest) != SHA256_HEX_LENGTH
+        or any(char not in "0123456789abcdef" for char in digest)
+    ):
+        return None
+    return path, digest
 
 
 def _mapping_or_empty(value: object | None, *, label: str) -> Mapping[str, object]:

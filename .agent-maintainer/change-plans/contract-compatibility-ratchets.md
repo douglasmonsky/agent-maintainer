@@ -20,9 +20,11 @@ allowed_paths = [
   "docs/architecture/subsystem-stability.md",
   "docs/roadmap/full-roadmap-blueprint.md",
   "docs/roadmap/phases/phase-184-contract-compatibility-ratchets.md",
+  "docs/releases/0.1.0b10.md",
   "docs/superpowers/plans/2026-07-18-contract-compatibility-ratchets.md",
   "docs/superpowers/specs/2026-07-18-contract-compatibility-ratchets-design.md",
   "docs/tool-map.md",
+  "docs/upgrading-to-0.1.0b10.md",
   "pyproject.toml",
   "schemas/agent-waits-wait-record.schema.json",
   "schemas/codex-app-server-wait.schema.json",
@@ -50,8 +52,8 @@ allowed_paths = [
   "tests/wait/test_codex_app_server.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 90
-max_changed_lines = 15000
+max_changed_files = 96
+max_changed_lines = 16000
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true
@@ -72,6 +74,11 @@ The file count also includes five source-backed dogfood contracts, architecture
 records, roadmap updates, and DocSync evidence invalidated by the new public
 command and catalog entry. Those records are scoped proof of the implementation,
 not unrelated feature breadth.
+
+Independent review added fail-closed staged-index extraction, snapshot-bypass,
+positional-order, unsupported-schema-payload, and deep-baseline regressions. The
+review repairs and their candidate documentation remain inside this same Phase
+184 boundary and account for the final bounded increase.
 
 ## Why this should not be split smaller
 

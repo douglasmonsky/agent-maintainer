@@ -306,6 +306,11 @@ Enforce baseline freshness and base-to-live compatibility with:
 agent-maintainer contract check --base-ref origin/main
 ```
 
+Pre-commit verification passes `--staged`, which reads policy, baseline,
+package version, and contract sources from the Git index and evaluates migration
+evidence from the staged diff. Unstaged worktree content cannot mask or invent a
+staged contract change.
+
 After reviewing an intentional change and satisfying its obligations, refresh
 the canonical baseline explicitly:
 
@@ -314,7 +319,9 @@ agent-maintainer contract snapshot --write --base-ref origin/main
 ```
 
 Use `--initialize` only for first adoption when no baseline exists; it records
-that no historical compatibility claim was made. The commands return `0` when
+that no historical compatibility claim was made. A base ref that predates
+ratchet adoption cannot authorize replacement of an existing baseline. The
+commands return `0` when
 valid, `1` for unresolved compatibility or obligation findings, and `2` for
 invalid or unsafe input. `--json` emits a deterministic `schema_version = 1`
 report with exact fingerprints and repair facts.

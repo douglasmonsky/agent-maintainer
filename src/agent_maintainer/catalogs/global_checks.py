@@ -84,22 +84,24 @@ def verification_plan_check(base_ref: str, *, staged: bool) -> models.Check:
 def contract_compatibility_check(
     config: MaintainerConfig,
     base_ref: str,
+    *,
+    staged: bool = False,
 ) -> models.Check:
     """Build the optional semantic contract compatibility gate."""
 
     artifact_path = Path(config.diagnostic_artifacts_dir) / "contract-compatibility.json"
+    command = [
+        sys.executable,
+        "-m",
+        "agent_maintainer",
+        "contract",
+        "check",
+    ]
+    command.extend(["--staged"] if staged else ["--base-ref", base_ref])
+    command.append("--json")
     return models.Check(
         "contract-compatibility",
-        [
-            sys.executable,
-            "-m",
-            "agent_maintainer",
-            "contract",
-            "check",
-            "--base-ref",
-            base_ref,
-            "--json",
-        ],
+        command,
         models.ALL_PROFILES,
         required_paths=(".agent-maintainer/contracts.toml",),
         optional_skip_reason=(

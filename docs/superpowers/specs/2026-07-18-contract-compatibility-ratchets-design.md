@@ -215,15 +215,18 @@ record contracts: `$id`, `type`, `properties`, `required`,
 `additionalProperties`, `items`, `enum`, `const`, numeric/string bounds, and
 local `$defs`/`$ref`. Repository-confined local references are resolved with
 cycle and depth limits. Unsupported keywords or ambiguous composition become
-review-required facts rather than guessed compatibility.
+review-required facts rather than guessed compatibility. Their bounded payloads
+are retained as canonical digests so a value change at the same JSON pointer
+cannot disappear.
 
 ## Three-Way Comparison
 
 `contract check --base-ref <ref>` uses three states:
 
 1. base policy and baseline read through bounded Git operations;
-2. current checked-in policy and baseline;
-3. live descriptors extracted from the current repository.
+2. current policy and baseline from the worktree, or from the Git index in
+   staged mode;
+3. live descriptors extracted from the same authoritative current state.
 
 The checker first proves that the current checked-in baseline exactly matches
 live extraction. It then compares the base descriptors with current live
@@ -234,6 +237,9 @@ This prevents a baseline rewrite from hiding a breaking change. Initial adoption
 requires an explicit initialization mode and makes no retroactive compatibility
 claim. When no usable base ref exists, freshness can be checked but historical
 compatibility is reported as unavailable rather than inferred.
+Snapshot replacement remains invalid when the selected base predates adoption
+but a current baseline already exists; only explicit first-adoption
+initialization with no baseline may make that no-history transition.
 
 ## Compatibility Classification
 
@@ -312,13 +318,15 @@ not import each other's domains.
 ## Public Commands
 
 ```text
-agent-maintainer contract diff [--base-ref REF] [--json]
-agent-maintainer contract check [--base-ref REF] [--json]
+agent-maintainer contract diff [--base-ref REF | --staged] [--json]
+agent-maintainer contract check [--base-ref REF | --staged] [--json]
 agent-maintainer contract snapshot --write [--base-ref REF] [--initialize]
 ```
 
 - `diff` is advisory and renders every semantic change and obligation.
 - `check` enforces freshness, decisions, versions, and migration evidence.
+- `--staged` materializes only regular stage-zero contract blobs into a
+  controlled temporary root and uses the cached Git diff for obligations.
 - `snapshot --write` writes only after extraction and version obligations are
   valid; it never edits policy, package versions, or migration docs.
 - `--initialize` is valid only when no baseline exists and records that no
@@ -341,6 +349,8 @@ Add one `contract-compatibility` catalog check to `fast`, `precommit`, `full`,
 and `ci` only when `.agent-maintainer/contracts.toml` exists. It invokes the
 public checker in enforcement mode against the profile's authoritative diff
 context. It does not select or suppress other checks.
+For staged pre-commit runs it invokes `contract check --staged`; worktree runs
+continue to use the configured base ref.
 
 Success stays quiet. Failure emits a bounded summary with exact contract IDs,
 fingerprints, minimum bump, missing migration evidence, and the command needed

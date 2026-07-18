@@ -3488,11 +3488,11 @@
           "object"
         ],
         "unsupported_semantics": [
-          "/allOf"
+          "/allOf#sha256:32bfa14c388af5367ff020205645836a44fa02abd23c97e284c72756b3c8f8b6"
         ]
       },
       "contract_id": "agent-waits-wait-record",
-      "fingerprint": "sha256:ae937cf8d42e91582080f5e367af6cd8b2eaa91f1f9cbf34b3bb945030f9cd22",
+      "fingerprint": "sha256:95424fe56d448dca572762c73f44a4a2459373c5170924c065a82ff4e5cff743",
       "kind": "json-schema",
       "owner": "agent_waits.registry",
       "revision": 1,
@@ -3606,11 +3606,11 @@
           "object"
         ],
         "unsupported_semantics": [
-          "/oneOf"
+          "/oneOf#sha256:12a38a0cee976046533781c89a788feff918e84320595f4a447baf5ced8a22fb"
         ]
       },
       "contract_id": "codex-app-server-wait",
-      "fingerprint": "sha256:276286ad6a21e53a1dfb211e111d01018120014b676272faf8e247895bc92728",
+      "fingerprint": "sha256:c8808de11b04bf2ae4780cb3cbf09f93f74ebeca6fa5588fdf6e049a63fd8c9d",
       "kind": "json-schema",
       "owner": "agent_maintainer.wait.codex_app_server_protocol",
       "revision": 1,
@@ -3786,7 +3786,7 @@
       "stability": "beta"
     }
   ],
-  "document_fingerprint": "sha256:7d59174b3b5354119cbca7045a71d554229941640fd9bedd74bcb8cb3108f2b5",
+  "document_fingerprint": "sha256:bc5fc1b9e301d0fc51be7548e76234c58ed0d2c84e3917c3c34556e3ffcacace",
   "generator": "agent-maintainer",
   "package_version": "0.1.0b10",
   "schema_version": 1

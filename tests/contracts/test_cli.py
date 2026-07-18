@@ -163,6 +163,31 @@ def test_default_and_custom_base_refs_reach_service(
     ]
 
 
+def test_staged_check_reaches_index_authoritative_service(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """The public check flag explicitly selects staged contract extraction."""
+    calls: list[bool] = []
+
+    def build(
+        _target: Path,
+        *,
+        base_ref: str,
+        mode: str,
+        initialize: bool = False,
+        staged: bool = False,
+    ) -> ContractReport:
+        del base_ref, mode, initialize
+        calls.append(staged)
+        return _clean_report()
+
+    monkeypatch.setattr(cli, "build_contract_report", build)
+
+    assert cli.main(["check", "--target", str(tmp_path), "--staged"]) == 0
+    assert calls == [True]
+
+
 def test_diff_and_check_never_write_baseline(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

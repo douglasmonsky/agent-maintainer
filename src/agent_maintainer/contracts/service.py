@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from agent_maintainer.contracts import baseline, comparison, extraction
+from agent_maintainer.contracts import baseline, comparison, extraction, index_state
 from agent_maintainer.contracts import models as contract_models
 from agent_maintainer.contracts import policy as policy_module
 from agent_maintainer.contracts.git_base import (
@@ -66,46 +66,103 @@ class _ReportContext:
         )
 
 
+@dataclass(frozen=True)
+class _BuildOptions:
+    base_ref: str
+    mode: str
+    initialize: bool
+    staged: bool
+
+
 def build_contract_report(
     repo_root: Path,
     *,
     base_ref: str,
     mode: str,
     initialize: bool = False,
+    staged: bool = False,
 ) -> ContractReport:
     """Build one deterministic three-way contract compatibility report."""
 
     root = repo_root.resolve()
     if mode not in VALID_MODES:
         return ContractReport(mode=mode, base_ref=base_ref, errors=("invalid contract mode",))
+    options = _BuildOptions(base_ref, mode, initialize, staged)
+    if staged:
+        return _build_staged_contract_report(root, options)
+    return _build_contract_report(
+        root,
+        git_root=root,
+        options=options,
+    )
+
+
+def _build_staged_contract_report(repo_root: Path, options: _BuildOptions) -> ContractReport:
+    if options.mode == "snapshot":
+        return _invalid_report(options.mode, options.base_ref, "staged snapshot is unsupported")
     try:
-        current = _load_current(root)
+        with index_state.materialized_contract_index(repo_root) as current_root:
+            return _build_contract_report(
+                current_root,
+                git_root=repo_root,
+                options=options,
+            )
     except (ContractError, OSError, ValueError) as exc:
-        return _invalid_report(mode, base_ref, str(exc))
-    context = _report_context(mode, base_ref, current)
-    invalid_current = _current_state_error(context, current, initialize=initialize)
+        return _invalid_report(options.mode, options.base_ref, str(exc))
+
+
+def _build_contract_report(
+    current_root: Path,
+    *,
+    git_root: Path,
+    options: _BuildOptions,
+) -> ContractReport:
+    try:
+        current = _load_current(current_root)
+    except (ContractError, OSError, ValueError) as exc:
+        return _invalid_report(options.mode, options.base_ref, str(exc))
+    context = _report_context(options.mode, options.base_ref, current)
+    invalid_current = _current_state_error(
+        context,
+        current,
+        initialize=options.initialize,
+    )
     if invalid_current is not None:
         return invalid_current
     try:
-        base = read_base_contract_files(root, base_ref)
+        base = read_base_contract_files(git_root, options.base_ref)
     except (ContractError, OSError, ValueError) as exc:
         return replace(context.report(), errors=(str(exc),))
     if base is None:
+        if options.mode == "snapshot" and current.baseline is not None:
+            return replace(
+                context.report(),
+                advisories=(HISTORICAL_UNAVAILABLE,),
+                errors=("snapshot requires historical contract state or explicit initialization",),
+            )
         report = replace(
             context.report(),
             advisories=(HISTORICAL_UNAVAILABLE,),
-            can_snapshot=True,
+            can_snapshot=False,
         )
     else:
-        report = _historical_report(root, current, base, context)
+        report = _historical_report(
+            git_root,
+            current,
+            base,
+            context,
+            staged=options.staged,
+        )
     return report
 
 
 def _historical_report(
-    repo_root: Path,
+    git_root: Path,
     current: _CurrentState,
     base: BaseContractState,
     context: _ReportContext,
+    *,
+    staged: bool,
 ) -> ContractReport:
     changes = comparison.compare_descriptors(
         base.baseline.descriptors,
@@ -113,7 +170,13 @@ def _historical_report(
         current.policy.decisions,
     )
     try:
-        obligations = _historical_obligations(repo_root, current, base, changes)
+        obligations = _historical_obligations(
+            git_root,
+            current,
+            base,
+            changes,
+            staged=staged,
+        )
     except (ContractError, OSError, ValueError) as exc:
         return replace(
             context.report(),
@@ -139,8 +202,10 @@ def _historical_obligations(
     current: _CurrentState,
     base: BaseContractState,
     changes: Sequence[ContractChange],
+    *,
+    staged: bool,
 ) -> tuple[ContractObligation, ...]:
-    git_changes = read_git_changes(repo_root, base.commit)
+    git_changes = read_git_changes(repo_root, base.commit, staged=staged)
     return _obligations(
         base,
         current.policy,

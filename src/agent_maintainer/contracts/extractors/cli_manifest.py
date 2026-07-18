@@ -78,7 +78,6 @@ def _normalize_command(raw: dict[str, object], spec: ContractSpec) -> dict[str, 
     _reject_duplicate_members(options, "option")
     _reject_duplicate_members(arguments, "argument")
     options.sort(key=lambda item: str(item[NAME_KEY]))
-    arguments.sort(key=lambda item: str(item[NAME_KEY]))
     return {
         "arguments": arguments,
         "exit_statuses": _exit_statuses(raw.get("exit_statuses")),

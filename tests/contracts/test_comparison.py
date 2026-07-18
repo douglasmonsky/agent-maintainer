@@ -161,6 +161,29 @@ def test_parameter_reorder_is_one_breaking_order_change() -> None:
     assert changes[0].classification == "breaking"
 
 
+def test_first_unsupported_payload_digest_is_evidence_enrichment() -> None:
+    """Legacy pointer-only baselines can adopt digests without inventing drift."""
+    base = (_descriptor({"unsupported_semantics": ["/oneOf"]}),)
+    current = (
+        _descriptor(
+            {"unsupported_semantics": [f"/oneOf#sha256:{'a' * 64}"]},
+        ),
+    )
+
+    assert compare_descriptors(base, current, ()) == ()
+
+
+def test_malformed_unsupported_payload_marker_remains_review_required() -> None:
+    """Only exact SHA-256 enrichment markers receive legacy equivalence."""
+    base = (_descriptor({"unsupported_semantics": ["/oneOf"]}),)
+    current = (_descriptor({"unsupported_semantics": ["/oneOf#sha256:short"]}),)
+
+    changes = compare_descriptors(base, current, ())
+
+    assert len(changes) == 1
+    assert changes[0].classification == "review-required"
+
+
 def test_optional_positional_parameter_is_compatible_only_when_trailing() -> None:
     """Insertion before an existing positional parameter changes positional calls."""
     parameter = {"annotation": "int", "has_default": True, "kind": "positional-or-keyword"}

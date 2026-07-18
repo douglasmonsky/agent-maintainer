@@ -5,7 +5,14 @@ depends_on = []
 
 [[modules]]
 path = "baseline"
-depends_on = ["//agent_maintainer.core.repo_paths", "baseline_write", "limits", "models", "paths"]
+depends_on = [
+  "//agent_maintainer.core.repo_paths",
+  "baseline_write",
+  "limits",
+  "models",
+  "paths",
+  "validation",
+]
 
 [[modules]]
 path = "baseline_write"
@@ -39,12 +46,17 @@ depends_on = ["//agent_maintainer.core.repo_paths", "models"]
 path = "git_base"
 depends_on = [
   "//agent_maintainer.core.command_run",
+  "//agent_maintainer.core.repo_paths",
   "baseline",
   "git_paths",
   "limits",
   "models",
   "policy",
 ]
+
+[[modules]]
+path = "index_state"
+depends_on = ["git_base", "models", "policy"]
 
 [[modules]]
 path = "git_paths"
@@ -56,7 +68,7 @@ depends_on = ["baseline", "models", "reporting", "service"]
 
 [[modules]]
 path = "normalization"
-depends_on = ["baseline", "limits", "models", "paths"]
+depends_on = ["baseline", "limits", "models", "paths", "validation"]
 
 [[modules]]
 path = "models"
@@ -92,6 +104,7 @@ depends_on = [
   "comparison",
   "extraction",
   "git_base",
+  "index_state",
   "migrations",
   "models",
   "policy",
@@ -124,4 +137,4 @@ depends_on = ["limits", "models", "normalization", "paths", "validation"]
 
 [[modules]]
 path = "validation"
-depends_on = []
+depends_on = ["limits"]

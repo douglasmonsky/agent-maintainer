@@ -10,6 +10,7 @@ from typing import cast
 
 from agent_maintainer.contracts import baseline_write, limits, models
 from agent_maintainer.contracts import paths as contract_paths
+from agent_maintainer.contracts.validation import validate_json_value
 from agent_maintainer.core import repo_paths
 
 DEFAULT_BASELINE_PATH = Path(".agent-maintainer/contracts-baseline.json")
@@ -64,10 +65,11 @@ def parse_baseline(text: str, *, source: str) -> ContractBaseline:
 
     try:
         raw = json.loads(text, object_pairs_hook=_unique_object)
-    except (json.JSONDecodeError, BaselineError) as exc:
+    except (json.JSONDecodeError, BaselineError, RecursionError) as exc:
         raise BaselineError(f"invalid contract baseline {source}") from exc
     _require(isinstance(raw, dict), "contract baseline must be a JSON object")
     payload = cast(dict[str, object], raw)
+    validate_json_value(payload, error_type=BaselineError, depth=-3)
     _exact_keys(
         payload,
         frozenset(

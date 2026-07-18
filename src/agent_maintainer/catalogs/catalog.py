@@ -56,7 +56,7 @@ def make_checks(
     return [
         *reviewability_checks(config, base_ref, staged=staged),
         verification_plan_check(base_ref, staged=staged),
-        contract_compatibility_check(config, base_ref),
+        contract_compatibility_check(config, base_ref, staged=staged),
         python_provider_checks["ruff-format"],
         python_provider_checks["ruff"],
         python_provider_checks["pyright"],
