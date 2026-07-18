@@ -15,6 +15,7 @@ allowed_paths = [
   "docs/upgrading-to-0.1.0b9.md",
   "pyproject.toml",
   "tests/packaging/test_package_metadata.py",
+  "tests/packaging/test_public_docs.py",
   "tests/release/test_distribution_bundle.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]

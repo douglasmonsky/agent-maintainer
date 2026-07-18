@@ -208,7 +208,7 @@ def test_changelog_unreleased_section_tracks_post_release_commits() -> None:
     unreleased = _unreleased_section(changelog)
     assert "No changes yet." not in unreleased
     assert f"`{_project_version()}` is an unpublished release candidate" in unreleased
-    assert "published 0.1.0b7 release evidence" in unreleased
+    assert "published 0.1.0b8 release evidence" in unreleased
 
 
 def test_changelog_b6_section_retains_release_topics() -> None:
