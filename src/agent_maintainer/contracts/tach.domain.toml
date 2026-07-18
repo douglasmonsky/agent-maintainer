@@ -13,6 +13,29 @@ depends_on = [
 ]
 
 [[modules]]
+path = "classifiers"
+depends_on = [
+  "baseline",
+  "models",
+]
+
+[[modules]]
+path = "comparison"
+depends_on = [
+  "baseline",
+  "classifiers",
+  "diffing",
+  "models",
+]
+
+[[modules]]
+path = "diffing"
+depends_on = [
+  "baseline",
+  "models",
+]
+
+[[modules]]
 path = "limits"
 depends_on = []
 

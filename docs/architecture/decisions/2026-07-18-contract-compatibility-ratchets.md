@@ -60,6 +60,13 @@ exact JSON Pointer paths for known composition keywords whose semantics are not
 proved. Those paths remain review-required evidence rather than being guessed
 into merged schemas.
 
+Comparison operates only on normalized descriptors. Identity-bearing arrays
+and schema property maps become deterministic member operations, while changed
+semantic leaves use a small shared operation vocabulary and kind-aware
+classifiers. A review decision is applied only after the original change
+fingerprint is computed, and it can resolve only that exact review-required
+finding; it cannot weaken compatibility that the classifier already proved.
+
 ## Consequences
 
 Every contract operation uses one repository-confinement and canonical
