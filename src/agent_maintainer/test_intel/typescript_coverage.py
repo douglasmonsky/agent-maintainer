@@ -52,6 +52,17 @@ class TypeScriptCoverageFileFact:
     missed_changed_lines: int
     changed_line_coverage: float | None
 
+    def to_json(self) -> dict[str, object]:
+        """Return a stable JSON payload."""
+
+        return {
+            "path": self.path,
+            "executable_changed_lines": self.executable_changed_lines,
+            "covered_changed_lines": self.covered_changed_lines,
+            "missed_changed_lines": self.missed_changed_lines,
+            "changed_line_coverage": self.changed_line_coverage,
+        }
+
 
 @dataclass(frozen=True)
 class TypeScriptCoverageReport:
@@ -70,6 +81,25 @@ class TypeScriptCoverageReport:
     matched_file_count: int
     files: tuple[TypeScriptCoverageFileFact, ...]
     note: str = ADVISORY_NOTE
+
+    def to_json(self) -> dict[str, object]:
+        """Return a stable JSON payload."""
+
+        return {
+            "artifact_path": self.artifact_path,
+            "source_root": self.source_root,
+            "base_ref": self.base_ref,
+            "staged": self.staged,
+            "changed_source": list(self.changed_source),
+            "missing_from_lcov": list(self.missing_from_lcov),
+            "executable_changed_lines": self.executable_changed_lines,
+            "covered_changed_lines": self.covered_changed_lines,
+            "missed_changed_lines": self.missed_changed_lines,
+            "changed_line_coverage": self.changed_line_coverage,
+            "matched_file_count": self.matched_file_count,
+            "files": [fact.to_json() for fact in self.files],
+            "note": self.note,
+        }
 
 
 @dataclass

@@ -34,6 +34,7 @@ depends_on = [
   "hypothesis_reporting",
   "mutation.cli",
   "run_changed",
+  "typescript_coverage_cli",
 ]
 
 [[modules]]
@@ -99,6 +100,17 @@ depends_on = [
   "//agent_repair_facts.parsers.typescript_coverage",
   "coverage_lines",
 ]
+
+[[modules]]
+path = "typescript_coverage_cli"
+depends_on = [
+  "typescript_coverage",
+  "typescript_coverage_reporting",
+]
+
+[[modules]]
+path = "typescript_coverage_reporting"
+depends_on = ["typescript_coverage"]
 
 [[modules]]
 path = "mutation"
