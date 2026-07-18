@@ -124,18 +124,17 @@ def text_array(
 def sorted_json_scalars(value: object, *, label: str) -> list[object]:
     """Return a stable unique array of JSON scalar choices."""
 
-    if not isinstance(value, list):
-        raise ExtractionError(f"{label} must be an array")
+    _require(isinstance(value, list), f"{label} must be an array")
     values = cast(list[object], value)
-    if len(values) > MAX_MEMBERS:
-        raise ExtractionError(f"{label} must be a bounded array")
-    if not all(item is None or isinstance(item, (bool, int, float, str)) for item in values):
-        raise ExtractionError(f"{label} must contain JSON scalars")
-    for item in values:
-        validate_json_value(item)
-    keyed = {canonical_json(item): item for item in values}
-    if len(keyed) != len(values):
-        raise ExtractionError(f"duplicate {label}")
+    _require(len(values) <= MAX_MEMBERS, f"{label} must be a bounded array")
+    _require(
+        all(item is None or isinstance(item, (bool, int, float, str)) for item in values),
+        f"{label} must contain JSON scalars",
+    )
+    for scalar in values:
+        validate_json_value(scalar)
+    keyed = {canonical_json(choice): choice for choice in values}
+    _require(len(keyed) == len(values), f"duplicate {label}")
     return [keyed[key] for key in sorted(keyed)]
 
 
@@ -181,6 +180,11 @@ def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
             raise ExtractionError(f"duplicate JSON key: {key}")
         result[key] = value
     return result
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ExtractionError(message)
 
 
 def _reject_constant(value: str) -> object:

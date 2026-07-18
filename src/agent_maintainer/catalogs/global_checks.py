@@ -103,8 +103,7 @@ def contract_compatibility_check(
         models.ALL_PROFILES,
         required_paths=(".agent-maintainer/contracts.toml",),
         optional_skip_reason=(
-            ".agent-maintainer/contracts.toml is absent; "
-            "contract compatibility is not configured"
+            ".agent-maintainer/contracts.toml is absent; contract compatibility is not configured"
         ),
         optional_skip_status=models.SKIP_STATUS_MISSING_OPTIONAL,
         artifact_paths=(str(artifact_path),),

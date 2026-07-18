@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import tomllib
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from types import MappingProxyType
 from typing import cast
 
 from packaging.version import InvalidVersion, Version
@@ -18,13 +19,15 @@ from agent_maintainer.contracts.models import (
 )
 from agent_maintainer.contracts.paths import read_confined_text
 
-IMPACT_ORDER: dict[VersionImpact, int] = {
-    "none": 0,
-    "prerelease": 1,
-    "patch": 2,
-    "minor": 3,
-    "major": 4,
-}
+IMPACT_ORDER: Mapping[VersionImpact, int] = MappingProxyType(
+    {
+        "none": 0,
+        "prerelease": 1,
+        "patch": 2,
+        "minor": 3,
+        "major": 4,
+    }
+)
 ADDITIVE_OPERATIONS = frozenset(("alias-change", "contract-add", "member-add"))
 
 
@@ -61,8 +64,7 @@ def package_version_obligation(
     impact = _minimum_impact(policy, changes)
     fingerprints = tuple(sorted(item.fingerprint for item in changes))
     try:
-        base = Version(base_version)
-        current = Version(current_version)
+        base, current = _version_pair(base_version, current_version)
     except InvalidVersion:
         return ContractObligation(
             kind="package-version",
@@ -100,6 +102,10 @@ def package_version_obligation(
     )
 
 
+def _version_pair(base_version: str, current_version: str) -> tuple[Version, Version]:
+    return Version(base_version), Version(current_version)
+
+
 def recommended_version(base: Version, impact: VersionImpact) -> Version | None:
     """Return a concrete normalized recommendation when one is unambiguous."""
 
@@ -108,10 +114,7 @@ def recommended_version(base: Version, impact: VersionImpact) -> Version | None:
     major, minor, patch = _release_triplet(base)
     epoch = f"{base.epoch}!" if base.epoch else ""
     if impact == "prerelease":
-        if base.pre is None:
-            return None
-        label, number = base.pre
-        return Version(f"{epoch}{major}.{minor}.{patch}{label}{number + 1}")
+        return _recommended_prerelease(base, epoch, major, minor, patch)
     if impact == "patch":
         patch += 1
     elif impact == "minor":
@@ -124,7 +127,24 @@ def recommended_version(base: Version, impact: VersionImpact) -> Version | None:
     return Version(f"{epoch}{major}.{minor}.{patch}")
 
 
-def read_package_version(repo_root: Path, configured_path: str) -> str:
+def _recommended_prerelease(
+    base: Version,
+    epoch: str,
+    major: int,
+    minor: int,
+    patch: int,
+) -> Version | None:
+    if base.pre is None:
+        return None
+    label, number = base.pre
+    next_number = number + 1
+    return Version(f"{epoch}{major}.{minor}.{patch}{label}{next_number}")
+
+
+def read_package_version(
+    repo_root: Path,
+    configured_path: str,
+) -> str:
     """Read the exact static ``[project].version`` from confined TOML metadata."""
 
     text = read_confined_text(repo_root, configured_path, label="package version file")
@@ -133,15 +153,22 @@ def read_package_version(repo_root: Path, configured_path: str) -> str:
     except tomllib.TOMLDecodeError as exc:
         raise ValueError("package version file must be valid TOML") from exc
     project_value = document.get("project")
-    if not isinstance(project_value, dict):
-        raise ValueError("package version file must contain a project table")
+    _require(isinstance(project_value, dict), "package version file must contain a project table")
     project = cast(dict[str, object], project_value)
-    version = project.get("version")
-    if not isinstance(version, str):
-        raise ValueError("project version must be text")
-    if not version or version.strip() != version or any(ord(char) < ord(" ") for char in version):
-        raise ValueError("project version must be non-empty safe text")
+    raw_version = project.get("version")
+    _require(isinstance(raw_version, str), "project version must be text")
+    version = cast(str, raw_version)
+    contains_control = any(ord(char) < ord(" ") for char in version)
+    _require(
+        bool(version) and version.strip() == version and not contains_control,
+        "project version must be non-empty safe text",
+    )
     return version
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ValueError(message)
 
 
 def _contract_revision_obligation(

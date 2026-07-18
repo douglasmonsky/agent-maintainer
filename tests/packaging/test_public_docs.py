@@ -73,7 +73,7 @@ def test_public_docs_explain_contract_ratchet_workflow() -> None:
     assert "contract snapshot --write" in readme
     assert ".agent-maintainer/contracts.toml" in readme
     assert "does not create a pre-1.0 compatibility guarantee" in support
-# docsync:evidence.end evidence.readme.contract_ratchets
+    # docsync:evidence.end evidence.readme.contract_ratchets
     assert "never suppresses existing verifier gates" in readme
 
 

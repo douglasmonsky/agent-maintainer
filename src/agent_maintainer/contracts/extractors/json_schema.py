@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import cast
 
 from agent_maintainer.contracts.baseline import canonical_json
@@ -18,6 +19,7 @@ from agent_maintainer.contracts.normalization import (
     text_array,
     validate_json_value,
 )
+from agent_maintainer.contracts.validation import require
 
 SCHEMA_KEYS = frozenset(
     (
@@ -62,18 +64,22 @@ COMPOSITION_KEYS = (
     "then",
 )
 ALLOWED_TYPES = frozenset(("array", "boolean", "integer", "null", "number", "object", "string"))
-NONNEGATIVE_KEYS = {
-    "maxItems": "max_items",
-    "maxLength": "max_length",
-    "minItems": "min_items",
-    "minLength": "min_length",
-}
-NUMERIC_KEYS = {
-    "exclusiveMaximum": "exclusive_maximum",
-    "exclusiveMinimum": "exclusive_minimum",
-    "maximum": "maximum",
-    "minimum": "minimum",
-}
+NONNEGATIVE_KEYS = MappingProxyType(
+    {
+        "maxItems": "max_items",
+        "maxLength": "max_length",
+        "minItems": "min_items",
+        "minLength": "min_length",
+    }
+)
+NUMERIC_KEYS = MappingProxyType(
+    {
+        "exclusiveMaximum": "exclusive_maximum",
+        "exclusiveMinimum": "exclusive_minimum",
+        "maximum": "maximum",
+        "minimum": "minimum",
+    }
+)
 
 
 @dataclass
@@ -130,7 +136,9 @@ def _normalize_schema(
         raise ExtractionError("JSON Schema exceeds maximum depth")
     exact_keys(schema, SCHEMA_KEYS, label="schema", required=frozenset())
     reference = schema.get("$ref")
-    if reference is not None:
+    if reference is None:
+        normalized = {}
+    else:
         normalized = _resolve_ref(
             reference,
             context=context,
@@ -138,8 +146,6 @@ def _normalize_schema(
             depth=depth,
             stack=stack,
         )
-    else:
-        normalized = {}
     _normalize_annotations(schema, normalized)
     _normalize_types(schema, normalized)
     visit = _Visit(context=context, path=path, depth=depth, stack=stack)
@@ -161,19 +167,19 @@ def _resolve_ref(
 ) -> dict[str, object]:
     reference = safe_text(value, label="JSON reference")
     prefix = "#/$defs/"
-    if not reference.startswith(prefix):
-        raise ExtractionError("unsupported or unsafe JSON reference")
+    require(reference.startswith(prefix), "unsupported or unsafe JSON reference", ExtractionError)
     encoded_name = reference.removeprefix(prefix)
-    if not encoded_name or re.search(r"~(?![01])", encoded_name):
-        raise ExtractionError("unsupported or unsafe JSON reference")
+    require(
+        bool(encoded_name) and re.search(r"~(?![01])", encoded_name) is None,
+        "unsupported or unsafe JSON reference",
+        ExtractionError,
+    )
     name = encoded_name.replace("~1", "/").replace("~0", "~")
-    if name in stack:
-        raise ExtractionError("JSON reference cycle")
+    require(name not in stack, "JSON reference cycle", ExtractionError)
     definition = context.definitions.get(name)
-    if definition is None:
-        raise ExtractionError(f"missing JSON definition: {name}")
+    require(definition is not None, f"missing JSON definition: {name}", ExtractionError)
     return _normalize_schema(
-        definition,
+        cast(dict[str, object], definition),
         context=context,
         path=path,
         depth=depth + 1,
@@ -236,17 +242,14 @@ def _schema_properties(
     value = schema.get("properties")
     required = text_array(schema.get("required", []), label="required property")
     if value is None:
-        if required:
-            raise ExtractionError("required property is missing from properties")
+        require(not required, "required property is missing from properties", ExtractionError)
         return None, required
-    if not isinstance(value, dict):
-        raise ExtractionError("properties must be an object")
+    require(isinstance(value, dict), "properties must be an object", ExtractionError)
     properties = cast(dict[str, object], value)
-    if len(properties) > MAX_MEMBERS:
-        raise ExtractionError("properties must be bounded")
+    require(len(properties) <= MAX_MEMBERS, "properties must be bounded", ExtractionError)
     missing = sorted(set(required) - set(properties))
-    if missing:
-        raise ExtractionError(f"required property is missing: {missing[0]}")
+    missing_name = missing[0] if missing else ""
+    require(not missing, f"required property is missing: {missing_name}", ExtractionError)
     return properties, required
 
 
@@ -308,16 +311,17 @@ def _normalize_items(
 def _normalize_constraints(schema: dict[str, object], output: dict[str, object]) -> None:
     for source, target in NUMERIC_KEYS.items():
         if source in schema:
-            output[target] = _number(schema[source], label=source)
+            output[target] = _number(schema.get(source), label=source)
     for source, target in NONNEGATIVE_KEYS.items():
         if source in schema:
-            output[target] = _nonnegative_integer(schema[source], label=source)
+            output[target] = _nonnegative_integer(schema.get(source), label=source)
     _normalize_pattern(schema, output)
     if "enum" in schema:
-        output["enum"] = _sorted_unique_json(schema["enum"], label="schema enum")
+        output["enum"] = _sorted_unique_json(schema.get("enum"), label="schema enum")
     if "const" in schema:
-        validate_json_value(schema["const"])
-        output["const"] = schema["const"]
+        constant = schema.get("const")
+        validate_json_value(constant)
+        output["const"] = constant
 
 
 def _normalize_pattern(schema: dict[str, object], output: dict[str, object]) -> None:
@@ -368,4 +372,5 @@ def _record_unsupported(schema: dict[str, object], *, context: _Context, path: s
 
 def _pointer(path: str, *parts: str) -> str:
     encoded = [part.replace("~", "~0").replace("/", "~1") for part in parts]
-    return f"{path}/{'/'.join(encoded)}"
+    suffix = "/".join(encoded)
+    return f"{path}/{suffix}"

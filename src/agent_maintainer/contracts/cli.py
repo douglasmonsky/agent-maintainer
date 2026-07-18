@@ -79,5 +79,5 @@ def _write_snapshot(repo_root: Path, report: ContractReport) -> int:
     return SUCCESS
 
 
-if __name__ == "__main__":  # pragma: no cover - exercised through main
-    raise SystemExit(main())
+if __name__ == "__main__":
+    sys.exit(main())

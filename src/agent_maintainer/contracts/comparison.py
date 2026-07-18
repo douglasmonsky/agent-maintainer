@@ -59,19 +59,7 @@ def compare_descriptors(
     for contract_id in sorted(set(base_by_id) | set(current_by_id)):
         before = base_by_id.get(contract_id)
         after = current_by_id.get(contract_id)
-        if before is None:
-            assert after is not None
-            deltas = (SemanticDelta("contract-add", "/", None, after.body),)
-            kind = after.kind
-        elif after is None:
-            deltas = (SemanticDelta("contract-remove", "/", before.body, None),)
-            kind = before.kind
-        elif before.kind != after.kind:
-            deltas = (SemanticDelta("type-change", "/kind", before.kind, after.kind),)
-            kind = after.kind
-        else:
-            deltas = tuple(_diff_mapping(before.kind, before.body, after.body, ""))
-            kind = before.kind
+        kind, deltas = _descriptor_deltas(before, after)
         changes.extend(_materialize(contract_id, kind, delta, decision_index) for delta in deltas)
     return tuple(
         sorted(
@@ -79,6 +67,22 @@ def compare_descriptors(
             key=lambda item: (item.contract_id, item.path, item.operation, item.fingerprint),
         )
     )
+
+
+def _descriptor_deltas(
+    before: Descriptor | None,
+    after: Descriptor | None,
+) -> tuple[ContractKind, tuple[SemanticDelta, ...]]:
+    if before is None:
+        if after is None:
+            raise ContractError("descriptor identity index is inconsistent")
+        return after.kind, (SemanticDelta("contract-add", "/", None, after.body),)
+    if after is None:
+        return before.kind, (SemanticDelta("contract-remove", "/", before.body, None),)
+    if before.kind == after.kind:
+        deltas = tuple(_diff_mapping(before.kind, before.body, after.body, ""))
+        return before.kind, deltas
+    return after.kind, (SemanticDelta("type-change", "/kind", before.kind, after.kind),)
 
 
 def _descriptor_index(
@@ -209,17 +213,16 @@ def _list_or_empty(value: object | None, *, label: str) -> list[object]:
 
 
 def _leaf_operation(key: str) -> str:
+    operations = {
+        "aliases": "alias-change",
+        "default": "default-change",
+        "has_default": "default-change",
+        "required": "requiredness-change",
+        "unsupported_semantics": "unsupported-semantic-change",
+    }
     if key in {"annotation", "kind", "return_annotation", "type", "types"}:
         return "type-change"
-    if key == "required":
-        return "requiredness-change"
-    if key in {"default", "has_default"}:
-        return "default-change"
-    if key == "aliases":
-        return "alias-change"
-    if key == "unsupported_semantics":
-        return "unsupported-semantic-change"
-    return "constraint-change"
+    return operations.get(key, "constraint-change")
 
 
 def _pointer(path: str, part: str) -> str:

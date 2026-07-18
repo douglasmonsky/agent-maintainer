@@ -4,22 +4,26 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import cast
 
 from agent_maintainer.contracts.baseline import canonical_json
 from agent_maintainer.contracts.models import ContractError, ContractKind
 
-MEMBER_LIST_IDENTITIES = {
-    "arguments": "name",
-    "attributes": "name",
-    "commands": "path",
-    "exports": "name",
-    "fields": "name",
-    "methods": "name",
-    "options": "name",
-    "parameters": "name",
-}
+MEMBER_LIST_IDENTITIES: Mapping[str, str] = MappingProxyType(
+    {
+        "arguments": "name",
+        "attributes": "name",
+        "commands": "path",
+        "exports": "name",
+        "fields": "name",
+        "methods": "name",
+        "options": "name",
+        "parameters": "name",
+    }
+)
 ORDERED_MEMBER_LISTS = frozenset(("arguments", "parameters"))
+MemberIndex = dict[str, dict[str, object]]
 
 
 @dataclass(frozen=True)
@@ -230,8 +234,8 @@ def _index_member_list(
     *,
     identity_key: str,
     label: str,
-) -> tuple[dict[str, dict[str, object]], list[str]]:
-    members: dict[str, dict[str, object]] = {}
+) -> tuple[MemberIndex, list[str]]:
+    members: MemberIndex = {}
     order: list[str] = []
     for value in values:
         if not isinstance(value, dict):

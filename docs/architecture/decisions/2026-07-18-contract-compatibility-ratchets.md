@@ -143,6 +143,16 @@ evaluate a shell, use the network, infer unsupported schema semantics, rewrite
 versions or migrations, accept a baseline implicitly, suppress other checks, or
 claim historical compatibility when evidence is unavailable.
 
+## Qualification Boundaries
+
+Qualification keeps the classifier dispatcher separate from member-specific
+rules, Git path parsing separate from Git process and historical-state access,
+and atomic baseline writes separate from canonical baseline parsing and
+rendering. Shared validation owns explicit input errors, while command
+environment construction remains outside the executor. Tach declares these
+dependencies directly so the smaller modules remain enforced architectural
+boundaries rather than quality-tool exceptions.
+
 ## Verification
 
 Focused tests cover strict policy rejection, canonical fingerprints, duplicate

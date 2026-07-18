@@ -17,6 +17,7 @@ from agent_maintainer.contracts.normalization import (
     validate_json_value,
 )
 
+NAME_KEY = "name"
 DOCUMENT_KEYS = frozenset(("commands", "console_scripts", "schema_version"))
 COMMAND_KEYS = frozenset(("arguments", "exit_statuses", "options", "path"))
 OPTION_KEYS = frozenset(
@@ -27,16 +28,16 @@ OPTION_KEYS = frozenset(
         "environment",
         "kind",
         "multiple",
-        "name",
+        NAME_KEY,
         "required",
         "stability",
     )
 )
 ARGUMENT_KEYS = frozenset(
-    ("choices", "default", "kind", "multiple", "name", "required", "stability")
+    ("choices", "default", "kind", "multiple", NAME_KEY, "required", "stability")
 )
-REQUIRED_OPTION_KEYS = frozenset(("aliases", "default", "kind", "multiple", "name", "required"))
-REQUIRED_ARGUMENT_KEYS = frozenset(("kind", "multiple", "name", "required"))
+REQUIRED_OPTION_KEYS = frozenset(("aliases", "default", "kind", "multiple", NAME_KEY, "required"))
+REQUIRED_ARGUMENT_KEYS = frozenset(("kind", "multiple", NAME_KEY, "required"))
 STABILITIES = frozenset(("beta", "stable"))
 MAX_EXIT_STATUS = 255
 
@@ -76,8 +77,8 @@ def _normalize_command(raw: dict[str, object], spec: ContractSpec) -> dict[str, 
     ]
     _reject_duplicate_members(options, "option")
     _reject_duplicate_members(arguments, "argument")
-    options.sort(key=lambda item: str(item["name"]))
-    arguments.sort(key=lambda item: str(item["name"]))
+    options.sort(key=lambda item: str(item[NAME_KEY]))
+    arguments.sort(key=lambda item: str(item[NAME_KEY]))
     return {
         "arguments": arguments,
         "exit_statuses": _exit_statuses(raw.get("exit_statuses")),
@@ -126,7 +127,7 @@ def _normalize_member(
         "default": default,
         "environment": environment,
         "kind": safe_text(raw.get("kind"), label="CLI kind"),
-        "name": safe_text(raw.get("name"), label="CLI name"),
+        NAME_KEY: safe_text(raw.get(NAME_KEY), label="CLI name"),
         "required": required,
         "stability": stability,
     }
@@ -153,6 +154,6 @@ def _command_identity(command: dict[str, object]) -> tuple[str, ...]:
 
 
 def _reject_duplicate_members(members: list[dict[str, object]], label: str) -> None:
-    identities = [str(member["name"]) for member in members]
+    identities = [str(member[NAME_KEY]) for member in members]
     if len(identities) != len(set(identities)):
         raise ExtractionError(f"duplicate {label} identity")

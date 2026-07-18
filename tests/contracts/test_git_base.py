@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import subprocess  # nosec B404
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -21,9 +20,7 @@ package_version_file = "pyproject.toml"
 pre_one_breaking = "prerelease"
 stable_breaking = "major"
 """
-VALID_BASELINE = render_baseline(
-    ContractBaseline(package_version="0.1.0b9")
-).encode()
+VALID_BASELINE = render_baseline(ContractBaseline(package_version="0.1.0b9")).encode()
 
 
 def _tree(*, policy_mode: str = "100644", baseline: bool = True) -> bytes:
@@ -61,9 +58,7 @@ def test_base_ref_is_resolved_before_blob_reads(
     tmp_path: Path,
 ) -> None:
     """Untrusted refs never appear in historical blob selectors."""
-    runner = RecordingGitRunner(
-        (BASE_SHA.encode() + b"\n", _tree(), VALID_POLICY, VALID_BASELINE)
-    )
+    runner = RecordingGitRunner((BASE_SHA.encode() + b"\n", _tree(), VALID_POLICY, VALID_BASELINE))
     monkeypatch.setattr(git_base, "run_git", runner)
 
     state = git_base.read_base_contract_files(tmp_path, "origin/main")
@@ -146,7 +141,7 @@ def test_subprocess_failure_does_not_echo_git_stderr(
     tmp_path: Path,
 ) -> None:
     """Git diagnostics expose bounded ref identity, never arbitrary stderr."""
-    failure = subprocess.CalledProcessError(1, ("git",), stderr=b"secret-token")
+    failure = GitContractError("synthetic command failure")
     runner = RecordingGitRunner((failure,))
     monkeypatch.setattr(git_base, "run_git", runner)
 
@@ -162,11 +157,7 @@ def test_git_path_changes_are_structured_once_from_resolved_commit(
     tmp_path: Path,
 ) -> None:
     """Migration checks receive only normalized current or destination paths."""
-    output = (
-        b"M\0CHANGELOG.md\0"
-        b"R100\0docs/old.md\0docs/new.md\0"
-        b"D\0docs/gone.md\0"
-    )
+    output = b"M\0CHANGELOG.md\0R100\0docs/old.md\0docs/new.md\0D\0docs/gone.md\0"
     runner = RecordingGitRunner((output,))
     monkeypatch.setattr(git_base, "run_git", runner)
 
@@ -189,27 +180,18 @@ def test_git_path_changes_are_structured_once_from_resolved_commit(
 
 
 def test_git_runner_never_uses_a_shell(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """Git execution receives an argv tuple and disables shell interpretation."""
+    """Git execution delegates argv to the shared bounded command runner."""
     observed: dict[str, object] = {}
 
-    class Process:
-        returncode = 0
-
-        def communicate(self, *, timeout: int | None = None) -> tuple[bytes, None]:
-            if timeout is not None:
-                assert timeout > 0
-            return BASE_SHA.encode(), None
-
-        def kill(self) -> None:
-            self.returncode = -9
-
-    def fake_popen(command: tuple[str, ...], **kwargs: object) -> Process:
+    def run_bounded(command: list[str], **kwargs: object) -> bytes:
         observed["command"] = command
         observed.update(kwargs)
-        return Process()
+        return BASE_SHA.encode()
 
-    monkeypatch.setattr(git_base.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(git_base.command_run, "run_command_bytes_bounded", run_bounded)
 
     assert git_base.resolve_base_commit(tmp_path, "main") == BASE_SHA
-    assert isinstance(observed["command"], tuple)
-    assert observed["shell"] is False
+    assert isinstance(observed["command"], list)
+    assert observed["cwd"] == tmp_path.resolve()
+    assert observed["timeout_seconds"] == git_base.GIT_TIMEOUT_SECONDS
+    assert observed["output_limit_bytes"] == git_base.MAX_REF_OUTPUT

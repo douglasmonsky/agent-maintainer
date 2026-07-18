@@ -4,31 +4,27 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
-import stat
-import tempfile
 from collections.abc import Mapping
 from pathlib import Path
 from typing import cast
 
-from agent_maintainer.contracts.limits import MAX_CONTRACTS
-from agent_maintainer.contracts.models import (
-    BaselineError,
-    ContractBaseline,
-    Descriptor,
-)
-from agent_maintainer.contracts.paths import read_confined_text, resolve_confined_path
-from agent_maintainer.core.repo_paths import RepoPathError, validate_repo_path
+from agent_maintainer.contracts import baseline_write, limits, models
+from agent_maintainer.contracts import paths as contract_paths
+from agent_maintainer.core import repo_paths
 
 DEFAULT_BASELINE_PATH = Path(".agent-maintainer/contracts-baseline.json")
 KINDS = frozenset(("config-capabilities", "cli-manifest", "python-api", "json-schema"))
+BaselineError = models.BaselineError
+ContractBaseline = models.ContractBaseline
+Descriptor = models.Descriptor
 
 
 def fingerprint(value: object) -> str:
     """Return the exact SHA-256 of canonical JSON-compatible semantic data."""
 
     encoded = canonical_json(value).encode("utf-8")
-    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
+    digest = hashlib.sha256(encoded).hexdigest()
+    return f"sha256:{digest}"
 
 
 def canonical_json(value: object) -> str:
@@ -53,7 +49,11 @@ def load_baseline(
     if not candidate.exists() and not candidate.is_symlink():
         return None
     try:
-        text = read_confined_text(repo_root, path.as_posix(), label="contract baseline")
+        text = contract_paths.read_confined_text(
+            repo_root,
+            path.as_posix(),
+            label="contract baseline",
+        )
     except ValueError as exc:
         raise BaselineError(str(exc)) from exc
     return parse_baseline(text, source=path.as_posix())
@@ -66,8 +66,7 @@ def parse_baseline(text: str, *, source: str) -> ContractBaseline:
         raw = json.loads(text, object_pairs_hook=_unique_object)
     except (json.JSONDecodeError, BaselineError) as exc:
         raise BaselineError(f"invalid contract baseline {source}") from exc
-    if not isinstance(raw, dict):
-        raise BaselineError("contract baseline must be a JSON object")
+    _require(isinstance(raw, dict), "contract baseline must be a JSON object")
     payload = cast(dict[str, object], raw)
     _exact_keys(
         payload,
@@ -82,23 +81,21 @@ def parse_baseline(text: str, *, source: str) -> ContractBaseline:
         ),
         "baseline",
     )
-    expected_document = _verify_document_identity(payload)
+    _verify_document_identity(payload)
     raw_descriptors = payload.get("descriptors")
-    if not isinstance(raw_descriptors, list):
-        raise BaselineError("descriptors must be a bounded array")
+    _require(isinstance(raw_descriptors, list), "descriptors must be a bounded array")
     descriptor_values = cast(list[object], raw_descriptors)
-    if len(descriptor_values) > MAX_CONTRACTS:
-        raise BaselineError("descriptors must be a bounded array")
+    _require(
+        len(descriptor_values) <= limits.MAX_CONTRACTS,
+        "descriptors must be a bounded array",
+    )
     descriptors = tuple(_decode_descriptor(item) for item in descriptor_values)
     identities = tuple(item.contract_id for item in descriptors)
-    if len(identities) != len(set(identities)):
-        raise BaselineError("duplicate baseline contract")
-    if identities != tuple(sorted(identities)):
-        raise BaselineError("baseline contracts must be sorted")
+    _require(len(identities) == len(set(identities)), "duplicate baseline contract")
+    _require(identities == tuple(sorted(identities)), "baseline contracts must be sorted")
     return ContractBaseline(
         package_version=_text(payload.get("package_version"), "package_version"),
         descriptors=descriptors,
-        document_fingerprint=expected_document,
     )
 
 
@@ -113,7 +110,8 @@ def render_baseline(baseline: ContractBaseline) -> str:
         "schema_version": baseline.schema_version,
     }
     payload["document_fingerprint"] = fingerprint(payload)
-    return json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
+    rendered = json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=True)
+    return f"{rendered}\n"
 
 
 def write_baseline_atomic(
@@ -123,63 +121,7 @@ def write_baseline_atomic(
 ) -> None:
     """Atomically replace the exact confined nonsymlinked baseline path."""
 
-    destination = _prepare_destination(repo_root, path)
-    temporary_name = ""
-    try:
-        temporary_name = _write_temporary(destination, render_baseline(baseline))
-        _revalidate_destination(repo_root, path, destination)
-        os.replace(temporary_name, destination)
-        temporary_name = ""
-    except OSError as exc:
-        raise BaselineError("could not atomically write contract baseline") from exc
-    finally:
-        if temporary_name:
-            Path(temporary_name).unlink(missing_ok=True)
-
-
-def _prepare_destination(repo_root: Path, path: Path) -> Path:
-    try:
-        destination = resolve_confined_path(repo_root, path.as_posix(), label="contract baseline")
-    except ValueError as exc:
-        raise BaselineError(str(exc)) from exc
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        metadata = destination.lstat()
-    except FileNotFoundError:
-        metadata = None
-    except OSError as exc:
-        raise BaselineError("contract baseline destination is unavailable") from exc
-    if metadata is not None and not stat.S_ISREG(metadata.st_mode):
-        raise BaselineError("contract baseline destination must be a regular file")
-    return destination
-
-
-def _write_temporary(destination: Path, content: str) -> str:
-    with tempfile.NamedTemporaryFile(
-        mode="w",
-        encoding="utf-8",
-        dir=destination.parent,
-        prefix=f".{destination.name}.",
-        delete=False,
-    ) as temporary:
-        os.chmod(temporary.name, 0o600)
-        temporary.write(content)
-        temporary.flush()
-        os.fsync(temporary.fileno())
-        return temporary.name
-
-
-def _revalidate_destination(repo_root: Path, path: Path, destination: Path) -> None:
-    try:
-        revalidated = resolve_confined_path(
-            repo_root,
-            path.as_posix(),
-            label="contract baseline",
-        )
-    except ValueError as exc:
-        raise BaselineError(str(exc)) from exc
-    if revalidated != destination:
-        raise BaselineError("contract baseline destination changed during write")
+    baseline_write.write_atomic(repo_root, path, render_baseline(baseline))
 
 
 def _descriptor_to_dict(descriptor: Descriptor) -> dict[str, object]:
@@ -196,8 +138,7 @@ def _descriptor_to_dict(descriptor: Descriptor) -> dict[str, object]:
 
 
 def _decode_descriptor(value: object) -> Descriptor:
-    if not isinstance(value, dict):
-        raise BaselineError("descriptor must be an object")
+    _require(isinstance(value, dict), "descriptor must be an object")
     raw = cast(dict[str, object], value)
     _exact_keys(
         raw,
@@ -216,21 +157,21 @@ def _decode_descriptor(value: object) -> Descriptor:
         "descriptor",
     )
     body = raw.get("body")
-    if not isinstance(body, dict):
-        raise BaselineError("descriptor body must be an object")
-    kind = raw.get("kind")
-    if not isinstance(kind, str) or kind not in KINDS:
-        raise BaselineError("descriptor kind is unsupported")
+    _require(isinstance(body, dict), "descriptor body must be an object")
+    raw_kind = raw.get("kind")
+    _require(isinstance(raw_kind, str) and raw_kind in KINDS, "descriptor kind is unsupported")
+    kind = cast(models.ContractKind, raw_kind)
     sources = _text_array(raw.get("sources"), "descriptor sources")
     try:
         canonical_sources = tuple(
-            validate_repo_path(item, label="descriptor source")
-            for item in sources
+            repo_paths.validate_repo_path(item, label="descriptor source") for item in sources
         )
-    except RepoPathError as exc:
+    except repo_paths.RepoPathError as exc:
         raise BaselineError(str(exc)) from exc
-    if canonical_sources != tuple(sorted(set(canonical_sources))):
-        raise BaselineError("descriptor sources must be sorted and unique")
+    _require(
+        canonical_sources == tuple(sorted(set(canonical_sources))),
+        "descriptor sources must be sorted and unique",
+    )
     descriptor = Descriptor(
         contract_id=_text(raw.get("contract_id"), "contract_id"),
         kind=kind,
@@ -243,18 +184,18 @@ def _decode_descriptor(value: object) -> Descriptor:
     )
     semantic = _descriptor_to_dict(descriptor)
     semantic.pop("fingerprint")
-    if fingerprint(semantic) != descriptor.fingerprint:
-        raise BaselineError("descriptor fingerprint mismatch")
+    _require(fingerprint(semantic) == descriptor.fingerprint, "descriptor fingerprint mismatch")
     return descriptor
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise BaselineError(message)
 
 
 def _verify_document_identity(payload: dict[str, object]) -> str:
     expected = _text(payload.get("document_fingerprint"), "document_fingerprint")
-    semantic = {
-        key: value
-        for key, value in payload.items()
-        if key != "document_fingerprint"
-    }
+    semantic = {key: value for key, value in payload.items() if key != "document_fingerprint"}
     if fingerprint(semantic) != expected:
         raise BaselineError("document fingerprint mismatch")
     if payload.get("schema_version") != 1 or isinstance(payload.get("schema_version"), bool):

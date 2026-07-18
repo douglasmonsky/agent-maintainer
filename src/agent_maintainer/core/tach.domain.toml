@@ -28,11 +28,7 @@ depends_on = ["bootstrap"]
 
 [[modules]]
 path = "setup_plans"
-depends_on = [
-  "scaffold.planning",
-  "scaffold.templates",
-  "scaffold.transaction",
-]
+depends_on = ["scaffold.planning", "scaffold.templates", "scaffold.transaction"]
 
 [[modules]]
 path = "artifact_environment"
@@ -47,6 +43,10 @@ path = "command_run"
 depends_on = []
 
 [[modules]]
+path = "command_environment"
+depends_on = ["runtime"]
+
+[[modules]]
 path = "config"
 depends_on = [
   "//agent_maintainer.config.loader",
@@ -59,19 +59,16 @@ path = "executor"
 depends_on = [
   "artifact_environment",
   "check_run",
+  "command_environment",
   "command_run",
   "reporting",
-  "runtime",
   "tooling.capabilities",
   "//agent_maintainer.models",
 ]
 
 [[modules]]
 path = "guidance"
-depends_on = [
-  "config",
-  "//agent_maintainer.ratchet.guidance",
-]
+depends_on = ["config", "//agent_maintainer.ratchet.guidance"]
 
 [[modules]]
 path = "scaffold.presets"
@@ -113,27 +110,22 @@ depends_on = ["scaffold.planning"]
 
 [[modules]]
 path = "layout"
-depends_on = [
-  "config",
-  "//agent_maintainer.models",
-]
+depends_on = ["config", "//agent_maintainer.models"]
 
 [[modules]]
 path = "reporting"
 depends_on = [
-    "//agent_context.budget",
-    "//agent_context.models",
-    "repair_capsule",
-    "structured_artifacts",
-    "structured_typescript",
-    "structured_values",
+  "//agent_context.budget",
+  "//agent_context.models",
+  "repair_capsule",
+  "structured_artifacts",
+  "structured_typescript",
+  "structured_values",
 ]
 
 [[modules]]
 path = "repair_capsule"
-depends_on = [
-    "reporting_context",
-]
+depends_on = ["reporting_context"]
 
 [[modules]]
 path = "reporting_context"
@@ -145,11 +137,7 @@ depends_on = []
 
 [[modules]]
 path = "structured_artifacts"
-depends_on = [
-"structured_pytest",
-"structured_security",
-"structured_values",
-]
+depends_on = ["structured_pytest", "structured_security", "structured_values"]
 
 [[modules]]
 path = "structured_pytest"
@@ -157,10 +145,7 @@ depends_on = ["structured_values"]
 
 [[modules]]
 path = "structured_security"
-depends_on = [
-  "structured_values",
-  "//agent_repair_facts.parsers.osv_scanner",
-]
+depends_on = ["structured_values", "//agent_repair_facts.parsers.osv_scanner"]
 
 [[modules]]
 path = "structured_values"
@@ -169,12 +154,12 @@ depends_on = []
 [[modules]]
 path = "structured_typescript"
 depends_on = [
- "//agent_repair_facts.parsers.typescript_checks",
- "//agent_repair_facts.parsers.typescript_dependency_cruiser",
- "//agent_repair_facts.parsers.typescript_coverage",
- "//agent_repair_facts.parsers.typescript_diagnostics",
- "//agent_repair_facts.parsers.typescript_knip",
- "//agent_repair_facts.parsers.typescript_tests",
+  "//agent_repair_facts.parsers.typescript_checks",
+  "//agent_repair_facts.parsers.typescript_dependency_cruiser",
+  "//agent_repair_facts.parsers.typescript_coverage",
+  "//agent_repair_facts.parsers.typescript_diagnostics",
+  "//agent_repair_facts.parsers.typescript_knip",
+  "//agent_repair_facts.parsers.typescript_tests",
 ]
 
 [[modules]]
@@ -191,9 +176,7 @@ depends_on = [
 
 [[modules]]
 path = "tooling.capability_registry"
-depends_on = [
-  "tooling.capability_types",
-]
+depends_on = ["tooling.capability_types"]
 
 [[modules]]
 path = "tooling.capability_types"

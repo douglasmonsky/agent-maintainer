@@ -15,9 +15,18 @@ from agent_maintainer.core import executor
 from agent_maintainer.verify.groups import STATIC_AND_POLICY_GROUP, checks_for_group
 
 OPTIONAL_REASON = (
-    ".agent-maintainer/contracts.toml is absent; "
-    "contract compatibility is not configured"
+    ".agent-maintainer/contracts.toml is absent; contract compatibility is not configured"
 )
+
+
+def _completed_command(
+    _command: list[str],
+    *,
+    timeout_seconds: int | None = None,
+    output_limit_chars: int | None = None,
+) -> tuple[int, str]:
+    del timeout_seconds, output_limit_chars
+    return 0, '{"schema_version":1,"errors":[]}\n'
 
 
 def _contract_check(*, staged: bool = False) -> models.Check:
@@ -61,10 +70,7 @@ def test_staged_catalog_does_not_invent_unsupported_contract_flag() -> None:
 
 def test_contract_check_order_is_stable_after_verification_plan() -> None:
     """The policy gates retain one reviewable deterministic order."""
-    names = [
-        item.name
-        for item in make_checks(MaintainerConfig(), "HEAD", "origin/main")
-    ]
+    names = [item.name for item in make_checks(MaintainerConfig(), "HEAD", "origin/main")]
 
     assert names.index("contract-compatibility") == names.index("verification-plan-policy") + 1
 
@@ -99,11 +105,7 @@ def test_executor_retains_complete_contract_json_artifact(
         artifact_paths=(str(artifact),),
     )
     output = '{"schema_version":1,"errors":[]}\n'
-    monkeypatch.setattr(
-        executor,
-        "run_command",
-        lambda *_args, **_kwargs: (0, output),
-    )
+    monkeypatch.setattr(executor, "run_command", _completed_command)
 
     result = executor.run_check(check, tmp_path / "logs", 50, 2_000)
 

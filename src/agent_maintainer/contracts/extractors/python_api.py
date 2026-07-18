@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import cast
 
@@ -14,15 +15,42 @@ from agent_maintainer.contracts.normalization import (
     validate_json_value,
 )
 from agent_maintainer.contracts.paths import read_confined_text
+from agent_maintainer.contracts.validation import require
 
-Definition = (
-    ast.FunctionDef
-    | ast.AsyncFunctionDef
-    | ast.ClassDef
-    | ast.Assign
-    | ast.AnnAssign
-)
+Definition = ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef | ast.Assign | ast.AnnAssign
 FunctionNode = ast.FunctionDef | ast.AsyncFunctionDef
+
+
+@dataclass
+class _ModuleIndex:
+    definitions: dict[str, Definition] = field(default_factory=dict[str, Definition])
+    static_all: tuple[str, ...] | None = None
+    has_star_import: bool = False
+
+    def visit(self, node: ast.stmt) -> None:
+        if isinstance(node, ast.ImportFrom) and any(alias.name == "*" for alias in node.names):
+            self.has_star_import = True
+        if _changes_all(node):
+            self._set_static_all(node)
+            return
+        self._add_definition(node)
+
+    def _set_static_all(self, node: ast.stmt) -> None:
+        if self.static_all is not None:
+            raise ExtractionError("duplicate __all__ definition")
+        self.static_all = _static_all(node)
+
+    def _add_definition(self, node: ast.stmt) -> None:
+        named = _definition_name(node)
+        supported = isinstance(
+            node,
+            (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Assign, ast.AnnAssign),
+        )
+        if named is None or not supported:
+            return
+        if named in self.definitions:
+            raise ExtractionError(f"duplicate definition: {named}")
+        self.definitions[named] = cast(Definition, node)
 
 
 def extract_python_api(repo_root: Path, spec: ContractSpec) -> Descriptor:
@@ -58,29 +86,10 @@ def _validate_tree_bounds(tree: ast.AST) -> None:
 def _module_definitions(
     tree: ast.Module,
 ) -> tuple[dict[str, Definition], tuple[str, ...] | None, bool]:
-    definitions: dict[str, Definition] = {}
-    static_all: tuple[str, ...] | None = None
-    has_star_import = False
+    index = _ModuleIndex()
     for node in tree.body:
-        if isinstance(node, ast.ImportFrom) and any(alias.name == "*" for alias in node.names):
-            has_star_import = True
-        if _changes_all(node):
-            if static_all is not None:
-                raise ExtractionError("duplicate __all__ definition")
-            static_all = _static_all(node)
-            continue
-        named = _definition_name(node)
-        if named is None:
-            continue
-        if not isinstance(
-            node,
-            (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Assign, ast.AnnAssign),
-        ):
-            continue
-        if named in definitions:
-            raise ExtractionError(f"duplicate definition: {named}")
-        definitions[named] = node
-    return definitions, static_all, has_star_import
+        index.visit(node)
+    return index.definitions, index.static_all, index.has_star_import
 
 
 def _changes_all(node: ast.stmt) -> bool:
@@ -91,19 +100,29 @@ def _changes_all(node: ast.stmt) -> bool:
 
 def _static_all(node: ast.stmt) -> tuple[str, ...]:
     value: ast.expr | None = None
-    if isinstance(node, ast.Assign) and len(node.targets) != 1:
-        raise ExtractionError("dynamic __all__ is unsupported")
+    require(
+        not isinstance(node, ast.Assign) or len(node.targets) == 1,
+        "dynamic __all__ is unsupported",
+        ExtractionError,
+    )
     if isinstance(node, (ast.Assign, ast.AnnAssign)):
         value = node.value
-    if not isinstance(value, (ast.List, ast.Tuple)):
-        raise ExtractionError("dynamic __all__ is unsupported")
+    require(
+        isinstance(value, (ast.List, ast.Tuple)),
+        "dynamic __all__ is unsupported",
+        ExtractionError,
+    )
+    collection = cast(ast.List | ast.Tuple, value)
     names: list[str] = []
-    for element in value.elts:
-        if not isinstance(element, ast.Constant) or not isinstance(element.value, str):
-            raise ExtractionError("dynamic __all__ is unsupported")
-        names.append(safe_text(element.value, label="__all__ export"))
-    if len(names) != len(set(names)):
-        raise ExtractionError("duplicate __all__ export")
+    for element in collection.elts:
+        require(
+            isinstance(element, ast.Constant) and isinstance(element.value, str),
+            "dynamic __all__ is unsupported",
+            ExtractionError,
+        )
+        literal = cast(ast.Constant, element)
+        names.append(safe_text(literal.value, label="__all__ export"))
+    require(len(names) == len(set(names)), "duplicate __all__ export", ExtractionError)
     return tuple(names)
 
 
@@ -132,9 +151,9 @@ def _selected_names(
         if has_star_import:
             raise ExtractionError("star import cannot define public exports")
         candidates = (
-            static_all
-            if static_all is not None
-            else tuple(name for name in definitions if not name.startswith("_"))
+            tuple(name for name in definitions if not name.startswith("_"))
+            if static_all is None
+            else static_all
         )
     elif "*" in spec.exports:
         raise ExtractionError("wildcard export cannot overlap explicit names")
@@ -263,28 +282,30 @@ def _annotation_text(node: ast.expr | None) -> str | None:
     return ast.unparse(node)
 
 
-def _validate_annotation(node: ast.AST) -> None:
-    if isinstance(node, ast.Name):
-        safe_text(node.id, label="annotation name")
-    elif isinstance(node, ast.Attribute):
-        safe_text(node.attr, label="annotation attribute")
-        _validate_annotation(node.value)
-    elif isinstance(node, ast.Subscript):
-        _validate_annotation(node.value)
-        _validate_annotation(node.slice)
-    elif isinstance(node, (ast.Tuple, ast.List)):
-        for element in node.elts:
-            _validate_annotation(element)
-    elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr):
-        _validate_annotation(node.left)
-        _validate_annotation(node.right)
-    elif not _is_annotation_leaf(node):
-        raise ExtractionError(f"unsupported annotation node: {type(node).__name__}")
+def _validate_annotation(
+    node: ast.AST,
+) -> None:
+    match node:
+        case ast.Name(id=name):
+            safe_text(name, label="annotation name")
+        case ast.Attribute(attr=attribute, value=value):
+            safe_text(attribute, label="annotation attribute")
+            _validate_annotation(value)
+        case ast.Subscript(value=value, slice=slice_node):
+            _validate_annotation(value)
+            _validate_annotation(slice_node)
+        case ast.Tuple(elts=elements) | ast.List(elts=elements):
+            for element in elements:
+                _validate_annotation(element)
+        case ast.BinOp(left=left, op=ast.BitOr(), right=right):
+            _validate_annotation(left)
+            _validate_annotation(right)
+        case _:
+            if not _is_annotation_leaf(node):
+                raise ExtractionError(f"unsupported annotation node: {type(node).__name__}")
 
 
 def _is_annotation_leaf(node: ast.AST) -> bool:
     if isinstance(node, (ast.Load, ast.BitOr)):
         return True
-    return isinstance(node, ast.Constant) and (
-        node.value is None or isinstance(node.value, str)
-    )
+    return isinstance(node, ast.Constant) and (node.value is None or isinstance(node.value, str))

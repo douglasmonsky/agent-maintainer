@@ -252,6 +252,7 @@ CASES: tuple[Case, ...] = (
     ("json-schema", "constraint-change", "/minimum_exclusive", False, True, "exclusive-broken"),
     ("json-schema", "constraint-change", "/maximum_exclusive", True, False, "exclusive-relaxed"),
     ("json-schema", "constraint-change", "/minimum_exclusive", None, None, "exclusive-ambiguous"),
+    ("json-schema", "constraint-change", "/const", "old", "new", "values-broken"),
     ("json-schema", "constraint-change", "/pattern", "a", "b", "values-broken"),
     (
         "json-schema",
@@ -265,6 +266,9 @@ CASES: tuple[Case, ...] = (
     ("json-schema", "constraint-change", "/enum", ["a"], ["b"], "enum-ambiguous"),
     ("json-schema", "constraint-change", "/enum", ["a"], ["a"], "enum-ambiguous"),
     ("json-schema", "constraint-change", "/min_length", 2, 3, "range-broken"),
+    ("json-schema", "constraint-change", "/exclusive_maximum", 10, 8, "range-broken"),
+    ("json-schema", "constraint-change", "/exclusive_minimum", 1, 2, "range-broken"),
+    ("json-schema", "constraint-change", "/min_items", 1, 2, "range-broken"),
     ("json-schema", "constraint-change", "/minimum", 3, 2, "range-relaxed"),
     ("json-schema", "constraint-change", "/maximum", 10, 8, "range-broken"),
     ("json-schema", "constraint-change", "/max_items", 8, 10, "range-relaxed"),

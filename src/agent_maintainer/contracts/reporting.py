@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable, Sequence
+from typing import cast
 
 from agent_maintainer.contracts.limits import MAX_REPORT_ITEMS
 from agent_maintainer.contracts.models import (
@@ -16,6 +17,7 @@ from agent_maintainer.contracts.models import (
 )
 
 JsonItem = dict[str, object]
+ReportSection = tuple[str, Sequence[object]]
 
 
 def report_to_dict(report: ContractReport) -> dict[str, object]:
@@ -31,29 +33,24 @@ def report_to_dict(report: ContractReport) -> dict[str, object]:
         "can_snapshot": report.can_snapshot,
         "unresolved": report.unresolved,
         "descriptors": [
-            _descriptor(item)
-            for item in sorted(report.descriptors, key=lambda value: value.contract_id)
+            _descriptor(item) for item in sorted(report.descriptors, key=_descriptor_key)
         ],
-        "changes": [
-            _change(item)
-            for item in sorted(report.changes, key=lambda value: value.identity())
-        ],
+        "changes": [_change(item) for item in sorted(report.changes, key=_change_key)],
         "obligations": [
-            _obligation(item)
-            for item in sorted(report.obligations, key=_obligation_key)
+            _obligation(item) for item in sorted(report.obligations, key=_obligation_key)
         ],
         "decisions": [
             _decision(item)
             for item in sorted(
                 report.decisions,
-                key=lambda value: (value.contract, value.fingerprint),
+                key=_decision_key,
             )
         ],
         "repair_facts": [
             _repair_fact(item)
             for item in sorted(
                 report.repair_facts,
-                key=lambda value: (value.contract_id, value.fingerprint, value.summary),
+                key=_repair_fact_key,
             )
         ],
         "advisories": list(sorted(report.advisories)),
@@ -64,14 +61,15 @@ def report_to_dict(report: ContractReport) -> dict[str, object]:
 def render_json(report: ContractReport) -> str:
     """Render complete stable ASCII JSON with one trailing newline."""
 
-    return json.dumps(report_to_dict(report), ensure_ascii=True, indent=2) + "\n"
+    rendered = json.dumps(report_to_dict(report), ensure_ascii=True, indent=2)
+    return f"{rendered}\n"
 
 
 def render_text(report: ContractReport) -> str:
     """Render a bounded stable human report suitable for captured logs."""
 
     payload = report_to_dict(report)
-    status = "INVALID" if report.errors else "BLOCKED" if report.unresolved else "CLEAN"
+    status = _report_status(report)
     lines = [
         f"Contract compatibility: {status}",
         f"Mode: {_escaped(report.mode)}",
@@ -79,7 +77,7 @@ def render_text(report: ContractReport) -> str:
         f"Package: {_escaped(report.base_package_version or '(none)')} -> "
         f"{_escaped(report.current_package_version or '(none)')}",
     ]
-    sections: tuple[tuple[str, Sequence[object]], ...] = (
+    sections: tuple[ReportSection, ...] = (
         ("Contracts", _items(payload["descriptors"])),
         ("Changes", _items(payload["changes"])),
         ("Obligations", _items(payload["obligations"])),
@@ -90,7 +88,32 @@ def render_text(report: ContractReport) -> str:
     )
     for title, items in sections:
         _append_section(lines, title, items, _human_item)
-    return "\n".join(lines) + "\n"
+    rendered = "\n".join(lines)
+    return f"{rendered}\n"
+
+
+def _report_status(report: ContractReport) -> str:
+    if report.errors:
+        return "INVALID"
+    if report.unresolved:
+        return "BLOCKED"
+    return "CLEAN"
+
+
+def _descriptor_key(item: Descriptor) -> str:
+    return item.contract_id
+
+
+def _change_key(item: ContractChange) -> tuple[str, str, str, str]:
+    return item.identity()
+
+
+def _decision_key(item: ContractDecision) -> tuple[str, str]:
+    return item.contract, item.fingerprint
+
+
+def _repair_fact_key(item: RepairFact) -> tuple[str, str, str]:
+    return item.contract_id, item.fingerprint, item.summary
 
 
 def _descriptor(item: Descriptor) -> JsonItem:
@@ -159,7 +182,7 @@ def _obligation_key(item: ContractObligation) -> tuple[str, str, str, str, str]:
 def _items(value: object) -> Sequence[object]:
     if not isinstance(value, list):
         raise TypeError("report section must be a list")
-    return value
+    return cast(list[object], value)
 
 
 def _append_section(

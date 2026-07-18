@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -63,6 +64,30 @@ def _clean_report(*, mode: str = "check") -> ContractReport:
     )
 
 
+def _report_builder(
+    report: ContractReport,
+) -> Callable[..., ContractReport]:
+    def build(
+        _target: Path,
+        *,
+        base_ref: str,
+        mode: str,
+        initialize: bool = False,
+    ) -> ContractReport:
+        del base_ref, mode, initialize
+        return report
+
+    return build
+
+
+def _ignore_baseline_write(
+    _root: Path,
+    _path: Path,
+    _baseline: ContractBaseline,
+) -> None:
+    return None
+
+
 def test_snapshot_requires_explicit_write(capsys: pytest.CaptureFixture[str]) -> None:
     """Snapshot never treats an omitted mutation flag as consent."""
     status = cli.main(["snapshot"])
@@ -75,7 +100,7 @@ def test_diff_is_advisory_with_breaking_findings(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Diff renders unresolved facts without enforcing them."""
-    monkeypatch.setattr(cli, "build_contract_report", lambda *_args, **_kwargs: _blocked_report())
+    monkeypatch.setattr(cli, "build_contract_report", _report_builder(_blocked_report()))
 
     assert cli.main(["diff", "--json"]) == 0
 
@@ -94,7 +119,7 @@ def test_check_exit_statuses(
     expected: int,
 ) -> None:
     """Check distinguishes clean, unresolved, and invalid reports."""
-    monkeypatch.setattr(cli, "build_contract_report", lambda *_args, **_kwargs: report)
+    monkeypatch.setattr(cli, "build_contract_report", _report_builder(report))
 
     assert cli.main(["check"]) == expected
 
@@ -105,7 +130,7 @@ def test_json_output_exactly_matches_reporting_layer(
 ) -> None:
     """CLI JSON stays complete for run-scoped captured logs."""
     report = _blocked_report()
-    monkeypatch.setattr(cli, "build_contract_report", lambda *_args, **_kwargs: report)
+    monkeypatch.setattr(cli, "build_contract_report", _report_builder(report))
 
     assert cli.main(["check", "--json"]) == 1
     assert capsys.readouterr().out == render_json(report)
@@ -143,7 +168,7 @@ def test_diff_and_check_never_write_baseline(
     tmp_path: Path,
 ) -> None:
     """Read-only commands never call the generated evidence writer."""
-    monkeypatch.setattr(cli, "build_contract_report", lambda *_args, **_kwargs: _clean_report())
+    monkeypatch.setattr(cli, "build_contract_report", _report_builder(_clean_report()))
 
     def unexpected_write(*_args: object, **_kwargs: object) -> None:
         pytest.fail("read-only contract command attempted a baseline write")
@@ -158,7 +183,7 @@ def test_snapshot_refuses_unresolved_report_without_writing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Explicit write intent cannot bypass unresolved obligations."""
-    monkeypatch.setattr(cli, "build_contract_report", lambda *_args, **_kwargs: _blocked_report())
+    monkeypatch.setattr(cli, "build_contract_report", _report_builder(_blocked_report()))
     writes = 0
 
     def unexpected_write(*_args: object, **_kwargs: object) -> None:
@@ -177,13 +202,13 @@ def test_snapshot_writes_prospective_baseline_atomically(
 ) -> None:
     """A clean snapshot writes exact live descriptors and package version."""
     report = _clean_report(mode="snapshot")
-    monkeypatch.setattr(cli, "build_contract_report", lambda *_args, **_kwargs: report)
+    monkeypatch.setattr(cli, "build_contract_report", _report_builder(report))
     writes: list[tuple[Path, Path, ContractBaseline]] = []
-    monkeypatch.setattr(
-        cli,
-        "write_baseline_atomic",
-        lambda root, path, baseline: writes.append((root, path, baseline)),
-    )
+
+    def record_write(root: Path, path: Path, baseline: ContractBaseline) -> None:
+        writes.append((root, path, baseline))
+
+    monkeypatch.setattr(cli, "write_baseline_atomic", record_write)
 
     assert cli.main(["snapshot", "--write", "--target", str(tmp_path)]) == 0
     assert len(writes) == 1
@@ -217,7 +242,7 @@ def test_snapshot_passes_initialization_and_relative_target(
         return _clean_report(mode="snapshot")
 
     monkeypatch.setattr(cli, "build_contract_report", build)
-    monkeypatch.setattr(cli, "write_baseline_atomic", lambda *_args: None)
+    monkeypatch.setattr(cli, "write_baseline_atomic", _ignore_baseline_write)
 
     assert cli.main(["snapshot", "--write", "--initialize", "--target", "repo"]) == 0
     assert calls == [(repository.resolve(), True)]

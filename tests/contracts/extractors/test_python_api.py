@@ -119,11 +119,7 @@ def test_wildcard_without_all_selects_only_public_top_level_names(tmp_path: Path
     """Wildcard discovery excludes private and nested definitions."""
     exports = _exports(
         tmp_path,
-        "def visible():\n"
-        "    def nested():\n"
-        "        pass\n"
-        "def _private():\n"
-        "    pass\n",
+        "def visible():\n    def nested():\n        pass\ndef _private():\n    pass\n",
     )
 
     assert [item["name"] for item in exports] == ["visible"]

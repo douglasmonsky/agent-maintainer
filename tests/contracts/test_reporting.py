@@ -113,8 +113,9 @@ def sample_report() -> ContractReport:
 def _object_list(payload: dict[str, object], key: str) -> list[dict[str, object]]:
     value = payload[key]
     assert isinstance(value, list)
-    assert all(isinstance(item, dict) for item in value)
-    return cast(list[dict[str, object]], value)
+    items = cast(list[object], value)
+    assert all(isinstance(item, dict) for item in items)
+    return cast(list[dict[str, object]], items)
 
 
 def test_report_dictionary_has_explicit_schema_and_sorted_facts() -> None:

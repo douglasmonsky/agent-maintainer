@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_maintainer.contracts import baseline as baseline_module
+from agent_maintainer.contracts import baseline_write
 from agent_maintainer.contracts.baseline import (
     canonical_json,
     fingerprint,
@@ -184,7 +184,7 @@ def test_failed_atomic_replace_preserves_existing_baseline(
     def fail_replace(_source: str, _destination: Path) -> None:
         raise OSError("synthetic replace failure")
 
-    monkeypatch.setattr(baseline_module.os, "replace", fail_replace)
+    monkeypatch.setattr(baseline_write.os, "replace", fail_replace)
 
     with pytest.raises(BaselineError, match="atomically write"):
         write_baseline_atomic(tmp_path, relative, _baseline())

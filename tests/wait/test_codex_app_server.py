@@ -24,7 +24,7 @@ from tests.support.paths import REPO_ROOT
 class JsonValidator(Protocol):
     """Narrow interface used by dogfood schema assertions."""
 
-    def validate(self, instance: object) -> None:
+    def validate(self, _instance: object) -> None:
         """Validate one JSON-compatible instance."""
 
 
@@ -34,9 +34,7 @@ THREAD_ID = "thread-1"
 def test_app_server_schema_covers_consumed_and_emitted_messages() -> None:
     """Static JSON-RPC schema accepts every request and observed response shape."""
     schema = json.loads(
-        (REPO_ROOT / "schemas/codex-app-server-wait.schema.json").read_text(
-            encoding="utf-8"
-        )
+        (REPO_ROOT / "schemas/codex-app-server-wait.schema.json").read_text(encoding="utf-8")
     )
     validator = cast(JsonValidator, Draft202012Validator(schema))
     Draft202012Validator.check_schema(schema)

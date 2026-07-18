@@ -49,9 +49,9 @@ def test_policy_loads_exact_contract_and_decision(tmp_path: Path) -> None:
     (
         ("version = 0", "version"),
         ("version = 2", "version"),
-        ("source = \"../api.py\"", "unsafe or ambiguous"),
-        ("fingerprint = \"sha256:*\"", "fingerprint"),
-        ("kind = \"runtime-reflection\"", "kind"),
+        ('source = "../api.py"', "unsafe or ambiguous"),
+        ('fingerprint = "sha256:*"', "fingerprint"),
+        ('kind = "runtime-reflection"', "kind"),
         ("unknown = true", "unknown"),
     ),
 )
@@ -124,13 +124,16 @@ def test_policy_rejects_invalid_contract_fields(
 
 def test_policy_rejects_duplicate_decision_fingerprint() -> None:
     """Two authored decisions cannot claim the same exact contract change."""
-    duplicate = VALID_POLICY + """
+    duplicate = (
+        VALID_POLICY
+        + """
 [[decisions]]
 contract = "docsync-api"
 fingerprint = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 classification = "breaking"
 reason = "Duplicate decision."
 """
+    )
 
     with pytest.raises(PolicyError, match="duplicate decision fingerprint"):
         parse_policy(duplicate, source="contracts.toml")
@@ -146,7 +149,9 @@ def test_policy_rejects_non_text_array_members() -> None:
 
 def test_policy_rejects_duplicate_contract_ids() -> None:
     """Contract identity cannot be shadowed later in the policy."""
-    duplicate = VALID_POLICY + """
+    duplicate = (
+        VALID_POLICY
+        + """
 [[contracts]]
 id = "docsync-api"
 kind = "python-api"
@@ -155,6 +160,7 @@ stability = "beta"
 revision = 1
 source = "src/docsync/api.py"
 """
+    )
 
     with pytest.raises(PolicyError, match="duplicate contract"):
         parse_policy(duplicate, source="contracts.toml")

@@ -28,7 +28,7 @@ CONTRACT_IDS = {
 class JsonValidator(Protocol):
     """Narrow interface used by dogfood schema assertions."""
 
-    def validate(self, instance: object) -> None:
+    def validate(self, _instance: object) -> None:
         """Validate one JSON-compatible instance."""
 
 

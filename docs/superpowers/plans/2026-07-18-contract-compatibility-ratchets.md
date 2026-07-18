@@ -33,140 +33,40 @@
 **Files:**
 
 - Create: `.agent-maintainer/change-plans/contract-compatibility-ratchets.md`
-- Create: `src/agent_maintainer/contracts/__init__.py`
 - Create: `src/agent_maintainer/contracts/models.py`
 - Create: `src/agent_maintainer/contracts/limits.py`
-- Create: `tests/contracts/__init__.py`
 - Create: `tests/contracts/test_models.py`
 - Modify: `docs/superpowers/specs/2026-07-18-contract-compatibility-ratchets-design.md`
 
 **Interfaces:**
 
-- Produces: `ContractPolicy`, `ContractSpec`, `ContractDecision`, `Descriptor`, `ContractBaseline`, `ContractChange`, `ContractObligation`, `RepairFact`, and `ContractReport` frozen dataclasses.
-- Produces: `ContractError`, `PolicyError`, `BaselineError`, `ExtractionError`, and `GitContractError` bounded exception classes.
-- Produces: exact literals `ContractKind`, `Classification`, and `VersionImpact`.
-- Produces: shared limits `MAX_INPUT_BYTES = 1_000_000`, `MAX_CONTRACTS = 256`, `MAX_MEMBERS = 10_000`, `MAX_DEPTH = 64`, and `MAX_REPORT_ITEMS = 200`.
+- Produce frozen domain dataclasses and bounded exceptions with exact literals
+  and shared input, contract, member, depth, and report limits.
 
 - [ ] **Step 1: Create the active cohesive change plan**
 
-Create front matter with `id = "contract-compatibility-ratchets"`, `kind = "feature"`, `status = "active"`, `base_ref = "453a00f"`, `expires = 2026-08-15`, `requires_tests = true`, `requires_full_verify = true`, `max_changed_files = 90`, and `max_changed_lines = 7500`. Allow only the new contracts domain/tests, `.agent-maintainer/contracts*`, the four dogfood manifests/schemas, direct CLI/catalog/Tach/config/docs/roadmap/DocSync integration files, this approved spec/plan, and the Phase 184 roadmap record. Forbid `config/prod/**`, `.env`, and `.env.*`. Explain why the extractors, comparison kernel, policy, CLI, dogfood evidence, and enforcement gate are one cohesive public control layer and list rollback as reverting Phase 184 commits in reverse order.
-
-Run:
-
-```bash
-PATH=/private/tmp/agent-maintainer-b8-release-venv/bin:$PATH python -m agent_maintainer change-plan check
-```
-
-Expected: `PASS change plans`.
+Create the active feature plan at base `453a00f`, scope only Phase 184
+implementation, tests, dogfood evidence, and documentation, require tests and
+full verification, and forbid production configuration and environment files.
 
 - [ ] **Step 2: Write failing model-invariant tests**
 
-```python
-from dataclasses import FrozenInstanceError
-
-import pytest
-
-from agent_maintainer.contracts.models import ContractChange, Descriptor
-
-
-def test_descriptor_is_immutable_and_semantic_only() -> None:
-    descriptor = Descriptor(
-        contract_id="docsync-api",
-        kind="python-api",
-        owner="docsync.api",
-        stability="beta",
-        revision=1,
-        sources=("src/docsync/api.py",),
-        body={"exports": []},
-        fingerprint="sha256:abc",
-    )
-
-    with pytest.raises(FrozenInstanceError):
-        descriptor.revision = 2  # type: ignore[misc]
-
-
-def test_change_identity_contains_no_free_form_source_payload() -> None:
-    change = ContractChange(
-        contract_id="docsync-api",
-        operation="member-remove",
-        path="exports.check_repo",
-        before="function",
-        after=None,
-        classification="breaking",
-        fingerprint="sha256:def",
-        reason="export removed",
-    )
-
-    assert change.identity() == (
-        "docsync-api",
-        "member-remove",
-        "exports.check_repo",
-        "sha256:def",
-    )
-```
+Cover frozen descriptors and changes whose identities contain only canonical
+contract, operation, path, and fingerprint fields.
 
 - [ ] **Step 3: Run the model tests and verify RED**
 
-```bash
-PATH=/private/tmp/agent-maintainer-b8-release-venv/bin:$PATH pytest tests/contracts/test_models.py -q
-```
-
-Expected: collection fails because `agent_maintainer.contracts` does not exist.
+Confirm the focused model test initially fails because the domain is absent.
 
 - [ ] **Step 4: Implement the immutable domain vocabulary**
 
-Use tuple collection fields and frozen dataclasses. Keep normalized bodies JSON-compatible while returning defensive copies from serialization boundaries.
-
-```python
-ContractKind = Literal[
-    "config-capabilities",
-    "cli-manifest",
-    "python-api",
-    "json-schema",
-]
-Classification = Literal["breaking", "compatible", "review-required"]
-VersionImpact = Literal["none", "prerelease", "patch", "minor", "major"]
-
-
-@dataclass(frozen=True)
-class ContractSpec:
-    id: str
-    kind: ContractKind
-    owner: str
-    stability: str
-    revision: int
-    source: str
-    exports: tuple[str, ...] = ()
-    migration_paths: tuple[str, ...] = ()
-
-
-@dataclass(frozen=True)
-class ContractChange:
-    contract_id: str
-    operation: str
-    path: str
-    before: object | None
-    after: object | None
-    classification: Classification
-    fingerprint: str
-    reason: str
-
-    def identity(self) -> tuple[str, str, str, str]:
-        return (self.contract_id, self.operation, self.path, self.fingerprint)
-```
-
-`ContractReport` must carry `schema_version`, mode, base availability, current/base package versions, descriptors, changes, obligations, decisions, repair facts, advisories, errors, and `can_snapshot`.
+Use tuple fields and frozen dataclasses, keep normalized bodies JSON-compatible,
+return defensive serialization copies, and include complete base/current/report
+state without free-form source payloads.
 
 - [ ] **Step 5: Run focused tests and commit the model boundary**
 
-```bash
-PATH=/private/tmp/agent-maintainer-b8-release-venv/bin:$PATH pytest tests/contracts/test_models.py -q
-PATH=/private/tmp/agent-maintainer-b8-release-venv/bin:$PATH python -m agent_maintainer change-plan check
-git add -- .agent-maintainer/change-plans/contract-compatibility-ratchets.md docs/superpowers/specs/2026-07-18-contract-compatibility-ratchets-design.md src/agent_maintainer/contracts/__init__.py src/agent_maintainer/contracts/limits.py src/agent_maintainer/contracts/models.py tests/contracts/__init__.py tests/contracts/test_models.py
-git commit -m "feat: add contract ratchet domain models"
-```
-
-Expected: model tests and the change-plan check pass; the commit succeeds through hooks.
+Confirm the focused model tests and change-plan check pass through hooks.
 
 ### Task 2: Load Strict Authored Policy And Canonical Baselines
 
@@ -193,61 +93,13 @@ Expected: model tests and the change-plan check pass; the commit succeeds throug
 
 Parameterize unsupported/missing version, unknown keys at every level, duplicate contract IDs, duplicate fingerprints, unsupported kinds, invalid owners/stability/revisions, wildcard fingerprints, absolute/parent/backslash/NUL paths, overlapping decisions, invalid PEP 440 sources, empty migration paths, and kind-specific keys used on the wrong extractor.
 
-```python
-def test_policy_loads_exact_contract_and_decision(tmp_path: Path) -> None:
-    write_policy(
-        tmp_path,
-        """version = 1
-package_version_file = "pyproject.toml"
-pre_one_breaking = "prerelease"
-stable_breaking = "major"
-
-[[contracts]]
-id = "docsync-api"
-kind = "python-api"
-owner = "docsync.api"
-stability = "beta"
-revision = 1
-source = "src/docsync/api.py"
-exports = ["*"]
-migration_paths = ["CHANGELOG.md"]
-
-[[decisions]]
-contract = "docsync-api"
-fingerprint = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-classification = "breaking"
-reason = "Documented beta migration."
-""",
-    )
-
-    policy = load_policy(tmp_path)
-
-    assert policy is not None
-    assert policy.contracts[0].id == "docsync-api"
-    assert policy.decisions[0].classification == "breaking"
-```
+Confirm one exact contract and decision round-trip through strict policy loading.
 
 - [ ] **Step 2: Write canonical baseline and atomic-write tests**
 
 Cover stable ordering under reversed descriptor/member input, descriptor and document fingerprint verification, missing/duplicate contracts, unsupported schema/generator, symlink/special-file rejection, one-megabyte limit, noncanonical source paths, and failed replace preserving the old file.
 
-```python
-def test_render_baseline_is_byte_stable(sample_baseline: ContractBaseline) -> None:
-    first = render_baseline(sample_baseline)
-    second = render_baseline(reversed_baseline(sample_baseline))
-
-    assert first == second
-    assert first.endswith("\n")
-    assert "created_at" not in first
-    assert str(Path.cwd()) not in first
-
-
-def test_tampered_descriptor_fingerprint_fails_closed(tmp_path: Path) -> None:
-    path = write_baseline(tmp_path, descriptor_fingerprint="sha256:" + "0" * 64)
-
-    with pytest.raises(BaselineError, match="fingerprint"):
-        load_baseline(tmp_path, path.relative_to(tmp_path))
-```
+Confirm byte stability under reordered inputs and reject fingerprint tampering.
 
 - [ ] **Step 3: Run policy/baseline tests and verify RED**
 
@@ -261,23 +113,7 @@ Expected: imports fail for the absent policy, baseline, and path modules.
 
 Open files only after `lstat`, reject symlinks/nonregular files, enforce byte and UTF-8 limits, and validate resolved parents remain under the repository root. Validate allowed key sets before converting values. Canonical JSON uses sorted mapping keys, normalized sorted descriptor/member arrays, compact fingerprint bytes, and pretty output only at the final baseline boundary.
 
-```python
-def fingerprint(value: object) -> str:
-    encoded = json.dumps(
-        value,
-        ensure_ascii=True,
-        allow_nan=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
-    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
-
-
-def render_baseline(baseline: ContractBaseline) -> str:
-    payload = baseline_to_dict(baseline, include_document_fingerprint=False)
-    payload["document_fingerprint"] = fingerprint(payload)
-    return json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
-```
+Hash compact sorted canonical JSON and pretty-print only the final baseline.
 
 Atomic writes create a mode-`0o600` temporary regular file in the destination directory, `fsync` it, revalidate the destination parent, and replace only the exact configured baseline path. Cleanup removes only the named temporary file created by that call.
 

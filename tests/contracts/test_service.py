@@ -67,24 +67,33 @@ def _install_state(
     monkeypatch: pytest.MonkeyPatch,
     state: ServiceState,
 ) -> None:
-    monkeypatch.setattr(service, "load_policy", lambda _root: state.current_policy)
-    monkeypatch.setattr(service, "extract_all", lambda _root, _policy: state.live)
-    monkeypatch.setattr(service, "load_baseline", lambda _root: state.current_baseline)
-    monkeypatch.setattr(
-        service,
-        "read_package_version",
-        lambda _root, _path: state.current_version,
-    )
-    monkeypatch.setattr(
-        service,
-        "read_base_contract_files",
-        lambda _root, _ref: state.base_state,
-    )
-    monkeypatch.setattr(
-        service,
-        "read_git_changes",
-        lambda _root, _commit: state.git_changes,
-    )
+    def load_policy(_root: Path) -> ContractPolicy:
+        return state.current_policy
+
+    def extract_all(
+        _root: Path,
+        _policy: ContractPolicy,
+    ) -> tuple[Descriptor, ...]:
+        return state.live
+
+    def load_baseline(_root: Path) -> ContractBaseline | None:
+        return state.current_baseline
+
+    def read_package_version(_root: Path, _path: Path) -> str:
+        return state.current_version
+
+    def read_base_contract_files(_root: Path, _ref: str) -> BaseContractState | None:
+        return state.base_state
+
+    def read_git_changes(_root: Path, _commit: str) -> tuple[GitPathChange, ...]:
+        return state.git_changes
+
+    monkeypatch.setattr(service, "load_policy", load_policy)
+    monkeypatch.setattr(service, "extract_all", extract_all)
+    monkeypatch.setattr(service, "load_baseline", load_baseline)
+    monkeypatch.setattr(service, "read_package_version", read_package_version)
+    monkeypatch.setattr(service, "read_base_contract_files", read_base_contract_files)
+    monkeypatch.setattr(service, "read_git_changes", read_git_changes)
 
 
 def test_current_baseline_must_exactly_match_live_extraction(
@@ -413,6 +422,5 @@ def test_unresolved_findings_produce_sorted_exact_repair_facts(
     )
     assert any(fact.fingerprint == report.changes[0].fingerprint for fact in report.repair_facts)
     assert all(
-        "agent-maintainer contract diff" in fact.inspect_command
-        for fact in report.repair_facts
+        "agent-maintainer contract diff" in fact.inspect_command for fact in report.repair_facts
     )

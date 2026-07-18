@@ -12,6 +12,9 @@ ContractKind = Literal[
     "json-schema",
 ]
 Classification = Literal["breaking", "compatible", "review-required"]
+BREAKING: Classification = "breaking"
+COMPATIBLE: Classification = "compatible"
+REVIEW_REQUIRED: Classification = "review-required"
 VersionImpact = Literal["none", "prerelease", "patch", "minor", "major"]
 ObligationStatus = Literal["satisfied", "unresolved"]
 JsonObject = dict[str, object]
@@ -95,7 +98,6 @@ class ContractBaseline:
     generator: str = "agent-maintainer"
     package_version: str = ""
     descriptors: tuple[Descriptor, ...] = ()
-    document_fingerprint: str = ""
 
 
 @dataclass(frozen=True)

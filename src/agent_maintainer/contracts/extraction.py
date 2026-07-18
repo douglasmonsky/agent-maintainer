@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol
 
+from agent_maintainer.contracts.extractors.cli_manifest import extract_cli_manifest
+from agent_maintainer.contracts.extractors.config_capabilities import (
+    extract_config_capabilities,
+)
+from agent_maintainer.contracts.extractors.json_schema import extract_json_schema
+from agent_maintainer.contracts.extractors.python_api import extract_python_api
 from agent_maintainer.contracts.models import (
     ContractError,
     ContractPolicy,
@@ -12,31 +18,21 @@ from agent_maintainer.contracts.models import (
     Descriptor,
     ExtractionError,
 )
-from agent_maintainer.contracts.normalization import build_descriptor
+from agent_maintainer.contracts.normalization import build_descriptor as _build_descriptor
 
-__all__ = ["Extractor", "build_descriptor", "extract_all", "extract_contract"]
+Extractor = Callable[[Path, ContractSpec], Descriptor]
 
 
-class Extractor(Protocol):
-    """One repository-confined semantic contract adapter."""
+def build_descriptor(spec: ContractSpec, body: dict[str, object]) -> Descriptor:
+    """Build one normalized descriptor through the public extraction facade."""
 
-    def extract(self, repo_root: Path, spec: ContractSpec) -> Descriptor:
-        """Extract one normalized descriptor without executing target code."""
-
-        ...
+    return _build_descriptor(spec, body)
 
 
 def extract_contract(repo_root: Path, spec: ContractSpec) -> Descriptor:
     """Route one supported contract kind to its pure-data extractor."""
 
-    from agent_maintainer.contracts.extractors.cli_manifest import extract_cli_manifest
-    from agent_maintainer.contracts.extractors.config_capabilities import (
-        extract_config_capabilities,
-    )
-    from agent_maintainer.contracts.extractors.json_schema import extract_json_schema
-    from agent_maintainer.contracts.extractors.python_api import extract_python_api
-
-    extractors = {
+    extractors: dict[str, Extractor] = {
         "cli-manifest": extract_cli_manifest,
         "config-capabilities": extract_config_capabilities,
         "json-schema": extract_json_schema,

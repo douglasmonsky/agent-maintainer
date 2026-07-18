@@ -7,9 +7,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from agent_maintainer.contracts.baseline import fingerprint, load_baseline
-from agent_maintainer.contracts.comparison import compare_descriptors
-from agent_maintainer.contracts.extraction import extract_all
+from agent_maintainer.contracts import baseline, comparison, extraction
+from agent_maintainer.contracts import models as contract_models
+from agent_maintainer.contracts import policy as policy_module
 from agent_maintainer.contracts.git_base import (
     BaseContractState,
     GitPathChange,
@@ -26,19 +26,18 @@ from agent_maintainer.contracts.models import (
     ContractPolicy,
     ContractReport,
     Descriptor,
-    RepairFact,
 )
-from agent_maintainer.contracts.policy import load_policy
 from agent_maintainer.contracts.versioning import (
     contract_revision_obligations,
     package_version_obligation,
     read_package_version,
 )
 
-HISTORICAL_UNAVAILABLE = (
-    "historical contract compatibility is unavailable for the selected base"
-)
+HISTORICAL_UNAVAILABLE = "historical contract compatibility is unavailable for the selected base"
 VALID_MODES = frozenset(("check", "diff", "snapshot"))
+extract_all = extraction.extract_all
+load_baseline = baseline.load_baseline
+load_policy = policy_module.load_policy
 
 
 @dataclass(frozen=True)
@@ -92,12 +91,14 @@ def build_contract_report(
     except (ContractError, OSError, ValueError) as exc:
         return replace(context.report(), errors=(str(exc),))
     if base is None:
-        return replace(
+        report = replace(
             context.report(),
             advisories=(HISTORICAL_UNAVAILABLE,),
             can_snapshot=True,
         )
-    return _historical_report(root, current, base, context)
+    else:
+        report = _historical_report(root, current, base, context)
+    return report
 
 
 def _historical_report(
@@ -106,20 +107,13 @@ def _historical_report(
     base: BaseContractState,
     context: _ReportContext,
 ) -> ContractReport:
-    changes = compare_descriptors(
+    changes = comparison.compare_descriptors(
         base.baseline.descriptors,
         current.descriptors,
         current.policy.decisions,
     )
     try:
-        git_changes = read_git_changes(repo_root, base.commit)
-        obligations = _obligations(
-            base,
-            current.policy,
-            current.package_version,
-            changes,
-            git_changes,
-        )
+        obligations = _historical_obligations(repo_root, current, base, changes)
     except (ContractError, OSError, ValueError) as exc:
         return replace(
             context.report(),
@@ -140,14 +134,30 @@ def _historical_report(
     return replace(report, can_snapshot=not report.unresolved)
 
 
+def _historical_obligations(
+    repo_root: Path,
+    current: _CurrentState,
+    base: BaseContractState,
+    changes: Sequence[ContractChange],
+) -> tuple[ContractObligation, ...]:
+    git_changes = read_git_changes(repo_root, base.commit)
+    return _obligations(
+        base,
+        current.policy,
+        current.package_version,
+        changes,
+        git_changes,
+    )
+
+
 def _load_current(repo_root: Path) -> _CurrentState:
-    policy = load_policy(repo_root)
-    if policy is None:
+    current_policy = load_policy(repo_root)
+    if current_policy is None:
         raise ContractError("current contract policy is missing")
     return _CurrentState(
-        policy=policy,
-        descriptors=_sorted_descriptors(extract_all(repo_root, policy)),
-        package_version=read_package_version(repo_root, policy.package_version_file),
+        policy=current_policy,
+        descriptors=_sorted_descriptors(extract_all(repo_root, current_policy)),
+        package_version=read_package_version(repo_root, current_policy.package_version_file),
         baseline=load_baseline(repo_root),
     )
 
@@ -219,10 +229,10 @@ def _repair_facts(
     changes: Sequence[ContractChange],
     obligations: Sequence[ContractObligation],
     base_ref: str,
-) -> tuple[RepairFact, ...]:
+) -> tuple[contract_models.RepairFact, ...]:
     command = f"agent-maintainer contract diff --base-ref {shlex.quote(base_ref)} --json"
     facts = [
-        RepairFact(
+        contract_models.RepairFact(
             contract_id=change.contract_id,
             fingerprint=change.fingerprint,
             summary=f"review required for {change.operation} at {change.path}",
@@ -232,7 +242,7 @@ def _repair_facts(
         if change.classification == "review-required"
     ]
     facts.extend(
-        RepairFact(
+        contract_models.RepairFact(
             contract_id=obligation.contract_id or "package",
             fingerprint=_obligation_fingerprint(obligation),
             summary=obligation.message,
@@ -248,7 +258,7 @@ def _repair_facts(
 def _obligation_fingerprint(obligation: ContractObligation) -> str:
     if len(obligation.fingerprints) == 1:
         return obligation.fingerprints[0]
-    return fingerprint(
+    return baseline.fingerprint(
         {
             "contract_id": obligation.contract_id,
             "current": obligation.current,
@@ -261,10 +271,10 @@ def _obligation_fingerprint(obligation: ContractObligation) -> str:
 
 
 def _baseline_is_fresh(
-    baseline: Sequence[Descriptor],
+    expected: Sequence[Descriptor],
     descriptors: Sequence[Descriptor],
 ) -> bool:
-    return tuple(item.fingerprint for item in baseline) == tuple(
+    return tuple(item.fingerprint for item in expected) == tuple(
         item.fingerprint for item in descriptors
     )
 

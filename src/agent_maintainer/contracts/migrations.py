@@ -17,19 +17,19 @@ EVIDENCE_KINDS = frozenset(("added", "modified", "renamed"))
 
 
 class GitPathFact(Protocol):
-    """Structured Git path fact accepted by migration evaluation."""
+    """Structural Git path fact accepted by migration evaluation."""
 
     @property
     def path(self) -> str:
         """Return the current or destination repository path."""
 
-        ...
+        raise NotImplementedError
 
     @property
     def kind(self) -> str:
         """Return the normalized Git change kind."""
 
-        ...
+        raise NotImplementedError
 
 
 def migration_obligations(

@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import os
 import stat
+from contextlib import ExitStack
 from pathlib import Path
 
 from agent_maintainer.contracts.limits import MAX_INPUT_BYTES
 from agent_maintainer.contracts.models import ContractError
 from agent_maintainer.core.repo_paths import RepoPathError, validate_repo_path
 
-READ_CHUNK_BYTES = 64 * 1024
+READ_CHUNK_BYTES = 65_536
 
 
 def resolve_confined_path(repo_root: Path, value: str, *, label: str) -> Path:
@@ -21,13 +22,18 @@ def resolve_confined_path(repo_root: Path, value: str, *, label: str) -> Path:
     except RepoPathError as exc:
         raise ContractError(str(exc)) from exc
     try:
-        root = repo_root.resolve(strict=True)
-        parent = (root / relative).parent.resolve(strict=False)
+        root, parent = _resolved_parent(repo_root, relative)
     except OSError as exc:
         raise ContractError(f"{label} path is unavailable") from exc
     if not parent.is_relative_to(root):
         raise ContractError(f"{label} must be repository-relative")
     return parent / Path(relative).name
+
+
+def _resolved_parent(repo_root: Path, relative: str) -> tuple[Path, Path]:
+    root = repo_root.resolve(strict=True)
+    parent = (root / relative).parent.resolve(strict=False)
+    return root, parent
 
 
 def read_confined_text(
@@ -85,17 +91,16 @@ def _read_regular_file(
         descriptor = os.open(path, flags)
     except OSError as exc:
         raise ContractError(f"{label} must be a readable regular file: {value}") from exc
-    try:
+    with ExitStack() as stack:
+        stack.callback(os.close, descriptor)
         metadata = os.fstat(descriptor)
-        if not _same_regular_file(metadata, expected_metadata):
-            raise ContractError(f"{label} must be a readable regular file: {value}")
-        if metadata.st_size > max_bytes:
-            raise ContractError(f"{label} is too large: {value}")
+        _require(
+            _same_regular_file(metadata, expected_metadata),
+            f"{label} must be a readable regular file: {value}",
+        )
+        _require(metadata.st_size <= max_bytes, f"{label} is too large: {value}")
         payload = _read_bounded(descriptor, max_bytes=max_bytes)
-    finally:
-        os.close(descriptor)
-    if len(payload) > max_bytes:
-        raise ContractError(f"{label} is too large: {value}")
+    _require(len(payload) <= max_bytes, f"{label} is too large: {value}")
     return payload
 
 
@@ -117,3 +122,8 @@ def _read_bounded(descriptor: int, *, max_bytes: int) -> bytes:
         chunks.append(chunk)
         remaining -= len(chunk)
     return b"".join(chunks)
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ContractError(message)

@@ -1,7 +1,7 @@
 +++
 id = "contract-compatibility-ratchets"
 kind = "feature"
-status = "complete"
+status = "active"
 base_ref = "453a00f"
 expires = 2026-08-15
 allowed_paths = [
@@ -31,7 +31,10 @@ allowed_paths = [
   "src/agent_maintainer/catalogs/tach.domain.toml",
   "src/agent_maintainer/cli.py",
   "src/agent_maintainer/contracts/**",
+  "src/agent_maintainer/core/command_run.py",
+  "src/agent_maintainer/core/command_environment.py",
   "src/agent_maintainer/core/executor.py",
+  "src/agent_maintainer/core/tach.domain.toml",
   "src/agent_maintainer/verify/groups.py",
   "tach.toml",
   "tests/catalogs/test_contract_catalog.py",
@@ -106,25 +109,21 @@ security profiles; one comprehensive review; and all protected hosted checks.
 
 ## Classifier mutation qualification
 
-The fresh isolated `contracts.classifiers` sweep generated 517 covered mutants.
-Exact branch-and-reason tests killed 503. The remaining 14 are equivalent under
-validated classifier inputs:
+The non-editable isolated sweep generated 529 covered mutants, killed 515, and
+left 14 equivalents under validated classifier inputs:
 
-- `x__classify_member_add__mutmut_5` and `_7` remove or replace the fallback
-  argument to `dict.get`; strict `ContractKind` validation is exhaustive and
-  `MEMBER_ADD_CLASSIFIERS` contains every allowed kind.
-- `x__classify_constraint__mutmut_5`, `_8`, and `_9` change `rsplit` limits or
-  select `+1` instead of `-1`; normalized contract paths contain `/`, and every
-  form returns the same final segment.
-- `x__classify_constraint__mutmut_29` passes `None` instead of `False` to the
-  internal truthiness branch, producing the same upper-bound result.
-- `x__classify_constraint__mutmut_39`, `_40`, and
-  `x__classify_constraint_mapping__mutmut_2` replace nested kind or path
-  context. Nested mapping aggregation retains only classification; the affected
-  variants remain review-required and final-segment dispatch is unchanged.
-- `x__classify_constraint__mutmut_47`, `_51`, `x__mapping__mutmut_1`,
-  `x__string_set__mutmut_3`, and `x__json_set__mutmut_3` change only the first
-  argument to `typing.cast`, which is a runtime identity operation.
+- `member_rules.x_classify_member_add__mutmut_12` and `_14` remove the fallback,
+  unreachable after strict `ContractKind` validation and exhaustive dispatch.
+- `classifiers.x__classify_primary__mutmut_59` replaces the kind passed to the
+  secondary dispatcher, whose kind parameter is intentionally unused.
+- `classifiers.x__classify_constraint__mutmut_5`, `_8`, and `_9` change `rsplit`
+  limits or sign; every normalized path returns the same final segment.
+- `classifiers.x__classify_constraint__mutmut_74`, `_75`, and
+  `x__classify_constraint_mapping__mutmut_2` replace nested context; validated
+  config/CLI keys are kind-independent and dispatch by the same final segment.
+- `classifiers.x__classify_constraint__mutmut_82`, `_86`, `x__mapping__mutmut_1`,
+  `x__string_set__mutmut_3`, and `x__json_set__mutmut_3` alter only runtime-identity
+  `typing.cast` type arguments.
 
 No behavioral survivor is waived.
 

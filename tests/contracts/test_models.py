@@ -28,8 +28,9 @@ def test_descriptor_is_immutable_and_semantic_only() -> None:
         fingerprint="sha256:abc",
     )
 
+    attribute = "revision"
     with pytest.raises(FrozenInstanceError):
-        descriptor.revision = 2  # type: ignore[misc]
+        setattr(descriptor, attribute, 2)
 
 
 def test_change_identity_is_exact_and_bounded() -> None:

@@ -61,13 +61,21 @@ STABILITIES = frozenset(("beta", "stable"))
 def extract_config_capabilities(repo_root: Path, spec: ContractSpec) -> Descriptor:
     """Extract normalized configuration fields from one strict manifest."""
 
+    document = load_json_object(repo_root, spec)
+    _validate_document(spec, document)
+    return build_descriptor(spec, {"fields": _normalized_fields(document)})
+
+
+def _validate_document(spec: ContractSpec, document: dict[str, object]) -> None:
     if spec.kind != "config-capabilities":
         raise ExtractionError("config extractor requires config-capabilities kind")
-    document = load_json_object(repo_root, spec)
     exact_keys(document, DOCUMENT_KEYS, label="manifest")
     if document.get("schema_version") != 1 or isinstance(document.get("schema_version"), bool):
         raise ExtractionError("manifest schema_version must be exactly 1")
     _validate_supporting_tables(document)
+
+
+def _normalized_fields(document: dict[str, object]) -> list[dict[str, object]]:
     fields = object_array(document.get("fields"), label="fields")
     if len(fields) > MAX_MEMBERS:
         raise ExtractionError("fields must be a bounded array")
@@ -76,7 +84,7 @@ def extract_config_capabilities(repo_root: Path, spec: ContractSpec) -> Descript
     if len(identities) != len(set(identities)):
         raise ExtractionError("duplicate field identity")
     normalized.sort(key=lambda item: str(item["name"]))
-    return build_descriptor(spec, {"fields": normalized})
+    return normalized
 
 
 def _validate_supporting_tables(document: dict[str, object]) -> None:

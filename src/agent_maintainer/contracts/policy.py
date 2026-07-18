@@ -88,6 +88,20 @@ def parse_policy(text: str, *, source: str) -> ContractPolicy:
         _decode_decision(item, index)
         for index, item in enumerate(_tables(raw.get("decisions", []), "decisions"))
     )
+    _validate_policy_relationships(contracts, decisions)
+    return ContractPolicy(
+        package_version_file=_path(raw.get("package_version_file"), "package_version_file"),
+        pre_one_breaking=_impact(raw.get("pre_one_breaking"), "pre_one_breaking"),
+        stable_breaking=_impact(raw.get("stable_breaking"), "stable_breaking"),
+        contracts=tuple(sorted(contracts, key=lambda item: item.id)),
+        decisions=tuple(sorted(decisions, key=lambda item: (item.contract, item.fingerprint))),
+    )
+
+
+def _validate_policy_relationships(
+    contracts: tuple[ContractSpec, ...],
+    decisions: tuple[ContractDecision, ...],
+) -> None:
     _reject_duplicates(tuple(item.id for item in contracts), "contract id")
     _reject_duplicates(
         tuple((item.contract, item.fingerprint) for item in decisions),
@@ -100,13 +114,6 @@ def parse_policy(text: str, *, source: str) -> ContractPolicy:
     )
     if unknown_decision is not None:
         raise PolicyError(f"decision references unknown contract: {unknown_decision}")
-    return ContractPolicy(
-        package_version_file=_path(raw.get("package_version_file"), "package_version_file"),
-        pre_one_breaking=_impact(raw.get("pre_one_breaking"), "pre_one_breaking"),
-        stable_breaking=_impact(raw.get("stable_breaking"), "stable_breaking"),
-        contracts=tuple(sorted(contracts, key=lambda item: item.id)),
-        decisions=tuple(sorted(decisions, key=lambda item: (item.contract, item.fingerprint))),
-    )
 
 
 def _decode_contract(value: object, index: int) -> ContractSpec:

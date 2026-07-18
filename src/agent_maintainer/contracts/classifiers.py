@@ -2,19 +2,20 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from typing import cast
 
+from agent_maintainer.contracts import member_rules
 from agent_maintainer.contracts.baseline import canonical_json
-from agent_maintainer.contracts.models import Classification, ContractKind
+from agent_maintainer.contracts.models import (
+    BREAKING,
+    COMPATIBLE,
+    REVIEW_REQUIRED,
+    Classification,
+    ContractKind,
+)
 
-LOWER_BOUNDS = frozenset(("exclusive_minimum", "min_items", "min_length", "minimum"))
-UPPER_BOUNDS = frozenset(("exclusive_maximum", "max_items", "max_length", "maximum"))
 ClassificationResult = tuple[Classification, str]
-Classifier = Callable[
-    [ContractKind, str, object | None, object | None],
-    ClassificationResult,
-]
 
 
 def classify_change(
@@ -26,8 +27,52 @@ def classify_change(
 ) -> ClassificationResult:
     """Classify one normalized operation using conservative compatibility rules."""
 
-    handler = OPERATION_CLASSIFIERS.get(operation, _classify_unknown)
-    return handler(kind, path, before, after)
+    return _classify_primary(kind, operation, path, before, after)
+
+
+def _classify_primary(
+    kind: ContractKind,
+    operation: str,
+    path: str,
+    before: object | None,
+    after: object | None,
+) -> ClassificationResult:
+    match operation:
+        case "alias-change":
+            result = _classify_aliases(before, after)
+        case "constraint-change":
+            result = _classify_constraint(kind, path, before, after)
+        case "contract-add":
+            result = (COMPATIBLE, "new contract surface")
+        case "contract-remove" | "member-remove":
+            result = (BREAKING, "contract surface removed")
+        case "default-change":
+            result = _classify_default(kind, path, before, after)
+        case "member-add":
+            result = _classify_member_add(kind, path, after)
+        case _:
+            result = _classify_secondary(kind, operation, path, before, after)
+    return result
+
+
+def _classify_secondary(
+    _kind: ContractKind,
+    operation: str,
+    path: str,
+    before: object | None,
+    after: object | None,
+) -> ClassificationResult:
+    match operation:
+        case "member-rename":
+            return _classify_rename(before, after)
+        case "requiredness-change":
+            return _classify_requiredness(before, after)
+        case "type-change":
+            return _classify_type(path, before, after)
+        case "unsupported-semantic-change":
+            return REVIEW_REQUIRED, "unsupported semantics changed"
+        case _:
+            return REVIEW_REQUIRED, "unrecognized semantic operation"
 
 
 def _classify_member_add(
@@ -36,62 +81,7 @@ def _classify_member_add(
     after: object | None,
 ) -> ClassificationResult:
     member = _mapping(after)
-    handler = MEMBER_ADD_CLASSIFIERS.get(kind, _classify_unknown_member_add)
-    return handler(path, member)
-
-
-def _classify_config_member_add(
-    _path: str,
-    member: Mapping[str, object],
-) -> ClassificationResult:
-    if member.get("required") is True:
-        return "breaking", "new required configuration field"
-    if "default" in member:
-        return "compatible", "new optional configuration field with default"
-    return "review-required", "new optional configuration field has no explicit default"
-
-
-def _classify_cli_member_add(
-    path: str,
-    member: Mapping[str, object],
-) -> ClassificationResult:
-    if "/options/" not in path and "/arguments/" not in path:
-        return "compatible", "new command surface"
-    if member.get("required") is True:
-        return "breaking", "new required command input"
-    return "compatible", "new optional command input"
-
-
-def _classify_python_member_add(
-    path: str,
-    member: Mapping[str, object],
-) -> ClassificationResult:
-    if "/parameters/" not in path:
-        return "compatible", "new nominated Python API member"
-    parameter_kind = member.get("kind")
-    optional = member.get("has_default") is True or parameter_kind in {
-        "var-keyword",
-        "var-positional",
-    }
-    if optional:
-        return "compatible", "new optional Python parameter"
-    return "breaking", "new required Python parameter"
-
-
-def _classify_schema_member_add(
-    _path: str,
-    member: Mapping[str, object],
-) -> ClassificationResult:
-    if member.get("required") is True:
-        return "breaking", "new required schema property"
-    return "compatible", "new optional schema property"
-
-
-def _classify_unknown_member_add(
-    _path: str,
-    _member: Mapping[str, object],
-) -> ClassificationResult:
-    return "review-required", "new member requires review"
+    return member_rules.classify_member_add(kind, path, member)
 
 
 def _classify_rename(
@@ -101,8 +91,8 @@ def _classify_rename(
     old_name = _mapping(before).get("name")
     aliases = _string_set(_mapping(after).get("aliases"))
     if isinstance(old_name, str) and old_name in aliases:
-        return "compatible", "renamed member preserves its previous name as an alias"
-    return "review-required", "inferred member rename has no proved alias mapping"
+        return COMPATIBLE, "renamed member preserves its previous name as an alias"
+    return REVIEW_REQUIRED, "inferred member rename has no proved alias mapping"
 
 
 def _classify_type(
@@ -111,15 +101,15 @@ def _classify_type(
     after: object | None,
 ) -> tuple[Classification, str]:
     if path.endswith(("/annotation", "/return_annotation")):
-        return "review-required", "annotation compatibility is not provable"
+        return REVIEW_REQUIRED, "annotation compatibility is not provable"
     before_types = _string_set(before)
     after_types = _string_set(after)
     if before_types and after_types:
         if before_types < after_types:
-            return "compatible", "accepted type set widened"
+            return COMPATIBLE, "accepted type set widened"
         if after_types < before_types or before_types != after_types:
-            return "breaking", "accepted type set narrowed or changed incompatibly"
-    return "breaking", "value kind changed incompatibly"
+            return BREAKING, "accepted type set narrowed or changed incompatibly"
+    return BREAKING, "value kind changed incompatibly"
 
 
 def _classify_requiredness(
@@ -127,10 +117,10 @@ def _classify_requiredness(
     after: object | None,
 ) -> tuple[Classification, str]:
     if before is False and after is True:
-        return "breaking", "optional member became required"
+        return BREAKING, "optional member became required"
     if before is True and after is False:
-        return "compatible", "required member became optional"
-    return "review-required", "requiredness change is ambiguous"
+        return COMPATIBLE, "required member became optional"
+    return REVIEW_REQUIRED, "requiredness change is ambiguous"
 
 
 def _classify_default(
@@ -141,12 +131,12 @@ def _classify_default(
 ) -> tuple[Classification, str]:
     if path.endswith("/has_default"):
         if before is False and after is True:
-            return "compatible", "parameter gained a default"
+            return COMPATIBLE, "parameter gained a default"
         if before is True and after is False:
-            return "breaking", "parameter lost its default"
+            return BREAKING, "parameter lost its default"
     if kind in {"config-capabilities", "cli-manifest"}:
-        return "breaking", "public default changed"
-    return "review-required", "literal default compatibility is not provable"
+        return BREAKING, "public default changed"
+    return REVIEW_REQUIRED, "literal default compatibility is not provable"
 
 
 def _classify_aliases(
@@ -156,10 +146,10 @@ def _classify_aliases(
     old = _string_set(before)
     new = _string_set(after)
     if old < new:
-        return "compatible", "new alias preserves canonical identity"
+        return COMPATIBLE, "new alias preserves canonical identity"
     if new < old:
-        return "breaking", "supported alias removed"
-    return "review-required", "aliases changed incompatibly or conflict"
+        return BREAKING, "supported alias removed"
+    return REVIEW_REQUIRED, "aliases changed incompatibly or conflict"
 
 
 def _classify_constraint(
@@ -169,13 +159,32 @@ def _classify_constraint(
     after: object | None,
 ) -> ClassificationResult:
     key = path.rsplit("/", 1)[-1]
-    handler = CONSTRAINT_CLASSIFIERS.get(key)
+    constraint_handlers = {
+        "additional_properties": _classify_additional_properties,
+        "choices": _classify_enum,
+        "const": _classify_incompatible_constraint,
+        "enum": _classify_enum,
+        "maximum_exclusive": _classify_exclusive,
+        "minimum_exclusive": _classify_exclusive,
+        "order": _classify_order,
+        "pattern": _classify_incompatible_constraint,
+    }
+    handler = constraint_handlers.get(key)
     if handler is not None:
         return handler(before, after)
-    if key in LOWER_BOUNDS:
-        return _classify_bound(before, after, tighter_when_higher=True)
-    if key in UPPER_BOUNDS:
-        return _classify_bound(before, after, tighter_when_higher=False)
+    bound_directions = {
+        "exclusive_maximum": False,
+        "exclusive_minimum": True,
+        "max_items": False,
+        "max_length": False,
+        "maximum": False,
+        "min_items": True,
+        "min_length": True,
+        "minimum": True,
+    }
+    bound_direction = bound_directions.get(key)
+    if bound_direction is not None:
+        return _classify_bound(before, after, tighter_when_higher=bound_direction)
     if key == "constraints" and isinstance(before, dict) and isinstance(after, dict):
         return _classify_constraint_mapping(
             kind,
@@ -184,12 +193,12 @@ def _classify_constraint(
             cast(dict[str, object], after),
         )
     if key == "value" and kind == "python-api":
-        return "review-required", "exported literal compatibility is not provable"
-    return "review-required", "constraint compatibility is not provable"
+        return REVIEW_REQUIRED, "exported literal compatibility is not provable"
+    return REVIEW_REQUIRED, "constraint compatibility is not provable"
 
 
 def _classify_order(_before: object | None, _after: object | None) -> ClassificationResult:
-    return "breaking", "positional member order changed"
+    return BREAKING, "positional member order changed"
 
 
 def _classify_additional_properties(
@@ -197,10 +206,10 @@ def _classify_additional_properties(
     after: object | None,
 ) -> ClassificationResult:
     if before in {None, True} and after is False:
-        return "breaking", "additional properties are no longer accepted"
+        return BREAKING, "additional properties are no longer accepted"
     if before is False and after is True:
-        return "compatible", "additional properties are now accepted"
-    return "review-required", "additional-property compatibility is not provable"
+        return COMPATIBLE, "additional properties are now accepted"
+    return REVIEW_REQUIRED, "additional-property compatibility is not provable"
 
 
 def _classify_exclusive(
@@ -208,17 +217,17 @@ def _classify_exclusive(
     after: object | None,
 ) -> ClassificationResult:
     if before is False and after is True:
-        return "breaking", "constraint became exclusive"
+        return BREAKING, "constraint became exclusive"
     if before is True and after is False:
-        return "compatible", "exclusive constraint was relaxed"
-    return "review-required", "constraint exclusivity is not provable"
+        return COMPATIBLE, "exclusive constraint was relaxed"
+    return REVIEW_REQUIRED, "constraint exclusivity is not provable"
 
 
 def _classify_incompatible_constraint(
     _before: object | None,
     _after: object | None,
 ) -> ClassificationResult:
-    return "breaking", "accepted values changed incompatibly"
+    return BREAKING, "accepted values changed incompatibly"
 
 
 def _classify_enum(
@@ -228,10 +237,10 @@ def _classify_enum(
     old = _json_set(before)
     new = _json_set(after)
     if old < new:
-        return "review-required", "enum expanded for potentially exhaustive consumers"
+        return REVIEW_REQUIRED, "enum expanded for potentially exhaustive consumers"
     if new < old:
-        return "breaking", "accepted enum values were removed"
-    return "review-required", "enum values changed incompatibly"
+        return BREAKING, "accepted enum values were removed"
+    return REVIEW_REQUIRED, "enum values changed incompatibly"
 
 
 def _classify_bound(
@@ -243,13 +252,13 @@ def _classify_bound(
     if isinstance(before, (int, float)) and isinstance(after, (int, float)):
         tightened = after > before if tighter_when_higher else after < before
         if tightened:
-            return "breaking", "accepted range narrowed"
-        return "compatible", "accepted range widened"
+            return BREAKING, "accepted range narrowed"
+        return COMPATIBLE, "accepted range widened"
     if before is None and after is not None:
-        return "breaking", "new range constraint narrows accepted values"
+        return BREAKING, "new range constraint narrows accepted values"
     if before is not None and after is None:
-        return "compatible", "range constraint was removed"
-    return "review-required", "range compatibility is not provable"
+        return COMPATIBLE, "range constraint was removed"
+    return REVIEW_REQUIRED, "range compatibility is not provable"
 
 
 def _classify_constraint_mapping(
@@ -263,11 +272,11 @@ def _classify_constraint_mapping(
         for key in sorted(set(before) | set(after))
         if before.get(key) != after.get(key)
     ]
-    if "breaking" in results:
-        return "breaking", "one or more accepted-value constraints tightened"
-    if "review-required" in results:
-        return "review-required", "one or more constraint changes require review"
-    return "compatible", "accepted-value constraints were relaxed"
+    if BREAKING in results:
+        return BREAKING, "one or more accepted-value constraints tightened"
+    if REVIEW_REQUIRED in results:
+        return REVIEW_REQUIRED, "one or more constraint changes require review"
+    return COMPATIBLE, "accepted-value constraints were relaxed"
 
 
 def _mapping(value: object | None) -> Mapping[str, object]:
@@ -290,136 +299,3 @@ def _json_set(value: object | None) -> set[str]:
         return set()
     values = cast(list[object] | tuple[object, ...], value)
     return {canonical_json(item) for item in values}
-
-
-def _classify_contract_add(
-    _kind: ContractKind,
-    _path: str,
-    _before: object | None,
-    _after: object | None,
-) -> ClassificationResult:
-    return "compatible", "new contract surface"
-
-
-def _classify_removal(
-    _kind: ContractKind,
-    _path: str,
-    _before: object | None,
-    _after: object | None,
-) -> ClassificationResult:
-    return "breaking", "contract surface removed"
-
-
-def _classify_member_add_operation(
-    kind: ContractKind,
-    path: str,
-    _before: object | None,
-    after: object | None,
-) -> ClassificationResult:
-    return _classify_member_add(kind, path, after)
-
-
-def _classify_rename_operation(
-    _kind: ContractKind,
-    _path: str,
-    before: object | None,
-    after: object | None,
-) -> ClassificationResult:
-    return _classify_rename(before, after)
-
-
-def _classify_type_operation(
-    _kind: ContractKind,
-    path: str,
-    before: object | None,
-    after: object | None,
-) -> ClassificationResult:
-    return _classify_type(path, before, after)
-
-
-def _classify_requiredness_operation(
-    _kind: ContractKind,
-    _path: str,
-    before: object | None,
-    after: object | None,
-) -> ClassificationResult:
-    return _classify_requiredness(before, after)
-
-
-def _classify_default_operation(
-    kind: ContractKind,
-    path: str,
-    before: object | None,
-    after: object | None,
-) -> ClassificationResult:
-    return _classify_default(kind, path, before, after)
-
-
-def _classify_alias_operation(
-    _kind: ContractKind,
-    _path: str,
-    before: object | None,
-    after: object | None,
-) -> ClassificationResult:
-    return _classify_aliases(before, after)
-
-
-def _classify_unsupported_operation(
-    _kind: ContractKind,
-    _path: str,
-    _before: object | None,
-    _after: object | None,
-) -> ClassificationResult:
-    return "review-required", "unsupported semantics changed"
-
-
-def _classify_constraint_operation(
-    kind: ContractKind,
-    path: str,
-    before: object | None,
-    after: object | None,
-) -> ClassificationResult:
-    return _classify_constraint(kind, path, before, after)
-
-
-def _classify_unknown(
-    _kind: ContractKind,
-    _path: str,
-    _before: object | None,
-    _after: object | None,
-) -> ClassificationResult:
-    return "review-required", "unrecognized semantic operation"
-
-
-MemberAddClassifier = Callable[[str, Mapping[str, object]], ClassificationResult]
-ConstraintClassifier = Callable[[object | None, object | None], ClassificationResult]
-
-MEMBER_ADD_CLASSIFIERS: dict[ContractKind, MemberAddClassifier] = {
-    "cli-manifest": _classify_cli_member_add,
-    "config-capabilities": _classify_config_member_add,
-    "json-schema": _classify_schema_member_add,
-    "python-api": _classify_python_member_add,
-}
-CONSTRAINT_CLASSIFIERS: dict[str, ConstraintClassifier] = {
-    "additional_properties": _classify_additional_properties,
-    "choices": _classify_enum,
-    "const": _classify_incompatible_constraint,
-    "enum": _classify_enum,
-    "maximum_exclusive": _classify_exclusive,
-    "minimum_exclusive": _classify_exclusive,
-    "order": _classify_order,
-    "pattern": _classify_incompatible_constraint,
-}
-OPERATION_CLASSIFIERS: dict[str, Classifier] = {
-    "alias-change": _classify_alias_operation,
-    "constraint-change": _classify_constraint_operation,
-    "contract-add": _classify_contract_add,
-    "contract-remove": _classify_removal,
-    "default-change": _classify_default_operation,
-    "member-add": _classify_member_add_operation,
-    "member-remove": _classify_removal,
-    "member-rename": _classify_rename_operation,
-    "requiredness-change": _classify_requiredness_operation,
-    "type-change": _classify_type_operation,
-    "unsupported-semantic-change": _classify_unsupported_operation,
-}
