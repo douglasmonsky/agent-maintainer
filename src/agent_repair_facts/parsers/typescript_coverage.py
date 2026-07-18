@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
+from dataclasses import dataclass
 from typing import cast
 
 from agent_repair_facts.parsers.typescript_diagnostics import (
@@ -14,6 +16,16 @@ from agent_repair_facts.parsers.typescript_diagnostics import (
 )
 
 LCOV_LINE_RE = re.compile(r"^DA:(?P<line>\d+),(?P<hits>-?\d+)(?:,.*)?$")
+MAX_LCOV_SOURCE_CHARS = 1_000
+
+
+@dataclass(frozen=True)
+class LcovFileRecord:
+    """Executable and covered line numbers for one LCOV source value."""
+
+    source: str
+    executable_lines: frozenset[int]
+    covered_lines: frozenset[int]
 
 
 def parse_coverage_summary_json(raw_output: str) -> list[TypeScriptDiagnostic]:
@@ -27,31 +39,60 @@ def parse_coverage_summary_json(raw_output: str) -> list[TypeScriptDiagnostic]:
 
 def parse_lcov_info(raw_output: str) -> list[TypeScriptDiagnostic]:
     """Parse LCOV coverage output."""
+
     diagnostics: list[TypeScriptDiagnostic] = []
-    current_path: str | None = None
-    missing_lines: list[int] = []
+    for record in parse_lcov_records(raw_output):
+        missing_lines = sorted(record.executable_lines - record.covered_lines)
+        diagnostics.extend(lcov_record_diagnostics(record.source, missing_lines))
+    return diagnostics
+
+
+def parse_lcov_records(raw_output: str) -> tuple[LcovFileRecord, ...]:
+    """Return deterministic executable-line records from LCOV text."""
+
+    line_sets: dict[str, tuple[set[int], set[int]]] = {}
+    current_source: str | None = None
 
     for raw_line in raw_output.splitlines():
         line = raw_line.strip()
         if line.startswith("SF:"):
-            if current_path is not None:
-                diagnostics.extend(lcov_record_diagnostics(current_path, missing_lines))
-            current_path = optional_text(line.removeprefix("SF:"))
-            missing_lines = []
+            current_source = safe_lcov_source(line.removeprefix("SF:"))
+            if current_source is not None:
+                line_sets.setdefault(current_source, (set(), set()))
             continue
         if line == "end_of_record":
-            if current_path is not None:
-                diagnostics.extend(lcov_record_diagnostics(current_path, missing_lines))
-            current_path = None
-            missing_lines = []
+            current_source = None
             continue
         match = LCOV_LINE_RE.match(line)
-        if match and int(match.group("hits")) == 0:
-            missing_lines.append(int(match.group("line")))
+        if match is None or current_source is None:
+            continue
+        line_number = int(match.group("line"))
+        if line_number <= 0:
+            continue
+        executable_lines, covered_lines = line_sets[current_source]
+        executable_lines.add(line_number)
+        if int(match.group("hits")) > 0:
+            covered_lines.add(line_number)
 
-    if current_path is not None:
-        diagnostics.extend(lcov_record_diagnostics(current_path, missing_lines))
-    return diagnostics
+    return tuple(
+        LcovFileRecord(
+            source=source,
+            executable_lines=frozenset(executable_lines),
+            covered_lines=frozenset(covered_lines),
+        )
+        for source, (executable_lines, covered_lines) in sorted(line_sets.items())
+    )
+
+
+def safe_lcov_source(value: str) -> str | None:
+    """Return a bounded source scalar without Unicode control characters."""
+
+    source = optional_text(value)
+    if source is None or source == "." or len(source) > MAX_LCOV_SOURCE_CHARS:
+        return None
+    if any(unicodedata.category(character).startswith("C") for character in source):
+        return None
+    return source
 
 
 def coverage_summary_diagnostics(payload: object) -> list[TypeScriptDiagnostic]:
