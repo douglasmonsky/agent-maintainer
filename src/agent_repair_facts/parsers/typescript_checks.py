@@ -3,7 +3,13 @@
 from __future__ import annotations
 
 TYPESCRIPT_CHECK_FAMILIES = frozenset(
-    ("typescript-lint", "typescript-typecheck", "typescript-test", "typescript-knip")
+    (
+        "typescript-lint",
+        "typescript-typecheck",
+        "typescript-test",
+        "typescript-knip",
+        "typescript-dependency-cruiser",
+    )
 )
 
 

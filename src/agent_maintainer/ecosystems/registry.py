@@ -63,6 +63,7 @@ TYPESCRIPT_PROVIDER = ProviderMetadata(
         "test",
         "classification",
         "repair-facts",
+        "architecture",
         "dead-code",
         "dependency-hygiene",
     ),
@@ -72,6 +73,10 @@ TYPESCRIPT_PROVIDER = ProviderMetadata(
         ProviderCommandSpec("typescript-typecheck", "typescript_typecheck_command"),
         ProviderCommandSpec("typescript-test", "typescript_test_command"),
         ProviderCommandSpec("typescript-knip", "typescript_knip_command"),
+        ProviderCommandSpec(
+            "typescript-dependency-cruiser",
+            "typescript_dependency_cruiser_command",
+        ),
     ),
 )
 

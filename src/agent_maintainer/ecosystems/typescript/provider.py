@@ -7,6 +7,8 @@ from collections.abc import Iterable
 from agent_maintainer.ecosystems.models import EcosystemCheckContext
 from agent_maintainer.models import Check
 
+DEPENDENCY_CRUISER_OUTPUT_LIMIT_CHARS = 5_000_000
+
 
 # docsync:evidence.start evidence.typescript.provider_commands
 class TypeScriptProvider:
@@ -48,6 +50,12 @@ class TypeScriptProvider:
                 config.typescript_knip_profiles,
                 "typescript_knip_command",
             ),
+            _configured_check(
+                "typescript-dependency-cruiser",
+                config.typescript_dependency_cruiser_command,
+                config.typescript_dependency_cruiser_profiles,
+                "typescript_dependency_cruiser_command",
+            ),
         ]
         for workspace in config.workspaces:
             workspace_specs = (
@@ -75,6 +83,12 @@ class TypeScriptProvider:
                     config.typescript_knip_profiles,
                     f"workspaces.{workspace.name}.typescript_knip_command",
                 ),
+                (
+                    "typescript-dependency-cruiser",
+                    workspace.typescript_dependency_cruiser_command,
+                    config.typescript_dependency_cruiser_profiles,
+                    (f"workspaces.{workspace.name}.typescript_dependency_cruiser_command"),
+                ),
             )
             checks.extend(
                 _configured_check(
@@ -97,6 +111,8 @@ def _configured_check(
 ) -> Check:
     """Build a runnable or explicitly skipped configured-command check."""
     selected_profiles = frozenset(profiles)
+    is_dependency_cruiser = name.partition(":")[0] == "typescript-dependency-cruiser"
+    output_limit = DEPENDENCY_CRUISER_OUTPUT_LIMIT_CHARS if is_dependency_cruiser else None
     if not command:
         return Check(
             name,
@@ -106,12 +122,16 @@ def _configured_check(
                 "TypeScript provider is enabled, but "
                 f"[tool.agent_maintainer].{config_field} is empty"
             ),
+            report_success_output=is_dependency_cruiser,
+            output_limit_chars=output_limit,
         )
     return Check(
         name,
         list(command),
         selected_profiles,
         required_executable=command[0],
+        report_success_output=is_dependency_cruiser,
+        output_limit_chars=output_limit,
     )
 
 

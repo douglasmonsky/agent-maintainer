@@ -915,8 +915,8 @@ claims:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe structured summaries and exact repair
       facts for tsc, ESLint JSON, Jest/Vitest JSON, Istanbul coverage summary,
-      LCOV, bounded Knip JSON, and bounded grouped OSV Scanner v2 outputs with
-      malformed output fallback.
+      LCOV, bounded Knip JSON, bounded dependency-cruiser cruise-result JSON,
+      and bounded grouped OSV Scanner v2 outputs with malformed output fallback.
     severity: medium
     evidence:
       - evidence.typescript.structured_output_tests
@@ -927,6 +927,10 @@ claims:
       - evidence.typescript.osv_fact_tests
       - evidence.typescript.osv_summary_tests
       - evidence.typescript.osv_external_fixtures
+      - evidence.typescript.dependency_cruiser_config_tests
+      - evidence.typescript.dependency_cruiser_fact_tests
+      - evidence.typescript.dependency_cruiser_summary_tests
+      - evidence.typescript.dependency_cruiser_external_fixtures
   claim.docs.typescript_provider_unsupported_surface:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs document unsupported package managers,
@@ -1488,6 +1492,36 @@ evidence:
       projected paths, and normalized supported findings.
     anchors:
       - path: tests/assess/test_typescript_osv_external_fixtures.py
+        mode: explicit_region
+  evidence.typescript.dependency_cruiser_config_tests:
+    type: test
+    description: TypeScript catalog tests cover explicit root and workspace
+      dependency-cruiser commands, stable check names, and full/ci profiles.
+    anchors:
+      - path: tests/catalogs/test_typescript_catalog.py
+        mode: explicit_region
+  evidence.typescript.dependency_cruiser_fact_tests:
+    type: test
+    description: Dependency-cruiser exact-fact tests cover documented
+      severities and types, malformed neighbors, workspace names, safe paths,
+      deterministic sorting, and parser retention bounds.
+    anchors:
+      - path: tests/repair_facts/test_typescript_dependency_cruiser_facts.py
+        mode: explicit_region
+  evidence.typescript.dependency_cruiser_summary_tests:
+    type: test
+    description: Dependency-cruiser structured-summary tests cover workspace
+      names, bounded output, truthful omission counts, and invalid JSON fallback.
+    anchors:
+      - path: tests/core/test_typescript_dependency_cruiser_structured_output.py
+        mode: explicit_region
+  evidence.typescript.dependency_cruiser_external_fixtures:
+    type: test
+    description: Pinned npm and pnpm projections record public
+      dependency-cruiser compatibility metadata, config and lockfile hashes,
+      exact commands, exit status, and bounded normalized findings.
+    anchors:
+      - path: tests/assess/test_depcruise_external_fixtures.py
         mode: explicit_region
   evidence.typescript.reviewability_fixture_tests:
     type: test

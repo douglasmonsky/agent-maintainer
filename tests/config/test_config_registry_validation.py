@@ -13,7 +13,7 @@ import pytest
 from agent_maintainer.config import coercion, loader, registry, schema, validation
 from agent_maintainer.core import args as core_args
 
-EXPECTED_CONFIG_FIELD_COUNT = 134
+EXPECTED_CONFIG_FIELD_COUNT = 136
 
 
 def assert_issue(

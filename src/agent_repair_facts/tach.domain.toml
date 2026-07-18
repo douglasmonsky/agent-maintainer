@@ -25,6 +25,7 @@ depends_on = [
   "parsers.security",
   "parsers.typescript",
   "parsers.typescript_checks",
+  "parsers.typescript_dependency_cruiser",
   "parsers.typescript_knip",
   "payloads",
 ]
@@ -106,6 +107,14 @@ depends_on = [
 
 path = "parsers.typescript_checks"
 depends_on = []
+
+
+[[modules]]
+
+path = "parsers.typescript_dependency_cruiser"
+depends_on = [
+  "payloads",
+]
 
 
 [[modules]]

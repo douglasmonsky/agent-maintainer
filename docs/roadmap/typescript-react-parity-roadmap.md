@@ -26,6 +26,8 @@ Already landed:
   repair facts.
 - Ecosystem-neutral OSV Scanner v2 facts with grouped aliases and safe lockfile
   provenance.
+- Explicit dependency-cruiser architecture commands with bounded, path-safe
+  cruise-result facts and summaries.
 - TypeScript/React doctor and setup-advisor guidance.
 - Advisory package-manager and workspace detection with file-and-field
   provenance.
@@ -33,7 +35,7 @@ Already landed:
 Still missing before a promotion assessment:
 
 - Blocking TypeScript/React reviewability gates.
-- First-class package-manager audit, architecture, changed-line coverage,
+- First-class package-manager audit, changed-line coverage,
   mutation, generated-file, and broader security adapters.
 - Broader external evidence across React, Vite, Next.js, and workspace layouts.
 
@@ -67,17 +69,36 @@ Still missing before a promotion assessment:
 1. Phase 178: advisory package-manager and workspace detection is complete.
 2. Phase 179: Knip unused-code and dependency facts are complete.
 3. Phase 180: OSV dependency facts are complete.
-4. Package-manager audit facts are the next parity slice.
-5. Dependency-cruiser architecture-boundary facts, followed by declared Nx
-   boundary support.
-6. LCOV changed-line coverage facts.
-7. React hooks, JSX accessibility, and Testing Library recommendations.
-8. Explicit generated-file and framework policy evidence.
-9. StrykerJS mutation facts with a runtime-cost guard.
-10. TypeScript/React blocking-gate promotion assessment.
+4. Phase 181: dependency-cruiser architecture-boundary facts are complete.
+5. Package-manager audit facts are the next parity slice.
+6. Declared Nx boundary support.
+7. LCOV changed-line coverage facts.
+8. React hooks, JSX accessibility, and Testing Library recommendations.
+9. Explicit generated-file and framework policy evidence.
+10. StrykerJS mutation facts with a runtime-cost guard.
+11. TypeScript/React blocking-gate promotion assessment.
 
 Assign later phase numbers when each slice has an approved design and
 implementation plan.
+
+## Phase 181 Dependency-Cruiser Boundary
+
+Phase 181 runs only explicit root or workspace
+`typescript_dependency_cruiser_command` arrays. Root
+`typescript_dependency_cruiser_profiles` defaults to `full` and `ci`. Agent
+Maintainer does not infer a package manager, add JSON reporter flags, install
+dependency-cruiser, generate configuration, invent rules, or reinterpret exit
+status.
+
+The shared parser reads only `summary.violations`, sorts before retaining 500
+normalized findings, and bounds failed-check summaries to 50 total lines.
+Unsafe sources are display-only and never become context targets. Pinned npm
+`decentralized-identity/dwn-sdk-js` and pnpm-workspace
+`hicommonwealth/commonwealth` projections provide offline public compatibility
+evidence. dependency-cruiser is the
+TypeScript/JavaScript architecture-boundary counterpart to Tach for this
+provider; Python Tach, Archguard, and declared Nx policies remain separate.
+TypeScript/JavaScript remains experimental.
 
 ## Phase 180 OSV Boundary
 

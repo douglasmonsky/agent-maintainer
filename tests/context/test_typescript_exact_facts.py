@@ -11,6 +11,7 @@ from agent_maintainer.context.pack import exact_facts
 APP_PATH = "src/app.ts"
 EXPECTED_CONTEXT_FACTS = 5
 INPUT_KNIP_FACTS = 7
+INPUT_DEPENDENCY_CRUISER_FACTS = 6
 
 
 # docsync:evidence.start evidence.typescript.repair_fact_tests
@@ -309,6 +310,47 @@ def test_typescript_knip_context_uses_existing_five_fact_limit(tmp_path: Path) -
     assert [fact["message"] for fact in facts] == [
         f"Unused export: export-{index}" for index in range(EXPECTED_CONTEXT_FACTS)
     ]
+
+
+def test_dependency_cruiser_context_uses_existing_five_fact_limit(
+    tmp_path: Path,
+) -> None:
+    """Architecture facts retain the context pack's per-check bound."""
+
+    log_path = tmp_path / "typescript-dependency-cruiser.log"
+    log_path.write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "violations": [
+                        {
+                            "from": f"src/{index}.ts",
+                            "to": "src/target.ts",
+                            "type": "dependency",
+                            "rule": {
+                                "name": f"boundary-{index}",
+                                "severity": "error",
+                            },
+                        }
+                        for index in range(INPUT_DEPENDENCY_CRUISER_FACTS)
+                    ]
+                },
+                "modules": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    facts = exact_facts.repair_facts(
+        tmp_path,
+        (record("typescript-dependency-cruiser:web", log_path),),
+    )
+
+    assert len(facts) == EXPECTED_CONTEXT_FACTS
+    assert [fact["symbol"] for fact in facts] == [
+        f"boundary-{index}" for index in range(EXPECTED_CONTEXT_FACTS)
+    ]
+    assert all(fact["check"] == "typescript-dependency-cruiser:web" for fact in facts)
 
 
 def record(check: str, log_path: Path) -> FailureRecord:

@@ -1,0 +1,66 @@
+version: 1
+attestations:
+- id: attest.20260718T024057Z.claim.docs.typescript_provider_repair_facts.ad6f92c
+  claim: claim.docs.typescript_provider_repair_facts
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.structured_output_tests
+  - evidence.typescript.repair_fact_tests
+  - evidence.typescript.knip_fact_tests
+  - evidence.typescript.knip_summary_tests
+  - evidence.typescript.knip_external_fixtures
+  - evidence.typescript.osv_fact_tests
+  - evidence.typescript.osv_summary_tests
+  - evidence.typescript.osv_external_fixtures
+  - evidence.typescript.dependency_cruiser_config_tests
+  - evidence.typescript.dependency_cruiser_fact_tests
+  - evidence.typescript.dependency_cruiser_summary_tests
+  - evidence.typescript.dependency_cruiser_external_fixtures
+  reason: 'Reviewed the complete TypeScript repair-fact claim after Phase 181: existing
+    structured, Knip, and OSV contracts remain accurate alongside explicit dependency-cruiser
+    commands, bounded path-safe facts and summaries, and pinned npm plus pnpm-workspace
+    compatibility evidence.'
+  reviewer: agent
+  reviewed_at: '2026-07-18T02:40:57Z'
+  base: HEAD
+  head: ad6f92c
+  evidence_fingerprints:
+    evidence.typescript.structured_output_tests: sha256:1317d01a61d0a590781301b0941e2e0fdcb39c1f4e854f323adc8ce5d4d85032
+    evidence.typescript.repair_fact_tests: sha256:4861890a7b5b2b6b4107825e4260f2405df115362f96e3f772f130abff86f861
+    evidence.typescript.knip_fact_tests: sha256:e5726b660a148b1bc75042b1f5ee6fcfd36393e868c6949c7ef9c37ad0bf5eeb
+    evidence.typescript.knip_summary_tests: sha256:fdbe08cdc926354df5b0e85f197b193564f9ab1d14ed6ccc60fd9cccaa66416e
+    evidence.typescript.knip_external_fixtures: sha256:c270c17cb432b99c1e87f9379ce08a9130fb213ee05b70e659e8d962ff1f89db
+    evidence.typescript.osv_fact_tests: sha256:e51c503a7f26169e73f04274126baca032f09e8d82954ddc354eb617b7df248c
+    evidence.typescript.osv_summary_tests: sha256:696606c6972cba88d2d4199e4a1d8b89915250f861b6500dd8fdcfa942f6ff9a
+    evidence.typescript.osv_external_fixtures: sha256:06dc66ae6c54e9e6f2f122638bd749f22f1ecacc238aa806b08b23aa8e1da1fc
+    evidence.typescript.dependency_cruiser_config_tests: sha256:c7096e1f54f25846e7439879569584a8038374b2592b553f93a591ca8bcc3e2c
+    evidence.typescript.dependency_cruiser_fact_tests: sha256:acd2c48dbf9eac5c8275ec0515827fb3913f4a539c2f7495fc3560a6d7b35809
+    evidence.typescript.dependency_cruiser_summary_tests: sha256:f43f8be5c012ac80fb3190f8e94d04c2613567566ada3642527a493247881a1f
+    evidence.typescript.dependency_cruiser_external_fixtures: sha256:460724e96f32aa3be46bd8ee89262d60ae2912affebcdae7dfa9f01778e8fca6
+  evidence_anchor_fingerprints:
+    evidence.typescript.structured_output_tests:
+    - sha256:16db39cca53dfcd907edcd7f9c752ee66a88b343f5ccec51373d4ec5807f140e
+    evidence.typescript.repair_fact_tests:
+    - sha256:a3ba60e4fb3a38f97057a4982a34cee48f6653dd923b49b260ab43dd93fc5740
+    evidence.typescript.knip_fact_tests:
+    - sha256:e285248f4b7f42c06ea9028bd9ac3785915a7cf9bb2bab01ede9450f75863360
+    evidence.typescript.knip_summary_tests:
+    - sha256:e5c07fac8e79ff200cc506084ed5427ff58f7201c829dee117cee1a5ad23c0d7
+    evidence.typescript.knip_external_fixtures:
+    - sha256:9351fb8dd80bc99ea0cb7ff73347f82bef17161e3fad5c20b4ff835706a456cf
+    evidence.typescript.osv_fact_tests:
+    - sha256:0345fd6b8dc24d0ddff446fc4ee92df93982a99f64cf04b1354430ae3e07429f
+    evidence.typescript.osv_summary_tests:
+    - sha256:5d57c546ccd95dda13731b477c62b4c6cb353bbfb14a8a420facdfaca31c9a4d
+    evidence.typescript.osv_external_fixtures:
+    - sha256:58892df3f771f1e3bec8ff64407171647aa7901a0a5f0f056aafa5a9d88bf9a6
+    evidence.typescript.dependency_cruiser_config_tests:
+    - sha256:57f651823b7504fea54cb92119758fec6ee76fdfa6a33b9609d0cf0e8d4bf756
+    evidence.typescript.dependency_cruiser_fact_tests:
+    - sha256:a2d6f4c56ca0bbbb8ebd6f62faa1916080a1eb2410cf19bb93904cda13c7dacb
+    evidence.typescript.dependency_cruiser_summary_tests:
+    - sha256:be234d33142aa843a5f344b340d7c9f6ed2364a1f6735527e099e4d438418a29
+    evidence.typescript.dependency_cruiser_external_fixtures:
+    - sha256:51ace4e6fad2ebbdf234688aef85f3b4f20c30d5ee87b2a28e85ee1af7c1c333
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

@@ -166,6 +166,7 @@ depends_on = []
 path = "structured_typescript"
 depends_on = [
  "//agent_repair_facts.parsers.typescript_checks",
+ "//agent_repair_facts.parsers.typescript_dependency_cruiser",
  "//agent_repair_facts.parsers.typescript_coverage",
  "//agent_repair_facts.parsers.typescript_diagnostics",
  "//agent_repair_facts.parsers.typescript_knip",

@@ -1,0 +1,30 @@
+version: 1
+attestations:
+- id: attest.20260718T030654Z.claim.docs.typescript_provider_explicit_commands.0dcb3de
+  claim: claim.docs.typescript_provider_explicit_commands
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.provider_commands
+  - evidence.typescript.provider_command_tests
+  - evidence.typescript.doctor_setup_tests
+  reason: Reviewed the final Phase 181 TypeScript provider command contract, including
+    explicit root and workspace commands, bounded cruise-result capture, non-blocking
+    exit-zero summaries, and current setup guidance; the command documentation is
+    accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-18T03:06:54Z'
+  base: HEAD
+  head: 0dcb3de
+  evidence_fingerprints:
+    evidence.typescript.provider_commands: sha256:34673e2fe9d549ee762fc2c075347ec26d4ff373aa6b4b5eb201db326fb4c630
+    evidence.typescript.provider_command_tests: sha256:11193d5bbf0eae3e47b1fdaeaa591f14d018bb296e32e7b162d1baab5a7f969a
+    evidence.typescript.doctor_setup_tests: sha256:822de799234476bf9a5e4cf2ed58d1bb1159ba92325c4578ebb2765654783401
+  evidence_anchor_fingerprints:
+    evidence.typescript.provider_commands:
+    - sha256:257320868a33cbe312728fa319593b14631146376512ac4059f8bd610674838b
+    evidence.typescript.provider_command_tests:
+    - sha256:de3bc317b0ca04385d2c705172eb94b8820f87dcdf28d5692c960b1d40152321
+    evidence.typescript.doctor_setup_tests:
+    - sha256:757a3b7d1310edf0ca4dabfe4b9c66a6b61c0927e211ca4c03a1eef33778c79e
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

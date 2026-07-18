@@ -122,16 +122,16 @@ Detailed scope:
 
 Track work:
 
-- [x] Phase 176: Codex Terminal Rewake Hardening — the read-only and explicitly
-      gated real-turn smokes passed; terminal rewake remains opt-in.
+- [x] Phase 176: Codex Terminal Rewake Hardening — the read-only and explicitly gated real-turn smokes passed; terminal rewake remains opt-in.
 
 ## Active: TypeScript/React Parity
 
-Follow the [parity roadmap](roadmap/typescript-react-parity-roadmap.md). Phase 177 refreshes the plan; Phases 178-179 add advisory package/workspace evidence and Knip facts.
+Follow the [parity roadmap](roadmap/typescript-react-parity-roadmap.md). Phase 177 refreshes the plan; Phases 178-181 add advisory package/workspace, Knip, OSV, and architecture facts.
 
 - [x] Phase 177: TypeScript/React Parity Roadmap
 - [x] Phase 178: Advisory Package-Manager And Workspace Detection
 - [x] Phase 179: TypeScript Knip Unused-Code And Dependency Facts
+- [x] Phase 180: TypeScript OSV Dependency Facts; Phase 181: TypeScript Dependency-Cruiser Facts
 
 ## Active: External Proof And Architecture Hardening
 

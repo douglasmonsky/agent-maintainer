@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from agent_repair_facts.parsers import typescript_checks, typescript_knip
+from agent_repair_facts.parsers import (
+    typescript_checks,
+    typescript_dependency_cruiser,
+    typescript_knip,
+)
 from agent_repair_facts.parsers.typescript_coverage import (
     parse_coverage_summary_json,
     parse_lcov_info,
@@ -18,6 +22,7 @@ from agent_repair_facts.parsers.typescript_tests import parse_vitest_json
 
 TYPESCRIPT_DIAGNOSTIC_LIMIT = 50
 KNIP_SUMMARY_LINE_LIMIT = 50
+DEPENDENCY_CRUISER_SUMMARY_LINE_LIMIT = 50
 
 
 def summarize_typescript_lint(raw_output: str) -> str | None:
@@ -58,18 +63,40 @@ def summarize_typescript_knip(raw_output: str) -> str | None:
     return "\n".join(lines)
 
 
+def summarize_typescript_dependency_cruiser(raw_output: str) -> str | None:
+    """Return a compact bounded dependency-cruiser summary."""
+
+    parse_result = typescript_dependency_cruiser.parse_dependency_cruiser_json_result(raw_output)
+    findings = parse_result.findings
+    if not findings:
+        return None
+    visible_limit = DEPENDENCY_CRUISER_SUMMARY_LINE_LIMIT
+    if parse_result.supported_count > visible_limit:
+        visible_limit -= 1
+    visible = findings[:visible_limit]
+    lines = [
+        typescript_dependency_cruiser.format_dependency_cruiser_finding(finding)
+        for finding in visible
+    ]
+    omitted = parse_result.supported_count - len(visible)
+    if omitted:
+        lines.append(f"... {omitted} more dependency-cruiser findings omitted. See .verify-logs/")
+    return "\n".join(lines)
+
+
 def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:
     """Return compact TypeScript provider summary when output is structured."""
-    check_family = typescript_checks.check_family(check_name)
-    if check_family == "typescript-lint":
-        return summarize_typescript_lint(raw_output)
-    if check_family == "typescript-typecheck":
-        return summarize_typescript_typecheck(raw_output)
-    if check_family == "typescript-test":
-        return summarize_typescript_test(raw_output)
-    if check_family == "typescript-knip":
-        return summarize_typescript_knip(raw_output)
-    return None
+    summarizers = {
+        "typescript-lint": summarize_typescript_lint,
+        "typescript-typecheck": summarize_typescript_typecheck,
+        "typescript-test": summarize_typescript_test,
+        "typescript-knip": summarize_typescript_knip,
+        "typescript-dependency-cruiser": summarize_typescript_dependency_cruiser,
+    }
+    summarizer = summarizers.get(typescript_checks.check_family(check_name))
+    if summarizer is None:
+        return None
+    return summarizer(raw_output)
 
 
 def summarize_diagnostics(diagnostics: list[TypeScriptDiagnostic]) -> str | None:

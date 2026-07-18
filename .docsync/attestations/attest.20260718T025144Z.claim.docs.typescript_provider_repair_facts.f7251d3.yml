@@ -1,0 +1,33 @@
+version: 1
+attestations:
+- id: attest.20260718T025144Z.claim.docs.typescript_provider_repair_facts.f7251d3
+  claim: claim.docs.typescript_provider_repair_facts
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.dependency_cruiser_config_tests
+  - evidence.typescript.dependency_cruiser_fact_tests
+  - evidence.typescript.dependency_cruiser_summary_tests
+  - evidence.typescript.dependency_cruiser_external_fixtures
+  reason: Reviewed Phase 181 explicit dependency-cruiser commands, bounded path-safe
+    architecture facts and summaries, and pinned public compatibility evidence; the
+    TypeScript provider repair-fact documentation is accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-18T02:51:44Z'
+  base: HEAD
+  head: f7251d3
+  evidence_fingerprints:
+    evidence.typescript.dependency_cruiser_config_tests: sha256:c7096e1f54f25846e7439879569584a8038374b2592b553f93a591ca8bcc3e2c
+    evidence.typescript.dependency_cruiser_fact_tests: sha256:acd2c48dbf9eac5c8275ec0515827fb3913f4a539c2f7495fc3560a6d7b35809
+    evidence.typescript.dependency_cruiser_summary_tests: sha256:f43f8be5c012ac80fb3190f8e94d04c2613567566ada3642527a493247881a1f
+    evidence.typescript.dependency_cruiser_external_fixtures: sha256:8370dee75525f9c73872469fc50f158a6d4932f3189cd7aa094705a537c8c08b
+  evidence_anchor_fingerprints:
+    evidence.typescript.dependency_cruiser_config_tests:
+    - sha256:57f651823b7504fea54cb92119758fec6ee76fdfa6a33b9609d0cf0e8d4bf756
+    evidence.typescript.dependency_cruiser_fact_tests:
+    - sha256:a2d6f4c56ca0bbbb8ebd6f62faa1916080a1eb2410cf19bb93904cda13c7dacb
+    evidence.typescript.dependency_cruiser_summary_tests:
+    - sha256:be234d33142aa843a5f344b340d7c9f6ed2364a1f6735527e099e4d438418a29
+    evidence.typescript.dependency_cruiser_external_fixtures:
+    - sha256:e6478cd1a070e5067e3e44f9f7cb66c4a04e8c2bb8f669166161d7274cc77001
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
