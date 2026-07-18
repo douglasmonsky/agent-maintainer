@@ -59,5 +59,20 @@ verifier gates.
 
 ## Verification Evidence
 
-Focused test, architecture, documentation, full-verifier, independent-review,
-and protected-PR evidence will be recorded here only after each result exists.
+- Focused matrix: 150 tests passed across planner, Git, path, catalog, config,
+  verification-group, packaging, onboarding, owner-contract, and roadmap
+  coverage.
+- Static and architecture gates: Ruff format/check, wemake, Pylint, Xenon,
+  strict Pyright (0 diagnostics across 884 files), exact Tach, Archguard
+  decision check, Markdownlint, DocSync, and the active change-plan check
+  passed.
+- Full verifier: `20260718T111121420551Z-full-c9c43d675c77` passed at exact
+  implementation SHA `467a298c5cc0fd7451f2b09304a9ffe23722d88e` in 133 seconds.
+- Security verifier: `20260718T112743419393Z-security-79c1982b5c93` passed at
+  the same exact implementation SHA.
+- Independent review found manifest-symlink confinement, terminal-safe bounded
+  text, adversarial glob depth, target-aware preflight, and repository policy
+  coverage gaps. Regression tests reproduced each issue before the fixes in
+  `467a298`; the focused and complete gates above verify the corrections.
+- Protected implementation and closure PR evidence remains pending; status
+  stays in progress until both merges complete.
