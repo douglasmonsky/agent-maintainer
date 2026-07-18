@@ -187,11 +187,14 @@ def _optional_gates(evidence: RepoEvidence) -> tuple[GateRecommendation, ...]:
             ),
         )
     if evidence.has_package_json:
+        lockfile_detail = " and a dependency lockfile" if evidence.has_lock_file else ""
         gates.append(
             GateRecommendation(
                 name="osv-scanner",
                 recommendation="consider",
-                reason="Non-Python ecosystem files are present.",
+                reason=(
+                    f"Package metadata{lockfile_detail} can be scanned for known vulnerabilities."
+                ),
                 config_key="enable_osv_scanner",
                 profiles=("manual",),
             ),

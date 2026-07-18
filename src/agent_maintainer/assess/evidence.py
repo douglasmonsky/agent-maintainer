@@ -77,7 +77,20 @@ def collect_evidence(
         has_claude_hooks=(root / ".claude" / "hooks").exists(),
         has_tach=(root / "tach.toml").exists(),
         has_import_linter=(root / ".importlinter").exists(),
-        has_lock_file=_any_exists(root, ("config/dev-lock.txt", "uv.lock", "poetry.lock")),
+        has_lock_file=_any_exists(
+            root,
+            (
+                "config/dev-lock.txt",
+                "uv.lock",
+                "poetry.lock",
+                "bun.lock",
+                "bun.lockb",
+                "npm-shrinkwrap.json",
+                "package-lock.json",
+                "pnpm-lock.yaml",
+                "yarn.lock",
+            ),
+        ),
         has_dependency_file=_any_exists(
             root,
             (

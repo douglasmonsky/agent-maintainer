@@ -1,0 +1,1170 @@
+{
+  "schema_version": 1,
+  "source_repository": "https://github.com/vitest-dev/eslint-plugin-vitest",
+  "commit": "7c697f8a53d7d7551b00ef11217d58cd45a0cf7d",
+  "lockfile_path": "pnpm-lock.yaml",
+  "package_manager": "pnpm@10.18.3",
+  "scanner_version": "2.4.0",
+  "capture_command": [
+    "osv-scanner",
+    "scan",
+    "source",
+    "-r",
+    ".",
+    "--format",
+    "json"
+  ],
+  "exit_code": 1,
+  "lockfile_sha256": "d56cd13f157c2aef8ce83b8be8c4d656a62cc393a62f096e3f964a3633a79720",
+  "raw_report_sha256": "5e02074892c381b3828ee89b06441f0774943e352d6b14fa231d2c5ec17c7faf",
+  "projection_method": "parser-consumed-fields-v1",
+  "projection_omitted_count": 15,
+  "supported_finding_count": 25,
+  "retained_finding_count": 25,
+  "projection": {
+    "results": [
+      {
+        "source": {
+          "path": "pnpm-lock.yaml",
+          "type": "lockfile"
+        },
+        "packages": [
+          {
+            "package": {
+              "name": "ajv",
+              "version": "6.12.6",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-2g4f-4pwh-qvx6",
+                "aliases": [
+                  "CVE-2025-69873"
+                ],
+                "summary": "ajv has ReDoS when using `$data` option",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "6.14.0"
+                          },
+                          {
+                            "fixed": "8.18.0"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-2g4f-4pwh-qvx6"
+                ],
+                "aliases": [
+                  "CVE-2025-69873",
+                  "GHSA-2g4f-4pwh-qvx6"
+                ],
+                "max_severity": "5.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "brace-expansion",
+              "version": "2.0.2",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-f886-m6hf-6m8v",
+                "aliases": [
+                  "CVE-2026-33750"
+                ],
+                "summary": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "1.1.13"
+                          },
+                          {
+                            "fixed": "2.0.3"
+                          },
+                          {
+                            "fixed": "3.0.2"
+                          },
+                          {
+                            "fixed": "5.0.5"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-f886-m6hf-6m8v"
+                ],
+                "aliases": [
+                  "CVE-2026-33750",
+                  "GHSA-f886-m6hf-6m8v"
+                ],
+                "max_severity": "6.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "brace-expansion",
+              "version": "5.0.2",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-f886-m6hf-6m8v",
+                "aliases": [
+                  "CVE-2026-33750"
+                ],
+                "summary": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "1.1.13"
+                          },
+                          {
+                            "fixed": "2.0.3"
+                          },
+                          {
+                            "fixed": "3.0.2"
+                          },
+                          {
+                            "fixed": "5.0.5"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-jxxr-4gwj-5jf2",
+                "aliases": [
+                  "CVE-2026-45149"
+                ],
+                "summary": "brace-expansion: Large numeric range defeats documented `max` DoS protection",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "5.0.6"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-f886-m6hf-6m8v"
+                ],
+                "aliases": [
+                  "CVE-2026-33750",
+                  "GHSA-f886-m6hf-6m8v"
+                ],
+                "max_severity": "6.5"
+              },
+              {
+                "ids": [
+                  "GHSA-jxxr-4gwj-5jf2"
+                ],
+                "aliases": [
+                  "CVE-2026-45149",
+                  "GHSA-jxxr-4gwj-5jf2"
+                ],
+                "max_severity": "6.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "brace-expansion",
+              "version": "5.0.5",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-jxxr-4gwj-5jf2",
+                "aliases": [
+                  "CVE-2026-45149"
+                ],
+                "summary": "brace-expansion: Large numeric range defeats documented `max` DoS protection",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "5.0.6"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-jxxr-4gwj-5jf2"
+                ],
+                "aliases": [
+                  "CVE-2026-45149",
+                  "GHSA-jxxr-4gwj-5jf2"
+                ],
+                "max_severity": "6.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "defu",
+              "version": "6.1.4",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-737v-mqg7-c878",
+                "aliases": [
+                  "CVE-2026-35209"
+                ],
+                "summary": "defu: Prototype pollution via `__proto__` key in defaults argument",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "6.1.5"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-737v-mqg7-c878"
+                ],
+                "aliases": [
+                  "CVE-2026-35209",
+                  "GHSA-737v-mqg7-c878"
+                ],
+                "max_severity": "7.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "esbuild",
+              "version": "0.20.2",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-67mh-4wv8-2f99",
+                "summary": "esbuild enables any website to send any requests to the development server and read the response",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "0.25.0"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-67mh-4wv8-2f99"
+                ],
+                "aliases": [
+                  "GHSA-67mh-4wv8-2f99"
+                ],
+                "max_severity": "5.3"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "esbuild",
+              "version": "0.27.3",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-g7r4-m6w7-qqqr",
+                "summary": "esbuild allows arbitrary file read when running the development server on Windows",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "0.28.1"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-g7r4-m6w7-qqqr"
+                ],
+                "aliases": [
+                  "GHSA-g7r4-m6w7-qqqr"
+                ],
+                "max_severity": "2.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "fast-uri",
+              "version": "3.1.0",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-q3j6-qgpj-74h6",
+                "aliases": [
+                  "CVE-2026-6321"
+                ],
+                "summary": "fast-uri vulnerable to path traversal via percent-encoded dot segments",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "3.1.1"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-v39h-62p7-jpjc",
+                "aliases": [
+                  "CVE-2026-6322"
+                ],
+                "summary": "fast-uri vulnerable to host confusion via percent-encoded authority delimiters",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "3.1.2"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-q3j6-qgpj-74h6"
+                ],
+                "aliases": [
+                  "CVE-2026-6321",
+                  "GHSA-q3j6-qgpj-74h6"
+                ],
+                "max_severity": "7.5"
+              },
+              {
+                "ids": [
+                  "GHSA-v39h-62p7-jpjc"
+                ],
+                "aliases": [
+                  "CVE-2026-6322",
+                  "GHSA-v39h-62p7-jpjc"
+                ],
+                "max_severity": "7.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "flatted",
+              "version": "3.3.3",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-25h7-pfq9-p65f",
+                "aliases": [
+                  "CVE-2026-32141"
+                ],
+                "summary": "flatted vulnerable to unbounded recursion DoS in parse() revive phase",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "3.4.0"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-rf6f-7fwh-wjgh",
+                "aliases": [
+                  "CVE-2026-33228"
+                ],
+                "summary": "Prototype Pollution via parse() in NodeJS flatted",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "3.4.2"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-25h7-pfq9-p65f"
+                ],
+                "aliases": [
+                  "CVE-2026-32141",
+                  "GHSA-25h7-pfq9-p65f"
+                ],
+                "max_severity": "7.5"
+              },
+              {
+                "ids": [
+                  "GHSA-rf6f-7fwh-wjgh"
+                ],
+                "aliases": [
+                  "CVE-2026-33228",
+                  "GHSA-rf6f-7fwh-wjgh"
+                ],
+                "max_severity": "8.9"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "js-yaml",
+              "version": "4.1.1",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-h67p-54hq-rp68",
+                "aliases": [
+                  "CVE-2026-53550"
+                ],
+                "summary": "JS-YAML: Quadratic-complexity DoS in merge key handling via repeated aliases",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "3.15.0"
+                          },
+                          {
+                            "fixed": "4.2.0"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-h67p-54hq-rp68"
+                ],
+                "aliases": [
+                  "CVE-2026-53550",
+                  "GHSA-h67p-54hq-rp68"
+                ],
+                "max_severity": "5.3"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "lodash",
+              "version": "4.17.23",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-f23m-r3pf-42rh",
+                "aliases": [
+                  "CVE-2025-13465",
+                  "CVE-2026-2950",
+                  "GHSA-xxjr-mmjv-4gpg"
+                ],
+                "summary": "lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "4.18.0"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-r5fr-rjxr-66jc",
+                "aliases": [
+                  "CVE-2021-23337",
+                  "CVE-2026-4800",
+                  "GHSA-35jh-r3h4-6jhm"
+                ],
+                "summary": "lodash vulnerable to Code Injection via `_.template` imports key names",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "4.18.0"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-f23m-r3pf-42rh"
+                ],
+                "aliases": [
+                  "CVE-2025-13465",
+                  "CVE-2026-2950",
+                  "GHSA-f23m-r3pf-42rh",
+                  "GHSA-xxjr-mmjv-4gpg"
+                ],
+                "max_severity": "6.5"
+              },
+              {
+                "ids": [
+                  "GHSA-r5fr-rjxr-66jc"
+                ],
+                "aliases": [
+                  "CVE-2021-23337",
+                  "CVE-2026-4800",
+                  "GHSA-35jh-r3h4-6jhm",
+                  "GHSA-r5fr-rjxr-66jc"
+                ],
+                "max_severity": "8.1"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "minimatch",
+              "version": "10.0.1",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-23c5-xmqv-rm74",
+                "aliases": [
+                  "CVE-2026-27904"
+                ],
+                "summary": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.3"
+                          },
+                          {
+                            "fixed": "3.1.4"
+                          },
+                          {
+                            "fixed": "4.2.5"
+                          },
+                          {
+                            "fixed": "5.1.8"
+                          },
+                          {
+                            "fixed": "6.2.2"
+                          },
+                          {
+                            "fixed": "7.4.8"
+                          },
+                          {
+                            "fixed": "8.0.6"
+                          },
+                          {
+                            "fixed": "9.0.7"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-3ppc-4f35-3m26",
+                "aliases": [
+                  "CVE-2026-26996"
+                ],
+                "summary": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.1"
+                          },
+                          {
+                            "fixed": "3.1.3"
+                          },
+                          {
+                            "fixed": "4.2.4"
+                          },
+                          {
+                            "fixed": "5.1.7"
+                          },
+                          {
+                            "fixed": "6.2.1"
+                          },
+                          {
+                            "fixed": "7.4.7"
+                          },
+                          {
+                            "fixed": "8.0.5"
+                          },
+                          {
+                            "fixed": "9.0.6"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-7r86-cg39-jmmj",
+                "aliases": [
+                  "CVE-2026-27903"
+                ],
+                "summary": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.3"
+                          },
+                          {
+                            "fixed": "3.1.3"
+                          },
+                          {
+                            "fixed": "4.2.5"
+                          },
+                          {
+                            "fixed": "5.1.8"
+                          },
+                          {
+                            "fixed": "6.2.2"
+                          },
+                          {
+                            "fixed": "7.4.8"
+                          },
+                          {
+                            "fixed": "8.0.6"
+                          },
+                          {
+                            "fixed": "9.0.7"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-23c5-xmqv-rm74"
+                ],
+                "aliases": [
+                  "CVE-2026-27904",
+                  "GHSA-23c5-xmqv-rm74"
+                ],
+                "max_severity": "7.5"
+              },
+              {
+                "ids": [
+                  "GHSA-3ppc-4f35-3m26"
+                ],
+                "aliases": [
+                  "CVE-2026-26996",
+                  "GHSA-3ppc-4f35-3m26"
+                ],
+                "max_severity": "8.7"
+              },
+              {
+                "ids": [
+                  "GHSA-7r86-cg39-jmmj"
+                ],
+                "aliases": [
+                  "CVE-2026-27903",
+                  "GHSA-7r86-cg39-jmmj"
+                ],
+                "max_severity": "7.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "minimatch",
+              "version": "10.2.0",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-23c5-xmqv-rm74",
+                "aliases": [
+                  "CVE-2026-27904"
+                ],
+                "summary": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.3"
+                          },
+                          {
+                            "fixed": "3.1.4"
+                          },
+                          {
+                            "fixed": "4.2.5"
+                          },
+                          {
+                            "fixed": "5.1.8"
+                          },
+                          {
+                            "fixed": "6.2.2"
+                          },
+                          {
+                            "fixed": "7.4.8"
+                          },
+                          {
+                            "fixed": "8.0.6"
+                          },
+                          {
+                            "fixed": "9.0.7"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-3ppc-4f35-3m26",
+                "aliases": [
+                  "CVE-2026-26996"
+                ],
+                "summary": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.1"
+                          },
+                          {
+                            "fixed": "3.1.3"
+                          },
+                          {
+                            "fixed": "4.2.4"
+                          },
+                          {
+                            "fixed": "5.1.7"
+                          },
+                          {
+                            "fixed": "6.2.1"
+                          },
+                          {
+                            "fixed": "7.4.7"
+                          },
+                          {
+                            "fixed": "8.0.5"
+                          },
+                          {
+                            "fixed": "9.0.6"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-7r86-cg39-jmmj",
+                "aliases": [
+                  "CVE-2026-27903"
+                ],
+                "summary": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.3"
+                          },
+                          {
+                            "fixed": "3.1.3"
+                          },
+                          {
+                            "fixed": "4.2.5"
+                          },
+                          {
+                            "fixed": "5.1.8"
+                          },
+                          {
+                            "fixed": "6.2.2"
+                          },
+                          {
+                            "fixed": "7.4.8"
+                          },
+                          {
+                            "fixed": "8.0.6"
+                          },
+                          {
+                            "fixed": "9.0.7"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-23c5-xmqv-rm74"
+                ],
+                "aliases": [
+                  "CVE-2026-27904",
+                  "GHSA-23c5-xmqv-rm74"
+                ],
+                "max_severity": "7.5"
+              },
+              {
+                "ids": [
+                  "GHSA-3ppc-4f35-3m26"
+                ],
+                "aliases": [
+                  "CVE-2026-26996",
+                  "GHSA-3ppc-4f35-3m26"
+                ],
+                "max_severity": "8.7"
+              },
+              {
+                "ids": [
+                  "GHSA-7r86-cg39-jmmj"
+                ],
+                "aliases": [
+                  "CVE-2026-27903",
+                  "GHSA-7r86-cg39-jmmj"
+                ],
+                "max_severity": "7.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "minimatch",
+              "version": "9.0.5",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-23c5-xmqv-rm74",
+                "aliases": [
+                  "CVE-2026-27904"
+                ],
+                "summary": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.3"
+                          },
+                          {
+                            "fixed": "3.1.4"
+                          },
+                          {
+                            "fixed": "4.2.5"
+                          },
+                          {
+                            "fixed": "5.1.8"
+                          },
+                          {
+                            "fixed": "6.2.2"
+                          },
+                          {
+                            "fixed": "7.4.8"
+                          },
+                          {
+                            "fixed": "8.0.6"
+                          },
+                          {
+                            "fixed": "9.0.7"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-3ppc-4f35-3m26",
+                "aliases": [
+                  "CVE-2026-26996"
+                ],
+                "summary": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.1"
+                          },
+                          {
+                            "fixed": "3.1.3"
+                          },
+                          {
+                            "fixed": "4.2.4"
+                          },
+                          {
+                            "fixed": "5.1.7"
+                          },
+                          {
+                            "fixed": "6.2.1"
+                          },
+                          {
+                            "fixed": "7.4.7"
+                          },
+                          {
+                            "fixed": "8.0.5"
+                          },
+                          {
+                            "fixed": "9.0.6"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GHSA-7r86-cg39-jmmj",
+                "aliases": [
+                  "CVE-2026-27903"
+                ],
+                "summary": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "10.2.3"
+                          },
+                          {
+                            "fixed": "3.1.3"
+                          },
+                          {
+                            "fixed": "4.2.5"
+                          },
+                          {
+                            "fixed": "5.1.8"
+                          },
+                          {
+                            "fixed": "6.2.2"
+                          },
+                          {
+                            "fixed": "7.4.8"
+                          },
+                          {
+                            "fixed": "8.0.6"
+                          },
+                          {
+                            "fixed": "9.0.7"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-23c5-xmqv-rm74"
+                ],
+                "aliases": [
+                  "CVE-2026-27904",
+                  "GHSA-23c5-xmqv-rm74"
+                ],
+                "max_severity": "7.5"
+              },
+              {
+                "ids": [
+                  "GHSA-3ppc-4f35-3m26"
+                ],
+                "aliases": [
+                  "CVE-2026-26996",
+                  "GHSA-3ppc-4f35-3m26"
+                ],
+                "max_severity": "8.7"
+              },
+              {
+                "ids": [
+                  "GHSA-7r86-cg39-jmmj"
+                ],
+                "aliases": [
+                  "CVE-2026-27903",
+                  "GHSA-7r86-cg39-jmmj"
+                ],
+                "max_severity": "7.5"
+              }
+            ]
+          },
+          {
+            "package": {
+              "name": "picomatch",
+              "version": "4.0.3",
+              "ecosystem": "npm"
+            },
+            "vulnerabilities": [
+              {
+                "id": "GHSA-3v7f-55p6-f55p",
+                "aliases": [
+                  "CVE-2026-33672"
+                ],
+                "summary": "Picomatch: Method Injection in POSIX Character Classes causes incorrect Glob Matching",
+                "affected": [
+                  {
+                    "ranges": [
+                      {
+                        "events": [
+                          {
+                            "fixed": "2.3.2"
+                          },
+                          {
+                            "fixed": "3.0.2"
+                          },
+                          {
+                            "fixed": "4.0.4"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "groups": [
+              {
+                "ids": [
+                  "GHSA-3v7f-55p6-f55p"
+                ],
+                "aliases": [
+                  "CVE-2026-33672",
+                  "GHSA-3v7f-55p6-f55p"
+                ],
+                "max_severity": "5.3"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
