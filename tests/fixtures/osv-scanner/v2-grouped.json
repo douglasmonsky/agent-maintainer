@@ -1,0 +1,109 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "apps/web/package-lock.json",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "lodash",
+            "version": "4.17.20"
+          },
+          "vulnerabilities": [
+            {
+              "id": "CVE-2021-23337",
+              "aliases": [
+                "GHSA-35jh-r3h4-6jhm"
+              ],
+              "summary": "Command injection in lodash",
+              "affected": [
+                {
+                  "ranges": [
+                    {
+                      "events": [
+                        {
+                          "introduced": "0"
+                        },
+                        {
+                          "fixed": "4.17.21"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "GHSA-35jh-r3h4-6jhm",
+              "aliases": [
+                "CVE-2021-23337"
+              ],
+              "summary": "Alias record for the same vulnerability",
+              "affected": [
+                {
+                  "ranges": [
+                    {
+                      "events": [
+                        {
+                          "fixed": "4.17.21"
+                        },
+                        {
+                          "last_affected": "4.17.20"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "groups": [
+            {
+              "ids": [
+                "GHSA-35jh-r3h4-6jhm",
+                "CVE-2021-23337"
+              ],
+              "aliases": [
+                "CVE-2021-23337",
+                "GHSA-35jh-r3h4-6jhm"
+              ],
+              "max_severity": "HIGH"
+            }
+          ]
+        },
+        {
+          "package": {
+            "name": 7
+          },
+          "vulnerabilities": "bad"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "/Users/example/project/pnpm-lock.yaml",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "demo",
+            "version": "1.0.0"
+          },
+          "vulnerabilities": [
+            {
+              "id": "GHSA-demo",
+              "aliases": [],
+              "summary": "A standalone advisory"
+            }
+          ],
+          "groups": []
+        }
+      ]
+    }
+  ]
+}

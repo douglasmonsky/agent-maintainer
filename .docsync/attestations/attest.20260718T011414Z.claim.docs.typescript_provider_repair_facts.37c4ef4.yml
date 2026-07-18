@@ -1,0 +1,29 @@
+version: 1
+attestations:
+- id: attest.20260718T011414Z.claim.docs.typescript_provider_repair_facts.37c4ef4
+  claim: claim.docs.typescript_provider_repair_facts
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.osv_fact_tests
+  - evidence.typescript.osv_summary_tests
+  - evidence.typescript.osv_external_fixtures
+  reason: Re-reviewed Phase 180 grouped OSV v2 facts after strict-type and style refactoring;
+    behavior, safe provenance, bounds, summaries, and pinned compatibility evidence
+    remain accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-18T01:14:14Z'
+  base: HEAD
+  head: 37c4ef4
+  evidence_fingerprints:
+    evidence.typescript.osv_fact_tests: sha256:8c9f498888c4e8b6589e6b15b97f3c9b51c78df97a8e5e41b8fe6cd0693d501e
+    evidence.typescript.osv_summary_tests: sha256:7642a4847c98325ec9f2603173f5159eda6c4b59aca7e115d5b66e2e96f98c76
+    evidence.typescript.osv_external_fixtures: sha256:77e7aac34f591b09b1d1ed3b0f8cf93331ba20d27ae1bae93f648e8eba687503
+  evidence_anchor_fingerprints:
+    evidence.typescript.osv_fact_tests:
+    - sha256:7fdcdd45297c76b7510ff10bcf1db90ef71d03ac7d8ddac459f9009840e28571
+    evidence.typescript.osv_summary_tests:
+    - sha256:77ca2016b511a74abafd4d1219ee7970eca0ea88296a6418c83af0d1ceec88f4
+    evidence.typescript.osv_external_fixtures:
+    - sha256:a3b0aa18ea91d110122ef464e274847801b42b218eeb907421f94181b046f3f0
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

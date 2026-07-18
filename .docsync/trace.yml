@@ -915,7 +915,8 @@ claims:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe structured summaries and exact repair
       facts for tsc, ESLint JSON, Jest/Vitest JSON, Istanbul coverage summary,
-      LCOV, and bounded Knip JSON outputs with malformed output fallback.
+      LCOV, bounded Knip JSON, and bounded grouped OSV Scanner v2 outputs with
+      malformed output fallback.
     severity: medium
     evidence:
       - evidence.typescript.structured_output_tests
@@ -923,6 +924,9 @@ claims:
       - evidence.typescript.knip_fact_tests
       - evidence.typescript.knip_summary_tests
       - evidence.typescript.knip_external_fixtures
+      - evidence.typescript.osv_fact_tests
+      - evidence.typescript.osv_summary_tests
+      - evidence.typescript.osv_external_fixtures
   claim.docs.typescript_provider_unsupported_surface:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs document unsupported package managers,
@@ -1460,6 +1464,30 @@ evidence:
       normalized supported findings.
     anchors:
       - path: tests/assess/test_typescript_knip_external_fixtures.py
+        mode: explicit_region
+  evidence.typescript.osv_fact_tests:
+    type: test
+    description: OSV Scanner v2 exact-fact tests cover alias grouping, fixed
+      versions, safe lockfile provenance, malformed neighbors, deterministic
+      ordering, and the 500-finding retention bound.
+    anchors:
+      - path: tests/repair_facts/test_osv_scanner_facts.py
+        mode: explicit_region
+  evidence.typescript.osv_summary_tests:
+    type: test
+    description: OSV Scanner v2 summary tests cover nested package versions,
+      alias grouping, 50-line output bounds, omission counts beyond parser
+      retention, and malformed output fallback.
+    anchors:
+      - path: tests/core/test_osv_structured_output.py
+        mode: explicit_region
+  evidence.typescript.osv_external_fixtures:
+    type: test
+    description: Pinned npm and pnpm fixtures record public OSV Scanner
+      compatibility metadata, lockfile and raw-report hashes, exit status, safe
+      projected paths, and normalized supported findings.
+    anchors:
+      - path: tests/assess/test_typescript_osv_external_fixtures.py
         mode: explicit_region
   evidence.typescript.reviewability_fixture_tests:
     type: test

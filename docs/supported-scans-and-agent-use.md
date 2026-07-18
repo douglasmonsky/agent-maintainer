@@ -20,7 +20,7 @@ that keeps raw logs out of chat.
 | Secrets | Gitleaks current-tree, range, and history modes | `full`, `ci`, `security` | Stop immediately and rotate secrets if real credentials appear. |
 | Documentation traceability | DocSync freshness checks when `.docsync/trace.yml` exists | `precommit`, `full`, `ci` | Update linked docs, add evidence, or create an attestation instead of ignoring stale claims. |
 | SAST | Semgrep | `manual` | Run on focused, stable configs; treat findings as review inputs. |
-| Multi-ecosystem CVEs | OSV Scanner | `manual` | Enable for repos with JS, lock files, or mixed ecosystems. |
+| Multi-ecosystem CVEs | OSV Scanner | `manual` | Enable for repos with JS, lock files, or mixed ecosystems; use alias-grouped exact facts and safe relative lockfile provenance for repairs. |
 | Containers and IaC | Trivy | `manual` | Enable only when Docker, Kubernetes, Terraform, or images matter. |
 | SBOM and licenses | CycloneDX Python, pip-licenses | `ci`, `manual` | Produce audit artifacts; add policy only after license rules exist. |
 | GitHub Actions | actionlint, zizmor | `full`, `ci` | Keep workflow syntax and permissions safe. |

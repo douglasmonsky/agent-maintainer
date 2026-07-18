@@ -124,10 +124,10 @@ def test_structured_artifact_summary_handles_security_json_artifacts(
 {
   "results": [
     {
+      "source": {"path": "package-lock.json", "type": "lockfile"},
       "packages": [
         {
-          "package": {"ecosystem": "PyPI", "name": "demo"},
-          "version": "1.0",
+          "package": {"ecosystem": "PyPI", "name": "demo", "version": "1.0"},
           "vulnerabilities": [{"id": "PYSEC-1", "summary": "demo vuln"}]
         }
       ]
@@ -187,7 +187,7 @@ def test_structured_artifact_summary_handles_security_json_artifacts(
     )
 
     assert semgrep_summary == ("src/example.py:4:8: python.subprocess.shell-true ERROR: shell=True")
-    assert osv_summary == "PyPI/demo 1.0: PYSEC-1: demo vuln"
+    assert osv_summary == ("PyPI/demo 1.0: PYSEC-1; source: package-lock.json; demo vuln")
     assert secret_summary == "src/example.py:5:9: generic-api-key: Generic API key"
     assert "do-not-print" not in secret_summary
     assert pip_audit_summary == "demo 1.0: PYSEC-2 fix: 1.1"
@@ -326,7 +326,7 @@ def test_security_summaries_cap_and_ignore_invalid_payloads() -> None:
                 "packages": [
                     {"package": "bad", "vulnerabilities": {}},
                     {
-                        "package": {"name": "demo"},
+                        "package": {"name": "demo", "version": "1.0"},
                         "vulnerabilities": [
                             {"id": f"OSV-{index}"}
                             for index in range(structured_security.STRUCTURED_DIAGNOSTIC_LIMIT + 1)
@@ -346,7 +346,7 @@ def test_security_summaries_cap_and_ignore_invalid_payloads() -> None:
     assert "1 more pip-audit findings omitted" in (
         structured_security.summarize_pip_audit_payload(pip_audit_payload) or ""
     )
-    assert "1 more OSV vulnerabilities omitted" in (
+    assert "2 more OSV vulnerabilities omitted" in (
         structured_security.summarize_osv_payload(osv_payload) or ""
     )
     assert structured_security.format_gitleaks_finding({}) == ("<unknown>:1:1: gitleaks:")

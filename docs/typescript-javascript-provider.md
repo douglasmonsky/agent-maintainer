@@ -94,7 +94,9 @@ configured-command output:
   `coverage-summary.json`, and LCOV `lcov.info` artifacts;
 - `typescript-knip`: Knip `--reporter json` output for unused files, exports,
   types, dependencies, binaries, unlisted dependencies, and unresolved imports
-  or binaries.
+  or binaries;
+- `osv-scanner`: OSV Scanner v2 output from the existing ecosystem-neutral
+  manual gate.
 
 Knip findings are sorted before Agent Maintainer retains at most 500 normalized
 findings. Compact failed-check summaries contain at most 50 total lines,
@@ -114,6 +116,32 @@ Pin Knip through the repository's exact dependency or lockfile and include
 
 These parsers are repair-loop helpers. They do not require new config fields,
 and malformed output falls back to the normal bounded raw-log summary.
+
+## Phase 180 OSV Boundary
+
+Phase 180 OSV dependency facts are complete. TypeScript support uses the
+existing ecosystem-neutral `osv-scanner` gate; it does not add a provider
+command or infer npm, pnpm, Yarn, or Bun behavior. The global gate remains
+explicitly enabled and runs in the `manual` profile by default.
+
+The shared OSV Scanner v2 parser emits one fact per OSV alias group. Facts
+include the package ecosystem, name, version, advisory aliases, safe lockfile
+provenance, and fixed versions when OSV range events provide them. Valid
+repository-relative paths can become context targets. Absolute paths, parent
+traversal, and Windows drive paths are redacted to a safe filename label.
+
+The parser retains at most 500 normalized findings, failed-check summaries
+contain at most 50 total lines, and context packs keep the existing five facts
+per check. Individual scalars are capped at 200 characters, alias and fix lists
+at 25 values each, and rendered messages at 1,000 characters. Synthetic tests
+cover partial groups, malformed neighbors, control characters, and unsafe
+paths. Bounded projections from pinned pnpm `eslint-plugin-vitest` and npm
+`node-typescript-boilerplate` revisions provide public compatibility evidence;
+they do not promote the provider or add a default check.
+
+The roadmap records that package-manager audit facts are the next parity slice.
+Mutation, changed-line coverage gates, and blocking reviewability remain unsupported.
+TypeScript/JavaScript remains experimental.
 
 For current maturation evidence and promotion criteria, see
 [TypeScript Provider Maturation Notes](case-studies/typescript-provider-maturation.md).
@@ -161,9 +189,10 @@ commands. Workspace Knip commands use the root `typescript_knip_profiles`
 selection and stable names such as `typescript-knip:web`.
 
 Coverage summaries and LCOV files can improve `typescript-test` repair facts
-when a repository already produces those artifacts, and Knip can now improve
-unused-code and dependency repair facts. TypeScript coverage enforcement,
-dependency security/audit, mutation, and blocking reviewability adapters are not
+when a repository already produces those artifacts, Knip can improve
+unused-code and dependency repair facts, and the ecosystem-neutral OSV gate can
+provide dependency vulnerability facts. TypeScript coverage enforcement,
+package-manager audit, mutation, and blocking reviewability adapters are not
 implemented yet. The provider should remain experimental until these surfaces
 have fixture and real-repo evidence.
 
@@ -173,8 +202,8 @@ have fixture and real-repo evidence.
 - No generated starter files yet.
 - No structured parser for arbitrary human-oriented test or coverage
   transcripts.
-- No TypeScript coverage command adapter, mutation adapter, or dependency
-  security/audit adapter.
+- No TypeScript coverage command adapter, mutation adapter, or package-manager
+  audit adapter.
 - No public plugin API.
 - No TypeScript reviewability gate is blocking by default.
 

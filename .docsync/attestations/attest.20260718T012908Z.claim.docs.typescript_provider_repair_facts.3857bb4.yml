@@ -1,0 +1,29 @@
+version: 1
+attestations:
+- id: attest.20260718T012908Z.claim.docs.typescript_provider_repair_facts.3857bb4
+  claim: claim.docs.typescript_provider_repair_facts
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.osv_fact_tests
+  - evidence.typescript.osv_summary_tests
+  - evidence.typescript.osv_external_fixtures
+  reason: Final review of Phase 180 hardening evidence, including overlong source
+    paths and semantic UTC capture-time validation; documented grouped, bounded, path-safe
+    behavior remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-18T01:29:08Z'
+  base: HEAD
+  head: 3857bb4
+  evidence_fingerprints:
+    evidence.typescript.osv_fact_tests: sha256:e51c503a7f26169e73f04274126baca032f09e8d82954ddc354eb617b7df248c
+    evidence.typescript.osv_summary_tests: sha256:696606c6972cba88d2d4199e4a1d8b89915250f861b6500dd8fdcfa942f6ff9a
+    evidence.typescript.osv_external_fixtures: sha256:06dc66ae6c54e9e6f2f122638bd749f22f1ecacc238aa806b08b23aa8e1da1fc
+  evidence_anchor_fingerprints:
+    evidence.typescript.osv_fact_tests:
+    - sha256:0345fd6b8dc24d0ddff446fc4ee92df93982a99f64cf04b1354430ae3e07429f
+    evidence.typescript.osv_summary_tests:
+    - sha256:5d57c546ccd95dda13731b477c62b4c6cb353bbfb14a8a420facdfaca31c9a4d
+    evidence.typescript.osv_external_fixtures:
+    - sha256:58892df3f771f1e3bec8ff64407171647aa7901a0a5f0f056aafa5a9d88bf9a6
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

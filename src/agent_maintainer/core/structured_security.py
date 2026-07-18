@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from agent_maintainer.core.structured_values import json_array, json_object, json_objects
+from agent_repair_facts.parsers import osv_scanner
 
 STRUCTURED_DIAGNOSTIC_LIMIT = 50
 
@@ -39,49 +40,19 @@ def format_semgrep_finding(finding: dict[str, object]) -> str:
 def summarize_osv_payload(payload: object) -> str | None:
     """Summarize OSV Scanner JSON vulnerabilities."""
 
-    report = json_object(payload)
-    if report is None:
+    parsed = osv_scanner.parse_osv_payload(payload)
+    if not parsed.valid or not parsed.findings:
         return None
-    lines: list[str] = []
-    results = json_array(report.get("results", [])) or []
-    for result in json_objects(results):
-        lines.extend(osv_result_lines(result))
-        if len(lines) >= STRUCTURED_DIAGNOSTIC_LIMIT:
-            break
-    append_omitted(
-        lines,
-        osv_vulnerability_count(report),
-        "OSV vulnerabilities",
-        "osv-scanner.json",
-    )
-    return "\n".join(lines) if lines else None
-
-
-def osv_result_lines(result: dict[str, object]) -> list[str]:
-    """Return formatted OSV vulnerability lines for one result object."""
-
-    lines: list[str] = []
-    packages = json_array(result.get("packages", []))
-    if packages is None:
-        return lines
-    for package in json_objects(packages):
-        lines.extend(osv_package_lines(package))
-        if len(lines) >= STRUCTURED_DIAGNOSTIC_LIMIT:
-            return lines
-    return lines
-
-
-def osv_package_lines(package: dict[str, object]) -> list[str]:
-    """Return formatted OSV vulnerability lines for one package."""
-
-    package_name = osv_package_name(package)
-    version = str_value(package.get("version"), default="?")
-    lines: list[str] = []
-    for vuln in vulnerabilities(package):
-        vuln_id = str_value(vuln.get("id"), default="OSV")
-        summary = str_value(vuln.get("summary"), default="")
-        lines.append(f"{package_name} {version}: {vuln_id}: {summary}".rstrip())
-    return lines
+    visible_limit = STRUCTURED_DIAGNOSTIC_LIMIT
+    if parsed.supported_count > STRUCTURED_DIAGNOSTIC_LIMIT:
+        visible_limit -= 1
+    lines = [osv_scanner.format_osv_finding(finding) for finding in parsed.findings[:visible_limit]]
+    omitted = parsed.supported_count - visible_limit
+    if omitted > 0:
+        lines.append(
+            f"... {omitted} more OSV vulnerabilities omitted. See .verify-logs/osv-scanner.json",
+        )
+    return "\n".join(lines)
 
 
 def summarize_gitleaks_payload(payload: object) -> str | None:
@@ -159,41 +130,6 @@ def format_pip_audit_vulnerability(
         fix_text = f" fix: {versions}"
     prefix = f"{name} {version}: {vuln_id}"
     return f"{prefix}{fix_text}"
-
-
-def osv_package_name(package: dict[str, object]) -> str:
-    """Return OSV package name with ecosystem when available."""
-
-    raw_package = json_object(package.get("package", {}))
-    if raw_package is None:
-        return "<unknown>"
-    name = str_value(raw_package.get("name"), default="<unknown>")
-    ecosystem = str_value(raw_package.get("ecosystem"), default="")
-    return f"{ecosystem}/{name}" if ecosystem else name
-
-
-def vulnerabilities(package: dict[str, object]) -> list[dict[str, object]]:
-    """Return vulnerability dictionaries from OSV package payload."""
-
-    raw_vulns = json_array(package.get("vulnerabilities", []))
-    if raw_vulns is None:
-        return []
-    return json_objects(raw_vulns)
-
-
-def osv_vulnerability_count(payload: dict[str, object]) -> int:
-    """Return total OSV vulnerability count."""
-
-    count = 0
-    results = json_array(payload.get("results", []))
-    if results is None:
-        return count
-    for result in json_objects(results):
-        packages = json_array(result.get("packages", []))
-        if packages is None:
-            continue
-        count += sum(len(vulnerabilities(package)) for package in json_objects(packages))
-    return count
 
 
 def pip_audit_vulnerability_count(dependencies: list[object]) -> int:

@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T010242Z.claim.docs.troubleshooting_repair_surfaces.37c4ef4
+  claim: claim.docs.troubleshooting_repair_surfaces
+  doc_object: docs.troubleshooting.overview
+  evidence:
+  - evidence.setup_advisor.recommendation_tests
+  reason: Reviewed the setup-advisor OSV wording change against troubleshooting repair
+    surfaces; no command, execution, or troubleshooting contract changed.
+  reviewer: agent
+  reviewed_at: '2026-07-18T01:02:42Z'
+  base: HEAD
+  head: 37c4ef4
+  evidence_fingerprints:
+    evidence.setup_advisor.recommendation_tests: sha256:27ed865370150af68b02b23e8ffd8e9a22556762acb9bff6744a3b270c6fac22
+  evidence_anchor_fingerprints:
+    evidence.setup_advisor.recommendation_tests:
+    - sha256:454a58655c4fe28556a62f02ba39eaa0cffa5d7a3693747b5c3dc12f15443614
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

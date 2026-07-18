@@ -129,6 +129,39 @@ def test_setup_advisor_recommends_ts_scripts(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
+    ("lockfile", "expected_reason"),
+    (
+        (
+            "package-lock.json",
+            "Package metadata and a dependency lockfile can be scanned for known vulnerabilities.",
+        ),
+        (
+            None,
+            "Package metadata can be scanned for known vulnerabilities.",
+        ),
+    ),
+)
+def test_setup_advisor_osv_reason_reflects_lockfile_evidence(
+    tmp_path: Path,
+    lockfile: str | None,
+    expected_reason: str,
+) -> None:
+    """OSV advice distinguishes package-only and lockfile-backed evidence."""
+
+    (tmp_path / "package.json").write_text("{}\n", encoding=TEXT_ENCODING)
+    if lockfile is not None:
+        (tmp_path / lockfile).write_text("{}\n", encoding=TEXT_ENCODING)
+
+    report = build_setup_report(collect_evidence(tmp_path))
+    gates = {gate.name: gate for gate in report.optional_gates}
+    gate = gates["osv-scanner"]
+
+    assert gate.reason == expected_reason
+    assert gate.recommendation == "consider"
+    assert gate.profiles == ("manual",)
+
+
+@pytest.mark.parametrize(
     "scripts",
     TYPESCRIPT_SETUP_SCRIPT_FIXTURES,
     ids=("pnpm-vite", "vite-vitest", "next-jest"),
