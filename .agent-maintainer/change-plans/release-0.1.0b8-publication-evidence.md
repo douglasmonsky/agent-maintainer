@@ -1,7 +1,7 @@
 +++
 id = "release-0.1.0b8-publication-evidence"
 kind = "release"
-status = "active"
+status = "complete"
 base_ref = "6236980"
 expires = 2026-07-25
 allowed_paths = [
