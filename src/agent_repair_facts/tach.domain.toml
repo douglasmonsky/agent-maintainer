@@ -20,6 +20,7 @@ depends_on = [
   "parsers.java",
   "parsers.lint",
   "parsers.logs",
+  "parsers.osv_scanner",
   "parsers.pytest",
   "parsers.security",
   "parsers.typescript",
@@ -61,6 +62,14 @@ depends_on = [
 [[modules]]
 
 path = "parsers.logs"
+depends_on = [
+  "payloads",
+]
+
+
+[[modules]]
+
+path = "parsers.osv_scanner"
 depends_on = [
   "payloads",
 ]
