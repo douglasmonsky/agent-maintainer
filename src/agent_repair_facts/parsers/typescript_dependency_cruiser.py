@@ -52,14 +52,10 @@ def parse_dependency_cruiser_json_result(
     try:
         payload = json.loads(raw_output)
     except (json.JSONDecodeError, RecursionError):
-        return DependencyCruiserParseResult((), 0, False)
+        payload = None
     root = json_object(payload)
-    if root is None:
-        return DependencyCruiserParseResult((), 0, False)
-    summary = json_object(root.get("summary"))
-    if summary is None:
-        return DependencyCruiserParseResult((), 0, False)
-    violations = json_array(summary.get("violations"))
+    summary = json_object(root.get("summary")) if root else None
+    violations = json_array(summary.get("violations")) if summary else None
     if violations is None:
         return DependencyCruiserParseResult((), 0, False)
 
@@ -83,20 +79,18 @@ def _parse_violation(raw_violation: object) -> DependencyCruiserFinding | None:
     if violation is None:
         return None
     source = _source_details(violation.get("from"))
-    if source is None:
+    target_label = _target_label(violation)
+    rule = _rule_details(violation.get("rule"))
+    type_supported, violation_type = _violation_type(violation.get("type"))
+    if (
+        source is None
+        or target_label is None
+        or rule is None
+        or type_supported is False
+    ):
         return None
     source_path, source_label = source
-
-    target_label = _target_label(violation)
-    if target_label is None:
-        return None
-    rule = _rule_details(violation.get("rule"))
-    if rule is None:
-        return None
     rule_name, severity = rule
-    type_supported, violation_type = _violation_type(violation.get("type"))
-    if not type_supported:
-        return None
     return DependencyCruiserFinding(
         source_path=source_path,
         source_label=source_label,
@@ -141,19 +135,16 @@ def _violation_type(value: object) -> tuple[bool, str | None]:
 def _target_label(violation: dict[str, object]) -> str | None:
     """Return the usable target or the unresolved-target fallback."""
 
-    target = _text(violation.get("to"))
-    if target is not None:
-        _target_path, label = _safe_path(violation.get("to"), "<unknown target>")
-        if label != "<unknown target>":
-            return label
-    unresolved = _text(violation.get("unresolvedTo"))
-    if unresolved is None:
-        return None
-    _unresolved_path, label = _safe_path(
-        violation.get("unresolvedTo"),
-        "<unknown target>",
-    )
-    return label if label != "<unknown target>" else None
+    unknown_target = "<unknown target>"
+    for field_name in ("to", "unresolvedTo"):
+        _target_path, label = _safe_path(
+            violation.get(field_name),
+            unknown_target,
+        )
+        if label == unknown_target:
+            continue
+        return label
+    return None
 
 
 def _text(value: object) -> str | None:
@@ -174,6 +165,26 @@ def _single_line(value: str) -> str:
     return _WHITESPACE_RE.sub(" ", without_controls).strip()
 
 
+def _path_is_unsafe(
+    text: str,
+    had_controls: bool,
+    windows_path: PureWindowsPath,
+    posix_path: PurePosixPath,
+) -> bool:
+    """Return whether a reported path is unsafe for repository targeting."""
+
+    markers = (
+        had_controls,
+        len(text) > DEPENDENCY_CRUISER_PATH_CHAR_LIMIT,
+        posix_path.is_absolute(),
+        windows_path.is_absolute(),
+        bool(windows_path.drive),
+        ".." in posix_path.parts,
+        posix_path.as_posix() == ".",
+    )
+    return any(markers)
+
+
 def _safe_path(value: object, unknown_label: str) -> tuple[str | None, str]:
     """Return a repository target plus a bounded, non-sensitive display label."""
 
@@ -185,16 +196,7 @@ def _safe_path(value: object, unknown_label: str) -> tuple[str | None, str]:
         return None, unknown_label
     windows_path = PureWindowsPath(text)
     posix_path = PurePosixPath(text.replace("\\", "/"))
-    unsafe = (
-        had_controls
-        or len(text) > DEPENDENCY_CRUISER_PATH_CHAR_LIMIT
-        or posix_path.is_absolute()
-        or windows_path.is_absolute()
-        or bool(windows_path.drive)
-        or ".." in posix_path.parts
-        or posix_path.as_posix() == "."
-    )
-    if unsafe:
+    if _path_is_unsafe(text, had_controls, windows_path, posix_path):
         return None, _safe_basename(posix_path, unknown_label)
     normalized = posix_path.as_posix()
     return normalized, normalized[:DEPENDENCY_CRUISER_FIELD_CHAR_LIMIT]
@@ -237,7 +239,8 @@ def format_dependency_cruiser_finding(
     )
     if len(message) <= DEPENDENCY_CRUISER_MESSAGE_CHAR_LIMIT:
         return message
-    return f"{message[: DEPENDENCY_CRUISER_MESSAGE_CHAR_LIMIT - 3].rstrip()}..."
+    truncated = message[: DEPENDENCY_CRUISER_MESSAGE_CHAR_LIMIT - 3].rstrip()
+    return f"{truncated}..."
 
 
 def dependency_cruiser_facts(

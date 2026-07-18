@@ -93,18 +93,17 @@ def summarize_typescript_dependency_cruiser(raw_output: str) -> str | None:
 
 def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:
     """Return compact TypeScript provider summary when output is structured."""
-    check_family = typescript_checks.check_family(check_name)
-    if check_family == "typescript-lint":
-        return summarize_typescript_lint(raw_output)
-    if check_family == "typescript-typecheck":
-        return summarize_typescript_typecheck(raw_output)
-    if check_family == "typescript-test":
-        return summarize_typescript_test(raw_output)
-    if check_family == "typescript-knip":
-        return summarize_typescript_knip(raw_output)
-    if check_family == "typescript-dependency-cruiser":
-        return summarize_typescript_dependency_cruiser(raw_output)
-    return None
+    summarizers = {
+        "typescript-lint": summarize_typescript_lint,
+        "typescript-typecheck": summarize_typescript_typecheck,
+        "typescript-test": summarize_typescript_test,
+        "typescript-knip": summarize_typescript_knip,
+        "typescript-dependency-cruiser": summarize_typescript_dependency_cruiser,
+    }
+    summarizer = summarizers.get(typescript_checks.check_family(check_name))
+    if summarizer is None:
+        return None
+    return summarizer(raw_output)
 
 
 def summarize_diagnostics(diagnostics: list[TypeScriptDiagnostic]) -> str | None:

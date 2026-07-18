@@ -527,7 +527,7 @@ git commit -m "feat: parse TypeScript architecture facts"
 
 - Create: `tests/fixtures/typescript_dependency_cruiser_external/npm-project.json`
 - Create: `tests/fixtures/typescript_dependency_cruiser_external/pnpm-workspace.json`
-- Create: `tests/assess/test_typescript_dependency_cruiser_external_fixtures.py`
+- Create: `tests/assess/test_depcruise_external_fixtures.py`
 - Create: `docs/roadmap/phases/phase-181-typescript-dependency-cruiser-facts.md`
 - Modify: `docs/roadmap/typescript-react-parity-roadmap.md`
 - Modify: `docs/roadmap/full-roadmap-blueprint.md`
@@ -572,7 +572,7 @@ supported and retained counts match projection metadata.
 Run:
 
 ```bash
-PATH=.venv/bin:$PATH pytest tests/assess/test_typescript_dependency_cruiser_external_fixtures.py -q
+PATH=.venv/bin:$PATH pytest tests/assess/test_depcruise_external_fixtures.py -q
 ```
 
 Expected: FAIL because the projection files do not exist.
@@ -645,7 +645,7 @@ Do not edit `.docsync/out/`.
 - [ ] **Step 5: Run the complete focused phase suite**
 
 ```bash
-PATH=.venv/bin:$PATH pytest tests/config/test_typescript_config.py tests/config/test_workspace_config.py tests/catalogs/test_typescript_catalog.py tests/catalogs/test_global_catalog_characterization.py tests/catalogs/test_provider_registry.py tests/catalogs/test_java_catalog.py tests/repair_facts/test_typescript_dependency_cruiser_facts.py tests/core/test_typescript_dependency_cruiser_structured_output.py tests/context/test_typescript_exact_facts.py tests/assess/test_typescript_dependency_cruiser_external_fixtures.py tests/docs/test_first_touch_docs.py tests/docs/test_roadmap_docs.py tests/docsync/test_public_doc_trace.py -q
+PATH=.venv/bin:$PATH pytest tests/config/test_typescript_config.py tests/config/test_workspace_config.py tests/catalogs/test_typescript_catalog.py tests/catalogs/test_global_catalog_characterization.py tests/catalogs/test_provider_registry.py tests/catalogs/test_java_catalog.py tests/repair_facts/test_typescript_dependency_cruiser_facts.py tests/core/test_typescript_dependency_cruiser_structured_output.py tests/context/test_typescript_exact_facts.py tests/assess/test_depcruise_external_fixtures.py tests/docs/test_first_touch_docs.py tests/docs/test_roadmap_docs.py tests/docsync/test_public_doc_trace.py -q
 ```
 
 Expected: PASS.

@@ -40,7 +40,7 @@ DEFAULT_TYPESCRIPT_LINT_PROFILES = ("precommit", "full", "ci")
 DEFAULT_TYPESCRIPT_TYPECHECK_PROFILES = ("full", "ci")
 DEFAULT_TYPESCRIPT_TEST_PROFILES = ("full", "ci")
 DEFAULT_TYPESCRIPT_KNIP_PROFILES = ("full", "ci")
-DEFAULT_TYPESCRIPT_DEPENDENCY_CRUISER_PROFILES = ("full", "ci")
+DEFAULT_DEPCRUISE_PROFILES = ("full", "ci")
 DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES = 4
 DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES = 200
 DEFAULT_TS_ADVISORY_BROAD_SUPPRESSION_WARN = 1
@@ -224,7 +224,7 @@ class MaintainerConfig:
     typescript_knip_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_KNIP_PROFILES
     typescript_dependency_cruiser_command: tuple[str, ...] = ()
     typescript_dependency_cruiser_profiles: tuple[str, ...] = (
-        DEFAULT_TYPESCRIPT_DEPENDENCY_CRUISER_PROFILES
+        DEFAULT_DEPCRUISE_PROFILES
     )
     typescript_advisory_source_warn_files: int = DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES
     typescript_advisory_source_warn_lines: int = DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES

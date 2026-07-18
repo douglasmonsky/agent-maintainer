@@ -26,15 +26,19 @@ SHA256_HEX_LENGTH = 64
 
 
 # docsync:evidence.start evidence.typescript.dependency_cruiser_external_fixtures
-@pytest.mark.parametrize(("filename", "package_manager"), FIXTURES)
-def test_public_projection_metadata_is_pinned_and_private_path_free(
-    filename: str,
+def _as_int(value: object) -> int:
+    """Return an integer fixture field or fail the contract."""
+
+    if isinstance(value, int):
+        return value
+    raise AssertionError
+
+
+def _assert_source_metadata(
+    fixture: dict[str, object],
     package_manager: str,
 ) -> None:
-    """Compatibility evidence is reproducible, bounded, and safe to commit."""
-
-    fixture = _fixture(filename)
-    serialized = json.dumps(fixture)
+    """Check pinned public-source and tool metadata."""
 
     assert str(fixture["source_repository"]).startswith("https://github.com/")
     assert len(str(fixture["commit"])) == COMMIT_SHA_LENGTH
@@ -44,32 +48,71 @@ def test_public_projection_metadata_is_pinned_and_private_path_free(
         "name": "dependency-cruiser",
         "version": "17.0.2",
     }
+
+
+def _assert_command_metadata(fixture: dict[str, object]) -> None:
+    """Check the replay command is explicit and JSON-producing."""
+
     command = fixture["command"]
     assert isinstance(command, list)
     assert command[-3:-1] == ["--output-type", "json"]
     assert str(command[-1]).endswith("/**/*.ts")
-    assert int(fixture["exit_code"]) >= 0
-    assert int(fixture["supported_finding_count"]) >= int(
-        fixture["retained_finding_count"]
-    )
-    assert int(fixture["retained_finding_count"]) <= PROJECTION_LIMIT
+
+
+def _assert_count_metadata(fixture: dict[str, object]) -> None:
+    """Check reported and retained finding counts are consistent."""
+
+    supported_count = _as_int(fixture["supported_finding_count"])
+    retained_count = _as_int(fixture["retained_finding_count"])
+    assert _as_int(fixture["exit_code"]) >= 0
+    assert supported_count >= retained_count
+    assert retained_count <= PROJECTION_LIMIT
+
+
+def _assert_hash_metadata(
+    fixture: dict[str, object],
+    package_manager: str,
+) -> None:
+    """Check source inputs carry pinned SHA-256 fingerprints."""
+
     assert len(str(fixture["config_sha256"])) == SHA256_HEX_LENGTH
     assert len(str(fixture["lockfile_sha256"])) == SHA256_HEX_LENGTH
     if package_manager == "pnpm":
         assert fixture["workspace_manifest_path"] == "pnpm-workspace.yaml"
-        assert len(str(fixture["workspace_manifest_sha256"])) == SHA256_HEX_LENGTH
+        workspace_hash = str(fixture["workspace_manifest_sha256"])
+        assert len(workspace_hash) == SHA256_HEX_LENGTH
+
+
+def _assert_private_path_free(fixture: dict[str, object]) -> None:
+    """Check the public projection contains no private local paths."""
+
+    serialized = json.dumps(fixture)
     assert "/Users/" not in serialized
     assert "/private/tmp/" not in serialized
 
 
 @pytest.mark.parametrize(("filename", "package_manager"), FIXTURES)
-def test_public_projection_replays_through_shared_parser(
+def test_projection_metadata(
     filename: str,
     package_manager: str,
 ) -> None:
+    """Compatibility evidence is reproducible, bounded, and safe to commit."""
+
+    fixture = _fixture(filename)
+    _assert_source_metadata(fixture, package_manager)
+    _assert_command_metadata(fixture)
+    _assert_count_metadata(fixture)
+    _assert_hash_metadata(fixture, package_manager)
+    _assert_private_path_free(fixture)
+
+
+@pytest.mark.parametrize(
+    "filename",
+    tuple(fixture[0] for fixture in FIXTURES),
+)
+def test_projection_parser_replay(filename: str) -> None:
     """Retained public violations remain compatible with the shared parser."""
 
-    del package_manager
     fixture = _fixture(filename)
     violations = fixture["violations"]
     result = parse_dependency_cruiser_json_result(

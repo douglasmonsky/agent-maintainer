@@ -1521,7 +1521,7 @@ evidence:
       dependency-cruiser compatibility metadata, config and lockfile hashes,
       exact commands, exit status, and bounded normalized findings.
     anchors:
-      - path: tests/assess/test_typescript_dependency_cruiser_external_fixtures.py
+      - path: tests/assess/test_depcruise_external_fixtures.py
         mode: explicit_region
   evidence.typescript.reviewability_fixture_tests:
     type: test
