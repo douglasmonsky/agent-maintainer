@@ -10,3 +10,10 @@ depends_on = ["//agent_maintainer.core.repo_paths"]
 [[modules]]
 path = "models"
 depends_on = []
+
+[[modules]]
+path = "policy"
+depends_on = [
+  "matching",
+  "models",
+]
