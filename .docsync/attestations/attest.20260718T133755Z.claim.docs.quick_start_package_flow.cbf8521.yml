@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T133755Z.claim.docs.quick_start_package_flow.cbf8521
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.package_metadata
+  reason: Quick Start remains accurate after recording 0.1.0b9 publication and advancing
+    package metadata to the 0.1.0b10 candidate.
+  reviewer: agent
+  reviewed_at: '2026-07-18T13:37:55Z'
+  base: HEAD
+  head: cbf8521
+  evidence_fingerprints:
+    evidence.readme.package_metadata: sha256:f9575b7e5047a962c796253d03daef5b0a78a580d3e8a2329e22d74df72676a0
+  evidence_anchor_fingerprints:
+    evidence.readme.package_metadata:
+    - sha256:e85e80434314d5f1ecbd5da471233de84b298213ed6e18f900b27e53597472a9
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

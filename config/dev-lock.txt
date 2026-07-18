@@ -8,7 +8,7 @@ actionlint-py==1.7.12.24
     # via -r config/dev-dependencies.in
 annotated-types==0.7.0
     # via pydantic
-anyio==4.14.1
+anyio==4.14.2
     # via
     #   httpx
     #   mcp
@@ -112,7 +112,7 @@ exceptiongroup==1.2.2
     # via semgrep
 face==26.0.1
     # via glom
-filelock==3.29.7
+filelock==3.31.0
     # via
     #   cachecontrol
     #   python-discovery
@@ -123,7 +123,7 @@ fqdn==1.5.1
     # via jsonschema
 gitdb==4.0.12
     # via gitpython
-gitpython==3.1.50
+gitpython==3.1.52
     # via tach
 glom==25.12.0
     # via semgrep
@@ -169,7 +169,7 @@ jaraco-classes==3.4.0
     # via keyring
 jaraco-context==6.1.2
     # via keyring
-jaraco-functools==4.5.0
+jaraco-functools==4.6.0
     # via keyring
 jinja2==3.1.6
     # via diff-cover
@@ -299,7 +299,7 @@ pip-requirements-parser==32.0.1
     #   pip-audit
 pip-tools==7.5.3
     # via -r config/dev-dependencies.in
-platformdirs==4.10.0
+platformdirs==4.10.1
     # via
     #   pip-audit
     #   pylint
@@ -489,7 +489,7 @@ tomli-w==1.2.0
     # via
     #   pip-audit
     #   tach
-tomlkit==0.15.0
+tomlkit==0.15.1
     # via pylint
 twine==6.2.0
     # via -r config/dev-dependencies.in
