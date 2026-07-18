@@ -75,5 +75,6 @@ verifier gates.
   coverage gaps. Regression tests reproduced each issue before the fixes in
   `467a298`; the focused and complete gates above verify the corrections.
 - Implementation PR #406 passed protected checks and merged as
-  `88bc8cc433eeb282b502d831e6a7189bcdb48f17`. The closure PR carries this
-  completed phase record and the final protected documentation evidence.
+  `88bc8cc433eeb282b502d831e6a7189bcdb48f17`. Closure PR #407 carries this
+  completed record under the same protected checks; its merge is the terminal
+  proof that the final updated head passed.
