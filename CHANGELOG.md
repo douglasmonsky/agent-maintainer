@@ -7,7 +7,22 @@ published package, with published 0.1.0b8 release evidence authoritative until
 this candidate passes the complete exact-commit release matrix and package-index
 smokes.
 
-- No user-facing changes are recorded yet.
+- Added `agent-maintainer verify-plan`, a deterministic advisory planner that
+  maps Git adds, modifications, copies, renames, deletions, and type changes to
+  affected Python packages, TypeScript workspaces, Gradle modules, repository
+  fallback units, configured checks, verifier profiles, review categories, and
+  required evidence.
+- Added strict versioned `.agent-maintainer/path-risk.toml` policy with
+  repository-confined segment-aware glob matching, cumulative overlapping
+  rules, destination-only changed-path evidence, and fail-closed validation for
+  unsafe paths, malformed patterns, unknown profiles, and ambiguous checks.
+- Added an optional `verification-plan-policy` catalog gate for repositories
+  that carry path-risk policy. Planning remains advisory unless enforcement is
+  explicitly requested, never executes checks, and never suppresses existing
+  verifier gates.
+- Added stable human output and `schema_version = 1` JSON output with exact CLI
+  statuses: `0` for a valid satisfied plan, `1` for missing required evidence
+  under enforcement, and `2` for invalid policy, configuration, or Git input.
 
 ## 0.1.0b8 - 2026-07-18
 
