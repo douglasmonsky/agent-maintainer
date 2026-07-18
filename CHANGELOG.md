@@ -24,6 +24,21 @@ smokes.
   preserving the 99% result ratchet with exact source-aware error coverage.
 - Fixed Java provider packaging so base installs include the secure XML parser,
   and kept all packaged source syntax compatible with Python 3.11 through 3.14.
+- Added advisory TypeScript/JavaScript package-manager and workspace evidence
+  without choosing a package manager, running Corepack, or inventing commands.
+- Added explicit Knip unused-code/dependency facts and dependency-cruiser
+  architecture facts for configured `full` and `ci` checks, with bounded,
+  path-safe repair summaries and pinned npm/pnpm compatibility evidence.
+- Added grouped OSV vulnerability repair facts for the existing
+  ecosystem-neutral scanner boundary, including package identity, advisory
+  aliases, safe lockfile provenance, and fixed versions when declared.
+- Added an advisory LCOV changed-line coverage command that reads existing
+  artifacts, reports weighted executable-line coverage and missing files
+  separately, and enforces no threshold. Git refs, diff failures, malformed
+  LCOV values, symlinks, paths, and output sizes are handled conservatively.
+- Kept TypeScript/JavaScript experimental: the release does not install Node
+  tools, infer runner or package-manager behavior, generate architecture rules,
+  or promote advisory facts into blocking policy.
 
 ## 0.1.0b7 - 2026-07-15
 
