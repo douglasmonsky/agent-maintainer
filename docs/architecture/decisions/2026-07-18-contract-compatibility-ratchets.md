@@ -67,6 +67,14 @@ classifiers. A review decision is applied only after the original change
 fingerprint is computed, and it can resolve only that exact review-required
 finding; it cannot weaken compatibility that the classifier already proved.
 
+Revision, package-version, and migration requirements are evaluated as
+independent obligations. Revision checks compare authored contract identities;
+package recommendations use the declared PEP 440 parser and repository-owned
+stable/beta impact policy; migration checks consume structured Git facts through
+a read-only protocol and count only added, modified, or renamed destination
+paths. Segment-aware matching stays inside the contracts domain so it does not
+depend outward on verifier orchestration or Git execution.
+
 ## Consequences
 
 Every contract operation uses one repository-confinement and canonical

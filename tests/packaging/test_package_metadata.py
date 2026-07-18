@@ -63,6 +63,15 @@ def test_runtime_dependencies_cover_imported_xml_parser() -> None:
     assert "defusedxml>=0.7.1" in metadata["project"]["dependencies"]
 
 
+def test_runtime_dependencies_cover_contract_version_parser() -> None:
+    """A base install includes the PEP 440 parser used by contract ratchets."""
+
+    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
+        metadata = tomllib.load(handle)
+
+    assert "packaging>=25" in metadata["project"]["dependencies"]
+
+
 def test_packaged_python_sources_parse_on_minimum_supported_version() -> None:
     """Packaged source syntax remains compatible with declared Python 3.11."""
 

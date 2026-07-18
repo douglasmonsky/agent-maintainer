@@ -13,6 +13,7 @@ allowed_paths = [
   "README.md",
   "config/agent-maintainer-capabilities.json",
   "config/agent-maintainer-cli.json",
+  "config/dev-lock.txt",
   "docs/ROADMAP.md",
   "docs/api-support-policy.md",
   "docs/architecture/decisions/2026-07-18-contract-compatibility-ratchets.md",
@@ -22,6 +23,7 @@ allowed_paths = [
   "docs/superpowers/plans/2026-07-18-contract-compatibility-ratchets.md",
   "docs/superpowers/specs/2026-07-18-contract-compatibility-ratchets-design.md",
   "docs/tool-map.md",
+  "pyproject.toml",
   "schemas/agent-waits-wait-record.schema.json",
   "schemas/codex-app-server-wait.schema.json",
   "src/agent_maintainer/catalogs/catalog.py",
@@ -38,6 +40,7 @@ allowed_paths = [
   "tests/packaging/test_package_metadata.py",
   "tests/packaging/test_public_docs.py",
   "tests/packaging/test_script_helpers.py",
+  "tests/release/test_release_packaging.py",
   "tests/verify/test_verification_groups.py",
   "tests/wait/test_agent_waits_core.py",
   "tests/wait/test_codex_app_server.py",
@@ -78,17 +81,18 @@ against one branch base.
 ## What allowed to change
 
 Only the new contract-ratchet domain and tests, authored/generated contract
-files, five dogfood manifests or schemas, direct root CLI/catalog/verifier/Tach
-integration, synthetic regression fixtures, architecture and roadmap records,
-public documentation, DocSync evidence, and the approved design and execution
-plan may change.
+files, five dogfood manifests or schemas, the required PEP 440 runtime parser,
+direct root CLI/catalog/verifier/Tach integration, synthetic regression fixtures,
+architecture and roadmap records, public documentation, DocSync evidence, and
+the approved design and execution plan may change.
 
 ## What must not change
 
 Do not import or execute target repository code, execute target commands, use
 the network or a shell, rewrite package versions or migrations, broadly accept
-baselines, suppress existing checks, add runtime dependencies, classify failure
-history, or perform unrelated refactors. Production data, credentials, billing,
+baselines, suppress existing checks, add runtime dependencies beyond the
+approved PEP 440 parser, classify failure history, or perform unrelated refactors.
+Production data, credentials, billing,
 deployments, and external account state remain outside scope.
 
 ## Verification plan
