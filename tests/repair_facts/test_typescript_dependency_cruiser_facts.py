@@ -66,6 +66,7 @@ def payload(*violations: object) -> dict[str, object]:
     return {"summary": {"violations": list(violations)}, "modules": []}
 
 
+# docsync:evidence.start evidence.typescript.dependency_cruiser_fact_tests
 def test_fixture_emits_sorted_safe_facts_for_workspace_check() -> None:
     """The public registry preserves workspace names and normalized details."""
 
@@ -272,3 +273,6 @@ def test_scalars_and_messages_are_single_line_and_bounded() -> None:
     assert len(parsed.rule) <= FIELD_LIMIT
     assert "\n" not in message
     assert len(message) <= MESSAGE_LIMIT
+
+
+# docsync:evidence.end evidence.typescript.dependency_cruiser_fact_tests

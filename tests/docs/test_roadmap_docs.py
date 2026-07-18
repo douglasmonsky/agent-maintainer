@@ -18,6 +18,9 @@ TYPESCRIPT_PACKAGE_WORKSPACE_PHASE = (
     PHASES_DIR / "phase-178-advisory-package-manager-workspace-detection.md"
 )
 TYPESCRIPT_KNIP_PHASE = PHASES_DIR / "phase-179-typescript-knip-unused-code-dependency-facts.md"
+TYPESCRIPT_DEPENDENCY_CRUISER_PHASE = (
+    PHASES_DIR / "phase-181-typescript-dependency-cruiser-facts.md"
+)
 MAX_ACTIVE_ROADMAP_LINES = 180
 MAX_INDEX_OVERHEAD_LINES = 4
 MAX_PHASE_LINES = 500
@@ -109,6 +112,7 @@ def test_typescript_parity_roadmap_keeps_execution_explicit_and_phased() -> None
         "Phase 178: advisory package-manager and workspace detection is complete.",
         "Phase 179: Knip unused-code and dependency facts are complete.",
         "Phase 180: OSV dependency facts are complete.",
+        "Phase 181: dependency-cruiser architecture-boundary facts are complete.",
         "Package-manager audit facts are the next parity slice.",
         "Repository evidence must never become subprocess arguments.",
         "at least two external real-repository comparisons",
@@ -145,6 +149,23 @@ def test_typescript_knip_phase_is_complete_and_bounded() -> None:
     assert "OSV dependency scanning" in phase
 
 
+def test_typescript_dependency_cruiser_phase_is_complete() -> None:
+    """Phase 181 records the advisory architecture boundary and evidence."""
+
+    phase = TYPESCRIPT_DEPENDENCY_CRUISER_PHASE.read_text(encoding="utf-8")
+
+    assert phase.startswith("# Phase 181: TypeScript Dependency-Cruiser Facts")
+    assert "Status: complete" in phase
+    assert "typescript_dependency_cruiser_command" in phase
+    assert "summary.violations" in phase
+    assert "500 normalized findings" in phase
+    assert "50 total lines" in phase
+    assert "decentralized-identity/dwn-sdk-js" in phase
+    assert "hicommonwealth/commonwealth" in phase
+    assert "TypeScript/JavaScript remains experimental" in phase
+    assert "Package-manager audit facts are the next parity slice" in phase
+
+
 def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     """The active tracker does not revive completed strict-typing debt."""
 
@@ -161,6 +182,7 @@ def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     assert "Phase 177: TypeScript/React Parity Roadmap" in text
     assert "Phase 178: Advisory Package-Manager And Workspace Detection" in text
     assert "Phase 179: TypeScript Knip Unused-Code And Dependency Facts" in text
+    assert "Phase 181: TypeScript Dependency-Cruiser Facts" in text
     assert "(roadmap/typescript-react-parity-roadmap.md)" in text
 
 

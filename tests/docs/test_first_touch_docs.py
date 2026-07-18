@@ -205,6 +205,47 @@ def test_provider_docs_track_typescript_osv_facts() -> None:
     _assert_phrases_present(phrases)
 
 
+def test_provider_docs_track_typescript_dependency_cruiser_facts() -> None:
+    """Public docs record explicit architecture commands and safe output."""
+
+    phrases = {
+        "docs/typescript-javascript-provider.md": (
+            "typescript_dependency_cruiser_command",
+            "typescript_dependency_cruiser_profiles",
+            "`typescript-dependency-cruiser`",
+            "`summary.violations`",
+            "500 normalized findings",
+            "50 total lines",
+            (
+                "dependency-cruiser is the TypeScript/JavaScript "
+                "architecture-boundary counterpart"
+            ),
+            "package-manager audit facts are the next parity slice",
+            "TypeScript/JavaScript remains experimental",
+        ),
+        "docs/provider-status.md": (
+            "Phase 181 dependency-cruiser architecture facts are complete.",
+            "decentralized-identity/dwn-sdk-js",
+            "hicommonwealth/commonwealth",
+            "package-manager audit facts are the next parity slice",
+            "TypeScript/JavaScript remains experimental",
+        ),
+        "docs/tool-map.md": (
+            (
+                "dependency-cruiser is the TypeScript/JavaScript "
+                "architecture-boundary counterpart"
+            ),
+            "Agent Maintainer never invents dependency-cruiser rules",
+        ),
+        "docs/supported-scans-and-agent-use.md": (
+            "dependency-cruiser",
+            "explicit TypeScript/JavaScript architecture commands",
+        ),
+    }
+
+    _assert_phrases_present(phrases)
+
+
 def test_setup_advisor_docs_include_workspace_command_example() -> None:
     """Setup advisor docs keep explicit workspace command ownership concrete."""
     phrases = {

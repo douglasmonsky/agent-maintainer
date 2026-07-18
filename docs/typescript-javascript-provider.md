@@ -30,6 +30,9 @@ typescript_lint_command = ["pnpm", "run", "lint"]
 typescript_typecheck_command = ["pnpm", "run", "typecheck"]
 typescript_test_command = ["pnpm", "run", "test"]
 typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]
+typescript_dependency_cruiser_command = [
+  "pnpm", "exec", "depcruise", "--output-type", "json", "src",
+]
 ```
 
 For Vite/Vitest projects, prefer repository scripts over inferred commands:
@@ -53,6 +56,7 @@ typescript_lint_profiles = ["precommit", "full", "ci"]
 typescript_typecheck_profiles = ["full", "ci"]
 typescript_test_profiles = ["full", "ci"]
 typescript_knip_profiles = ["full", "ci"]
+typescript_dependency_cruiser_profiles = ["full", "ci"]
 ```
 
 Default profiles are:
@@ -63,9 +67,13 @@ Default profiles are:
 | `typescript-typecheck` | `full`, `ci` |
 | `typescript-test` | `full`, `ci` |
 | `typescript-knip` | `full`, `ci` |
+| `typescript-dependency-cruiser` | `full`, `ci` |
 
 `typescript_knip_profiles` defaults to `full` and `ci`. Knip stays out of
 `precommit` by default because it normally analyzes the whole repository.
+`typescript_dependency_cruiser_profiles` also defaults to `full` and `ci`;
+architecture cruising is repository-wide and stays out of `precommit` by
+default.
 
 If `enable_typescript = true` but a command is empty, the corresponding check is
 reported as an optional skip. Agent Maintainer will not guess the package
@@ -95,6 +103,8 @@ configured-command output:
 - `typescript-knip`: Knip `--reporter json` output for unused files, exports,
   types, dependencies, binaries, unlisted dependencies, and unresolved imports
   or binaries;
+- `typescript-dependency-cruiser`: dependency-cruiser cruise-result JSON from
+  the configured command's `summary.violations` array;
 - `osv-scanner`: OSV Scanner v2 output from the existing ecosystem-neutral
   manual gate.
 
@@ -116,6 +126,39 @@ Pin Knip through the repository's exact dependency or lockfile and include
 
 These parsers are repair-loop helpers. They do not require new config fields,
 and malformed output falls back to the normal bounded raw-log summary.
+
+## Phase 181 Dependency-Cruiser Boundary
+
+Phase 181 dependency-cruiser architecture facts are complete. For this
+provider, dependency-cruiser is the TypeScript/JavaScript architecture-boundary
+counterpart to Tach. It does not replace Python Tach, Archguard decision notes,
+or declared Nx boundary policy.
+
+Agent Maintainer runs only the exact root or workspace
+`typescript_dependency_cruiser_command` array and preserves its exit status.
+It never appends `--output-type json`, installs dependency-cruiser, generates a
+configuration, chooses a package manager, or invents boundary rules. Include a
+repository-owned JSON reporter argument when structured facts are wanted.
+
+The parser reads only `summary.violations`. It preserves supported `error`,
+`warn`, and `info` severities, documented violation types, rule names, and safe
+source and target labels. Findings are sorted before retaining at most 500
+normalized findings. Compact summaries contain at most 50 total lines, and
+context packs retain five facts per failed check.
+
+Only safe repository-relative sources become context targets. Absolute,
+drive-qualified, traversal, control-bearing, dot, empty, and overlong paths are
+non-targetable. Safe basenames can remain visible; violation targets are always
+display-only. Malformed neighbors and unsupported severity or type values are
+skipped independently.
+
+Pinned npm `decentralized-identity/dwn-sdk-js` and pnpm-workspace
+`hicommonwealth/commonwealth` projections replay offline with
+dependency-cruiser 17.0.2.
+They record exact public revisions, config and lockfile hashes, commands, exit
+status, and bounded normalized violations. Package-manager audit facts are the
+next parity slice. Declared Nx boundaries and blocking architecture policy
+remain later work. TypeScript/JavaScript remains experimental.
 
 ## Phase 180 OSV Boundary
 
@@ -187,11 +230,15 @@ package-specific checks, add commands under
 workspace TypeScript commands you configure and will not infer nested package
 commands. Workspace Knip commands use the root `typescript_knip_profiles`
 selection and stable names such as `typescript-knip:web`.
+Workspace dependency-cruiser commands use the root
+`typescript_dependency_cruiser_profiles` selection and stable names such as
+`typescript-dependency-cruiser:web`.
 
 Coverage summaries and LCOV files can improve `typescript-test` repair facts
 when a repository already produces those artifacts, Knip can improve
 unused-code and dependency repair facts, and the ecosystem-neutral OSV gate can
-provide dependency vulnerability facts. TypeScript coverage enforcement,
+provide dependency vulnerability facts. Explicit dependency-cruiser JSON can
+provide advisory architecture facts. TypeScript coverage enforcement,
 package-manager audit, mutation, and blocking reviewability adapters are not
 implemented yet. The provider should remain experimental until these surfaces
 have fixture and real-repo evidence.

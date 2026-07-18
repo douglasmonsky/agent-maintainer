@@ -227,6 +227,13 @@ the configured limit.
 
 Archguard runs alongside Tach when `architecture_tool = "tach"`. Tach enforces the current architecture contract. Archguard governs changes to that contract. If `tach.toml` or `tach.domain.toml` changes, Archguard requires an architecture decision note in `docs/architecture/decisions/`. `archguard map`, `archguard impact <path>`, and `archguard explain-boundary <source> <target>` provide read-only ownership, dependency-direction, affected-test, boundary-violation, and decision-note context before editing architecture-sensitive files. They merge nested domain ownership with root rules, prefer explicit domain dependencies when present, and retain legacy layer direction for rules without an explicit allowlist. Affected-test hints are sorted and bounded. If root or nested policy cannot be loaded, Archguard reports the bounded load error and treats dependency direction as unknown rather than inferring an allowed boundary.
 
+For the experimental provider, dependency-cruiser is the TypeScript/JavaScript
+architecture-boundary counterpart to Tach. Configure an explicit
+`typescript_dependency_cruiser_command` with cruise-result JSON output; Agent
+Maintainer never invents dependency-cruiser rules, installs the tool, chooses a
+package manager, or changes its exit status. Bounded facts use only
+`summary.violations`. Nx boundaries remain a separate future adapter.
+
 ## Diff hygiene gates
 
 The file-length check stops giant files. In `legacy-ratchet`, it can use `file_length_baseline` so old oversized files are tolerated only while they stay unchanged or improve; new and worsened oversized files fail.

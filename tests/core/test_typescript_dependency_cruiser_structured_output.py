@@ -9,6 +9,7 @@ from agent_maintainer.core import structured_typescript
 SUMMARY_LINE_LIMIT = 50
 
 
+# docsync:evidence.start evidence.typescript.dependency_cruiser_summary_tests
 def test_dependency_cruiser_summary_formats_one_violation() -> None:
     """Workspace checks route through the shared architecture parser."""
 
@@ -86,3 +87,6 @@ def _payload_with_findings(count: int) -> dict[str, object]:
         },
         "modules": [],
     }
+
+
+# docsync:evidence.end evidence.typescript.dependency_cruiser_summary_tests

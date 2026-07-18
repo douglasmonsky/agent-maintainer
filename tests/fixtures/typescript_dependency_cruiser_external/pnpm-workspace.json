@@ -1,0 +1,179 @@
+{
+  "source_repository": "https://github.com/hicommonwealth/commonwealth",
+  "commit": "fca71cca527b490e3f3ad955044a0506139d0330",
+  "collected_at": "2026-07-18T02:25:18Z",
+  "package_manager": "pnpm",
+  "tool": {
+    "name": "dependency-cruiser",
+    "version": "17.0.2"
+  },
+  "command": [
+    "npx",
+    "--yes",
+    "dependency-cruiser@17.0.2",
+    "--output-type",
+    "json",
+    "packages/commonwealth/client/scripts/**/*.ts"
+  ],
+  "exit_code": 0,
+  "config_path": ".dependency-cruiser.cjs",
+  "config_sha256": "b6dfc8407d40ce488c93437399bdf0cf179b0b58a626b6f76189e1a084e2828f",
+  "lockfile_path": "pnpm-lock.yaml",
+  "lockfile_sha256": "183fcf107c3a963af062597f1133caedca9bfb41dc3fd498603b7b66ccc15e92",
+  "workspace_manifest_path": "pnpm-workspace.yaml",
+  "workspace_manifest_sha256": "0a7a1b0b6936bbee0a5794607ac390b0ea5e3ad374c1719a603e8219c7383d86",
+  "supported_finding_count": 52,
+  "retained_finding_count": 25,
+  "violations": [
+    {
+      "from": "packages/commonwealth/client/scripts/features/index.ts",
+      "to": "packages/commonwealth/client/scripts/features/index.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/models/BlockInfo.ts",
+      "to": "packages/commonwealth/client/scripts/models/BlockInfo.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/models/SearchQuery.ts",
+      "to": "packages/commonwealth/client/scripts/models/SearchQuery.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/models/StorageModule.ts",
+      "to": "packages/commonwealth/client/scripts/models/StorageModule.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/hooks/useAppStatus.ts",
+      "to": "packages/commonwealth/client/scripts/shared/hooks/useAppStatus.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/hooks/useDeviceProfile.ts",
+      "to": "packages/commonwealth/client/scripts/shared/hooks/useDeviceProfile.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/constants.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/constants.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/currency.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/currency.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/dom.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/dom.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/downloadDataAsFile.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/downloadDataAsFile.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/formValidations/messages.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/formValidations/messages.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/html.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/html.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/image.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/image.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/link.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/link.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/localStorage.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/localStorage.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/number.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/number.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/string.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/string.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/truncate.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/truncate.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/shared/utils/typeGuards.ts",
+      "to": "packages/commonwealth/client/scripts/shared/utils/typeGuards.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/state/api/ai/prompts.ts",
+      "to": "packages/commonwealth/client/scripts/state/api/ai/prompts.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/stores/Store.ts",
+      "to": "packages/commonwealth/client/scripts/stores/Store.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/stores/interfaces.ts",
+      "to": "packages/commonwealth/client/scripts/stores/interfaces.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/utils/geckoUtils.ts",
+      "to": "packages/commonwealth/client/scripts/utils/geckoUtils.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/views/components/Breadcrumbs/data.ts",
+      "to": "packages/commonwealth/client/scripts/views/components/Breadcrumbs/data.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    },
+    {
+      "from": "packages/commonwealth/client/scripts/views/components/MarketIntegrations/types.ts",
+      "to": "packages/commonwealth/client/scripts/views/components/MarketIntegrations/types.ts",
+      "rule": {"name": "no-orphans", "severity": "warn"},
+      "type": "module"
+    }
+  ]
+}

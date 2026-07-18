@@ -165,3 +165,4 @@
 | 178 | [Advisory Package-Manager And Workspace Detection](phases/phase-178-advisory-package-manager-workspace-detection.md) |
 | 179 | [TypeScript Knip Unused-Code And Dependency Facts](phases/phase-179-typescript-knip-unused-code-dependency-facts.md) |
 | 180 | [TypeScript OSV Dependency Facts](phases/phase-180-typescript-osv-dependency-facts.md) |
+| 181 | [TypeScript Dependency-Cruiser Facts](phases/phase-181-typescript-dependency-cruiser-facts.md) |

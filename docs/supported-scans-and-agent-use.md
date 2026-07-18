@@ -14,7 +14,7 @@ that keeps raw logs out of chat.
 | Java/Gradle evidence | Checked-wrapper task groups; Spotless/SpotBugs native ratchets; upward-only JaCoCo thresholds; bounded Checkstyle, PMD, SpotBugs, JUnit, and JaCoCo reports; separate project coverage labels | `precommit`, `full`, `ci` by configured group | Use complete, non-truncated runner artifacts for Java baseline lifecycle and exact repair facts; keep raw XML in Gradle build output. |
 | Python quality | Ruff, Pyright, Pylint, wemake, Xenon/Radon | `precommit`, `full`, `ci` | Fix design pressure before adding suppressions. |
 | Tests and coverage | pytest, coverage, diff-cover, release packaging checks | `precommit`, `full`, `ci`, release | Add focused tests before broader gates. |
-| Architecture | Tach, Import Linter, Archguard decision notes | `full`, `ci` | Respect module boundaries; add ADRs for boundary changes. |
+| Architecture | Tach, Import Linter, Archguard decision notes, dependency-cruiser | `full`, `ci` | Respect module boundaries; add ADRs for policy changes; use explicit TypeScript/JavaScript architecture commands and bounded cruise-result facts. |
 | Dependency hygiene | deptry, vulture | `full`, `ci` | Remove dead code/deps or document intentional exports. |
 | Python security | Bandit, pip-audit | `full`, `ci` | Fix insecure patterns and vulnerable dependencies. |
 | Secrets | Gitleaks current-tree, range, and history modes | `full`, `ci`, `security` | Stop immediately and rotate secrets if real credentials appear. |

@@ -12,6 +12,7 @@ from agent_maintainer.config import loader, schema
 from agent_maintainer.core.config import MaintainerConfig
 
 
+# docsync:evidence.start evidence.typescript.dependency_cruiser_config_tests
 def test_typescript_checks_are_absent_by_default() -> None:
     """Default Python catalog behavior does not include TypeScript checks."""
     checks = maintainer_catalog.make_checks(
@@ -198,3 +199,6 @@ typescript_dependency_cruiser_command = [
         "json",
         "src",
     ]
+
+
+# docsync:evidence.end evidence.typescript.dependency_cruiser_config_tests
