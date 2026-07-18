@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-18
 
-**Status:** Draft for written-spec review
+**Status:** Approved for implementation
 
 **Scope:** Phase 184 contract discovery, semantic compatibility classification,
 contract and package version obligations, deterministic baselines, CLI and
