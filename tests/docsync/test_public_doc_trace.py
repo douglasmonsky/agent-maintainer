@@ -90,6 +90,9 @@ PUBLIC_DOC_EVIDENCE = {
     "evidence.typescript.knip_fact_tests",
     "evidence.typescript.knip_summary_tests",
     "evidence.typescript.knip_external_fixtures",
+    "evidence.typescript.osv_fact_tests",
+    "evidence.typescript.osv_summary_tests",
+    "evidence.typescript.osv_external_fixtures",
 }
 
 ACTIVE_DOC_PATHS = {

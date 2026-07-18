@@ -10,6 +10,15 @@ import pytest
 from agent_repair_facts import registry
 
 FIXTURE = Path(__file__).parents[1] / "fixtures" / "osv-scanner" / "v2-grouped.json"
+INVALID_OSV_PAYLOADS: tuple[object, ...] = (
+    None,
+    list[object](),
+    dict[str, object](),
+    dict[str, object](results=dict[str, object]()),
+    dict[str, object](
+        results=list[object]((None, dict[str, object]())),
+    ),
+)
 OSV_FACT_LIMIT = 500
 
 
@@ -82,7 +91,7 @@ def test_osv_nested_version_wins_with_legacy_outer_fallback() -> None:
         ]
     }
 
-    messages = [fact["message"] for fact in artifact_facts(payload)]
+    messages = [str(fact["message"]) for fact in artifact_facts(payload)]
 
     assert messages[0].startswith("npm/legacy 3: OSV-LEGACY")
     assert messages[1].startswith("npm/nested 2: OSV-NESTED")
@@ -90,7 +99,7 @@ def test_osv_nested_version_wins_with_legacy_outer_fallback() -> None:
 
 @pytest.mark.parametrize(
     "payload",
-    [None, [], {}, {"results": {}}, {"results": [None, {}]}],
+    INVALID_OSV_PAYLOADS,
 )
 def test_osv_invalid_payloads_emit_no_facts(payload: object) -> None:
     """Invalid roots and empty malformed neighbors fail closed."""

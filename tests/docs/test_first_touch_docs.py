@@ -131,7 +131,7 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "Agent Maintainer will run only the workspace TypeScript commands "
             "you configure and will not infer nested package commands.",
             "Coverage summaries and LCOV files can improve `typescript-test` repair facts",
-            "TypeScript coverage enforcement, dependency security/audit, "
+            "TypeScript coverage enforcement, package-manager audit, "
             "mutation, and blocking reviewability adapters are not "
             "implemented yet.",
             "No TypeScript reviewability gate is blocking by default.",
@@ -168,7 +168,7 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
 
 def test_provider_status_tracks_typescript_knip_facts() -> None:
     """Provider status records completed Knip facts and the next parity slice."""
-    text = Path("docs/provider-status.md").read_text(encoding="utf-8")
+    text = normalized_text("docs/provider-status.md")
     for expected in (
         "Phase 178 package-manager and workspace evidence is advisory only.",
         "preserves file-and-field provenance",
@@ -178,10 +178,31 @@ def test_provider_status_tracks_typescript_knip_facts() -> None:
         "Phase 179 Knip unused-code and dependency facts are complete.",
         "TanStack Query",
         "Astro",
-        "OSV dependency scanning is the next parity slice",
+        "Phase 180 OSV dependency facts are complete.",
+        "package-manager audit facts are the next parity slice",
         "TypeScript/JavaScript remains experimental",
     ):
         assert expected in text
+
+
+def test_provider_docs_track_typescript_osv_facts() -> None:
+    """Provider docs record the completed OSV slice and remaining boundary."""
+
+    phrases = {
+        "docs/typescript-javascript-provider.md": (
+            "Phase 180 OSV dependency facts are complete.",
+            "uses the existing ecosystem-neutral `osv-scanner` gate",
+            "one fact per OSV alias group",
+            "package-manager audit facts are the next parity slice",
+            "TypeScript/JavaScript remains experimental",
+        ),
+        "docs/provider-status.md": (
+            "Phase 180 OSV dependency facts are complete.",
+            "package-manager audit facts are the next parity slice",
+            "TypeScript/JavaScript remains experimental",
+        ),
+    }
+    _assert_phrases_present(phrases)
 
 
 def test_setup_advisor_docs_include_workspace_command_example() -> None:

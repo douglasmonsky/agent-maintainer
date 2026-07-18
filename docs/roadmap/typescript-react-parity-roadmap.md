@@ -24,6 +24,8 @@ Already landed:
 - Explicit root and workspace-owned lint, typecheck, and test commands.
 - TypeScript compiler, ESLint JSON, Jest/Vitest JSON, Istanbul summary, and LCOV
   repair facts.
+- Ecosystem-neutral OSV Scanner v2 facts with grouped aliases and safe lockfile
+  provenance.
 - TypeScript/React doctor and setup-advisor guidance.
 - Advisory package-manager and workspace detection with file-and-field
   provenance.
@@ -31,8 +33,8 @@ Already landed:
 Still missing before a promotion assessment:
 
 - Blocking TypeScript/React reviewability gates.
-- First-class dead-code, dependency, security, architecture, changed-line
-  coverage, mutation, and generated-file adapters.
+- First-class package-manager audit, architecture, changed-line coverage,
+  mutation, generated-file, and broader security adapters.
 - Broader external evidence across React, Vite, Next.js, and workspace layouts.
 
 ## Parity Tool Map
@@ -46,7 +48,7 @@ Still missing before a promotion assessment:
 | Coverage.py/diff-cover | Istanbul/V8 LCOV plus a changed-line adapter | Partial replacement | Build advisory LCOV changed-line facts before any threshold gate. |
 | Tach/import-linter | dependency-cruiser, Nx boundaries, ESLint boundaries | Partial replacement | Start with dependency-cruiser; support Nx only when a repository declares it. |
 | Vulture/Deptry | Knip | Strong replacement | Parse stable Knip JSON for unused files, exports, dependencies, and unresolved binaries. |
-| pip-audit | OSV Scanner plus package-manager audit | Strong replacement | Add lockfile-aware OSV facts before package-manager audit summaries. |
+| pip-audit | OSV Scanner plus package-manager audit | Strong replacement | Lockfile-aware OSV facts are complete; add package-manager audit summaries next. |
 | Bandit | Semgrep JS/TS rules and ESLint security plugins | Partial replacement | Keep advisory until external evidence measures false positives. |
 | Gitleaks | Gitleaks | Ecosystem-neutral | Reuse the existing secret scan without a TypeScript adapter. |
 | Radon/Xenon | ESLint complexity and SonarJS cognitive complexity | Partial replacement | Measure advisory facts before defining thresholds. |
@@ -64,17 +66,36 @@ Still missing before a promotion assessment:
 
 1. Phase 178: advisory package-manager and workspace detection is complete.
 2. Phase 179: Knip unused-code and dependency facts are complete.
-3. OSV dependency scanning is next. Package-manager audit facts follow.
-4. Dependency-cruiser architecture-boundary facts, followed by declared Nx
+3. Phase 180: OSV dependency facts are complete.
+4. Package-manager audit facts are the next parity slice.
+5. Dependency-cruiser architecture-boundary facts, followed by declared Nx
    boundary support.
-5. LCOV changed-line coverage facts.
-6. React hooks, JSX accessibility, and Testing Library recommendations.
-7. Explicit generated-file and framework policy evidence.
-8. StrykerJS mutation facts with a runtime-cost guard.
-9. TypeScript/React blocking-gate promotion assessment.
+6. LCOV changed-line coverage facts.
+7. React hooks, JSX accessibility, and Testing Library recommendations.
+8. Explicit generated-file and framework policy evidence.
+9. StrykerJS mutation facts with a runtime-cost guard.
+10. TypeScript/React blocking-gate promotion assessment.
 
 Assign later phase numbers when each slice has an approved design and
 implementation plan.
+
+## Phase 180 OSV Boundary
+
+Phase 180 reuses the existing global `osv-scanner` check. It does not add a
+TypeScript command, infer a package manager, or enable the manual gate by
+default. The shared OSV Scanner v2 parser emits one finding per alias group,
+retains fixed versions only from OSV range events, and sorts findings before a
+500-finding parser bound. Compact summaries use at most 50 total lines, while
+context packs retain the existing five facts per failed check.
+
+Valid repository-relative lockfile paths remain available as provenance.
+Absolute paths, parent traversal, and Windows drive paths are reduced to a safe
+filename label and never become a context target. Synthetic fixtures establish
+malformed-neighbor and path-rejection behavior. Bounded projections from pinned
+`vitest-dev/eslint-plugin-vitest` and
+`jsynowiec/node-typescript-boilerplate` revisions record pnpm and npm
+compatibility without making tests depend on the network or scanner binary.
+TypeScript/JavaScript remains experimental.
 
 ## Phase 179 Knip Boundary
 

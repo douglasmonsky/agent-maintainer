@@ -12,7 +12,7 @@ behind explicit configuration.
 | Ecosystem | Maturity | Current Support | Not Yet |
 |---|---|---|---|
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security and dependency checks, doctor support, repair facts, and starter templates. | External plugin API. |
-| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test/Knip commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, Istanbul/LCOV, and bounded Knip repair facts; format-aware doctor setup and repair-fact output guidance rows. Advisory package-manager and workspace evidence. | Starter files, coverage adapters, mutation testing, dependency security/audit adapters, and blocking reviewability gates. |
+| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test/Knip commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, Istanbul/LCOV, bounded Knip repair facts, and grouped OSV dependency facts through the ecosystem-neutral manual gate; format-aware doctor setup and repair-fact output guidance rows. Advisory package-manager and workspace evidence. | Starter files, coverage adapters, mutation testing, package-manager audit adapters, broader security adapters, and blocking reviewability gates. |
 | Java/Gradle | Experimental calibrated ratchets | Explicit checked-wrapper task groups; reviewed setup; Spotless/native SpotBugs ratchets; exact upward-only JaCoCo thresholds; truthful project coverage; bounded XML evidence; Java debt baselines; exact repair facts; live Linux/Windows Gradle fixtures; static doctor checks. | Maven, automatic aggregate coverage, broad Java-specific blocking reviewability, production-scale calibration, and stable-provider guarantees. |
 
 There is no active Go provider on `main`. Go remains archived historical work
@@ -29,9 +29,12 @@ keeps the provider experimental while evidence accumulates.
 Phase 178 package-manager and workspace evidence is advisory only. The setup
 assessment JSON preserves file-and-field provenance for recognized declarations,
 lockfiles, and workspace manifests, but never selects a manager, expands workspace globs,
-or creates a command. Phase 179 Knip unused-code and dependency facts are complete.
-Synthetic category coverage and pinned TanStack Query and Astro
-comparisons. OSV dependency scanning is the next parity slice;
+or creates a command. Phase 179 Knip unused-code and dependency facts are
+complete. Synthetic category coverage includes pinned TanStack Query and Astro
+comparisons. Phase 180 OSV dependency facts are complete. The existing global
+manual gate now yields bounded alias-grouped facts with safe lockfile
+provenance, backed by pinned npm and pnpm projections. The remaining roadmap
+says package-manager audit facts are the next parity slice;
 TypeScript/JavaScript remains experimental.
 
 Java/Gradle remains the second built-in experimental priority. Neither provider

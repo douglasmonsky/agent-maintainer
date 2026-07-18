@@ -174,6 +174,9 @@ Structured repair summaries prefer safe artifacts for Ruff, Pyright, Bandit,
 pytest/coverage, Semgrep, OSV Scanner, Gitleaks, and pip-audit. Secret scanner
 summaries intentionally omit raw secret values and point to run-scoped artifacts
 for details.
+OSV Scanner v2 artifacts produce one exact fact per alias group. Fix versions
+come only from OSV range events, valid relative lockfile paths remain available
+as provenance, and unsafe machine paths are reduced to filename labels.
 Managed agent-client hooks append local execution evidence to
 `.verify-logs/hooks.jsonl`, and `doctor` reports latest audited hook status.
 Hook install/update/status/uninstall behavior is routed through the shared
@@ -272,7 +275,7 @@ CycloneDX Python SBOM generation uses `cyclonedx-py` from `cyclonedx-bom`. It is
 
 License reporting and optional policy enforcement use `pip-licenses`. By default, `license_check_args = ["--from=mixed", "--format=json"]` generates `.verify-logs/licenses.json`. Add `--allow-only=...` or `--fail-on=...` to turn the same check into a blocking license policy once the repository has a real license policy. This repository enables the manual report but does not pretend a legal policy exists.
 
-OSV Scanner provides multi-ecosystem dependency CVE coverage. Configure `enable_osv_scanner = true`; the default manual check writes `.verify-logs/osv-scanner.json`. This repository enables OSV as a dogfooded manual gate alongside its Python-native `pip-audit` gate. Trivy is best reserved for repositories with Dockerfiles, container images, Kubernetes, Terraform, or other IaC assets. Configure `enable_trivy = true` for those repositories; the default manual check writes `.verify-logs/trivy.json`. Syft/Grype are better fits for broader deployable artifacts or container workflows. This repository still does not add Docker or IaC just to run Trivy.
+OSV Scanner provides multi-ecosystem dependency CVE coverage. Configure `enable_osv_scanner = true`; the default manual check writes `.verify-logs/osv-scanner.json`. Its v2 artifact produces bounded exact repair facts grouped by advisory aliases, with fixes from OSV range events and only safe relative lockfile paths retained as targetable provenance. Unsafe machine paths are reduced to filename labels. This repository enables OSV as a dogfooded manual gate alongside its Python-native `pip-audit` gate. Trivy is best reserved for repositories with Dockerfiles, container images, Kubernetes, Terraform, or other IaC assets. Configure `enable_trivy = true` for those repositories; the default manual check writes `.verify-logs/trivy.json`. Syft/Grype are better fits for broader deployable artifacts or container workflows. This repository still does not add Docker or IaC just to run Trivy.
 
 ## Docs Config Hygiene
 

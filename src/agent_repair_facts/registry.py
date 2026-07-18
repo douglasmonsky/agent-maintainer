@@ -9,12 +9,26 @@ from agent_repair_facts.parsers import (
     docsync,
     java,
     lint,
-    logs,
     osv_scanner,
     pytest,
     security,
-    typescript,
     typescript_checks,
+)
+from agent_repair_facts.parsers.logs import (
+    architecture_decision_facts,
+    change_budget_facts,
+    file_length_facts,
+    pylint_facts,
+    ruff_format_facts,
+    vulture_facts,
+    wemake_facts,
+    xenon_complexity_facts,
+)
+from agent_repair_facts.parsers.typescript import (
+    typescript_lint_facts,
+    typescript_test_artifact_facts,
+    typescript_test_facts,
+    typescript_typecheck_facts,
 )
 from agent_repair_facts.parsers.typescript_knip import knip_facts
 from agent_repair_facts.payloads import FactSource, MemoryFactSource
@@ -29,25 +43,25 @@ ARTIFACT_FACT_PARSERS: tuple[FactParserEntry, ...] = (
     ("pip-audit", security.pip_audit_facts),
     ("osv-scanner", osv_scanner.osv_facts),
     ("pytest-coverage", pytest.pytest_artifact_facts),
-    ("typescript-test", typescript.typescript_test_artifact_facts),
+    ("typescript-test", typescript_test_artifact_facts),
     ("docsync", docsync.docsync_report_facts),
     ("java-gradle-static", java.java_artifact_facts),
     ("java-gradle-tests", java.java_artifact_facts),
 )
 
 LOG_FACT_PARSERS: tuple[FactParserEntry, ...] = (
-    ("architecture-decision", logs.architecture_decision_facts),
-    ("file-length", logs.file_length_facts),
-    ("change-budget", logs.change_budget_facts),
-    ("ruff-format", logs.ruff_format_facts),
-    ("pylint", logs.pylint_facts),
-    ("typescript-lint", typescript.typescript_lint_facts),
-    ("typescript-typecheck", typescript.typescript_typecheck_facts),
-    ("typescript-test", typescript.typescript_test_facts),
+    ("architecture-decision", architecture_decision_facts),
+    ("file-length", file_length_facts),
+    ("change-budget", change_budget_facts),
+    ("ruff-format", ruff_format_facts),
+    ("pylint", pylint_facts),
+    ("typescript-lint", typescript_lint_facts),
+    ("typescript-typecheck", typescript_typecheck_facts),
+    ("typescript-test", typescript_test_facts),
     ("typescript-knip", knip_facts),
-    ("vulture", logs.vulture_facts),
-    ("wemake", logs.wemake_facts),
-    ("xenon-complexity-gate", logs.xenon_complexity_facts),
+    ("vulture", vulture_facts),
+    ("wemake", wemake_facts),
+    ("xenon-complexity-gate", xenon_complexity_facts),
 )
 
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import chain
 from pathlib import PurePosixPath, PureWindowsPath
 from typing import Final
 
@@ -87,12 +88,15 @@ def osv_facts(
 def format_osv_finding(finding: OsvFinding) -> str:
     """Return one concise, path-safe OSV finding line."""
 
-    base = f"{finding.ecosystem}/{finding.package} {finding.version}: {finding.advisory}"
+    package_name = "/".join((finding.ecosystem, finding.package))
+    base = f"{package_name} {finding.version}: {finding.advisory}"
     if finding.aliases:
-        base = f"{base} ({', '.join(finding.aliases)})"
+        aliases = ", ".join(finding.aliases)
+        base = f"{base} ({aliases})"
     details = [f"source: {finding.source_label}"]
     if finding.fixed_versions:
-        details.append(f"fix: {', '.join(finding.fixed_versions)}")
+        fixed_versions = ", ".join(finding.fixed_versions)
+        details.append(f"fix: {fixed_versions}")
     if finding.max_severity:
         details.append(f"severity: {finding.max_severity}")
     if finding.summary:
@@ -101,7 +105,10 @@ def format_osv_finding(finding: OsvFinding) -> str:
 
 
 def _result_findings(result: dict[str, object]) -> list[OsvFinding]:
-    source = _source_info(result.get("source"))
+    raw_source = payloads.json_object(result.get("source")) or {}
+    path, label = _safe_source_path(raw_source.get("path"))
+    source_type = _text(raw_source.get("type")) or "unknown"
+    source = _SourceInfo(path, label, source_type)
     findings: list[OsvFinding] = []
     for item in payloads.json_objects(result.get("packages")):
         findings.extend(_package_findings(source, item))
@@ -120,28 +127,23 @@ def _package_findings(
     if name is None or version is None:
         return []
     ecosystem = _text(package_info.get("ecosystem")) or "<unknown>"
-    vulnerabilities = tuple(payloads.json_objects(item.get("vulnerabilities")))
+    vulnerabilities = {
+        advisory: vulnerability
+        for vulnerability in payloads.json_objects(item.get("vulnerabilities"))
+        for advisory in (_text(vulnerability.get("id")),)
+        if advisory is not None
+    }
     package = _PackageInfo(
         source=source,
         ecosystem=ecosystem,
         name=name,
         version=version,
-        vulnerabilities=_vulnerabilities_by_id(vulnerabilities),
+        vulnerabilities=vulnerabilities,
     )
     return _grouped_and_fallback_findings(
         package,
         item.get("groups"),
     )
-
-
-def _vulnerabilities_by_id(
-    vulnerabilities: tuple[dict[str, object], ...],
-) -> dict[str, dict[str, object]]:
-    return {
-        advisory: vulnerability
-        for vulnerability in vulnerabilities
-        if (advisory := _text(vulnerability.get("id"))) is not None
-    }
 
 
 def _grouped_and_fallback_findings(
@@ -229,30 +231,35 @@ def _fallback_finding(
 def _fixed_versions(
     vulnerabilities: tuple[dict[str, object], ...],
 ) -> tuple[str, ...]:
-    fixes: set[str] = set()
-    for vulnerability in vulnerabilities:
-        for affected in payloads.json_objects(vulnerability.get("affected")):
-            for value_range in payloads.json_objects(affected.get("ranges")):
-                for event in payloads.json_objects(value_range.get("events")):
-                    if fixed := _text(event.get("fixed")):
-                        fixes.add(fixed)
-    return tuple(sorted(fixes))
+    events = chain.from_iterable(_fixed_events(vulnerability) for vulnerability in vulnerabilities)
+    fixes = {_text(event.get("fixed")) for event in events}
+    return tuple(sorted(fixed for fixed in fixes if fixed is not None))
+
+
+def _fixed_events(vulnerability: dict[str, object]) -> tuple[dict[str, object], ...]:
+    ranges = chain.from_iterable(
+        payloads.json_objects(affected.get("ranges"))
+        for affected in payloads.json_objects(vulnerability.get("affected"))
+    )
+    return tuple(
+        chain.from_iterable(
+            payloads.json_objects(value_range.get("events")) for value_range in ranges
+        ),
+    )
 
 
 def _summary(vulnerability: dict[str, object] | None) -> str | None:
-    if vulnerability is None or (raw := _text(vulnerability.get("summary"))) is None:
+    if vulnerability is None:
+        return None
+    raw = _text(vulnerability.get("summary"))
+    if raw is None:
         return None
     text = " ".join(raw.split())
     if len(text) <= OSV_SUMMARY_CHAR_LIMIT:
         return text
-    return f"{text[: OSV_SUMMARY_CHAR_LIMIT - 3].rstrip()}..."
-
-
-def _source_info(value: object) -> _SourceInfo:
-    source = payloads.json_object(value) or {}
-    path, label = _safe_source_path(source.get("path"))
-    source_type = _text(source.get("type")) or "unknown"
-    return _SourceInfo(path, label, source_type)
+    prefix = text[: OSV_SUMMARY_CHAR_LIMIT - 3].rstrip()
+    ellipsis = "..."
+    return f"{prefix}{ellipsis}"
 
 
 def _safe_source_path(value: object) -> tuple[str | None, str]:
@@ -262,12 +269,14 @@ def _safe_source_path(value: object) -> tuple[str | None, str]:
     windows_path = PureWindowsPath(text)
     posix_path = PurePosixPath(text.replace("\\", "/"))
     filename = windows_path.name or posix_path.name or "<unknown source>"
-    unsafe = (
-        posix_path.is_absolute()
-        or windows_path.is_absolute()
-        or bool(windows_path.drive)
-        or ".." in posix_path.parts
-        or posix_path.as_posix() == "."
+    unsafe = any(
+        (
+            posix_path.is_absolute(),
+            windows_path.is_absolute(),
+            bool(windows_path.drive),
+            ".." in posix_path.parts,
+            posix_path.as_posix() == ".",
+        ),
     )
     if unsafe:
         return (None, filename)
@@ -284,7 +293,8 @@ def _text(value: object) -> str | None:
 
 def _text_values(value: object) -> tuple[str, ...]:
     values = payloads.json_array(value) or []
-    return tuple(text for item in values if (text := _text(item)) is not None)
+    texts = (_text(item) for item in values)
+    return tuple(text for text in texts if text is not None)
 
 
 def _finding_sort_key(finding: OsvFinding) -> tuple[str, str, str, str, str]:
