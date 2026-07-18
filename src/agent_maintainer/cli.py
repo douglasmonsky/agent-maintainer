@@ -38,6 +38,7 @@ Stable workflows:
   install         Install local hooks for this repository.
   skill           Install the setup skill for personal agent clients.
   verify          Run configured verification profiles.
+  verify-plan     Plan exact evidence and gates required by the current diff.
   wait            Quiet polling is stable; terminal rewake is experimental.
 
 Repair and inspection:
@@ -68,6 +69,7 @@ Examples:
   python -m agent_maintainer assess file-baselines
   python -m agent_maintainer verify --profile precommit
   python -m agent_maintainer verify --profile full
+  python -m agent_maintainer verify-plan --base-ref origin/main
   python -m agent_maintainer context failures
   python -m agent_maintainer context log pyright --tail 120
   python -m agent_maintainer guidance --check
@@ -142,6 +144,7 @@ def command_handlers() -> dict[str, CommandRunner]:
         "test-intel": test_intel_command,
         "wait": wait_command,
         "verify": verify_main,
+        "verify-plan": verify_plan_command,
     }
 
 
@@ -229,6 +232,12 @@ def test_intel_command(command_args: list[str]) -> int:
 def wait_command(command_args: list[str]) -> int:
     """Run quiet wait command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.wait.cli", command_args)
+
+
+@preflight.ValidatedCommand
+def verify_plan_command(command_args: list[str]) -> int:
+    """Run verification planning lazily to keep entrypoint light."""
+    return _run_module_main("agent_maintainer.verification_plan.cli", command_args)
 
 
 def _run_module_main(module_name: str, command_args: list[str]) -> int:

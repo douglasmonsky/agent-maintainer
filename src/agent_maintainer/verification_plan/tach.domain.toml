@@ -49,3 +49,12 @@ depends_on = [
 [[modules]]
 path = "reporting"
 depends_on = ["models"]
+
+[[modules]]
+path = "cli"
+depends_on = [
+  "//agent_maintainer.config.issues",
+  "planner",
+  "policy",
+  "reporting",
+]

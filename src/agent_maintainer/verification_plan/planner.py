@@ -23,7 +23,11 @@ from agent_maintainer.verification_plan.models import (
     RequirementResult,
     VerificationPlanReport,
 )
-from agent_maintainer.verification_plan.policy import load_policy, validate_catalog_names
+from agent_maintainer.verification_plan.policy import (
+    PolicyError,
+    load_policy,
+    validate_catalog_names,
+)
 from agent_maintainer.verification_plan.units import (
     UnitResolutionInputs,
     resolve_affected_units,
@@ -95,7 +99,7 @@ def build_verification_plan(
             policy=policy,
             policy_path=policy_path,
             catalog_profiles=check_models.VALID_PROFILES,
-            catalog_checks=tuple(check.name for check in configured_checks),
+            catalog_checks=_configured_check_names(configured_checks),
         ),
     )
 
@@ -240,6 +244,23 @@ def _change_kind(value: str) -> ChangeKind:
         return ChangeKind(value)
     except ValueError:
         return ChangeKind.UNKNOWN
+
+
+def _configured_check_names(
+    checks: Sequence[check_models.Check],
+) -> tuple[str, ...]:
+    """Collapse disjoint profile variants while rejecting ambiguous duplicates."""
+    profiles_by_name: dict[str, set[str]] = {}
+    for check in checks:
+        configured_profiles = profiles_by_name.setdefault(check.name, set())
+        overlap = configured_profiles.intersection(check.profiles)
+        if overlap:
+            profile = sorted(overlap)[0]
+            raise PolicyError(
+                f"duplicate configured check {check.name!r} for profile {profile!r}",
+            )
+        configured_profiles.update(check.profiles)
+    return tuple(sorted(profiles_by_name))
 
 
 def _union(groups: Iterable[tuple[str, ...]]) -> tuple[str, ...]:
