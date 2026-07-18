@@ -1,0 +1,37 @@
+# Tach domain contract for agent_maintainer.contracts.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "baseline"
+depends_on = [
+  "//agent_maintainer.core.repo_paths",
+  "limits",
+  "models",
+  "paths",
+]
+
+[[modules]]
+path = "limits"
+depends_on = []
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "paths"
+depends_on = [
+  "//agent_maintainer.core.repo_paths",
+  "limits",
+  "models",
+]
+
+[[modules]]
+path = "policy"
+depends_on = [
+  "//agent_maintainer.core.repo_paths",
+  "models",
+  "paths",
+]
