@@ -1,0 +1,70 @@
++++
+id = "release-0.1.0b8-publication-evidence"
+kind = "release"
+status = "active"
+base_ref = "6236980"
+expires = 2026-07-25
+allowed_paths = [
+  ".agent-maintainer/change-plans/**",
+  ".docsync/**",
+  "CHANGELOG.md",
+  "README.md",
+  "docs/ROADMAP.md",
+  "docs/releases/**",
+  "docs/upgrading-to-0.1.0b8.md",
+  "docs/upgrading-to-0.1.0b9.md",
+  "pyproject.toml",
+  "tests/packaging/test_package_metadata.py",
+  "tests/release/test_distribution_bundle.py",
+]
+forbidden_paths = ["config/prod/**", ".env", ".env.*"]
+max_changed_files = 25
+max_changed_lines = 1000
+allow_source_without_test_change = false
+requires_tests = true
+requires_full_verify = true
+ratchet_targets = []
++++
+# Cohesive Change Plan: release-0.1.0b8-publication-evidence
+
+## Why this change intentionally large
+
+Recording a published beta touches the package version, immutable artifact
+evidence, public latest-version pointers, upgrade guidance, roadmap state,
+DocSync claims, release-state fixtures, and the next truthful candidate record.
+
+## Why this should not be split smaller
+
+The repository release contract requires the published evidence and next
+candidate state to agree in one reviewed branch. Splitting them would leave
+either false public publication claims or a published version as the active
+development candidate, both of which the release-state checks reject.
+
+## What allowed to change
+
+Only release evidence and public release pointers, the b8 and b9 adoption
+records, package version metadata, directly coupled release fixtures, DocSync
+traceability records, and this change plan may change.
+
+## What must not change
+
+Do not alter runtime behavior, dependencies, publishing workflows, package
+artifacts, the immutable b8 tag, release assets, or package-index state. Do not
+claim b9 features or publication evidence that do not exist.
+
+## Verification plan
+
+Validate focused release state, package metadata, distribution bundles,
+DocSync, release-only clean-environment packaging, and a fresh full verifier.
+Then require every protected PR check before merging the evidence update.
+
+## Rollback plan
+
+Revert only the evidence and next-candidate commit if its documentation is
+incorrect. The already published b8 artifacts and immutable tag remain intact;
+correct publication records forward rather than rewriting package history.
+
+## Follow-up ratchet work
+
+Mark this plan complete immediately after the protected evidence PR merges.
+Keep b9 intent-only until its roadmap scope is implemented and verified.

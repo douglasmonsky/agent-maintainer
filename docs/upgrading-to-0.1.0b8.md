@@ -1,9 +1,8 @@
 <!-- docsync:object docs.upgrade_0_1_0b8.overview -->
 # Upgrading from 0.1.0b7 to 0.1.0b8
 
-`0.1.0b8` is currently unpublished. Use this guide only to evaluate a trusted
-candidate checkout or locally built distribution; keep `0.1.0b7` pinned for
-normal package-index installation until the release index moves.
+`0.1.0b8` is published on PyPI. Use this guide to review the experimental Java
+and TypeScript additions before adopting them in an existing repository.
 
 ## Before You Start
 
@@ -15,10 +14,10 @@ normal package-index installation until the release index moves.
    python -m pip install "agent-maintainer[core]==0.1.0b7"
    ```
 
-4. Install the candidate from a trusted clean checkout:
+4. Install the published release:
 
    ```bash
-   python -m pip install -e ".[core]"
+   python -m pip install --upgrade "agent-maintainer[core]==0.1.0b8"
    agent-maintainer doctor
    ```
 
@@ -60,7 +59,7 @@ checked-in Gradle wrapper and must not create a system-Gradle fallback.
   architecture, dependency-audit, and coverage policy until the advisory
   output has been calibrated for the repository.
 
-## Complete The Evaluation
+## Complete The Upgrade
 
 Run the profiles appropriate to the repository and inspect the final diff:
 
@@ -78,7 +77,7 @@ required.
 
 ## Rollback
 
-If candidate behavior is unsuitable, restore the preserved repository state
+If the new behavior is unsuitable, restore the preserved repository state
 and reinstall the published beta:
 
 ```bash

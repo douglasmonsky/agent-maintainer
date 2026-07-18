@@ -1,11 +1,17 @@
 # Changelog
 
-## Unreleased (target: 0.1.0b8)
+## Unreleased (target: 0.1.0b9)
 
-`0.1.0b8` is an unpublished release candidate. `0.1.0b7` remains the latest
-published package, with published 0.1.0b7 release evidence authoritative until
+`0.1.0b9` is an unpublished release candidate. `0.1.0b8` remains the latest
+published package, with published 0.1.0b8 release evidence authoritative until
 this candidate passes the complete exact-commit release matrix and package-index
 smokes.
+
+- No user-facing changes are recorded yet.
+
+## 0.1.0b8 - 2026-07-18
+
+Eighth beta release of Agent Maintainer.
 
 - Added an experimental Java/Gradle provider that requires a checked-in wrapper,
   groups static analysis and test execution into two bounded wrapper calls, and
