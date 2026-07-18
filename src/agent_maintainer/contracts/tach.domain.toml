@@ -50,6 +50,7 @@ path = "extraction"
 depends_on = [
   "extractors.cli_manifest",
   "extractors.config_capabilities",
+  "extractors.json_schema",
   "extractors.python_api",
   "models",
   "normalization",
@@ -69,6 +70,15 @@ depends_on = [
 [[modules]]
 path = "extractors.config_capabilities"
 depends_on = [
+  "limits",
+  "models",
+  "normalization",
+]
+
+[[modules]]
+path = "extractors.json_schema"
+depends_on = [
+  "baseline",
   "limits",
   "models",
   "normalization",

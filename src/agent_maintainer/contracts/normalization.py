@@ -69,7 +69,8 @@ def exact_keys(
     """Reject unknown and required-missing keys with bounded messages."""
 
     unknown = sorted(set(raw) - allowed)
-    missing = sorted((required or allowed) - set(raw))
+    required_keys = allowed if required is None else required
+    missing = sorted(required_keys - set(raw))
     if unknown:
         raise ExtractionError(f"unknown {label} key: {unknown[0]}")
     if missing:

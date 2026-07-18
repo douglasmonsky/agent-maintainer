@@ -53,6 +53,13 @@ evaluating defaults, renders only a strict annotation-node allowlist, and
 retains only bounded JSON literal constants. Module bodies, decorators, imports,
 and target runtime objects are never executed or used for discovery.
 
+JSON Schema extraction retains only the bounded structural subset needed for
+compatibility checks. It resolves local `#/$defs/<escaped-name>` references,
+rejects remote or file references and malformed or cyclic graphs, and records
+exact JSON Pointer paths for known composition keywords whose semantics are not
+proved. Those paths remain review-required evidence rather than being guessed
+into merged schemas.
+
 ## Consequences
 
 Every contract operation uses one repository-confinement and canonical
