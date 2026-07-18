@@ -153,7 +153,10 @@ depends_on = ["structured_values"]
 
 [[modules]]
 path = "structured_security"
-depends_on = ["structured_values"]
+depends_on = [
+  "structured_values",
+  "//agent_repair_facts.parsers.osv_scanner",
+]
 
 [[modules]]
 path = "structured_values"
