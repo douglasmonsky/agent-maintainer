@@ -52,7 +52,7 @@ allowed_paths = [
   "tests/wait/test_codex_app_server.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 96
+max_changed_files = 102
 max_changed_lines = 16000
 allow_source_without_test_change = false
 requires_tests = true
@@ -78,7 +78,10 @@ not unrelated feature breadth.
 Independent review added fail-closed staged-index extraction, snapshot-bypass,
 positional-order, unsupported-schema-payload, and deep-baseline regressions. The
 review repairs and their candidate documentation remain inside this same Phase
-184 boundary and account for the final bounded increase.
+184 boundary and account for the final bounded increase. Six individually
+generated DocSync attestations and three focused source/test files bring the
+reviewed branch total to exactly 102 files; the limit records that measured
+scope without adding headroom for adjacent work.
 
 ## Why this should not be split smaller
 
