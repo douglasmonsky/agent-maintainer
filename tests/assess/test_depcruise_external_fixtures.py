@@ -58,8 +58,9 @@ def _assert_command_metadata(fixture: dict[str, object]) -> None:
 
     command = fixture["command"]
     assert isinstance(command, list)
-    assert command[-3:-1] == ["--output-type", "json"]
-    assert str(command[-1]).endswith("/**/*.ts")
+    command_items = cast(list[object], command)
+    assert command_items[-3:-1] == ["--output-type", "json"]
+    assert str(command_items[-1]).endswith("/**/*.ts")
 
 
 def _assert_count_metadata(fixture: dict[str, object]) -> None:
