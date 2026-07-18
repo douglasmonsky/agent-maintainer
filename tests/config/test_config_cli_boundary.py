@@ -110,7 +110,28 @@ def test_repository_root_handlers_have_config_preflight() -> None:
     assert all(handler.original_handler() for handler in validated.values())
 
 
-def fake_handlers(calls: list[list[str]]) -> dict[str, cli.CommandRunner]:
+def test_target_aware_preflight_ignores_invalid_current_directory_config(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    current = tmp_path / "current"
+    current.mkdir()
+    (current / "pyproject.toml").write_text(
+        "[tool.agent_maintainer]\nunknown = true\n",
+        encoding="utf-8",
+    )
+    target = tmp_path / "target"
+    target.mkdir()
+    monkeypatch.chdir(current)
+    command = preflight.ValidatedCommand(
+        lambda _arguments: SUCCESS_STATUS,
+        config_root_option="--target",
+    )
+
+    assert command(["--target", str(target)]) == SUCCESS_STATUS
+
+
+def fake_handlers(calls: list[list[str]]) -> dict[str, preflight.CommandRunner]:
     """Return one observable command handler."""
 
     return {

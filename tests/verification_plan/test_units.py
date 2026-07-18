@@ -99,6 +99,38 @@ def test_typescript_workspace_requires_manifest_and_prefers_nested_root(
     assert any("packages/missing" in advisory for advisory in advisories)
 
 
+def test_typescript_workspace_rejects_external_manifest_symlink(tmp_path: Path) -> None:
+    external = tmp_path.parent / "external-package.json"
+    external.write_text('{"name": "external"}\n', encoding="utf-8")
+    workspace = tmp_path / "packages/web"
+    workspace.mkdir(parents=True)
+    (workspace / "package.json").symlink_to(external)
+
+    units, advisories = resolve_affected_units(
+        tmp_path,
+        changes=(GitPathChange("packages/web/src/app.ts", "modified"),),
+        inputs=UnitResolutionInputs(
+            config=MaintainerConfig(),
+            classifications=(_classification("packages/web/src/app.ts", "typescript"),),
+            package_workspace=PackageWorkspaceEvidence(
+                workspace_declarations=(
+                    WorkspaceDeclaration(
+                        kind="package-json",
+                        name="workspaces",
+                        source_path="package.json",
+                        source_field="workspaces",
+                        patterns=("packages/*",),
+                    ),
+                ),
+            ),
+            java_module_paths=(),
+        ),
+    )
+
+    assert units[0].kind == "repository"
+    assert any("manifest" in advisory and "outside" in advisory for advisory in advisories)
+
+
 def test_java_module_and_unclassified_paths_use_safe_units(tmp_path: Path) -> None:
     changes = (
         GitPathChange("services/api/src/main/java/App.java", "modified"),
@@ -110,9 +142,7 @@ def test_java_module_and_unclassified_paths_use_safe_units(tmp_path: Path) -> No
         changes=changes,
         inputs=UnitResolutionInputs(
             config=MaintainerConfig(),
-            classifications=(
-                _classification("services/api/src/main/java/App.java", "java"),
-            ),
+            classifications=(_classification("services/api/src/main/java/App.java", "java"),),
             package_workspace=PackageWorkspaceEvidence(),
             java_module_paths=("services/api",),
         ),

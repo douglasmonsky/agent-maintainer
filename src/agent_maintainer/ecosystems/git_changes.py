@@ -12,14 +12,14 @@ from agent_maintainer.core.repo_paths import RepoPathError, validate_repo_path
 
 NUMSTAT_FIELD_COUNT = 3
 GIT_SHA = re.compile(r"^[0-9a-f]{40,64}$")
-SINGLE_PATH_STATUSES = {
-    "A": "added",
-    "D": "deleted",
-    "M": "modified",
-    "T": "type-changed",
-    "U": "unmerged",
-}
-PAIR_PATH_STATUSES = {"C": "copied", "R": "renamed"}
+SINGLE_PATH_STATUSES = (
+    ("A", "added"),
+    ("D", "deleted"),
+    ("M", "modified"),
+    ("T", "type-changed"),
+    ("U", "unmerged"),
+)
+PAIR_PATH_STATUSES = (("C", "copied"), ("R", "renamed"))
 
 
 @dataclass(frozen=True)
@@ -46,7 +46,9 @@ class GitPathChange:
 
     def affected_paths(self) -> tuple[str, ...]:
         """Return every source or destination path affected by the change."""
-        return (self.old_path, self.path) if self.old_path is not None else (self.path,)
+        if self.old_path is None:
+            return (self.path,)
+        return (self.old_path, self.path)
 
     def evidence_paths(self) -> tuple[str, ...]:
         """Return paths present after the change that may satisfy evidence."""
@@ -114,28 +116,15 @@ def run_git_name_status(
 ) -> tuple[GitPathChange, ...]:
     """Read structured Git path changes without option-shaped ref ambiguity."""
     base_sha = "" if staged else _resolve_base_sha(base_ref, cwd=cwd)
+    command = git_name_status_command(base_sha, staged=staged)
     try:
-        command = git_name_status_command(base_sha, staged=staged)
-        if cwd is None:
-            result = subprocess.run(  # nosec B603
-                command,
-                text=False,
-                capture_output=True,
-                check=True,
-            )
-        else:
-            result = subprocess.run(  # nosec B603
-                command,
-                text=False,
-                capture_output=True,
-                check=True,
-                cwd=cwd,
-            )
-        return parse_name_status_z(result.stdout)
+        result = _run_bytes_command(command, cwd=cwd)
     except subprocess.CalledProcessError as exc:
         stderr = _stderr_text(exc.stderr)
         target = diff_target_label(base_ref, staged=staged)
         raise RuntimeError(f"Could not calculate path changes for {target}: {stderr}") from exc
+    try:
+        return parse_name_status_z(result.stdout)
     except (UnicodeError, ValueError) as exc:
         target = diff_target_label(base_ref, staged=staged)
         raise RuntimeError(f"Invalid Git path changes for {target}: {exc}") from exc
@@ -154,22 +143,42 @@ def parse_name_status_z(output: bytes) -> tuple[GitPathChange, ...]:
         status = _decode_status(tokens[index])
         index += 1
         status_code = status[0]
-        if status_code in PAIR_PATH_STATUSES:
-            if not status[1:].isdigit() or index + 1 >= len(tokens):
-                raise ValueError(f"invalid paired name-status record: {status!r}")
-            old_path = _decode_git_path(tokens[index])
-            path = _decode_git_path(tokens[index + 1])
-            index += 2
-            changes.append(
-                GitPathChange(path, PAIR_PATH_STATUSES[status_code], old_path=old_path),
-            )
+        pair_kind = _status_kind(PAIR_PATH_STATUSES, status_code)
+        if pair_kind is not None:
+            change, index = _paired_change(tokens, index, status, pair_kind)
+            changes.append(change)
             continue
-        if status not in SINGLE_PATH_STATUSES or index >= len(tokens):
-            raise ValueError(f"invalid name-status record: {status!r}")
-        path = _decode_git_path(tokens[index])
-        index += 1
-        changes.append(GitPathChange(path, SINGLE_PATH_STATUSES[status]))
+        change, index = _single_change(tokens, index, status)
+        changes.append(change)
     return tuple(changes)
+
+
+def _paired_change(
+    tokens: list[bytes],
+    index: int,
+    status: str,
+    kind: str,
+) -> tuple[GitPathChange, int]:
+    if not status[1:].isdigit() or index + 1 >= len(tokens):
+        raise ValueError(f"invalid paired name-status record: {status!r}")
+    old_path = _decode_git_path(tokens[index])
+    path = _decode_git_path(tokens[index + 1])
+    return GitPathChange(path, kind, old_path=old_path), index + 2
+
+
+def _single_change(
+    tokens: list[bytes],
+    index: int,
+    status: str,
+) -> tuple[GitPathChange, int]:
+    kind = _status_kind(SINGLE_PATH_STATUSES, status)
+    if kind is None or index >= len(tokens):
+        raise ValueError(f"invalid name-status record: {status!r}")
+    return GitPathChange(_decode_git_path(tokens[index]), kind), index + 1
+
+
+def _status_kind(statuses: tuple[tuple[str, str], ...], status: str) -> str | None:
+    return next((kind for code, kind in statuses if code == status), None)
 
 
 def parse_numstat_line(line: str) -> FileChange | None:
@@ -200,21 +209,7 @@ def _resolve_base_sha(base_ref: str, *, cwd: Path | None = None) -> str:
         f"{base_ref}^{{commit}}",
     ]
     try:
-        if cwd is None:
-            result = subprocess.run(  # nosec B603
-                command,
-                text=True,
-                capture_output=True,
-                check=True,
-            )
-        else:
-            result = subprocess.run(  # nosec B603
-                command,
-                text=True,
-                capture_output=True,
-                check=True,
-                cwd=cwd,
-            )
+        result = _run_text_command(command, cwd=cwd)
     except subprocess.CalledProcessError as exc:
         stderr = _stderr_text(exc.stderr)
         raise RuntimeError(f"Could not resolve base ref {base_ref!r}: {stderr}") from exc
@@ -234,9 +229,54 @@ def _decode_status(value: bytes) -> str:
 def _decode_git_path(value: bytes) -> str:
     try:
         path = value.decode("utf-8")
-        return validate_repo_path(path, label="Git path")
-    except (UnicodeDecodeError, RepoPathError) as exc:
+    except UnicodeDecodeError as exc:
         raise ValueError(str(exc)) from exc
+    try:
+        return validate_repo_path(path, label="Git path")
+    except RepoPathError as exc:
+        raise ValueError(str(exc)) from exc
+
+
+def _run_bytes_command(
+    command: list[str],
+    *,
+    cwd: Path | None,
+) -> subprocess.CompletedProcess[bytes]:
+    if cwd is None:
+        return subprocess.run(  # nosec B603
+            command,
+            text=False,
+            capture_output=True,
+            check=True,
+        )
+    return subprocess.run(  # nosec B603
+        command,
+        text=False,
+        capture_output=True,
+        check=True,
+        cwd=cwd,
+    )
+
+
+def _run_text_command(
+    command: list[str],
+    *,
+    cwd: Path | None,
+) -> subprocess.CompletedProcess[str]:
+    if cwd is None:
+        return subprocess.run(  # nosec B603
+            command,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+    return subprocess.run(  # nosec B603
+        command,
+        text=True,
+        capture_output=True,
+        check=True,
+        cwd=cwd,
+    )
 
 
 def _stderr_text(stderr: str | bytes | None) -> str:

@@ -6,7 +6,7 @@ import re
 import tomllib
 from collections.abc import Collection, Mapping
 from pathlib import Path
-from typing import Any
+from typing import cast
 
 from agent_maintainer.verification_plan.matching import (
     PathPatternError,
@@ -80,14 +80,16 @@ def validate_catalog_names(
             )
 
 
-def _decode_policy(path: Path, raw: Mapping[str, Any]) -> PathRiskPolicy:
+def _decode_policy(path: Path, raw: Mapping[str, object]) -> PathRiskPolicy:
     _reject_unknown(raw, TOP_LEVEL_KEYS, label="top-level")
     version = raw.get("version")
-    if type(version) is not int or version != POLICY_SCHEMA_VERSION:
+    if (
+        not isinstance(version, int)
+        or isinstance(version, bool)
+        or version != POLICY_SCHEMA_VERSION
+    ):
         raise PolicyError(f"version must be exactly {POLICY_SCHEMA_VERSION}")
-    raw_rules = raw.get("rules", [])
-    if not isinstance(raw_rules, list):
-        raise PolicyError("rules must be an array of tables")
+    raw_rules = _object_list(raw.get("rules", []), label="rules")
     rules = tuple(_decode_rule(value, index) for index, value in enumerate(raw_rules))
     duplicate_rules = _duplicates(tuple(rule.id for rule in rules))
     if duplicate_rules:
@@ -104,9 +106,10 @@ def _decode_rule(value: object, index: int) -> PathRiskRule:
     mode = raw.get("mode", "advisory")
     if not isinstance(mode, str) or mode not in VALID_MODES:
         raise PolicyError(f"{label}.mode must be advisory or required")
-    evidence_values = raw.get("evidence", [])
-    if not isinstance(evidence_values, list):
-        raise PolicyError(f"{label}.evidence must be an array of tables")
+    evidence_values = _object_list(
+        raw.get("evidence", []),
+        label=f"{label}.evidence",
+    )
     evidence = tuple(
         _decode_evidence(item, rule_index=index, evidence_index=evidence_index)
         for evidence_index, item in enumerate(evidence_values)
@@ -144,11 +147,11 @@ def _decode_evidence(
     if kind != CHANGED_PATH_KIND:
         raise PolicyError(f"{label}.kind must be {CHANGED_PATH_KIND!r}")
     minimum = raw.get("minimum", 1)
-    if type(minimum) is not int or minimum < 1:
+    if not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 1:
         raise PolicyError(f"{label}.minimum must be a positive integer")
     return EvidenceRequirement(
         id=_identifier(raw.get("id"), label=f"{label}.id"),
-        kind=kind,
+        kind=CHANGED_PATH_KIND,
         paths=_patterns(raw.get("paths"), label=f"{label}.paths"),
         minimum=minimum,
         message=_optional_text(raw.get("message"), label=f"{label}.message"),
@@ -177,17 +180,19 @@ def _text_tuple(
     label: str,
     required: bool = False,
 ) -> tuple[str, ...]:
-    if not isinstance(value, list):
-        raise PolicyError(f"{label} must be an array of text")
-    if required and not value:
+    raw_values = _object_list(value, label=label, item_kind="text")
+    if required and not raw_values:
         raise PolicyError(f"{label} must not be empty")
-    if any(not isinstance(item, str) or not item for item in value):
-        raise PolicyError(f"{label} must contain non-empty text")
-    values = tuple(value)
-    duplicates = _duplicates(values)
+    values: list[str] = []
+    for item in raw_values:
+        if not isinstance(item, str) or not item:
+            raise PolicyError(f"{label} must contain non-empty text")
+        values.append(item)
+    result = tuple(values)
+    duplicates = _duplicates(result)
     if duplicates:
         raise PolicyError(f"{label} contains duplicate value: {duplicates[0]}")
-    return values
+    return result
 
 
 def _identifier(value: object, *, label: str) -> str:
@@ -204,14 +209,25 @@ def _optional_text(value: object, *, label: str) -> str:
     return value
 
 
-def _table(value: object, *, label: str) -> Mapping[str, Any]:
+def _table(value: object, *, label: str) -> Mapping[str, object]:
     if not isinstance(value, dict):
         raise PolicyError(f"{label} must be a table")
-    return value
+    return cast(Mapping[str, object], value)
+
+
+def _object_list(
+    value: object,
+    *,
+    label: str,
+    item_kind: str = "tables",
+) -> list[object]:
+    if not isinstance(value, list):
+        raise PolicyError(f"{label} must be an array of {item_kind}")
+    return cast(list[object], value)
 
 
 def _reject_unknown(
-    raw: Mapping[str, Any],
+    raw: Mapping[str, object],
     allowed: frozenset[str],
     *,
     label: str,
@@ -229,4 +245,6 @@ def _duplicates(values: tuple[str, ...]) -> tuple[str, ...]:
             duplicates.add(value)
         seen.add(value)
     return tuple(sorted(duplicates))
+
+
 # docsync:evidence.end evidence.readme.path_risk_policy

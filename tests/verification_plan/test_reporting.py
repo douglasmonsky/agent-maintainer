@@ -73,6 +73,41 @@ def test_text_ends_ready_when_no_blockers() -> None:
     assert render_text(report).endswith("Ready:\n- No blocking findings.\n")
 
 
+def test_text_escapes_control_characters_in_git_paths() -> None:
+    report = VerificationPlanReport(
+        target="/repo",
+        base_ref="main",
+        staged=False,
+        policy_path="policy.toml",
+        policy_configured=True,
+        changes=(PlannedChange(path="docs/ok.md\nReady:\n- forged", kind="added"),),
+    )
+
+    rendered = render_text(report)
+
+    assert "docs/ok.md\\nReady:\\n- forged" in rendered
+    assert rendered.count("\nReady:") == 1
+    assert "\n- forged" not in rendered
+
+
+def test_text_caps_nested_affected_unit_paths() -> None:
+    paths = tuple(f"src/file-{index:04d}.py" for index in range(250))
+    report = VerificationPlanReport(
+        target="/repo",
+        base_ref="main",
+        staged=False,
+        policy_path="policy.toml",
+        policy_configured=True,
+        affected_units=(AffectedUnit("python-package", "app", "src", paths),),
+    )
+
+    rendered = render_text(report)
+
+    assert "src/file-0099.py" in rendered
+    assert "src/file-0100.py" not in rendered
+    assert "150 more paths" in rendered
+
+
 def _report() -> VerificationPlanReport:
     return VerificationPlanReport(
         target="/repo",
@@ -95,9 +130,7 @@ def _report() -> VerificationPlanReport:
                 ),
             ),
         ),
-        affected_units=(
-            AffectedUnit("python-package", "app", "src", ("src/new.py",)),
-        ),
+        affected_units=(AffectedUnit("python-package", "app", "src", ("src/new.py",)),),
         matched_rules=("architecture",),
         selected_profiles=("precommit",),
         selected_checks=("tach",),
@@ -115,9 +148,7 @@ def _report() -> VerificationPlanReport:
                 message="Add an ADR.",
             ),
         ),
-        recommended_commands=(
-            "python -m agent_maintainer verify --profile precommit",
-        ),
+        recommended_commands=("python -m agent_maintainer verify --profile precommit",),
         advisories=("review ownership",),
         blocking_findings=("architecture/adr: Add an ADR.",),
     )

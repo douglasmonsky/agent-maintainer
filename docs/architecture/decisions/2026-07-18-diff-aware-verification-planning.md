@@ -52,6 +52,13 @@ diff. Required missing evidence blocks only under explicit enforcement;
 advisory policy remains informative.
 
 TypeScript workspace expansion is literal, repository-confined, and capped.
+Workspace manifests are independently resolved and must remain inside the
+repository even when the workspace directory itself is safe. Human-readable
+output escapes control characters and caps nested changed-path lists; policy
+matching uses bounded iterative state rather than recursive glob evaluation.
+The root command validates configuration relative to an explicit `--target`
+instead of an unrelated current directory.
+
 Java ownership remains conservative and source-derived; the planner does not
 interpret executable Gradle settings DSL. Unknown or ambiguous ownership falls
 back to a repository unit with an advisory.

@@ -27,6 +27,7 @@
 ### Task 1: Establish The Cohesive Change And Safe Policy Primitives
 
 **Files:**
+
 - Create: `.agent-maintainer/change-plans/diff-aware-verification-path-risk.md`
 - Create: `src/agent_maintainer/core/repo_paths.py`
 - Modify: `src/agent_maintainer/core/tach.domain.toml`
@@ -39,6 +40,7 @@
 - Modify: `docs/superpowers/specs/2026-07-18-diff-aware-verification-path-risk-design.md`
 
 **Interfaces:**
+
 - Produces: `EvidenceRequirement`, `PathRiskRule`, `PathRiskPolicy`, `AffectedUnit`, `RequirementResult`, `VerificationPlanReport` frozen dataclasses.
 - Produces from `core.repo_paths`: `validate_repo_path(value: str, *, label: str) -> str` and `RepoPathError(ValueError)`.
 - Produces from `matching`: `validate_repo_pattern(value: str, *, label: str) -> str`.
@@ -150,10 +152,12 @@ git commit -m "feat: add verification policy primitives"
 ### Task 2: Add A Rename-Aware Neutral Git Change Reader
 
 **Files:**
+
 - Modify: `src/agent_maintainer/ecosystems/git_changes.py`
 - Modify: `tests/ecosystems/test_git_changes.py`
 
 **Interfaces:**
+
 - Produces: `GitPathChange(path: str, kind: str, old_path: str | None = None)`.
 - Produces: `GitPathChange.affected_paths() -> tuple[str, ...]`.
 - Produces: `GitPathChange.evidence_paths() -> tuple[str, ...]`.
@@ -234,10 +238,12 @@ git commit -m "feat: read structured git path changes"
 ### Task 3: Load And Validate Strict Path-Risk Policy
 
 **Files:**
+
 - Create: `src/agent_maintainer/verification_plan/policy.py`
 - Create: `tests/verification_plan/test_policy.py`
 
 **Interfaces:**
+
 - Consumes: policy dataclasses and matching validation from Task 1.
 - Produces: `PolicyError(ValueError)`.
 - Produces: `load_policy(path: Path) -> PathRiskPolicy | None`.
@@ -305,10 +311,12 @@ git commit -m "feat: load strict path-risk policy"
 ### Task 4: Resolve Provider-Neutral Affected Units
 
 **Files:**
+
 - Create: `src/agent_maintainer/verification_plan/units.py`
 - Create: `tests/verification_plan/test_units.py`
 
 **Interfaces:**
+
 - Consumes: `MaintainerConfig`, structured Git changes, classifications, `PackageWorkspaceEvidence`, and bounded `RepoEvidence.java_module_paths`.
 - Produces: `resolve_affected_units(repo_root: Path, *, config: MaintainerConfig, changes: Sequence[GitPathChange], package_workspace: PackageWorkspaceEvidence, java_module_paths: Sequence[str]) -> tuple[tuple[AffectedUnit, ...], tuple[str, ...]]`.
 - Returns: sorted units plus advisories; ambiguity always falls back to repository ownership.
@@ -379,12 +387,14 @@ git commit -m "feat: resolve affected repository units"
 ### Task 5: Build And Render Deterministic Verification Plans
 
 **Files:**
+
 - Create: `src/agent_maintainer/verification_plan/planner.py`
 - Create: `src/agent_maintainer/verification_plan/reporting.py`
 - Create: `tests/verification_plan/test_planner.py`
 - Create: `tests/verification_plan/test_reporting.py`
 
 **Interfaces:**
+
 - Consumes: Tasks 1–4, configured `MaintainerConfig`, and `catalogs.catalog.make_checks`.
 - Produces: `build_verification_plan(target: Path, *, base_ref: str, staged: bool, policy_path: Path) -> VerificationPlanReport`.
 - Produces: `plan_from_facts(...) -> VerificationPlanReport` as a pure core for focused tests.
@@ -474,12 +484,14 @@ git commit -m "feat: build deterministic verification plans"
 ### Task 6: Expose The `verify-plan` CLI And Root Route
 
 **Files:**
+
 - Create: `src/agent_maintainer/verification_plan/cli.py`
 - Modify: `src/agent_maintainer/cli.py`
 - Create: `tests/verification_plan/test_cli.py`
 - Modify: `tests/packaging/test_script_helpers.py`
 
 **Interfaces:**
+
 - Produces: `parse_args(argv: list[str]) -> argparse.Namespace`.
 - Produces: `main(argv: list[str]) -> int` with exact `0/1/2` semantics.
 - Produces: lazy root route `verify_plan_command(command_args: list[str]) -> int`.
@@ -532,6 +544,7 @@ git commit -m "feat: expose verification planning command"
 ### Task 7: Integrate Tach, The Optional Catalog Gate, And Repository Policy
 
 **Files:**
+
 - Create: `src/agent_maintainer/verification_plan/tach.domain.toml`
 - Modify: `src/agent_maintainer/ecosystems/tach.domain.toml`
 - Modify: `src/agent_maintainer/catalogs/tach.domain.toml`
@@ -543,6 +556,7 @@ git commit -m "feat: expose verification planning command"
 - Create: `docs/architecture/decisions/2026-07-18-diff-aware-verification-planning.md`
 
 **Interfaces:**
+
 - Produces: `verification_plan_check(base_ref: str, *, staged: bool) -> Check`.
 - Adds: `verification-plan-policy` to `fast`, `precommit`, `full`, and `ci` via `ALL_PROFILES`.
 - Adds: exact Tach dependencies for every implemented import.
@@ -609,6 +623,7 @@ git commit -m "feat: enforce declarative path-risk policy"
 ### Task 8: Document Phase 183 And The Public Contract
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `docs/tool-map.md`
 - Modify: `docs/architecture/subsystem-stability.md`
@@ -619,6 +634,7 @@ git commit -m "feat: enforce declarative path-risk policy"
 - Modify: `tests/packaging/test_public_docs.py`
 
 **Interfaces:**
+
 - Documents: command syntax, exit codes, policy schema, JSON schema version, examples, additive/non-suppression boundary, and Phase 183 promotion evidence.
 - Labels: `agent-maintainer verify-plan` exactly once in subsystem stability.
 
@@ -672,10 +688,12 @@ git commit -m "docs: publish verification planning contract"
 ### Task 9: Complete Verification, Review, And Evidence
 
 **Files:**
+
 - Modify only files allowed by the active change plan when verification reveals a defect.
 - Modify: `docs/roadmap/phases/phase-183-diff-aware-verification-planning.md` only to record real immutable verification evidence.
 
 **Interfaces:**
+
 - Produces: clean focused, architecture, documentation, full, manual, and security evidence.
 - Produces: one comprehensive independent review with no unresolved important findings.
 
@@ -730,9 +748,11 @@ Skip this commit when the phase record already contains the final immutable evid
 ### Task 10: Publish Through Protected PR And Close The Change Plan
 
 **Files:**
+
 - Modify after the implementation PR merges: `.agent-maintainer/change-plans/diff-aware-verification-path-risk.md`
 
 **Interfaces:**
+
 - Produces: protected implementation PR merged to `main`.
 - Produces: follow-up protected plan-closure PR merged to `main`.
 

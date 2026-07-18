@@ -53,6 +53,7 @@ _STATIC_CHECK_NAMES = frozenset(
         "typescript-lint",
         "typescript-typecheck",
         "vulture",
+        "verification-plan-policy",
         "wemake",
         "xenon-complexity-gate",
         "yamllint",

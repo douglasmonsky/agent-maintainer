@@ -48,7 +48,7 @@ def test_overlapping_rules_union_and_sort_all_selections() -> None:
                     ),
                 ),
             ),
-            catalog_profiles=("precommit", "fast"),
+            catalog_profiles=frozenset(("precommit", "fast")),
             catalog_checks=("tach", "ruff"),
         ),
     )
@@ -94,7 +94,7 @@ def test_required_missing_evidence_blocks_but_advisory_only_warns() -> None:
                     ),
                 ),
             ),
-            catalog_profiles=(),
+            catalog_profiles=frozenset(),
             catalog_checks=(),
         ),
     )
@@ -152,7 +152,7 @@ def test_rule_local_minimum_and_destination_only_evidence() -> None:
                     ),
                 ),
             ),
-            catalog_profiles=(),
+            catalog_profiles=frozenset(),
             catalog_checks=(),
         ),
     )
@@ -181,7 +181,7 @@ def test_ignored_classification_does_not_suppress_rule_matching() -> None:
                 path="policy.toml",
                 rules=(PathRiskRule(id="secrets", paths=("**/*.pem",)),),
             ),
-            catalog_profiles=(),
+            catalog_profiles=frozenset(),
             catalog_checks=(),
         ),
     )
@@ -202,7 +202,7 @@ def test_absent_policy_returns_stable_unconfigured_report() -> None:
             unit_advisories=(),
             policy=None,
             policy_path=Path(".agent-maintainer/path-risk.toml"),
-            catalog_profiles=("fast",),
+            catalog_profiles=frozenset(("fast",)),
             catalog_checks=("ruff",),
         ),
     )

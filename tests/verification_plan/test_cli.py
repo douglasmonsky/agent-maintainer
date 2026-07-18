@@ -19,7 +19,11 @@ def test_enforcement_changes_only_exit_status(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     report = _report(blockers=("architecture/adr: Add an ADR.",))
-    monkeypatch.setattr(cli, "build_verification_plan", lambda *args, **kwargs: report)
+
+    def build(*_args: object, **_kwargs: object) -> VerificationPlanReport:
+        return report
+
+    monkeypatch.setattr(cli, "build_verification_plan", build)
 
     assert cli.main(["--json"]) == 0
     first = capsys.readouterr().out
@@ -106,6 +110,16 @@ def test_absent_policy_in_synthetic_git_repository_is_valid(
     payload = json.loads(capsys.readouterr().out)
     assert payload["policy_configured"] is False
     assert payload["changes"] == []
+
+
+def test_missing_target_returns_concise_usage_error(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    missing = tmp_path / "missing"
+
+    assert cli.main(["--target", str(missing), "--base-ref", "HEAD"]) == USAGE_ERROR
+    assert capsys.readouterr().err.startswith("FAIL verify-plan:")
 
 
 def _report(*, blockers: tuple[str, ...] = ()) -> VerificationPlanReport:

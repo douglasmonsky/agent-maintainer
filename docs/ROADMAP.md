@@ -142,14 +142,10 @@ coding-agent tasks, and measure activation time, initializer conflicts,
 false-positive review findings, repair iterations, context expansions, review
 cost, and four-week retained use.
 
-Strict Pyright cutover complete: zero diagnostics and the former ratchet
-baseline are retired.
+Strict Pyright cutover complete: zero diagnostics and the former ratchet baseline are retired.
 
-- [ ] Phase 183: Diff-Aware Verification Planning And Declarative Path-Risk
-      Policy — implementation and local verification are in progress.
-
-- [ ] External proof: run the three-to-five-repository cohort and retain its
-      activation and use evidence.
+- [ ] Phase 183: Diff-Aware Verification Planning And Declarative Path-Risk Policy — implementation and local verification are in progress.
+- [ ] External proof: run the three-to-five-repository cohort and retain its activation and use evidence.
 - [x] Strict Pyright cutover complete: zero diagnostics; baseline retired.
 - [x] Reclassify top-level help and public docs into stable workflow, repair and
       inspection, optional local intelligence, experimental integrations, and

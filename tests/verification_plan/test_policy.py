@@ -74,46 +74,43 @@ def test_load_policy_defaults_rule_to_advisory(tmp_path: Path) -> None:
         ("version = true\n", "version"),
         ("version = 1\nunknown = true\n", "unknown top-level"),
         ("version = 1\nrules = {}\n", "rules"),
-        ("version = 1\n[[rules]]\npaths = [\"src/**\"]\n", "id"),
-        ("version = 1\n[[rules]]\nid = \"Bad ID\"\npaths = [\"src/**\"]\n", "id"),
-        ("version = 1\n[[rules]]\nid = \"source\"\npaths = []\n", "paths"),
-        ("version = 1\n[[rules]]\nid = \"source\"\npaths = [\"../src\"]\n", "paths"),
+        ('version = 1\n[[rules]]\npaths = ["src/**"]\n', "id"),
+        ('version = 1\n[[rules]]\nid = "Bad ID"\npaths = ["src/**"]\n', "id"),
+        ('version = 1\n[[rules]]\nid = "source"\npaths = []\n', "paths"),
+        ('version = 1\n[[rules]]\nid = "source"\npaths = ["../src"]\n', "paths"),
         (
-            "version = 1\n[[rules]]\nid = \"source\"\npaths = [\"src/**\"]\n"
-            "mode = \"block\"\n",
+            'version = 1\n[[rules]]\nid = "source"\npaths = ["src/**"]\nmode = "block"\n',
             "mode",
         ),
         (
-            "version = 1\n[[rules]]\nid = \"source\"\npaths = [\"src/**\"]\n"
-            "extra = true\n",
+            'version = 1\n[[rules]]\nid = "source"\npaths = ["src/**"]\nextra = true\n',
             "unknown rule",
         ),
         (
-            "version = 1\n[[rules]]\nid = \"source\"\npaths = [\"src/**\"]\n"
-            "review_categories = [\"Bad Category\"]\n",
+            'version = 1\n[[rules]]\nid = "source"\npaths = ["src/**"]\n'
+            'review_categories = ["Bad Category"]\n',
             "review_categories",
         ),
         (
-            "version = 1\n[[rules]]\nid = \"source\"\n"
-            "paths = [\"src/**\", \"src/**\"]\n",
+            'version = 1\n[[rules]]\nid = "source"\npaths = ["src/**", "src/**"]\n',
             "duplicate",
         ),
         (
-            "version = 1\n[[rules]]\nid = \"source\"\npaths = [\"src/**\"]\n"
-            "[[rules.evidence]]\nid = \"tests\"\nkind = \"artifact\"\n"
-            "paths = [\"tests/**\"]\n",
+            'version = 1\n[[rules]]\nid = "source"\npaths = ["src/**"]\n'
+            '[[rules.evidence]]\nid = "tests"\nkind = "artifact"\n'
+            'paths = ["tests/**"]\n',
             "kind",
         ),
         (
-            "version = 1\n[[rules]]\nid = \"source\"\npaths = [\"src/**\"]\n"
-            "[[rules.evidence]]\nid = \"tests\"\nkind = \"changed-path\"\n"
-            "paths = [\"tests/**\"]\nminimum = 0\n",
+            'version = 1\n[[rules]]\nid = "source"\npaths = ["src/**"]\n'
+            '[[rules.evidence]]\nid = "tests"\nkind = "changed-path"\n'
+            'paths = ["tests/**"]\nminimum = 0\n',
             "minimum",
         ),
         (
-            "version = 1\n[[rules]]\nid = \"source\"\npaths = [\"src/**\"]\n"
-            "[[rules.evidence]]\nid = \"tests\"\nkind = \"changed-path\"\n"
-            "paths = [\"tests/**\"]\nextra = true\n",
+            'version = 1\n[[rules]]\nid = "source"\npaths = ["src/**"]\n'
+            '[[rules.evidence]]\nid = "tests"\nkind = "changed-path"\n'
+            'paths = ["tests/**"]\nextra = true\n',
             "unknown evidence",
         ),
     ),
@@ -185,8 +182,22 @@ def test_catalog_names_are_validated_against_exact_configured_contract(
         )
 
 
+def test_repository_policy_covers_lock_security_and_release_surfaces() -> None:
+    policy = policy_loader.load_policy(Path(".agent-maintainer/path-risk.toml"))
+    assert policy is not None
+    patterns = {rule.id: set(rule.paths) for rule in policy.rules}
+
+    assert "config/dev-lock.txt" in patterns["dependency-contract"]
+    assert "package-lock.json" in patterns["dependency-contract"]
+    assert "semgrep.yml" in patterns["security-policy"]
+    assert "osv-scanner.toml" in patterns["security-policy"]
+    assert "pyproject.toml" in patterns["release-contract"]
+
+
 def _write_policy(tmp_path: Path, document: str) -> Path:
     path = tmp_path / "path-risk.toml"
     path.write_text(document.strip() + "\n", encoding="utf-8")
     return path
+
+
 # docsync:evidence.end evidence.readme.path_risk_policy_tests

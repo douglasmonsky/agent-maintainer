@@ -106,6 +106,8 @@ def optional_skip_applies(check: Check) -> bool:
         return not Path("tach.toml").exists()
     if check.name in {"actionlint", "zizmor"}:
         return not Path(".github/workflows").exists()
+    if check.name == "verification-plan-policy":
+        return not Path(".agent-maintainer/path-risk.toml").exists()
     return check.name in {
         "pip-audit",
         "pytest-coverage",

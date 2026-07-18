@@ -3,21 +3,17 @@
 from __future__ import annotations
 
 import json
-from collections import defaultdict
-from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
-from agent_maintainer.assess.models import PackageWorkspaceEvidence
+from agent_maintainer.assess import models as assess_models
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.core.repo_paths import RepoPathError, validate_repo_path
-from agent_maintainer.ecosystems.git_changes import GitPathChange
-from agent_maintainer.ecosystems.models import FileChangeClassification
-from agent_maintainer.verification_plan.matching import (
-    PathPatternError,
-    validate_repo_pattern,
-)
-from agent_maintainer.verification_plan.models import AffectedUnit
+from agent_maintainer.core import repo_paths
+from agent_maintainer.ecosystems import git_changes
+from agent_maintainer.ecosystems import models as ecosystem_models
+from agent_maintainer.verification_plan import matching
+from agent_maintainer.verification_plan import models as plan_models
 
 MAX_WORKSPACE_ROOTS = 256
 REPOSITORY_KEY = ("repository", "repository", ".")
@@ -28,8 +24,8 @@ class UnitResolutionInputs:
     """Repository evidence required to resolve affected units."""
 
     config: MaintainerConfig
-    classifications: tuple[FileChangeClassification, ...]
-    package_workspace: PackageWorkspaceEvidence
+    classifications: tuple[ecosystem_models.FileChangeClassification, ...]
+    package_workspace: assess_models.PackageWorkspaceEvidence
     java_module_paths: tuple[str, ...]
 
 
@@ -43,12 +39,32 @@ class _UnitRoots:
 def resolve_affected_units(
     repo_root: Path,
     *,
-    changes: Sequence[GitPathChange],
+    changes: tuple[git_changes.GitPathChange, ...],
     inputs: UnitResolutionInputs,
-) -> tuple[tuple[AffectedUnit, ...], tuple[str, ...]]:
+) -> tuple[tuple[plan_models.AffectedUnit, ...], tuple[str, ...]]:
     """Return smallest-known units plus bounded ownership advisories."""
     advisories: list[str] = []
-    roots = _UnitRoots(
+    roots = _build_roots(repo_root, inputs, advisories=advisories)
+    grouped = _group_paths(changes, inputs.classifications, roots, advisories=advisories)
+    units = tuple(
+        plan_models.AffectedUnit(
+            kind=kind,
+            name=name,
+            root=root,
+            changed_paths=tuple(sorted(paths)),
+        )
+        for (kind, name, root), paths in sorted(grouped.items(), key=_unit_sort_key)
+    )
+    return units, tuple(sorted(set(advisories)))
+
+
+def _build_roots(
+    repo_root: Path,
+    inputs: UnitResolutionInputs,
+    *,
+    advisories: list[str],
+) -> _UnitRoots:
+    return _UnitRoots(
         python=_validated_roots(
             inputs.config.package_paths,
             label="Python package root",
@@ -65,8 +81,17 @@ def resolve_affected_units(
             advisories=advisories,
         ),
     )
-    ecosystems = _ecosystems_by_path(inputs.classifications)
-    grouped: dict[tuple[str, str, str], set[str]] = defaultdict(set)
+
+
+def _group_paths(
+    changes: tuple[git_changes.GitPathChange, ...],
+    classifications: tuple[ecosystem_models.FileChangeClassification, ...],
+    roots: _UnitRoots,
+    *,
+    advisories: list[str],
+) -> dict[tuple[str, str, str], set[str]]:
+    ecosystems = _ecosystems_by_path(classifications)
+    grouped: dict[tuple[str, str, str], set[str]] = {}
     affected_paths = sorted(
         {path for change in changes for path in change.affected_paths()},
     )
@@ -78,12 +103,8 @@ def resolve_affected_units(
             roots=roots,
             advisories=advisories,
         )
-        grouped[unit].add(path)
-    units = tuple(
-        AffectedUnit(kind=kind, name=name, root=root, changed_paths=tuple(sorted(paths)))
-        for (kind, name, root), paths in sorted(grouped.items(), key=_unit_sort_key)
-    )
-    return units, tuple(sorted(set(advisories)))
+        grouped.setdefault(unit, set()).add(path)
+    return grouped
 
 
 def _unit_for_path(
@@ -94,9 +115,8 @@ def _unit_for_path(
     advisories: list[str],
 ) -> tuple[str, str, str]:
     if len(path_ecosystems) > 1:
-        advisories.append(
-            f"ambiguous ecosystem ownership for {path}: {', '.join(path_ecosystems)}",
-        )
+        ecosystems = ", ".join(path_ecosystems)
+        advisories.append(f"ambiguous ecosystem ownership for {path}: {ecosystems}")
         return REPOSITORY_KEY
     if not path_ecosystems:
         return REPOSITORY_KEY
@@ -132,7 +152,7 @@ def _owned_unit(
 
 
 def _validated_roots(
-    roots: Sequence[str],
+    roots: tuple[str, ...],
     *,
     label: str,
     advisories: list[str],
@@ -140,15 +160,15 @@ def _validated_roots(
     validated: set[str] = set()
     for root in roots:
         try:
-            validated.add(validate_repo_path(root, label=label))
-        except RepoPathError as exc:
+            validated.add(repo_paths.validate_repo_path(root, label=label))
+        except repo_paths.RepoPathError as exc:
             advisories.append(f"ignored {label.lower()} {root!r}: {exc}")
     return tuple(sorted(validated))
 
 
 def _typescript_workspace_roots(
     repo_root: Path,
-    evidence: PackageWorkspaceEvidence,
+    evidence: assess_models.PackageWorkspaceEvidence,
     *,
     advisories: list[str],
 ) -> dict[str, str]:
@@ -174,7 +194,7 @@ def _typescript_workspace_roots(
 
 
 def _workspace_patterns(
-    evidence: PackageWorkspaceEvidence,
+    evidence: assess_models.PackageWorkspaceEvidence,
     *,
     advisories: list[str],
 ) -> tuple[str, ...]:
@@ -183,12 +203,12 @@ def _workspace_patterns(
         for pattern in declaration.patterns:
             try:
                 patterns.append(
-                    validate_repo_pattern(
+                    matching.validate_repo_pattern(
                         pattern,
                         label=f"workspace pattern from {declaration.source_path}",
                     ),
                 )
-            except PathPatternError as exc:
+            except matching.PathPatternError as exc:
                 advisories.append(f"ignored workspace pattern {pattern!r}: {exc}")
     return tuple(patterns)
 
@@ -218,20 +238,24 @@ def _workspace_root(
     *,
     advisories: list[str],
 ) -> tuple[str, str] | None:
-    if not candidate.is_dir() or not (candidate / "package.json").is_file():
+    manifest = candidate / "package.json"
+    if not candidate.is_dir() or not manifest.is_file():
         return None
     resolved = candidate.resolve()
     if not resolved.is_relative_to(resolved_root):
         advisories.append(f"ignored out-of-repository workspace {candidate}")
         return None
+    if not manifest.resolve().is_relative_to(resolved_root):
+        advisories.append(f"ignored workspace manifest outside repository: {manifest}")
+        return None
     relative = candidate.relative_to(repo_root).as_posix()
     try:
-        safe_root = validate_repo_path(relative, label="workspace root")
-    except RepoPathError as exc:
+        safe_root = repo_paths.validate_repo_path(relative, label="workspace root")
+    except repo_paths.RepoPathError as exc:
         advisories.append(f"ignored workspace root {relative!r}: {exc}")
         return None
     name = _package_name(
-        candidate / "package.json",
+        manifest,
         fallback=safe_root,
         advisories=advisories,
     )
@@ -249,27 +273,26 @@ def _package_name(
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         advisories.append(f"could not read workspace name from {fallback}: {exc}")
         return fallback
-    name = payload.get("name") if isinstance(payload, dict) else None
+    package = cast(dict[str, object], payload) if isinstance(payload, dict) else {}
+    name = package.get("name")
     if isinstance(name, str) and name.strip():
         return name.strip()
     return fallback
 
 
 def _ecosystems_by_path(
-    classifications: Sequence[FileChangeClassification],
+    classifications: tuple[ecosystem_models.FileChangeClassification, ...],
 ) -> dict[str, tuple[str, ...]]:
-    grouped: dict[str, set[str]] = defaultdict(set)
+    grouped: dict[str, set[str]] = {}
     for classification in classifications:
-        grouped[classification.path].add(classification.ecosystem)
+        grouped.setdefault(classification.path, set()).add(classification.ecosystem)
     return {path: tuple(sorted(values)) for path, values in grouped.items()}
 
 
 def _longest_root(path: str, roots: tuple[str, ...]) -> str | None:
     path_parts = tuple(path.split("/"))
     matches = [
-        root
-        for root in roots
-        if path_parts[: len(root.split("/"))] == tuple(root.split("/"))
+        root for root in roots if path_parts[: len(root.split("/"))] == tuple(root.split("/"))
     ]
     if not matches:
         return None

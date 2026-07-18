@@ -253,6 +253,33 @@ evidence should return exit status `1`:
 agent-maintainer verify-plan --base-ref origin/main --enforce
 ```
 
+A minimal versioned policy names a rule, its triggering paths, existing
+profiles or checks, review categories, and optional changed-path evidence:
+
+```toml
+version = 1
+
+[[rules]]
+id = "architecture"
+paths = ["tach.toml", "src/**/tach.domain.toml"]
+mode = "required"
+profiles = ["full"]
+checks = ["tach"]
+review_categories = ["architecture"]
+
+[[rules.evidence]]
+id = "decision"
+kind = "changed-path"
+paths = ["docs/architecture/decisions/*.md"]
+minimum = 1
+message = "Add or update an architecture decision."
+```
+
+Patterns are repository-relative and segment-aware: `*` matches within one
+path segment, while `**` is valid only as a complete segment and crosses
+directories. Unknown fields, duplicate identifiers, unsafe paths, and unknown
+configured profile or check names fail closed.
+
 Use `--staged` for an exact staged-diff plan and `--json` for the deterministic
 `schema_version = 1` report. Invalid policy, configuration, or Git refs return
 exit status `2`. The planner recommends evidence and existing profiles; it

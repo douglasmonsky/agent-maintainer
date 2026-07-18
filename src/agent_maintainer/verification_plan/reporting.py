@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable, Sequence
+from typing import TypeVar
 
 from agent_maintainer.verification_plan.models import (
     AffectedUnit,
@@ -14,6 +15,8 @@ from agent_maintainer.verification_plan.models import (
 )
 
 MAX_TEXT_ITEMS = 100
+MAX_UNIT_PATHS = 100
+ItemT = TypeVar("ItemT")
 
 
 def report_to_dict(report: VerificationPlanReport) -> dict[str, object]:
@@ -40,35 +43,31 @@ def report_to_dict(report: VerificationPlanReport) -> dict[str, object]:
 
 def render_json(report: VerificationPlanReport) -> str:
     """Render stable pretty JSON with exactly one trailing newline."""
-    return json.dumps(report_to_dict(report), indent=2, sort_keys=True) + "\n"
+    return "\n".join((json.dumps(report_to_dict(report), indent=2, sort_keys=True), ""))
 
 
 def render_text(report: VerificationPlanReport) -> str:
     """Render one bounded, deterministic human-readable plan."""
     lines = [
-        f"Verification plan for {report.target}",
+        f"Verification plan for {_safe_text(report.target)}",
         "",
         "Policy:",
-        f"- Path: {report.policy_path}",
-        f"- Configured: {'yes' if report.policy_configured else 'no'}",
-        f"- Diff: {'staged changes' if report.staged else report.base_ref}",
+        f"- Path: {_safe_text(report.policy_path)}",
+        f"- Configured: {_configured_text(report)}",
+        f"- Diff: {_diff_text(report)}",
     ]
     _section(lines, "Changed paths", report.changes, _change_text)
     _section(
         lines,
         "Affected units",
         report.affected_units,
-        lambda unit: f"{unit.kind} {unit.name} ({unit.root}): {', '.join(unit.changed_paths)}",
+        _unit_text,
     )
     _section(
         lines,
         "Requirements",
         report.requirements,
-        lambda requirement: (
-            f"[{requirement.status}] {requirement.rule_id}/{requirement.id} "
-            f"({len(requirement.matched_paths)}/{requirement.minimum}): "
-            f"{requirement.message}"
-        ),
+        _requirement_text,
     )
     _string_section(lines, "Review categories", report.review_categories)
     _string_section(lines, "Recommended commands", report.recommended_commands)
@@ -77,7 +76,7 @@ def render_text(report: VerificationPlanReport) -> str:
         _string_section(lines, "Blocking findings", report.blocking_findings)
     else:
         _string_section(lines, "Ready", ("No blocking findings.",))
-    return "\n".join(lines) + "\n"
+    return "\n".join((*lines, ""))
 
 
 def _change_to_dict(change: PlannedChange) -> dict[str, object]:
@@ -127,19 +126,53 @@ def _requirement_to_dict(requirement: RequirementResult) -> dict[str, object]:
 
 def _change_text(change: PlannedChange) -> str:
     if change.old_path is not None:
-        return f"{change.kind}: {change.old_path} -> {change.path}"
-    return f"{change.kind}: {change.path}"
+        return (
+            f"{_safe_text(change.kind)}: {_safe_text(change.old_path)} -> {_safe_text(change.path)}"
+        )
+    return f"{_safe_text(change.kind)}: {_safe_text(change.path)}"
+
+
+def _unit_text(unit: AffectedUnit) -> str:
+    visible_paths = unit.changed_paths[:MAX_UNIT_PATHS]
+    paths = ", ".join(_safe_text(path) for path in visible_paths)
+    omitted = len(unit.changed_paths) - len(visible_paths)
+    suffix = f", ... {omitted} more paths" if omitted else ""
+    return (
+        f"{_safe_text(unit.kind)} {_safe_text(unit.name)} "
+        f"({_safe_text(unit.root)}): {paths}{suffix}"
+    )
+
+
+def _requirement_text(requirement: RequirementResult) -> str:
+    identity = f"{requirement.rule_id}/{requirement.id}"
+    progress = f"{len(requirement.matched_paths)}/{requirement.minimum}"
+    return (
+        f"[{_safe_text(requirement.status)}] {_safe_text(identity)} "
+        f"({progress}): {_safe_text(requirement.message)}"
+    )
+
+
+def _configured_text(report: VerificationPlanReport) -> str:
+    return "yes" if report.policy_configured else "no"
+
+
+def _diff_text(report: VerificationPlanReport) -> str:
+    return "staged changes" if report.staged else _safe_text(report.base_ref)
 
 
 def _string_section(lines: list[str], title: str, items: Sequence[str]) -> None:
-    _section(lines, title, items, str)
+    _section(lines, title, items, _safe_text)
 
 
-def _section[T](
+def _safe_text(value: str) -> str:
+    return json.dumps(value, ensure_ascii=True)[1:-1]
+
+
+def _section(  # noqa: UP047 - package syntax must remain compatible with Python 3.11
     lines: list[str],
     title: str,
-    items: Sequence[T],
-    render: Callable[[T], str],
+    items: Sequence[ItemT],
+    render: Callable[[ItemT], str],
 ) -> None:
     lines.extend(("", f"{title}:"))
     if not items:

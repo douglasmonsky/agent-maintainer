@@ -13,15 +13,25 @@ class RepoPathError(ValueError):
 
 def validate_repo_path(value: str, *, label: str) -> str:
     """Return validated POSIX repository-relative path text."""
-    if not isinstance(value, str) or not value:
-        raise RepoPathError(f"{label} must be non-empty text")
-    if "\0" in value:
-        raise RepoPathError(f"{label} must not contain NUL")
-    if "\\" in value:
-        raise RepoPathError(f"{label} must use POSIX separators")
-    if value.startswith("/") or value.startswith("./") or WINDOWS_DRIVE.match(value):
-        raise RepoPathError(f"{label} must be repository-relative")
-    parts = value.split("/")
-    if any(part in {"", ".", ".."} for part in parts):
-        raise RepoPathError(f"{label} contains an unsafe or ambiguous segment")
+    reason = _invalid_reason(value)
+    if reason is not None:
+        raise RepoPathError(f"{label} {reason}")
     return value
+
+
+def _invalid_reason(value: str) -> str | None:
+    parts = value.split("/")
+    checks = (
+        (not value, "must be non-empty text"),
+        ("\0" in value, "must not contain NUL"),
+        ("\\" in value, "must use POSIX separators"),
+        (
+            any((value.startswith("/"), value.startswith("./"), bool(WINDOWS_DRIVE.match(value)))),
+            "must be repository-relative",
+        ),
+        (
+            any(part in {"", ".", ".."} for part in parts),
+            "contains an unsafe or ambiguous segment",
+        ),
+    )
+    return next((reason for invalid, reason in checks if invalid), None)

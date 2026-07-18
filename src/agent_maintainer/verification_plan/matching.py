@@ -33,15 +33,14 @@ def path_matches(pattern: str, path: str) -> bool:
 
 
 def _match_segments(patterns: tuple[str, ...], parts: tuple[str, ...]) -> bool:
-    if not patterns:
-        return not parts
-    head, tail = patterns[0], patterns[1:]
-    if head == "**":
-        return _match_segments(tail, parts) or (
-            bool(parts) and _match_segments(patterns, parts[1:])
-        )
-    return (
-        bool(parts)
-        and fnmatch.fnmatchcase(parts[0], head)
-        and _match_segments(tail, parts[1:])
-    )
+    reachable: set[int] = {0}
+    for pattern in patterns:
+        if pattern == "**":
+            reachable = set(range(min(reachable), len(parts) + 1)) if reachable else set()
+            continue
+        reachable = {
+            index + 1
+            for index in reachable
+            if index < len(parts) and fnmatch.fnmatchcase(parts[index], pattern)
+        }
+    return len(parts) in reachable

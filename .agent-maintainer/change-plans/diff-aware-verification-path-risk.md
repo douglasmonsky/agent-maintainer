@@ -12,6 +12,7 @@ allowed_paths = [
   "docs/ROADMAP.md",
   "docs/architecture/decisions/2026-07-18-diff-aware-verification-planning.md",
   "docs/architecture/subsystem-stability.md",
+  "docs/roadmap/full-roadmap-blueprint.md",
   "docs/roadmap/phases/phase-183-diff-aware-verification-planning.md",
   "docs/superpowers/plans/2026-07-18-diff-aware-verification-path-risk.md",
   "docs/superpowers/specs/2026-07-18-diff-aware-verification-path-risk-design.md",
@@ -20,14 +21,18 @@ allowed_paths = [
   "src/agent_maintainer/catalogs/global_checks.py",
   "src/agent_maintainer/catalogs/tach.domain.toml",
   "src/agent_maintainer/cli.py",
+  "src/agent_maintainer/config/preflight.py",
+  "src/agent_maintainer/core/executor.py",
   "src/agent_maintainer/core/repo_paths.py",
   "src/agent_maintainer/core/tach.domain.toml",
   "src/agent_maintainer/ecosystems/git_changes.py",
   "src/agent_maintainer/ecosystems/tach.domain.toml",
   "src/agent_maintainer/verification_plan/**",
+  "src/agent_maintainer/verify/groups.py",
   "tach.toml",
   "tests/catalogs/test_config_catalog.py",
   "tests/catalogs/test_python_catalog_characterization.py",
+  "tests/config/test_config_cli_boundary.py",
   "tests/core/test_repo_paths.py",
   "tests/ecosystems/test_git_changes.py",
   "tests/packaging/test_public_docs.py",
@@ -35,10 +40,11 @@ allowed_paths = [
   "tests/regression/test_phase10_error_paths.py",
   "tests/runtime_events/test_command_runtime_events.py",
   "tests/verification_plan/**",
+  "tests/verify/test_verification_groups.py",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 60
-max_changed_lines = 5000
+max_changed_files = 75
+max_changed_lines = 5500
 allow_source_without_test_change = false
 requires_tests = true
 requires_full_verify = true

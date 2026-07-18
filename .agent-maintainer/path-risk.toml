@@ -19,10 +19,16 @@ message = "Add or update an architecture decision record."
 id = "dependency-contract"
 description = "Dependency declarations require a refreshed lock and dependency gates."
 paths = [
+  "config/dev-lock.txt",
   "config/dev-dependencies.txt",
+  "package-lock.json",
   "package.json",
+  "packages/*/package-lock.json",
   "packages/*/package.json",
+  "pnpm-lock.yaml",
   "pyproject.toml",
+  "uv.lock",
+  "yarn.lock",
 ]
 mode = "required"
 profiles = ["full", "security"]
@@ -59,6 +65,7 @@ paths = [
   ".github/workflows/*release*.yaml",
   "src/agent_maintainer/release_artifacts.py",
   "src/agent_maintainer/release_evidence.py",
+  "pyproject.toml",
 ]
 mode = "required"
 profiles = ["full", "ci"]
@@ -96,6 +103,8 @@ message = "Record the policy boundary in an architecture decision."
 id = "security-policy"
 description = "Security enforcement code requires focused tests and review."
 paths = [
+  "osv-scanner.toml",
+  "semgrep.yml",
   "src/agent_maintainer/catalogs/security.py",
   "src/agent_maintainer/runners/secret_scan.py",
   "src/agent_maintainer/verification_plan/**",

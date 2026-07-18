@@ -19,13 +19,16 @@ disable_bytecode_writes()
 
 CommandRunner = preflight.CommandRunner
 
-
-context_main: CommandRunner = preflight.ValidatedCommand(_context_main)
-guidance_main: CommandRunner = preflight.ValidatedCommand(_guidance_main)
-init_main: CommandRunner = preflight.ValidatedCommand(_init_main)
-doctor_main: CommandRunner = preflight.ValidatedCommand(_doctor_main)
-hooks_main: CommandRunner = preflight.ValidatedCommand(_hooks_main)
-verify_main: CommandRunner = preflight.ValidatedCommand(_verify_main)
+context_main: preflight.CommandRunner = preflight.ValidatedCommand(_context_main)
+guidance_main: preflight.CommandRunner = preflight.ValidatedCommand(_guidance_main)
+init_main: preflight.CommandRunner = preflight.ValidatedCommand(_init_main)
+doctor_main: preflight.CommandRunner = preflight.ValidatedCommand(_doctor_main)
+hooks_main: preflight.CommandRunner = preflight.ValidatedCommand(_hooks_main)
+verify_main: preflight.CommandRunner = preflight.ValidatedCommand(_verify_main)
+verify_plan_command: preflight.CommandRunner = preflight.lazy_target_command(
+    "agent_maintainer.verification_plan.cli",
+    option="--target",
+)
 
 # docsync:evidence.start evidence.readme.command_registry
 USAGE = """Usage:
@@ -120,7 +123,7 @@ def route_command(command: str, command_args: list[str]) -> int:
     return handler(command_args)
 
 
-def command_handlers() -> dict[str, CommandRunner]:
+def command_handlers() -> dict[str, preflight.CommandRunner]:
     """Return command handlers keyed by top-level subcommand name."""
 
     return {
@@ -232,12 +235,6 @@ def test_intel_command(command_args: list[str]) -> int:
 def wait_command(command_args: list[str]) -> int:
     """Run quiet wait command lazily to keep entrypoint light."""
     return _run_module_main("agent_maintainer.wait.cli", command_args)
-
-
-@preflight.ValidatedCommand
-def verify_plan_command(command_args: list[str]) -> int:
-    """Run verification planning lazily to keep entrypoint light."""
-    return _run_module_main("agent_maintainer.verification_plan.cli", command_args)
 
 
 def _run_module_main(module_name: str, command_args: list[str]) -> int:

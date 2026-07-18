@@ -57,3 +57,9 @@ def test_invalid_policy_patterns_fail_closed(pattern: str) -> None:
 def test_path_matches_rejects_invalid_changed_path() -> None:
     with pytest.raises(PathPatternError, match="path"):
         path_matches("src/**", "src/../secret.txt")
+
+
+def test_path_matching_handles_adversarial_depth_without_recursion() -> None:
+    pattern = "/".join((*(("**",) * 1100), "target.txt"))
+
+    assert path_matches(pattern, "target.txt")
