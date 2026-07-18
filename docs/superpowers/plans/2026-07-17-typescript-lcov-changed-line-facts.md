@@ -214,7 +214,7 @@ the new module. Run:
 ```bash
 PATH=.venv/bin:$PATH pytest tests/test_intel/test_typescript_coverage.py -q
 PATH=.venv/bin:$PATH python -m tach check
-PATH=.venv/bin:$PATH python -m agent_maintainer architecture check
+PATH=.venv/bin:$PATH python -m archguard tach-config --strict-root-module
 ```
 
 Expected: PASS.
@@ -402,7 +402,7 @@ PATH=.venv/bin:$PATH pyright \
   src/agent_maintainer/test_intel/typescript_coverage_cli.py \
   src/agent_maintainer/test_intel/typescript_coverage_reporting.py
 PATH=.venv/bin:$PATH python -m tach check
-PATH=.venv/bin:$PATH python -m agent_maintainer architecture check
+PATH=.venv/bin:$PATH python -m archguard tach-config --strict-root-module
 PATH=.venv/bin:$PATH python -m docsync check
 ```
 

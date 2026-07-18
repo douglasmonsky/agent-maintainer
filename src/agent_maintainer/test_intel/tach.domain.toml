@@ -92,6 +92,15 @@ path = "models"
 depends_on = []
 
 [[modules]]
+path = "typescript_coverage"
+depends_on = [
+  "//agent_maintainer.ecosystems.models",
+  "//agent_maintainer.ecosystems.typescript.classification",
+  "//agent_repair_facts.parsers.typescript_coverage",
+  "coverage_lines",
+]
+
+[[modules]]
 path = "mutation"
 depends_on = []
 
