@@ -17,3 +17,15 @@ depends_on = [
   "matching",
   "models",
 ]
+
+[[modules]]
+path = "units"
+depends_on = [
+  "//agent_maintainer.assess.models",
+  "//agent_maintainer.config.schema",
+  "//agent_maintainer.core.repo_paths",
+  "//agent_maintainer.ecosystems.git_changes",
+  "//agent_maintainer.ecosystems.models",
+  "matching",
+  "models",
+]
