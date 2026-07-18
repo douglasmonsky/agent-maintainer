@@ -41,6 +41,13 @@ application objects, execute target commands, use a shell, or access a network.
 Root CLI and catalog integration may depend inward on the completed service;
 the contracts domain must not depend back on those outward adapters.
 
+Historical loading resolves an authored base ref to one commit before any blob
+read, verifies both contract paths are regular Git tree blobs, and then reads
+bounded UTF-8 content only through that resolved identity. Service orchestration
+proves current baseline freshness before comparing base descriptors with live
+descriptors, reads structured Git path facts once, and evaluates revision,
+package-version, and migration obligations independently.
+
 Extractor routing depends on concrete adapters, while adapters depend on a
 separate inward-only normalization module for bounded JSON, canonical ordering,
 and descriptor construction. Adapters do not depend back on routing. This keeps

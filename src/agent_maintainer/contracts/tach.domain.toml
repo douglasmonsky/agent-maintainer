@@ -47,6 +47,16 @@ depends_on = [
 ]
 
 [[modules]]
+path = "git_base"
+depends_on = [
+  "//agent_maintainer.core.repo_paths",
+  "baseline",
+  "limits",
+  "models",
+  "policy",
+]
+
+[[modules]]
 path = "normalization"
 depends_on = [
   "baseline",
@@ -91,6 +101,19 @@ path = "versioning"
 depends_on = [
   "models",
   "paths",
+]
+
+[[modules]]
+path = "service"
+depends_on = [
+  "baseline",
+  "comparison",
+  "extraction",
+  "git_base",
+  "migrations",
+  "models",
+  "policy",
+  "versioning",
 ]
 
 [[modules]]
