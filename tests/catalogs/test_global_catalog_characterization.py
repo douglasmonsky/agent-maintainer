@@ -37,17 +37,26 @@ def test_experimental_checks_follow_the_python_catalog() -> None:
         typescript_typecheck_command=("npm", "run", "typecheck"),
         typescript_test_command=("npm", "test"),
         typescript_knip_command=("pnpm", "exec", "knip", "--reporter", "json"),
+        typescript_dependency_cruiser_command=(
+            "pnpm",
+            "exec",
+            "depcruise",
+            "--output-type",
+            "json",
+            "src",
+        ),
     )
 
     names = [check.name for check in make_checks(config, "HEAD", "origin/main")]
     start = names.index("typescript-lint")
 
-    assert names[start - 1 : start + 5] == [
+    assert names[start - 1 : start + 6] == [
         "secret-scan-history",
         "typescript-lint",
         "typescript-typecheck",
         "typescript-test",
         "typescript-knip",
+        "typescript-dependency-cruiser",
         "actionlint",
     ]
 

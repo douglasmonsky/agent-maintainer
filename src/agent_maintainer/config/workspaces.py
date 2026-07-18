@@ -18,3 +18,4 @@ class WorkspaceConfig:
     typescript_typecheck_command: tuple[str, ...] = ()
     typescript_test_command: tuple[str, ...] = ()
     typescript_knip_command: tuple[str, ...] = ()
+    typescript_dependency_cruiser_command: tuple[str, ...] = ()

@@ -32,6 +32,14 @@ def test_typescript_checks_are_included_when_enabled() -> None:
         typescript_typecheck_command=("npm", "run", "typecheck"),
         typescript_test_command=("npm", "test"),
         typescript_knip_command=("pnpm", "exec", "knip", "--reporter", "json"),
+        typescript_dependency_cruiser_command=(
+            "pnpm",
+            "exec",
+            "depcruise",
+            "--output-type",
+            "json",
+            "src",
+        ),
     )
 
     checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
@@ -48,6 +56,17 @@ def test_typescript_checks_are_included_when_enabled() -> None:
         "json",
     ]
     assert by_name["typescript-knip"].profiles == frozenset(("full", "ci"))
+    assert by_name["typescript-dependency-cruiser"].command == [
+        "pnpm",
+        "exec",
+        "depcruise",
+        "--output-type",
+        "json",
+        "src",
+    ]
+    assert by_name["typescript-dependency-cruiser"].profiles == frozenset(
+        ("full", "ci")
+    )
 
 
 def test_workspace_typescript_commands_emit_owned_checks() -> None:
@@ -73,6 +92,16 @@ def test_workspace_typescript_commands_emit_owned_checks() -> None:
                     "knip",
                     "--reporter",
                     "json",
+                ),
+                typescript_dependency_cruiser_command=(
+                    "pnpm",
+                    "--filter",
+                    "api",
+                    "exec",
+                    "depcruise",
+                    "--output-type",
+                    "json",
+                    "src",
                 ),
             ),
         ),
@@ -105,6 +134,19 @@ def test_workspace_typescript_commands_emit_owned_checks() -> None:
         "json",
     ]
     assert checks["typescript-knip:api"].profiles == frozenset(("full", "ci"))
+    assert checks["typescript-dependency-cruiser:api"].command == [
+        "pnpm",
+        "--filter",
+        "api",
+        "exec",
+        "depcruise",
+        "--output-type",
+        "json",
+        "src",
+    ]
+    assert checks["typescript-dependency-cruiser:api"].profiles == frozenset(
+        ("full", "ci")
+    )
 
 
 def test_typescript_fixture_config_smoke(
@@ -120,6 +162,9 @@ typescript_lint_command = ["npm", "run", "lint"]
 typescript_typecheck_command = ["npm", "run", "typecheck"]
 typescript_test_command = ["npm", "test"]
 typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]
+typescript_dependency_cruiser_command = [
+  "pnpm", "exec", "depcruise", "--output-type", "json", "src",
+]
 """.strip(),
         encoding="utf-8",
     )
@@ -144,4 +189,12 @@ typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]
         "knip",
         "--reporter",
         "json",
+    ]
+    assert checks["typescript-dependency-cruiser"].command == [
+        "pnpm",
+        "exec",
+        "depcruise",
+        "--output-type",
+        "json",
+        "src",
     ]

@@ -2906,6 +2906,53 @@
         "verification_profiles": false
       },
       "default": [],
+      "description": "Configure typescript dependency cruiser command.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_DEPENDENCY_CRUISER_COMMAND",
+      "environment_style": "standard",
+      "label": "Typescript Dependency Cruiser Command",
+      "name": "typescript_dependency_cruiser_command",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_dependency_cruiser_command",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "full",
+        "ci"
+      ],
+      "description": "Configure typescript dependency cruiser profiles.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_DEPENDENCY_CRUISER_PROFILES",
+      "environment_style": "standard",
+      "label": "Typescript Dependency Cruiser Profiles",
+      "name": "typescript_dependency_cruiser_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_dependency_cruiser_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
       "description": "Configure typescript knip command.",
       "environment": "AGENT_MAINTAINER_TYPESCRIPT_KNIP_COMMAND",
       "environment_style": "standard",
@@ -3314,6 +3361,7 @@
       "package_paths",
       "source_roots",
       "test_roots",
+      "typescript_dependency_cruiser_command",
       "typescript_knip_command",
       "typescript_lint_command",
       "typescript_test_command",

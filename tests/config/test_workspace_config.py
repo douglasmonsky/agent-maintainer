@@ -43,6 +43,10 @@ def test_workspace_config_loads_named_tables(tmp_path: Path) -> None:
         typescript_typecheck_command = ["pnpm", "--filter", "api", "typecheck"]
         typescript_test_command = ["pnpm", "--filter", "api", "test"]
         typescript_knip_command = ["pnpm", "--filter", "api", "exec", "knip", "--reporter", "json"]
+        typescript_dependency_cruiser_command = [
+          "pnpm", "--filter", "api", "exec", "depcruise",
+          "--output-type", "json", "src",
+        ]
         """,
         encoding="utf-8",
     )
@@ -73,6 +77,16 @@ def test_workspace_config_loads_named_tables(tmp_path: Path) -> None:
                 "--reporter",
                 "json",
             ),
+            typescript_dependency_cruiser_command=(
+                "pnpm",
+                "--filter",
+                "api",
+                "exec",
+                "depcruise",
+                "--output-type",
+                "json",
+                "src",
+            ),
         ),
         schema.WorkspaceConfig(
             name="worker",
@@ -101,6 +115,16 @@ def test_coerce_updates_reads_workspace_tables() -> None:
                         "--reporter",
                         "json",
                     ],
+                    "typescript_dependency_cruiser_command": [
+                        "pnpm",
+                        "--filter",
+                        "api",
+                        "exec",
+                        "depcruise",
+                        "--output-type",
+                        "json",
+                        "src",
+                    ],
                 },
             },
         }
@@ -120,6 +144,16 @@ def test_coerce_updates_reads_workspace_tables() -> None:
                 "knip",
                 "--reporter",
                 "json",
+            ),
+            typescript_dependency_cruiser_command=(
+                "pnpm",
+                "--filter",
+                "api",
+                "exec",
+                "depcruise",
+                "--output-type",
+                "json",
+                "src",
             ),
         ),
     )

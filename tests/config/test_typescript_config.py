@@ -32,6 +32,15 @@ def test_pyproject_loads_typescript_provider_config() -> None:
                 "json",
             ],
             "typescript_knip_profiles": ["full", "ci"],
+            "typescript_dependency_cruiser_command": [
+                "pnpm",
+                "exec",
+                "depcruise",
+                "--output-type",
+                "json",
+                "src",
+            ],
+            "typescript_dependency_cruiser_profiles": ["full", "ci"],
         },
     )
 
@@ -50,6 +59,15 @@ def test_pyproject_loads_typescript_provider_config() -> None:
         "json",
     )
     assert loaded.typescript_knip_profiles == ("full", "ci")
+    assert loaded.typescript_dependency_cruiser_command == (
+        "pnpm",
+        "exec",
+        "depcruise",
+        "--output-type",
+        "json",
+        "src",
+    )
+    assert loaded.typescript_dependency_cruiser_profiles == ("full", "ci")
 
 
 def test_env_overrides_typescript_provider_config(
@@ -80,6 +98,14 @@ def test_env_overrides_typescript_provider_config(
         "pnpm,exec,knip,--reporter,json",
     )
     monkeypatch.setenv("AGENT_MAINTAINER_TYPESCRIPT_KNIP_PROFILES", "full,ci")
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_DEPENDENCY_CRUISER_COMMAND",
+        "pnpm,exec,depcruise,--output-type,json,src",
+    )
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_DEPENDENCY_CRUISER_PROFILES",
+        "full,ci",
+    )
 
     loaded = loader.apply_env(MaintainerConfig())
 
@@ -98,6 +124,15 @@ def test_env_overrides_typescript_provider_config(
         "json",
     )
     assert loaded.typescript_knip_profiles == ("full", "ci")
+    assert loaded.typescript_dependency_cruiser_command == (
+        "pnpm",
+        "exec",
+        "depcruise",
+        "--output-type",
+        "json",
+        "src",
+    )
+    assert loaded.typescript_dependency_cruiser_profiles == ("full", "ci")
 
 
 def test_typescript_knip_defaults_to_full_and_ci_profiles() -> None:
@@ -107,6 +142,15 @@ def test_typescript_knip_defaults_to_full_and_ci_profiles() -> None:
 
     assert loaded.typescript_knip_command == ()
     assert loaded.typescript_knip_profiles == ("full", "ci")
+
+
+def test_typescript_dependency_cruiser_defaults_to_full_and_ci_profiles() -> None:
+    """Dependency-cruiser stays out of fast and precommit by default."""
+
+    loaded = MaintainerConfig()
+
+    assert loaded.typescript_dependency_cruiser_command == ()
+    assert loaded.typescript_dependency_cruiser_profiles == ("full", "ci")
 
 
 # docsync:evidence.start evidence.typescript.advisory_threshold_config_tests

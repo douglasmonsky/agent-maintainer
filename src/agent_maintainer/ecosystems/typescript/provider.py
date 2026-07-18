@@ -48,6 +48,12 @@ class TypeScriptProvider:
                 config.typescript_knip_profiles,
                 "typescript_knip_command",
             ),
+            _configured_check(
+                "typescript-dependency-cruiser",
+                config.typescript_dependency_cruiser_command,
+                config.typescript_dependency_cruiser_profiles,
+                "typescript_dependency_cruiser_command",
+            ),
         ]
         for workspace in config.workspaces:
             workspace_specs = (
@@ -74,6 +80,15 @@ class TypeScriptProvider:
                     workspace.typescript_knip_command,
                     config.typescript_knip_profiles,
                     f"workspaces.{workspace.name}.typescript_knip_command",
+                ),
+                (
+                    "typescript-dependency-cruiser",
+                    workspace.typescript_dependency_cruiser_command,
+                    config.typescript_dependency_cruiser_profiles,
+                    (
+                        f"workspaces.{workspace.name}."
+                        "typescript_dependency_cruiser_command"
+                    ),
                 ),
             )
             checks.extend(

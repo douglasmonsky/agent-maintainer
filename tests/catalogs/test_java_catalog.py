@@ -31,7 +31,9 @@ def test_enabled_java_checks_follow_typescript_and_precede_workflow_checks() -> 
     checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
     names = [check.name for check in checks]
 
-    assert names[names.index("typescript-knip") + 1 : names.index("actionlint")] == [
+    assert names[
+        names.index("typescript-dependency-cruiser") + 1 : names.index("actionlint")
+    ] == [
         "java-gradle-format",
         "java-gradle-static",
         "java-gradle-tests",
