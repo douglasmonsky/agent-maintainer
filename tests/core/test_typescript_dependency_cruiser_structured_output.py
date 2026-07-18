@@ -18,9 +18,7 @@ def test_dependency_cruiser_summary_formats_one_violation() -> None:
         json.dumps(_payload_with_findings(1)),
     )
 
-    assert summary == (
-        "src/000.ts -> src/target.ts: rule-000 [error; dependency]"
-    )
+    assert summary == ("src/000.ts -> src/target.ts: rule-000 [error; dependency]")
 
 
 def test_dependency_cruiser_summary_reserves_the_final_line() -> None:
@@ -34,9 +32,7 @@ def test_dependency_cruiser_summary_reserves_the_final_line() -> None:
     assert summary is not None
     lines = summary.splitlines()
     assert len(lines) == SUMMARY_LINE_LIMIT
-    assert lines[-1] == (
-        "... 2 more dependency-cruiser findings omitted. See .verify-logs/"
-    )
+    assert lines[-1] == ("... 2 more dependency-cruiser findings omitted. See .verify-logs/")
 
 
 def test_dependency_cruiser_summary_counts_beyond_parser_retention() -> None:
@@ -50,9 +46,7 @@ def test_dependency_cruiser_summary_counts_beyond_parser_retention() -> None:
     assert summary is not None
     lines = summary.splitlines()
     assert len(lines) == SUMMARY_LINE_LIMIT
-    assert lines[-1] == (
-        "... 551 more dependency-cruiser findings omitted. See .verify-logs/"
-    )
+    assert lines[-1] == ("... 551 more dependency-cruiser findings omitted. See .verify-logs/")
 
 
 def test_dependency_cruiser_invalid_output_has_no_summary() -> None:

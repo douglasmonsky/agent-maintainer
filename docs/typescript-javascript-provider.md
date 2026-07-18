@@ -139,6 +139,9 @@ Agent Maintainer runs only the exact root or workspace
 It never appends `--output-type json`, installs dependency-cruiser, generates a
 configuration, chooses a package manager, or invents boundary rules. Include a
 repository-owned JSON reporter argument when structured facts are wanted.
+Cruise-result output has a five-million-character capture limit so realistic
+module graphs are not cut at the generic command limit. Exit-zero findings are
+reported as non-blocking warning summaries; the process still passes.
 
 The parser reads only `summary.violations`. It preserves supported `error`,
 `warn`, and `info` severities, documented violation types, rule names, and safe
@@ -155,10 +158,11 @@ skipped independently.
 Pinned npm `decentralized-identity/dwn-sdk-js` and pnpm-workspace
 `hicommonwealth/commonwealth` projections replay offline with
 dependency-cruiser 17.0.2.
-They record exact public revisions, config and lockfile hashes, commands, exit
-status, and bounded normalized violations. Package-manager audit facts are the
-next parity slice. Declared Nx boundaries and blocking architecture policy
-remain later work. TypeScript/JavaScript remains experimental.
+They record exact public revisions, Node and tool versions, config and lockfile
+hashes, raw-report hashes and byte counts, commands, exit status, and bounded
+normalized violations. Package-manager audit facts are the next parity slice.
+Declared Nx boundaries and blocking architecture policy remain later work.
+TypeScript/JavaScript remains experimental.
 
 ## Phase 180 OSV Boundary
 

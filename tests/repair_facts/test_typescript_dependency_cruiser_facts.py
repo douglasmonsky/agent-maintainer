@@ -81,16 +81,10 @@ def test_fixture_emits_sorted_safe_facts_for_workspace_check() -> None:
         "line": None,
         "column": None,
         "symbol": "api-not-to-db",
-        "message": (
-            "src/api/client.ts -> src/db/private.ts: "
-            "api-not-to-db [error; dependency]"
-        ),
+        "message": ("src/api/client.ts -> src/db/private.ts: api-not-to-db [error; dependency]"),
         "severity": "error",
     }
-    observed_types = {
-        str(fact["message"]).rsplit("; ", 1)[-1].removesuffix("]")
-        for fact in facts
-    }
+    observed_types = {str(fact["message"]).rsplit("; ", 1)[-1].removesuffix("]") for fact in facts}
     assert observed_types >= SUPPORTED_TYPES
     assert all(fact["check"] == "typescript-dependency-cruiser:web" for fact in facts)
 
@@ -146,9 +140,7 @@ def test_supported_severities_and_types_are_preserved(
 ) -> None:
     """Documented dependency-cruiser values survive normalization."""
 
-    fact = facts_from(
-        payload(violation(severity=severity, violation_type=violation_type))
-    )[0]
+    fact = facts_from(payload(violation(severity=severity, violation_type=violation_type)))[0]
 
     assert fact["severity"] == severity
     assert str(fact["message"]).endswith(f"[{severity}; {violation_type}]")
@@ -177,9 +169,7 @@ def test_missing_type_is_supported_but_unknown_type_is_skipped() -> None:
 def test_malformed_types_are_skipped(violation_type: object) -> None:
     """Malformed optional-type values are not mistaken for omission."""
 
-    assert (
-        facts_from(payload(violation(violation_type=violation_type))) == []
-    )
+    assert facts_from(payload(violation(violation_type=violation_type))) == []
 
 
 def test_unresolved_target_is_used_only_when_to_is_unusable() -> None:
@@ -220,6 +210,7 @@ def test_findings_sort_before_the_retention_limit() -> None:
         ("../../private/source.ts", "source.ts"),
         ("C:\\private\\source.ts", "source.ts"),
         ("src/control\nsource.ts", "control source.ts"),
+        ("src/spoof\u202esource.ts", "spoof source.ts"),
     ),
 )
 def test_unsafe_sources_are_display_only(source: str, display: str) -> None:
@@ -254,6 +245,26 @@ def test_overlong_relative_source_is_nontargetable_with_safe_display() -> None:
     assert str(fact["message"]).startswith("source.ts -> src/target.ts")
 
 
+def test_path_whitespace_is_preserved_exactly() -> None:
+    """Valid spaces are not collapsed into a different repository target."""
+
+    source = "src/a  b.ts"
+    fact = facts_from(payload(violation(source=source)))[0]
+
+    assert fact["path"] == source
+    assert str(fact["message"]).startswith(f"{source} -> src/target.ts")
+
+
+def test_whitespace_heavy_source_is_nontargetable() -> None:
+    """The raw path length cap applies before display sanitization."""
+
+    source = "src/" + (" " * 501) + "source.ts"
+    fact = facts_from(payload(violation(source=source)))[0]
+
+    assert fact["path"] is None
+    assert str(fact["message"]).startswith("source.ts -> src/target.ts")
+
+
 def test_scalars_and_messages_are_single_line_and_bounded() -> None:
     """Untrusted scalar content cannot expand context output."""
 
@@ -273,6 +284,24 @@ def test_scalars_and_messages_are_single_line_and_bounded() -> None:
     assert len(parsed.rule) <= FIELD_LIMIT
     assert "\n" not in message
     assert len(message) <= MESSAGE_LIMIT
+
+
+def test_formatter_enforces_its_independent_message_cap() -> None:
+    """Direct formatter callers cannot bypass the final message bound."""
+
+    finding = typescript_dependency_cruiser.DependencyCruiserFinding(
+        source_path="src/source.ts",
+        source_label="source" * 300,
+        target_label="target" * 300,
+        rule="rule" * 300,
+        severity="error",
+        violation_type="dependency",
+    )
+
+    message = typescript_dependency_cruiser.format_dependency_cruiser_finding(finding)
+
+    assert len(message) == MESSAGE_LIMIT
+    assert message.endswith("...")
 
 
 # docsync:evidence.end evidence.typescript.dependency_cruiser_fact_tests

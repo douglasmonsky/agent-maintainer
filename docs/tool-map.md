@@ -232,7 +232,9 @@ architecture-boundary counterpart to Tach. Configure an explicit
 `typescript_dependency_cruiser_command` with cruise-result JSON output; Agent
 Maintainer never invents dependency-cruiser rules, installs the tool, chooses a
 package manager, or changes its exit status. Bounded facts use only
-`summary.violations`. Nx boundaries remain a separate future adapter.
+`summary.violations`. A five-million-character capture limit accommodates
+real cruise graphs, and exit-zero findings surface as non-blocking warning
+summaries. Nx boundaries remain a separate future adapter.
 
 ## Diff hygiene gates
 

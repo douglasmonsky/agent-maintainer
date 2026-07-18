@@ -223,9 +223,7 @@ class MaintainerConfig:
     typescript_knip_command: tuple[str, ...] = ()
     typescript_knip_profiles: tuple[str, ...] = DEFAULT_TYPESCRIPT_KNIP_PROFILES
     typescript_dependency_cruiser_command: tuple[str, ...] = ()
-    typescript_dependency_cruiser_profiles: tuple[str, ...] = (
-        DEFAULT_DEPCRUISE_PROFILES
-    )
+    typescript_dependency_cruiser_profiles: tuple[str, ...] = DEFAULT_DEPCRUISE_PROFILES
     typescript_advisory_source_warn_files: int = DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES
     typescript_advisory_source_warn_lines: int = DEFAULT_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES
     typescript_advisory_broad_suppression_warn: int = DEFAULT_TS_ADVISORY_BROAD_SUPPRESSION_WARN

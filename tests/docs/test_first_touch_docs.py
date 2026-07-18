@@ -216,10 +216,7 @@ def test_provider_docs_track_typescript_dependency_cruiser_facts() -> None:
             "`summary.violations`",
             "500 normalized findings",
             "50 total lines",
-            (
-                "dependency-cruiser is the TypeScript/JavaScript "
-                "architecture-boundary counterpart"
-            ),
+            ("dependency-cruiser is the TypeScript/JavaScript architecture-boundary counterpart"),
             "package-manager audit facts are the next parity slice",
             "TypeScript/JavaScript remains experimental",
         ),
@@ -231,10 +228,7 @@ def test_provider_docs_track_typescript_dependency_cruiser_facts() -> None:
             "TypeScript/JavaScript remains experimental",
         ),
         "docs/tool-map.md": (
-            (
-                "dependency-cruiser is the TypeScript/JavaScript "
-                "architecture-boundary counterpart"
-            ),
+            ("dependency-cruiser is the TypeScript/JavaScript architecture-boundary counterpart"),
             "Agent Maintainer never invents dependency-cruiser rules",
         ),
         "docs/supported-scans-and-agent-use.md": (

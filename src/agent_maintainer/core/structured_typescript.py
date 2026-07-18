@@ -66,11 +66,7 @@ def summarize_typescript_knip(raw_output: str) -> str | None:
 def summarize_typescript_dependency_cruiser(raw_output: str) -> str | None:
     """Return a compact bounded dependency-cruiser summary."""
 
-    parse_result = (
-        typescript_dependency_cruiser.parse_dependency_cruiser_json_result(
-            raw_output
-        )
-    )
+    parse_result = typescript_dependency_cruiser.parse_dependency_cruiser_json_result(raw_output)
     findings = parse_result.findings
     if not findings:
         return None
@@ -84,10 +80,7 @@ def summarize_typescript_dependency_cruiser(raw_output: str) -> str | None:
     ]
     omitted = parse_result.supported_count - len(visible)
     if omitted:
-        lines.append(
-            f"... {omitted} more dependency-cruiser findings omitted. "
-            "See .verify-logs/"
-        )
+        lines.append(f"... {omitted} more dependency-cruiser findings omitted. See .verify-logs/")
     return "\n".join(lines)
 
 

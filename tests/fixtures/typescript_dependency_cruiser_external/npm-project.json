@@ -3,6 +3,7 @@
   "commit": "0e903014464388bcfcdcd42da74c40fdd902fd23",
   "collected_at": "2026-07-18T02:25:18Z",
   "package_manager": "npm",
+  "node_version": "v26.5.0",
   "tool": {
     "name": "dependency-cruiser",
     "version": "17.0.2"
@@ -20,6 +21,8 @@
   "config_sha256": "57ba664bcc9247c9004d8490c7d5323e76e1501a5c9cff25cd13380f0859285a",
   "lockfile_path": "package-lock.json",
   "lockfile_sha256": "90d81b2b09c9650bd0eed176fb91a82d2999705b06d1ec491fa4f567ad438930",
+  "raw_report_sha256": "b30882232356f6840d8378241852ccf8da55de74aa22aaebe7df00a24c672823",
+  "raw_report_bytes": 665516,
   "supported_finding_count": 657,
   "retained_finding_count": 25,
   "violations": [

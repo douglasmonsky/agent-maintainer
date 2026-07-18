@@ -350,9 +350,7 @@ def test_dependency_cruiser_context_uses_existing_five_fact_limit(
     assert [fact["symbol"] for fact in facts] == [
         f"boundary-{index}" for index in range(EXPECTED_CONTEXT_FACTS)
     ]
-    assert all(
-        fact["check"] == "typescript-dependency-cruiser:web" for fact in facts
-    )
+    assert all(fact["check"] == "typescript-dependency-cruiser:web" for fact in facts)
 
 
 def record(check: str, log_path: Path) -> FailureRecord:

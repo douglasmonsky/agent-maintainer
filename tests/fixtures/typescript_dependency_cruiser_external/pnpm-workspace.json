@@ -3,6 +3,7 @@
   "commit": "fca71cca527b490e3f3ad955044a0506139d0330",
   "collected_at": "2026-07-18T02:25:18Z",
   "package_manager": "pnpm",
+  "node_version": "v26.5.0",
   "tool": {
     "name": "dependency-cruiser",
     "version": "17.0.2"
@@ -22,6 +23,8 @@
   "lockfile_sha256": "183fcf107c3a963af062597f1133caedca9bfb41dc3fd498603b7b66ccc15e92",
   "workspace_manifest_path": "pnpm-workspace.yaml",
   "workspace_manifest_sha256": "0a7a1b0b6936bbee0a5794607ac390b0ea5e3ad374c1719a603e8219c7383d86",
+  "raw_report_sha256": "2dfefbe4a155abc24570373e062206ea9332dc1730d18371e0ca4f075b65e875",
+  "raw_report_bytes": 2222180,
   "supported_finding_count": 52,
   "retained_finding_count": 25,
   "violations": [

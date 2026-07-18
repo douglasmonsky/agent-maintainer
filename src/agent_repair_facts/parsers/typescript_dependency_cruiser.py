@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from dataclasses import dataclass
 from pathlib import PurePosixPath, PureWindowsPath
 
@@ -19,7 +20,6 @@ SUPPORTED_TYPES = frozenset(
     ("dependency", "module", "reachability", "cycle", "instability", "folder")
 )
 
-_CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
 _WHITESPACE_RE = re.compile(r"\s+")
 
 
@@ -82,12 +82,7 @@ def _parse_violation(raw_violation: object) -> DependencyCruiserFinding | None:
     target_label = _target_label(violation)
     rule = _rule_details(violation.get("rule"))
     type_supported, violation_type = _violation_type(violation.get("type"))
-    if (
-        source is None
-        or target_label is None
-        or rule is None
-        or type_supported is False
-    ):
+    if source is None or target_label is None or rule is None or type_supported is False:
         return None
     source_path, source_label = source
     rule_name, severity = rule
@@ -158,10 +153,22 @@ def _text(value: object) -> str | None:
     return text[:DEPENDENCY_CRUISER_FIELD_CHAR_LIMIT]
 
 
+def _is_control(character: str) -> bool:
+    """Return whether a character can control or spoof rendered text."""
+
+    return unicodedata.category(character) in {"Cc", "Cf"}
+
+
+def _contains_controls(value: str) -> bool:
+    """Return whether text includes control or Unicode format characters."""
+
+    return any(_is_control(character) for character in value)
+
+
 def _single_line(value: str) -> str:
     """Collapse controls and whitespace without applying a length bound."""
 
-    without_controls = _CONTROL_RE.sub(" ", value)
+    without_controls = "".join(" " if _is_control(character) else character for character in value)
     return _WHITESPACE_RE.sub(" ", without_controls).strip()
 
 
@@ -188,15 +195,12 @@ def _path_is_unsafe(
 def _safe_path(value: object, unknown_label: str) -> tuple[str | None, str]:
     """Return a repository target plus a bounded, non-sensitive display label."""
 
-    if not isinstance(value, str):
+    if not isinstance(value, str) or not value:
         return None, unknown_label
-    had_controls = _CONTROL_RE.search(value) is not None
-    text = _single_line(value)
-    if not text:
-        return None, unknown_label
-    windows_path = PureWindowsPath(text)
-    posix_path = PurePosixPath(text.replace("\\", "/"))
-    if _path_is_unsafe(text, had_controls, windows_path, posix_path):
+    had_controls = _contains_controls(value)
+    windows_path = PureWindowsPath(value)
+    posix_path = PurePosixPath(value.replace("\\", "/"))
+    if _path_is_unsafe(value, had_controls, windows_path, posix_path):
         return None, _safe_basename(posix_path, unknown_label)
     normalized = posix_path.as_posix()
     return normalized, normalized[:DEPENDENCY_CRUISER_FIELD_CHAR_LIMIT]
@@ -233,10 +237,7 @@ def format_dependency_cruiser_finding(
     details = finding.severity
     if finding.violation_type:
         details = f"{details}; {finding.violation_type}"
-    message = (
-        f"{finding.source_label} -> {finding.target_label}: "
-        f"{finding.rule} [{details}]"
-    )
+    message = f"{finding.source_label} -> {finding.target_label}: {finding.rule} [{details}]"
     if len(message) <= DEPENDENCY_CRUISER_MESSAGE_CHAR_LIMIT:
         return message
     truncated = message[: DEPENDENCY_CRUISER_MESSAGE_CHAR_LIMIT - 3].rstrip()

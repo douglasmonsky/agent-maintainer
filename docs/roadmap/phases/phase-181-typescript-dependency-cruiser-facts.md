@@ -73,9 +73,10 @@ dependencies or running package scripts:
 
 The captures contained 657 and 52 parser-supported findings respectively.
 Each committed projection retains the first 25 normalized violations and
-records repository, revision, UTC collection time, tool version, exact command,
-exit status, and config and lockfile hashes. Tests replay the projections
-offline without network access or dependency-cruiser.
+records repository, revision, UTC collection time, Node and tool versions,
+exact command, exit status, config and lockfile hashes, and the raw report hash
+and byte count. Tests replay the projections offline without network access or
+dependency-cruiser.
 
 ## Acceptance Criteria
 

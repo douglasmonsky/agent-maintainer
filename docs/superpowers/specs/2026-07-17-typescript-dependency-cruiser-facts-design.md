@@ -233,10 +233,12 @@ direction. Any architecture-policy edit receives a matching decision note.
 ## Exit And Error Semantics
 
 - Exit `0` remains pass even if the JSON contains warning or informational
-  notices.
+  notices; valid findings are retained as a non-blocking warning summary.
 - Any nonzero exit remains failure through the existing check runner.
 - Parser success or failure never upgrades, suppresses, or replaces the process
   result.
+- Root and workspace cruise-result output uses a five-million-character
+  capture limit instead of the generic one-million-character command limit.
 - Empty violations produce no structured summary or repair facts.
 - Malformed JSON, recursion errors, invalid root shapes, and malformed neighbors
   fail closed to bounded raw output without raising into verification.
@@ -255,7 +257,8 @@ When dependencies are required for resolution, installation must use the
 repository's lockfile with lifecycle scripts disabled. Committed projections
 retain only public repository metadata, pinned commit, UTC collection time,
 tool and Node versions, exact command, exit status, configuration and lockfile
-hashes, supported/retained counts, and at most 25 normalized violations.
+hashes, raw-report hash and byte count, supported/retained counts, and at most
+25 normalized violations.
 
 Raw clones, dependency trees, full cruise graphs, local absolute paths, and
 temporary files are not committed. Normal tests replay projections offline and
