@@ -52,6 +52,13 @@ comparison. Snapshot mode alone treats that staleness as the prospective write,
 but still compares base descriptors directly with live extraction and permits
 the atomic replacement only after every independent obligation is satisfied.
 
+Root command integration remains a lazy target-aware adapter. The verifier
+catalog describes the public `contract check` subprocess without importing the
+contracts domain, skips it only when authored policy is absent, and assigns it
+to the static-policy group. The executor validates the command's complete JSON
+stdout before retaining it as a run artifact, so configuration diagnostics
+cannot masquerade as a structured contract report.
+
 Extractor routing depends on concrete adapters, while adapters depend on a
 separate inward-only normalization module for bounded JSON, canonical ordering,
 and descriptor construction. Adapters do not depend back on routing. This keeps

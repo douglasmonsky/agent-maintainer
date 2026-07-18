@@ -19,6 +19,7 @@ DOCTOR_STATUS = 14
 INSTALL_STATUS = 12
 VERIFY_STATUS = 13
 VERIFY_PLAN_STATUS = 18
+CONTRACT_STATUS = 19
 GUIDANCE_STATUS = 15
 INIT_STATUS = 16
 RATCHET_STATUS = 17
@@ -74,6 +75,11 @@ def test_maintainer_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> Non
         "verify_plan_command",
         constant_callback(VERIFY_PLAN_STATUS),
     )
+    monkeypatch.setattr(
+        maintainer_cli,
+        "contract_command",
+        constant_callback(CONTRACT_STATUS),
+    )
 
     assert maintainer_cli.main(["bootstrap"]) == BOOTSTRAP_STATUS
     assert maintainer_cli.main(["doctor", "--strict"]) == DOCTOR_STATUS
@@ -83,6 +89,7 @@ def test_maintainer_main_routes_commands(monkeypatch: pytest.MonkeyPatch) -> Non
     assert maintainer_cli.main(["ratchet", "status"]) == RATCHET_STATUS
     assert maintainer_cli.main(["verify", "--profile", "fast"]) == VERIFY_STATUS
     assert maintainer_cli.main(["verify-plan", "--json"]) == VERIFY_PLAN_STATUS
+    assert maintainer_cli.main(["contract", "check"]) == CONTRACT_STATUS
     assert maintainer_cli.main(["unknown"]) == UNKNOWN_COMMAND_STATUS
 
 
@@ -105,6 +112,7 @@ def test_maintainer_package_entrypoint_help() -> None:
     assert result.returncode == 0
     assert "python -m agent_maintainer doctor" in result.stdout
     assert "verify-plan" in result.stdout
+    assert "contract" in result.stdout
     assert "python -m agent_maintainer <command> [options]" in result.stdout
     for heading in (
         "Stable workflows:\n",
@@ -142,6 +150,18 @@ def test_maintainer_console_script_dispatches(
 
     assert maintainer_cli.console_main() == 0
     assert calls == [["doctor"]]
+
+
+def test_unrelated_command_does_not_import_contract_extractors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The root command keeps semantic extractors behind lazy dispatch."""
+    extractor_module = "agent_maintainer.contracts.extractors.python_api"
+    sys.modules.pop(extractor_module, None)
+    monkeypatch.setattr(maintainer_cli, "doctor_main", constant_callback(DOCTOR_STATUS))
+
+    assert maintainer_cli.main(["doctor"]) == DOCTOR_STATUS
+    assert extractor_module not in sys.modules
 
 
 def test_maintainer_package_main_module_dispatches(

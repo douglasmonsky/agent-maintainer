@@ -35,6 +35,7 @@ allowed_paths = [
   "src/agent_maintainer/verify/groups.py",
   "tach.toml",
   "tests/catalogs/test_contract_catalog.py",
+  "tests/catalogs/test_python_catalog_characterization.py",
   "tests/config/test_config_reference.py",
   "tests/contracts/**",
   "tests/packaging/test_package_metadata.py",

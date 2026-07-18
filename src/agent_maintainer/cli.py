@@ -29,6 +29,10 @@ verify_plan_command: preflight.CommandRunner = preflight.lazy_target_command(
     "agent_maintainer.verification_plan.cli",
     option="--target",
 )
+contract_command: preflight.CommandRunner = preflight.lazy_target_command(
+    "agent_maintainer.contracts.cli",
+    option="--target",
+)
 
 # docsync:evidence.start evidence.readme.command_registry
 USAGE = """Usage:
@@ -40,6 +44,7 @@ Stable workflows:
   init            Write starter files into a target repository.
   install         Install local hooks for this repository.
   skill           Install the setup skill for personal agent clients.
+  contract        Diff, check, or snapshot semantic compatibility contracts.
   verify          Run configured verification profiles.
   verify-plan     Plan exact evidence and gates required by the current diff.
   wait            Quiet polling is stable; terminal rewake is experimental.
@@ -73,6 +78,7 @@ Examples:
   python -m agent_maintainer verify --profile precommit
   python -m agent_maintainer verify --profile full
   python -m agent_maintainer verify-plan --base-ref origin/main
+  python -m agent_maintainer contract check --base-ref origin/main
   python -m agent_maintainer context failures
   python -m agent_maintainer context log pyright --tail 120
   python -m agent_maintainer guidance --check
@@ -131,6 +137,7 @@ def command_handlers() -> dict[str, preflight.CommandRunner]:
         "assess": assess_command,
         "bootstrap": bootstrap_command,
         "change-plan": change_plan_command,
+        "contract": contract_command,
         "context": context_main,
         "doctor": doctor_main,
         "events": events_command,

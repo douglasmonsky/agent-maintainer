@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import sys
@@ -108,6 +109,8 @@ def optional_skip_applies(check: Check) -> bool:
         return not Path(".github/workflows").exists()
     if check.name == "verification-plan-policy":
         return not Path(".agent-maintainer/path-risk.toml").exists()
+    if check.name == "contract-compatibility":
+        return not Path(".agent-maintainer/contracts.toml").exists()
     return check.name in {
         "pip-audit",
         "pytest-coverage",
@@ -172,6 +175,7 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
                 timeout_seconds=check.timeout_seconds,
                 output_limit_chars=check.output_limit_chars,
             )
+            capture_stdout_artifact(check, output)
     except OSError as exc:
         ended_at = utc_timestamp()
         output = f"could not run {check.command!r}: {exc}"
@@ -217,6 +221,22 @@ def existing_artifact_paths(check: Check) -> tuple[str, ...]:
     """Return declared artifacts that exist after a check has run."""
 
     return tuple(path for path in check.artifact_paths if Path(path).exists())
+
+
+def capture_stdout_artifact(check: Check, output: str) -> None:
+    """Retain complete JSON stdout for the contract compatibility check."""
+
+    if check.name != "contract-compatibility" or len(check.artifact_paths) != 1:
+        return
+    try:
+        payload = json.loads(output)
+    except json.JSONDecodeError:
+        return
+    if not isinstance(payload, dict):
+        return
+    path = Path(check.artifact_paths[0])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(output, encoding="utf-8")
 
 
 def missing_requirement_result(
