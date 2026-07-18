@@ -47,6 +47,12 @@ and descriptor construction. Adapters do not depend back on routing. This keeps
 the dependency graph acyclic while preserving one public extraction entry point
 and one shared fingerprint implementation.
 
+Python API extraction is AST-only. It accepts static `__all__` or explicit
+policy nominations, records signature shape and default presence without
+evaluating defaults, renders only a strict annotation-node allowlist, and
+retains only bounded JSON literal constants. Module bodies, decorators, imports,
+and target runtime objects are never executed or used for discovery.
+
 ## Consequences
 
 Every contract operation uses one repository-confinement and canonical

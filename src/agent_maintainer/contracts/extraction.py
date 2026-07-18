@@ -33,10 +33,12 @@ def extract_contract(repo_root: Path, spec: ContractSpec) -> Descriptor:
     from agent_maintainer.contracts.extractors.config_capabilities import (
         extract_config_capabilities,
     )
+    from agent_maintainer.contracts.extractors.python_api import extract_python_api
 
     extractors = {
         "cli-manifest": extract_cli_manifest,
         "config-capabilities": extract_config_capabilities,
+        "python-api": extract_python_api,
     }
     extractor = extractors.get(spec.kind)
     if extractor is None:
