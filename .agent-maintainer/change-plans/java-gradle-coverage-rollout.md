@@ -1,7 +1,7 @@
 +++
 id = "java-gradle-coverage-rollout"
 kind = "feature"
-status = "active"
+status = "complete"
 base_ref = "3511d61c118ac3604b8f9f8cc7cba9dc5fa2df7b"
 expires = 2026-07-30
 allowed_paths = [

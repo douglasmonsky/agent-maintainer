@@ -166,3 +166,4 @@
 | 179 | [TypeScript Knip Unused-Code And Dependency Facts](phases/phase-179-typescript-knip-unused-code-dependency-facts.md) |
 | 180 | [TypeScript OSV Dependency Facts](phases/phase-180-typescript-osv-dependency-facts.md) |
 | 181 | [TypeScript Dependency-Cruiser Facts](phases/phase-181-typescript-dependency-cruiser-facts.md) |
+| 182 | [TypeScript LCOV Changed-Line Facts](phases/phase-182-typescript-lcov-changed-line-facts.md) |

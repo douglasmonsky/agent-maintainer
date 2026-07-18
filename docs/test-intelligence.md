@@ -44,6 +44,38 @@ warnings use the same mapping so source changes do not ignore likely relevant
 test changes. The warning stays non-blocking unless existing strict
 warning-as-error options are enabled.
 
+## TypeScript LCOV Changed-Line Coverage
+
+Run an advisory report against an existing LCOV artifact:
+
+```bash
+python -m agent_maintainer test-intel typescript-coverage
+python -m agent_maintainer test-intel typescript-coverage --base-ref origin/main
+python -m agent_maintainer test-intel typescript-coverage --staged --format json
+python -m agent_maintainer test-intel typescript-coverage \
+  --lcov packages/web/coverage/lcov.info \
+  --source-root packages/web
+```
+
+The default artifact is `coverage/lcov.info`. The command asks Git for added,
+copied, renamed, or modified TypeScript/JavaScript source, then intersects those
+new-line hunks with executable LCOV `DA` lines. Tests, generated files, ignored
+build output, deleted paths, comments, blanks, and other lines absent from LCOV
+do not enter the denominator.
+
+Coverage is weighted across all executable changed lines. For example, one
+file with 2/2 lines covered and another with 0/1 produces 66.67%, not the 50%
+average of the two file percentages. Changed source absent from LCOV is listed
+separately so missing evidence is visible without being misrepresented as
+uncovered executable code.
+
+Relative `SF:` records resolve beneath `--source-root`, which defaults to the
+repository root. The artifact, source root, and accepted absolute `SF:` paths
+must stay inside the repository after resolution. The report is bounded and
+advisory: it does not run a JavaScript test tool, infer a package manager, call
+`diff-cover`, enforce a percentage, or join a verifier profile. Missing or
+unusable explicit input is a command error; a valid low percentage is not.
+
 ## Execute Affected Tests
 
 Run:

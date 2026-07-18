@@ -61,6 +61,14 @@ repositories already produce stable artifacts; it does not add TypeScript
 coverage enforcement or default framework commands. Broader external framework
 samples remain needed before promotion beyond advisory output.
 
+Phase 182 combined reusable LCOV records with the existing Git changed-line
+mapper in `test-intel typescript-coverage`. The report now provides weighted
+executable changed-line facts for existing root or workspace artifacts while
+remaining advisory and command-free. Committed LCOV projections from pinned
+`CMSgov/qpp-measures-data` and `starbeamjs/starbeam` revisions add npm/Jest V8
+and pnpm-workspace compatibility evidence. This still does not add coverage
+execution, thresholds, verifier profiles, or blocking TypeScript policy.
+
 Phase 139 added one external public-repository comparison against
 `vitest-dev/eslint-plugin-vitest` commit
 `7c697f8a53d7d7551b00ef11217d58cd45a0cf7d`, compared with its parent

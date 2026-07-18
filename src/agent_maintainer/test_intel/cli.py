@@ -13,6 +13,7 @@ from agent_maintainer.test_intel import (
     crosshair_reporting,
     hypothesis_candidates,
     hypothesis_reporting,
+    typescript_coverage_cli,
 )
 from agent_maintainer.test_intel import (
     run_changed as run_changed_tests,
@@ -42,6 +43,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         choices=FORMAT_CHOICES,
         default=FORMAT_TEXT,
     )
+    typescript_coverage_cli.add_parser(subparsers.add_parser)
     run_changed_parser = subparsers.add_parser(
         "run-changed",
         help="Run tests affected by changed Python source and test files.",
@@ -92,6 +94,7 @@ def main(argv: list[str]) -> int:
     args = parse_args(argv)
     handlers = {
         "changed": run_changed,
+        "typescript-coverage": typescript_coverage_cli.run,
         "run-changed": run_changed_tests_from_cli,
         "hypothesis-candidates": run_hypothesis_candidates,
         "mutation-targets": mutation_cli.run_targets,
