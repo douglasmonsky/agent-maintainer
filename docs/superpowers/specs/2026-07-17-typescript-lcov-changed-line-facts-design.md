@@ -52,8 +52,9 @@ recommended answer proceeds automatically. These are the Phase 182 choices.
    repository root. Relative `SF:` paths resolve beneath that root; absolute
    paths are accepted only when they resolve inside the repository.
 4. **Changed source discovery?** Use Git diff paths classified by the existing
-   TypeScript/JavaScript provider. Include source roles only; exclude tests,
-   generated files, ignored outputs, configuration, docs, and lockfiles.
+   TypeScript/JavaScript provider. Include added, copied, renamed, or modified
+   source roles only; exclude deleted paths, tests, generated files, ignored
+   outputs, configuration, docs, and lockfiles.
 5. **Coverage math?** Divide total covered executable changed lines by total
    executable changed lines across all matched files. Do not average per-file
    percentages.
