@@ -57,6 +57,28 @@ def reviewability_checks(
     ]
 
 
+def verification_plan_check(base_ref: str, *, staged: bool) -> models.Check:
+    """Build the optional declarative path-risk enforcement gate."""
+    command = [
+        sys.executable,
+        "-m",
+        "agent_maintainer",
+        "verify-plan",
+    ]
+    command.extend(["--staged"] if staged else ["--base-ref", base_ref])
+    command.append("--enforce")
+    return models.Check(
+        "verification-plan-policy",
+        command,
+        models.ALL_PROFILES,
+        required_paths=(".agent-maintainer/path-risk.toml",),
+        optional_skip_reason=(
+            ".agent-maintainer/path-risk.toml is absent; path-risk policy is not configured"
+        ),
+        optional_skip_status=models.SKIP_STATUS_MISSING_OPTIONAL,
+    )
+
+
 def architecture_checks(
     config: MaintainerConfig,
     base_ref: str,

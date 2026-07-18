@@ -27,6 +27,7 @@ allowed_paths = [
   "src/agent_maintainer/verification_plan/**",
   "tach.toml",
   "tests/catalogs/test_config_catalog.py",
+  "tests/catalogs/test_python_catalog_characterization.py",
   "tests/core/test_repo_paths.py",
   "tests/ecosystems/test_git_changes.py",
   "tests/packaging/test_public_docs.py",

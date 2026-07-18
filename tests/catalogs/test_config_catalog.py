@@ -15,14 +15,56 @@ from agent_maintainer.config import (
 from agent_maintainer.core import config as maintainer_config
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.models import (
+    ALL_PROFILES,
     CI_PROFILE,
     FULL_PROFILE,
     FULL_PROFILES,
     MANUAL_PROFILE,
     MANUAL_PROFILES,
     PRECOMMIT_PROFILE,
+    SKIP_STATUS_MISSING_OPTIONAL,
     VALID_PROFILES,
 )
+
+
+def test_verification_plan_policy_check_is_optional_and_exact() -> None:
+    checks = maintainer_catalog.make_checks(MaintainerConfig(), "origin/main", "main")
+    check = next(item for item in checks if item.name == "verification-plan-policy")
+
+    assert check.profiles == ALL_PROFILES
+    assert check.required_paths == (".agent-maintainer/path-risk.toml",)
+    assert check.optional_skip_status == SKIP_STATUS_MISSING_OPTIONAL
+    assert check.optional_skip_reason == (
+        ".agent-maintainer/path-risk.toml is absent; path-risk policy is not configured"
+    )
+    assert check.command == [
+        sys.executable,
+        "-m",
+        "agent_maintainer",
+        "verify-plan",
+        "--base-ref",
+        "origin/main",
+        "--enforce",
+    ]
+
+
+def test_staged_verification_plan_policy_check_avoids_base_ref() -> None:
+    checks = maintainer_catalog.make_checks(
+        MaintainerConfig(),
+        "option-shaped-ref",
+        "main",
+        staged=True,
+    )
+    check = next(item for item in checks if item.name == "verification-plan-policy")
+
+    assert check.command == [
+        sys.executable,
+        "-m",
+        "agent_maintainer",
+        "verify-plan",
+        "--staged",
+        "--enforce",
+    ]
 
 
 def test_legacy_ratchet_mode_sets_file_length_baseline() -> None:

@@ -1,0 +1,102 @@
+version = 1
+
+[[rules]]
+id = "architecture-contract"
+description = "Architecture boundary changes require an explicit decision and exact checks."
+paths = ["tach.toml", "src/**/tach.domain.toml"]
+mode = "required"
+profiles = ["precommit", "full"]
+checks = ["tach-config", "tach", "architecture-decision"]
+review_categories = ["architecture"]
+
+[[rules.evidence]]
+id = "architecture-decision"
+kind = "changed-path"
+paths = ["docs/architecture/decisions/*.md"]
+message = "Add or update an architecture decision record."
+
+[[rules]]
+id = "dependency-contract"
+description = "Dependency declarations require a refreshed lock and dependency gates."
+paths = [
+  "config/dev-dependencies.txt",
+  "package.json",
+  "packages/*/package.json",
+  "pyproject.toml",
+]
+mode = "required"
+profiles = ["full", "security"]
+checks = ["pip-audit", "osv-scanner", "license-check", "sbom"]
+review_categories = ["dependencies", "security"]
+
+[[rules.evidence]]
+id = "dependency-lock"
+kind = "changed-path"
+paths = [
+  "config/dev-lock.txt",
+  "package-lock.json",
+  "packages/*/package-lock.json",
+  "pnpm-lock.yaml",
+  "uv.lock",
+  "yarn.lock",
+]
+message = "Refresh the applicable dependency lock file."
+
+[[rules]]
+id = "workflow-contract"
+description = "Workflow changes require CI and supply-chain validation."
+paths = [".github/workflows/**"]
+mode = "required"
+profiles = ["ci", "security"]
+checks = ["actionlint", "yamllint", "zizmor"]
+review_categories = ["ci", "supply-chain"]
+
+[[rules]]
+id = "release-contract"
+description = "Release and version surfaces require release evidence."
+paths = [
+  ".github/workflows/*release*.yml",
+  ".github/workflows/*release*.yaml",
+  "src/agent_maintainer/release_artifacts.py",
+  "src/agent_maintainer/release_evidence.py",
+]
+mode = "required"
+profiles = ["full", "ci"]
+checks = ["pytest-coverage", "check-jsonschema"]
+review_categories = ["release"]
+
+[[rules.evidence]]
+id = "release-tests"
+kind = "changed-path"
+paths = ["tests/release/**", "tests/test_release*.py"]
+message = "Add or update release-contract tests."
+
+[[rules]]
+id = "security-policy"
+description = "Security policy and enforcement changes require focused tests and review."
+paths = [
+  ".agent-maintainer/path-risk.toml",
+  "src/agent_maintainer/catalogs/security.py",
+  "src/agent_maintainer/runners/secret_scan.py",
+  "src/agent_maintainer/verification_plan/**",
+]
+mode = "required"
+profiles = ["full", "security"]
+checks = ["bandit", "secret-scan", "secret-scan-history", "semgrep"]
+review_categories = ["security", "policy"]
+
+[[rules.evidence]]
+id = "security-tests"
+kind = "changed-path"
+paths = [
+  "tests/catalogs/test_config_catalog.py",
+  "tests/security/**",
+  "tests/verification_plan/**",
+]
+message = "Add or update focused security-policy tests."
+
+[[rules.evidence]]
+id = "policy-decision"
+kind = "changed-path"
+paths = ["docs/architecture/decisions/*.md"]
+message = "Record the policy boundary in an architecture decision."
