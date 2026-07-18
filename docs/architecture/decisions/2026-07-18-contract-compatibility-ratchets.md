@@ -41,6 +41,12 @@ application objects, execute target commands, use a shell, or access a network.
 Root CLI and catalog integration may depend inward on the completed service;
 the contracts domain must not depend back on those outward adapters.
 
+Extractor routing depends on concrete adapters, while adapters depend on a
+separate inward-only normalization module for bounded JSON, canonical ordering,
+and descriptor construction. Adapters do not depend back on routing. This keeps
+the dependency graph acyclic while preserving one public extraction entry point
+and one shared fingerprint implementation.
+
 ## Consequences
 
 Every contract operation uses one repository-confinement and canonical

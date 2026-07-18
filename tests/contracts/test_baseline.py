@@ -9,6 +9,7 @@ import pytest
 
 from agent_maintainer.contracts import baseline as baseline_module
 from agent_maintainer.contracts.baseline import (
+    canonical_json,
     fingerprint,
     load_baseline,
     parse_baseline,
@@ -18,6 +19,11 @@ from agent_maintainer.contracts.baseline import (
 from agent_maintainer.contracts.models import BaselineError, ContractBaseline, Descriptor
 
 BASELINE_MODE = 0o600
+
+
+def test_canonical_json_is_compact_and_key_sorted() -> None:
+    """Semantic helpers receive one compact deterministic JSON encoding."""
+    assert canonical_json({"z": 1, "a": [2]}) == '{"a":[2],"z":1}'
 
 
 def _descriptor(contract_id: str = "docsync-api") -> Descriptor:

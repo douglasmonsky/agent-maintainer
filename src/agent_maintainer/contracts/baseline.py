@@ -27,14 +27,20 @@ KINDS = frozenset(("config-capabilities", "cli-manifest", "python-api", "json-sc
 def fingerprint(value: object) -> str:
     """Return the exact SHA-256 of canonical JSON-compatible semantic data."""
 
-    encoded = json.dumps(
+    encoded = canonical_json(value).encode("utf-8")
+    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
+
+
+def canonical_json(value: object) -> str:
+    """Return compact deterministic JSON for semantic ordering and hashing."""
+
+    return json.dumps(
         value,
         allow_nan=False,
         ensure_ascii=True,
         separators=(",", ":"),
         sort_keys=True,
-    ).encode("utf-8")
-    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
+    )
 
 
 def load_baseline(

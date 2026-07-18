@@ -17,6 +17,15 @@ path = "limits"
 depends_on = []
 
 [[modules]]
+path = "normalization"
+depends_on = [
+  "baseline",
+  "limits",
+  "models",
+  "paths",
+]
+
+[[modules]]
 path = "models"
 depends_on = []
 
@@ -34,4 +43,32 @@ depends_on = [
   "//agent_maintainer.core.repo_paths",
   "models",
   "paths",
+]
+
+[[modules]]
+path = "extraction"
+depends_on = [
+  "extractors.cli_manifest",
+  "extractors.config_capabilities",
+  "models",
+  "normalization",
+]
+
+[[modules]]
+path = "extractors"
+depends_on = []
+
+[[modules]]
+path = "extractors.cli_manifest"
+depends_on = [
+  "models",
+  "normalization",
+]
+
+[[modules]]
+path = "extractors.config_capabilities"
+depends_on = [
+  "limits",
+  "models",
+  "normalization",
 ]
