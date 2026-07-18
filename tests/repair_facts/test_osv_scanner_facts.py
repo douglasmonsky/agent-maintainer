@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from agent_repair_facts import registry
+from agent_repair_facts.parsers import osv_scanner
 
 FIXTURE = Path(__file__).parents[1] / "fixtures" / "osv-scanner" / "v2-grouped.json"
 INVALID_OSV_PAYLOADS: tuple[object, ...] = (
@@ -135,6 +136,36 @@ def test_osv_malformed_group_does_not_hide_valid_vulnerability() -> None:
     ]
 
 
+def test_osv_partial_group_preserves_canonical_and_missing_alias() -> None:
+    """Valid group IDs survive when only one embedded advisory is available."""
+
+    payload = {
+        "results": [
+            {
+                "source": {"path": "package-lock.json", "type": "lockfile"},
+                "packages": [
+                    {
+                        "package": {
+                            "ecosystem": "npm",
+                            "name": "demo",
+                            "version": "1",
+                        },
+                        "vulnerabilities": [{"id": "GHSA-1", "summary": "partial artifact"}],
+                        "groups": [{"ids": ["GHSA-1", "CVE-1"]}],
+                    }
+                ],
+            }
+        ]
+    }
+
+    facts = artifact_facts(payload)
+
+    assert len(facts) == 1
+    assert facts[0]["symbol"] == "CVE-1"
+    assert "CVE-1 (GHSA-1)" in str(facts[0]["message"])
+    assert "partial artifact" in str(facts[0]["message"])
+
+
 def test_osv_unsafe_paths_never_enter_fact_paths_or_messages() -> None:
     """Absolute, drive-qualified, and traversal sources expose filenames only."""
 
@@ -177,6 +208,101 @@ def test_osv_unsafe_paths_never_enter_fact_paths_or_messages() -> None:
     assert "C:\\\\private" not in serialized
     assert "package-lock.json" in serialized
     assert "pnpm-lock.yaml" in serialized
+
+
+@pytest.mark.parametrize("source_path", ("..", "../..", "C:\\", "\n"))
+def test_osv_unsafe_source_without_filename_uses_unknown_label(source_path: str) -> None:
+    """Traversal identities, drive roots, and controls have no display filename."""
+
+    payload = {
+        "results": [
+            {
+                "source": {"path": source_path, "type": "lockfile"},
+                "packages": [
+                    {
+                        "package": {
+                            "ecosystem": "npm",
+                            "name": "demo",
+                            "version": "1",
+                        },
+                        "vulnerabilities": [{"id": "OSV-1"}],
+                    }
+                ],
+            }
+        ]
+    }
+
+    fact = artifact_facts(payload)[0]
+
+    assert fact["path"] is None
+    assert "source: <unknown source>" in str(fact["message"])
+
+
+def test_osv_overlong_source_is_nontargetable_with_safe_filename() -> None:
+    """An oversized relative path retains only its independently safe filename."""
+
+    source_path = f"packages/{'x' * 501}/package-lock.json"
+    payload = {
+        "results": [
+            {
+                "source": {"path": source_path, "type": "lockfile"},
+                "packages": [
+                    {
+                        "package": {
+                            "ecosystem": "npm",
+                            "name": "demo",
+                            "version": "1",
+                        },
+                        "vulnerabilities": [{"id": "OSV-1"}],
+                    }
+                ],
+            }
+        ]
+    }
+
+    fact = artifact_facts(payload)[0]
+
+    assert fact["path"] is None
+    assert "source: package-lock.json" in str(fact["message"])
+
+
+def test_osv_rendered_fields_are_single_line_and_bounded() -> None:
+    """Control characters and oversized advisory lists cannot expand context."""
+
+    aliases = [f"GHSA-{index:03d}-" + ("x" * 300) for index in range(100)]
+    fixes = [{"fixed": f"{index}.0." + ("x" * 300)} for index in range(100)]
+    payload = {
+        "results": [
+            {
+                "source": {"path": "package-lock.json", "type": "lock\nfile"},
+                "packages": [
+                    {
+                        "package": {
+                            "ecosystem": "npm\nINJECTED",
+                            "name": "demo\nINJECTED" + ("x" * 500),
+                            "version": "1\nINJECTED",
+                        },
+                        "vulnerabilities": [
+                            {
+                                "id": "OSV-1\nINJECTED",
+                                "aliases": aliases,
+                                "summary": "summary\nINJECTED " + ("x" * 500),
+                                "affected": [{"ranges": [{"events": fixes}]}],
+                            }
+                        ],
+                    }
+                ],
+            }
+        ]
+    }
+
+    parsed = osv_scanner.parse_osv_payload(payload)
+    message = osv_scanner.format_osv_finding(parsed.findings[0])
+
+    assert "\n" not in message
+    assert len(message) <= osv_scanner.OSV_MESSAGE_CHAR_LIMIT
+    assert len(parsed.findings[0].aliases) <= osv_scanner.OSV_LIST_ITEM_LIMIT
+    assert len(parsed.findings[0].fixed_versions) <= osv_scanner.OSV_LIST_ITEM_LIMIT
 
 
 def test_osv_sorts_before_the_retention_limit() -> None:

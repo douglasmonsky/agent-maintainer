@@ -1,7 +1,9 @@
 # TypeScript OSV Dependency Facts Design
 
-**Date:** 2026-07-17  
-**Phase:** 180  
+**Date:** 2026-07-17
+
+**Phase:** 180
+
 **Status:** Approved for implementation planning
 
 ## Context
@@ -196,6 +198,13 @@ The parser retains at most 500 findings from one artifact. Compact verifier
 output renders at most 50 total lines and adds the existing omission marker.
 Exact context retains the existing five-fact-per-check limit. Sorting happens
 before every limit so input order cannot change retained findings.
+
+Each normalized scalar is whitespace-safe and at most 200 characters. A
+finding retains at most 25 aliases and 25 fixed versions, and one rendered fact
+or summary line is at most 1,000 characters. Source paths longer than 500
+characters are non-targetable and retain only a separately validated filename
+label. These inner bounds prevent one syntactically valid advisory from
+defeating the outer finding, line, or context limits.
 
 ## Shared Parser Boundary
 

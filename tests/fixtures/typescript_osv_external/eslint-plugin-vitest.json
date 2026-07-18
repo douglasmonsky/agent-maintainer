@@ -5,6 +5,7 @@
   "lockfile_path": "pnpm-lock.yaml",
   "package_manager": "pnpm@10.18.3",
   "scanner_version": "2.4.0",
+  "collected_at": "2026-07-18T00:52:02Z",
   "capture_command": [
     "osv-scanner",
     "scan",

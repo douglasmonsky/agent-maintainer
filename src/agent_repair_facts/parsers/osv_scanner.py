@@ -11,6 +11,10 @@ from agent_repair_facts import payloads
 
 OSV_FACT_LIMIT: Final = 500
 OSV_SUMMARY_CHAR_LIMIT: Final = 200
+OSV_FIELD_CHAR_LIMIT: Final = 200
+OSV_PATH_CHAR_LIMIT: Final = 500
+OSV_LIST_ITEM_LIMIT: Final = 25
+OSV_MESSAGE_CHAR_LIMIT: Final = 1_000
 
 
 @dataclass(frozen=True)
@@ -101,7 +105,12 @@ def format_osv_finding(finding: OsvFinding) -> str:
         details.append(f"severity: {finding.max_severity}")
     if finding.summary:
         details.append(finding.summary)
-    return "; ".join((base, *details))
+    message = "; ".join((base, *details))
+    if len(message) <= OSV_MESSAGE_CHAR_LIMIT:
+        return message
+    prefix = message[: OSV_MESSAGE_CHAR_LIMIT - 3].rstrip()
+    ellipsis = "..."
+    return f"{prefix}{ellipsis}"
 
 
 def _result_findings(result: dict[str, object]) -> list[OsvFinding]:
@@ -153,14 +162,11 @@ def _grouped_and_fallback_findings(
     referenced: set[str] = set()
     findings: list[OsvFinding] = []
     for group in payloads.json_objects(raw_groups):
-        ids = tuple(
-            sorted(
-                set(_text_values(group.get("ids"))) & package.vulnerabilities.keys(),
-            ),
-        )
-        if not ids:
+        ids = _text_values(group.get("ids"))
+        available_ids = tuple(advisory for advisory in ids if advisory in package.vulnerabilities)
+        if not available_ids:
             continue
-        referenced.update(ids)
+        referenced.update(available_ids)
         findings.append(
             _group_finding(
                 package,
@@ -185,7 +191,9 @@ def _group_finding(
     group: dict[str, object],
 ) -> OsvFinding:
     canonical = ids[0]
-    records = tuple(package.vulnerabilities[advisory] for advisory in ids)
+    records = tuple(
+        package.vulnerabilities[advisory] for advisory in ids if advisory in package.vulnerabilities
+    )
     aliases = set(ids[1:])
     aliases.update(_text_values(group.get("aliases")))
     for record in records:
@@ -199,7 +207,7 @@ def _group_finding(
         package=package.name,
         version=package.version,
         advisory=canonical,
-        aliases=tuple(sorted(aliases)),
+        aliases=tuple(sorted(aliases)[:OSV_LIST_ITEM_LIMIT]),
         fixed_versions=_fixed_versions(records),
         max_severity=_text(group.get("max_severity")),
         summary=_summary(package.vulnerabilities.get(canonical) or records[0]),
@@ -221,7 +229,7 @@ def _fallback_finding(
         package=package.name,
         version=package.version,
         advisory=advisory,
-        aliases=tuple(sorted(aliases)),
+        aliases=tuple(sorted(aliases)[:OSV_LIST_ITEM_LIMIT]),
         fixed_versions=_fixed_versions((vulnerability,)),
         max_severity=None,
         summary=_summary(vulnerability),
@@ -233,7 +241,9 @@ def _fixed_versions(
 ) -> tuple[str, ...]:
     events = chain.from_iterable(_fixed_events(vulnerability) for vulnerability in vulnerabilities)
     fixes = {_text(event.get("fixed")) for event in events}
-    return tuple(sorted(fixed for fixed in fixes if fixed is not None))
+    return tuple(
+        sorted(fixed for fixed in fixes if fixed is not None)[:OSV_LIST_ITEM_LIMIT],
+    )
 
 
 def _fixed_events(vulnerability: dict[str, object]) -> tuple[dict[str, object], ...]:
@@ -263,14 +273,30 @@ def _summary(vulnerability: dict[str, object] | None) -> str | None:
 
 
 def _safe_source_path(value: object) -> tuple[str | None, str]:
-    text = _text(value)
-    if text is None:
+    if not isinstance(value, str):
+        return (None, "<unknown source>")
+    had_controls = any(not character.isprintable() for character in value)
+    printable = "".join(character if character.isprintable() else " " for character in value)
+    text = " ".join(printable.split())
+    if not text:
         return (None, "<unknown source>")
     windows_path = PureWindowsPath(text)
     posix_path = PurePosixPath(text.replace("\\", "/"))
-    filename = windows_path.name or posix_path.name or "<unknown source>"
+    filename = _text(windows_path.name or posix_path.name) or "<unknown source>"
+    invalid_filename = any(
+        (
+            filename in {".", ".."},
+            bool(PureWindowsPath(filename).drive),
+            "/" in filename,
+            "\\" in filename,
+        ),
+    )
+    if invalid_filename:
+        filename = "<unknown source>"
     unsafe = any(
         (
+            had_controls,
+            len(text) > OSV_PATH_CHAR_LIMIT,
             posix_path.is_absolute(),
             windows_path.is_absolute(),
             bool(windows_path.drive),
@@ -287,14 +313,21 @@ def _safe_source_path(value: object) -> tuple[str | None, str]:
 def _text(value: object) -> str | None:
     if not isinstance(value, str):
         return None
-    text = value.strip()
-    return text or None
+    printable = "".join(character if character.isprintable() else " " for character in value)
+    text = " ".join(printable.split())
+    if not text:
+        return None
+    if len(text) <= OSV_FIELD_CHAR_LIMIT:
+        return text
+    prefix = text[: OSV_FIELD_CHAR_LIMIT - 3].rstrip()
+    ellipsis = "..."
+    return f"{prefix}{ellipsis}"
 
 
 def _text_values(value: object) -> tuple[str, ...]:
     values = payloads.json_array(value) or []
     texts = (_text(item) for item in values)
-    return tuple(text for text in texts if text is not None)
+    return tuple(sorted({text for text in texts if text is not None}))
 
 
 def _finding_sort_key(finding: OsvFinding) -> tuple[str, str, str, str, str]:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import cast
 
@@ -53,6 +54,12 @@ def test_public_osv_fixture_is_pinned_and_replayable(
     assert fixture["lockfile_path"] == lockfile
     assert fixture["package_manager"] == package_manager
     assert fixture["scanner_version"]
+    collected_at = str(fixture["collected_at"])
+    assert re.fullmatch(
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z",
+        collected_at,
+    )
+    assert datetime.strptime(collected_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC).tzinfo is UTC
     assert fixture["capture_command"] == [
         "osv-scanner",
         "scan",

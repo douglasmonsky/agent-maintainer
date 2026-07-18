@@ -36,7 +36,10 @@ summary, aliases, severity, and fixed versions consumed by the repair loop.
 
 The parser sorts before retaining 500 findings. Compact failed-check summaries
 contain at most 50 total lines, reserving the last line for an omission count
-when needed. Context packs keep the existing five-fact-per-check limit.
+when needed. Context packs keep the existing five-fact-per-check limit. Scalars
+are normalized and capped at 200 characters, aliases and fixes at 25 each, and
+one rendered message at 1,000 characters. Paths longer than 500 characters are
+non-targetable.
 
 ## Evidence
 
@@ -55,11 +58,11 @@ dependencies or running package scripts:
   `550dfd2a976d69254ed71eb6f5a6c5ee20060807`, using
   `package-lock.json` and npm.
 
-Each committed projection records the repository, revision, lockfile and raw
-report hashes, scanner version, exit status, normalization method, and counts.
-It retains at most 25 sorted alias groups and removes all temporary machine
-paths. Normal tests replay the projections offline without OSV Scanner or
-network access.
+Each committed projection records the repository, revision, UTC collection
+time, lockfile and raw report hashes, scanner version, exit status,
+normalization method, and counts. It retains at most 25 sorted alias groups and
+removes all temporary machine paths. Normal tests replay the projections
+offline without OSV Scanner or network access.
 
 ## Acceptance Criteria
 

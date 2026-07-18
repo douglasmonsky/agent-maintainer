@@ -132,8 +132,10 @@ traversal, and Windows drive paths are redacted to a safe filename label.
 
 The parser retains at most 500 normalized findings, failed-check summaries
 contain at most 50 total lines, and context packs keep the existing five facts
-per check. Synthetic tests cover malformed neighbors and unsafe paths. Bounded
-projections from pinned pnpm `eslint-plugin-vitest` and npm
+per check. Individual scalars are capped at 200 characters, alias and fix lists
+at 25 values each, and rendered messages at 1,000 characters. Synthetic tests
+cover partial groups, malformed neighbors, control characters, and unsafe
+paths. Bounded projections from pinned pnpm `eslint-plugin-vitest` and npm
 `node-typescript-boilerplate` revisions provide public compatibility evidence;
 they do not promote the provider or add a default check.
 

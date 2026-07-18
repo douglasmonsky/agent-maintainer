@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from agent_maintainer.core import structured_security
+from agent_repair_facts.parsers import osv_scanner
 
 OSV_SUMMARY_LINE_LIMIT = 50
 
@@ -73,6 +74,34 @@ def test_osv_invalid_payload_has_no_summary() -> None:
     """Unsupported JSON keeps the bounded raw-output fallback available."""
 
     assert structured_security.summarize_osv_payload({}) is None
+
+
+def test_osv_summary_normalizes_embedded_newlines() -> None:
+    """One normalized finding always occupies exactly one compact-output line."""
+
+    payload = {
+        "results": [
+            {
+                "source": {"path": "package-lock.json", "type": "lockfile"},
+                "packages": [
+                    {
+                        "package": {
+                            "ecosystem": "npm",
+                            "name": "demo\nINJECTED",
+                            "version": "1",
+                        },
+                        "vulnerabilities": [{"id": "OSV-1"}],
+                    }
+                ],
+            }
+        ]
+    }
+
+    summary = structured_security.summarize_osv_payload(payload)
+
+    assert summary is not None
+    assert len(summary.splitlines()) == 1
+    assert len(summary) <= osv_scanner.OSV_MESSAGE_CHAR_LIMIT
 
 
 def _payload_with_findings(count: int) -> dict[str, object]:
