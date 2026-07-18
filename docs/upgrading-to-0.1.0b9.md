@@ -24,9 +24,29 @@ normal package-index installation until the release index moves.
 
 ## Review Candidate Scope
 
-No user-facing `0.1.0b9` changes are recorded yet. Before evaluating a later
-candidate state, review the Unreleased changelog and candidate notes for exact
-behavior, configuration, and generated-file changes.
+`0.1.0b9` adds diff-aware verification planning and declarative path-risk
+policy. Existing verification commands and profiles keep their prior behavior;
+the planner is additive and does not dynamically skip configured gates.
+
+- Run the advisory planner against a trusted base ref:
+
+  ```bash
+  agent-maintainer verify-plan --base-ref origin/main
+  ```
+
+- Use `--json` for deterministic `schema_version = 1` output and `--staged` to
+  plan the exact staged diff.
+- Add `.agent-maintainer/path-risk.toml` only after reviewing the versioned
+  policy contract. Unknown fields, unsafe paths, malformed globs, unknown
+  profiles, and ambiguous check names fail closed.
+- Add `--enforce` when missing required evidence should return exit status `1`.
+  Invalid policy, configuration, or Git input returns `2`.
+- Treat recommended commands as an explanation of required verification, not
+  as permission to omit existing repository or CI gates.
+
+There are no breaking changes to existing CLI, configuration, or verifier
+execution contracts. Repositories without path-risk policy remain advisory and
+do not gain the optional policy gate.
 
 Preview every repository mutation before applying it:
 
