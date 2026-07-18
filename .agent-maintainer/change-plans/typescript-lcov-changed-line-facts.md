@@ -1,7 +1,7 @@
 +++
 id = "typescript-lcov-changed-line-facts"
 kind = "feature"
-status = "active"
+status = "complete"
 base_ref = "b7b45b1"
 expires = 2026-07-31
 allowed_paths = [

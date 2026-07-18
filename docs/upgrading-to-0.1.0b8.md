@@ -45,6 +45,20 @@ checked-in Gradle wrapper and must not create a system-Gradle fallback.
 - JaCoCo coverage thresholds can only ratchet upward, and multi-project reports
   retain per-module truth rather than inventing a repository-wide percentage.
 - Copied and renamed destinations now count toward cohesive-change budgets.
+- TypeScript/JavaScript package-manager and workspace detection is advisory;
+  Agent Maintainer does not choose a package manager or run repository scripts.
+- Configured Knip and dependency-cruiser checks provide bounded repair facts,
+  while the existing OSV Scanner gate provides grouped vulnerability facts.
+- Existing LCOV can be inspected against changed lines without running a test
+  tool or enforcing a threshold:
+
+  ```bash
+  agent-maintainer test-intel typescript-coverage --base-ref origin/main
+  ```
+
+- TypeScript/JavaScript remains experimental. Keep existing native lint, test,
+  architecture, dependency-audit, and coverage policy until the advisory
+  output has been calibrated for the repository.
 
 ## Complete The Evaluation
 
