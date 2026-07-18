@@ -10,8 +10,8 @@ from agent_maintainer.contracts.models import Classification, ContractKind
 
 LOWER_BOUNDS = frozenset(("exclusive_minimum", "min_items", "min_length", "minimum"))
 UPPER_BOUNDS = frozenset(("exclusive_maximum", "max_items", "max_length", "maximum"))
-type ClassificationResult = tuple[Classification, str]
-type Classifier = Callable[
+ClassificationResult = tuple[Classification, str]
+Classifier = Callable[
     [ContractKind, str, object | None, object | None],
     ClassificationResult,
 ]
@@ -391,8 +391,8 @@ def _classify_unknown(
     return "review-required", "unrecognized semantic operation"
 
 
-type MemberAddClassifier = Callable[[str, Mapping[str, object]], ClassificationResult]
-type ConstraintClassifier = Callable[[object | None, object | None], ClassificationResult]
+MemberAddClassifier = Callable[[str, Mapping[str, object]], ClassificationResult]
+ConstraintClassifier = Callable[[object | None, object | None], ClassificationResult]
 
 MEMBER_ADD_CLASSIFIERS: dict[ContractKind, MemberAddClassifier] = {
     "cli-manifest": _classify_cli_member_add,

@@ -15,14 +15,14 @@ from agent_maintainer.contracts.normalization import (
 )
 from agent_maintainer.contracts.paths import read_confined_text
 
-type Definition = (
+Definition = (
     ast.FunctionDef
     | ast.AsyncFunctionDef
     | ast.ClassDef
     | ast.Assign
     | ast.AnnAssign
 )
-type FunctionNode = ast.FunctionDef | ast.AsyncFunctionDef
+FunctionNode = ast.FunctionDef | ast.AsyncFunctionDef
 
 
 def extract_python_api(repo_root: Path, spec: ContractSpec) -> Descriptor:

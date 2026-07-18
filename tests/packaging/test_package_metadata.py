@@ -70,6 +70,7 @@ def test_packaged_python_sources_parse_on_minimum_supported_version() -> None:
     assert source_paths
     for path in source_paths:
         source = path.read_text(encoding="utf-8")
+        assert "\ntype " not in source, f"PEP 695 alias requires Python 3.12: {path}"
         ast.parse(source, filename=str(path), feature_version=(3, 11))
 
 

@@ -32,7 +32,7 @@ class SemanticDelta:
     after: object | None
 
 
-type Recurse = Callable[
+Recurse = Callable[
     [ContractKind, Mapping[str, object], Mapping[str, object], str],
     list[SemanticDelta],
 ]

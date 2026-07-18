@@ -35,6 +35,7 @@ allowed_paths = [
   "tests/catalogs/test_contract_catalog.py",
   "tests/config/test_config_reference.py",
   "tests/contracts/**",
+  "tests/packaging/test_package_metadata.py",
   "tests/packaging/test_public_docs.py",
   "tests/packaging/test_script_helpers.py",
   "tests/verify/test_verification_groups.py",
