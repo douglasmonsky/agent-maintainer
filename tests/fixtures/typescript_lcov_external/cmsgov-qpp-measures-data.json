@@ -1,0 +1,33 @@
+{
+  "source_repository": "https://github.com/CMSgov/qpp-measures-data",
+  "commit": "b2dd1ed84ed4da08269a4d0d625711d57688523d",
+  "collected_at": "2026-07-18T03:55:00Z",
+  "package_manager": "npm",
+  "package_manager_version": ">=11.11",
+  "node_version": ">=24",
+  "lockfile_path": "package-lock.json",
+  "lockfile_version": "3",
+  "lockfile_sha256": "8491dc39004f6dc8fae8a0fdf13973c08362bba90b8924bbbd8496224a581113",
+  "coverage_producer": {
+    "name": "Jest V8 coverage",
+    "version": "30.4.2"
+  },
+  "command": ["npm", "run", "jest:cov"],
+  "declared_command": "TS_NODE_FILES=true NODE_OPTIONS='--max-old-space-size=3072' jest --coverage --coverage-provider=v8",
+  "artifact_path": "lcov.info",
+  "artifact_git_blob_sha1": "32f5c013faaca78aa42d037d185b47edf4637c04",
+  "raw_lcov_sha256": "526c89f07a1dea49172ccdc7ec1615558f16e2dc7ad00d9b54a983fb35893716",
+  "raw_lcov_bytes": 64809,
+  "source_root": ".",
+  "projected_record_count": 2,
+  "changed_lines": {
+    "constants.ts": [1, 2],
+    "scripts/errors.ts": [3, 9]
+  },
+  "expected": {
+    "executable_changed_lines": 4,
+    "covered_changed_lines": 4,
+    "changed_line_coverage": 100.0
+  },
+  "lcov_projection": "TN:\nSF:constants.ts\nFNF:0\nFNH:0\nDA:1,1\nDA:2,1\nDA:3,1\nDA:4,1\nDA:5,1\nDA:6,1\nDA:7,1\nDA:8,1\nDA:9,1\nDA:10,1\nDA:11,1\nDA:12,1\nDA:13,1\nDA:14,1\nDA:15,1\nDA:16,1\nDA:17,1\nDA:18,1\nDA:19,1\nDA:20,1\nDA:21,1\nDA:22,1\nDA:23,1\nDA:24,1\nDA:25,1\nDA:26,1\nDA:27,1\nDA:28,1\nDA:29,1\nDA:30,1\nDA:31,1\nDA:32,1\nDA:33,1\nDA:34,1\nDA:35,1\nDA:36,1\nDA:37,1\nDA:38,1\nDA:39,1\nLF:39\nLH:39\nBRF:0\nBRH:0\nend_of_record\nTN:\nSF:scripts/errors.ts\nFN:3,InvalidValueError\nFN:9,DataValidationError\nFNF:2\nFNH:2\nFNDA:6,InvalidValueError\nFNDA:65,DataValidationError\nDA:1,1\nDA:2,1\nDA:3,1\nDA:4,6\nDA:5,6\nDA:6,1\nDA:7,1\nDA:8,1\nDA:9,1\nDA:10,65\nDA:11,65\nDA:12,1\nDA:13,1\nLF:13\nLH:13\nBRDA:3,0,0,6\nBRDA:9,1,0,65\nBRF:2\nBRH:2\nend_of_record\n"
+}

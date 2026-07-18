@@ -28,6 +28,8 @@ Already landed:
   provenance.
 - Explicit dependency-cruiser architecture commands with bounded, path-safe
   cruise-result facts and summaries.
+- Advisory LCOV changed-line coverage for existing root or workspace artifacts,
+  with weighted executable-line facts and no threshold gate.
 - TypeScript/React doctor and setup-advisor guidance.
 - Advisory package-manager and workspace detection with file-and-field
   provenance.
@@ -35,8 +37,8 @@ Already landed:
 Still missing before a promotion assessment:
 
 - Blocking TypeScript/React reviewability gates.
-- First-class package-manager audit, changed-line coverage,
-  mutation, generated-file, and broader security adapters.
+- First-class package-manager audit, mutation, generated-file, and broader
+  security adapters.
 - Broader external evidence across React, Vite, Next.js, and workspace layouts.
 
 ## Parity Tool Map
@@ -70,16 +72,32 @@ Still missing before a promotion assessment:
 2. Phase 179: Knip unused-code and dependency facts are complete.
 3. Phase 180: OSV dependency facts are complete.
 4. Phase 181: dependency-cruiser architecture-boundary facts are complete.
-5. Package-manager audit facts are the next parity slice.
-6. Declared Nx boundary support.
-7. LCOV changed-line coverage facts.
-8. React hooks, JSX accessibility, and Testing Library recommendations.
-9. Explicit generated-file and framework policy evidence.
-10. StrykerJS mutation facts with a runtime-cost guard.
-11. TypeScript/React blocking-gate promotion assessment.
+5. Phase 182: advisory LCOV changed-line coverage facts are complete.
+6. Package-manager audit facts are the next parity slice.
+7. Explicit generated-file and framework policy evidence.
+8. TypeScript/React blocking-gate promotion assessment.
+9. Declared Nx boundary support.
+10. React hooks, JSX accessibility, and Testing Library recommendations.
+11. StrykerJS mutation facts with a runtime-cost guard.
 
 Assign later phase numbers when each slice has an approved design and
 implementation plan.
+
+## Phase 182 LCOV Changed-Line Coverage Boundary
+
+Phase 182 adds `test-intel typescript-coverage`, which reads an existing LCOV
+artifact and intersects its executable `DA` lines with a selected Git diff.
+Relative LCOV sources resolve beneath an explicit source root; absolute sources
+are accepted only inside the repository. Missing files remain visible but do
+not become synthetic uncovered lines. Aggregate coverage is weighted across
+all executable changed lines rather than averaging per-file percentages.
+
+The command does not run a test tool, infer a package manager, call
+`diff-cover`, or configure a threshold, ratchet, verifier profile, or blocking
+gate. Pinned committed LCOV projections from npm/TypeScript/Jest V8
+`CMSgov/qpp-measures-data` and pnpm-workspace `starbeamjs/starbeam` provide
+offline public compatibility evidence. TypeScript/JavaScript remains
+experimental.
 
 ## Phase 181 Dependency-Cruiser Boundary
 

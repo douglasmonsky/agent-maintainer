@@ -118,6 +118,42 @@ namespace/class member categories are ignored in this phase.
 Only repository-relative paths are emitted. Absolute and parent-traversal paths
 are rejected so local machine paths cannot enter summaries or repair context.
 
+## Advisory LCOV Changed-Line Coverage
+
+When a repository already produces LCOV, report executable changed-line
+coverage without running a JavaScript tool:
+
+```bash
+python -m agent_maintainer test-intel typescript-coverage \
+  --lcov coverage/lcov.info \
+  --base-ref origin/main
+```
+
+For workspace-relative records such as `SF:src/app.ts`, supply the workspace
+root explicitly:
+
+```bash
+python -m agent_maintainer test-intel typescript-coverage \
+  --lcov packages/web/coverage/lcov.info \
+  --source-root packages/web \
+  --staged \
+  --format json
+```
+
+The report classifies non-deleted TypeScript/JavaScript source paths from the
+Git diff, intersects them with executable LCOV `DA` lines, and calculates one
+weighted percentage from total covered executable changed lines. Changed
+comments and other non-executable lines do not enter the denominator. Changed
+source missing from LCOV is listed separately instead of being silently counted
+as uncovered.
+
+The LCOV file and source root must resolve inside the repository. Unsafe or
+ambiguous paths never match source. Input, retained file facts, and text details
+are bounded. A valid report exits successfully regardless of its percentage;
+there is no threshold, ratchet, configured provider check, or verifier profile.
+The command never runs Jest, Vitest, Istanbul, V8, npm, pnpm, Yarn, Bun, or
+`diff-cover`.
+
 Agent Maintainer honors the configured Knip command's exit status. Exit `0`
 passes, while exits `1` and `2` fail through the normal check runner. It does
 not add `--no-exit-code`, thresholds, reporter flags, or version enforcement.
@@ -186,8 +222,9 @@ paths. Bounded projections from pinned pnpm `eslint-plugin-vitest` and npm
 `node-typescript-boilerplate` revisions provide public compatibility evidence;
 they do not promote the provider or add a default check.
 
-The roadmap records that package-manager audit facts are the next parity slice.
-Mutation, changed-line coverage gates, and blocking reviewability remain unsupported.
+Phase 182 advisory LCOV changed-line coverage facts are complete. The roadmap
+records that package-manager audit facts are the next parity slice. Coverage
+commands or gates, mutation, and blocking reviewability remain unsupported.
 TypeScript/JavaScript remains experimental.
 
 For current maturation evidence and promotion criteria, see
@@ -239,13 +276,17 @@ Workspace dependency-cruiser commands use the root
 `typescript-dependency-cruiser:web`.
 
 Coverage summaries and LCOV files can improve `typescript-test` repair facts
-when a repository already produces those artifacts, Knip can improve
+when a repository already produces those artifacts. Existing LCOV can also
+feed the advisory `test-intel typescript-coverage` report. Knip can improve
 unused-code and dependency repair facts, and the ecosystem-neutral OSV gate can
 provide dependency vulnerability facts. Explicit dependency-cruiser JSON can
-provide advisory architecture facts. TypeScript coverage enforcement,
-package-manager audit, mutation, and blocking reviewability adapters are not
-implemented yet. The provider should remain experimental until these surfaces
-have fixture and real-repo evidence.
+provide advisory architecture facts. TypeScript coverage command execution or
+enforcement, package-manager audit, mutation, and blocking reviewability
+adapters are not implemented yet. The provider should remain experimental
+until these surfaces have fixture and real-repo evidence.
+
+TypeScript coverage enforcement, package-manager audit, mutation, and blocking
+reviewability adapters are not implemented yet.
 
 ## Limitations
 
@@ -253,7 +294,7 @@ have fixture and real-repo evidence.
 - No generated starter files yet.
 - No structured parser for arbitrary human-oriented test or coverage
   transcripts.
-- No TypeScript coverage command adapter, mutation adapter, or package-manager
+- No TypeScript coverage command or gate, mutation adapter, or package-manager
   audit adapter.
 - No public plugin API.
 - No TypeScript reviewability gate is blocking by default.
