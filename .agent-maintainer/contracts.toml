@@ -1,0 +1,58 @@
+version = 1
+package_version_file = "pyproject.toml"
+pre_one_breaking = "prerelease"
+stable_breaking = "major"
+
+[[contracts]]
+id = "agent-maintainer-config"
+kind = "config-capabilities"
+owner = "agent_maintainer.config.reference"
+stability = "beta"
+revision = 1
+source = "config/agent-maintainer-capabilities.json"
+migration_paths = ["CHANGELOG.md", "docs/upgrading-to-*.md"]
+
+[[contracts]]
+id = "agent-maintainer-cli"
+kind = "cli-manifest"
+owner = "agent_maintainer.cli"
+stability = "beta"
+revision = 1
+source = "config/agent-maintainer-cli.json"
+migration_paths = ["CHANGELOG.md", "docs/upgrading-to-*.md"]
+
+[[contracts]]
+id = "docsync-api"
+kind = "python-api"
+owner = "docsync.api"
+stability = "beta"
+revision = 1
+source = "src/docsync/api.py"
+exports = [
+  "CheckOptions",
+  "IndexOptions",
+  "build_index",
+  "check_repo",
+  "create_attestation",
+  "create_review_packet",
+  "doctor_repo",
+]
+migration_paths = ["CHANGELOG.md", "docs/upgrading-to-*.md"]
+
+[[contracts]]
+id = "codex-app-server-wait"
+kind = "json-schema"
+owner = "agent_maintainer.wait.codex_app_server_protocol"
+stability = "beta"
+revision = 1
+source = "schemas/codex-app-server-wait.schema.json"
+migration_paths = ["CHANGELOG.md", "docs/upgrading-to-*.md"]
+
+[[contracts]]
+id = "agent-waits-wait-record"
+kind = "json-schema"
+owner = "agent_waits.registry"
+stability = "beta"
+revision = 1
+source = "schemas/agent-waits-wait-record.schema.json"
+migration_paths = ["CHANGELOG.md", "docs/upgrading-to-*.md"]

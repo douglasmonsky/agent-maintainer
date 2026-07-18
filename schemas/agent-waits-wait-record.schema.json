@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-maintainer.dev/schemas/agent-waits-wait-record.schema.json",
+  "title": "Agent Wait Record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "branch": {"type": "string"},
+    "created_at": {"type": "string", "minLength": 1},
+    "deadline_at": {"type": "string", "minLength": 1},
+    "head_sha": {"type": "string"},
+    "interval_seconds": {"type": "integer", "minimum": 1},
+    "kind": {"type": "string", "minLength": 1},
+    "last_observed_state": {"type": ["object", "null"]},
+    "metadata": {"type": ["object", "null"]},
+    "platform": {"type": "string", "minLength": 1},
+    "pr_number": {"type": "string", "minLength": 1},
+    "repo": {"type": ["string", "null"]},
+    "resume_instruction": {"type": "string"},
+    "resume_message": {"type": "string"},
+    "schema_version": {"const": 1},
+    "status": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "terminal_result": {"type": "string"},
+    "timeout_seconds": {"type": "integer", "minimum": 1},
+    "updated_at": {"type": "string", "minLength": 1},
+    "wait_id": {"type": "string", "minLength": 1}
+  },
+  "required": [
+    "branch",
+    "created_at",
+    "deadline_at",
+    "head_sha",
+    "interval_seconds",
+    "kind",
+    "last_observed_state",
+    "metadata",
+    "platform",
+    "repo",
+    "resume_instruction",
+    "resume_message",
+    "schema_version",
+    "status",
+    "target_id",
+    "terminal_result",
+    "timeout_seconds",
+    "updated_at",
+    "wait_id"
+  ],
+  "allOf": [
+    {
+      "if": {"properties": {"kind": {"const": "github-pr"}}, "required": ["kind"]},
+      "then": {"required": ["pr_number"]}
+    }
+  ]
+}
