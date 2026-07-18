@@ -420,7 +420,7 @@ run_history_limit = 10
 
 [tool.mutmut]
 source_paths = ["src/agent_maintainer/"]
-also_copy = ["src/archguard"]
+also_copy = ["src/archguard", "src/agent_repair_facts"]
 only_mutate = [
   "src/agent_maintainer/config/coercion.py",
   "src/agent_maintainer/core/runtime.py",
