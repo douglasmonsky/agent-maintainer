@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 # docsync:evidence.start evidence.readme.package_metadata
 [project]
 name = "agent-maintainer"
-version = "0.1.0b9"
+version = "0.1.0b10"
 description = "Repository maintenance checks and diagnostics for AI-assisted Python development."
 readme = "README.md"
 requires-python = ">=3.11"

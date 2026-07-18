@@ -1,11 +1,17 @@
 # Changelog
 
-## Unreleased (target: 0.1.0b9)
+## Unreleased (target: 0.1.0b10)
 
-`0.1.0b9` is an unpublished release candidate. `0.1.0b8` remains the latest
-published package, with published 0.1.0b8 release evidence authoritative until
+`0.1.0b10` is an unpublished release candidate. `0.1.0b9` remains the latest
+published package, with published 0.1.0b9 release evidence authoritative until
 this candidate passes the complete exact-commit release matrix and package-index
 smokes.
+
+- No user-facing changes are recorded yet.
+
+## 0.1.0b9 - 2026-07-18
+
+Ninth beta release of Agent Maintainer.
 
 - Added `agent-maintainer verify-plan`, a deterministic advisory planner that
   maps Git adds, modifications, copies, renames, deletions, and type changes to
