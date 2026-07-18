@@ -140,6 +140,10 @@ path = "reporting_context"
 depends_on = []
 
 [[modules]]
+path = "repo_paths"
+depends_on = []
+
+[[modules]]
 path = "structured_artifacts"
 depends_on = [
 "structured_pytest",

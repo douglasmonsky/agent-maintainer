@@ -1,0 +1,12 @@
+# Tach domain contract for agent_maintainer.verification_plan.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "matching"
+depends_on = ["//agent_maintainer.core.repo_paths"]
+
+[[modules]]
+path = "models"
+depends_on = []
