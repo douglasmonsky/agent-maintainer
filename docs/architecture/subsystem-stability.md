@@ -17,6 +17,7 @@ of pre-1.0 cross-version compatibility.
 | --- | --- | --- |
 | Setup and configuration | `core` | Initialization, bootstrap, doctor, guidance, setup skill, and managed hooks. |
 | Verification and repair facts | `core` | Profiles, runners, fingerprints, manifests, summaries, and repair guidance. |
+| Contract compatibility | `core` | Repository-owned semantic baselines, obligations, decisions, and repair facts. |
 | Context, ratchets, and assessment | `core` | Bounded context, legacy baselines, debt signals, and repair planning. |
 | Test intelligence | `core` | Affected-test selection and deeper opt-in testing recommendations. |
 | Archguard | `core` | Architecture maps, impact analysis, Tach policy, and decision checks. |
@@ -43,6 +44,7 @@ top-level command has exactly one label here.
 | `agent-maintainer bootstrap` | `core` | Prepare the development checkout. |
 | `agent-maintainer change-plan` | `core` | Manage cohesive large-change authority. |
 | `agent-maintainer context` | `core` | Read bounded repair context. |
+| `agent-maintainer contract` | `core` | Inspect and enforce declared semantic contracts. |
 | `agent-maintainer doctor` | `core` | Diagnose setup and integration drift. |
 | `agent-maintainer guidance` | `core` | Generate or validate repository agent guidance. |
 | `agent-maintainer hooks` | `core` | Manage agent-client hooks. |

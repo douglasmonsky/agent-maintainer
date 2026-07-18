@@ -11,7 +11,7 @@ for the first opt-in non-Python provider.
 | Category | Commands | Stability note |
 | --- | --- | --- |
 | Stable workflows | `doctor`, `guidance`, `init`, `install`, `verify`, `verify-plan`, `wait` | Quiet polling is stable; terminal rewake is experimental. |
-| Repair and inspection | `assess`, `context`, `ratchet`, `repair-plan`, `test-intel` | Use these commands to inspect and plan repairs. |
+| Repair and inspection | `assess`, `context`, `contract`, `ratchet`, `repair-plan`, `test-intel` | Use these commands to inspect and plan repairs. |
 | Optional local intelligence | `attention`, `events`, `report`, `scoring` | Local artifacts and datasets provide optional guidance. |
 | Experimental integrations | `mcp` | Optional typed MCP tool surface. |
 | Operations | `bootstrap`, `change-plan`, `hooks` | Checkout and workflow administration. |
@@ -41,6 +41,21 @@ It never suppresses existing verifier gates, executes checks, or claims that an
 unselected check is unnecessary. When the policy file exists, the optional
 `verification-plan-policy` catalog check enforces it in the normal fast,
 precommit, full, and CI profiles.
+
+## Contract compatibility ratchets
+
+`python3 -m agent_maintainer contract diff --base-ref origin/main` reports
+semantic changes to contracts declared in `.agent-maintainer/contracts.toml`.
+`contract check` enforces current baseline freshness plus base-to-live revision,
+package-version, exact-decision, and migration obligations. Use
+`contract snapshot --write` only after review; `--initialize` is restricted to
+first adoption and makes no historical compatibility assertion.
+
+All commands return `0` for a valid result, `1` for unresolved compatibility or
+obligation findings, and `2` for invalid policy, baseline, Git, extractor, or
+path input. `--json` emits deterministic schema-versioned findings and repair
+facts. The optional `contract-compatibility` catalog check activates only when
+policy exists and never selects or suppresses another verifier check.
 
 ## Attention priority and provenance
 

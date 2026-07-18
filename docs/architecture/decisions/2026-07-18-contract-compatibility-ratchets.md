@@ -12,6 +12,10 @@ or trusting a rewritten baseline. The policy and generated evidence cross a
 security-sensitive filesystem boundary, while later extraction and comparison
 logic needs one stable inward-facing domain model.
 
+Agent Maintainer remains pre-1.0. The boundary must prevent accidental drift
+without freezing every beta surface or claiming compatibility across installed
+versions.
+
 Keeping these responsibilities in root orchestration would mix strict input
 validation, semantic normalization, Git history, reporting, and command
 routing. Keeping baseline or policy parsing in the extractor adapters would
@@ -58,6 +62,12 @@ contracts domain, skips it only when authored policy is absent, and assigns it
 to the static-policy group. The executor validates the command's complete JSON
 stdout before retaining it as a run artifact, so configuration diagnostics
 cannot masquerade as a structured contract report.
+
+The public workflow is explicit: `contract diff` is advisory, `contract check`
+enforces independent obligations, and `contract snapshot --write` updates only
+canonical evidence after those obligations pass. Agent Maintainer dogfoods
+configuration capabilities, its CLI manifest, `docsync.api`, Codex app-server
+wait messages, and durable `agent_waits` records.
 
 Extractor routing depends on concrete adapters, while adapters depend on a
 separate inward-only normalization module for bounded JSON, canonical ordering,
@@ -117,6 +127,21 @@ runtime reflection or permissive fallback.
   environment-dependent.
 - Treat the generated baseline as authoritative current state. Rejected because
   a baseline rewrite could otherwise hide a breaking live contract change.
+- Compare raw source hashes or golden text. Rejected because formatting and
+  implementation changes are not semantic contract changes.
+- Maintain independent surface-specific ratchets. Rejected because policy,
+  version rules, decisions, repair facts, and enforcement would diverge.
+- Freeze all beta surfaces. Rejected because that contradicts the explicit
+  pre-1.0 support policy and prevents necessary evolution.
+- Accept baselines or edit versions automatically. Rejected because the
+  control would become its own bypass and hide the review decision.
+
+## Forbidden Behavior
+
+The ratchet must not import arbitrary target modules, execute target commands,
+evaluate a shell, use the network, infer unsupported schema semantics, rewrite
+versions or migrations, accept a baseline implicitly, suppress other checks, or
+claim historical compatibility when evidence is unavailable.
 
 ## Verification
 
@@ -125,4 +150,6 @@ and unsafe source rejection, bounded UTF-8 regular-file reads, FIFO and symlink
 rejection, stable file identity, atomic replacement, and preservation of the
 old baseline when replacement fails. Ruff, strict Pyright, exact Tach,
 change-plan validation, the diff-aware verification planner, and the repository
-verifier enforce the boundary.
+verifier enforce the boundary. Exact classifier mutation qualification, the
+five dogfood freshness checks, DocSync, full, CI-equivalent, security, review,
+and protected hosted gates complete Phase 184.

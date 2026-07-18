@@ -4,6 +4,11 @@
 
 Documented commands, configuration, and schema-versioned artifacts are expected to work for the exact installed beta version. There is no cross-version compatibility guarantee before 1.0.
 
+Contract ratchets detect undeclared semantic drift and require explicit
+revision, version, decision, and migration evidence for configured surfaces.
+This does not create a pre-1.0 compatibility guarantee: intentional beta
+changes remain allowed when those repository-owned obligations pass.
+
 ## Current Python entry points
 
 `docsync.api` is the intended DocSync integration boundary for current code, not a frozen signature. It may change or be removed without a deprecation window before 1.0.

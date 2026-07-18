@@ -1,0 +1,24 @@
+version: 1
+attestations:
+- id: attest.20260718T194727Z.claim.docs.quick_start_package_flow.b5011a6
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.command_registry
+  - evidence.readme.package_metadata
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:27Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:5022fb6aa41621158553e8920fa439cb27a7655cc9950d7ffe7700fff9a66e7d
+    evidence.readme.package_metadata: sha256:b7f4be45e23e83737e1e2bec144fdb6eb46a4556a60657eb204db3d265edb97b
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:b13afa2498aa5679864acfe686602ec833664367fe78af51bded7d08237f34b0
+    evidence.readme.package_metadata:
+    - sha256:329938a6fea095455497ca588cf1768194c2701b0e7daffed04a6a69da9db8f8
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
