@@ -37,7 +37,7 @@ allowed_paths = [
   "tests/verification_plan/**",
 ]
 forbidden_paths = ["config/prod/**", ".env", ".env.*"]
-max_changed_files = 45
+max_changed_files = 60
 max_changed_lines = 5000
 allow_source_without_test_change = false
 requires_tests = true
@@ -53,6 +53,9 @@ strict repository policy, deterministic planning, CLI output, verifier catalog
 integration, architecture contracts, and public documentation. These surfaces
 form one control-layer contract: a changed path must map to the same named
 evidence in local planning, automated enforcement, and hosted review.
+The file count includes DocSync-generated attestations for existing public
+claims invalidated by the new command registry and catalog entry; those records
+are individually generated, scoped evidence rather than implementation breadth.
 
 ## Why this should not be split smaller
 
