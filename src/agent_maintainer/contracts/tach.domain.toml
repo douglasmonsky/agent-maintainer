@@ -57,6 +57,15 @@ depends_on = [
 ]
 
 [[modules]]
+path = "cli"
+depends_on = [
+  "baseline",
+  "models",
+  "reporting",
+  "service",
+]
+
+[[modules]]
 path = "normalization"
 depends_on = [
   "baseline",
@@ -114,6 +123,13 @@ depends_on = [
   "models",
   "policy",
   "versioning",
+]
+
+[[modules]]
+path = "reporting"
+depends_on = [
+  "limits",
+  "models",
 ]
 
 [[modules]]

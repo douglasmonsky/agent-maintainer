@@ -184,7 +184,10 @@ def _current_state_error(
             context.report(),
             errors=("current contract baseline is missing",),
         )
-    if not _baseline_is_fresh(current.baseline.descriptors, current.descriptors):
+    if context.mode != "snapshot" and not _baseline_is_fresh(
+        current.baseline.descriptors,
+        current.descriptors,
+    ):
         return replace(
             context.report(),
             errors=("current contract baseline does not match live extraction",),

@@ -112,6 +112,42 @@ def test_current_baseline_must_exactly_match_live_extraction(
     assert not report.can_snapshot
 
 
+def test_snapshot_can_replace_stale_baseline_after_obligations_pass(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Snapshot compares base to live while check continues to enforce freshness."""
+    base_spec = _spec(revision=1)
+    current_spec = _spec(revision=2)
+    old = _descriptor(base_spec, "old")
+    new = build_descriptor(
+        current_spec,
+        {"exports": [{"kind": "constant", "name": "new", "value": 1}]},
+    )
+    state = BaseContractState(
+        BASE_COMMIT,
+        _policy(base_spec),
+        _baseline(old, "0.1.0b9"),
+    )
+    _install_state(
+        monkeypatch,
+        ServiceState(
+            current_policy=_policy(current_spec),
+            live=(new,),
+            current_baseline=_baseline(old, "0.1.0b9"),
+            base_state=state,
+            git_changes=(GitPathChange("CHANGELOG.md", "modified"),),
+        ),
+    )
+
+    report = service.build_contract_report(tmp_path, base_ref="main", mode="snapshot")
+
+    assert report.errors == ()
+    assert any(change.operation == "member-remove" for change in report.changes)
+    assert all(item.status == "satisfied" for item in report.obligations)
+    assert report.can_snapshot
+
+
 BASE_COMMIT = "a" * 40
 
 

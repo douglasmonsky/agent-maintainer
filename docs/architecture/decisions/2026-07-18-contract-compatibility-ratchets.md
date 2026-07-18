@@ -47,6 +47,10 @@ bounded UTF-8 content only through that resolved identity. Service orchestration
 proves current baseline freshness before comparing base descriptors with live
 descriptors, reads structured Git path facts once, and evaluates revision,
 package-version, and migration obligations independently.
+Enforcement and advisory checks reject stale current evidence before historical
+comparison. Snapshot mode alone treats that staleness as the prospective write,
+but still compares base descriptors directly with live extraction and permits
+the atomic replacement only after every independent obligation is satisfied.
 
 Extractor routing depends on concrete adapters, while adapters depend on a
 separate inward-only normalization module for bounded JSON, canonical ordering,
