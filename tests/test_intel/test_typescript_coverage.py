@@ -7,10 +7,13 @@ from pathlib import Path
 
 import pytest
 
+from agent_maintainer.test_intel import typescript_coverage
 from agent_maintainer.test_intel.typescript_coverage import (
     TypeScriptCoverageError,
     TypeScriptCoverageRequest,
     build_report,
+    changed_typescript_source_paths,
+    is_typescript_source,
 )
 
 EXPECTED_EXECUTABLE_LINES = 3
@@ -191,6 +194,42 @@ def test_report_rejects_paths_outside_repository(tmp_path: Path) -> None:
         build_report(
             TypeScriptCoverageRequest(repo_root=tmp_path, source_root=tmp_path.parent)
         )
+
+
+def test_report_rejects_oversized_artifact(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Bounded artifact reads fail before Git or parser work."""
+
+    create_repo(tmp_path)
+    write_lcov(tmp_path, "SF:src/app.ts\nDA:1,1\n")
+    monkeypatch.setattr(typescript_coverage, "MAX_LCOV_BYTES", 8)
+
+    with pytest.raises(TypeScriptCoverageError, match="10 MiB limit"):
+        build_report(TypeScriptCoverageRequest(repo_root=tmp_path))
+
+
+def test_changed_source_rejects_unsafe_or_excessive_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Git paths are control-safe and bounded before diff-hunk mapping."""
+
+    assert is_typescript_source("src/unsafe\nname.ts") is False
+    assert is_typescript_source(f"src/{'x' * 501}.ts") is False
+    stdout = "\0".join(
+        f"src/file-{index:03d}.ts"
+        for index in range(typescript_coverage.MAX_CHANGED_SOURCE_FILES + 1)
+    )
+    monkeypatch.setattr(
+        typescript_coverage.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, stdout, ""),
+    )
+
+    with pytest.raises(TypeScriptCoverageError, match="too many TypeScript source files"):
+        changed_typescript_source_paths(tmp_path, base_ref="HEAD", staged=False)
 
 
 def create_repo(path: Path) -> None:

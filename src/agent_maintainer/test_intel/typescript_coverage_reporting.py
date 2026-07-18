@@ -35,7 +35,8 @@ def render_text(report: TypeScriptCoverageReport) -> str:
     ]
     details = [render_file(fact) for fact in report.files]
     details.extend(f"- missing LCOV: {path}" for path in report.missing_from_lcov)
-    lines.extend(bounded_details(details))
+    model_omissions = max(report.matched_file_count - len(report.files), 0)
+    lines.extend(bounded_details(details, model_omissions=model_omissions))
     lines.extend(("", f"Note: {report.note}"))
     return "\n".join(lines)
 
@@ -64,13 +65,17 @@ def render_file(fact: TypeScriptCoverageFileFact) -> str:
     )
 
 
-def bounded_details(details: list[str]) -> list[str]:
+def bounded_details(
+    details: list[str],
+    *,
+    model_omissions: int = 0,
+) -> list[str]:
     """Return at most the configured number of truthful detail lines."""
 
-    if not details:
+    if not details and model_omissions == 0:
         return ["- <none>"]
-    if len(details) <= MAX_TEXT_DETAILS:
+    if len(details) <= MAX_TEXT_DETAILS and model_omissions == 0:
         return details
     retained = details[: MAX_TEXT_DETAILS - 1]
-    omitted = len(details) - len(retained)
+    omitted = len(details) - len(retained) + model_omissions
     return [*retained, f"- ... {omitted} detail line(s) omitted"]

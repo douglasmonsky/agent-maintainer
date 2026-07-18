@@ -20,6 +20,7 @@ DEFAULT_LCOV_PATH = Path("coverage/lcov.info")
 MAX_LCOV_BYTES = 10 * 1024 * 1024
 MAX_SOURCE_PATH_CHARS = 500
 MAX_FILE_FACTS = 500
+MAX_CHANGED_SOURCE_FILES = 500
 WINDOWS_DRIVE_RE = re.compile(r"^[A-Za-z]:/")
 ADVISORY_NOTE = (
     "Advisory only: missing LCOV files are reported separately and no "
@@ -273,16 +274,23 @@ def changed_typescript_source_paths(
         )
     except (OSError, subprocess.CalledProcessError, UnicodeDecodeError) as exc:
         raise TypeScriptCoverageError("Git diff could not identify changed source.") from exc
-    return tuple(
+    paths = tuple(
         path
         for path in sorted(set(result.stdout.split("\0")) - {""})
         if is_typescript_source(path)
     )
+    if len(paths) > MAX_CHANGED_SOURCE_FILES:
+        raise TypeScriptCoverageError(
+            "Git diff contains too many TypeScript source files; narrow the diff."
+        )
+    return paths
 
 
 def is_typescript_source(path: str) -> bool:
     """Return whether a path is provider-classified source."""
 
+    if unsafe_source_scalar(path.replace("\\", "/")):
+        return False
     classification = classify_path(path)
     return classification is not None and classification.role is FileRole.SOURCE
 

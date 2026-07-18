@@ -98,6 +98,22 @@ def test_render_text_bounds_file_and_missing_details() -> None:
     assert len(detail_lines) == EXPECTED_DETAIL_LIMIT
 
 
+def test_render_text_counts_model_level_omissions() -> None:
+    """The omission marker includes facts dropped before text rendering."""
+
+    report = sample_report()
+    report = TypeScriptCoverageReport(
+        **{
+            **report.__dict__,
+            "matched_file_count": 102,
+        }
+    )
+
+    output = render_text(report)
+
+    assert "100 detail line(s) omitted" in output
+
+
 def test_cli_reports_default_lcov_as_json(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
