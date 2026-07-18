@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Callable, Sequence
-from typing import TypeVar
+from collections.abc import Sequence
 
 from agent_maintainer.verification_plan.models import (
     AffectedUnit,
@@ -16,7 +15,7 @@ from agent_maintainer.verification_plan.models import (
 
 MAX_TEXT_ITEMS = 100
 MAX_UNIT_PATHS = 100
-ItemT = TypeVar("ItemT")
+TextItem = AffectedUnit | PlannedChange | RequirementResult | str
 
 
 def report_to_dict(report: VerificationPlanReport) -> dict[str, object]:
@@ -56,18 +55,16 @@ def render_text(report: VerificationPlanReport) -> str:
         f"- Configured: {_configured_text(report)}",
         f"- Diff: {_diff_text(report)}",
     ]
-    _section(lines, "Changed paths", report.changes, _change_text)
+    _section(lines, "Changed paths", report.changes)
     _section(
         lines,
         "Affected units",
         report.affected_units,
-        _unit_text,
     )
     _section(
         lines,
         "Requirements",
         report.requirements,
-        _requirement_text,
     )
     _string_section(lines, "Review categories", report.review_categories)
     _string_section(lines, "Recommended commands", report.recommended_commands)
@@ -161,25 +158,34 @@ def _diff_text(report: VerificationPlanReport) -> str:
 
 
 def _string_section(lines: list[str], title: str, items: Sequence[str]) -> None:
-    _section(lines, title, items, _safe_text)
+    _section(lines, title, items)
 
 
 def _safe_text(value: str) -> str:
     return json.dumps(value, ensure_ascii=True)[1:-1]
 
 
-def _section(  # noqa: UP047 - package syntax must remain compatible with Python 3.11
+def _section(
     lines: list[str],
     title: str,
-    items: Sequence[ItemT],
-    render: Callable[[ItemT], str],
+    items: Sequence[TextItem],
 ) -> None:
     lines.extend(("", f"{title}:"))
     if not items:
         lines.append("- None")
         return
     visible = items[:MAX_TEXT_ITEMS]
-    lines.extend(f"- {render(item)}" for item in visible)
+    lines.extend(f"- {_item_text(item)}" for item in visible)
     omitted = len(items) - len(visible)
     if omitted:
         lines.append(f"- ... {omitted} more")
+
+
+def _item_text(item: TextItem) -> str:
+    if isinstance(item, PlannedChange):
+        return _change_text(item)
+    if isinstance(item, AffectedUnit):
+        return _unit_text(item)
+    if isinstance(item, RequirementResult):
+        return _requirement_text(item)
+    return _safe_text(item)

@@ -58,6 +58,9 @@ def test_text_contains_bounded_contract_sections_and_final_blocker() -> None:
         "Blocking findings",
     ):
         assert f"{heading}:" in rendered
+    assert "- renamed: src/old.py -> src/new.py" in rendered
+    assert "- python-package app (src): src/new.py" in rendered
+    assert "- [missing] architecture/adr (0/1): Add an ADR." in rendered
     assert rendered.endswith("architecture/adr: Add an ADR.\n")
 
 
