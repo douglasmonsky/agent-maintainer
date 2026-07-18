@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess  # nosec B404
 from dataclasses import dataclass
+from pathlib import Path
 
 from agent_maintainer.core.repo_paths import RepoPathError, validate_repo_path
 
@@ -105,16 +106,31 @@ def run_git_numstat(base_ref: str, *, staged: bool) -> list[FileChange]:
     ]
 
 
-def run_git_name_status(base_ref: str, *, staged: bool) -> tuple[GitPathChange, ...]:
+def run_git_name_status(
+    base_ref: str,
+    *,
+    staged: bool,
+    cwd: Path | None = None,
+) -> tuple[GitPathChange, ...]:
     """Read structured Git path changes without option-shaped ref ambiguity."""
-    base_sha = "" if staged else _resolve_base_sha(base_ref)
+    base_sha = "" if staged else _resolve_base_sha(base_ref, cwd=cwd)
     try:
-        result = subprocess.run(  # nosec B603
-            git_name_status_command(base_sha, staged=staged),
-            text=False,
-            capture_output=True,
-            check=True,
-        )
+        command = git_name_status_command(base_sha, staged=staged)
+        if cwd is None:
+            result = subprocess.run(  # nosec B603
+                command,
+                text=False,
+                capture_output=True,
+                check=True,
+            )
+        else:
+            result = subprocess.run(  # nosec B603
+                command,
+                text=False,
+                capture_output=True,
+                check=True,
+                cwd=cwd,
+            )
         return parse_name_status_z(result.stdout)
     except subprocess.CalledProcessError as exc:
         stderr = _stderr_text(exc.stderr)
@@ -174,7 +190,7 @@ def parse_count(value: str) -> int:
     return int(value) if value.isdecimal() else 0
 
 
-def _resolve_base_sha(base_ref: str) -> str:
+def _resolve_base_sha(base_ref: str, *, cwd: Path | None = None) -> str:
     git = shutil.which("git") or "git"
     command = [
         git,
@@ -184,12 +200,21 @@ def _resolve_base_sha(base_ref: str) -> str:
         f"{base_ref}^{{commit}}",
     ]
     try:
-        result = subprocess.run(  # nosec B603
-            command,
-            text=True,
-            capture_output=True,
-            check=True,
-        )
+        if cwd is None:
+            result = subprocess.run(  # nosec B603
+                command,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+        else:
+            result = subprocess.run(  # nosec B603
+                command,
+                text=True,
+                capture_output=True,
+                check=True,
+                cwd=cwd,
+            )
     except subprocess.CalledProcessError as exc:
         stderr = _stderr_text(exc.stderr)
         raise RuntimeError(f"Could not resolve base ref {base_ref!r}: {stderr}") from exc

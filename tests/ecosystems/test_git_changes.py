@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import subprocess
 from collections.abc import Callable
+from pathlib import Path
 
 import pytest
 
@@ -91,6 +92,33 @@ def test_name_status_resolves_option_shaped_ref_before_diff(
     assert changes == (git_changes.GitPathChange("src/app.py", "modified"),)
     assert calls[0][-2:] == ["--end-of-options", "--stat^{commit}"]
     assert calls[1][-2:] == [f"{'a' * 40}...HEAD", "--"]
+
+
+def test_name_status_runs_all_git_commands_in_requested_repository(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    seen_cwds: list[Path | None] = []
+
+    def fake_run(
+        command: list[str],
+        *,
+        text: bool,
+        capture_output: bool,
+        check: bool,
+        cwd: Path | None = None,
+    ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
+        del capture_output, check
+        seen_cwds.append(cwd)
+        if text:
+            return subprocess.CompletedProcess(command, 0, stdout=f"{'a' * 40}\n")
+        return subprocess.CompletedProcess(command, 0, stdout=b"M\0src/app.py\0")
+
+    monkeypatch.setattr(git_changes.subprocess, "run", fake_run)
+
+    git_changes.run_git_name_status("main", staged=False, cwd=tmp_path)
+
+    assert seen_cwds == [tmp_path, tmp_path]
 
 
 def _sequenced_git_run(
