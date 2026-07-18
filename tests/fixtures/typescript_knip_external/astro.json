@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "source_repository": "https://github.com/withastro/astro",
+  "commit": "91992ef2ccd9a90fa4270633eb4f5d3b811bf315",
+  "config_path": "knip.js",
+  "lockfile_path": "pnpm-lock.yaml",
+  "config_sha256": "8d87b59c3eb6c7ad8ea574106d0f235508e1d0ae0cdd09fe2cfaf3d6b09ed9d7",
+  "lockfile_sha256": "1f6825aeede0acda724605d2c59fe2cd9dab43a02f98c28d79f3ad82476d13a3",
+  "package_manager": "pnpm@11.5.0",
+  "node_version": "v26.5.0 (repository .nvmrc: 24.14.0)",
+  "knip_version": "5.82.1",
+  "install_mode": "pnpm install --frozen-lockfile --ignore-scripts",
+  "command": ["pnpm", "exec", "knip", "--reporter", "json"],
+  "exit_code": 1,
+  "stdout": "{\"files\":[],\"issues\":[{\"file\":\"packages/astro/src/core/csp/common.ts\",\"dependencies\":[],\"devDependencies\":[],\"optionalPeerDependencies\":[],\"unlisted\":[],\"binaries\":[],\"unresolved\":[{\"name\":\"../../runtime/server/astro-island.prebuilt.js\",\"line\":3,\"col\":33,\"pos\":113},{\"name\":\"../../runtime/server/astro-island.prebuilt-dev.js\",\"line\":4,\"col\":36,\"pos\":197}],\"exports\":[],\"types\":[],\"enumMembers\":{},\"duplicates\":[],\"catalog\":[]},{\"file\":\"packages/astro/src/core/client-directive/default.ts\",\"dependencies\":[],\"devDependencies\":[],\"optionalPeerDependencies\":[],\"unlisted\":[],\"binaries\":[],\"unresolved\":[{\"name\":\"../../runtime/client/idle.prebuilt.js\",\"line\":1,\"col\":26,\"pos\":24},{\"name\":\"../../runtime/client/load.prebuilt.js\",\"line\":2,\"col\":26,\"pos\":90},{\"name\":\"../../runtime/client/media.prebuilt.js\",\"line\":3,\"col\":27,\"pos\":157},{\"name\":\"../../runtime/client/only.prebuilt.js\",\"line\":4,\"col\":26,\"pos\":224},{\"name\":\"../../runtime/client/visible.prebuilt.js\",\"line\":5,\"col\":29,\"pos\":293}],\"exports\":[],\"types\":[],\"enumMembers\":{},\"duplicates\":[],\"catalog\":[]},{\"file\":\"packages/astro/src/runtime/server/scripts.ts\",\"dependencies\":[],\"devDependencies\":[],\"optionalPeerDependencies\":[],\"unlisted\":[],\"binaries\":[],\"unresolved\":[{\"name\":\"./astro-island.prebuilt.js\",\"line\":2,\"col\":26,\"pos\":89},{\"name\":\"./astro-island.prebuilt-dev.js\",\"line\":3,\"col\":29,\"pos\":147}],\"exports\":[],\"types\":[],\"enumMembers\":{},\"duplicates\":[],\"catalog\":[]},{\"file\":\"packages/markdown/remark/src/load-plugins.ts\",\"dependencies\":[],\"devDependencies\":[],\"optionalPeerDependencies\":[],\"unlisted\":[],\"binaries\":[],\"unresolved\":[{\"name\":\"#import-plugin\",\"line\":2,\"col\":47,\"pos\":86}],\"exports\":[],\"types\":[],\"enumMembers\":{},\"duplicates\":[],\"catalog\":[]},{\"file\":\"packages/internal-helpers/src/shiki.ts\",\"dependencies\":[],\"devDependencies\":[],\"optionalPeerDependencies\":[],\"unlisted\":[],\"binaries\":[],\"unresolved\":[{\"name\":\"#shiki-engine\",\"line\":18,\"col\":33,\"pos\":428}],\"exports\":[],\"types\":[],\"enumMembers\":{},\"duplicates\":[],\"catalog\":[]}]}\n",
+  "supported_finding_count": 11,
+  "retained_finding_count": 11
+}

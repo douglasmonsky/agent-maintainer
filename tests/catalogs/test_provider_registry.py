@@ -55,7 +55,9 @@ def test_configured_provider_command_fields() -> None:
         "typescript_lint_command",
         "typescript_typecheck_command",
         "typescript_test_command",
+        "typescript_knip_command",
     ]
+    assert {"dead-code", "dependency-hygiene"} <= set(providers["typescript"].capabilities)
 
 
 def test_archived_go_provider_has_no_active_config_surface() -> None:

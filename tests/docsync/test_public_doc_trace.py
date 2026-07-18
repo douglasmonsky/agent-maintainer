@@ -87,6 +87,9 @@ PUBLIC_DOC_CLAIMS = {
 
 PUBLIC_DOC_EVIDENCE = {
     "evidence.typescript.package_workspace_detection_tests",
+    "evidence.typescript.knip_fact_tests",
+    "evidence.typescript.knip_summary_tests",
+    "evidence.typescript.knip_external_fixtures",
 }
 
 ACTIVE_DOC_PATHS = {

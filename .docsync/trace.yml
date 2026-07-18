@@ -915,11 +915,14 @@ claims:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs describe structured summaries and exact repair
       facts for tsc, ESLint JSON, Jest/Vitest JSON, Istanbul coverage summary,
-      and LCOV outputs with malformed output fallback.
+      LCOV, and bounded Knip JSON outputs with malformed output fallback.
     severity: medium
     evidence:
       - evidence.typescript.structured_output_tests
       - evidence.typescript.repair_fact_tests
+      - evidence.typescript.knip_fact_tests
+      - evidence.typescript.knip_summary_tests
+      - evidence.typescript.knip_external_fixtures
   claim.docs.typescript_provider_unsupported_surface:
     object: docs.typescript_provider.overview
     text: TypeScript provider docs document unsupported package managers,
@@ -1434,6 +1437,29 @@ evidence:
       Jest-compatible JSON, and malformed output fallback facts.
     anchors:
       - path: tests/context/test_typescript_exact_facts.py
+        mode: explicit_region
+  evidence.typescript.knip_fact_tests:
+    type: test
+    description: Knip exact-fact tests cover supported and ignored categories,
+      malformed neighbors, workspace names, deterministic order, and the
+      500-finding retention bound.
+    anchors:
+      - path: tests/repair_facts/test_typescript_knip_facts.py
+        mode: explicit_region
+  evidence.typescript.knip_summary_tests:
+    type: test
+    description: Knip structured-summary tests cover workspace names, bounded
+      output, omission counts, and malformed JSON fallback.
+    anchors:
+      - path: tests/core/test_typescript_knip_structured_output.py
+        mode: explicit_region
+  evidence.typescript.knip_external_fixtures:
+    type: test
+    description: Pinned TanStack Query and Astro fixtures record public Knip
+      compatibility metadata, config and lockfile hashes, exit status, and
+      normalized supported findings.
+    anchors:
+      - path: tests/assess/test_typescript_knip_external_fixtures.py
         mode: explicit_region
   evidence.typescript.reviewability_fixture_tests:
     type: test

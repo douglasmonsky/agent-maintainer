@@ -5,7 +5,17 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from agent_repair_facts.parsers import docsync, java, lint, logs, pytest, security, typescript
+from agent_repair_facts.parsers import (
+    docsync,
+    java,
+    lint,
+    logs,
+    pytest,
+    security,
+    typescript,
+    typescript_checks,
+)
+from agent_repair_facts.parsers.typescript_knip import knip_facts
 from agent_repair_facts.payloads import FactSource, MemoryFactSource
 
 FactParser = Callable[[FactSource, str], list[dict[str, object]]]
@@ -32,6 +42,7 @@ LOG_FACT_PARSERS: tuple[FactParserEntry, ...] = (
     ("typescript-lint", typescript.typescript_lint_facts),
     ("typescript-typecheck", typescript.typescript_typecheck_facts),
     ("typescript-test", typescript.typescript_test_facts),
+    ("typescript-knip", knip_facts),
     ("vulture", logs.vulture_facts),
     ("wemake", logs.wemake_facts),
     ("xenon-complexity-gate", logs.xenon_complexity_facts),
@@ -89,5 +100,5 @@ def _source_facts(
 ) -> list[dict[str, object]]:
     """Return facts from one path-backed or in-memory source."""
 
-    parser = find_parser(check, parsers)
+    parser = find_parser(typescript_checks.check_family(check), parsers)
     return parser(source, check) if parser else []

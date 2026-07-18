@@ -119,12 +119,19 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "default checks, generated-file rules, coverage commands, "
             "or dependency policies.",
             "Workspace command ownership is explicit.",
+            'typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]',
+            "`typescript_knip_profiles` defaults to `full` and `ci`.",
+            "Agent Maintainer honors the configured Knip command's exit status",
+            "at most 500 normalized findings",
+            "at most 50 total lines",
+            "existing 5-fact-per-check bound",
+            "Absolute and parent-traversal paths are rejected",
             "Configure root TypeScript commands only when they intentionally "
             "cover packages you want Agent Maintainer to verify.",
             "Agent Maintainer will run only the workspace TypeScript commands "
             "you configure and will not infer nested package commands.",
             "Coverage summaries and LCOV files can improve `typescript-test` repair facts",
-            "TypeScript coverage enforcement, dependency/security, "
+            "TypeScript coverage enforcement, dependency security/audit, "
             "mutation, and blocking reviewability adapters are not "
             "implemented yet.",
             "No TypeScript reviewability gate is blocking by default.",
@@ -159,8 +166,8 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
 # docsync:evidence.end evidence.typescript.provider_docs_maturity_tests
 
 
-def test_provider_status_tracks_typescript_package_workspace_evidence() -> None:
-    """Provider status records completed advisory detection and the next parity slice."""
+def test_provider_status_tracks_typescript_knip_facts() -> None:
+    """Provider status records completed Knip facts and the next parity slice."""
     text = Path("docs/provider-status.md").read_text(encoding="utf-8")
     for expected in (
         "Phase 178 package-manager and workspace evidence is advisory only.",
@@ -168,8 +175,11 @@ def test_provider_status_tracks_typescript_package_workspace_evidence() -> None:
         "never selects a manager",
         "expands workspace globs",
         "creates a command",
-        "Knip unused-code and dependency facts",
-        "next parity slice",
+        "Phase 179 Knip unused-code and dependency facts are complete.",
+        "TanStack Query",
+        "Astro",
+        "OSV dependency scanning is the next parity slice",
+        "TypeScript/JavaScript remains experimental",
     ):
         assert expected in text
 
@@ -182,6 +192,11 @@ def test_setup_advisor_docs_include_workspace_command_example() -> None:
             'typescript_lint_command = ["pnpm", "--filter", "web", "lint"]',
             'typescript_typecheck_command = ["pnpm", "--filter", "web", "typecheck"]',
             'typescript_test_command = ["pnpm", "--filter", "web", "test"]',
+            'typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]',
+            (
+                'typescript_knip_command = ["pnpm", "--filter", "web", "exec", '
+                '"knip", "--reporter", "json"]'
+            ),
             "Setup advisor still does not infer nested package commands or workspace managers.",
         ),
     }

@@ -1,0 +1,36 @@
+version: 1
+attestations:
+- id: attest.20260717T223344Z.claim.docs.typescript_provider_repair_facts.ed3ffe0
+  claim: claim.docs.typescript_provider_repair_facts
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.structured_output_tests
+  - evidence.typescript.repair_fact_tests
+  - evidence.typescript.knip_fact_tests
+  - evidence.typescript.knip_summary_tests
+  - evidence.typescript.knip_external_fixtures
+  reason: Reviewed Phase 179 bounded Knip facts and summaries against synthetic tests
+    and pinned TanStack Query and Astro captures.
+  reviewer: agent
+  reviewed_at: '2026-07-17T22:33:44Z'
+  base: HEAD
+  head: ed3ffe0
+  evidence_fingerprints:
+    evidence.typescript.structured_output_tests: sha256:43e9f0d1a5cbb0461db3fcf9fcdb6d3cefb571fb7aea9dae680f9e4016e752c4
+    evidence.typescript.repair_fact_tests: sha256:51ce765f58a4868340fc6164a78c4c6dad9af7574798bfa2e6b15db46e389b02
+    evidence.typescript.knip_fact_tests: sha256:99c79cc1755cfe7b85990a13a0875ac2ea9af86c52ce6aa7bc9a42924c73a49e
+    evidence.typescript.knip_summary_tests: sha256:a1b681529ce521d005ab4765e8cb7aa15a57cb6bf6ca6aebf8d9c4cfc06acb1a
+    evidence.typescript.knip_external_fixtures: sha256:c503f8cfea48ebf3b90bd012bca24796648cf1614ca6fdbaacf59d6cfcd40093
+  evidence_anchor_fingerprints:
+    evidence.typescript.structured_output_tests:
+    - sha256:f92f528df94874294700c95323abf246933d6f065f878504f94d8630a856d3ea
+    evidence.typescript.repair_fact_tests:
+    - sha256:dc5fbecd0fd4d02296e502f6d1fb3528d766f05857bbaf6cce62b449606b9e93
+    evidence.typescript.knip_fact_tests:
+    - sha256:6f0803decf4222274a6484a9aa30948a115b973507b0600671c6798d2b152a08
+    evidence.typescript.knip_summary_tests:
+    - sha256:7cc6686abcd73efb94ab64cd64cc0cb601550c320b86dd0e7fed5ba0823aabb7
+    evidence.typescript.knip_external_fixtures:
+    - sha256:5e307d1dd10045e49b04bd958d502ee43dd5fdc8ef8b4f85dfd043555f102d3e
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

@@ -42,6 +42,12 @@ class TypeScriptProvider:
                 config.typescript_test_profiles,
                 "typescript_test_command",
             ),
+            _configured_check(
+                "typescript-knip",
+                config.typescript_knip_command,
+                config.typescript_knip_profiles,
+                "typescript_knip_command",
+            ),
         ]
         for workspace in config.workspaces:
             workspace_specs = (
@@ -62,6 +68,12 @@ class TypeScriptProvider:
                     workspace.typescript_test_command,
                     config.typescript_test_profiles,
                     f"workspaces.{workspace.name}.typescript_test_command",
+                ),
+                (
+                    "typescript-knip",
+                    workspace.typescript_knip_command,
+                    config.typescript_knip_profiles,
+                    f"workspaces.{workspace.name}.typescript_knip_command",
                 ),
             )
             checks.extend(

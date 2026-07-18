@@ -127,11 +127,11 @@ Track work:
 
 ## Active: TypeScript/React Parity
 
-Follow the [parity roadmap](roadmap/typescript-react-parity-roadmap.md). Phase 177
-refreshes the plan; Phase 178 adds advisory package-manager/workspace detection.
+Follow the [parity roadmap](roadmap/typescript-react-parity-roadmap.md). Phase 177 refreshes the plan; Phases 178-179 add advisory package/workspace evidence and Knip facts.
 
 - [x] Phase 177: TypeScript/React Parity Roadmap
 - [x] Phase 178: Advisory Package-Manager And Workspace Detection
+- [x] Phase 179: TypeScript Knip Unused-Code And Dependency Facts
 
 ## Active: External Proof And Architecture Hardening
 

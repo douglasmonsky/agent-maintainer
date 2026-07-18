@@ -17,3 +17,4 @@ class WorkspaceConfig:
     typescript_lint_command: tuple[str, ...] = ()
     typescript_typecheck_command: tuple[str, ...] = ()
     typescript_test_command: tuple[str, ...] = ()
+    typescript_knip_command: tuple[str, ...] = ()

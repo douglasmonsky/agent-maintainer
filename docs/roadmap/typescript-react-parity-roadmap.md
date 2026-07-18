@@ -63,8 +63,8 @@ Still missing before a promotion assessment:
 ## Implementation Sequence
 
 1. Phase 178: advisory package-manager and workspace detection is complete.
-2. Knip unused-code and dependency facts.
-3. OSV and package-manager audit facts.
+2. Phase 179: Knip unused-code and dependency facts are complete.
+3. OSV dependency scanning is next. Package-manager audit facts follow.
 4. Dependency-cruiser architecture-boundary facts, followed by declared Nx
    boundary support.
 5. LCOV changed-line coverage facts.
@@ -73,8 +73,21 @@ Still missing before a promotion assessment:
 8. StrykerJS mutation facts with a runtime-cost guard.
 9. TypeScript/React blocking-gate promotion assessment.
 
-Only Phase 178 is numbered in advance. Assign later phase numbers when each
-slice has an approved design and implementation plan.
+Assign later phase numbers when each slice has an approved design and
+implementation plan.
+
+## Phase 179 Knip Boundary
+
+Phase 179 runs only explicit root or workspace `typescript_knip_command` arrays
+and uses root `typescript_knip_profiles`, which defaults to `full` and `ci`.
+Agent Maintainer does not infer commands, append reporter flags, enforce a Knip
+version, add thresholds, or change the configured process exit status.
+
+The JSON parser normalizes supported unused-code, dependency, binary, and
+unresolved findings. It sorts before retaining 500 facts and bounds compact
+summaries to 50 total lines. Synthetic fixtures define the category contract;
+pinned TanStack Query and Astro captures provide public compatibility evidence.
+TypeScript/JavaScript remains experimental.
 
 ## Phase 178 Safety Boundary
 

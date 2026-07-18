@@ -1,0 +1,36 @@
+version: 1
+attestations:
+- id: attest.20260717T225034Z.claim.docs.typescript_provider_repair_facts.c8bb81f
+  claim: claim.docs.typescript_provider_repair_facts
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.structured_output_tests
+  - evidence.typescript.repair_fact_tests
+  - evidence.typescript.knip_fact_tests
+  - evidence.typescript.knip_summary_tests
+  - evidence.typescript.knip_external_fixtures
+  reason: Reviewed current top-level Knip files shape, repository-relative path safety,
+    five-fact context bound, compact summaries, and pinned public captures.
+  reviewer: agent
+  reviewed_at: '2026-07-17T22:50:34Z'
+  base: HEAD
+  head: c8bb81f
+  evidence_fingerprints:
+    evidence.typescript.structured_output_tests: sha256:43e9f0d1a5cbb0461db3fcf9fcdb6d3cefb571fb7aea9dae680f9e4016e752c4
+    evidence.typescript.repair_fact_tests: sha256:fe55acd179a7dfe06f3de90deaef542f6903f4d423b730c6ba6a9e45f2137a84
+    evidence.typescript.knip_fact_tests: sha256:e5726b660a148b1bc75042b1f5ee6fcfd36393e868c6949c7ef9c37ad0bf5eeb
+    evidence.typescript.knip_summary_tests: sha256:fdbe08cdc926354df5b0e85f197b193564f9ab1d14ed6ccc60fd9cccaa66416e
+    evidence.typescript.knip_external_fixtures: sha256:c270c17cb432b99c1e87f9379ce08a9130fb213ee05b70e659e8d962ff1f89db
+  evidence_anchor_fingerprints:
+    evidence.typescript.structured_output_tests:
+    - sha256:f92f528df94874294700c95323abf246933d6f065f878504f94d8630a856d3ea
+    evidence.typescript.repair_fact_tests:
+    - sha256:d567df30b81a31803ed0dc498424e4678695010b216a7865ceee89919904c3f2
+    evidence.typescript.knip_fact_tests:
+    - sha256:e285248f4b7f42c06ea9028bd9ac3785915a7cf9bb2bab01ede9450f75863360
+    evidence.typescript.knip_summary_tests:
+    - sha256:e5c07fac8e79ff200cc506084ed5427ff58f7201c829dee117cee1a5ad23c0d7
+    evidence.typescript.knip_external_fixtures:
+    - sha256:9351fb8dd80bc99ea0cb7ff73347f82bef17161e3fad5c20b4ff835706a456cf
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

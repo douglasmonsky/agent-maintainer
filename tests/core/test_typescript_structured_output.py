@@ -48,6 +48,31 @@ def test_typescript_lint_output_summarizes_eslint_json() -> None:
     assert reporting.summarize_check("typescript-lint", raw_output, 5, 500) == summary
 
 
+def test_typescript_workspace_lint_uses_the_root_structured_summary() -> None:
+    """Workspace suffixes do not disable TypeScript structured parsing."""
+
+    raw_output = json.dumps(
+        [
+            {
+                "filePath": APP_PATH,
+                "messages": [
+                    {
+                        "line": 7,
+                        "column": 3,
+                        "ruleId": "no-unused-vars",
+                        "severity": 2,
+                        "message": "Unused variable",
+                    }
+                ],
+            }
+        ]
+    )
+
+    summary = structured_typescript.summarize_typescript_check("typescript-lint:web", raw_output)
+
+    assert summary == f"{APP_PATH}:7:3: error: no-unused-vars: Unused variable"
+
+
 def test_typescript_test_output_summarizes_jest_json() -> None:
     """Jest-compatible JSON test output produces compact summaries."""
     raw_output = json.dumps(

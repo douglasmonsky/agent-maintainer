@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "source_repository": "https://github.com/TanStack/query",
+  "commit": "97db5d244715642fb63d9ce78566aa632cdfdc07",
+  "config_path": "knip.json",
+  "lockfile_path": "pnpm-lock.yaml",
+  "config_sha256": "4640b4b5c8322c601d1e0d3c74f5ad9e06d37bca3b21af963de591b6ef38bdb1",
+  "lockfile_sha256": "a8f25d94d53ff7840c920ce293fd3eafcf016c1f1935a280441649c79db214c4",
+  "package_manager": "pnpm@11.9.0",
+  "node_version": "v26.5.0",
+  "knip_version": "6.1.1",
+  "install_mode": "pnpm install --frozen-lockfile --ignore-scripts",
+  "command": ["pnpm", "exec", "knip", "--reporter", "json"],
+  "exit_code": 0,
+  "stdout": "{\"issues\":[]}\n",
+  "supported_finding_count": 0,
+  "retained_finding_count": 0
+}

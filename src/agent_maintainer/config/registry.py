@@ -105,6 +105,7 @@ WORKSPACE_KEYS = frozenset(
         "typescript_lint_command",
         "typescript_typecheck_command",
         "typescript_test_command",
+        "typescript_knip_command",
     )
 )
 WORKSPACE_PATH_KEYS = frozenset(("source_roots", "test_roots", "package_paths", "coverage_source"))

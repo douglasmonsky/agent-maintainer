@@ -2906,6 +2906,53 @@
         "verification_profiles": false
       },
       "default": [],
+      "description": "Configure typescript knip command.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_KNIP_COMMAND",
+      "environment_style": "standard",
+      "label": "Typescript Knip Command",
+      "name": "typescript_knip_command",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_knip_command",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "full",
+        "ci"
+      ],
+      "description": "Configure typescript knip profiles.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_KNIP_PROFILES",
+      "environment_style": "standard",
+      "label": "Typescript Knip Profiles",
+      "name": "typescript_knip_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_knip_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
       "description": "Configure typescript lint command.",
       "environment": "AGENT_MAINTAINER_TYPESCRIPT_LINT_COMMAND",
       "environment_style": "standard",
@@ -3267,6 +3314,7 @@
       "package_paths",
       "source_roots",
       "test_roots",
+      "typescript_knip_command",
       "typescript_lint_command",
       "typescript_test_command",
       "typescript_typecheck_command"

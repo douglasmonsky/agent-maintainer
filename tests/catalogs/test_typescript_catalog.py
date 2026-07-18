@@ -31,6 +31,7 @@ def test_typescript_checks_are_included_when_enabled() -> None:
         typescript_lint_command=("npm", "run", "lint"),
         typescript_typecheck_command=("npm", "run", "typecheck"),
         typescript_test_command=("npm", "test"),
+        typescript_knip_command=("pnpm", "exec", "knip", "--reporter", "json"),
     )
 
     checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
@@ -39,6 +40,14 @@ def test_typescript_checks_are_included_when_enabled() -> None:
     assert by_name["typescript-lint"].command == ["npm", "run", "lint"]
     assert by_name["typescript-typecheck"].command == ["npm", "run", "typecheck"]
     assert by_name["typescript-test"].command == ["npm", "test"]
+    assert by_name["typescript-knip"].command == [
+        "pnpm",
+        "exec",
+        "knip",
+        "--reporter",
+        "json",
+    ]
+    assert by_name["typescript-knip"].profiles == frozenset(("full", "ci"))
 
 
 def test_workspace_typescript_commands_emit_owned_checks() -> None:
@@ -55,6 +64,15 @@ def test_workspace_typescript_commands_emit_owned_checks() -> None:
                     "--filter",
                     "api",
                     "typecheck",
+                ),
+                typescript_knip_command=(
+                    "pnpm",
+                    "--filter",
+                    "api",
+                    "exec",
+                    "knip",
+                    "--reporter",
+                    "json",
                 ),
             ),
         ),
@@ -77,6 +95,16 @@ def test_workspace_typescript_commands_emit_owned_checks() -> None:
         "typecheck",
     ]
     assert "typescript-test:api" not in checks
+    assert checks["typescript-knip:api"].command == [
+        "pnpm",
+        "--filter",
+        "api",
+        "exec",
+        "knip",
+        "--reporter",
+        "json",
+    ]
+    assert checks["typescript-knip:api"].profiles == frozenset(("full", "ci"))
 
 
 def test_typescript_fixture_config_smoke(
@@ -91,6 +119,7 @@ enable_typescript = true
 typescript_lint_command = ["npm", "run", "lint"]
 typescript_typecheck_command = ["npm", "run", "typecheck"]
 typescript_test_command = ["npm", "test"]
+typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]
 """.strip(),
         encoding="utf-8",
     )
@@ -109,3 +138,10 @@ typescript_test_command = ["npm", "test"]
     assert checks["typescript-lint"].command == ["npm", "run", "lint"]
     assert checks["typescript-typecheck"].command == ["npm", "run", "typecheck"]
     assert checks["typescript-test"].command == ["npm", "test"]
+    assert checks["typescript-knip"].command == [
+        "pnpm",
+        "exec",
+        "knip",
+        "--reporter",
+        "json",
+    ]
