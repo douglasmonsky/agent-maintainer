@@ -159,14 +159,14 @@ violations and avoids duplicating data present at multiple schema levels.
 
 A supported violation requires:
 
-- non-empty string `from` and `to` values;
+- a non-empty string `from` plus a usable non-empty `to` or `unresolvedTo`;
 - an object `rule` with non-empty string `name`;
 - rule severity `error`, `warn`, or `info`;
 - optional violation type from dependency-cruiser's documented set:
   `dependency`, `module`, `reachability`, `cycle`, `instability`, or `folder`.
 
 Unknown severities, `ignore` violations, malformed neighbors, and unsupported
-violation types are skipped independently. `unresolvedTo` may supply the display
+violation types are skipped independently. `unresolvedTo` supplies the display
 target only when `to` is empty or unusable; it never becomes a context path.
 The root must contain object `summary` and array `violations` to be considered a
 valid structured result.
