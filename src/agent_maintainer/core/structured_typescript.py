@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from agent_repair_facts.parsers import typescript_checks, typescript_knip
+from agent_repair_facts.parsers import (
+    typescript_checks,
+    typescript_dependency_cruiser,
+    typescript_knip,
+)
 from agent_repair_facts.parsers.typescript_coverage import (
     parse_coverage_summary_json,
     parse_lcov_info,
@@ -18,6 +22,7 @@ from agent_repair_facts.parsers.typescript_tests import parse_vitest_json
 
 TYPESCRIPT_DIAGNOSTIC_LIMIT = 50
 KNIP_SUMMARY_LINE_LIMIT = 50
+DEPENDENCY_CRUISER_SUMMARY_LINE_LIMIT = 50
 
 
 def summarize_typescript_lint(raw_output: str) -> str | None:
@@ -58,6 +63,34 @@ def summarize_typescript_knip(raw_output: str) -> str | None:
     return "\n".join(lines)
 
 
+def summarize_typescript_dependency_cruiser(raw_output: str) -> str | None:
+    """Return a compact bounded dependency-cruiser summary."""
+
+    parse_result = (
+        typescript_dependency_cruiser.parse_dependency_cruiser_json_result(
+            raw_output
+        )
+    )
+    findings = parse_result.findings
+    if not findings:
+        return None
+    visible_limit = DEPENDENCY_CRUISER_SUMMARY_LINE_LIMIT
+    if parse_result.supported_count > visible_limit:
+        visible_limit -= 1
+    visible = findings[:visible_limit]
+    lines = [
+        typescript_dependency_cruiser.format_dependency_cruiser_finding(finding)
+        for finding in visible
+    ]
+    omitted = parse_result.supported_count - len(visible)
+    if omitted:
+        lines.append(
+            f"... {omitted} more dependency-cruiser findings omitted. "
+            "See .verify-logs/"
+        )
+    return "\n".join(lines)
+
+
 def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:
     """Return compact TypeScript provider summary when output is structured."""
     check_family = typescript_checks.check_family(check_name)
@@ -69,6 +102,8 @@ def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:
         return summarize_typescript_test(raw_output)
     if check_family == "typescript-knip":
         return summarize_typescript_knip(raw_output)
+    if check_family == "typescript-dependency-cruiser":
+        return summarize_typescript_dependency_cruiser(raw_output)
     return None
 
 

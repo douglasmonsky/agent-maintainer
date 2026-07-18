@@ -1,0 +1,100 @@
+{
+  "summary": {
+    "violations": [
+      {
+        "from": "src/ui/view.ts",
+        "to": "src/data/private.ts",
+        "type": "folder",
+        "rule": {"name": "ui-not-to-data", "severity": "warn"}
+      },
+      {
+        "from": "src/api/client.ts",
+        "to": "src/db/private.ts",
+        "type": "dependency",
+        "rule": {"name": "api-not-to-db", "severity": "error"}
+      },
+      {
+        "from": "src/domain/order.ts",
+        "to": "src/ui/view.ts",
+        "type": "module",
+        "rule": {"name": "domain-not-to-ui", "severity": "info"}
+      },
+      {
+        "from": "src/cycle/a.ts",
+        "to": "src/cycle/b.ts",
+        "type": "cycle",
+        "rule": {"name": "no-cycles", "severity": "error"}
+      },
+      {
+        "from": "src/core/public.ts",
+        "to": "src/legacy/private.ts",
+        "type": "instability",
+        "rule": {"name": "stable-dependencies", "severity": "warn"}
+      },
+      {
+        "from": "src/entry.ts",
+        "to": "src/deep/leaf.ts",
+        "type": "reachability",
+        "rule": {"name": "entry-not-to-leaf", "severity": "info"}
+      },
+      {
+        "from": "src/unresolved.ts",
+        "to": "",
+        "unresolvedTo": "missing-package",
+        "type": "dependency",
+        "rule": {"name": "no-unresolved", "severity": "error"}
+      },
+      {
+        "from": "/private/z-absolute-source.ts",
+        "to": "../../private/target.ts",
+        "type": "dependency",
+        "rule": {"name": "unsafe-posix", "severity": "warn"}
+      },
+      {
+        "from": "C:\\private\\z-windows-source.ts",
+        "to": "D:\\private\\target.ts",
+        "type": "dependency",
+        "rule": {"name": "unsafe-windows", "severity": "info"}
+      },
+      {
+        "from": "src/control/\nz-control-source.ts",
+        "to": "src/control\ttarget.ts",
+        "type": "dependency",
+        "rule": {"name": "unsafe-controls", "severity": "error"}
+      },
+      {
+        "from": ".",
+        "to": ".",
+        "type": "dependency",
+        "rule": {"name": "unsafe-dot", "severity": "warn"}
+      },
+      {
+        "from": "",
+        "to": "src/ignored.ts",
+        "type": "dependency",
+        "rule": {"name": "empty-source", "severity": "error"}
+      },
+      null,
+      {"from": "src/malformed.ts", "to": "src/target.ts", "rule": "bad"},
+      {
+        "from": "src/ignored.ts",
+        "to": "src/target.ts",
+        "type": "dependency",
+        "rule": {"name": "ignored", "severity": "ignore"}
+      },
+      {
+        "from": "src/unknown-severity.ts",
+        "to": "src/target.ts",
+        "type": "dependency",
+        "rule": {"name": "unknown-severity", "severity": "fatal"}
+      },
+      {
+        "from": "src/unknown-type.ts",
+        "to": "src/target.ts",
+        "type": "graph",
+        "rule": {"name": "unknown-type", "severity": "error"}
+      }
+    ]
+  },
+  "modules": []
+}

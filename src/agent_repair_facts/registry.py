@@ -13,6 +13,7 @@ from agent_repair_facts.parsers import (
     pytest,
     security,
     typescript_checks,
+    typescript_dependency_cruiser,
 )
 from agent_repair_facts.parsers.logs import (
     architecture_decision_facts,
@@ -59,6 +60,7 @@ LOG_FACT_PARSERS: tuple[FactParserEntry, ...] = (
     ("typescript-typecheck", typescript_typecheck_facts),
     ("typescript-test", typescript_test_facts),
     ("typescript-knip", knip_facts),
+    ("typescript-dependency-cruiser", typescript_dependency_cruiser.dependency_cruiser_facts),
     ("vulture", vulture_facts),
     ("wemake", wemake_facts),
     ("xenon-complexity-gate", xenon_complexity_facts),
