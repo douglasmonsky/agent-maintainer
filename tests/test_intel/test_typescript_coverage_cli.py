@@ -132,9 +132,7 @@ def test_cli_reports_default_lcov_as_json(
     )
     monkeypatch.chdir(tmp_path)
 
-    status = maintainer_main(
-        ["test-intel", "typescript-coverage", "--format", "json"]
-    )
+    status = maintainer_main(["test-intel", "typescript-coverage", "--format", "json"])
 
     assert status == 0
     payload = json.loads(capsys.readouterr().out)

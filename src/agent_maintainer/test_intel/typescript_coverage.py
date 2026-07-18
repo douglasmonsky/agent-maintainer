@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-import subprocess
+import subprocess  # nosec B404
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,8 +20,8 @@ DEFAULT_LCOV_PATH = Path("coverage/lcov.info")
 MAX_LCOV_BYTES = 10 * 1024 * 1024
 MAX_SOURCE_PATH_CHARS = 500
 MAX_FILE_FACTS = 500
-MAX_CHANGED_SOURCE_FILES = 500
 WINDOWS_DRIVE_RE = re.compile(r"^[A-Za-z]:/")
+GIT_OBJECT_RE = re.compile(r"^[0-9a-f]{40,64}$")
 ADVISORY_NOTE = (
     "Advisory only: missing LCOV files are reported separately and no "
     "coverage threshold is enforced."
@@ -111,6 +111,60 @@ class _MutableLineRecord:
     covered: set[int]
 
 
+class _GitDiff:
+    """Strict Git boundary for advisory changed-line reporting."""
+
+    def __init__(self, repo_root: Path) -> None:
+        self._repo_root = repo_root
+
+    def resolve_ref(self, *, base_ref: str, staged: bool) -> str:
+        """Resolve one base ref to a canonical object ID before diffing."""
+
+        if staged:
+            return base_ref
+        command = ["git", "rev-parse", "--verify", "--end-of-options", f"{base_ref}^{{commit}}"]
+        try:
+            result = subprocess.run(  # nosec B603
+                command,
+                cwd=self._repo_root,
+                capture_output=True,
+                check=True,
+                text=True,
+            )
+        except (OSError, subprocess.CalledProcessError, UnicodeDecodeError) as exc:
+            raise TypeScriptCoverageError("Git ref could not be resolved.") from exc
+        object_id = result.stdout.strip()
+        if GIT_OBJECT_RE.fullmatch(object_id) is None:
+            raise TypeScriptCoverageError("Git ref could not be resolved.")
+        return object_id
+
+    def changed_line_numbers(
+        self,
+        changed_source: tuple[str, ...],
+        *,
+        base_ref: str,
+        staged: bool,
+    ) -> dict[str, frozenset[int]]:
+        """Map changed lines while surfacing Git and decoding failures."""
+
+        command = coverage_lines.git_diff_command(
+            changed_source,
+            base_ref=base_ref,
+            staged=staged,
+        )
+        try:
+            result = subprocess.run(  # nosec B603
+                command,
+                cwd=self._repo_root,
+                capture_output=True,
+                check=True,
+                text=True,
+            )
+        except (OSError, subprocess.CalledProcessError, UnicodeDecodeError) as exc:
+            raise TypeScriptCoverageError("Git diff could not map changed lines.") from exc
+        return coverage_lines.parse_changed_lines(result.stdout, frozenset(changed_source))
+
+
 def build_report(request: TypeScriptCoverageRequest) -> TypeScriptCoverageReport:
     """Build an advisory TypeScript changed-line coverage report."""
 
@@ -131,21 +185,23 @@ def build_report(request: TypeScriptCoverageRequest) -> TypeScriptCoverageReport
     if not any(record.executable for record in records.values()):
         raise TypeScriptCoverageError("Artifact contains no usable LCOV line records.")
 
-    changed_source = changed_typescript_source_paths(
-        repo_root,
+    diff_ref = _GitDiff(repo_root).resolve_ref(
         base_ref=request.base_ref,
         staged=request.staged,
     )
-    changed_map = coverage_lines.changed_line_numbers(
+    changed_source = changed_typescript_source_paths(
         repo_root,
+        base_ref=diff_ref,
+        staged=request.staged,
+    )
+    changed_map = _GitDiff(repo_root).changed_line_numbers(
         changed_source,
-        base_ref=request.base_ref,
+        base_ref=diff_ref,
         staged=request.staged,
     )
     facts, missing = coverage_facts(changed_source, changed_map, records)
     executable = sum(fact.executable_changed_lines for fact in facts)
     covered = sum(fact.covered_changed_lines for fact in facts)
-    missed = executable - covered
     return TypeScriptCoverageReport(
         artifact_path=relative_label(artifact, repo_root),
         source_root=relative_label(source_root, repo_root),
@@ -155,7 +211,7 @@ def build_report(request: TypeScriptCoverageRequest) -> TypeScriptCoverageReport
         missing_from_lcov=missing,
         executable_changed_lines=executable,
         covered_changed_lines=covered,
-        missed_changed_lines=missed,
+        missed_changed_lines=executable - covered,
         changed_line_coverage=coverage_percent(covered, executable),
         matched_file_count=len(facts),
         files=facts[:MAX_FILE_FACTS],
@@ -176,20 +232,33 @@ def read_lcov_artifact(path: Path) -> str:
     """Read one regular, bounded UTF-8 LCOV artifact."""
 
     try:
-        metadata = path.stat()
-        if not path.is_file():
-            raise TypeScriptCoverageError("LCOV artifact is not a regular file.")
-        if metadata.st_size > MAX_LCOV_BYTES:
-            raise TypeScriptCoverageError("LCOV artifact exceeds the 10 MiB limit.")
-        with path.open("rb") as handle:
-            raw = handle.read(MAX_LCOV_BYTES + 1)
-        if len(raw) > MAX_LCOV_BYTES:
-            raise TypeScriptCoverageError("LCOV artifact exceeds the 10 MiB limit.")
+        raw = read_lcov_bytes(path)
+    except OSError as exc:
+        raise TypeScriptCoverageError("LCOV artifact could not be read.") from exc
+    try:
         return raw.decode("utf-8")
     except UnicodeDecodeError as exc:
         raise TypeScriptCoverageError("LCOV artifact is not valid UTF-8.") from exc
-    except OSError as exc:
-        raise TypeScriptCoverageError("LCOV artifact could not be read.") from exc
+
+
+def read_lcov_bytes(path: Path) -> bytes:
+    """Return bounded bytes from one regular LCOV artifact."""
+
+    metadata = path.stat()
+    if not path.is_file():
+        raise TypeScriptCoverageError("LCOV artifact is not a regular file.")
+    require_lcov_size(metadata.st_size)
+    with path.open("rb") as handle:
+        raw = handle.read(MAX_LCOV_BYTES + 1)
+    require_lcov_size(len(raw))
+    return raw
+
+
+def require_lcov_size(size: int) -> None:
+    """Reject LCOV content larger than the explicit artifact bound."""
+
+    if size > MAX_LCOV_BYTES:
+        raise TypeScriptCoverageError("LCOV artifact exceeds the 10 MiB limit.")
 
 
 def normalize_records(
@@ -235,14 +304,22 @@ def normalize_source_path(source: str, repo_root: Path, source_root: Path) -> st
 def unsafe_source_scalar(source: str) -> bool:
     """Return whether an LCOV source scalar is unsafe to resolve."""
 
-    return (
-        not source
-        or source == "."
-        or len(source) > MAX_SOURCE_PATH_CHARS
-        or source.startswith("//")
-        or WINDOWS_DRIVE_RE.match(source) is not None
-        or any(unicodedata.category(character).startswith("C") for character in source)
+    unsafe_shape = any(
+        (
+            not source,
+            source == ".",
+            len(source) > MAX_SOURCE_PATH_CHARS,
+            source.startswith("//"),
+            WINDOWS_DRIVE_RE.match(source) is not None,
+        )
     )
+    return unsafe_shape or has_unicode_control(source)
+
+
+def has_unicode_control(value: str) -> bool:
+    """Return whether text contains any Unicode control or format scalar."""
+
+    return any(unicodedata.category(character).startswith("C") for character in value)
 
 
 def changed_typescript_source_paths(
@@ -274,16 +351,9 @@ def changed_typescript_source_paths(
         )
     except (OSError, subprocess.CalledProcessError, UnicodeDecodeError) as exc:
         raise TypeScriptCoverageError("Git diff could not identify changed source.") from exc
-    paths = tuple(
-        path
-        for path in sorted(set(result.stdout.split("\0")) - {""})
-        if is_typescript_source(path)
+    return tuple(
+        path for path in sorted(set(result.stdout.split("\0")) - {""}) if is_typescript_source(path)
     )
-    if len(paths) > MAX_CHANGED_SOURCE_FILES:
-        raise TypeScriptCoverageError(
-            "Git diff contains too many TypeScript source files; narrow the diff."
-        )
-    return paths
 
 
 def is_typescript_source(path: str) -> bool:

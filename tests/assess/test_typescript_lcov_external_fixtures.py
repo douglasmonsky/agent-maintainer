@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+from datetime import datetime, timedelta
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import cast
 
@@ -21,7 +22,6 @@ FIXTURES = (
     ("cmsgov-qpp-measures-data.json", "npm"),
     ("starbeam-pnpm-workspace.json", "pnpm"),
 )
-COMMIT_SHA_LENGTH = 40
 SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
 SHA1_HEX_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -34,8 +34,10 @@ def test_public_lcov_projection_metadata(filename: str, package_manager: str) ->
     fixture = load_fixture(filename)
 
     assert str(fixture["source_repository"]).startswith("https://github.com/")
-    assert len(str(fixture["commit"])) == COMMIT_SHA_LENGTH
-    assert str(fixture["collected_at"]).endswith("Z")
+    assert SHA1_HEX_RE.fullmatch(str(fixture["commit"]))
+    collected_at = datetime.fromisoformat(str(fixture["collected_at"]))
+    assert collected_at.tzinfo is not None
+    assert collected_at.utcoffset() == timedelta(0)
     assert fixture["package_manager"] == package_manager
     assert str(fixture["package_manager_version"])
     assert str(fixture["node_version"])
@@ -43,6 +45,7 @@ def test_public_lcov_projection_metadata(filename: str, package_manager: str) ->
     assert SHA256_HEX_RE.fullmatch(str(fixture["raw_lcov_sha256"]))
     assert SHA1_HEX_RE.fullmatch(str(fixture["artifact_git_blob_sha1"]))
     assert positive_int(fixture["raw_lcov_bytes"])
+    assert coverage_provenance_is_explicit(fixture)
     assert fixture["projected_record_count"] == len(
         parse_lcov_records(str(fixture["lcov_projection"]))
     )
@@ -79,7 +82,7 @@ def test_public_lcov_projection_replays_changed_line_math(
     expected = object_mapping(fixture["expected"])
 
     assert report.changed_source == tuple(sorted(changed_lines))
-    assert report.missing_from_lcov == ()
+    assert not report.missing_from_lcov
     assert report.executable_changed_lines == expected["executable_changed_lines"]
     assert report.covered_changed_lines == expected["covered_changed_lines"]
     assert report.changed_line_coverage == expected["changed_line_coverage"]
@@ -100,6 +103,27 @@ def positive_int(value: object) -> bool:
     return isinstance(value, int) and value > 0
 
 
+def coverage_provenance_is_explicit(fixture: dict[str, object]) -> bool:
+    """Return whether producer and generation-command provenance are explicit."""
+
+    producer = object_mapping(fixture["coverage_producer"])
+    producer_declared = bool(str(producer.get("name", ""))) and bool(
+        str(producer.get("version", ""))
+    )
+    command = fixture.get("command")
+    declared_command = fixture.get("declared_command")
+    unavailable = fixture.get("generation_status")
+    command_declared = (
+        isinstance(command, list)
+        and bool(command)
+        and isinstance(declared_command, str)
+        and bool(declared_command)
+    )
+    return producer_declared and (
+        command_declared or unavailable == "exact command not declared at pinned commit"
+    )
+
+
 def object_mapping(value: object) -> dict[str, object]:
     """Return a fixture object mapping."""
 
@@ -113,8 +137,9 @@ def string_line_map(value: object) -> dict[str, tuple[int, ...]]:
     result: dict[str, tuple[int, ...]] = {}
     for path, raw_lines in object_mapping(value).items():
         assert isinstance(raw_lines, list)
-        assert all(isinstance(line, int) and line > 0 for line in raw_lines)
-        result[path] = tuple(cast(list[int], raw_lines))
+        lines = cast(list[object], raw_lines)
+        assert all(isinstance(line, int) and line > 0 for line in lines)
+        result[path] = tuple(cast(list[int], lines))
     return result
 
 
@@ -124,7 +149,8 @@ def nested_strings(value: object) -> list[str]:
     if isinstance(value, str):
         return [value]
     if isinstance(value, list):
-        return [text for item in value for text in nested_strings(item)]
+        items = cast(list[object], value)
+        return [text for item in items for text in nested_strings(item)]
     if isinstance(value, dict):
         mapping = cast(dict[object, object], value)
         return [text for item in mapping.values() for text in nested_strings(item)]

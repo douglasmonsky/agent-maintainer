@@ -102,3 +102,19 @@ def test_parse_lcov_records_skips_unsafe_source_scalars() -> None:
             covered_lines=frozenset(),
         ),
     )
+
+
+def test_parse_lcov_records_skips_overlong_numeric_neighbors() -> None:
+    """Hostile integer fields do not raise or hide later valid DA lines."""
+
+    records = parse_lcov_records(
+        f"SF:src/app.ts\nDA:{'9' * 5_000},1\nDA:6,{'9' * 5_000}\nDA:7,1\nend_of_record\n"
+    )
+
+    assert records == (
+        LcovFileRecord(
+            source="src/app.ts",
+            executable_lines=frozenset((7,)),
+            covered_lines=frozenset((7,)),
+        ),
+    )

@@ -17,10 +17,10 @@ FORMAT_TEXT = "text"
 FORMAT_CHOICES = (FORMAT_TEXT, FORMAT_JSON)
 
 
-def add_parser(add_parser: Callable[..., argparse.ArgumentParser]) -> None:
+def add_parser(parser_factory: Callable[..., argparse.ArgumentParser]) -> None:
     """Add the advisory TypeScript coverage subcommand."""
 
-    parser = add_parser(
+    parser = parser_factory(
         "typescript-coverage",
         help="Report advisory LCOV coverage for changed TypeScript lines.",
     )

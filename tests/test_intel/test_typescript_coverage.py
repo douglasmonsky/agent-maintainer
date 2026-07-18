@@ -14,6 +14,7 @@ from agent_maintainer.test_intel.typescript_coverage import (
     build_report,
     changed_typescript_source_paths,
     is_typescript_source,
+    normalize_source_path,
 )
 
 EXPECTED_EXECUTABLE_LINES = 3
@@ -74,10 +75,7 @@ def test_report_maps_workspace_and_absolute_lcov_sources(tmp_path: Path) -> None
     write_source(tmp_path, "packages/web/src/app.ts", "new();\n")
     write_lcov(
         tmp_path,
-        (
-            "SF:src/app.ts\nDA:1,0\nend_of_record\n"
-            f"SF:{source_path}\nDA:1,3\nend_of_record\n"
-        ),
+        (f"SF:src/app.ts\nDA:1,0\nend_of_record\nSF:{source_path}\nDA:1,3\nend_of_record\n"),
     )
 
     report = build_report(
@@ -125,9 +123,7 @@ def test_report_uses_staged_diff_and_excludes_non_source_roles(tmp_path: Path) -
     run_git(tmp_path, "add", "--", "src")
     write_lcov(tmp_path, "SF:src/app.ts\nDA:1,1\nend_of_record\n")
 
-    report = build_report(
-        TypeScriptCoverageRequest(repo_root=tmp_path, staged=True)
-    )
+    report = build_report(TypeScriptCoverageRequest(repo_root=tmp_path, staged=True))
 
     assert report.changed_source == ("src/app.ts",)
     assert report.changed_line_coverage == FULL_COVERAGE_PERCENT
@@ -173,10 +169,24 @@ def test_report_rejects_unusable_artifacts_and_invalid_git_refs(tmp_path: Path) 
         build_report(TypeScriptCoverageRequest(repo_root=tmp_path))
 
     write_lcov(tmp_path, "SF:src/app.ts\nDA:1,1\nend_of_record\n")
-    with pytest.raises(TypeScriptCoverageError, match="Git diff"):
-        build_report(
-            TypeScriptCoverageRequest(repo_root=tmp_path, base_ref="missing-ref")
-        )
+    with pytest.raises(TypeScriptCoverageError, match="Git ref"):
+        build_report(TypeScriptCoverageRequest(repo_root=tmp_path, base_ref="missing-ref"))
+
+
+@pytest.mark.parametrize("base_ref", ("--stat", "--ext-diff", "--output=unsafe.patch"))
+def test_report_rejects_option_shaped_git_refs(tmp_path: Path, base_ref: str) -> None:
+    """Git options are rejected before they can reach a diff command."""
+
+    create_repo(tmp_path)
+    write_source(tmp_path, "src/app.ts", "old();\n")
+    commit_all(tmp_path)
+    write_source(tmp_path, "src/app.ts", "new();\n")
+    write_lcov(tmp_path, "SF:src/app.ts\nDA:1,1\nend_of_record\n")
+
+    with pytest.raises(TypeScriptCoverageError, match="Git ref"):
+        build_report(TypeScriptCoverageRequest(repo_root=tmp_path, base_ref=base_ref))
+
+    assert not (tmp_path / "unsafe.patch").exists()
 
 
 def test_report_rejects_paths_outside_repository(tmp_path: Path) -> None:
@@ -187,13 +197,47 @@ def test_report_rejects_paths_outside_repository(tmp_path: Path) -> None:
     outside.write_text("SF:src/app.ts\nDA:1,1\n", encoding="utf-8")
 
     with pytest.raises(TypeScriptCoverageError, match="inside the repository"):
-        build_report(
-            TypeScriptCoverageRequest(repo_root=tmp_path, lcov_path=outside)
-        )
+        build_report(TypeScriptCoverageRequest(repo_root=tmp_path, lcov_path=outside))
+    with pytest.raises(TypeScriptCoverageError, match="inside the repository"):
+        build_report(TypeScriptCoverageRequest(repo_root=tmp_path, source_root=tmp_path.parent))
+
+
+def test_report_confines_symlinks_but_accepts_internal_artifact_link(tmp_path: Path) -> None:
+    """Resolved artifact, source-root, and LCOV paths stay inside the repository."""
+
+    create_repo(tmp_path)
+    outside_artifact = tmp_path.parent / f"{tmp_path.name}-outside.lcov"
+    outside_source = tmp_path.parent / f"{tmp_path.name}-outside-source"
+    outside_artifact.write_text("SF:src/app.ts\nDA:1,1\n", encoding="utf-8")
+    outside_source.mkdir()
+    (tmp_path / "artifact-link.lcov").symlink_to(outside_artifact)
+    (tmp_path / "source-link").symlink_to(outside_source, target_is_directory=True)
+
     with pytest.raises(TypeScriptCoverageError, match="inside the repository"):
         build_report(
-            TypeScriptCoverageRequest(repo_root=tmp_path, source_root=tmp_path.parent)
+            TypeScriptCoverageRequest(repo_root=tmp_path, lcov_path=Path("artifact-link.lcov"))
         )
+    with pytest.raises(TypeScriptCoverageError, match="inside the repository"):
+        build_report(TypeScriptCoverageRequest(repo_root=tmp_path, source_root=Path("source-link")))
+
+    internal_artifact = tmp_path / "coverage/real.info"
+    internal_artifact.parent.mkdir(parents=True)
+    internal_artifact.write_text("SF:src/app.ts\nDA:1,1\n", encoding="utf-8")
+    internal_link = tmp_path / "coverage/link.info"
+    internal_link.symlink_to(internal_artifact)
+    assert typescript_coverage.read_lcov_artifact(internal_link).startswith("SF:src/app.ts")
+
+
+def test_lcov_source_symlink_cannot_escape_repository(tmp_path: Path) -> None:
+    """An LCOV source symlink is ignored when its target escapes the repository."""
+
+    outside_source = tmp_path.parent / f"{tmp_path.name}-outside.ts"
+    outside_source.write_text("outside();\n", encoding="utf-8")
+    source_link = tmp_path / "src/escape.ts"
+    source_link.parent.mkdir(parents=True)
+    source_link.symlink_to(outside_source)
+
+    assert normalize_source_path("src/escape.ts", tmp_path, tmp_path) is None
 
 
 def test_report_rejects_oversized_artifact(
@@ -210,17 +254,16 @@ def test_report_rejects_oversized_artifact(
         build_report(TypeScriptCoverageRequest(repo_root=tmp_path))
 
 
-def test_changed_source_rejects_unsafe_or_excessive_paths(
+def test_changed_source_rejects_unsafe_paths_without_truncating_valid_diffs(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Git paths are control-safe and bounded before diff-hunk mapping."""
+    """Git paths are control-safe without truncating valid large diffs."""
 
     assert is_typescript_source("src/unsafe\nname.ts") is False
     assert is_typescript_source(f"src/{'x' * 501}.ts") is False
     stdout = "\0".join(
-        f"src/file-{index:03d}.ts"
-        for index in range(typescript_coverage.MAX_CHANGED_SOURCE_FILES + 1)
+        f"src/file-{index:03d}.ts" for index in range(typescript_coverage.MAX_FILE_FACTS + 1)
     )
     monkeypatch.setattr(
         typescript_coverage.subprocess,
@@ -228,8 +271,72 @@ def test_changed_source_rejects_unsafe_or_excessive_paths(
         lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, stdout, ""),
     )
 
-    with pytest.raises(TypeScriptCoverageError, match="too many TypeScript source files"):
-        changed_typescript_source_paths(tmp_path, base_ref="HEAD", staged=False)
+    paths = changed_typescript_source_paths(tmp_path, base_ref="HEAD", staged=False)
+
+    assert len(paths) == typescript_coverage.MAX_FILE_FACTS + 1
+
+
+def test_report_aggregates_all_files_before_retaining_facts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A large valid diff keeps exact totals and retains only 500 facts."""
+
+    create_repo(tmp_path)
+    paths = tuple(
+        f"src/file-{index:03d}.ts" for index in range(typescript_coverage.MAX_FILE_FACTS + 1)
+    )
+    write_lcov(
+        tmp_path,
+        "".join(f"SF:{path}\nDA:1,1\nend_of_record\n" for path in paths),
+    )
+    monkeypatch.setattr(
+        typescript_coverage,
+        "changed_typescript_source_paths",
+        lambda *_args, **_kwargs: paths,
+    )
+    monkeypatch.setattr(
+        "agent_maintainer.test_intel.typescript_coverage._GitDiff.changed_line_numbers",
+        lambda *_args, **_kwargs: {path: frozenset((1,)) for path in paths},
+    )
+
+    report = build_report(TypeScriptCoverageRequest(repo_root=tmp_path, staged=True))
+
+    assert report.executable_changed_lines == len(paths)
+    assert report.covered_changed_lines == len(paths)
+    assert report.matched_file_count == len(paths)
+    assert len(report.files) == typescript_coverage.MAX_FILE_FACTS
+
+
+@pytest.mark.parametrize(
+    "failure",
+    (
+        subprocess.CalledProcessError(1, ["git", "diff"]),
+        UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid byte"),
+    ),
+)
+def test_report_surfaces_strict_hunk_mapping_failures(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure: Exception,
+) -> None:
+    """The explicit report never converts a failed hunk diff into unknown coverage."""
+
+    create_repo(tmp_path)
+    write_lcov(tmp_path, "SF:src/app.ts\nDA:1,1\nend_of_record\n")
+    monkeypatch.setattr(
+        typescript_coverage,
+        "changed_typescript_source_paths",
+        lambda *_args, **_kwargs: ("src/app.ts",),
+    )
+
+    def fail_diff(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise failure
+
+    monkeypatch.setattr(typescript_coverage.subprocess, "run", fail_diff)
+
+    with pytest.raises(TypeScriptCoverageError, match="Git diff"):
+        build_report(TypeScriptCoverageRequest(repo_root=tmp_path, staged=True))
 
 
 def create_repo(path: Path) -> None:
