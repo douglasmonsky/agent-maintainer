@@ -71,6 +71,16 @@ The new domain has focused modules:
 - `reporting.py`: deterministic human-readable and JSON output.
 - `cli.py`: argument parsing and exit-status behavior.
 
+Repository-relative path validation lives in the neutral
+`agent_maintainer.core.repo_paths` module so both the Git adapter and planner
+matching can use the same fail-closed boundary without a lower-level ecosystem
+module depending on the new planner domain.
+
+The neutral `agent_maintainer.ecosystems.git_changes` adapter gains a separate
+NUL-delimited name-status reader for planning. It preserves change kind and
+source/destination identity for renames and copies; the existing numstat API
+remains backward compatible for reviewability and change-budget consumers.
+
 The root CLI lazily dispatches `verify-plan` to the new domain. A verifier
 catalog entry invokes `verify-plan --enforce` only when the default policy file
 exists. This makes enforcement available to normal verification without making
@@ -139,25 +149,37 @@ prevents misspelled policy from becoming silently ineffective.
 
 ### Glob Semantics
 
-All paths use normalized POSIX separators and are relative to the repository
-root. `*` matches within one path segment, `**` matches zero or more complete
-segments, and `?` matches one non-separator character. Matching is
-case-sensitive and does not consult `.gitignore`.
+All paths use POSIX separators and are relative to the repository root. `*`
+matches within one path segment, `**` is accepted only as a complete segment and
+matches zero or more complete segments, and `?` matches one non-separator
+character. Matching is case-sensitive and does not consult `.gitignore`.
 
-A rule is matched when at least one changed destination path matches one of its
-`paths`. Generated and ignored classifications remain eligible for matching so
-security rules cannot be bypassed by locating a file under a generated-looking
-directory.
+Policy paths and globs containing a leading slash, leading `./`, backslash,
+empty segment, `.` segment, `..` segment, NUL, or embedded `**` are rejected
+rather than silently canonicalized. Git paths come from NUL-delimited output and
+must pass the same repository-relative validation before matching.
+
+A rule is matched when at least one affected path matches one of its `paths`.
+Adds and modifications have one affected path. Renames and copies expose both
+source and destination paths. Deletions expose the removed source path. This
+prevents moving or deleting a sensitive file from bypassing policy. Named
+`changed-path` evidence counts only paths present after the change, so a deleted
+path cannot satisfy evidence. Generated and ignored classifications remain
+eligible for matching so security rules cannot be bypassed by locating a file
+under a generated-looking directory.
 
 ## Affected Units
 
 The planner reports the smallest known repository units affected by the diff:
 
 - Python: configured `package_paths`, matched by longest path prefix.
-- TypeScript: literal workspace declarations expanded to directories that
-  contain `package.json`, then matched by longest path prefix.
-- Java/Gradle: module paths derived by existing bounded repository evidence,
-  matched by longest path prefix.
+- TypeScript: literal workspace declarations expanded without following
+  out-of-repository symlinks, capped at 256 candidate roots, filtered to
+  directories containing `package.json`, then matched by longest path prefix.
+- Java/Gradle: module paths derived conservatively from existing bounded Java
+  source/test evidence, matched by longest path prefix. This phase does not
+  interpret executable Gradle settings DSL or claim support for custom
+  `projectDir` mappings.
 - Repository: a stable root unit for unmatched or ambiguous paths.
 
 Each unit contains `kind`, `name`, `root`, and sorted `changed_paths`. A path may
@@ -168,7 +190,9 @@ repository unit and emits an advisory rather than guessing ownership.
 
 Planning follows this order:
 
-1. Read numstat changes through the existing neutral Git adapter.
+1. Resolve the base ref with `git rev-parse --verify --end-of-options`, then read
+   NUL-delimited name-status changes through the neutral Git adapter, preserving
+   source and destination identity for renames and copies.
 2. Classify every changed path through registered ecosystem providers.
 3. Resolve affected units.
 4. Load and validate policy, including verifier profile and check names.
@@ -186,14 +210,18 @@ status only under `--enforce`.
 The planner derives recommended commands from selected profiles. It reports
 exact selected checks for orchestration and audit, but does not execute them.
 Existing verifier profiles remain authoritative for command execution and run
-artifacts.
+artifacts. Every selected profile renders the canonical
+`python -m agent_maintainer verify --profile PROFILE` command, even when its
+configured catalog currently has no applicable checks. Evidence paths may
+overlap triggering paths; authors avoid self-triggering rules when that is not
+the intended policy.
 
 ## Report Contract
 
 JSON output has `schema_version = 1` and these stable top-level fields:
 
 - `target`, `base_ref`, `staged`, `policy_path`, and `policy_configured`;
-- `changes`;
+- `changes`, including `kind`, current `path`, and optional `old_path`;
 - `affected_units`;
 - `matched_rules`;
 - `selected_profiles` and `selected_checks`;
@@ -230,7 +258,9 @@ agent-maintainer verify-plan
 
 When the policy file is absent, the planner returns a valid unconfigured report
 with no matched rules. The optional verifier catalog check is not applicable in
-that state, preserving existing repositories' behavior.
+that state, preserving existing repositories' behavior. When configured, the
+policy check belongs to the existing `fast`, `precommit`, `full`, and `ci`
+profiles and receives the catalog's exact base-ref and staged mode.
 
 ## Repository Policy Rollout
 
@@ -262,6 +292,8 @@ environment values, credentials, or verifier log contents.
 Implementation uses test-driven development. Required proof includes:
 
 - strict policy parsing and every rejection class;
+- NUL-delimited add, modify, delete, rename, copy, binary, malformed, and Git
+  failure change-reader cases;
 - segment-aware glob matching, including `**` and path normalization;
 - Python, TypeScript, Gradle, and root affected-unit resolution;
 - overlapping rules and deterministic unions;
