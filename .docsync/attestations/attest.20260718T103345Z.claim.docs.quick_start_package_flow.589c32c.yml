@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T103345Z.claim.docs.quick_start_package_flow.589c32c
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.command_registry
+  reason: Reviewed the expanded command registry; quick-start package guidance remains
+    accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-18T10:33:45Z'
+  base: HEAD
+  head: 589c32c
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:9769777a516fbd8ffee84ab4ce995f1e6070b2c43c08879a8c1a0a3aa1a412d4
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:a958c7d5cef53a364153d3f417be411fbd3a14a89d963a93b149b9890c702c89
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

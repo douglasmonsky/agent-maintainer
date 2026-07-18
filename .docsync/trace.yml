@@ -290,6 +290,14 @@ objects:
     heading:
       level: 2
       text: Run Profiles
+  docs.readme.verification_planning:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.verification_planning
+    heading:
+      level: 2
+      text: Diff-Aware Verification Planning
   docs.readme.supported_checks:
     document: docs.readme
     kind: heading_section
@@ -803,6 +811,17 @@ claims:
     evidence:
     - evidence.readme.command_registry
     - evidence.readme.catalog_composition
+  claim.readme.verification_planning:
+    object: docs.readme.verification_planning
+    text: README documents advisory and enforced diff-aware verification planning,
+      deterministic schema version 1 JSON, and the invariant that planning never
+      suppresses existing verifier gates.
+    severity: high
+    evidence:
+    - evidence.readme.command_registry
+    - evidence.readme.verification_planning
+    - evidence.readme.path_risk_policy
+    - evidence.readme.path_risk_policy_tests
   claim.readme.supported_checks:
     object: docs.readme.supported_checks
     text: README supported-checks overview is backed by the live check catalog,
@@ -1333,6 +1352,26 @@ evidence:
       workflow, and coverage checks.
     anchors:
     - path: src/agent_maintainer/catalogs/catalog.py
+      mode: explicit_region
+  evidence.readme.verification_planning:
+    type: code
+    description: Verification planning collects repository facts, evaluates policy,
+      and returns deterministic selections without executing checks.
+    anchors:
+    - path: src/agent_maintainer/verification_plan/planner.py
+      mode: explicit_region
+  evidence.readme.path_risk_policy:
+    type: code
+    description: Path-risk policy loading and validation enforce the strict schema.
+    anchors:
+    - path: src/agent_maintainer/verification_plan/policy.py
+      mode: explicit_region
+  evidence.readme.path_risk_policy_tests:
+    type: test
+    description: Policy tests cover schema version, unsafe input, duplicates, and
+      exact configured catalog names.
+    anchors:
+    - path: tests/verification_plan/test_policy.py
       mode: explicit_region
   evidence.readme.python_provider_checks:
     type: code

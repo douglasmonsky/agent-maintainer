@@ -53,6 +53,7 @@ class PlanningFacts:
     policy_path: Path = DEFAULT_POLICY_PATH
 
 
+# docsync:evidence.start evidence.readme.verification_planning
 def build_verification_plan(
     target: Path,
     *,
@@ -269,3 +270,4 @@ def _union(groups: Iterable[tuple[str, ...]]) -> tuple[str, ...]:
 
 def _unit_sort_key(unit: AffectedUnit) -> tuple[int, str, str]:
     return (0 if unit.kind == "repository" else 1, unit.kind, unit.root)
+# docsync:evidence.end evidence.readme.verification_planning

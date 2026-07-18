@@ -72,10 +72,30 @@ paths = ["tests/release/**", "tests/test_release*.py"]
 message = "Add or update release-contract tests."
 
 [[rules]]
+id = "path-risk-policy-definition"
+description = "The repository path-risk policy requires focused tests and a decision record."
+paths = [".agent-maintainer/path-risk.toml"]
+mode = "required"
+profiles = ["full", "security"]
+checks = ["bandit", "secret-scan", "secret-scan-history", "semgrep"]
+review_categories = ["security", "policy"]
+
+[[rules.evidence]]
+id = "policy-tests"
+kind = "changed-path"
+paths = ["tests/catalogs/test_config_catalog.py", "tests/verification_plan/**"]
+message = "Add or update focused path-risk policy tests."
+
+[[rules.evidence]]
+id = "policy-decision"
+kind = "changed-path"
+paths = ["docs/architecture/decisions/*.md"]
+message = "Record the policy boundary in an architecture decision."
+
+[[rules]]
 id = "security-policy"
-description = "Security policy and enforcement changes require focused tests and review."
+description = "Security enforcement code requires focused tests and review."
 paths = [
-  ".agent-maintainer/path-risk.toml",
   "src/agent_maintainer/catalogs/security.py",
   "src/agent_maintainer/runners/secret_scan.py",
   "src/agent_maintainer/verification_plan/**",
@@ -94,9 +114,3 @@ paths = [
   "tests/verification_plan/**",
 ]
 message = "Add or update focused security-policy tests."
-
-[[rules.evidence]]
-id = "policy-decision"
-kind = "changed-path"
-paths = ["docs/architecture/decisions/*.md"]
-message = "Record the policy boundary in an architecture decision."

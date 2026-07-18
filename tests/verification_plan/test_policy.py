@@ -9,6 +9,7 @@ import pytest
 from agent_maintainer.verification_plan import policy as policy_loader
 
 
+# docsync:evidence.start evidence.readme.path_risk_policy_tests
 def test_missing_policy_is_unconfigured(tmp_path: Path) -> None:
     assert policy_loader.load_policy(tmp_path / "missing.toml") is None
 
@@ -188,3 +189,4 @@ def _write_policy(tmp_path: Path, document: str) -> Path:
     path = tmp_path / "path-risk.toml"
     path.write_text(document.strip() + "\n", encoding="utf-8")
     return path
+# docsync:evidence.end evidence.readme.path_risk_policy_tests

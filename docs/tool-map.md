@@ -10,7 +10,7 @@ for the first opt-in non-Python provider.
 
 | Category | Commands | Stability note |
 | --- | --- | --- |
-| Stable workflows | `doctor`, `guidance`, `init`, `install`, `verify`, `wait` | Quiet polling is stable; terminal rewake is experimental. |
+| Stable workflows | `doctor`, `guidance`, `init`, `install`, `verify`, `verify-plan`, `wait` | Quiet polling is stable; terminal rewake is experimental. |
 | Repair and inspection | `assess`, `context`, `ratchet`, `repair-plan`, `test-intel` | Use these commands to inspect and plan repairs. |
 | Optional local intelligence | `attention`, `events`, `report`, `scoring` | Local artifacts and datasets provide optional guidance. |
 | Experimental integrations | `mcp` | Optional typed MCP tool surface. |
@@ -25,6 +25,22 @@ for the first opt-in non-Python provider.
 `python3 -m agent_maintainer` is the canonical entrypoint. Editable installs
 also provide `agent-maintainer` for interactive use, but committed hooks and CI
 should prefer the module command.
+
+## Diff-aware verification planning
+
+`python3 -m agent_maintainer verify-plan --base-ref origin/main` reports the
+affected repository units, matched `.agent-maintainer/path-risk.toml` rules,
+named evidence, review categories, configured checks, and canonical verifier
+commands for a diff. Use `--staged` to inspect exactly what is staged, `--json`
+for the deterministic schema-versioned report, and `--enforce` to return `1`
+when required evidence is missing. Policy, configuration, and Git input errors
+return `2`.
+
+The planner is a repository-aware control layer, not a dynamic CI scheduler.
+It never suppresses existing verifier gates, executes checks, or claims that an
+unselected check is unnecessary. When the policy file exists, the optional
+`verification-plan-policy` catalog check enforces it in the normal fast,
+precommit, full, and CI profiles.
 
 ## Attention priority and provenance
 

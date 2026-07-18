@@ -42,6 +42,7 @@ class PolicyError(ValueError):
     """Raised when path-risk policy is malformed or internally inconsistent."""
 
 
+# docsync:evidence.start evidence.readme.path_risk_policy
 def load_policy(path: Path) -> PathRiskPolicy | None:
     """Load one strict versioned path-risk policy, or None when absent."""
     if not path.exists():
@@ -228,3 +229,4 @@ def _duplicates(values: tuple[str, ...]) -> tuple[str, ...]:
             duplicates.add(value)
         seen.add(value)
     return tuple(sorted(duplicates))
+# docsync:evidence.end evidence.readme.path_risk_policy

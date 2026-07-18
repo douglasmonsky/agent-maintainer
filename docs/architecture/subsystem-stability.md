@@ -53,6 +53,7 @@ top-level command has exactly one label here.
 | `agent-maintainer skill` | `core` | Install and inspect the new-repository setup skill. |
 | `agent-maintainer test-intel` | `core` | Select and run relevant tests. |
 | `agent-maintainer verify` | `core` | Run configured verification profiles. |
+| `agent-maintainer verify-plan` | `core` | Plan diff-specific evidence and verification policy. |
 | `agent-maintainer wait` | `core` | Run quiet waits and manage durable wait state. |
 | `archguard` | `core` | Inspect and enforce architecture policy. |
 | `agent-maintainer attention` | `optional` | Build local file-attention ledgers. |

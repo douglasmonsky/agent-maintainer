@@ -41,6 +41,8 @@ The planner unions matched rule selections and recommends canonical verifier
 commands, but it never executes checks or suppresses existing gates. The
 optional `verification-plan-policy` catalog check invokes the public planner in
 enforcement mode when `.agent-maintainer/path-risk.toml` exists.
+Policy-definition changes require a decision record; implementation changes
+require focused tests without imposing a new ADR on every source edit.
 
 ## Consequences
 
