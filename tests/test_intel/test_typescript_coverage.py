@@ -265,10 +265,17 @@ def test_changed_source_rejects_unsafe_paths_without_truncating_valid_diffs(
     stdout = "\0".join(
         f"src/file-{index:03d}.ts" for index in range(typescript_coverage.MAX_FILE_FACTS + 1)
     )
+
+    def completed_diff(
+        *_args: object,
+        **_kwargs: object,
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(["git", "diff"], 0, stdout, "")
+
     monkeypatch.setattr(
         typescript_coverage.subprocess,
         "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, stdout, ""),
+        completed_diff,
     )
 
     paths = changed_typescript_source_paths(tmp_path, base_ref="HEAD", staged=False)
@@ -290,14 +297,28 @@ def test_report_aggregates_all_files_before_retaining_facts(
         tmp_path,
         "".join(f"SF:{path}\nDA:1,1\nend_of_record\n" for path in paths),
     )
+
+    def changed_paths(*_args: object, **_kwargs: object) -> tuple[str, ...]:
+        return paths
+
+    def changed_lines(
+        _self: object,
+        _changed_source: tuple[str, ...],
+        *,
+        base_ref: str,
+        staged: bool,
+    ) -> dict[str, frozenset[int]]:
+        del base_ref, staged
+        return {path: frozenset((1,)) for path in paths}
+
     monkeypatch.setattr(
         typescript_coverage,
         "changed_typescript_source_paths",
-        lambda *_args, **_kwargs: paths,
+        changed_paths,
     )
     monkeypatch.setattr(
         "agent_maintainer.test_intel.typescript_coverage._GitDiff.changed_line_numbers",
-        lambda *_args, **_kwargs: {path: frozenset((1,)) for path in paths},
+        changed_lines,
     )
 
     report = build_report(TypeScriptCoverageRequest(repo_root=tmp_path, staged=True))
@@ -324,10 +345,14 @@ def test_report_surfaces_strict_hunk_mapping_failures(
 
     create_repo(tmp_path)
     write_lcov(tmp_path, "SF:src/app.ts\nDA:1,1\nend_of_record\n")
+
+    def changed_paths(*_args: object, **_kwargs: object) -> tuple[str, ...]:
+        return ("src/app.ts",)
+
     monkeypatch.setattr(
         typescript_coverage,
         "changed_typescript_source_paths",
-        lambda *_args, **_kwargs: ("src/app.ts",),
+        changed_paths,
     )
 
     def fail_diff(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:

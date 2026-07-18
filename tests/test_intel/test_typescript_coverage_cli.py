@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -102,12 +103,7 @@ def test_render_text_counts_model_level_omissions() -> None:
     """The omission marker includes facts dropped before text rendering."""
 
     report = sample_report()
-    report = TypeScriptCoverageReport(
-        **{
-            **report.__dict__,
-            "matched_file_count": 102,
-        }
-    )
+    report = replace(report, matched_file_count=102)
 
     output = render_text(report)
 

@@ -115,7 +115,7 @@ def coverage_provenance_is_explicit(fixture: dict[str, object]) -> bool:
     unavailable = fixture.get("generation_status")
     command_declared = (
         isinstance(command, list)
-        and bool(command)
+        and len(cast(list[object], command)) > 0
         and isinstance(declared_command, str)
         and bool(declared_command)
     )
