@@ -1,7 +1,7 @@
 +++
 id = "diff-aware-verification-path-risk"
 kind = "feature"
-status = "active"
+status = "complete"
 base_ref = "a119b0d"
 expires = 2026-08-01
 allowed_paths = [

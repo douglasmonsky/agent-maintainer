@@ -1,6 +1,6 @@
 # Phase 183: Diff-Aware Verification Planning And Path-Risk Policy
 
-Status: in progress
+Status: complete
 
 ## Goal
 
@@ -74,5 +74,7 @@ verifier gates.
   text, adversarial glob depth, target-aware preflight, and repository policy
   coverage gaps. Regression tests reproduced each issue before the fixes in
   `467a298`; the focused and complete gates above verify the corrections.
-- Protected implementation and closure PR evidence remains pending; status
-  stays in progress until both merges complete.
+- Implementation PR #406 passed protected checks and merged as
+  `88bc8cc433eeb282b502d831e6a7189bcdb48f17`. Closure PR #407 carries this
+  completed record under the same protected checks; its merge is the terminal
+  proof that the final updated head passed.

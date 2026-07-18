@@ -144,7 +144,7 @@ cost, and four-week retained use.
 
 Strict Pyright cutover complete: zero diagnostics and the former ratchet baseline are retired.
 
-- [ ] Phase 183: Diff-Aware Verification Planning And Declarative Path-Risk Policy — implementation and local verification are in progress.
+- [x] Phase 183: Diff-Aware Verification Planning And Declarative Path-Risk Policy — implementation PR #406 passed protected checks and merged.
 - [ ] External proof: run the three-to-five-repository cohort and retain its activation and use evidence.
 - [x] Strict Pyright cutover complete: zero diagnostics; baseline retired.
 - [x] Reclassify top-level help and public docs into stable workflow, repair and
