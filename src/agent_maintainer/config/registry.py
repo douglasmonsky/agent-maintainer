@@ -19,6 +19,7 @@ ValueKind = Literal[
     "tuple",
     "workspaces",
     "file-baseline-groups",
+    "cpp",
     "java",
 ]
 
@@ -61,10 +62,10 @@ NESTED_FIELD_KINDS: Mapping[str, ValueKind] = MappingProxyType(
     {
         "workspaces": "workspaces",
         "file_baselines": "file-baseline-groups",
+        "cpp": "cpp",
         "java": "java",
     }
 )
-NESTED_TOP_LEVEL_TABLE_KEYS = frozenset(("cpp",))
 NESTED_TOML_KEYS = MappingProxyType(
     {
         "diagnostic_artifacts_enabled": "diagnostics.enabled",
@@ -411,7 +412,7 @@ def top_level_toml_keys() -> frozenset[str]:
 
     canonical = frozenset(spec.toml_key.split(".", 1)[0] for spec in FIELD_SPECS.values())
     aliases = frozenset(alias for spec in FIELD_SPECS.values() for alias in spec.toml_aliases)
-    return canonical | aliases | NESTED_TOP_LEVEL_TABLE_KEYS
+    return canonical | aliases
 
 
 def env_specs() -> tuple[ConfigFieldSpec, ...]:

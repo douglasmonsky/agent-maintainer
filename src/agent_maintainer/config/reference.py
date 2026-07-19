@@ -27,6 +27,7 @@ def capability_payload() -> dict[str, object]:
         "schema_version": CAPABILITY_SCHEMA_VERSION,
         "precedence": ["defaults", "mode", "file", "environment", "command_line"],
         "nested_tables": {
+            "cpp": sorted(registry.CPP_KEYS),
             "diagnostics": sorted(registry.DIAGNOSTIC_KEYS),
             "workspaces.*": sorted(registry.WORKSPACE_KEYS),
             "file_baselines": sorted(registry.FILE_BASELINE_KEYS),

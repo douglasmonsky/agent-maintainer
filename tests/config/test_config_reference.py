@@ -45,6 +45,7 @@ def test_payload_covers_fields_and_tables() -> None:
     assert names == set(registry.FIELD_SPECS)
     assert nested is not None
     assert set(nested) == {
+        "cpp",
         "diagnostics",
         "file_baselines",
         "file_baselines.groups.*",
@@ -52,6 +53,7 @@ def test_payload_covers_fields_and_tables() -> None:
         "java.reports.*",
         "workspaces.*",
     }
+    assert nested["cpp"] == sorted(registry.CPP_KEYS)
     assert payload["nested_environment"] == {"java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"}
 
 

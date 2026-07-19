@@ -703,6 +703,58 @@
         "repository_relative_path": false,
         "verification_profiles": false
       },
+      "default": {
+        "build_command": [],
+        "build_profiles": [
+          "full",
+          "ci"
+        ],
+        "cmake_root": ".",
+        "coverage_command": [],
+        "coverage_profiles": [
+          "full",
+          "ci"
+        ],
+        "enabled": false,
+        "format_command": [],
+        "format_profiles": [
+          "precommit",
+          "full",
+          "ci"
+        ],
+        "static_analysis_command": [],
+        "static_analysis_profiles": [
+          "precommit",
+          "full",
+          "ci"
+        ],
+        "test_command": [],
+        "test_profiles": [
+          "full",
+          "ci"
+        ]
+      },
+      "description": "Configure cpp.",
+      "environment": null,
+      "environment_style": null,
+      "label": "Cpp",
+      "name": "cpp",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "cpp",
+      "value_kind": "cpp"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
       "default": ".verify-logs",
       "description": "Configure diagnostic artifacts dir.",
       "environment": "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR",
@@ -3299,6 +3351,20 @@
     "java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"
   },
   "nested_tables": {
+    "cpp": [
+      "build_command",
+      "build_profiles",
+      "cmake_root",
+      "coverage_command",
+      "coverage_profiles",
+      "enabled",
+      "format_command",
+      "format_profiles",
+      "static_analysis_command",
+      "static_analysis_profiles",
+      "test_command",
+      "test_profiles"
+    ],
     "diagnostics": [
       "enabled",
       "log_dir",

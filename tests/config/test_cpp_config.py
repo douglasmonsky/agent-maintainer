@@ -37,9 +37,10 @@ def test_cpp_defaults_are_frozen_and_disabled() -> None:
         cpp.enabled = True  # type: ignore[misc]
 
 
-def test_cpp_is_a_nested_table_not_a_scalar_registry_field() -> None:
+def test_cpp_is_a_registered_nested_configuration_field() -> None:
     assert "cpp" in registry.top_level_toml_keys()
-    assert "cpp" not in registry.FIELD_SPECS
+    assert registry.NESTED_FIELD_KINDS["cpp"] == "cpp"
+    assert registry.FIELD_SPECS["cpp"].value_kind == "cpp"
 
 
 def test_complete_cpp_table_is_coerced_without_shell_parsing() -> None:

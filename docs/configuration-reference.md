@@ -9,6 +9,7 @@ Configuration precedence is defaults, mode preset, file, environment, then CLI.
 
 | Table | Accepted child keys |
 |---|---|
+| `cpp` | `["build_command","build_profiles","cmake_root","coverage_command","coverage_profiles","enabled","format_command","format_profiles","static_analysis_command","static_analysis_profiles","test_command","test_profiles"]` |
 | `diagnostics` | `["enabled","log_dir","run_history_limit"]` |
 | `workspaces.*` | `["coverage_source","package_paths","source_roots","test_roots","typescript_dependency_cruiser_command","typescript_knip_command","typescript_lint_command","typescript_test_command","typescript_typecheck_command"]` |
 | `file_baselines` | `["baseline","enabled","groups","mode"]` |
@@ -86,6 +87,7 @@ Create and prune require a clean Git worktree. Verification and inspect are read
 | `context_write_context_packs` | bool | `true` | `AGENT_MAINTAINER_CONTEXT_WRITE_CONTEXT_PACKS` | none | — | beta |
 | `coverage_fail_under` | int | `80` | `AGENT_MAINTAINER_COVERAGE_FAIL_UNDER` | verify | >= 0; <= 100 | stable |
 | `coverage_source` | tuple | `["src"]` | `AGENT_MAINTAINER_COVERAGE_SOURCE` | verify | repository-relative path | stable |
+| `cpp` | cpp | `{"build_command":[],"build_profiles":["full","ci"],"cmake_root":".","coverage_command":[],"coverage_profiles":["full","ci"],"enabled":false,"format_command":[],"format_profiles":["precommit","full","ci"],"static_analysis_command":[],"static_analysis_profiles":["precommit","full","ci"],"test_command":[],"test_profiles":["full","ci"]}` | — | none | — | beta |
 | `diagnostics.log_dir` | str | `".verify-logs"` | `AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR` | none | aliases: diagnostic_artifacts_dir | beta |
 | `diagnostics.enabled` | bool | `true` | `AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED` | none | aliases: diagnostic_artifacts_enabled | beta |
 | `diagnostics.run_history_limit` | non-negative-int | `10` | `AGENT_MAINTAINER_DIAGNOSTIC_RUN_HISTORY_LIMIT` | none | >= 0; aliases: diagnostic_run_history_limit | beta |
