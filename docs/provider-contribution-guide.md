@@ -16,6 +16,7 @@ Related reading:
 - [Polyglot Ecosystem Provider Roadmap](roadmap/polyglot-ecosystem-providers.md)
 - [Experimental TypeScript/JavaScript Provider](typescript-javascript-provider.md)
 - [Experimental Java/Gradle Provider](java-gradle-provider.md)
+- [Experimental C/C++ (CMake) Provider](cpp-cmake-provider.md)
 - [Diagnostics and Repair Loop](diagnostics-repair-loop.md)
 - [Supported Scans and Agent Use](supported-scans-and-agent-use.md)
 
@@ -31,11 +32,14 @@ Built-in experimental providers remain the contribution path until the internal
 seam has survived real use outside this repository.
 
 The current registry contains the Python core/reference provider plus built-in
-experimental TypeScript/JavaScript and Java/Gradle providers. Java/Gradle is
-disabled by default and currently exposes explicit checked-wrapper groups,
-reviewed setup/native ratchets, truthful coverage topology, bounded structured
-evidence, and static doctor support; it is not a public provider API or a
-feature-parity claim.
+experimental TypeScript/JavaScript, Java/Gradle, and C/C++ (CMake) providers.
+Java/Gradle is disabled by default and currently exposes explicit
+checked-wrapper groups, reviewed setup/native ratchets, truthful coverage
+topology, bounded structured evidence, and static doctor support. The C/C++
+Experimental foundation is also disabled by default; Phase 187 provides config,
+classification, advisory suppression evidence, and static doctor diagnostics
+but never executes configured commands. Neither provider is a public provider
+API or a feature-parity claim.
 
 Provider additions should be small and phased:
 

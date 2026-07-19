@@ -4,8 +4,8 @@
 Agent Maintainer is Python-core today, with an internal provider seam for
 careful expansion. Experimental providers are not feature parity.
 
-The built-in experimental TypeScript/JavaScript and Java/Gradle providers are
-behind explicit configuration.
+The built-in experimental TypeScript/JavaScript, Java/Gradle, and C/C++ (CMake)
+providers are behind explicit configuration.
 
 ## Current Providers
 
@@ -14,19 +14,11 @@ behind explicit configuration.
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security and dependency checks, doctor support, repair facts, and starter templates. | External plugin API. |
 | TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test/Knip/dependency-cruiser commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, Istanbul/LCOV, bounded Knip and dependency-cruiser repair facts, grouped OSV dependency facts through the ecosystem-neutral manual gate, and advisory LCOV changed-line coverage for existing artifacts; format-aware doctor setup and repair-fact output guidance rows. Advisory package-manager and workspace evidence. | Starter files, coverage command/gate adapters, mutation testing, package-manager audit adapters, broader security adapters, declared Nx boundaries, and blocking reviewability gates. |
 | Java/Gradle | Experimental calibrated ratchets | Explicit checked-wrapper task groups; reviewed setup; Spotless/native SpotBugs ratchets; exact upward-only JaCoCo thresholds; truthful project coverage; bounded XML evidence; Java debt baselines; exact repair facts; live Linux/Windows Gradle fixtures; static doctor checks. | Maven, automatic aggregate coverage, broad Java-specific blocking reviewability, production-scale calibration, and stable-provider guarantees. |
+| C/C++ (CMake) | Experimental foundation | Classification, config, suppression evidence, and static doctor only. All evidence is advisory-only. | Command execution and typed reports until Phase 188; report parsing, sanitizers, blocking policy, promotion, non-CMake build systems, and a stable external provider API. |
 
 There is no active Go provider on `main`. Go remains archived historical work
 until active experimental providers have stronger evidence and the provider
 seam has settled.
-
-## Approved Provider Experiment
-
-C/C++ (CMake) is approved as the next built-in experiment but is not yet a
-current provider. [Phases 186-191](roadmap/cpp-cmake-experimental-provider-roadmap.md)
-will add a disabled-by-default `cpp` provider through independently reviewable
-classification, command, static-analysis, test, coverage, and qualification
-slices. It will execute only repository-owned explicit commands and will not
-select compilers, generators, presets, targets, or build directories.
 
 ## Current Focus
 

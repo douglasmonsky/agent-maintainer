@@ -198,3 +198,29 @@ Regenerate after registry changes:
 python -m agent_maintainer.config.reference
 python -m agent_maintainer.config.reference --check
 ```
+
+## C/C++ (CMake) Provider
+
+The experimental provider is disabled by default. Phase 187 accepts the nested
+configuration below for classification, advisory suppression evidence, and
+static doctor only. Configured commands are not executed. Typed report
+declarations are unavailable until Phase 188.
+
+```toml
+[tool.agent_maintainer.cpp]
+```
+
+| Nested key | Type | Default |
+|---|---|---|
+| `enabled` | bool | `false` |
+| `cmake_root` | str | `"."` |
+| `format_command` | command array | `[]` |
+| `static_analysis_command` | command array | `[]` |
+| `build_command` | command array | `[]` |
+| `test_command` | command array | `[]` |
+| `coverage_command` | command array | `[]` |
+| `format_profiles` | profile array | `["precommit","full","ci"]` |
+| `static_analysis_profiles` | profile array | `["precommit","full","ci"]` |
+| `build_profiles` | profile array | `["full","ci"]` |
+| `test_profiles` | profile array | `["full","ci"]` |
+| `coverage_profiles` | profile array | `["full","ci"]` |

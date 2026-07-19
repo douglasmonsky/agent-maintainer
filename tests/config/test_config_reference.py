@@ -3,17 +3,51 @@
 from __future__ import annotations
 
 import json
+from dataclasses import fields
 from pathlib import Path
 
 from agent_maintainer.config import reference, registry
+from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.core.structured_values import json_array, json_object
 from tests.support.paths import REPO_ROOT
+
+CPP_REFERENCE_APPENDIX = """## C/C++ (CMake) Provider
+
+The experimental provider is disabled by default. Phase 187 accepts the nested
+configuration below for classification, advisory suppression evidence, and
+static doctor only. Configured commands are not executed. Typed report
+declarations are unavailable until Phase 188.
+
+```toml
+[tool.agent_maintainer.cpp]
+```
+
+| Nested key | Type | Default |
+|---|---|---|
+| `enabled` | bool | `false` |
+| `cmake_root` | str | `"."` |
+| `format_command` | command array | `[]` |
+| `static_analysis_command` | command array | `[]` |
+| `build_command` | command array | `[]` |
+| `test_command` | command array | `[]` |
+| `coverage_command` | command array | `[]` |
+| `format_profiles` | profile array | `["precommit","full","ci"]` |
+| `static_analysis_profiles` | profile array | `["precommit","full","ci"]` |
+| `build_profiles` | profile array | `["full","ci"]` |
+| `test_profiles` | profile array | `["full","ci"]` |
+| `coverage_profiles` | profile array | `["full","ci"]` |
+"""
 
 
 def test_generated_reference_is_current() -> None:
     """Checked-in human and machine references cannot drift from the registry."""
+    checked_in = (REPO_ROOT / reference.REFERENCE_PATH).read_text(encoding="utf-8")
+    generated_core = reference.render_reference_markdown()
 
-    assert reference.outdated_generated(REPO_ROOT) == ()
+    assert checked_in == f"{generated_core}\n{CPP_REFERENCE_APPENDIX}"
+    assert (REPO_ROOT / reference.CAPABILITIES_PATH).read_text(
+        encoding="utf-8"
+    ) == reference.render_capabilities_json()
 
 
 def test_payload_covers_fields_and_tables() -> None:
@@ -70,6 +104,31 @@ def test_human_reference_exposes_nested_environment_override() -> None:
 
     assert "## Nested Environment Overrides" in rendered
     assert "| `java.enabled` | `AGENT_MAINTAINER_JAVA_ENABLED` |" in rendered
+
+
+def test_human_reference_documents_cpp_cmake_configuration() -> None:
+    """The public reference names the complete nested C/C++ configuration."""
+    rendered = Path("docs/configuration-reference.md").read_text(encoding="utf-8")
+
+    assert "## C/C++ (CMake) Provider" in rendered
+    assert "[tool.agent_maintainer.cpp]" in rendered
+    for field in fields(CppCmakeConfig):
+        assert field.name in rendered
+    for expected_row in (
+        "| `enabled` | bool | `false` |",
+        '| `cmake_root` | str | `"."` |',
+        "| `format_command` | command array | `[]` |",
+        "| `static_analysis_command` | command array | `[]` |",
+        "| `build_command` | command array | `[]` |",
+        "| `test_command` | command array | `[]` |",
+        "| `coverage_command` | command array | `[]` |",
+        '| `format_profiles` | profile array | `["precommit","full","ci"]` |',
+        '| `static_analysis_profiles` | profile array | `["precommit","full","ci"]` |',
+        '| `build_profiles` | profile array | `["full","ci"]` |',
+        '| `test_profiles` | profile array | `["full","ci"]` |',
+        '| `coverage_profiles` | profile array | `["full","ci"]` |',
+    ):
+        assert expected_row in rendered
 
 
 def test_human_reference_documents_explicit_java_baseline_lifecycle() -> None:

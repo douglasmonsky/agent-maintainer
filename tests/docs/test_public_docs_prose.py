@@ -10,6 +10,22 @@ def normalized_text(path: str) -> str:
     return " ".join(Path(path).read_text(encoding="utf-8").split())
 
 
+def test_cpp_cmake_provider_doc_records_phase_187_boundary() -> None:
+    """C/C++ provider docs should state the experimental foundation boundary."""
+    provider_doc = Path("docs/cpp-cmake-provider.md").read_text(encoding="utf-8")
+    for phrase in (
+        "C/C++ (CMake)",
+        "experimental",
+        "disabled by default",
+        "repository-owned explicit command arrays",
+        "Phase 187 does not execute",
+        "Linux/GCC",
+        "macOS/Clang",
+        "Windows/MSVC",
+    ):
+        assert phrase in provider_doc
+
+
 def test_mutation_testing_doc_records_current_ratchet_posture() -> None:
     """Mutation testing docs should be readable and match current dogfood data."""
     text = normalized_text("docs/mutation-testing.md")
