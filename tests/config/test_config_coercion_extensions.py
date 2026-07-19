@@ -50,3 +50,28 @@ def test_coerce_updates_forwards_source_to_java(
 
     assert updates["java"] is sentinel
     assert observed == ["settings.toml"]
+
+
+def test_coerce_updates_forwards_source_to_cpp(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The aggregate coercion boundary preserves C/C++ diagnostic provenance."""
+
+    observed: list[str] = []
+    sentinel = object()
+
+    def fake_cpp(
+        raw: dict[str, object],
+        *,
+        source: str,
+    ) -> dict[str, object]:
+        del raw
+        observed.append(source)
+        return {"cpp": sentinel}
+
+    monkeypatch.setattr(coercion, "coerce_cpp_update", fake_cpp)
+
+    updates = coercion.coerce_updates({"cpp": {}}, source="settings.toml")
+
+    assert updates["cpp"] is sentinel
+    assert observed == ["settings.toml"]
