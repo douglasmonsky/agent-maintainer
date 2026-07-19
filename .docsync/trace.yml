@@ -212,6 +212,10 @@ documents:
     path: docs/releases/0.1.0b11.md
     title: Agent Maintainer 0.1.0b11 Candidate Notes
     audience: public
+  docs.release_0_1_0b12_candidate:
+    path: docs/releases/0.1.0b12.md
+    title: Agent Maintainer 0.1.0b12 Candidate Notes
+    audience: public
   docs.upgrade_0_1_0b6:
     path: docs/upgrading-to-0.1.0b6.md
     title: Installing or Upgrading to 0.1.0b6
@@ -235,6 +239,10 @@ documents:
   docs.upgrade_0_1_0b11:
     path: docs/upgrading-to-0.1.0b11.md
     title: Upgrading from 0.1.0b10 to 0.1.0b11
+    audience: public
+  docs.upgrade_0_1_0b12:
+    path: docs/upgrading-to-0.1.0b12.md
+    title: Upgrading from 0.1.0b10 to 0.1.0b12
     audience: public
 
   docs.future_call_roi_acceleration:
@@ -730,6 +738,14 @@ objects:
     heading:
       level: 1
       text: Agent Maintainer 0.1.0b11 Candidate Notes
+  docs.release_0_1_0b12_candidate.overview:
+    document: docs.release_0_1_0b12_candidate
+    kind: heading_section
+    path: docs/releases/0.1.0b12.md
+    marker: docs.release_0_1_0b12_candidate.overview
+    heading:
+      level: 1
+      text: Agent Maintainer 0.1.0b12 Candidate Notes
   docs.upgrade_0_1_0b6.overview:
     document: docs.upgrade_0_1_0b6
     kind: heading_section
@@ -778,6 +794,14 @@ objects:
     heading:
       level: 1
       text: Upgrading from 0.1.0b10 to 0.1.0b11
+  docs.upgrade_0_1_0b12.overview:
+    document: docs.upgrade_0_1_0b12
+    kind: heading_section
+    path: docs/upgrading-to-0.1.0b12.md
+    marker: docs.upgrade_0_1_0b12.overview
+    heading:
+      level: 1
+      text: Upgrading from 0.1.0b10 to 0.1.0b12
 
   docs.future_call_roi_acceleration.overview:
     document: docs.future_call_roi_acceleration
@@ -1335,6 +1359,12 @@ claims:
     severity: high
     evidence:
       - evidence.release.public_contract_tests
+  claim.docs.release_0_1_0b12_candidate_truth:
+    object: docs.release_0_1_0b12_candidate.overview
+    text: Candidate notes identify 0.1.0b12 intent without claiming publication evidence.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
   claim.docs.upgrade_0_1_0b6_safe_adoption:
     object: docs.upgrade_0_1_0b6.overview
     text: Upgrade guidance covers published-package adoption, mutation preview, verification, and rollback.
@@ -1368,6 +1398,12 @@ claims:
   claim.docs.upgrade_0_1_0b11_safe_adoption:
     object: docs.upgrade_0_1_0b11.overview
     text: Candidate upgrade guidance covers trusted evaluation, mutation preview, verification, and rollback to 0.1.0b10.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
+  claim.docs.upgrade_0_1_0b12_safe_adoption:
+    object: docs.upgrade_0_1_0b12.overview
+    text: Candidate upgrade guidance covers trusted C/C++ evaluation, mutation preview, verification, and rollback to 0.1.0b10.
     severity: high
     evidence:
       - evidence.release.public_contract_tests

@@ -955,6 +955,54 @@
             "stability": "stable"
           },
           {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": {
+              "build_command": [],
+              "build_profiles": [
+                "full",
+                "ci"
+              ],
+              "cmake_root": ".",
+              "coverage_command": [],
+              "coverage_profiles": [
+                "full",
+                "ci"
+              ],
+              "enabled": false,
+              "format_command": [],
+              "format_profiles": [
+                "precommit",
+                "full",
+                "ci"
+              ],
+              "static_analysis_command": [],
+              "static_analysis_profiles": [
+                "precommit",
+                "full",
+                "ci"
+              ],
+              "test_command": [],
+              "test_profiles": [
+                "full",
+                "ci"
+              ]
+            },
+            "environment": [],
+            "kind": "cpp",
+            "name": "cpp",
+            "required": false,
+            "stability": "beta"
+          },
+          {
             "aliases": [
               "diagnostic_artifacts_dir"
             ],
@@ -3337,7 +3385,7 @@
         ]
       },
       "contract_id": "agent-maintainer-config",
-      "fingerprint": "sha256:1eed936b5ffcecb647318df096680a30f7f22f6d4bec620bc9aa1f7b7fdbbc52",
+      "fingerprint": "sha256:c9137463939fe362163ef77d21386d846d5237a13bc8a7b1dfbb6df0978bf5a6",
       "kind": "config-capabilities",
       "owner": "agent_maintainer.config.reference",
       "revision": 1,
@@ -3786,8 +3834,8 @@
       "stability": "beta"
     }
   ],
-  "document_fingerprint": "sha256:159b6f35293e2080bb81c80ede9cce9a09b3dd5171368ac76c5f5a4b167fd016",
+  "document_fingerprint": "sha256:fcca437b449bba3f6c9f6f2cb34aa0cb745013f51c8803dc40b3d87f91019b80",
   "generator": "agent-maintainer",
-  "package_version": "0.1.0b11",
+  "package_version": "0.1.0b12",
   "schema_version": 1
 }

@@ -15,8 +15,8 @@ from agent_run_artifacts import distribution_bundle
 GIT_SHA_LENGTH = 40
 COMMIT_SHA = "c" * GIT_SHA_LENGTH
 OTHER_SHA = "d" * GIT_SHA_LENGTH
-WHEEL_NAME = "agent_maintainer-0.1.0b11-py3-none-any.whl"
-SDIST_NAME = "agent_maintainer-0.1.0b11.tar.gz"
+WHEEL_NAME = "agent_maintainer-0.1.0b12-py3-none-any.whl"
+SDIST_NAME = "agent_maintainer-0.1.0b12.tar.gz"
 PACKAGES_DIR = "packages"
 
 

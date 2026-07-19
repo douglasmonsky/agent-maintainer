@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260719T153621Z.claim.readme.package_identity.3b1f773
+  claim: claim.readme.package_identity
+  doc_object: docs.readme.overview
+  evidence:
+  - evidence.readme.package_metadata
+  reason: Reviewed the source metadata advance to the intent-only 0.1.0b12 candidate;
+    README package identity remains accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-19T15:36:21Z'
+  base: HEAD
+  head: 3b1f773
+  evidence_fingerprints:
+    evidence.readme.package_metadata: sha256:ad2ddee03e7fb0449de36b2b0b715d67c3d7db8c8a94d3fc927c5a2f89ee2538
+  evidence_anchor_fingerprints:
+    evidence.readme.package_metadata:
+    - sha256:1c6b6c32ab045d8e73e1f62851e111cb9f631013be61ad0e330f2497cf41de0c
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
