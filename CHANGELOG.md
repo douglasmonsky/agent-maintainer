@@ -1,10 +1,14 @@
 # Changelog
 
-## Unreleased (target: 0.1.0b12)
+## Unreleased (target: 0.1.0b13)
 
-`0.1.0b12` is an unpublished release candidate.
-The published 0.1.0b10 release evidence remains authoritative; the unpublished
-0.1.0b11 candidate was superseded before publication.
+`0.1.0b13` is an unpublished release candidate.
+The published 0.1.0b12 release evidence remains authoritative; no b13 changes
+are recorded.
+
+## 0.1.0b12 - 2026-07-19
+
+Twelfth beta release of Agent Maintainer.
 
 - Added a disabled-by-default experimental C/C++ (CMake) provider foundation
   with explicit configuration, conservative file classification, advisory

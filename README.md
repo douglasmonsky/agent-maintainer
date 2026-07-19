@@ -17,12 +17,12 @@ repositories.
 > files and defaults may change as it is tested across more Python repository
 > layouts.
 >
-> Latest published package: `agent-maintainer==0.1.0b10`, with immutable
-> [release evidence](docs/releases/0.1.0b10.md). See the
-> [upgrade guide](docs/upgrading-to-0.1.0b10.md) for package-index adoption and
-> rollback guidance. This checkout targets the unpublished `0.1.0b12` release
-> candidate; see its [candidate notes](docs/releases/0.1.0b12.md) and
-> [evaluation guide](docs/upgrading-to-0.1.0b12.md).
+> Latest published package: `agent-maintainer==0.1.0b12`, with immutable
+> [release evidence](docs/releases/0.1.0b12.md). See the
+> [upgrade guide](docs/upgrading-to-0.1.0b12.md) for package-index adoption and
+> rollback guidance. This checkout targets the unpublished `0.1.0b13` release
+> candidate; see its [candidate notes](docs/releases/0.1.0b13.md) and
+> [evaluation guide](docs/upgrading-to-0.1.0b13.md).
 
 Agent Maintainer helps coding agents make smaller, safer, more reviewable code
 changes. It wraps your existing quality tools in low-noise profiles, adds
@@ -61,11 +61,11 @@ raw evidence stays in run-scoped artifacts.
 Install the core toolset:
 
 ```bash
-python -m pip install "agent-maintainer[core]==0.1.0b10"
+python -m pip install "agent-maintainer[core]==0.1.0b12"
 ```
 
 That pin installs the latest published beta. Follow the
-[0.1.0b10 upgrade guide](docs/upgrading-to-0.1.0b10.md) for safe adoption and
+[0.1.0b12 upgrade guide](docs/upgrading-to-0.1.0b12.md) for safe adoption and
 rollback guidance.
 
 Initialize a repo:
@@ -490,8 +490,10 @@ Read more:
 [0.1.0b9 release evidence](docs/releases/0.1.0b9.md),
 [0.1.0b10 release evidence](docs/releases/0.1.0b10.md),
 [0.1.0b10 upgrade guide](docs/upgrading-to-0.1.0b10.md),
-[0.1.0b12 candidate notes](docs/releases/0.1.0b12.md),
-[0.1.0b12 evaluation guide](docs/upgrading-to-0.1.0b12.md).
+[0.1.0b12 release evidence](docs/releases/0.1.0b12.md),
+[0.1.0b12 upgrade guide](docs/upgrading-to-0.1.0b12.md),
+[0.1.0b13 candidate notes](docs/releases/0.1.0b13.md),
+[0.1.0b13 evaluation guide](docs/upgrading-to-0.1.0b13.md).
 
 ## Configuration
 
