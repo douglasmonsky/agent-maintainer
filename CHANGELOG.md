@@ -2,8 +2,9 @@
 
 ## Unreleased (target: 0.1.0b11)
 
-`0.1.0b11` is an unpublished release candidate. The published 0.1.0b10 release
-evidence remains authoritative; no b11 user-facing changes are recorded yet.
+`0.1.0b11` is an unpublished release candidate.
+The published 0.1.0b10 release evidence remains authoritative; no b11
+user-facing changes are recorded yet.
 
 ## 0.1.0b10 - 2026-07-18
 
