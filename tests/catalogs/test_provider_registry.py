@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import fields
 from pathlib import Path
 
+from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.config.java import JavaGradleConfig
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.doctor.support.providers import provider_enabled
@@ -110,6 +111,12 @@ def test_registry_owns_classification_dispatch() -> None:
         MaintainerConfig(java=JavaGradleConfig(enabled=True)),
     )
     assert [candidate.ecosystem for candidate in java_candidates] == ["java"]
+    assert classification_candidates("src/main.cpp", config) == ()
+    cpp_candidates = classification_candidates(
+        "src/main.cpp",
+        MaintainerConfig(cpp=CppCmakeConfig(enabled=True)),
+    )
+    assert [candidate.ecosystem for candidate in cpp_candidates] == ["cpp"]
 
 
 def test_registry_owns_advisory_suppression_dispatch() -> None:

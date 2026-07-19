@@ -18,6 +18,7 @@ from agent_maintainer.ecosystems.registry import classification_candidates
 HIGH_CONFIDENCE_ROLES = frozenset(
     (
         FileRole.SOURCE,
+        FileRole.HEADER,
         FileRole.TEST,
         FileRole.GENERATED,
         FileRole.DEPENDENCY,

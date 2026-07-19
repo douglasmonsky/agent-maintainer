@@ -6,6 +6,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.ecosystems.cpp import classification as cpp_classification
 from agent_maintainer.ecosystems.java import classification as java_classification
 from agent_maintainer.ecosystems.java.provider import JavaProvider
 from agent_maintainer.ecosystems.models import (
@@ -175,10 +176,23 @@ def java_classification_candidate(
     return java_classification.classify_path(normalized_path, config.java)
 
 
+def cpp_classification_candidate(
+    path: str | Path,
+    config: MaintainerConfig,
+    _repo_root: Path | None,
+) -> FileClassification | None:
+    """Return C/C++ classification only after explicit provider enablement."""
+
+    if not config.cpp.enabled:
+        return None
+    return cpp_classification.classify_path(path, config.cpp)
+
+
 CLASSIFICATION_PROVIDERS: tuple[ClassificationProvider, ...] = (
     python_classification_candidate,
     typescript_classification_candidate,
     java_classification_candidate,
+    cpp_classification_candidate,
 )
 ADVISORY_SUPPRESSION_PROVIDERS: tuple[SuppressionProviderEntry, ...] = (
     ("typescript", typescript_suppressions.classify_line),

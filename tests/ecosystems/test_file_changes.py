@@ -7,12 +7,14 @@ from dataclasses import replace
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.ecosystems.file_changes import (
     ChangedPath,
+    _select_classification,
     classify_changed_path,
     classify_changed_paths,
 )
 from agent_maintainer.ecosystems.models import (
     ChangeKind,
     FileChangeClassification,
+    FileClassification,
     FileRole,
 )
 
@@ -117,6 +119,20 @@ def test_typescript_dot_directory_classification_preserves_path() -> None:
     _assert_change(classification, ecosystem="typescript", role=FileRole.SOURCE)
     assert classification is not None
     assert classification.path == ".storybook/main.ts"
+
+
+def test_header_role_wins_over_shared_docs_candidate() -> None:
+    """C/C++ headers remain high confidence for shared repository paths."""
+    selected = _select_classification(
+        (
+            FileClassification("include/api.hpp", "python", FileRole.DOCS),
+            FileClassification("include/api.hpp", "cpp", FileRole.HEADER),
+        ),
+    )
+
+    assert selected is not None
+    assert selected.ecosystem == "cpp"
+    assert selected.role is FileRole.HEADER
 
 
 def _assert_change(
