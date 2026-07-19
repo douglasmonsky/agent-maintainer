@@ -20,6 +20,7 @@ C8_IGNORE_RE = re.compile(r"(?:/\*|//)\s*c8 ignore")
 
 def classify_line(line: str, path: str = "") -> tuple[SuppressionFinding, ...]:
     """Return TypeScript/JavaScript suppression findings in one source line."""
+    line = (line, path)[0]
     findings: list[SuppressionFinding] = []
     if ESLINT_DISABLE_RE.search(line) or ESLINT_BLOCK_DISABLE_RE.search(line):
         findings.append(_eslint_finding(line))
