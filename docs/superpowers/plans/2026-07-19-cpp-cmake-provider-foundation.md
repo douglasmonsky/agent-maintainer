@@ -225,9 +225,12 @@ CPP_TUPLE_FIELDS = (
 
 def _string_tuple(value: object, field_name: str) -> tuple[str, ...]:
     values = json_array(value)
-    if values is None or not all(isinstance(item, str) for item in values):
+    if values is None:
         raise TypeError(f"{field_name} must be a list of strings")
-    return tuple(values)
+    strings = tuple(item for item in values if isinstance(item, str))
+    if len(strings) != len(values):
+        raise TypeError(f"{field_name} must be a list of strings")
+    return strings
 
 
 def coerce_cpp(raw_value: object, *, source: str = "configuration") -> CppCmakeConfig:
@@ -298,7 +301,12 @@ def cpp_issues(cpp: CppCmakeConfig, *, source: str) -> tuple[ConfigIssue, ...]:
         command = getattr(cpp, field_name)
         if any(not item for item in command):
             issues.append(ConfigIssue(source, f"cpp.{field_name}", "must not contain empty elements"))
-        if command and PurePosixPath(command[0].replace("\\", "/")).name.lower() in SHELL_EXECUTABLES:
+        executable_name = (
+            PurePosixPath(command[0].replace("\\", "/")).name.lower().removesuffix(".exe")
+            if command
+            else ""
+        )
+        if executable_name in SHELL_EXECUTABLES:
             issues.append(ConfigIssue(source, f"cpp.{field_name}", "must not invoke a shell executable"))
         if any(item in SHELL_CONTROL_TOKENS for item in command):
             issues.append(ConfigIssue(source, f"cpp.{field_name}", "must not contain shell control tokens"))
