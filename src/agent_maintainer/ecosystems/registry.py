@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
+from agent_maintainer.ecosystems.cpp import provider_hooks as cpp
 from agent_maintainer.ecosystems.java import classification as java_classification
 from agent_maintainer.ecosystems.java.provider import JavaProvider
 from agent_maintainer.ecosystems.models import (
@@ -25,11 +25,7 @@ from agent_maintainer.ecosystems.typescript import (
 )
 from agent_maintainer.ecosystems.typescript.provider import TypeScriptProvider
 
-ClassificationProvider = Callable[
-    [str | Path, MaintainerConfig, Path | None],
-    FileClassification | None,
-]
-SuppressionProvider = Callable[[str], tuple[SuppressionFinding, ...]]
+SuppressionProvider = cpp.SuppressionProvider
 SuppressionProviderEntry = tuple[str, SuppressionProvider]
 
 PYTHON_PROVIDER = ProviderMetadata(
@@ -89,10 +85,27 @@ JAVA_PROVIDER = ProviderMetadata(
     enabled_field="java.enabled",
 )
 
+CPP_PROVIDER = ProviderMetadata(
+    name="cpp",
+    display_name="C/C++ (CMake)",
+    maturity=ProviderMaturity.EXPERIMENTAL,
+    docs_path="docs/cpp-cmake-provider.md",
+    capabilities=("classification", "suppression-evidence", "doctor"),
+    enabled_field="cpp.enabled",
+    command_specs=(
+        ProviderCommandSpec("cpp-format", "cpp.format_command"),
+        ProviderCommandSpec("cpp-static-analysis", "cpp.static_analysis_command"),
+        ProviderCommandSpec("cpp-build", "cpp.build_command"),
+        ProviderCommandSpec("cpp-test", "cpp.test_command"),
+        ProviderCommandSpec("cpp-coverage", "cpp.coverage_command"),
+    ),
+)
+
 BUILTIN_PROVIDER_METADATA = (
     PYTHON_PROVIDER,
     TYPESCRIPT_PROVIDER,
     JAVA_PROVIDER,
+    CPP_PROVIDER,
 )
 
 
@@ -128,10 +141,11 @@ def classification_candidates(
 def advisory_suppression_findings(
     ecosystem: str,
     line: str,
+    path: str = "",
 ) -> tuple[SuppressionFinding, ...]:
     """Return advisory suppression findings for ecosystem line."""
     provider = suppression_provider(ecosystem)
-    return provider(line) if provider else ()
+    return provider(line, path) if provider else ()
 
 
 def suppression_provider(ecosystem: str) -> SuppressionProvider | None:
@@ -175,11 +189,25 @@ def java_classification_candidate(
     return java_classification.classify_path(normalized_path, config.java)
 
 
-CLASSIFICATION_PROVIDERS: tuple[ClassificationProvider, ...] = (
+def cpp_classification_candidate(
+    path: str | Path,
+    config: MaintainerConfig,
+    _repo_root: Path | None,
+) -> FileClassification | None:
+    """Return C/C++ classification only after explicit provider enablement."""
+
+    if not config.cpp.enabled:
+        return None
+    return cpp.classify_path(path, config.cpp)
+
+
+CLASSIFICATION_PROVIDERS = (
     python_classification_candidate,
     typescript_classification_candidate,
     java_classification_candidate,
+    cpp_classification_candidate,
 )
 ADVISORY_SUPPRESSION_PROVIDERS: tuple[SuppressionProviderEntry, ...] = (
     ("typescript", typescript_suppressions.classify_line),
+    ("cpp", cpp.classify_suppression_line),
 )

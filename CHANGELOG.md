@@ -1,10 +1,22 @@
 # Changelog
 
-## Unreleased (target: 0.1.0b11)
+## Unreleased (target: 0.1.0b12)
 
-`0.1.0b11` is an unpublished release candidate.
-The published 0.1.0b10 release evidence remains authoritative; no b11
-user-facing changes are recorded yet.
+`0.1.0b12` is an unpublished release candidate.
+The published 0.1.0b10 release evidence remains authoritative; the unpublished
+0.1.0b11 candidate was superseded before publication.
+
+- Added a disabled-by-default experimental C/C++ (CMake) provider foundation
+  with explicit configuration, conservative file classification, advisory
+  suppression evidence, and static doctor diagnostics.
+- Kept all configured C/C++ commands inert in Phase 187. Agent Maintainer does
+  not configure, build, test, or run analysis commands until Phase 188 adds the
+  checked execution and typed-report boundary.
+- Hardened CMake-root and repository-wrapper validation across platforms,
+  including unsafe Windows paths and symlinks, and made suppression evidence
+  require exact supported markers.
+- Added the C/C++ field to generated capability metadata and the public
+  configuration reference so clients can discover the optional beta surface.
 
 ## 0.1.0b10 - 2026-07-18
 

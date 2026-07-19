@@ -30,6 +30,7 @@ def unknown_keys(raw: dict[str, object], *, prefix: str = TOOL_TABLE) -> tuple[s
     unknown.extend(_unknown_fixed_table(raw, "diagnostics", registry.DIAGNOSTIC_KEYS, prefix))
     unknown.extend(_unknown_dynamic_table(raw, "workspaces", registry.WORKSPACE_KEYS, prefix))
     unknown.extend(_unknown_file_baselines(raw, prefix=prefix))
+    unknown.extend(_unknown_cpp(raw, prefix=prefix))
     unknown.extend(_unknown_java(raw, prefix=prefix))
     return tuple(sorted(unknown))
 
@@ -111,6 +112,13 @@ def _unknown_file_baselines(raw: dict[str, object], *, prefix: str) -> tuple[str
             if key not in registry.FILE_BASELINE_GROUP_KEYS
         )
     return tuple(unknown)
+
+
+def _unknown_cpp(raw: dict[str, object], *, prefix: str) -> tuple[str, ...]:
+    value = json_object(raw.get("cpp"))
+    if value is None:
+        return ()
+    return tuple(f"{prefix}.cpp.{key}" for key in value if key not in registry.CPP_KEYS)
 
 
 def _unknown_java(raw: dict[str, object], *, prefix: str) -> tuple[str, ...]:

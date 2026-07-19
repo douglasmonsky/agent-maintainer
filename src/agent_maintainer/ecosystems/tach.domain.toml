@@ -31,6 +31,7 @@ depends_on = ["//agent_maintainer.core.repo_paths"]
 
 path = "registry"
 depends_on = [
+ "cpp.provider_hooks",
  "java.classification",
  "java.provider",
  "models",
@@ -41,6 +42,30 @@ depends_on = [
  "typescript.suppressions",
  "//agent_maintainer.config.schema",
 ]
+
+
+[[modules]]
+path = "cpp"
+depends_on = []
+
+[[modules]]
+path = "cpp.provider_hooks"
+depends_on = [
+  "cpp.classification",
+  "cpp.suppressions",
+  "models",
+]
+
+[[modules]]
+path = "cpp.classification"
+depends_on = [
+  "models",
+  "//agent_maintainer.config.cpp",
+]
+
+[[modules]]
+path = "cpp.suppressions"
+depends_on = ["models"]
 
 
 [[modules]]

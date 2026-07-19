@@ -20,9 +20,9 @@ repositories.
 > Latest published package: `agent-maintainer==0.1.0b10`, with immutable
 > [release evidence](docs/releases/0.1.0b10.md). See the
 > [upgrade guide](docs/upgrading-to-0.1.0b10.md) for package-index adoption and
-> rollback guidance. This checkout targets the unpublished `0.1.0b11` release
-> candidate; see its [candidate notes](docs/releases/0.1.0b11.md) and
-> [evaluation guide](docs/upgrading-to-0.1.0b11.md).
+> rollback guidance. This checkout targets the unpublished `0.1.0b12` release
+> candidate; see its [candidate notes](docs/releases/0.1.0b12.md) and
+> [evaluation guide](docs/upgrading-to-0.1.0b12.md).
 
 Agent Maintainer helps coding agents make smaller, safer, more reviewable code
 changes. It wraps your existing quality tools in low-noise profiles, adds
@@ -354,7 +354,7 @@ context.
 | Dependency hygiene | deptry, vulture. |
 | Python security | Bandit, pip-audit. |
 | Secrets | Gitleaks current-tree, staged/range, and history modes. |
-| Ecosystems | Python core/reference provider; experimental configured-command TypeScript/JavaScript provider; experimental Java/Gradle provider with checked-wrapper tasks, structured reports, and ratchets. |
+| Ecosystems | Python core/reference provider; experimental configured-command TypeScript/JavaScript provider; experimental Java/Gradle provider with checked-wrapper tasks, structured reports, and ratchets; C/C++ (CMake) Experimental foundation with classification, config, suppression evidence, and static doctor only. C/C++ evidence is advisory-only. |
 | SAST | Semgrep in manual profile when enabled. |
 | Multi-ecosystem CVEs | OSV Scanner when enabled. |
 | Containers/IaC | Trivy when relevant to the repo. |
@@ -373,6 +373,7 @@ Read more:
 [supported scans and agent use](docs/supported-scans-and-agent-use.md),
 [ecosystem provider status](docs/provider-status.md),
 [experimental Java/Gradle provider](docs/java-gradle-provider.md),
+[experimental C/C++ (CMake) provider](docs/cpp-cmake-provider.md),
 [multi-ecosystem reviewability policy](docs/multi-ecosystem-reviewability-policy.md),
 
 [mutation testing](docs/mutation-testing.md),
@@ -489,8 +490,8 @@ Read more:
 [0.1.0b9 release evidence](docs/releases/0.1.0b9.md),
 [0.1.0b10 release evidence](docs/releases/0.1.0b10.md),
 [0.1.0b10 upgrade guide](docs/upgrading-to-0.1.0b10.md),
-[0.1.0b11 candidate notes](docs/releases/0.1.0b11.md),
-[0.1.0b11 evaluation guide](docs/upgrading-to-0.1.0b11.md).
+[0.1.0b12 candidate notes](docs/releases/0.1.0b12.md),
+[0.1.0b12 evaluation guide](docs/upgrading-to-0.1.0b12.md).
 
 ## Configuration
 

@@ -18,10 +18,21 @@ from agent_maintainer.ecosystems.registry import classification_candidates
 HIGH_CONFIDENCE_ROLES = frozenset(
     (
         FileRole.SOURCE,
+        FileRole.HEADER,
         FileRole.TEST,
         FileRole.GENERATED,
         FileRole.DEPENDENCY,
         FileRole.IGNORED,
+    ),
+)
+CPP_SPECIFIC_ROLES = frozenset(
+    (
+        FileRole.SOURCE,
+        FileRole.HEADER,
+        FileRole.TEST,
+        FileRole.GENERATED,
+        FileRole.DEPENDENCY,
+        FileRole.CONFIG,
     ),
 )
 
@@ -89,6 +100,9 @@ def _select_classification(
     candidates: tuple[FileClassification, ...],
 ) -> FileClassification | None:
     """Pick the strongest provider classification for shared repo files."""
+    for candidate in candidates:
+        if candidate.ecosystem == "cpp" and candidate.role in CPP_SPECIFIC_ROLES:
+            return candidate
     for candidate in candidates:
         if candidate.role in HIGH_CONFIDENCE_ROLES:
             return candidate

@@ -13,6 +13,11 @@ from agent_maintainer.assess import reporting
 from agent_maintainer.assess import reviewability as assessment_reviewability
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.ecosystems.git_changes import FileChange
+from agent_maintainer.ecosystems.models import (
+    ChangeKind,
+    FileChangeClassification,
+    FileRole,
+)
 
 BASE_REF = "origin/main"
 TYPESCRIPT = "typescript"
@@ -54,6 +59,25 @@ def test_json_and_text_render_advisories(
 
 
 # docsync:evidence.end evidence.multi_ecosystem_reviewability.advisory_suppression_tests
+
+
+def test_cpp_suppression_classifier_receives_changed_file_path() -> None:
+    """Reviewability passes the changed path to C/C++ suppression detection."""
+    classification = FileChangeClassification(
+        path="cppcheck-suppressions.txt",
+        ecosystem="cpp",
+        role=FileRole.CONFIG,
+        change_kind=ChangeKind.MODIFIED,
+    )
+
+    findings = assessment_reviewability._suppression_findings(  # pyright: ignore[reportPrivateUsage]
+        classification,
+        {classification.path: ("uninitvar",)},
+    )
+
+    assert [(item.path, item.kind, item.broad) for item in findings] == [
+        ("cppcheck-suppressions.txt", "cppcheck-suppression-file", False)
+    ]
 
 
 def _build_report(

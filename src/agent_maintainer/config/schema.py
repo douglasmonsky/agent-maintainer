@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from agent_maintainer.config import schema_fields
+from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.config.java import JavaGradleConfig
 from agent_maintainer.config.structure_defaults import (
     DEFAULT_STRUCTURE_HINT_PATTERNS,
@@ -259,3 +260,4 @@ class MaintainerConfig:
     structure_paths: tuple[str, ...] = ()
     structure_ignore_paths: tuple[str, ...] = DEFAULT_STRUCTURE_IGNORE_PATHS
     structure_hint_patterns: tuple[str, ...] = DEFAULT_STRUCTURE_HINT_PATTERNS
+    cpp: CppCmakeConfig = field(default_factory=CppCmakeConfig)

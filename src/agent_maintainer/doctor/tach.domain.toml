@@ -117,10 +117,20 @@ depends_on = [
  "//agent_maintainer.core.config",
  "support.context_artifacts",
  "support.context_health",
+ "support.cpp_provider",
  "support.java_provider",
  "support.models",
  "support.providers",
  "//agent_maintainer.models",
+]
+
+[[modules]]
+path = "support.cpp_provider"
+depends_on = [
+ "//agent_maintainer.config.cpp",
+ "//agent_maintainer.config.schema",
+ "support.models",
+ "support.providers",
 ]
 
 [[modules]]

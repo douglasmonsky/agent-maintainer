@@ -9,7 +9,12 @@ from agent_maintainer.config import loader as maintainer_config_loader
 from agent_maintainer.config import schema as maintainer_config_schema
 from agent_maintainer.config import validation as maintainer_config_validation
 from agent_maintainer.core import config as maintainer_config
-from agent_maintainer.doctor.support import context_artifacts, context_health, java_provider
+from agent_maintainer.doctor.support import (
+    context_artifacts,
+    context_health,
+    cpp_provider,
+    java_provider,
+)
 from agent_maintainer.doctor.support import providers as provider_support
 from agent_maintainer.doctor.support.models import (
     ACTIVE,
@@ -27,6 +32,7 @@ check_context_health = context_health.check_context_health
 check_provider_status = provider_support.check_provider_status
 check_typescript_provider = provider_support.check_typescript_provider
 check_java_provider = java_provider.check_java_provider
+check_cpp_provider = cpp_provider.check_cpp_provider
 
 
 def check_unknown_config_keys(repo_root: Path) -> DoctorResult:

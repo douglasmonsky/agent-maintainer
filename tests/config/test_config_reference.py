@@ -3,17 +3,30 @@
 from __future__ import annotations
 
 import json
+from dataclasses import fields
 from pathlib import Path
+from typing import cast
 
 from agent_maintainer.config import reference, registry
+from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.core.structured_values import json_array, json_object
 from tests.support.paths import REPO_ROOT
 
 
 def test_generated_reference_is_current() -> None:
     """Checked-in human and machine references cannot drift from the registry."""
+    checked_in = (REPO_ROOT / reference.REFERENCE_PATH).read_text(encoding="utf-8")
+    generated_core = reference.render_reference_markdown()
+    generated_appendix = reference.render_cpp_reference_appendix()
+    generated = reference.render_configuration_reference_markdown()
 
-    assert reference.outdated_generated(REPO_ROOT) == ()
+    assert generated == f"{generated_core}\n{generated_appendix}"
+    assert generated.count("## C/C++ (CMake) Provider") == 1
+    assert checked_in == generated
+    assert reference.main(["--root", str(REPO_ROOT), "--check"]) == reference.SUCCESS_STATUS
+    assert (REPO_ROOT / reference.CAPABILITIES_PATH).read_text(
+        encoding="utf-8"
+    ) == reference.render_capabilities_json()
 
 
 def test_payload_covers_fields_and_tables() -> None:
@@ -33,6 +46,7 @@ def test_payload_covers_fields_and_tables() -> None:
     assert names == set(registry.FIELD_SPECS)
     assert nested is not None
     assert set(nested) == {
+        "cpp",
         "diagnostics",
         "file_baselines",
         "file_baselines.groups.*",
@@ -40,6 +54,7 @@ def test_payload_covers_fields_and_tables() -> None:
         "java.reports.*",
         "workspaces.*",
     }
+    assert nested["cpp"] == sorted(registry.CPP_KEYS)
     assert payload["nested_environment"] == {"java.enabled": "AGENT_MAINTAINER_JAVA_ENABLED"}
 
 
@@ -48,6 +63,9 @@ def test_reference_cli_writes_and_detects_drift(tmp_path: Path) -> None:
 
     assert reference.main(["--root", str(tmp_path)]) == reference.SUCCESS_STATUS
     assert reference.outdated_generated(tmp_path) == ()
+    generated_reference = (tmp_path / reference.REFERENCE_PATH).read_text(encoding="utf-8")
+    assert generated_reference.count("## C/C++ (CMake) Provider") == 1
+    assert reference.main(["--root", str(tmp_path), "--check"]) == reference.SUCCESS_STATUS
     capability_path = tmp_path / reference.CAPABILITIES_PATH
     capability_path.write_text("{}\n", encoding="utf-8")
 
@@ -70,6 +88,24 @@ def test_human_reference_exposes_nested_environment_override() -> None:
 
     assert "## Nested Environment Overrides" in rendered
     assert "| `java.enabled` | `AGENT_MAINTAINER_JAVA_ENABLED` |" in rendered
+
+
+def test_human_reference_documents_cpp_cmake_configuration() -> None:
+    """The public reference names the complete nested C/C++ configuration."""
+    rendered = reference.render_cpp_reference_appendix()
+    defaults = CppCmakeConfig()
+
+    assert "## C/C++ (CMake) Provider" in rendered
+    assert "[tool.agent_maintainer.cpp]" in rendered
+    rows = [line for line in rendered.splitlines() if line.startswith("| `")]
+    assert len(rows) == len(fields(CppCmakeConfig))
+    for field in fields(CppCmakeConfig):
+        row = next(line for line in rows if line.startswith(f"| `{field.name}` |"))
+        documented_default = row.split("|")[3].strip().strip("`")
+        expected_default: object = getattr(defaults, field.name)
+        if isinstance(expected_default, tuple):
+            expected_default = list(cast(tuple[object, ...], expected_default))
+        assert json.loads(documented_default) == expected_default
 
 
 def test_human_reference_documents_explicit_java_baseline_lifecycle() -> None:

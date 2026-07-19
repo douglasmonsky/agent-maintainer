@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from types import MappingProxyType
 from typing import Literal
 
@@ -19,6 +19,7 @@ ValueKind = Literal[
     "tuple",
     "workspaces",
     "file-baseline-groups",
+    "cpp",
     "java",
 ]
 
@@ -61,6 +62,7 @@ NESTED_FIELD_KINDS: Mapping[str, ValueKind] = MappingProxyType(
     {
         "workspaces": "workspaces",
         "file_baselines": "file-baseline-groups",
+        "cpp": "cpp",
         "java": "java",
     }
 )
@@ -124,6 +126,7 @@ FILE_BASELINE_GROUP_KEYS = frozenset(
 )
 JAVA_ENABLED_ENV = "AGENT_MAINTAINER_JAVA_ENABLED"
 NESTED_CONFIG_ENV_VARS = frozenset((JAVA_ENABLED_ENV,))
+CPP_KEYS = frozenset(field.name for field in fields(schema.CppCmakeConfig))
 JAVA_KEYS = frozenset(
     (
         "enabled",

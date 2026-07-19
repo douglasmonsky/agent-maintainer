@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.ecosystems.file_changes import (
     ChangedPath,
@@ -117,6 +118,32 @@ def test_typescript_dot_directory_classification_preserves_path() -> None:
     _assert_change(classification, ecosystem="typescript", role=FileRole.SOURCE)
     assert classification is not None
     assert classification.path == ".storybook/main.ts"
+
+
+def test_header_role_wins_over_shared_docs_candidate() -> None:
+    """C/C++ headers remain high confidence for shared repository paths."""
+    config = replace(MaintainerConfig(), cpp=CppCmakeConfig(enabled=True))
+
+    selected = classify_changed_path(
+        "include/api.hpp",
+        "modified",
+        config,
+    )
+
+    _assert_change(selected, ecosystem="cpp", role=FileRole.HEADER)
+
+
+def test_cpp_paths_win_registry_selection() -> None:
+    """Enabled C/C++ ownership outranks generic Python path heuristics."""
+    config = replace(MaintainerConfig(), cpp=CppCmakeConfig(enabled=True))
+
+    expected_roles = {
+        "CMakeLists.txt": FileRole.CONFIG,
+        "CMakePresets.json": FileRole.CONFIG,
+        "build/generated/config.hpp": FileRole.GENERATED,
+    }
+    for path, role in expected_roles.items():
+        _assert_change(classify_changed_path(path, "modified", config), ecosystem="cpp", role=role)
 
 
 def _assert_change(

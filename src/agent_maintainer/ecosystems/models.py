@@ -41,6 +41,7 @@ class FileRole(StrEnum):
     """High-level repository file roles used by ecosystem classifiers."""
 
     SOURCE = "source"
+    HEADER = "header"
     TEST = "test"
     GENERATED = "generated"
     CONFIG = "config"

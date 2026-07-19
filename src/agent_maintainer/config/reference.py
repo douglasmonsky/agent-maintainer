@@ -5,11 +5,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import asdict, is_dataclass
+from dataclasses import asdict, fields, is_dataclass
 from pathlib import Path
 from typing import cast
 
 from agent_maintainer.config import registry
+from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.core.structured_values import json_object
 
 REFERENCE_PATH = Path("docs/configuration-reference.md")
@@ -26,6 +27,7 @@ def capability_payload() -> dict[str, object]:
         "schema_version": CAPABILITY_SCHEMA_VERSION,
         "precedence": ["defaults", "mode", "file", "environment", "command_line"],
         "nested_tables": {
+            "cpp": sorted(registry.CPP_KEYS),
             "diagnostics": sorted(registry.DIAGNOSTIC_KEYS),
             "workspaces.*": sorted(registry.WORKSPACE_KEYS),
             "file_baselines": sorted(registry.FILE_BASELINE_KEYS),
@@ -166,6 +168,37 @@ def render_reference_markdown() -> str:
     return "\n".join(lines)
 
 
+def render_cpp_reference_appendix() -> str:
+    """Render the nested C/C++ provider configuration from its public defaults."""
+    defaults = CppCmakeConfig()
+    lines = [
+        "## C/C++ (CMake) Provider",
+        "",
+        "The experimental provider is disabled by default. Phase 187 accepts the nested",
+        "configuration below for classification, advisory suppression evidence, and",
+        "static doctor only. Configured commands are not executed. Typed report",
+        "declarations are unavailable until Phase 188.",
+        "",
+        "```toml",
+        "[tool.agent_maintainer.cpp]",
+        "```",
+        "",
+        "| Nested key | Type | Default |",
+        "|---|---|---|",
+        *(
+            _cpp_field_markdown_row(field.name, getattr(defaults, field.name))
+            for field in fields(CppCmakeConfig)
+        ),
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def render_configuration_reference_markdown() -> str:
+    """Render the scalar reference and provider-owned C/C++ appendix."""
+    return f"{render_reference_markdown()}\n{render_cpp_reference_appendix()}"
+
+
 def _nested_table_rows() -> list[str]:
     nested = json_object(capability_payload()["nested_tables"])
     if nested is None:
@@ -192,6 +225,19 @@ def _field_markdown_row(spec: registry.ConfigFieldSpec) -> str:
     )
     cells = " | ".join(values)
     return f"| {cells} |"
+
+
+def _cpp_field_markdown_row(field_name: str, default: object) -> str:
+    rendered_default = _markdown_value(_json_value(default))
+    if isinstance(default, bool):
+        kind = "bool"
+    elif isinstance(default, str):
+        kind = "str"
+    elif isinstance(default, tuple):
+        kind = "profile array" if field_name.endswith("_profiles") else "command array"
+    else:
+        raise TypeError(f"unsupported C/C++ configuration default: {field_name}")
+    return f"| `{field_name}` | {kind} | {rendered_default} |"
 
 
 def _constraint_text(spec: registry.ConfigFieldSpec) -> str:
@@ -226,7 +272,7 @@ def rendered_files() -> dict[Path, str]:
     """Return generated repository paths and their current contents."""
 
     return {
-        REFERENCE_PATH: render_reference_markdown(),
+        REFERENCE_PATH: render_configuration_reference_markdown(),
         CAPABILITIES_PATH: render_capabilities_json(),
     }
 
