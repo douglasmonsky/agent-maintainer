@@ -1,11 +1,13 @@
 # Changelog
 
-## Unreleased (target: 0.1.0b10)
+## Unreleased (target: 0.1.0b11)
 
-`0.1.0b10` is an unpublished release candidate. `0.1.0b9` remains the latest
-published package, with published 0.1.0b9 release evidence authoritative until
-this candidate passes the complete exact-commit release matrix and package-index
-smokes.
+`0.1.0b11` is an unpublished release candidate. The published 0.1.0b10 release
+evidence remains authoritative; no b11 user-facing changes are recorded yet.
+
+## 0.1.0b10 - 2026-07-18
+
+Tenth beta release of Agent Maintainer.
 
 - Added opt-in semantic compatibility ratchets for repository configuration,
   authored CLI manifests, nominated Python APIs, and structural JSON Schema

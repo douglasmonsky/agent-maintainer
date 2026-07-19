@@ -1,7 +1,7 @@
 +++
 id = "contract-compatibility-ratchets"
 kind = "feature"
-status = "active"
+status = "complete"
 base_ref = "453a00f"
 expires = 2026-08-15
 allowed_paths = [

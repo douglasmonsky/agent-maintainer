@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260719T003713Z.claim.docs.quick_start_package_flow.2db6cd3
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.package_metadata
+  reason: Reviewed the 0.1.0b10 publication evidence and advanced source metadata
+    to the intent-only 0.1.0b11 candidate.
+  reviewer: agent
+  reviewed_at: '2026-07-19T00:37:13Z'
+  base: HEAD
+  head: 2db6cd3
+  evidence_fingerprints:
+    evidence.readme.package_metadata: sha256:b09e2701ab3d5792724e86d1db0cd97176fc932774e4106d260d2d07037f225d
+  evidence_anchor_fingerprints:
+    evidence.readme.package_metadata:
+    - sha256:d88c6757d36ce4f4844ff7c2dd0dc8def8b14fcd9039d5ea2c45dbc889513fc9
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
