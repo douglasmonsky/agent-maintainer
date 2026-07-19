@@ -111,6 +111,7 @@ depends_on = []
 path = "reference"
 depends_on = [
   "//agent_maintainer.core.structured_values",
+  "cpp",
   "registry",
 ]
 
