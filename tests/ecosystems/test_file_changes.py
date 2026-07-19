@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.ecosystems.file_changes import (
     ChangedPath,
@@ -133,6 +134,19 @@ def test_header_role_wins_over_shared_docs_candidate() -> None:
     assert selected is not None
     assert selected.ecosystem == "cpp"
     assert selected.role is FileRole.HEADER
+
+
+def test_cpp_paths_win_registry_selection() -> None:
+    """Enabled C/C++ ownership outranks generic Python path heuristics."""
+    config = replace(MaintainerConfig(), cpp=CppCmakeConfig(enabled=True))
+
+    expected_roles = {
+        "CMakeLists.txt": FileRole.CONFIG,
+        "CMakePresets.json": FileRole.CONFIG,
+        "build/generated/config.hpp": FileRole.GENERATED,
+    }
+    for path, role in expected_roles.items():
+        _assert_change(classify_changed_path(path, "modified", config), ecosystem="cpp", role=role)
 
 
 def _assert_change(

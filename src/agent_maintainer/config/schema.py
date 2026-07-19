@@ -118,7 +118,6 @@ class MaintainerConfig:
     """Resolved verifier settings after presets and overrides are applied."""
 
     mode: str = CUSTOM_MODE
-    cpp: CppCmakeConfig = field(default_factory=CppCmakeConfig)
     java: JavaGradleConfig = field(default_factory=JavaGradleConfig)
     workspaces: tuple[WorkspaceConfig, ...] = ()
     source_roots: tuple[str, ...] = DEFAULT_SOURCE_ROOTS
@@ -261,3 +260,4 @@ class MaintainerConfig:
     structure_paths: tuple[str, ...] = ()
     structure_ignore_paths: tuple[str, ...] = DEFAULT_STRUCTURE_IGNORE_PATHS
     structure_hint_patterns: tuple[str, ...] = DEFAULT_STRUCTURE_HINT_PATTERNS
+    cpp: CppCmakeConfig = field(default_factory=CppCmakeConfig)

@@ -9,6 +9,7 @@ import pytest
 
 from agent_maintainer.config import loader, registry
 from agent_maintainer.config.cpp import CppCmakeConfig
+from agent_maintainer.config.java import JavaGradleConfig
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.config.validation import ConfigValidationError
 
@@ -41,6 +42,16 @@ def test_cpp_is_a_registered_nested_configuration_field() -> None:
     assert "cpp" in registry.top_level_toml_keys()
     assert registry.NESTED_FIELD_KINDS["cpp"] == "cpp"
     assert registry.FIELD_SPECS["cpp"].value_kind == "cpp"
+
+
+def test_cpp_keeps_positional_java_field() -> None:
+    """Adding C/C++ config does not shift existing positional fields."""
+    java = JavaGradleConfig(enabled=True)
+
+    config = MaintainerConfig("custom", java)
+
+    assert config.java is java
+    assert config.cpp == CppCmakeConfig()
 
 
 def test_complete_cpp_table_is_coerced_without_shell_parsing() -> None:
