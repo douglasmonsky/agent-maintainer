@@ -91,10 +91,27 @@ JAVA_PROVIDER = ProviderMetadata(
     enabled_field="java.enabled",
 )
 
+CPP_PROVIDER = ProviderMetadata(
+    name="cpp",
+    display_name="C/C++ (CMake)",
+    maturity=ProviderMaturity.EXPERIMENTAL,
+    docs_path="docs/cpp-cmake-provider.md",
+    capabilities=("classification", "suppression-evidence", "doctor"),
+    enabled_field="cpp.enabled",
+    command_specs=(
+        ProviderCommandSpec("cpp-format", "cpp.format_command"),
+        ProviderCommandSpec("cpp-static-analysis", "cpp.static_analysis_command"),
+        ProviderCommandSpec("cpp-build", "cpp.build_command"),
+        ProviderCommandSpec("cpp-test", "cpp.test_command"),
+        ProviderCommandSpec("cpp-coverage", "cpp.coverage_command"),
+    ),
+)
+
 BUILTIN_PROVIDER_METADATA = (
     PYTHON_PROVIDER,
     TYPESCRIPT_PROVIDER,
     JAVA_PROVIDER,
+    CPP_PROVIDER,
 )
 
 

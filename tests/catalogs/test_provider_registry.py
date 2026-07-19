@@ -24,10 +24,17 @@ def test_provider_metadata_names_and_maturity() -> None:
     # docsync:evidence.start evidence.provider_registry.active_providers
     providers = {metadata.name: metadata for metadata in builtin_provider_metadata()}
 
-    assert tuple(providers) == ("python", "typescript", "java")
+    assert tuple(providers) == ("python", "typescript", "java", "cpp")
     assert providers["python"].maturity == ProviderMaturity.CORE
     assert providers["typescript"].maturity == ProviderMaturity.EXPERIMENTAL
     assert providers["java"].maturity == ProviderMaturity.EXPERIMENTAL
+    assert providers["cpp"].display_name == "C/C++ (CMake)"
+    assert providers["cpp"].maturity is ProviderMaturity.EXPERIMENTAL
+    assert providers["cpp"].capabilities == (
+        "classification",
+        "suppression-evidence",
+        "doctor",
+    )
     # docsync:evidence.end evidence.provider_registry.active_providers
 
 
@@ -39,12 +46,18 @@ def test_provider_metadata_enabled_fields() -> None:
     assert providers["python"].enabled_field is None
     assert providers["typescript"].enabled_field == "enable_typescript"
     assert providers["java"].enabled_field == "java.enabled"
+    assert providers["cpp"].enabled_field == "cpp.enabled"
     assert MaintainerConfig().enable_typescript is False
     assert provider_enabled(providers["typescript"], MaintainerConfig(enable_typescript=True))
     assert provider_enabled(providers["java"], MaintainerConfig()) is False
+    assert provider_enabled(providers["cpp"], MaintainerConfig()) is False
     assert provider_enabled(
         providers["java"],
         MaintainerConfig(java=JavaGradleConfig(enabled=True)),
+    )
+    assert provider_enabled(
+        providers["cpp"],
+        MaintainerConfig(cpp=CppCmakeConfig(enabled=True)),
     )
 
 
