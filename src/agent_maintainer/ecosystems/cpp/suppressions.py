@@ -10,12 +10,12 @@ from agent_maintainer.ecosystems.models import SuppressionFinding
 ECOSYSTEM_NAME = "cpp"
 CPPCHECK_SUPPRESSION_FILE_NAMES = frozenset((".cppcheck-suppressions", "cppcheck-suppressions.txt"))
 
-NOLINT_RE = re.compile(r"\bNOLINT(?![A-Z])(?:\((?P<rules>[^)]*)\))?")
-NOLINTNEXTLINE_RE = re.compile(r"\bNOLINTNEXTLINE(?![A-Z])(?:\((?P<rules>[^)]*)\))?")
-NOLINTBEGIN_RE = re.compile(r"\bNOLINTBEGIN(?![A-Z])(?:\((?P<rules>[^)]*)\))?")
-NOLINTEND_RE = re.compile(r"\bNOLINTEND(?![A-Z])(?:\((?P<rules>[^)]*)\))?")
-CPPCHECK_SUPPRESS_RE = re.compile(r"\bcppcheck-suppress(?!-file\b)(?:\s+(?P<rule>[^\s*/]+))?")
-CPPCHECK_SUPPRESS_FILE_RE = re.compile(r"\bcppcheck-suppress-file\b")
+NOLINT_RE = re.compile(r"\bNOLINT(?:\((?P<rules>[^)]*)\))?(?![\w(])")
+NOLINTNEXTLINE_RE = re.compile(r"\bNOLINTNEXTLINE(?:\((?P<rules>[^)]*)\))?(?![\w(])")
+NOLINTBEGIN_RE = re.compile(r"\bNOLINTBEGIN(?:\((?P<rules>[^)]*)\))?(?![\w(])")
+NOLINTEND_RE = re.compile(r"\bNOLINTEND(?:\((?P<rules>[^)]*)\))?(?![\w(])")
+CPPCHECK_SUPPRESS_RE = re.compile(r"\bcppcheck-suppress(?:[ \t]+(?P<rule>[^\s*/]+))?(?=$|\s)")
+CPPCHECK_SUPPRESS_FILE_RE = re.compile(r"\bcppcheck-suppress-file(?=$|\s)")
 
 _MARKER_PATTERNS = (
     ("nolint", NOLINT_RE),

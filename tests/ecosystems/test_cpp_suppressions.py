@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from agent_maintainer.ecosystems.cpp import suppressions
 
 
@@ -39,3 +41,62 @@ def test_cpp_marker_families_follow_source_order() -> None:
     )
 
     assert [item.kind for item in findings] == ["cppcheck-suppress", "nolint"]
+
+
+@pytest.mark.parametrize(
+    "line",
+    (
+        "// NOLINTfoo",
+        "// NOLINT_value",
+        "// NOLINT1",
+        "// NOLINT(",
+        "// NOLINT(rule",
+        "// NOLINT(rule)extra",
+        "// NOLINTNEXTLINEfoo",
+        "// NOLINTBEGIN_extra",
+        "// NOLINTEND2",
+    ),
+)
+def test_cpp_nolint_requires_an_exact_complete_marker(line: str) -> None:
+    """NOLINT-like identifiers and incomplete rule lists are ignored."""
+    assert suppressions.classify_line(line) == ()
+
+
+@pytest.mark.parametrize(
+    "line",
+    (
+        "// cppcheck-suppressions",
+        "// cppcheck-suppress_file",
+        "// cppcheck-suppressX",
+        "// cppcheck-suppress-file-extra",
+        "// cppcheck-suppress-file_extra",
+        "// cppcheck-suppress-fileX",
+    ),
+)
+def test_cppcheck_requires_an_exact_marker_name(line: str) -> None:
+    """Longer cppcheck-like identifiers are not suppression markers."""
+    assert suppressions.classify_line(line) == ()
+
+
+def test_cpp_exact_markers_allow_complete_lists_and_trailing_whitespace() -> None:
+    """Complete rule lists and whitespace-delimited markers remain valid."""
+    empty = suppressions.classify_line("// NOLINT() explanation")
+    named = suppressions.classify_line("// NOLINT(readability-magic-numbers) explanation")
+    cppcheck = suppressions.classify_line("/* cppcheck-suppress */")
+    cppcheck_file = suppressions.classify_line("/* cppcheck-suppress-file */")
+
+    assert [(item.kind, item.broad) for item in empty] == [("nolint", True)]
+    assert [(item.kind, item.broad) for item in named] == [("nolint", False)]
+    assert [(item.kind, item.broad) for item in cppcheck] == [("cppcheck-suppress", True)]
+    assert [(item.kind, item.broad) for item in cppcheck_file] == [("cppcheck-suppress-file", True)]
+
+
+def test_cpp_nolint_allows_non_identifier_terminators() -> None:
+    """NOLINT markers may end before punctuation or a block-comment close."""
+    block = suppressions.classify_line("/* NOLINT*/")
+    explained = suppressions.classify_line("// NOLINT: explanation")
+    named = suppressions.classify_line("// NOLINT(readability-magic-numbers): explanation")
+
+    assert [(item.kind, item.broad) for item in block] == [("nolint", True)]
+    assert [(item.kind, item.broad) for item in explained] == [("nolint", True)]
+    assert [(item.kind, item.broad) for item in named] == [("nolint", False)]
