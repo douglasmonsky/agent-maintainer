@@ -32,6 +32,7 @@ depends_on = ["//agent_maintainer.core.repo_paths"]
 path = "registry"
 depends_on = [
  "cpp.classification",
+ "cpp.suppressions",
  "java.classification",
  "java.provider",
  "models",
@@ -54,6 +55,10 @@ depends_on = [
   "models",
   "//agent_maintainer.config.cpp",
 ]
+
+[[modules]]
+path = "cpp.suppressions"
+depends_on = ["models"]
 
 
 [[modules]]

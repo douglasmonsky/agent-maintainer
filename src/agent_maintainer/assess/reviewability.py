@@ -143,7 +143,11 @@ def _suppression_findings(
     findings = tuple(
         finding
         for line in added_lines.get(classification.path, ())
-        for finding in _classify_suppression_line(classification.ecosystem, line)
+        for finding in _classify_suppression_line(
+            classification.ecosystem,
+            line,
+            classification.path,
+        )
     )
     return tuple(
         assess_models.ReviewabilitySuppression(
@@ -160,9 +164,10 @@ def _suppression_findings(
 def _classify_suppression_line(
     ecosystem: str,
     line: str,
+    path: str = "",
 ) -> tuple[ecosystem_models.SuppressionFinding, ...]:
     """Dispatch line-level suppression classification by ecosystem."""
-    return registry.advisory_suppression_findings(ecosystem, line)
+    return registry.advisory_suppression_findings(ecosystem, line, path)
 
 
 def _provider_summaries(

@@ -33,3 +33,12 @@ def test_ts_suppressions_classify_narrow_markers() -> None:
 def test_ts_suppressions_ignore_normal_comments() -> None:
     """Normal comments do not become suppression findings."""
     assert suppressions.classify_line("// regular comment") == ()
+
+
+def test_ts_suppressions_ignore_path_context() -> None:
+    """Path context leaves existing TypeScript findings byte-compatible."""
+    line = "// eslint-disable @ts-ignore c8 ignore next"
+
+    assert suppressions.classify_line(line, path="src/web/app.ts") == (
+        suppressions.classify_line(line)
+    )

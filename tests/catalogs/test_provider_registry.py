@@ -126,6 +126,14 @@ def test_registry_owns_advisory_suppression_dispatch() -> None:
     assert len(findings) == 1
     assert findings[0].ecosystem == "typescript"
     assert findings[0].broad is True
+    cpp_findings = advisory_suppression_findings(
+        "cpp",
+        "uninitvar",
+        "cppcheck-suppressions.txt",
+    )
+    assert [(item.kind, item.broad) for item in cpp_findings] == [
+        ("cppcheck-suppression-file", False)
+    ]
     assert advisory_suppression_findings("unknown", "// eslint-disable") == ()
 
 

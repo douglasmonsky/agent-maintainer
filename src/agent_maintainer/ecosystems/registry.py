@@ -7,6 +7,7 @@ from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
 from agent_maintainer.ecosystems.cpp import classification as cpp_classification
+from agent_maintainer.ecosystems.cpp import suppressions as cpp_suppressions
 from agent_maintainer.ecosystems.java import classification as java_classification
 from agent_maintainer.ecosystems.java.provider import JavaProvider
 from agent_maintainer.ecosystems.models import (
@@ -30,7 +31,7 @@ ClassificationProvider = Callable[
     [str | Path, MaintainerConfig, Path | None],
     FileClassification | None,
 ]
-SuppressionProvider = Callable[[str], tuple[SuppressionFinding, ...]]
+SuppressionProvider = Callable[[str, str], tuple[SuppressionFinding, ...]]
 SuppressionProviderEntry = tuple[str, SuppressionProvider]
 
 PYTHON_PROVIDER = ProviderMetadata(
@@ -129,10 +130,11 @@ def classification_candidates(
 def advisory_suppression_findings(
     ecosystem: str,
     line: str,
+    path: str = "",
 ) -> tuple[SuppressionFinding, ...]:
     """Return advisory suppression findings for ecosystem line."""
     provider = suppression_provider(ecosystem)
-    return provider(line) if provider else ()
+    return provider(line, path) if provider else ()
 
 
 def suppression_provider(ecosystem: str) -> SuppressionProvider | None:
@@ -196,4 +198,5 @@ CLASSIFICATION_PROVIDERS: tuple[ClassificationProvider, ...] = (
 )
 ADVISORY_SUPPRESSION_PROVIDERS: tuple[SuppressionProviderEntry, ...] = (
     ("typescript", typescript_suppressions.classify_line),
+    ("cpp", cpp_suppressions.classify_line),
 )
