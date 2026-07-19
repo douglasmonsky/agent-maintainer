@@ -35,7 +35,7 @@ def test_cpp_defaults_are_frozen_and_disabled() -> None:
     assert cpp.test_profiles == ("full", "ci")
     assert cpp.coverage_profiles == ("full", "ci")
     with pytest.raises(FrozenInstanceError):
-        cpp.enabled = True  # type: ignore[misc]
+        type(cpp).__setattr__(cpp, "enabled", True)
 
 
 def test_cpp_is_a_registered_nested_configuration_field() -> None:

@@ -8,14 +8,12 @@ from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.ecosystems.file_changes import (
     ChangedPath,
-    _select_classification,  # pyright: ignore[reportPrivateUsage]
     classify_changed_path,
     classify_changed_paths,
 )
 from agent_maintainer.ecosystems.models import (
     ChangeKind,
     FileChangeClassification,
-    FileClassification,
     FileRole,
 )
 
@@ -124,16 +122,15 @@ def test_typescript_dot_directory_classification_preserves_path() -> None:
 
 def test_header_role_wins_over_shared_docs_candidate() -> None:
     """C/C++ headers remain high confidence for shared repository paths."""
-    selected = _select_classification(
-        (
-            FileClassification("include/api.hpp", "python", FileRole.DOCS),
-            FileClassification("include/api.hpp", "cpp", FileRole.HEADER),
-        ),
+    config = replace(MaintainerConfig(), cpp=CppCmakeConfig(enabled=True))
+
+    selected = classify_changed_path(
+        "include/api.hpp",
+        "modified",
+        config,
     )
 
-    assert selected is not None
-    assert selected.ecosystem == "cpp"
-    assert selected.role is FileRole.HEADER
+    _assert_change(selected, ecosystem="cpp", role=FileRole.HEADER)
 
 
 def test_cpp_paths_win_registry_selection() -> None:
