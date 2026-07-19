@@ -19,6 +19,15 @@ There is no active Go provider on `main`. Go remains archived historical work
 until active experimental providers have stronger evidence and the provider
 seam has settled.
 
+## Approved Provider Experiment
+
+C/C++ (CMake) is approved as the next built-in experiment but is not yet a
+current provider. [Phases 186-191](roadmap/cpp-cmake-experimental-provider-roadmap.md)
+will add a disabled-by-default `cpp` provider through independently reviewable
+classification, command, static-analysis, test, coverage, and qualification
+slices. It will execute only repository-owned explicit commands and will not
+select compilers, generators, presets, targets, or build directories.
+
 ## Current Focus
 
 TypeScript/JavaScript is again the active parity track. TypeScript/React parity

@@ -169,3 +169,9 @@
 | 182 | [TypeScript LCOV Changed-Line Facts](phases/phase-182-typescript-lcov-changed-line-facts.md) |
 | 183 | [Diff-Aware Verification Planning And Declarative Path-Risk Policy](phases/phase-183-diff-aware-verification-planning.md) |
 | 184 | [Contract Compatibility Ratchets](phases/phase-184-contract-compatibility-ratchets.md) |
+| 186 | [C/C++ Provider Contract And Roadmap](phases/phase-186-cpp-provider-contract-and-roadmap.md) |
+| 187 | [C/C++ Classification, Configuration, Registry, And Doctor](phases/phase-187-cpp-classification-config-registry-doctor.md) |
+| 188 | [C/C++ Explicit Commands And Bounded Artifacts](phases/phase-188-cpp-explicit-commands-and-bounded-artifacts.md) |
+| 189 | [C/C++ Static-Analysis Facts](phases/phase-189-cpp-static-analysis-facts.md) |
+| 190 | [C/C++ Test And Coverage Facts](phases/phase-190-cpp-test-and-coverage-facts.md) |
+| 191 | [C/C++ Cross-Platform And External Proof](phases/phase-191-cpp-cross-platform-and-external-proof.md) |

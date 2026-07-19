@@ -160,18 +160,18 @@ cost, and four-week retained use.
 - [x] Publish exact-installed-version expectations and unfrozen current entry
       points for commands, formats, and internal top-level packages.
 
-## Future Work
+## Active: C/C++ CMake Experiment
 
-- Keep agent orchestration framework work behind replaceable adapter contracts:
-  [`docs/roadmap/agent-orchestration-adapter-doctrine.md`](roadmap/agent-orchestration-adapter-doctrine.md).
+Follow the [C/C++ CMake roadmap](roadmap/cpp-cmake-experimental-provider-roadmap.md).
+The provider remains disabled by default and experimental throughout this track.
 
-- Continue adding section-level DocSync claims as public docs materially change,
-  especially where a claim can point to durable implementation or test evidence.
-
-- Avoid adding additional ecosystems until TypeScript/JavaScript and Java/Gradle
-  satisfy their documented promotion bars, including
-
-  [`docs/case-studies/typescript-provider-maturation.md`](case-studies/typescript-provider-maturation.md).
+- [x] Phase 186: Provider Contract And Roadmap
+- [ ] Phase 187: Classification, Configuration, Registry, And Doctor
+- [ ] Phase 188: Explicit Commands And Bounded Artifacts
+- [ ] Phase 189: Static-Analysis Facts
+- [ ] Phase 190: Test And Coverage Facts
+- [ ] Phase 191: Cross-Platform And External Proof
+Other future work remains governed by the [agent-adapter doctrine](roadmap/agent-orchestration-adapter-doctrine.md), while DocSync claims expand only with material public-doc changes.
 
 ## Final Definition Of Done
 

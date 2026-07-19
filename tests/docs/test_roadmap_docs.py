@@ -21,6 +21,18 @@ TYPESCRIPT_KNIP_PHASE = PHASES_DIR / "phase-179-typescript-knip-unused-code-depe
 TYPESCRIPT_DEPENDENCY_CRUISER_PHASE = (
     PHASES_DIR / "phase-181-typescript-dependency-cruiser-facts.md"
 )
+CPP_CMAKE_ROADMAP = ROADMAP_ROOT / "cpp-cmake-experimental-provider-roadmap.md"
+CPP_PHASE_PATHS = tuple(
+    PHASES_DIR / filename
+    for filename in (
+        "phase-186-cpp-provider-contract-and-roadmap.md",
+        "phase-187-cpp-classification-config-registry-doctor.md",
+        "phase-188-cpp-explicit-commands-and-bounded-artifacts.md",
+        "phase-189-cpp-static-analysis-facts.md",
+        "phase-190-cpp-test-and-coverage-facts.md",
+        "phase-191-cpp-cross-platform-and-external-proof.md",
+    )
+)
 MAX_ACTIVE_ROADMAP_LINES = 180
 MAX_INDEX_OVERHEAD_LINES = 4
 MAX_PHASE_LINES = 500
@@ -164,6 +176,35 @@ def test_typescript_dependency_cruiser_phase_is_complete() -> None:
     assert "hicommonwealth/commonwealth" in phase
     assert "TypeScript/JavaScript remains experimental" in phase
     assert "Package-manager audit facts are the next parity slice" in phase
+
+
+def test_cpp_cmake_experiment_is_explicit_cross_platform_and_phased() -> None:
+    """C/C++ planning stays command-owned, cross-platform, and experimental."""
+
+    roadmap = CPP_CMAKE_ROADMAP.read_text(encoding="utf-8")
+    normalized = " ".join(roadmap.split())
+
+    for phrase in (
+        "disabled by default",
+        "repository-owned explicit commands",
+        "Linux/GCC",
+        "macOS/Clang",
+        "Windows/MSVC",
+        "Clang-Tidy exported-fixes YAML",
+        "Cppcheck XML version 2",
+        "CTest JUnit XML",
+        "LCOV tracefiles",
+        "version-declared gcovr JSON",
+        "three pinned public repositories",
+    ):
+        assert phrase in normalized
+    assert "does not select a compiler" in normalized
+    assert [path.exists() for path in CPP_PHASE_PATHS] == [True] * 6
+    assert "Status: complete" in CPP_PHASE_PATHS[0].read_text(encoding="utf-8")
+    for phase in CPP_PHASE_PATHS[1:]:
+        assert "Status: planned" in phase.read_text(encoding="utf-8")
+    for target in markdown_links(roadmap):
+        assert (ROADMAP_ROOT / target).exists(), target
 
 
 def test_active_roadmap_reports_current_strict_and_api_state() -> None:
