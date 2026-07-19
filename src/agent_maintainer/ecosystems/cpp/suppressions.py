@@ -14,8 +14,13 @@ NOLINT_RE = re.compile(r"\bNOLINT(?:\((?P<rules>[^)]*)\))?(?![\w(])")
 NOLINTNEXTLINE_RE = re.compile(r"\bNOLINTNEXTLINE(?:\((?P<rules>[^)]*)\))?(?![\w(])")
 NOLINTBEGIN_RE = re.compile(r"\bNOLINTBEGIN(?:\((?P<rules>[^)]*)\))?(?![\w(])")
 NOLINTEND_RE = re.compile(r"\bNOLINTEND(?:\((?P<rules>[^)]*)\))?(?![\w(])")
-CPPCHECK_SUPPRESS_RE = re.compile(r"\bcppcheck-suppress(?:[ \t]+(?P<rule>[^\s*/]+))?(?=$|\s)")
-CPPCHECK_SUPPRESS_FILE_RE = re.compile(r"\bcppcheck-suppress-file(?=$|\s)")
+CPPCHECK_SUPPRESS_RE = re.compile(
+    r"\bcppcheck-suppress(?:"
+    r"[ \t]+(?P<rule>[^\s*/]+)(?=$|\s|\*/)|"
+    r"[ \t]*(?=$|\*/)"
+    r")"
+)
+CPPCHECK_SUPPRESS_FILE_RE = re.compile(r"\bcppcheck-suppress-file(?=$|\s|\*/)")
 
 _MARKER_PATTERNS = (
     ("nolint", NOLINT_RE),

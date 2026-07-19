@@ -71,6 +71,7 @@ def test_cpp_nolint_requires_an_exact_complete_marker(line: str) -> None:
         "// cppcheck-suppress-file-extra",
         "// cppcheck-suppress-file_extra",
         "// cppcheck-suppress-fileX",
+        "/* cppcheck-suppress nullPointer*extra */",
     ),
 )
 def test_cppcheck_requires_an_exact_marker_name(line: str) -> None:
@@ -100,3 +101,14 @@ def test_cpp_nolint_allows_non_identifier_terminators() -> None:
     assert [(item.kind, item.broad) for item in block] == [("nolint", True)]
     assert [(item.kind, item.broad) for item in explained] == [("nolint", True)]
     assert [(item.kind, item.broad) for item in named] == [("nolint", False)]
+
+
+def test_cppcheck_markers_allow_adjacent_block_comment_close() -> None:
+    """Cppcheck directives remain exact when immediately followed by */."""
+    broad = suppressions.classify_line("/* cppcheck-suppress*/")
+    broad_file = suppressions.classify_line("/* cppcheck-suppress-file*/")
+    narrow = suppressions.classify_line("/* cppcheck-suppress nullPointer*/")
+
+    assert [(item.kind, item.broad) for item in broad] == [("cppcheck-suppress", True)]
+    assert [(item.kind, item.broad) for item in broad_file] == [("cppcheck-suppress-file", True)]
+    assert [(item.kind, item.broad) for item in narrow] == [("cppcheck-suppress", False)]
