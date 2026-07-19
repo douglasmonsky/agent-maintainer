@@ -69,7 +69,9 @@ def classify_path(
         role, generated, ignored = special
         return _result(normalized, role, generated=generated, ignored=ignored)
     role = _owned_role(pure, parts)
-    return _result(normalized, role) if role is not None else None
+    if role is None:
+        return None
+    return _result(normalized, role)
 
 
 def _special_role(
@@ -81,12 +83,20 @@ def _special_role(
         return FileRole.GENERATED, True, True
     if parts & (BUILD_IGNORED_PARTS | VENDOR_PARTS | ALWAYS_IGNORED_PARTS):
         return FileRole.IGNORED, False, True
+    role = _metadata_role(pure)
+    if role is None:
+        return None
+    return role, False, False
+
+
+def _metadata_role(pure: PurePosixPath) -> FileRole | None:
+    """Return roles for C/C++ repository metadata and documentation."""
     if pure.name in DEPENDENCY_NAMES:
-        return FileRole.DEPENDENCY, False, False
+        return FileRole.DEPENDENCY
     if pure.name in CMAKE_NAMES or pure.name in TOOL_CONFIG_NAMES or pure.suffix == ".cmake":
-        return FileRole.CONFIG, False, False
+        return FileRole.CONFIG
     if pure.suffix in DOC_EXTENSIONS:
-        return FileRole.DOCS, False, False
+        return FileRole.DOCS
     return None
 
 

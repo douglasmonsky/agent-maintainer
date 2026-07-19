@@ -6,7 +6,7 @@ import math
 from typing import Any, TypeGuard
 
 from agent_maintainer.config import registry, schema, validation
-from agent_maintainer.config.cpp_coercion import coerce_cpp
+from agent_maintainer.config.cpp_coercion import coerce_cpp_update
 from agent_maintainer.config.java_coercion import coerce_java
 
 DEFAULT_CONFIG_SOURCE = "configuration"
@@ -311,18 +311,11 @@ def coerce_updates(
     file_baselines = raw.get("file_baselines")
     if file_baselines is not None:
         updates.update(coerce_file_baselines(file_baselines, source=source))
-    updates.update(_coerce_cpp_update(raw, source=source))
+    updates.update(coerce_cpp_update(raw, source=source))
     java = raw.get("java")
     if java is not None:
         updates["java"] = coerce_java(java, source=source)
     return updates
-
-
-def _coerce_cpp_update(raw: dict[str, Any], *, source: str) -> dict[str, object]:
-    cpp = raw.get("cpp")
-    if cpp is None:
-        return {}
-    return {"cpp": coerce_cpp(cpp, source=source)}
 
 
 def _raw_scalar_item(

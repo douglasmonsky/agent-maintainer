@@ -57,25 +57,36 @@ def resolve_repository_wrapper(repo_root: Path, executable: str) -> Path:
     """Resolve one explicit path-like executable to a confined regular file."""
     canonical_root = repo_root.resolve(strict=True)
     if not _is_path_like(executable):
-        resolved = shutil.which(executable, path=path_with_local_bins(canonical_root))
-        if resolved is None:
-            raise FileNotFoundError(f"executable is unavailable: {executable}")
-        return Path(resolved)
+        return _resolve_system_executable(canonical_root, executable)
+    return _resolve_explicit_wrapper(canonical_root, executable)
 
+
+def _resolve_system_executable(repo_root: Path, executable: str) -> Path:
+    resolved = shutil.which(executable, path=path_with_local_bins(repo_root))
+    if resolved is None:
+        raise FileNotFoundError(f"executable is unavailable: {executable}")
+    return Path(resolved)
+
+
+def _resolve_explicit_wrapper(repo_root: Path, executable: str) -> Path:
     configured = Path(executable)
-    candidate = configured if configured.is_absolute() else canonical_root / configured
-    _reject_symlink_path(candidate, canonical_root)
+    candidate = configured if configured.is_absolute() else repo_root / configured
+    _reject_symlink_path(candidate, repo_root)
     try:
         resolved = candidate.resolve(strict=True)
     except FileNotFoundError as exc:
         raise FileNotFoundError(f"wrapper is missing: {executable}") from exc
-    if not resolved.is_relative_to(canonical_root):
+    _validate_explicit_wrapper(resolved, repo_root=repo_root, executable=executable)
+    return resolved
+
+
+def _validate_explicit_wrapper(resolved: Path, *, repo_root: Path, executable: str) -> None:
+    if not resolved.is_relative_to(repo_root):
         raise ValueError(f"wrapper escapes repository: {executable}")
     if not resolved.is_file():
         raise ValueError(f"wrapper is not a regular file: {executable}")
     if os.name == "posix" and not os.access(resolved, os.X_OK):
         raise ValueError(f"wrapper is not executable: {executable}")
-    return resolved
 
 
 def _check_cmake_root(repo_root: Path, cpp: CppCmakeConfig) -> DoctorResult:
@@ -227,19 +238,37 @@ def _is_path_like(executable: str) -> bool:
 
 
 def _reject_symlink_path(candidate: Path, repo_root: Path) -> None:
-    try:
-        relative = candidate.relative_to(repo_root)
-    except ValueError as exc:
-        raise ValueError(f"wrapper escapes repository: {candidate}") from exc
+    relative = _relative_wrapper_path(candidate, repo_root)
     current = repo_root
     for part in relative.parts:
-        if part == "..":
-            if current == repo_root:
-                raise ValueError(f"wrapper escapes repository: {candidate}")
-            current = current.parent
-            continue
-        current /= part
-        if current.is_symlink():
-            raise ValueError(f"wrapper uses a symlink: {candidate}")
+        current = _next_wrapper_component(current, part, repo_root=repo_root, candidate=candidate)
+    _ensure_wrapper_confined(current, repo_root=repo_root, candidate=candidate)
+
+
+def _relative_wrapper_path(candidate: Path, repo_root: Path) -> Path:
+    try:
+        return candidate.relative_to(repo_root)
+    except ValueError as exc:
+        raise ValueError(f"wrapper escapes repository: {candidate}") from exc
+
+
+def _next_wrapper_component(
+    current: Path,
+    part: str,
+    *,
+    repo_root: Path,
+    candidate: Path,
+) -> Path:
+    if part == "..":
+        if current == repo_root:
+            raise ValueError(f"wrapper escapes repository: {candidate}")
+        return current.parent
+    next_path = current / part
+    if next_path.is_symlink():
+        raise ValueError(f"wrapper uses a symlink: {candidate}")
+    return next_path
+
+
+def _ensure_wrapper_confined(current: Path, *, repo_root: Path, candidate: Path) -> None:
     if not current.is_relative_to(repo_root):
         raise ValueError(f"wrapper escapes repository: {candidate}")

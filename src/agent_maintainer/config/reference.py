@@ -228,18 +228,16 @@ def _field_markdown_row(spec: registry.ConfigFieldSpec) -> str:
 
 
 def _cpp_field_markdown_row(field_name: str, default: object) -> str:
-    kind = _cpp_field_kind(field_name, default)
-    return f"| `{field_name}` | {kind} | {_markdown_value(_json_value(default))} |"
-
-
-def _cpp_field_kind(field_name: str, default: object) -> str:
+    rendered_default = _markdown_value(_json_value(default))
     if isinstance(default, bool):
-        return "bool"
-    if isinstance(default, str):
-        return "str"
-    if isinstance(default, tuple):
-        return "profile array" if field_name.endswith("_profiles") else "command array"
-    raise TypeError(f"unsupported C/C++ configuration default: {field_name}")
+        kind = "bool"
+    elif isinstance(default, str):
+        kind = "str"
+    elif isinstance(default, tuple):
+        kind = "profile array" if field_name.endswith("_profiles") else "command array"
+    else:
+        raise TypeError(f"unsupported C/C++ configuration default: {field_name}")
+    return f"| `{field_name}` | {kind} | {rendered_default} |"
 
 
 def _constraint_text(spec: registry.ConfigFieldSpec) -> str:

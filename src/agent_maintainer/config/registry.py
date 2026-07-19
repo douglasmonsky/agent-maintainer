@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from types import MappingProxyType
 from typing import Literal
 
@@ -126,22 +126,7 @@ FILE_BASELINE_GROUP_KEYS = frozenset(
 )
 JAVA_ENABLED_ENV = "AGENT_MAINTAINER_JAVA_ENABLED"
 NESTED_CONFIG_ENV_VARS = frozenset((JAVA_ENABLED_ENV,))
-CPP_KEYS = frozenset(
-    (
-        "enabled",
-        "cmake_root",
-        "format_command",
-        "static_analysis_command",
-        "build_command",
-        "test_command",
-        "coverage_command",
-        "format_profiles",
-        "static_analysis_profiles",
-        "build_profiles",
-        "test_profiles",
-        "coverage_profiles",
-    )
-)
+CPP_KEYS = frozenset(field.name for field in fields(schema.CppCmakeConfig))
 JAVA_KEYS = frozenset(
     (
         "enabled",

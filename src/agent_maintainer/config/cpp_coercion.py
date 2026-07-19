@@ -20,6 +20,7 @@ CPP_TUPLE_FIELDS = (
     "test_profiles",
     "coverage_profiles",
 )
+_MISSING = object()
 
 
 def _string_tuple(value: object, field_name: str) -> tuple[str, ...]:
@@ -32,24 +33,51 @@ def _string_tuple(value: object, field_name: str) -> tuple[str, ...]:
     return strings
 
 
-def coerce_cpp(raw_value: object, *, source: str = "configuration") -> CppCmakeConfig:
-    """Coerce the provider-owned C/C++ table without shell shortcuts."""
-
+def _cpp_table(raw_value: object, *, source: str) -> dict[str, object]:
     raw = json_object(raw_value)
     if raw is None:
         raise TypeError("cpp must be a table")
     validation.validate_raw_config({"cpp": raw}, source=source)
-    updates: dict[str, object] = {
+    return raw
+
+
+def _tuple_updates(raw: dict[str, object]) -> dict[str, object]:
+    return {
         name: _string_tuple(raw[name], f"cpp.{name}") for name in CPP_TUPLE_FIELDS if name in raw
     }
-    if "enabled" in raw:
-        enabled = raw["enabled"]
-        if not isinstance(enabled, bool):
-            raise TypeError("cpp.enabled must be a boolean")
-        updates["enabled"] = enabled
-    if "cmake_root" in raw:
-        cmake_root = raw["cmake_root"]
-        if not isinstance(cmake_root, str) or not cmake_root:
-            raise TypeError("cpp.cmake_root must be a non-empty string")
-        updates["cmake_root"] = cmake_root
+
+
+def _enabled_update(raw: dict[str, object]) -> dict[str, object]:
+    enabled = raw.get("enabled", _MISSING)
+    if enabled is _MISSING:
+        return {}
+    if not isinstance(enabled, bool):
+        raise TypeError("cpp.enabled must be a boolean")
+    return {"enabled": enabled}
+
+
+def _cmake_root_update(raw: dict[str, object]) -> dict[str, object]:
+    cmake_root = raw.get("cmake_root", _MISSING)
+    if cmake_root is _MISSING:
+        return {}
+    if not isinstance(cmake_root, str) or not cmake_root:
+        raise TypeError("cpp.cmake_root must be a non-empty string")
+    return {"cmake_root": cmake_root}
+
+
+def coerce_cpp(raw_value: object, *, source: str = "configuration") -> CppCmakeConfig:
+    """Coerce the provider-owned C/C++ table without shell shortcuts."""
+
+    raw = _cpp_table(raw_value, source=source)
+    updates = _tuple_updates(raw)
+    updates.update(_enabled_update(raw))
+    updates.update(_cmake_root_update(raw))
     return replace(CppCmakeConfig(), **updates)
+
+
+def coerce_cpp_update(raw: dict[str, object], *, source: str) -> dict[str, object]:
+    """Coerce the nested C/C++ table when present in raw configuration."""
+    cpp = raw.get("cpp")
+    if cpp is None:
+        return {}
+    return {"cpp": coerce_cpp(cpp, source=source)}

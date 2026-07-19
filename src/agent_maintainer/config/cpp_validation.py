@@ -46,37 +46,69 @@ def cpp_issues(cpp: CppCmakeConfig, *, source: str) -> tuple[ConfigIssue, ...]:
 
 
 def _command_issues(cpp: CppCmakeConfig, *, source: str) -> tuple[ConfigIssue, ...]:
-    issues: list[ConfigIssue] = []
-    for field_name in COMMAND_FIELDS:
-        command = getattr(cpp, field_name)
-        if any(not item for item in command):
-            issues.append(
-                ConfigIssue(source, f"cpp.{field_name}", "must not contain empty elements")
-            )
-        executable_name = (
-            PurePosixPath(command[0].replace("\\", "/")).name.lower().removesuffix(".exe")
-            if command
-            else ""
+    return tuple(
+        issue
+        for field_name in COMMAND_FIELDS
+        for issue in _command_field_issues(
+            getattr(cpp, field_name),
+            field_name=field_name,
+            source=source,
         )
-        if executable_name in SHELL_EXECUTABLES:
-            issues.append(
-                ConfigIssue(source, f"cpp.{field_name}", "must not invoke a shell executable")
-            )
-        if any(item in SHELL_CONTROL_TOKENS for item in command):
-            issues.append(
-                ConfigIssue(source, f"cpp.{field_name}", "must not contain shell control tokens")
-            )
+    )
+
+
+def _command_field_issues(
+    command: tuple[str, ...],
+    *,
+    field_name: str,
+    source: str,
+) -> tuple[ConfigIssue, ...]:
+    issues: list[ConfigIssue] = []
+    if any(not item for item in command):
+        issues.append(ConfigIssue(source, f"cpp.{field_name}", "must not contain empty elements"))
+    executable_name = _executable_name(command)
+    if executable_name in SHELL_EXECUTABLES:
+        issues.append(
+            ConfigIssue(source, f"cpp.{field_name}", "must not invoke a shell executable")
+        )
+    if any(item in SHELL_CONTROL_TOKENS for item in command):
+        issues.append(
+            ConfigIssue(source, f"cpp.{field_name}", "must not contain shell control tokens")
+        )
     return tuple(issues)
 
 
+def _executable_name(command: tuple[str, ...]) -> str:
+    if not command:
+        return ""
+    return PurePosixPath(command[0].replace("\\", "/")).name.lower().removesuffix(".exe")
+
+
 def _profile_issues(cpp: CppCmakeConfig, *, source: str) -> tuple[ConfigIssue, ...]:
+    return tuple(
+        issue
+        for field_name in PROFILE_FIELDS
+        for issue in _profile_field_issues(
+            getattr(cpp, field_name),
+            field_name=field_name,
+            source=source,
+        )
+    )
+
+
+def _profile_field_issues(
+    profiles: tuple[str, ...],
+    *,
+    field_name: str,
+    source: str,
+) -> tuple[ConfigIssue, ...]:
     issues: list[ConfigIssue] = []
-    for field_name in PROFILE_FIELDS:
-        profiles = getattr(cpp, field_name)
-        if len(profiles) != len(set(profiles)):
-            issues.append(ConfigIssue(source, f"cpp.{field_name}", "profiles must be unique"))
-        invalid = sorted(set(profiles) - models.VALID_PROFILES)
-        if invalid:
-            message = f"invalid profiles: {', '.join(invalid)}"
-            issues.append(ConfigIssue(source, f"cpp.{field_name}", message))
+    if len(profiles) != len(set(profiles)):
+        issues.append(ConfigIssue(source, f"cpp.{field_name}", "profiles must be unique"))
+    invalid = sorted(set(profiles) - models.VALID_PROFILES)
+    if invalid:
+        invalid_names = ", ".join(invalid)
+        issues.append(
+            ConfigIssue(source, f"cpp.{field_name}", f"invalid profiles: {invalid_names}")
+        )
     return tuple(issues)

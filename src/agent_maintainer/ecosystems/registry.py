@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 
 from agent_maintainer.config.schema import MaintainerConfig
-from agent_maintainer.ecosystems.cpp import classification as cpp_classification
-from agent_maintainer.ecosystems.cpp import suppressions as cpp_suppressions
+from agent_maintainer.ecosystems.cpp import provider_hooks as cpp
 from agent_maintainer.ecosystems.java import classification as java_classification
 from agent_maintainer.ecosystems.java.provider import JavaProvider
 from agent_maintainer.ecosystems.models import (
@@ -27,11 +25,7 @@ from agent_maintainer.ecosystems.typescript import (
 )
 from agent_maintainer.ecosystems.typescript.provider import TypeScriptProvider
 
-ClassificationProvider = Callable[
-    [str | Path, MaintainerConfig, Path | None],
-    FileClassification | None,
-]
-SuppressionProvider = Callable[[str, str], tuple[SuppressionFinding, ...]]
+SuppressionProvider = cpp.SuppressionProvider
 SuppressionProviderEntry = tuple[str, SuppressionProvider]
 
 PYTHON_PROVIDER = ProviderMetadata(
@@ -204,10 +198,10 @@ def cpp_classification_candidate(
 
     if not config.cpp.enabled:
         return None
-    return cpp_classification.classify_path(path, config.cpp)
+    return cpp.classify_path(path, config.cpp)
 
 
-CLASSIFICATION_PROVIDERS: tuple[ClassificationProvider, ...] = (
+CLASSIFICATION_PROVIDERS = (
     python_classification_candidate,
     typescript_classification_candidate,
     java_classification_candidate,
@@ -215,5 +209,5 @@ CLASSIFICATION_PROVIDERS: tuple[ClassificationProvider, ...] = (
 )
 ADVISORY_SUPPRESSION_PROVIDERS: tuple[SuppressionProviderEntry, ...] = (
     ("typescript", typescript_suppressions.classify_line),
-    ("cpp", cpp_suppressions.classify_line),
+    ("cpp", cpp.classify_suppression_line),
 )
