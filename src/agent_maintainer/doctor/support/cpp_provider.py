@@ -227,12 +227,19 @@ def _is_path_like(executable: str) -> bool:
 
 
 def _reject_symlink_path(candidate: Path, repo_root: Path) -> None:
-    lexical = Path(os.path.abspath(candidate))
-    if not lexical.is_relative_to(repo_root):
-        raise ValueError(f"wrapper escapes repository: {candidate}")
-    relative = lexical.relative_to(repo_root)
+    try:
+        relative = candidate.relative_to(repo_root)
+    except ValueError as exc:
+        raise ValueError(f"wrapper escapes repository: {candidate}") from exc
     current = repo_root
     for part in relative.parts:
+        if part == "..":
+            if current == repo_root:
+                raise ValueError(f"wrapper escapes repository: {candidate}")
+            current = current.parent
+            continue
         current /= part
         if current.is_symlink():
             raise ValueError(f"wrapper uses a symlink: {candidate}")
+    if not current.is_relative_to(repo_root):
+        raise ValueError(f"wrapper escapes repository: {candidate}")

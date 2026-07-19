@@ -93,6 +93,23 @@ def test_cpp_doctor_accepts_repository_executable_wrapper(tmp_path: Path) -> Non
     assert result.state == ACTIVE
 
 
+def test_cpp_doctor_rejects_symlink_traversed_before_parent_segment(
+    tmp_path: Path,
+) -> None:
+    """Lexical parent traversal cannot erase an earlier symlink component."""
+    (tmp_path / "real-dir").mkdir()
+    (tmp_path / "linked-dir").symlink_to(tmp_path / "real-dir", target_is_directory=True)
+    _write_executable(tmp_path / "cpp-tool")
+    config = _cpp_config(
+        format_command=("./linked-dir/../cpp-tool", "--check"),
+    )
+
+    result = _cpp_results(tmp_path, config)["cpp-command-executables"]
+
+    assert result.status == WARNING
+    assert result.state == UNSAFE_CONFIG
+
+
 def test_cpp_doctor_warns_when_preset_command_has_no_preset_file(tmp_path: Path) -> None:
     """Preset-based commands need a checked-in CMake preset file."""
     config = _cpp_config(format_command=("missing-cpp-tool", "--preset", "lint"))
