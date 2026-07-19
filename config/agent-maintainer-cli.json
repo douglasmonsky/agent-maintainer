@@ -1,0 +1,31 @@
+{
+  "commands": [
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["assess"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["attention"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["bootstrap"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["change-plan"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["context"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["contract"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["contract", "check"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["contract", "diff"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["contract", "snapshot"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["doctor"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["events"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["guidance"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["hooks"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["init"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["install"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["mcp"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["ratchet"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["repair-plan"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["report"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["scoring"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["skill"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["test-intel"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["verify"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["verify-plan"]},
+    {"exit_statuses": [0, 1, 2], "options": [], "path": ["wait"]}
+  ],
+  "console_scripts": ["agent-maintainer"],
+  "schema_version": 1
+}

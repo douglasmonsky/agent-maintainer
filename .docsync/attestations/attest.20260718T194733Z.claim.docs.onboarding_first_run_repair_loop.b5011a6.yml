@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T194733Z.claim.docs.onboarding_first_run_repair_loop.b5011a6
+  claim: claim.docs.onboarding_first_run_repair_loop
+  doc_object: docs.onboarding_first_run.overview
+  evidence:
+  - evidence.readme.command_registry
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:33Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:5022fb6aa41621158553e8920fa439cb27a7655cc9950d7ffe7700fff9a66e7d
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:b13afa2498aa5679864acfe686602ec833664367fe78af51bded7d08237f34b0
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

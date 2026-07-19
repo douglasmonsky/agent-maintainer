@@ -6,6 +6,7 @@ import os
 import signal
 import subprocess  # nosec B404
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
@@ -14,6 +15,22 @@ DEFAULT_COMMAND_OUTPUT_LIMIT_CHARS = 1_000_000
 TIMEOUT_EXIT_CODE = 124
 TERMINATE_GRACE_SECONDS = 5
 TRUNCATION_MARKER_ALLOWANCE = 40
+
+
+class CommandRunError(RuntimeError):
+    """Bounded command execution failed without exposing command output."""
+
+
+@dataclass(frozen=True)
+class CommandFileRun:
+    """Inputs for one shell-free command whose streams go to files."""
+
+    command: list[str]
+    stdout_path: Path
+    stderr_path: Path
+    env: dict[str, str]
+    timeout: int
+    cwd: Path | None = None
 
 
 class TerminableProcess(Protocol):
@@ -66,19 +83,28 @@ def run_command_to_files(
 ) -> subprocess.CompletedProcess[bytes]:
     """Run command with stdout and stderr redirected to files."""
 
+    return _run_command_to_files(
+        CommandFileRun(command, stdout_path, stderr_path, env, timeout),
+    )
+
+
+def _run_command_to_files(request: CommandFileRun) -> subprocess.CompletedProcess[bytes]:
+    """Execute a validated file-output request without a shell."""
+
     with (
-        stdout_path.open("wb") as stdout_file,
-        stderr_path.open("wb") as stderr_file,
+        request.stdout_path.open("wb") as stdout_file,
+        request.stderr_path.open("wb") as stderr_file,
         subprocess.Popen(  # nosec B603
-            command,
+            request.command,
             stdout=stdout_file,
             stderr=stderr_file,
-            env=env,
+            cwd=request.cwd,
+            env=request.env,
             start_new_session=os.name == "posix",
         ) as process,
     ):
         try:
-            process.wait(timeout=timeout)
+            process.wait(timeout=request.timeout)
         except subprocess.TimeoutExpired:
             terminate_process_tree(process)
             raise
@@ -86,7 +112,52 @@ def run_command_to_files(
             if process.poll() is None:
                 terminate_process_tree(process)
             raise
-        return subprocess.CompletedProcess(command, process.returncode)
+        return subprocess.CompletedProcess(request.command, process.returncode)
+
+
+def run_command_bytes_bounded(
+    command: list[str],
+    *,
+    cwd: Path,
+    timeout_seconds: int,
+    output_limit_bytes: int,
+) -> bytes:
+    """Run one shell-free command and return size-bounded stdout bytes."""
+
+    with tempfile.TemporaryDirectory(prefix="agent-maintainer-bytes-") as temp_dir:
+        stdout_path = Path(temp_dir) / "stdout.bin"
+        stderr_path = Path(temp_dir) / "stderr.bin"
+        try:
+            result = _run_command_to_files(
+                CommandFileRun(
+                    command,
+                    stdout_path,
+                    stderr_path,
+                    os.environ.copy(),
+                    timeout_seconds,
+                    cwd,
+                ),
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise CommandRunError("command exceeded the time limit") from exc
+        if result.returncode:
+            raise CommandRunError("command returned a nonzero status")
+        return _read_bounded_bytes(stdout_path, output_limit_bytes)
+
+
+def _read_bounded_bytes(path: Path, limit: int) -> bytes:
+    """Read a regular command-output file only after checking its size."""
+
+    try:
+        size = path.stat().st_size
+    except OSError as exc:
+        raise CommandRunError("command output could not be inspected") from exc
+    if size > limit:
+        raise CommandRunError("command output exceeded the size limit")
+    try:
+        return path.read_bytes()
+    except OSError as exc:
+        raise CommandRunError("command output could not be read") from exc
 
 
 def terminate_process_tree(process: TerminableProcess) -> None:

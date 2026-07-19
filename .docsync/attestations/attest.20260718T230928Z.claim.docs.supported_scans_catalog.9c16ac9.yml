@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T230928Z.claim.docs.supported_scans_catalog.9c16ac9
+  claim: claim.docs.supported_scans_catalog
+  doc_object: docs.supported_scans.overview
+  evidence:
+  - evidence.readme.catalog_composition
+  reason: Phase 184 review fixes preserve the documented catalog while making staged
+    contract checks index-authoritative.
+  reviewer: agent
+  reviewed_at: '2026-07-18T23:09:28Z'
+  base: HEAD
+  head: 9c16ac9
+  evidence_fingerprints:
+    evidence.readme.catalog_composition: sha256:c2654b62118c420f67e26b71990a0d4e82260e617932d573c69e8148f4953f6f
+  evidence_anchor_fingerprints:
+    evidence.readme.catalog_composition:
+    - sha256:f5c1ce6f84bd2ed6a899000561e06ef71e925c5092c6502b7c241dffef4b1e7f
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

@@ -60,6 +60,20 @@ def test_verify_plan_public_contract_is_documented() -> None:
     assert ".agent-maintainer/path-risk.toml" in readme
     assert "schema_version = 1" in readme
     assert "--enforce" in readme
+
+
+# docsync:evidence.start evidence.readme.contract_ratchets
+def test_public_docs_explain_contract_ratchet_workflow() -> None:
+    """Public docs explain setup, comparison, and beta compatibility scope."""
+    readme = README.read_text(encoding="utf-8")
+    support = API_SUPPORT_POLICY.read_text(encoding="utf-8")
+
+    assert "agent-maintainer contract diff" in readme
+    assert "agent-maintainer contract check" in readme
+    assert "contract snapshot --write" in readme
+    assert ".agent-maintainer/contracts.toml" in readme
+    assert "does not create a pre-1.0 compatibility guarantee" in support
+    # docsync:evidence.end evidence.readme.contract_ratchets
     assert "never suppresses existing verifier gates" in readme
 
 

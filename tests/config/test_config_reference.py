@@ -61,6 +61,7 @@ def test_capability_json_is_stable() -> None:
     payload = json.loads(rendered)
 
     assert rendered == reference.render_capabilities_json()
+    assert (REPO_ROOT / reference.CAPABILITIES_PATH).read_text(encoding="utf-8") == rendered
     assert payload["schema_version"] == reference.CAPABILITY_SCHEMA_VERSION
 
 

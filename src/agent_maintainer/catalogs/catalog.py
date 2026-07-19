@@ -8,6 +8,7 @@ from agent_maintainer import models
 from agent_maintainer.catalogs.docs import docs_config_checks, docsync_checks
 from agent_maintainer.catalogs.global_checks import (
     architecture_checks,
+    contract_compatibility_check,
     existing_or_configured,
     reviewability_checks,
     verification_plan_check,
@@ -55,6 +56,7 @@ def make_checks(
     return [
         *reviewability_checks(config, base_ref, staged=staged),
         verification_plan_check(base_ref, staged=staged),
+        contract_compatibility_check(config, base_ref, staged=staged),
         python_provider_checks["ruff-format"],
         python_provider_checks["ruff"],
         python_provider_checks["pyright"],

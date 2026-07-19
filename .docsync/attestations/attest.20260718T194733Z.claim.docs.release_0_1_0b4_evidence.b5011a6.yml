@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T194733Z.claim.docs.release_0_1_0b4_evidence.b5011a6
+  claim: claim.docs.release_0_1_0b4_evidence
+  doc_object: docs.release_0_1_0b4.overview
+  evidence:
+  - evidence.release.packaging_tests
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:33Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.release.packaging_tests: sha256:5ec8c28bcab16b22db2c7d1d90059bf8a57f264f5cb32355e36005f2309f25b0
+  evidence_anchor_fingerprints:
+    evidence.release.packaging_tests:
+    - sha256:1bfab9f40972de7539d8d22edfad31430015f6d3dd1456cd58e94e191ca3092f
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

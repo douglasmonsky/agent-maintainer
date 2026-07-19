@@ -288,6 +288,54 @@ never suppresses existing verifier gates or executes a reduced test set.
 See the [tool map](docs/tool-map.md) and
 [path-risk policy decision](docs/architecture/decisions/2026-07-18-diff-aware-verification-planning.md).
 <!-- docsync:object.end docs.readme.verification_planning -->
+<!-- docsync:object docs.readme.contract_ratchets -->
+## Contract Compatibility Ratchets
+
+Repositories can opt into semantic compatibility checks with strict authored
+policy at `.agent-maintainer/contracts.toml` and a canonical generated baseline
+at `.agent-maintainer/contracts-baseline.json`. Inspect every semantic change
+and its revision, version, decision, and migration obligations with:
+
+```bash
+agent-maintainer contract diff --base-ref origin/main
+```
+
+Enforce baseline freshness and base-to-live compatibility with:
+
+```bash
+agent-maintainer contract check --base-ref origin/main
+```
+
+Pre-commit verification passes `--staged`, which reads policy, baseline,
+package version, and contract sources from the Git index and evaluates migration
+evidence from the staged diff. Unstaged worktree content cannot mask or invent a
+staged contract change.
+
+After reviewing an intentional change and satisfying its obligations, refresh
+the canonical baseline explicitly:
+
+```bash
+agent-maintainer contract snapshot --write --base-ref origin/main
+```
+
+Use `--initialize` only for first adoption when no baseline exists; it records
+that no historical compatibility claim was made. A base ref that predates
+ratchet adoption cannot authorize replacement of an existing baseline. The
+commands return `0` when
+valid, `1` for unresolved compatibility or obligation findings, and `2` for
+invalid or unsafe input. `--json` emits a deterministic `schema_version = 1`
+report with exact fingerprints and repair facts.
+
+Breaking beta changes remain possible. They require a contract revision,
+sufficient package-version movement, changed migration evidence, and any exact
+decision needed for review-required semantics. The ratchet protects declared
+current contracts; it does not freeze every beta API or create a pre-1.0
+cross-version guarantee.
+
+See the [API support policy](docs/api-support-policy.md),
+[tool map](docs/tool-map.md), and
+[contract-ratchet decision](docs/architecture/decisions/2026-07-18-contract-compatibility-ratchets.md).
+<!-- docsync:object.end docs.readme.contract_ratchets -->
 <!-- docsync:object docs.readme.supported_checks -->
 ## Supported Checks And Scans
 

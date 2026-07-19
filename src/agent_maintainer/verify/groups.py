@@ -21,6 +21,7 @@ _STATIC_CHECK_NAMES = frozenset(
         "bandit",
         "change-budget",
         "check-jsonschema",
+        "contract-compatibility",
         "deptry",
         "docsync",
         "file-length",

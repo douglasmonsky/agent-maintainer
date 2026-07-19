@@ -1,0 +1,3793 @@
+{
+  "descriptors": [
+    {
+      "body": {
+        "commands": [
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "assess"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "attention"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "bootstrap"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "change-plan"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "context"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "contract"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "contract",
+              "check"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "contract",
+              "diff"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "contract",
+              "snapshot"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "doctor"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "events"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "guidance"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "hooks"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "init"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "install"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "mcp"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "ratchet"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "repair-plan"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "report"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "scoring"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "skill"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "test-intel"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "verify"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "verify-plan"
+            ]
+          },
+          {
+            "arguments": [],
+            "exit_statuses": [
+              0,
+              1,
+              2
+            ],
+            "options": [],
+            "path": [
+              "wait"
+            ]
+          }
+        ],
+        "console_scripts": [
+          "agent-maintainer"
+        ]
+      },
+      "contract_id": "agent-maintainer-cli",
+      "fingerprint": "sha256:a525495d835a4f34e7afef1e1e1b1e3383a4608c3d161adbf8e73e5968ea386a",
+      "kind": "cli-manifest",
+      "owner": "agent_maintainer.cli",
+      "revision": 1,
+      "sources": [
+        "config/agent-maintainer-cli.json"
+      ],
+      "stability": "beta"
+    },
+    {
+      "body": {
+        "fields": [
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ALLOW_SOURCE_WITHOUT_TEST_CHANGE"
+            ],
+            "kind": "bool",
+            "name": "allow_source_without_test_change",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "import-linter",
+              "tach"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "import-linter",
+            "environment": [
+              "AGENT_MAINTAINER_ARCHITECTURE_TOOL"
+            ],
+            "kind": "choice",
+            "name": "architecture_tool",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 20,
+            "environment": [
+              "AGENT_MAINTAINER_CHANGE_BLOCK_FILES"
+            ],
+            "kind": "int",
+            "name": "change_block_files",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 800,
+            "environment": [
+              "AGENT_MAINTAINER_CHANGE_BLOCK_LINES"
+            ],
+            "kind": "int",
+            "name": "change_block_lines",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 8,
+            "environment": [
+              "AGENT_MAINTAINER_CHANGE_WARN_FILES"
+            ],
+            "kind": "int",
+            "name": "change_warn_files",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 300,
+            "environment": [
+              "AGENT_MAINTAINER_CHANGE_WARN_LINES"
+            ],
+            "kind": "int",
+            "name": "change_warn_lines",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_CHECK_JSONSCHEMA_ARGS"
+            ],
+            "kind": "tuple",
+            "name": "check_jsonschema_args",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_ENABLED"
+            ],
+            "kind": "bool",
+            "name": "cohesive_change_override_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 40,
+            "environment": [
+              "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_FILES"
+            ],
+            "kind": "int",
+            "name": "cohesive_change_override_max_files",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 2000,
+            "environment": [
+              "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_MAX_LINES"
+            ],
+            "kind": "int",
+            "name": "cohesive_change_override_max_lines",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_COHESIVE_CHANGE_OVERRIDE_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "cohesive_change_override_paths",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "extractive",
+              "headroom",
+              "none",
+              "truncate"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "extractive",
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_COMPRESSION_BACKEND"
+            ],
+            "kind": "choice",
+            "name": "context_compression_backend",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_COMPRESSION_ENABLED"
+            ],
+            "kind": "bool",
+            "name": "context_compression_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_COMPRESSION_REQUIRE_BACKEND"
+            ],
+            "kind": "bool",
+            "name": "context_compression_require_backend",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "minimum_exclusive": true,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 0.5,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_COMPRESSION_TARGET_RATIO"
+            ],
+            "kind": "float",
+            "name": "context_compression_target_ratio",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 12000,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_DEFAULT_BUDGET_CHARS"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_default_budget_chars",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 8000,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_HOOK_BUDGET_CHARS"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_hook_budget_chars",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 250000,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_LARGE_FILE_THRESHOLD_BYTES"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_large_file_threshold_bytes",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 800,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_LARGE_FILE_THRESHOLD_LINES"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_large_file_threshold_lines",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 16000,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_LAST_FAILURE_BUDGET_CHARS"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_last_failure_budget_chars",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 250,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_MAX_DIRECT_FILE_READ_LINES"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_max_direct_file_read_lines",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 200,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_MAX_DIRECT_LOG_READ_LINES"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_max_direct_log_read_lines",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 10,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_MAX_FAILURE_ITEMS"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_max_failure_items",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 50,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_MAX_PATHS_DEFAULT"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_max_paths_default",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 24000,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_PACK_BUDGET_CHARS"
+            ],
+            "kind": "non-negative-int",
+            "name": "context_pack_budget_chars",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": true,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_PACK_CONTAINS_SOURCE"
+            ],
+            "kind": "bool",
+            "name": "context_pack_contains_source",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": true,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_PACKS_LOCAL_ONLY"
+            ],
+            "kind": "bool",
+            "name": "context_packs_local_only",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": true,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_REQUIRE_OUTLINE_FOR_LARGE_FILES"
+            ],
+            "kind": "bool",
+            "name": "context_require_outline_for_large_files",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": true,
+            "environment": [
+              "AGENT_MAINTAINER_CONTEXT_WRITE_CONTEXT_PACKS"
+            ],
+            "kind": "bool",
+            "name": "context_write_context_packs",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 80,
+            "environment": [
+              "AGENT_MAINTAINER_COVERAGE_FAIL_UNDER"
+            ],
+            "kind": "int",
+            "name": "coverage_fail_under",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "src"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_COVERAGE_SOURCE"
+            ],
+            "kind": "tuple",
+            "name": "coverage_source",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [
+              "diagnostic_artifacts_dir"
+            ],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": ".verify-logs",
+            "environment": [
+              "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_DIR"
+            ],
+            "kind": "str",
+            "name": "diagnostic_artifacts_dir",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [
+              "diagnostic_artifacts_enabled"
+            ],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": true,
+            "environment": [
+              "AGENT_MAINTAINER_DIAGNOSTIC_ARTIFACTS_ENABLED"
+            ],
+            "kind": "bool",
+            "name": "diagnostic_artifacts_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [
+              "diagnostic_run_history_limit"
+            ],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 10,
+            "environment": [
+              "AGENT_MAINTAINER_DIAGNOSTIC_RUN_HISTORY_LIMIT"
+            ],
+            "kind": "non-negative-int",
+            "name": "diagnostic_run_history_limit",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 90,
+            "environment": [
+              "AGENT_MAINTAINER_DIFF_COVER_FAIL_UNDER"
+            ],
+            "kind": "int",
+            "name": "diff_cover_fail_under",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_CHECK_JSONSCHEMA"
+            ],
+            "kind": "bool",
+            "name": "enable_check_jsonschema",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_INTERROGATE"
+            ],
+            "kind": "bool",
+            "name": "enable_interrogate",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_LICENSE_CHECK"
+            ],
+            "kind": "bool",
+            "name": "enable_license_check",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_MARKDOWNLINT"
+            ],
+            "kind": "bool",
+            "name": "enable_markdownlint",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_MUTMUT"
+            ],
+            "kind": "bool",
+            "name": "enable_mutmut",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_OSV_SCANNER"
+            ],
+            "kind": "bool",
+            "name": "enable_osv_scanner",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_PIP_AUDIT"
+            ],
+            "kind": "bool",
+            "name": "enable_pip_audit",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_SBOM"
+            ],
+            "kind": "bool",
+            "name": "enable_sbom",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_SECRET_SCANNING"
+            ],
+            "kind": "bool",
+            "name": "enable_secret_scanning",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_SEMGREP"
+            ],
+            "kind": "bool",
+            "name": "enable_semgrep",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_TAPLO"
+            ],
+            "kind": "bool",
+            "name": "enable_taplo",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_TRIVY"
+            ],
+            "kind": "bool",
+            "name": "enable_trivy",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_TYPESCRIPT"
+            ],
+            "kind": "bool",
+            "name": "enable_typescript",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_WEMAKE"
+            ],
+            "kind": "bool",
+            "name": "enable_wemake",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_ENABLE_YAMLLINT"
+            ],
+            "kind": "bool",
+            "name": "enable_yamllint",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [],
+            "kind": "file-baseline-groups",
+            "name": "file_baselines",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": ".agent-maintainer/file-baselines.json",
+            "environment": [
+              "AGENT_MAINTAINER_FILE_BASELINES_BASELINE"
+            ],
+            "kind": "str",
+            "name": "file_baselines_baseline",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [
+              "file_baselines_enabled"
+            ],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [],
+            "kind": "bool",
+            "name": "file_baselines_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [
+              "file_baselines_mode"
+            ],
+            "choices": [
+              "advisory",
+              "blocking"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "advisory",
+            "environment": [],
+            "kind": "choice",
+            "name": "file_baselines_mode",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": true,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": "",
+            "environment": [
+              "AGENT_MAINTAINER_FILE_LENGTH_BASELINE"
+            ],
+            "kind": "str",
+            "name": "file_length_baseline",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 600,
+            "environment": [
+              "AGENT_MAINTAINER_FILE_LENGTH_MAX_PHYSICAL"
+            ],
+            "kind": "int",
+            "name": "file_length_max_physical",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 450,
+            "environment": [
+              "AGENT_MAINTAINER_FILE_LENGTH_MAX_SOURCE"
+            ],
+            "kind": "int",
+            "name": "file_length_max_source",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "src",
+              "tests",
+              ".codex/hooks",
+              ".claude/hooks"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_FILE_LENGTH_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "file_length_paths",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 40,
+            "environment": [
+              "AGENT_MAINTAINER_FOLDER_FILE_BLOCK"
+            ],
+            "kind": "int",
+            "name": "folder_file_block",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 20,
+            "environment": [
+              "AGENT_MAINTAINER_FOLDER_FILE_WARN"
+            ],
+            "kind": "int",
+            "name": "folder_file_warn",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 80,
+            "environment": [
+              "AGENT_MAINTAINER_INTERROGATE_FAIL_UNDER"
+            ],
+            "kind": "int",
+            "name": "interrogate_fail_under",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": {
+              "checks": [],
+              "checkstyle_profiles": [
+                "full",
+                "ci"
+              ],
+              "checkstyle_tasks": [],
+              "enabled": false,
+              "findings_baseline": ".agent-maintainer/java-findings-baseline.json",
+              "gradle_args": [
+                "--console=plain",
+                "--continue"
+              ],
+              "gradle_root": ".",
+              "jacoco_branch_property": "agentMaintainer.jacoco.minimumBranchCoverage",
+              "jacoco_line_property": "agentMaintainer.jacoco.minimumLineCoverage",
+              "jacoco_profiles": [
+                "full",
+                "ci"
+              ],
+              "jacoco_ratchet_ref": "origin/main",
+              "jacoco_report_tasks": [],
+              "jacoco_verify_tasks": [],
+              "pmd_profiles": [
+                "full",
+                "ci"
+              ],
+              "pmd_tasks": [],
+              "projects": [
+                ":"
+              ],
+              "reports": [
+                {
+                  "coverage_label": "",
+                  "coverage_scope": "",
+                  "globs": [
+                    "build/reports/spotbugs/main.xml",
+                    "build/reports/spotbugs/test.xml"
+                  ],
+                  "required": true,
+                  "tasks": [
+                    "spotbugsMain",
+                    "spotbugsTest"
+                  ],
+                  "tool": "spotbugs"
+                },
+                {
+                  "coverage_label": "",
+                  "coverage_scope": "",
+                  "globs": [
+                    "build/reports/checkstyle/main.xml",
+                    "build/reports/checkstyle/test.xml"
+                  ],
+                  "required": true,
+                  "tasks": [
+                    "checkstyleMain",
+                    "checkstyleTest"
+                  ],
+                  "tool": "checkstyle"
+                },
+                {
+                  "coverage_label": "",
+                  "coverage_scope": "",
+                  "globs": [
+                    "build/reports/pmd/main.xml",
+                    "build/reports/pmd/test.xml"
+                  ],
+                  "required": true,
+                  "tasks": [
+                    "pmdMain",
+                    "pmdTest"
+                  ],
+                  "tool": "pmd"
+                },
+                {
+                  "coverage_label": "",
+                  "coverage_scope": "",
+                  "globs": [
+                    "build/test-results/test/*.xml"
+                  ],
+                  "required": true,
+                  "tasks": [
+                    "test"
+                  ],
+                  "tool": "test"
+                },
+                {
+                  "coverage_label": ":",
+                  "coverage_scope": "project",
+                  "globs": [
+                    "build/reports/jacoco/test/jacocoTestReport.xml"
+                  ],
+                  "required": true,
+                  "tasks": [
+                    "jacocoTestReport"
+                  ],
+                  "tool": "jacoco"
+                }
+              ],
+              "source_roots": [
+                "src/main/java",
+                "**/src/main/java"
+              ],
+              "spotbugs_baseline": "",
+              "spotbugs_profiles": [
+                "full",
+                "ci"
+              ],
+              "spotbugs_tasks": [],
+              "spotless_profiles": [
+                "precommit",
+                "full",
+                "ci"
+              ],
+              "spotless_ratchet_ref": "",
+              "spotless_tasks": [],
+              "test_profiles": [
+                "full",
+                "ci"
+              ],
+              "test_roots": [
+                "src/test/java",
+                "**/src/test/java"
+              ],
+              "test_tasks": []
+            },
+            "environment": [],
+            "kind": "java",
+            "name": "java",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_LARGE_CHANGE_ALLOW_EXPIRED_PLANS"
+            ],
+            "kind": "bool",
+            "name": "large_change_allow_expired_plans",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": true,
+            "environment": [
+              "AGENT_MAINTAINER_LARGE_CHANGE_FAIL_OUT_OF_PLAN_PATHS"
+            ],
+            "kind": "bool",
+            "name": "large_change_fail_out_of_plan_paths",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 1,
+            "environment": [
+              "AGENT_MAINTAINER_LARGE_CHANGE_MAX_ACTIVE_PLANS"
+            ],
+            "kind": "non-negative-int",
+            "name": "large_change_max_active_plans",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              ".agent-maintainer/change-plans"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_LARGE_CHANGE_PLAN_DIRS"
+            ],
+            "kind": "tuple",
+            "name": "large_change_plan_dirs",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": true,
+            "environment": [
+              "AGENT_MAINTAINER_LARGE_CHANGE_REQUIRE_REQUIRED_SECTIONS"
+            ],
+            "kind": "bool",
+            "name": "large_change_require_required_sections",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_LARGE_CHANGES_ENABLED"
+            ],
+            "kind": "bool",
+            "name": "large_changes_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [
+              "--from=mixed",
+              "--format=json"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_LICENSE_CHECK_ARGS"
+            ],
+            "kind": "tuple",
+            "name": "license_check_args",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "manual"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_LICENSE_CHECK_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "license_check_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "**/*.md"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_MARKDOWNLINT_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "markdownlint_paths",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "custom",
+              "fresh-strict",
+              "legacy-ratchet"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "custom",
+            "environment": [
+              "AGENT_MAINTAINER_MODE"
+            ],
+            "kind": "choice",
+            "name": "mode",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [
+              "run"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_MUTMUT_ARGS"
+            ],
+            "kind": "tuple",
+            "name": "mutmut_args",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 0,
+            "environment": [
+              "AGENT_MAINTAINER_MUTMUT_MAX_SURVIVORS"
+            ],
+            "kind": "non-negative-int",
+            "name": "mutmut_max_survivors",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 0,
+            "environment": [
+              "AGENT_MAINTAINER_MUTMUT_MAX_SUSPICIOUS"
+            ],
+            "kind": "non-negative-int",
+            "name": "mutmut_max_suspicious",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 0,
+            "environment": [
+              "AGENT_MAINTAINER_MUTMUT_MAX_TIMEOUTS"
+            ],
+            "kind": "non-negative-int",
+            "name": "mutmut_max_timeouts",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 0,
+            "environment": [
+              "AGENT_MAINTAINER_MUTMUT_MIN_SCORE"
+            ],
+            "kind": "non-negative-int",
+            "name": "mutmut_min_score",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_MUTMUT_RESULT_RATCHET_ENABLED"
+            ],
+            "kind": "bool",
+            "name": "mutmut_result_ratchet_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 0,
+            "environment": [
+              "AGENT_MAINTAINER_MUTMUT_TARGET_MIN"
+            ],
+            "kind": "non-negative-int",
+            "name": "mutmut_target_min",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [
+              "scan",
+              "source",
+              "-r",
+              "."
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_OSV_SCANNER_ARGS"
+            ],
+            "kind": "tuple",
+            "name": "osv_scanner_args",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "manual"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_OSV_SCANNER_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "osv_scanner_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "src"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_PACKAGE_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "package_paths",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_PIP_AUDIT_ARGS"
+            ],
+            "kind": "tuple",
+            "name": "pip_audit_args",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": "config/pyright-strict-baseline.json",
+            "environment": [
+              "AGENT_MAINTAINER_PYRIGHT_STRICT_BASELINE"
+            ],
+            "kind": "str",
+            "name": "pyright_strict_baseline",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 0,
+            "environment": [
+              "AGENT_MAINTAINER_PYRIGHT_STRICT_MAX_ERRORS"
+            ],
+            "kind": "non-negative-int",
+            "name": "pyright_strict_max_errors",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "manual"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_PYRIGHT_STRICT_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "pyright_strict_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_PYRIGHT_STRICT_RATCHET_ENABLED"
+            ],
+            "kind": "bool",
+            "name": "pyright_strict_ratchet_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "basic",
+              "off",
+              "standard",
+              "strict"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "standard",
+            "environment": [
+              "AGENT_MAINTAINER_PYRIGHT_TYPE_CHECKING_MODE"
+            ],
+            "kind": "choice",
+            "name": "pyright_type_checking_mode",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": ".agent-maintainer/ratchet-baseline.json",
+            "environment": [
+              "AGENT_MAINTAINER_RATCHET_BASELINE_PATH"
+            ],
+            "kind": "str",
+            "name": "ratchet_baseline_path",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_RATCHET_ENABLED"
+            ],
+            "kind": "bool",
+            "name": "ratchet_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": "AGENTS.ratchet.md",
+            "environment": [
+              "AGENT_MAINTAINER_RATCHET_GUIDANCE_PATH"
+            ],
+            "kind": "str",
+            "name": "ratchet_guidance_path",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 5,
+            "environment": [
+              "AGENT_MAINTAINER_RATCHET_TARGET_LIMIT"
+            ],
+            "kind": "non-negative-int",
+            "name": "ratchet_target_limit",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": true,
+            "environment": [
+              "AGENT_MAINTAINER_REQUIRE_TESTS"
+            ],
+            "kind": "bool",
+            "name": "require_tests",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 10,
+            "environment": [],
+            "kind": "int",
+            "name": "ruff_max_complexity",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 14,
+            "environment": [
+              "AGENT_MAINTAINER_RUNTIME_EVENT_HISTORY_LIMIT"
+            ],
+            "kind": "non-negative-int",
+            "name": "runtime_event_history_limit",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "debug",
+              "error",
+              "info",
+              "warning"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "info",
+            "environment": [
+              "AGENT_MAINTAINER_RUNTIME_EVENT_LEVEL"
+            ],
+            "kind": "choice",
+            "name": "runtime_event_level",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": ".verify-logs/events",
+            "environment": [
+              "AGENT_MAINTAINER_RUNTIME_EVENTS_DIR"
+            ],
+            "kind": "str",
+            "name": "runtime_events_dir",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_RUNTIME_EVENTS_ENABLED"
+            ],
+            "kind": "bool",
+            "name": "runtime_events_enabled",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": false,
+            "environment": [
+              "AGENT_MAINTAINER_RUNTIME_EVENTS_INCLUDE_DEBUG"
+            ],
+            "kind": "bool",
+            "name": "runtime_events_include_debug",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [
+              "requirements",
+              "config/dev-lock.txt",
+              "--output-reproducible",
+              "--of",
+              "JSON"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_SBOM_ARGS"
+            ],
+            "kind": "tuple",
+            "name": "sbom_args",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "ci"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_SBOM_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "sbom_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "security"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_SECRET_SCAN_HISTORY_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "secret_scan_history_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "full",
+              "ci"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_SECRET_SCAN_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "secret_scan_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "gitleaks"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "gitleaks",
+            "environment": [
+              "AGENT_MAINTAINER_SECRET_SCANNER"
+            ],
+            "kind": "choice",
+            "name": "secret_scanner",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [
+              "scan",
+              "--config",
+              "semgrep.yml",
+              "--error",
+              "--metrics=off",
+              "."
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_SEMGREP_ARGS"
+            ],
+            "kind": "tuple",
+            "name": "semgrep_args",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "manual"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_SEMGREP_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "semgrep_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "src"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_SOURCE_ROOTS"
+            ],
+            "kind": "tuple",
+            "name": "source_roots",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_SOURCE_WITHOUT_TEST_CHANGE_ERROR_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "source_without_test_change_error_profiles",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 1.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 4,
+            "environment": [
+              "AGENT_MAINTAINER_STRUCTURE_CLUSTER_MIN"
+            ],
+            "kind": "int",
+            "name": "structure_cluster_min",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [
+              "^maintainer_",
+              "^check_",
+              "^user_",
+              "^course_",
+              "_model$",
+              "_service$",
+              "_repository$",
+              "_client$",
+              "_adapter$",
+              "_parser$",
+              "_loader$",
+              "_schema$",
+              "_executor$",
+              "_reporting$",
+              "^(cli|args|config|models|checks|doctor|executor|reporting)$"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_STRUCTURE_HINT_PATTERNS"
+            ],
+            "kind": "tuple",
+            "name": "structure_hint_patterns",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "tests/**",
+              "migrations/**",
+              "generated/**",
+              ".venv/**",
+              "venv/**",
+              "**/__pycache__/**"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_STRUCTURE_IGNORE_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "structure_ignore_paths",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_STRUCTURE_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "structure_paths",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 3,
+            "environment": [
+              "AGENT_MAINTAINER_SUPPRESSION_MAX_NEW"
+            ],
+            "kind": "int",
+            "name": "suppression_max_new",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "*.toml",
+              "config/*.toml"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TAPLO_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "taplo_paths",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "tests"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TEST_ROOTS"
+            ],
+            "kind": "tuple",
+            "name": "test_roots",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [
+              "fs",
+              "--scanners",
+              "vuln,misconfig",
+              "--format",
+              "json",
+              "--exit-code",
+              "1",
+              "."
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TRIVY_ARGS"
+            ],
+            "kind": "tuple",
+            "name": "trivy_args",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "manual"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TRIVY_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "trivy_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 1,
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_BROAD_SUPPRESSION_WARN"
+            ],
+            "kind": "non-negative-int",
+            "name": "typescript_advisory_broad_suppression_warn",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 4,
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_SOURCE_WARN_FILES"
+            ],
+            "kind": "non-negative-int",
+            "name": "typescript_advisory_source_warn_files",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": 0.0,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": 200,
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_ADVISORY_SOURCE_WARN_LINES"
+            ],
+            "kind": "non-negative-int",
+            "name": "typescript_advisory_source_warn_lines",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_DEPENDENCY_CRUISER_COMMAND"
+            ],
+            "kind": "tuple",
+            "name": "typescript_dependency_cruiser_command",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "full",
+              "ci"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_DEPENDENCY_CRUISER_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "typescript_dependency_cruiser_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_KNIP_COMMAND"
+            ],
+            "kind": "tuple",
+            "name": "typescript_knip_command",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "full",
+              "ci"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_KNIP_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "typescript_knip_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_LINT_COMMAND"
+            ],
+            "kind": "tuple",
+            "name": "typescript_lint_command",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "precommit",
+              "full",
+              "ci"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_LINT_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "typescript_lint_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_TEST_COMMAND"
+            ],
+            "kind": "tuple",
+            "name": "typescript_test_command",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "full",
+              "ci"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_TEST_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "typescript_test_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_TYPECHECK_COMMAND"
+            ],
+            "kind": "tuple",
+            "name": "typescript_typecheck_command",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "full",
+              "ci"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_TYPECHECK_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "typescript_typecheck_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              "src",
+              "tests",
+              ".codex/hooks",
+              ".claude/hooks"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_VULTURE_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "vulture_paths",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [],
+            "kind": "workspaces",
+            "name": "workspaces",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "B",
+            "environment": [
+              "AGENT_MAINTAINER_XENON_MAX_ABSOLUTE"
+            ],
+            "kind": "choice",
+            "name": "xenon_max_absolute",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "A",
+            "environment": [
+              "AGENT_MAINTAINER_XENON_MAX_AVERAGE"
+            ],
+            "kind": "choice",
+            "name": "xenon_max_average",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F"
+            ],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "A",
+            "environment": [
+              "AGENT_MAINTAINER_XENON_MAX_MODULES"
+            ],
+            "kind": "choice",
+            "name": "xenon_max_modules",
+            "required": false,
+            "stability": "stable"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": true,
+              "verification_profiles": false
+            },
+            "default": [
+              ".github/workflows",
+              ".github/dependabot.yml",
+              ".pre-commit-config.yaml",
+              "*.yml",
+              "*.yaml"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_YAMLLINT_PATHS"
+            ],
+            "kind": "tuple",
+            "name": "yamllint_paths",
+            "required": false,
+            "stability": "beta"
+          }
+        ]
+      },
+      "contract_id": "agent-maintainer-config",
+      "fingerprint": "sha256:1eed936b5ffcecb647318df096680a30f7f22f6d4bec620bc9aa1f7b7fdbbc52",
+      "kind": "config-capabilities",
+      "owner": "agent_maintainer.config.reference",
+      "revision": 1,
+      "sources": [
+        "config/agent-maintainer-capabilities.json"
+      ],
+      "stability": "beta"
+    },
+    {
+      "body": {
+        "additional_properties": false,
+        "id": "https://agent-maintainer.dev/schemas/agent-waits-wait-record.schema.json",
+        "properties": {
+          "branch": {
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "created_at": {
+            "min_length": 1,
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "deadline_at": {
+            "min_length": 1,
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "head_sha": {
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "interval_seconds": {
+            "minimum": 1,
+            "required": true,
+            "types": [
+              "integer"
+            ]
+          },
+          "kind": {
+            "min_length": 1,
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "last_observed_state": {
+            "required": true,
+            "types": [
+              "null",
+              "object"
+            ]
+          },
+          "metadata": {
+            "required": true,
+            "types": [
+              "null",
+              "object"
+            ]
+          },
+          "platform": {
+            "min_length": 1,
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "pr_number": {
+            "min_length": 1,
+            "required": false,
+            "types": [
+              "string"
+            ]
+          },
+          "repo": {
+            "required": true,
+            "types": [
+              "null",
+              "string"
+            ]
+          },
+          "resume_instruction": {
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "resume_message": {
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "schema_version": {
+            "const": 1,
+            "required": true
+          },
+          "status": {
+            "min_length": 1,
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "target_id": {
+            "min_length": 1,
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "terminal_result": {
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "timeout_seconds": {
+            "minimum": 1,
+            "required": true,
+            "types": [
+              "integer"
+            ]
+          },
+          "updated_at": {
+            "min_length": 1,
+            "required": true,
+            "types": [
+              "string"
+            ]
+          },
+          "wait_id": {
+            "min_length": 1,
+            "required": true,
+            "types": [
+              "string"
+            ]
+          }
+        },
+        "types": [
+          "object"
+        ],
+        "unsupported_semantics": [
+          "/allOf#sha256:32bfa14c388af5367ff020205645836a44fa02abd23c97e284c72756b3c8f8b6"
+        ]
+      },
+      "contract_id": "agent-waits-wait-record",
+      "fingerprint": "sha256:95424fe56d448dca572762c73f44a4a2459373c5170924c065a82ff4e5cff743",
+      "kind": "json-schema",
+      "owner": "agent_waits.registry",
+      "revision": 1,
+      "sources": [
+        "schemas/agent-waits-wait-record.schema.json"
+      ],
+      "stability": "beta"
+    },
+    {
+      "body": {
+        "additional_properties": false,
+        "id": "https://agent-maintainer.dev/schemas/codex-app-server-wait.schema.json",
+        "properties": {
+          "error": {
+            "properties": {
+              "message": {
+                "required": false,
+                "types": [
+                  "string"
+                ]
+              }
+            },
+            "required": false,
+            "types": [
+              "object"
+            ]
+          },
+          "id": {
+            "required": false,
+            "types": [
+              "integer"
+            ]
+          },
+          "method": {
+            "enum": [
+              "initialize",
+              "initialized",
+              "thread/read",
+              "thread/resume",
+              "turn.completed",
+              "turn/completed",
+              "turn/start"
+            ],
+            "required": false
+          },
+          "params": {
+            "properties": {
+              "clientInfo": {
+                "required": false,
+                "types": [
+                  "object"
+                ]
+              },
+              "includeTurns": {
+                "required": false,
+                "types": [
+                  "boolean"
+                ]
+              },
+              "input": {
+                "items": {
+                  "properties": {
+                    "text": {
+                      "required": false,
+                      "types": [
+                        "string"
+                      ]
+                    },
+                    "type": {
+                      "const": "text",
+                      "required": false
+                    }
+                  },
+                  "types": [
+                    "object"
+                  ]
+                },
+                "required": false,
+                "types": [
+                  "array"
+                ]
+              },
+              "threadId": {
+                "min_length": 1,
+                "required": false,
+                "types": [
+                  "string"
+                ]
+              }
+            },
+            "required": false,
+            "types": [
+              "object"
+            ]
+          },
+          "result": {
+            "required": false,
+            "types": [
+              "object"
+            ]
+          },
+          "type": {
+            "enum": [
+              "turn.completed",
+              "turn/completed"
+            ],
+            "required": false
+          }
+        },
+        "types": [
+          "object"
+        ],
+        "unsupported_semantics": [
+          "/oneOf#sha256:12a38a0cee976046533781c89a788feff918e84320595f4a447baf5ced8a22fb"
+        ]
+      },
+      "contract_id": "codex-app-server-wait",
+      "fingerprint": "sha256:c8808de11b04bf2ae4780cb3cbf09f93f74ebeca6fa5588fdf6e049a63fd8c9d",
+      "kind": "json-schema",
+      "owner": "agent_maintainer.wait.codex_app_server_protocol",
+      "revision": 1,
+      "sources": [
+        "schemas/codex-app-server-wait.schema.json"
+      ],
+      "stability": "beta"
+    },
+    {
+      "body": {
+        "exports": [
+          {
+            "attributes": [
+              {
+                "annotation": "str",
+                "default": "origin/main",
+                "has_default": true,
+                "kind": "attribute",
+                "name": "base_ref"
+              },
+              {
+                "annotation": "Path | None",
+                "default": null,
+                "has_default": true,
+                "kind": "attribute",
+                "name": "config_path"
+              },
+              {
+                "annotation": "Path",
+                "default": null,
+                "has_default": false,
+                "kind": "attribute",
+                "name": "repo_root"
+              },
+              {
+                "annotation": "Path | None",
+                "default": null,
+                "has_default": true,
+                "kind": "attribute",
+                "name": "trace_path"
+              }
+            ],
+            "kind": "class",
+            "methods": [],
+            "name": "CheckOptions"
+          },
+          {
+            "attributes": [
+              {
+                "annotation": "Path | None",
+                "default": null,
+                "has_default": true,
+                "kind": "attribute",
+                "name": "config_path"
+              },
+              {
+                "annotation": "Path",
+                "default": null,
+                "has_default": false,
+                "kind": "attribute",
+                "name": "repo_root"
+              },
+              {
+                "annotation": "Path | None",
+                "default": null,
+                "has_default": true,
+                "kind": "attribute",
+                "name": "trace_path"
+              }
+            ],
+            "kind": "class",
+            "methods": [],
+            "name": "IndexOptions"
+          },
+          {
+            "async": false,
+            "kind": "function",
+            "name": "build_index",
+            "parameters": [
+              {
+                "annotation": "IndexOptions",
+                "has_default": false,
+                "kind": "positional-or-keyword",
+                "name": "options"
+              }
+            ],
+            "return_annotation": "IndexResult"
+          },
+          {
+            "async": false,
+            "kind": "function",
+            "name": "check_repo",
+            "parameters": [
+              {
+                "annotation": "CheckOptions",
+                "has_default": false,
+                "kind": "positional-or-keyword",
+                "name": "options"
+              }
+            ],
+            "return_annotation": "CheckResult"
+          },
+          {
+            "async": false,
+            "kind": "function",
+            "name": "create_attestation",
+            "parameters": [
+              {
+                "annotation": "Path",
+                "has_default": false,
+                "kind": "positional-or-keyword",
+                "name": "repo_root"
+              },
+              {
+                "annotation": "str",
+                "has_default": false,
+                "kind": "positional-or-keyword",
+                "name": "claim_id"
+              },
+              {
+                "annotation": "Sequence[str]",
+                "has_default": false,
+                "kind": "positional-or-keyword",
+                "name": "evidence_ids"
+              },
+              {
+                "annotation": "str",
+                "has_default": false,
+                "kind": "positional-or-keyword",
+                "name": "reason"
+              }
+            ],
+            "return_annotation": "Path"
+          },
+          {
+            "async": false,
+            "kind": "function",
+            "name": "create_review_packet",
+            "parameters": [
+              {
+                "annotation": "CheckResult",
+                "has_default": false,
+                "kind": "positional-or-keyword",
+                "name": "check_result"
+              }
+            ],
+            "return_annotation": "dict[str, Any]"
+          },
+          {
+            "async": false,
+            "kind": "function",
+            "name": "doctor_repo",
+            "parameters": [
+              {
+                "annotation": "CheckOptions",
+                "has_default": false,
+                "kind": "positional-or-keyword",
+                "name": "options"
+              }
+            ],
+            "return_annotation": "CheckResult"
+          }
+        ]
+      },
+      "contract_id": "docsync-api",
+      "fingerprint": "sha256:e8751123209a3fb307963d50325802ab2b752fb9d5abbd36f9fff7bd2bb8eb8d",
+      "kind": "python-api",
+      "owner": "docsync.api",
+      "revision": 1,
+      "sources": [
+        "src/docsync/api.py"
+      ],
+      "stability": "beta"
+    }
+  ],
+  "document_fingerprint": "sha256:bc5fc1b9e301d0fc51be7548e76234c58ed0d2c84e3917c3c34556e3ffcacace",
+  "generator": "agent-maintainer",
+  "package_version": "0.1.0b10",
+  "schema_version": 1
+}

@@ -63,6 +63,7 @@ def test_static_group_receives_non_test_catalog_checks() -> None:
         check("pytest-coverage"),
         check("typescript-typecheck:web"),
         check("verification-plan-policy"),
+        check("contract-compatibility"),
     ]
 
     selected = checks_for_group(checks, "static-and-policy")
@@ -71,6 +72,7 @@ def test_static_group_receives_non_test_catalog_checks() -> None:
         "ruff",
         "typescript-typecheck:web",
         "verification-plan-policy",
+        "contract-compatibility",
     ]
 
 

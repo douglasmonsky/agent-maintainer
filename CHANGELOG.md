@@ -7,7 +7,18 @@ published package, with published 0.1.0b9 release evidence authoritative until
 this candidate passes the complete exact-commit release matrix and package-index
 smokes.
 
-- No user-facing changes are recorded yet.
+- Added opt-in semantic compatibility ratchets for repository configuration,
+  authored CLI manifests, nominated Python APIs, and structural JSON Schema
+  contracts, with canonical generated baselines and exact change fingerprints.
+- Added deterministic `agent-maintainer contract diff`, `check`, and explicit
+  `snapshot --write` commands with independent contract-revision,
+  package-version, migration-evidence, and exact-decision obligations.
+- Added an optional `contract-compatibility` verifier gate and dogfood coverage
+  for Agent Maintainer configuration, CLI, `docsync.api`, Codex wait messages,
+  and durable wait records.
+- Made staged contract verification index-authoritative, preserved positional
+  CLI order, retained digests for unsupported JSON Schema payloads, bounded deep
+  baseline input, and closed the pre-adoption snapshot replacement path.
 
 ## 0.1.0b9 - 2026-07-18
 

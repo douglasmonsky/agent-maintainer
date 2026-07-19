@@ -142,9 +142,9 @@ coding-agent tasks, and measure activation time, initializer conflicts,
 false-positive review findings, repair iterations, context expansions, review
 cost, and four-week retained use.
 
-Strict Pyright cutover complete: zero diagnostics and the former ratchet baseline are retired.
-
 - [x] Phase 183: Diff-Aware Verification Planning And Declarative Path-Risk Policy — implementation PR #406 passed protected checks and merged.
+- [ ] Phase 184: Contract Compatibility Ratchets — implementation complete; final qualification and protected review pending.
+- [ ] Phase 185: Failure Intelligence — classify new versus pre-existing failures, fingerprint recurring failures, and emit machine-readable repair packets.
 - [ ] External proof: run the three-to-five-repository cohort and retain its activation and use evidence.
 - [x] Strict Pyright cutover complete: zero diagnostics; baseline retired.
 - [x] Reclassify top-level help and public docs into stable workflow, repair and

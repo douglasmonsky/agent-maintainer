@@ -272,6 +272,7 @@ packageurl-python==0.17.6
     #   cyclonedx-python-lib
 packaging==26.2
     # via
+    #   agent-maintainer (pyproject.toml)
     #   build
     #   cyclonedx-bom
     #   deptry

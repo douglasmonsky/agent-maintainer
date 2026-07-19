@@ -6,16 +6,49 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Protocol, cast
 
 import pytest
+from jsonschema import Draft202012Validator
 
 from agent_maintainer.wait.codex_app_server import CodexAppServerClient
 from agent_maintainer.wait.codex_app_server_protocol import (
+    app_server_messages,
+    app_server_probe_messages,
     app_server_turn_completed,
     parse_app_server_line,
 )
+from tests.support.paths import REPO_ROOT
+
+
+class JsonValidator(Protocol):
+    """Narrow interface used by dogfood schema assertions."""
+
+    def validate(self, _instance: object) -> None:
+        """Validate one JSON-compatible instance."""
+
 
 THREAD_ID = "thread-1"
+
+
+def test_app_server_schema_covers_consumed_and_emitted_messages() -> None:
+    """Static JSON-RPC schema accepts every request and observed response shape."""
+    schema = json.loads(
+        (REPO_ROOT / "schemas/codex-app-server-wait.schema.json").read_text(encoding="utf-8")
+    )
+    validator = cast(JsonValidator, Draft202012Validator(schema))
+    Draft202012Validator.check_schema(schema)
+    messages: tuple[object, ...] = (
+        *app_server_messages(THREAD_ID, "continue"),
+        *app_server_probe_messages(THREAD_ID),
+        {"id": 3, "result": {"turn": {"id": "turn-1", "status": "inProgress"}}},
+        {"id": 3, "error": {"message": "request failed"}},
+        {"method": "turn/completed", "params": {}},
+        {"type": "turn/completed"},
+    )
+
+    for message in messages:
+        validator.validate(message)
 
 
 def test_app_server_client_runs_json_rpc_turn(tmp_path: Path) -> None:

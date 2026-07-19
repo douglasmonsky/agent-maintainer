@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260718T194731Z.claim.docs.provider_status_python_core.b5011a6
+  claim: claim.docs.provider_status_python_core
+  doc_object: docs.provider_status.overview
+  evidence:
+  - evidence.readme.catalog_composition
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:31Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.catalog_composition: sha256:8463780702dda74a64dfd5e79711f04c8274a46da03ab23197a4ce0643a71b2d
+  evidence_anchor_fingerprints:
+    evidence.readme.catalog_composition:
+    - sha256:53b42c5b42494d6b7cc91d01ddd47f9a1a33a7d77723f145ffe0a2c87e0f7872
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

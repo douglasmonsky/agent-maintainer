@@ -72,6 +72,15 @@ def artifact_contains_license(path: Path) -> bool:
         return any(name.endswith("/LICENSE") for name in archive.getnames())
 
 
+def wheel_metadata(path: Path) -> str:
+    """Return the core metadata embedded in a built wheel."""
+    with zipfile.ZipFile(path) as archive:
+        metadata_path = next(
+            name for name in archive.namelist() if name.endswith(".dist-info/METADATA")
+        )
+        return archive.read(metadata_path).decode()
+
+
 def smoke_setup_skill(python: Path) -> None:
     """Assert an installed artifact exposes skill data and its public command."""
     resource_check = (
@@ -171,6 +180,8 @@ def test_release_builds_artifacts_and_installs_console_scripts(
     built_wheel = next(dist_dir.glob("agent_maintainer-*.whl"))
     built_sdist = next(dist_dir.glob("agent_maintainer-*.tar.gz"))
     built_artifacts = (built_wheel, built_sdist)
+
+    assert "Requires-Dist: packaging>=25" in wheel_metadata(built_wheel)
 
     result = run(
         [

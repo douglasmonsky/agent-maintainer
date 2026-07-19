@@ -1,0 +1,158 @@
+version: 1
+attestations:
+- id: attest.20260718T194727Z.claim.docs.quick_start_package_flow.b5011a6
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.command_registry
+  - evidence.readme.package_metadata
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:27Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:5022fb6aa41621158553e8920fa439cb27a7655cc9950d7ffe7700fff9a66e7d
+    evidence.readme.package_metadata: sha256:b7f4be45e23e83737e1e2bec144fdb6eb46a4556a60657eb204db3d265edb97b
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:b13afa2498aa5679864acfe686602ec833664367fe78af51bded7d08237f34b0
+    evidence.readme.package_metadata:
+    - sha256:329938a6fea095455497ca588cf1768194c2701b0e7daffed04a6a69da9db8f8
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
+- id: attest.20260718T194731Z.claim.docs.optional_gates_catalog.b5011a6
+  claim: claim.docs.optional_gates_catalog
+  doc_object: docs.optional_gates.overview
+  evidence:
+  - evidence.readme.catalog_composition
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:31Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.catalog_composition: sha256:8463780702dda74a64dfd5e79711f04c8274a46da03ab23197a4ce0643a71b2d
+  evidence_anchor_fingerprints:
+    evidence.readme.catalog_composition:
+    - sha256:53b42c5b42494d6b7cc91d01ddd47f9a1a33a7d77723f145ffe0a2c87e0f7872
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
+- id: attest.20260718T194730Z.claim.readme.verification_planning.b5011a6
+  claim: claim.readme.verification_planning
+  doc_object: docs.readme.verification_planning
+  evidence:
+  - evidence.readme.command_registry
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:30Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:5022fb6aa41621158553e8920fa439cb27a7655cc9950d7ffe7700fff9a66e7d
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:b13afa2498aa5679864acfe686602ec833664367fe78af51bded7d08237f34b0
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
+- id: attest.20260718T194729Z.claim.docs.supported_scans_catalog.b5011a6
+  claim: claim.docs.supported_scans_catalog
+  doc_object: docs.supported_scans.overview
+  evidence:
+  - evidence.readme.catalog_composition
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:29Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.catalog_composition: sha256:8463780702dda74a64dfd5e79711f04c8274a46da03ab23197a4ce0643a71b2d
+  evidence_anchor_fingerprints:
+    evidence.readme.catalog_composition:
+    - sha256:53b42c5b42494d6b7cc91d01ddd47f9a1a33a7d77723f145ffe0a2c87e0f7872
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
+- id: attest.20260718T194729Z.claim.readme.run_profiles.b5011a6
+  claim: claim.readme.run_profiles
+  doc_object: docs.readme.run_profiles
+  evidence:
+  - evidence.readme.catalog_composition
+  - evidence.readme.command_registry
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:29Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.catalog_composition: sha256:8463780702dda74a64dfd5e79711f04c8274a46da03ab23197a4ce0643a71b2d
+    evidence.readme.command_registry: sha256:5022fb6aa41621158553e8920fa439cb27a7655cc9950d7ffe7700fff9a66e7d
+  evidence_anchor_fingerprints:
+    evidence.readme.catalog_composition:
+    - sha256:53b42c5b42494d6b7cc91d01ddd47f9a1a33a7d77723f145ffe0a2c87e0f7872
+    evidence.readme.command_registry:
+    - sha256:b13afa2498aa5679864acfe686602ec833664367fe78af51bded7d08237f34b0
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
+- id: attest.20260718T194730Z.claim.docs.release_checklist_packaging.b5011a6
+  claim: claim.docs.release_checklist_packaging
+  doc_object: docs.release_checklist.overview
+  evidence:
+  - evidence.release.packaging_tests
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:30Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.release.packaging_tests: sha256:5ec8c28bcab16b22db2c7d1d90059bf8a57f264f5cb32355e36005f2309f25b0
+  evidence_anchor_fingerprints:
+    evidence.release.packaging_tests:
+    - sha256:1bfab9f40972de7539d8d22edfad31430015f6d3dd1456cd58e94e191ca3092f
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
+- id: attest.20260718T194730Z.claim.readme.package_identity.b5011a6
+  claim: claim.readme.package_identity
+  doc_object: docs.readme.overview
+  evidence:
+  - evidence.readme.command_registry
+  - evidence.readme.package_metadata
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:30Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:5022fb6aa41621158553e8920fa439cb27a7655cc9950d7ffe7700fff9a66e7d
+    evidence.readme.package_metadata: sha256:b7f4be45e23e83737e1e2bec144fdb6eb46a4556a60657eb204db3d265edb97b
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:b13afa2498aa5679864acfe686602ec833664367fe78af51bded7d08237f34b0
+    evidence.readme.package_metadata:
+    - sha256:329938a6fea095455497ca588cf1768194c2701b0e7daffed04a6a69da9db8f8
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.
+- id: attest.20260718T194730Z.claim.readme.technical_debt_surface.b5011a6
+  claim: claim.readme.technical_debt_surface
+  doc_object: docs.readme.technical_debt
+  evidence:
+  - evidence.readme.command_registry
+  reason: Phase 184 reviewed the changed command, catalog, package, and release evidence
+    against the linked documentation.
+  reviewer: agent
+  reviewed_at: '2026-07-18T19:47:30Z'
+  base: HEAD
+  head: b5011a6
+  evidence_fingerprints:
+    evidence.readme.command_registry: sha256:5022fb6aa41621158553e8920fa439cb27a7655cc9950d7ffe7700fff9a66e7d
+  evidence_anchor_fingerprints:
+    evidence.readme.command_registry:
+    - sha256:b13afa2498aa5679864acfe686602ec833664367fe78af51bded7d08237f34b0
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

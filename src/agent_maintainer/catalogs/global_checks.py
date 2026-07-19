@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 from agent_maintainer import models
 from agent_maintainer.config.schema import (
@@ -19,6 +20,7 @@ CHANGE_BUDGET_PROFILES = (
     models.FULL_PROFILE,
     models.CI_PROFILE,
 )
+CONTRACT_OUTPUT_LIMIT_CHARS = 8_000_000
 
 
 def existing_or_configured(paths: tuple[str, ...]) -> tuple[str, ...]:
@@ -76,6 +78,38 @@ def verification_plan_check(base_ref: str, *, staged: bool) -> models.Check:
             ".agent-maintainer/path-risk.toml is absent; path-risk policy is not configured"
         ),
         optional_skip_status=models.SKIP_STATUS_MISSING_OPTIONAL,
+    )
+
+
+def contract_compatibility_check(
+    config: MaintainerConfig,
+    base_ref: str,
+    *,
+    staged: bool = False,
+) -> models.Check:
+    """Build the optional semantic contract compatibility gate."""
+
+    artifact_path = Path(config.diagnostic_artifacts_dir) / "contract-compatibility.json"
+    command = [
+        sys.executable,
+        "-m",
+        "agent_maintainer",
+        "contract",
+        "check",
+    ]
+    command.extend(["--staged"] if staged else ["--base-ref", base_ref])
+    command.append("--json")
+    return models.Check(
+        "contract-compatibility",
+        command,
+        models.ALL_PROFILES,
+        required_paths=(".agent-maintainer/contracts.toml",),
+        optional_skip_reason=(
+            ".agent-maintainer/contracts.toml is absent; contract compatibility is not configured"
+        ),
+        optional_skip_status=models.SKIP_STATUS_MISSING_OPTIONAL,
+        artifact_paths=(str(artifact_path),),
+        output_limit_chars=CONTRACT_OUTPUT_LIMIT_CHARS,
     )
 
 

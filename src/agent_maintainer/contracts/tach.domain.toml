@@ -1,0 +1,140 @@
+# Tach domain contract for agent_maintainer.contracts.
+
+[root]
+depends_on = []
+
+[[modules]]
+path = "baseline"
+depends_on = [
+  "//agent_maintainer.core.repo_paths",
+  "baseline_write",
+  "limits",
+  "models",
+  "paths",
+  "validation",
+]
+
+[[modules]]
+path = "baseline_write"
+depends_on = ["models", "paths"]
+
+[[modules]]
+path = "classifiers"
+depends_on = ["baseline", "member_rules", "models"]
+
+[[modules]]
+path = "member_rules"
+depends_on = ["models"]
+
+[[modules]]
+path = "comparison"
+depends_on = ["baseline", "classifiers", "diffing", "models"]
+
+[[modules]]
+path = "diffing"
+depends_on = ["baseline", "models"]
+
+[[modules]]
+path = "limits"
+depends_on = []
+
+[[modules]]
+path = "migrations"
+depends_on = ["//agent_maintainer.core.repo_paths", "models"]
+
+[[modules]]
+path = "git_base"
+depends_on = [
+  "//agent_maintainer.core.command_run",
+  "//agent_maintainer.core.repo_paths",
+  "baseline",
+  "git_paths",
+  "limits",
+  "models",
+  "policy",
+]
+
+[[modules]]
+path = "index_state"
+depends_on = ["git_base", "models", "policy"]
+
+[[modules]]
+path = "git_paths"
+depends_on = ["//agent_maintainer.core.repo_paths"]
+
+[[modules]]
+path = "cli"
+depends_on = ["baseline", "models", "reporting", "service"]
+
+[[modules]]
+path = "normalization"
+depends_on = ["baseline", "limits", "models", "paths", "validation"]
+
+[[modules]]
+path = "models"
+depends_on = []
+
+[[modules]]
+path = "paths"
+depends_on = ["//agent_maintainer.core.repo_paths", "limits", "models"]
+
+[[modules]]
+path = "policy"
+depends_on = ["//agent_maintainer.core.repo_paths", "models", "paths"]
+
+[[modules]]
+path = "extraction"
+depends_on = [
+  "extractors.cli_manifest",
+  "extractors.config_capabilities",
+  "extractors.json_schema",
+  "extractors.python_api",
+  "models",
+  "normalization",
+]
+
+[[modules]]
+path = "versioning"
+depends_on = ["models", "paths"]
+
+[[modules]]
+path = "service"
+depends_on = [
+  "baseline",
+  "comparison",
+  "extraction",
+  "git_base",
+  "index_state",
+  "migrations",
+  "models",
+  "policy",
+  "versioning",
+]
+
+[[modules]]
+path = "reporting"
+depends_on = ["limits", "models"]
+
+[[modules]]
+path = "extractors"
+depends_on = []
+
+[[modules]]
+path = "extractors.cli_manifest"
+depends_on = ["models", "normalization"]
+
+[[modules]]
+path = "extractors.config_capabilities"
+depends_on = ["limits", "models", "normalization"]
+
+[[modules]]
+path = "extractors.json_schema"
+depends_on = ["baseline", "limits", "models", "normalization", "validation"]
+
+[[modules]]
+path = "extractors.python_api"
+depends_on = ["limits", "models", "normalization", "paths", "validation"]
+
+[[modules]]
+path = "validation"
+depends_on = ["limits"]

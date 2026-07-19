@@ -306,6 +306,14 @@ objects:
     heading:
       level: 2
       text: Diff-Aware Verification Planning
+  docs.readme.contract_ratchets:
+    document: docs.readme
+    kind: heading_section
+    path: README.md
+    marker: docs.readme.contract_ratchets
+    heading:
+      level: 2
+      text: Contract Compatibility Ratchets
   docs.readme.supported_checks:
     document: docs.readme
     kind: heading_section
@@ -846,6 +854,16 @@ claims:
     - evidence.readme.verification_planning
     - evidence.readme.path_risk_policy
     - evidence.readme.path_risk_policy_tests
+  claim.readme.contract_ratchets:
+    object: docs.readme.contract_ratchets
+    text: README documents repository-owned semantic contract policy, explicit
+      baseline workflow, exact command statuses, and the pre-1.0 compatibility
+      boundary.
+    severity: high
+    evidence:
+    - evidence.readme.command_registry
+    - evidence.readme.catalog_composition
+    - evidence.readme.contract_ratchets
   claim.readme.supported_checks:
     object: docs.readme.supported_checks
     text: README supported-checks overview is backed by the live check catalog,
@@ -1408,6 +1426,13 @@ evidence:
       exact configured catalog names.
     anchors:
     - path: tests/verification_plan/test_policy.py
+      mode: explicit_region
+  evidence.readme.contract_ratchets:
+    type: test
+    description: Public documentation tests require the semantic contract workflow,
+      policy path, and pre-1.0 support boundary.
+    anchors:
+    - path: tests/packaging/test_public_docs.py
       mode: explicit_region
   evidence.readme.python_provider_checks:
     type: code

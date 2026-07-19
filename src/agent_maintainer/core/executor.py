@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
-import os
+import json
 import shutil
-import sys
 from pathlib import Path
 
+from agent_maintainer.core import check_run as check_run_module
+from agent_maintainer.core import reporting
 from agent_maintainer.core.artifact_environment import artifact_environment
-from agent_maintainer.core.check_run import CheckRun, utc_timestamp
+from agent_maintainer.core.command_environment import (
+    command_env,
+    tool_search_path,
+)
 from agent_maintainer.core.command_run import run_command_bounded
-from agent_maintainer.core.reporting import summarize_check, summarize_check_from_artifacts
-from agent_maintainer.core.runtime import hardened_subprocess_env
 from agent_maintainer.core.tooling import capabilities as maintainer_tool_capabilities
 from agent_maintainer.models import (
     SKIP_STATUS_DISABLED,
@@ -25,45 +27,6 @@ from agent_maintainer.models import (
 )
 
 OutputLimits = tuple[int, int]
-
-
-def tool_search_path() -> str:
-    """Build PATH with local virtualenv tools ahead of ambient executables."""
-
-    local_tool_dirs = [
-        str(Path(relative))
-        for relative in (".venv/bin", "venv/bin", "node_modules/.bin")
-        if Path(relative).is_dir()
-    ]
-    executable_dir = str(Path(sys.executable).parent)
-    existing_path = os.environ.get("PATH", "")
-    search_dirs = [*local_tool_dirs, executable_dir]
-    if existing_path:
-        search_dirs.append(existing_path)
-    return os.pathsep.join(search_dirs)
-
-
-def command_env() -> dict[str, str]:
-    """Return the subprocess environment used for maintainer commands."""
-
-    env = hardened_subprocess_env()
-    env["PATH"] = tool_search_path()
-    pythonpath = local_package_pythonpath()
-    if pythonpath is not None:
-        existing_pythonpath = env.get("PYTHONPATH")
-        env["PYTHONPATH"] = (
-            f"{pythonpath}{os.pathsep}{existing_pythonpath}" if existing_pythonpath else pythonpath
-        )
-    return env
-
-
-def local_package_pythonpath() -> str | None:
-    """Return local source package path when running from this kit checkout."""
-
-    src_path = Path("src")
-    if (src_path / "agent_maintainer").is_dir():
-        return str(src_path)
-    return None
 
 
 def optional_skip(check: Check) -> str | None:
@@ -106,8 +69,13 @@ def optional_skip_applies(check: Check) -> bool:
         return not Path("tach.toml").exists()
     if check.name in {"actionlint", "zizmor"}:
         return not Path(".github/workflows").exists()
-    if check.name == "verification-plan-policy":
-        return not Path(".agent-maintainer/path-risk.toml").exists()
+    policy_paths = {
+        "contract-compatibility": ".agent-maintainer/contracts.toml",
+        "verification-plan-policy": ".agent-maintainer/path-risk.toml",
+    }
+    configured_path = policy_paths.get(check.name)
+    if configured_path is not None:
+        return not Path(configured_path).exists()
     return check.name in {
         "pip-audit",
         "pytest-coverage",
@@ -160,7 +128,7 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
     """Execute one check, write its raw log, and return a compact result."""
 
     log_path = log_dir / f"{check.name}.log"
-    started_at = utc_timestamp()
+    started_at = check_run_module.utc_timestamp()
     log_dir.mkdir(parents=True, exist_ok=True)
     missing = missing_requirement(check)
     if missing:
@@ -172,8 +140,9 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
                 timeout_seconds=check.timeout_seconds,
                 output_limit_chars=check.output_limit_chars,
             )
+            capture_stdout_artifact(check, output)
     except OSError as exc:
-        ended_at = utc_timestamp()
+        ended_at = check_run_module.utc_timestamp()
         output = f"could not run {check.command!r}: {exc}"
         log_path.write_text(f"{output}\n", encoding="utf-8")
         return CheckResult(
@@ -186,7 +155,7 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
             ended_at=ended_at,
             artifact_sensitivity=check.artifact_sensitivity,
         )
-    ended_at = utc_timestamp()
+    ended_at = check_run_module.utc_timestamp()
     log_dir.mkdir(parents=True, exist_ok=True)
     log_path.write_text(output, encoding="utf-8")
     artifact_paths = existing_artifact_paths(check)
@@ -195,12 +164,12 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
             check,
             output,
             (max_lines, max_chars),
-            CheckRun(log_path, started_at, ended_at),
+            check_run_module.CheckRun(log_path, started_at, ended_at),
         )
     return CheckResult(
         check.name,
         passed=False,
-        output=summarize_check_from_artifacts(
+        output=reporting.summarize_check_from_artifacts(
             check.name, artifact_paths, output, max_lines, max_chars
         ),
         command=tuple(check.command),
@@ -219,12 +188,28 @@ def existing_artifact_paths(check: Check) -> tuple[str, ...]:
     return tuple(path for path in check.artifact_paths if Path(path).exists())
 
 
+def capture_stdout_artifact(check: Check, output: str) -> None:
+    """Retain complete JSON stdout for the contract compatibility check."""
+
+    if check.name != "contract-compatibility" or len(check.artifact_paths) != 1:
+        return
+    try:
+        payload = json.loads(output)
+    except json.JSONDecodeError:
+        return
+    if not isinstance(payload, dict):
+        return
+    path = Path(check.artifact_paths[0])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(output, encoding="utf-8")
+
+
 def missing_requirement_result(
     check: Check, log_path: Path, missing: str, started_at: str
 ) -> CheckResult:
     """Write a missing-requirement log and return its verifier result."""
 
-    ended_at = utc_timestamp()
+    ended_at = check_run_module.utc_timestamp()
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.write_text(f"{missing}\n", encoding="utf-8")
     if missing.startswith("optional skip:"):
@@ -256,7 +241,7 @@ def success_result(
     check: Check,
     output: str,
     output_limits: OutputLimits,
-    check_run: CheckRun,
+    check_run: check_run_module.CheckRun,
 ) -> CheckResult:
     """Return a passing result, preserving configured warning output."""
 
@@ -266,7 +251,7 @@ def success_result(
         return CheckResult(
             check.name,
             passed=True,
-            output=summarize_check(check.name, output, max_lines, max_chars),
+            output=reporting.summarize_check(check.name, output, max_lines, max_chars),
             warning=True,
             command=tuple(check.command),
             exit_code=0,
