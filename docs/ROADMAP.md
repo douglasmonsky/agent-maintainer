@@ -43,18 +43,18 @@ example repos, and the first cohesive-change budget exception.
 
 Current external release state:
 
-- [x] `agent-maintainer==0.1.0b10` is published to TestPyPI and PyPI,
-      attached to GitHub prerelease `v0.1.0b10`, and smoke-tested from both
+- [x] `agent-maintainer==0.1.0b12` is published to TestPyPI and PyPI,
+      attached to GitHub prerelease `v0.1.0b12`, and smoke-tested from both
       package indexes. Release evidence is recorded in
-      [`docs/releases/0.1.0b10.md`](releases/0.1.0b10.md).
+      [`docs/releases/0.1.0b12.md`](releases/0.1.0b12.md).
 
 Current source candidate state:
 
-- [x] The unpublished `0.1.0b12` release candidate is the package-metadata and
+- [x] The unpublished `0.1.0b13` release candidate is the package-metadata and
       main-branch documentation target. Review the
-      [candidate notes](releases/0.1.0b12.md) and
-      [evaluation guide](upgrading-to-0.1.0b12.md).
-- [ ] `0.1.0b12` becomes the current external release only after the exact
+      [candidate notes](releases/0.1.0b13.md) and
+      [evaluation guide](upgrading-to-0.1.0b13.md).
+- [ ] `0.1.0b13` becomes the current external release only after the exact
       candidate commit passes the complete release matrix, TestPyPI and PyPI
       smokes pass, and publication evidence replaces candidate intent in the
       [release index](releases/README.md).
@@ -166,7 +166,7 @@ Follow the [C/C++ CMake roadmap](roadmap/cpp-cmake-experimental-provider-roadmap
 The provider remains disabled by default and experimental throughout this track.
 
 - [x] Phase 186: Provider Contract And Roadmap
-- [ ] Phase 187: Classification, Configuration, Registry, And Doctor
+- [x] Phase 187: Classification, Configuration, Registry, And Doctor
 - [ ] Phase 188: Explicit Commands And Bounded Artifacts
 - [ ] Phase 189: Static-Analysis Facts
 - [ ] Phase 190: Test And Coverage Facts

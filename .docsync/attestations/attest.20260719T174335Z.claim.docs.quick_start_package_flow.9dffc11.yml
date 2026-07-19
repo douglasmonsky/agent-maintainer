@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260719T174335Z.claim.docs.quick_start_package_flow.9dffc11
+  claim: claim.docs.quick_start_package_flow
+  doc_object: docs.quick_start.overview
+  evidence:
+  - evidence.readme.package_metadata
+  reason: Reviewed the verified 0.1.0b12 publication evidence and intent-only 0.1.0b13
+    source transition; package metadata remains aligned with public installation guidance.
+  reviewer: agent
+  reviewed_at: '2026-07-19T17:43:35Z'
+  base: HEAD
+  head: 9dffc11
+  evidence_fingerprints:
+    evidence.readme.package_metadata: sha256:ad5f95cf3db59c2b3e1ffe871001ff72407ce0485737bf6f55fa979590b7943d
+  evidence_anchor_fingerprints:
+    evidence.readme.package_metadata:
+    - sha256:9637e0f824a46094feb0b23d9833cc874e02318f9d20798d85704f2b588d3a7f
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

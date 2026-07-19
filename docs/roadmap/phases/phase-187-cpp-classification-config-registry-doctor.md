@@ -1,6 +1,6 @@
 # Phase 187: C/C++ Classification, Configuration, Registry, And Doctor
 
-Status: planned
+Status: complete
 
 ## Goal
 

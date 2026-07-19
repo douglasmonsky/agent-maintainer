@@ -81,7 +81,7 @@ that runtime support has landed.
 
 ### Phase 187: Classification, Configuration, Registry, And Doctor
 
-Status: planned.
+Status: complete.
 
 Add the disabled nested configuration, conservative file roles, header role,
 ignored roots, provider metadata, advisory suppression facts, and static doctor

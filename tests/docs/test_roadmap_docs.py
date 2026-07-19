@@ -200,8 +200,9 @@ def test_cpp_cmake_experiment_is_explicit_cross_platform_and_phased() -> None:
         assert phrase in normalized
     assert "does not select a compiler" in normalized
     assert [path.exists() for path in CPP_PHASE_PATHS] == [True] * 6
-    assert "Status: complete" in CPP_PHASE_PATHS[0].read_text(encoding="utf-8")
-    for phase in CPP_PHASE_PATHS[1:]:
+    for phase in CPP_PHASE_PATHS[:2]:
+        assert "Status: complete" in phase.read_text(encoding="utf-8")
+    for phase in CPP_PHASE_PATHS[2:]:
         assert "Status: planned" in phase.read_text(encoding="utf-8")
     for target in markdown_links(roadmap):
         assert (ROADMAP_ROOT / target).exists(), target

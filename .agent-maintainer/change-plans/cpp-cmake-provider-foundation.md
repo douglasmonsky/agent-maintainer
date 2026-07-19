@@ -1,7 +1,7 @@
 +++
 id = "cpp-cmake-provider-foundation"
 kind = "feature"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-08-02
 allowed_paths = [
@@ -75,6 +75,7 @@ persistent migration state.
 
 ## Follow-up ratchet work
 
-Complete this plan before Phase 188 wires explicit commands and bounded
-artifacts. Static-analysis facts, test/coverage facts, and cross-platform live
-proof remain in Phases 189 through 191.
+Phase 187 and its b12 release evidence are complete. Phase 188 may now wire
+explicit commands and bounded artifacts under a separate plan. Static-analysis
+facts, test/coverage facts, and cross-platform live proof remain in Phases 189
+through 191.
