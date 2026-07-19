@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath, PureWindowsPath
 
 from agent_maintainer import models
 from agent_maintainer.config.cpp import CppCmakeConfig
@@ -32,7 +32,13 @@ def cpp_issues(cpp: CppCmakeConfig, *, source: str) -> tuple[ConfigIssue, ...]:
     issues: list[ConfigIssue] = []
     normalized_root = cpp.cmake_root.replace("\\", "/")
     root_path = PurePosixPath(normalized_root)
-    if root_path.is_absolute() or ".." in root_path.parts:
+    windows_root = PureWindowsPath(cpp.cmake_root)
+    if (
+        root_path.is_absolute()
+        or ".." in root_path.parts
+        or bool(windows_root.drive)
+        or bool(windows_root.anchor)
+    ):
         issues.append(ConfigIssue(source, "cpp.cmake_root", "must stay repository-relative"))
     issues.extend(_command_issues(cpp, source=source))
     issues.extend(_profile_issues(cpp, source=source))

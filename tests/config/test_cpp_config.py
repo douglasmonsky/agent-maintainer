@@ -75,11 +75,19 @@ def test_complete_cpp_table_is_coerced_without_shell_parsing() -> None:
         ({"build_command": "cmake --build ."}, "cpp.build_command: must be a list of strings"),
         ({"build_command": ["cmake", ""]}, "cpp.build_command"),
         ({"build_command": ["bash", "-c", "cmake --build ."]}, "cpp.build_command"),
+        ({"build_command": ["cmd.exe", "/c", "cmake --build ."]}, "cpp.build_command"),
+        (
+            {"build_command": ["PowerShell.EXE", "-Command", "cmake --build ."]},
+            "cpp.build_command",
+        ),
         ({"build_command": ["cmake", "|", "tee", "log"]}, "cpp.build_command"),
         ({"build_profiles": ["full", "full"]}, "cpp.build_profiles"),
         ({"test_profiles": ["unknown"]}, "cpp.test_profiles"),
         ({"cmake_root": "/tmp/native"}, "cpp.cmake_root"),
         ({"cmake_root": "../native"}, "cpp.cmake_root"),
+        ({"cmake_root": r"C:\native"}, "cpp.cmake_root"),
+        ({"cmake_root": "C:/native"}, "cpp.cmake_root"),
+        ({"cmake_root": "C:native"}, "cpp.cmake_root"),
     ],
 )
 def test_cpp_config_rejects_invalid_values(raw: object, message: str) -> None:
@@ -93,3 +101,8 @@ def test_cpp_config_rejects_unknown_nested_keys() -> None:
         match=r"tool\.agent_maintainer\.cpp\.unknown",
     ):
         apply_cpp({"unknown": True})
+
+
+@pytest.mark.parametrize("cmake_root", [".", "native", "native/subdirectory"])
+def test_cpp_config_accepts_repository_relative_cmake_roots(cmake_root: str) -> None:
+    assert apply_cpp({"cmake_root": cmake_root}).cpp.cmake_root == cmake_root
