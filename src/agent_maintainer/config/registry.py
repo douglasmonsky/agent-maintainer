@@ -64,6 +64,7 @@ NESTED_FIELD_KINDS: Mapping[str, ValueKind] = MappingProxyType(
         "java": "java",
     }
 )
+NESTED_TOP_LEVEL_TABLE_KEYS = frozenset(("cpp",))
 NESTED_TOML_KEYS = MappingProxyType(
     {
         "diagnostic_artifacts_enabled": "diagnostics.enabled",
@@ -124,6 +125,22 @@ FILE_BASELINE_GROUP_KEYS = frozenset(
 )
 JAVA_ENABLED_ENV = "AGENT_MAINTAINER_JAVA_ENABLED"
 NESTED_CONFIG_ENV_VARS = frozenset((JAVA_ENABLED_ENV,))
+CPP_KEYS = frozenset(
+    (
+        "enabled",
+        "cmake_root",
+        "format_command",
+        "static_analysis_command",
+        "build_command",
+        "test_command",
+        "coverage_command",
+        "format_profiles",
+        "static_analysis_profiles",
+        "build_profiles",
+        "test_profiles",
+        "coverage_profiles",
+    )
+)
 JAVA_KEYS = frozenset(
     (
         "enabled",
@@ -394,7 +411,7 @@ def top_level_toml_keys() -> frozenset[str]:
 
     canonical = frozenset(spec.toml_key.split(".", 1)[0] for spec in FIELD_SPECS.values())
     aliases = frozenset(alias for spec in FIELD_SPECS.values() for alias in spec.toml_aliases)
-    return canonical | aliases
+    return canonical | aliases | NESTED_TOP_LEVEL_TABLE_KEYS
 
 
 def env_specs() -> tuple[ConfigFieldSpec, ...]:

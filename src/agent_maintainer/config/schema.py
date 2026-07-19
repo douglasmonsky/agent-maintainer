@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from agent_maintainer.config import schema_fields
+from agent_maintainer.config.cpp import CppCmakeConfig
 from agent_maintainer.config.java import JavaGradleConfig
 from agent_maintainer.config.structure_defaults import (
     DEFAULT_STRUCTURE_HINT_PATTERNS,
@@ -117,6 +118,7 @@ class MaintainerConfig:
     """Resolved verifier settings after presets and overrides are applied."""
 
     mode: str = CUSTOM_MODE
+    cpp: CppCmakeConfig = field(default_factory=CppCmakeConfig)
     java: JavaGradleConfig = field(default_factory=JavaGradleConfig)
     workspaces: tuple[WorkspaceConfig, ...] = ()
     source_roots: tuple[str, ...] = DEFAULT_SOURCE_ROOTS
