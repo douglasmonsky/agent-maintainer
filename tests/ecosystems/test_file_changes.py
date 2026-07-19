@@ -7,7 +7,7 @@ from dataclasses import replace
 from agent_maintainer.core.config import MaintainerConfig
 from agent_maintainer.ecosystems.file_changes import (
     ChangedPath,
-    _select_classification,
+    _select_classification,  # pyright: ignore[reportPrivateUsage]
     classify_changed_path,
     classify_changed_paths,
 )

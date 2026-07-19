@@ -70,7 +70,7 @@ def test_cpp_suppression_classifier_receives_changed_file_path() -> None:
         change_kind=ChangeKind.MODIFIED,
     )
 
-    findings = assessment_reviewability._suppression_findings(
+    findings = assessment_reviewability._suppression_findings(  # pyright: ignore[reportPrivateUsage]
         classification,
         {classification.path: ("uninitvar",)},
     )

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import fields
 from pathlib import Path
+from typing import cast
 
 from agent_maintainer.config import reference, registry
 from agent_maintainer.config.cpp import CppCmakeConfig
@@ -101,9 +102,9 @@ def test_human_reference_documents_cpp_cmake_configuration() -> None:
     for field in fields(CppCmakeConfig):
         row = next(line for line in rows if line.startswith(f"| `{field.name}` |"))
         documented_default = row.split("|")[3].strip().strip("`")
-        expected_default = getattr(defaults, field.name)
+        expected_default: object = getattr(defaults, field.name)
         if isinstance(expected_default, tuple):
-            expected_default = list(expected_default)
+            expected_default = list(cast(tuple[object, ...], expected_default))
         assert json.loads(documented_default) == expected_default
 
 

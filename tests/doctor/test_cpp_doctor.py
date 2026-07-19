@@ -52,13 +52,17 @@ def test_cpp_doctor_warns_for_missing_system_executable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Bare executables must resolve on the configured search path."""
-    monkeypatch.setattr(cpp_provider.shutil, "which", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(cpp_provider.shutil, "which", _missing_system_executable)
 
     result = _cpp_results(tmp_path, _cpp_config())["cpp-command-executables"]
 
     assert result.status == WARNING
     assert result.state == MISSING
     assert "cpp-format (missing-cpp-tool)" in result.message
+
+
+def _missing_system_executable(*_args: object, **_kwargs: object) -> None:
+    """Return no executable for deterministic missing-tool coverage."""
 
 
 @pytest.mark.parametrize("wrapper_kind", ["outside", "symlink"])
