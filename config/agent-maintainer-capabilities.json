@@ -3100,6 +3100,75 @@
         "verification_profiles": false
       },
       "default": [],
+      "description": "Configure typescript package manager audit command.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_COMMAND",
+      "environment_style": "standard",
+      "label": "Typescript Package Manager Audit Command",
+      "name": "typescript_package_manager_audit_command",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_package_manager_audit_command",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": true,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": "",
+      "description": "Configure typescript package manager audit manager.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_MANAGER",
+      "environment_style": "standard",
+      "label": "Typescript Package Manager Audit Manager",
+      "name": "typescript_package_manager_audit_manager",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_package_manager_audit_manager",
+      "value_kind": "str"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": true
+      },
+      "default": [
+        "full",
+        "ci"
+      ],
+      "description": "Configure typescript package manager audit profiles.",
+      "environment": "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_PROFILES",
+      "environment_style": "standard",
+      "label": "Typescript Package Manager Audit Profiles",
+      "name": "typescript_package_manager_audit_profiles",
+      "stability": "beta",
+      "toml_aliases": [],
+      "toml_key": "typescript_package_manager_audit_profiles",
+      "value_kind": "tuple"
+    },
+    {
+      "cli_override": "none",
+      "constraints": {
+        "allow_empty": false,
+        "choices": [],
+        "maximum": null,
+        "minimum": null,
+        "minimum_exclusive": false,
+        "repository_relative_path": false,
+        "verification_profiles": false
+      },
+      "default": [],
       "description": "Configure typescript test command.",
       "environment": "AGENT_MAINTAINER_TYPESCRIPT_TEST_COMMAND",
       "environment_style": "standard",
@@ -3430,6 +3499,8 @@
       "typescript_dependency_cruiser_command",
       "typescript_knip_command",
       "typescript_lint_command",
+      "typescript_package_manager_audit_command",
+      "typescript_package_manager_audit_manager",
       "typescript_test_command",
       "typescript_typecheck_command"
     ]

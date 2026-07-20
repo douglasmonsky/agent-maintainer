@@ -132,7 +132,7 @@ Follow the [parity roadmap](roadmap/typescript-react-parity-roadmap.md). Phase 1
 - [x] Phase 178: Advisory Package-Manager And Workspace Detection
 - [x] Phase 179: TypeScript Knip Unused-Code And Dependency Facts
 - [x] Phase 180: TypeScript OSV Dependency Facts; Phase 181: TypeScript Dependency-Cruiser Facts
-- [x] Phase 182: TypeScript LCOV Changed-Line Facts
+- [x] Phase 182: TypeScript LCOV Changed-Line Facts; Phase 192: TypeScript Package-Manager Audit Facts — explicit manager/command ownership, bounded advisory facts, and pinned npm/pnpm replay evidence; Yarn/Bun remain fixture-only.
 
 ## Active: External Proof And Architecture Hardening
 

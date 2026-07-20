@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
+from typing import cast
 
-from agent_repair_facts.parsers.typescript_package_manager_audit import RawAuditRecord
+from agent_repair_facts.parsers.typescript_package_manager_audit_contract import RawAuditRecord
 
 JsonObject = dict[str, object]
 Adapter = Callable[[object], tuple[RawAuditRecord, ...] | None]
@@ -24,8 +25,9 @@ def adapter_for(manager: str) -> Adapter:
 def parse_npm_payload(payload: object) -> tuple[RawAuditRecord, ...] | None:
     """Parse current or legacy npm audit object projections."""
 
-    if isinstance(payload, list):
-        return tuple(record for item in payload if (record := _record_from_item(item)) is not None)
+    items = _list(payload)
+    if items is not None:
+        return tuple(record for item in items if (record := _record_from_item(item)) is not None)
     root = _object(payload)
     if root is None:
         return None
@@ -41,8 +43,9 @@ def parse_npm_payload(payload: object) -> tuple[RawAuditRecord, ...] | None:
 def parse_pnpm_payload(payload: object) -> tuple[RawAuditRecord, ...] | None:
     """Parse pnpm advisory objects and supported wrapper projections."""
 
-    if isinstance(payload, list):
-        return tuple(record for item in payload if (record := _record_from_item(item)) is not None)
+    items = _list(payload)
+    if items is not None:
+        return tuple(record for item in items if (record := _record_from_item(item)) is not None)
     root = _object(payload)
     if root is None:
         return None
@@ -60,10 +63,9 @@ def parse_yarn_record(payload: object) -> tuple[RawAuditRecord, ...] | None:
 
     result: tuple[RawAuditRecord, ...] | None = None
     root = _object(payload)
-    if root is None and isinstance(payload, list):
-        result = tuple(
-            record for item in payload if (record := _record_from_item(item)) is not None
-        )
+    items = _list(payload)
+    if root is None and items is not None:
+        result = tuple(record for item in items if (record := _record_from_item(item)) is not None)
     elif root is not None:
         record_type = root.get("type")
         if record_type in {"auditSummary", "auditAction"}:
@@ -84,10 +86,9 @@ def parse_bun_payload(payload: object) -> tuple[RawAuditRecord, ...] | None:
     """Parse Bun advisory object/NDJSON projections without trusting chatter."""
 
     result: tuple[RawAuditRecord, ...] | None = None
-    if isinstance(payload, list):
-        result = tuple(
-            record for item in payload if (record := _record_from_item(item)) is not None
-        )
+    items = _list(payload)
+    if items is not None:
+        result = tuple(record for item in items if (record := _record_from_item(item)) is not None)
     else:
         root = _object(payload)
         if root is not None:
@@ -123,8 +124,9 @@ def _vulnerability_map(value: object) -> tuple[RawAuditRecord, ...] | None:
 
 
 def _advisory_container(value: object) -> tuple[RawAuditRecord, ...] | None:
-    if isinstance(value, list):
-        return tuple(record for item in value if (record := _record_from_item(item)) is not None)
+    items = _list(value)
+    if items is not None:
+        return tuple(record for item in items if (record := _record_from_item(item)) is not None)
     mapping = _object(value)
     if mapping is None:
         return () if value == {} else None
@@ -140,16 +142,16 @@ def _record_from_vulnerability(package: str, details: object) -> RawAuditRecord 
     if value is None:
         return None
     via = value.get("via")
-    via_values = via if isinstance(via, list) else (via,)
+    via_values = _list(via) or (via,)
     advisory_ids = tuple(
-        item
+        candidate
         for item in via_values
-        if isinstance(item, Mapping)
-        for item in (_first(item, "source", "id", "advisoryId"),)
-        if _looks_like_id(item)
+        if (mapping_item := _object(item)) is not None
+        for candidate in (_first(mapping_item, "source", "id", "advisoryId"),)
+        if _looks_like_id(candidate)
     )
     advisory_ids += tuple(
-        item for item in via_values if _looks_like_id(item) and not isinstance(item, Mapping)
+        item for item in via_values if _looks_like_id(item) and _object(item) is None
     )
     if not advisory_ids:
         return None
@@ -179,12 +181,12 @@ def _record_from_item(item: object, fallback_advisory_id: object = "") -> RawAud
     if not advisory_ids:
         return None
     findings = value.get("findings")
-    finding_values = findings if isinstance(findings, list) else ()
+    finding_values = _list(findings) or ()
     finding_paths = tuple(
         path
         for finding in finding_values
-        if isinstance(finding, Mapping)
-        for path in _values(_first(finding, "paths", "path", "node"))
+        if (finding_object := _object(finding)) is not None
+        for path in _values(_first(finding_object, "paths", "path", "node"))
     )
     return RawAuditRecord(
         package=package,
@@ -256,12 +258,14 @@ def _first_path(value: JsonObject) -> object:
 def _values(value: object) -> tuple[object, ...]:
     if value is None:
         return ()
-    if isinstance(value, (list, tuple)):
-        return tuple(value)
+    if isinstance(value, list):
+        return tuple(cast(list[object], value))
+    if isinstance(value, tuple):
+        return tuple(cast(tuple[object, ...], value))
     return (value,)
 
 
-def _first(value: Mapping[str, object], *keys: str) -> object:
+def _first(value: JsonObject, *keys: str) -> object:
     for key in keys:
         candidate = value.get(key)
         if candidate is not None:
@@ -270,7 +274,20 @@ def _first(value: Mapping[str, object], *keys: str) -> object:
 
 
 def _object(value: object) -> JsonObject | None:
-    return value if isinstance(value, dict) and all(isinstance(key, str) for key in value) else None
+    if not isinstance(value, dict):
+        return None
+    normalized: JsonObject = {}
+    for key, item in cast(dict[object, object], value).items():
+        if not isinstance(key, str):
+            return None
+        normalized[key] = item
+    return normalized
+
+
+def _list(value: object) -> list[object] | None:
+    """Return a JSON list with its unknown element type normalized to object."""
+
+    return cast(list[object], value) if isinstance(value, list) else None
 
 
 def _looks_like_id(value: object) -> bool:

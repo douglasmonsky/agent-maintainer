@@ -1,5 +1,7 @@
 """Offline replay tests for public TypeScript audit projections."""
 
+# docsync:evidence.start evidence.typescript.package_manager_audit_facts
+
 from __future__ import annotations
 
 import hashlib
@@ -55,3 +57,6 @@ def test_pinned_audit_projection_replays_offline(
     assert [finding.package for finding in result.findings] == [
         item["package"] for item in payload["normalized_findings"]
     ]
+
+
+# docsync:evidence.end evidence.typescript.package_manager_audit_facts

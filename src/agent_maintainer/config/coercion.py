@@ -218,7 +218,7 @@ def coerce_workspace(
         {"workspaces": {name: workspace}},
         source=source,
     )
-    updates = {
+    updates: dict[str, Any] = {
         field_name: parser(workspace.get(field_name), f"workspaces.{name}.{field_name}")
         for field_name, parser in WORKSPACE_FIELD_PARSERS
     }

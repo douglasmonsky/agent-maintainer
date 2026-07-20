@@ -37,8 +37,7 @@ Already landed:
 Still missing before a promotion assessment:
 
 - Blocking TypeScript/React reviewability gates.
-- First-class package-manager audit, mutation, generated-file, and broader
-  security adapters.
+- First-class mutation, generated-file, and broader security adapters.
 - Broader external evidence across React, Vite, Next.js, and workspace layouts.
 
 ## Parity Tool Map
@@ -52,7 +51,7 @@ Still missing before a promotion assessment:
 | Coverage.py/diff-cover | Istanbul/V8 LCOV plus a changed-line adapter | Partial replacement | Build advisory LCOV changed-line facts before any threshold gate. |
 | Tach/import-linter | dependency-cruiser, Nx boundaries, ESLint boundaries | Partial replacement | Start with dependency-cruiser; support Nx only when a repository declares it. |
 | Vulture/Deptry | Knip | Strong replacement | Parse stable Knip JSON for unused files, exports, dependencies, and unresolved binaries. |
-| pip-audit | OSV Scanner plus package-manager audit | Strong replacement | Lockfile-aware OSV facts are complete; add package-manager audit summaries next. |
+| pip-audit | OSV Scanner plus package-manager audit | Strong replacement | Lockfile-aware OSV and explicit package-manager audit facts are complete; keep both advisory until promotion evidence is sufficient. |
 | Bandit | Semgrep JS/TS rules and ESLint security plugins | Partial replacement | Keep advisory until external evidence measures false positives. |
 | Gitleaks | Gitleaks | Ecosystem-neutral | Reuse the existing secret scan without a TypeScript adapter. |
 | Radon/Xenon | ESLint complexity and SonarJS cognitive complexity | Partial replacement | Measure advisory facts before defining thresholds. |
@@ -73,7 +72,8 @@ Still missing before a promotion assessment:
 3. Phase 180: OSV dependency facts are complete.
 4. Phase 181: dependency-cruiser architecture-boundary facts are complete.
 5. Phase 182: advisory LCOV changed-line coverage facts are complete.
-6. Package-manager audit facts are the next parity slice.
+6. Phase 192: explicit package-manager audit facts are complete with manager,
+   command, workspace, and profile ownership.
 7. Explicit generated-file and framework policy evidence.
 8. TypeScript/React blocking-gate promotion assessment.
 9. Declared Nx boundary support.
@@ -117,6 +117,28 @@ evidence. dependency-cruiser is the
 TypeScript/JavaScript architecture-boundary counterpart to Tach for this
 provider; Python Tach, Archguard, and declared Nx policies remain separate.
 TypeScript/JavaScript remains experimental.
+
+## Phase 192 Package-Manager Audit Facts
+
+Phase 192 adds a package-manager audit check only when the repository declares
+both an explicit manager (`npm`, `pnpm`, `yarn`, or `bun`) and an exact command.
+Root and workspace commands preserve the configured process exit status and
+the root `full`/`ci` profile selection; no manager, lockfile, script, or
+workspace ownership is inferred.
+
+The shared normalized contract emits bounded advisory facts for package,
+severity, advisory identifiers, vulnerable ranges, fixed versions, dependency
+scope/directness, workspace, and safe repository-relative provenance. Parser
+retention is capped at 500 findings, list fields at 25 values, scalar fields at
+200 characters, display paths at 500 characters, and compact summaries at 50
+lines. Exact facts and summaries reuse the same parser, while malformed
+neighbors are skipped and invalid roots fall back to bounded raw output.
+
+Synthetic fixtures cover npm, pnpm, Yarn, Bun, JSON, NDJSON, malformed records,
+safe-path handling, and clean reports. Two pinned public projections replay
+offline for npm and pnpm with canonical report hashes; Yarn and Bun remain
+fixture-only. Findings are advisory and do not promote TypeScript/React to
+blocking reviewability.
 
 ## Phase 180 OSV Boundary
 

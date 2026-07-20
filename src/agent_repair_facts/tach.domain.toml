@@ -27,6 +27,7 @@ depends_on = [
   "parsers.typescript_checks",
   "parsers.typescript_dependency_cruiser",
   "parsers.typescript_knip",
+  "parsers.typescript_package_manager_audit",
   "payloads",
 ]
 
@@ -123,6 +124,29 @@ path = "parsers.typescript_knip"
 depends_on = [
   "payloads",
 ]
+
+
+[[modules]]
+
+path = "parsers.typescript_package_manager_audit"
+depends_on = [
+  "parsers.typescript_package_manager_audit_adapters",
+  "parsers.typescript_package_manager_audit_contract",
+]
+
+
+[[modules]]
+
+path = "parsers.typescript_package_manager_audit_adapters"
+depends_on = [
+  "parsers.typescript_package_manager_audit_contract",
+]
+
+
+[[modules]]
+
+path = "parsers.typescript_package_manager_audit_contract"
+depends_on = []
 
 
 [[modules]]

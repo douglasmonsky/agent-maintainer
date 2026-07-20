@@ -369,7 +369,8 @@ def _build_spec(field_name: str) -> ConfigFieldSpec:
         minimum_exclusive=field_name == "context_compression_target_ratio",
         path_value=field_name in PATH_FIELDS,
         profile_values=field_name in PROFILE_FIELDS,
-        allow_empty=field_name in {
+        allow_empty=field_name
+        in {
             "file_length_baseline",
             "typescript_package_manager_audit_manager",
         },

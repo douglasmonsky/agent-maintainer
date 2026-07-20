@@ -175,3 +175,4 @@
 | 189 | [C/C++ Static-Analysis Facts](phases/phase-189-cpp-static-analysis-facts.md) |
 | 190 | [C/C++ Test And Coverage Facts](phases/phase-190-cpp-test-and-coverage-facts.md) |
 | 191 | [C/C++ Cross-Platform And External Proof](phases/phase-191-cpp-cross-platform-and-external-proof.md) |
+| 192 | [TypeScript Package-Manager Audit Facts](phases/phase-192-typescript-package-manager-audit-facts.md) |

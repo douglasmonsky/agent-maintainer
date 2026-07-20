@@ -121,7 +121,7 @@ class TypeScriptProvider:
         return checks
 
 
-def _configured_check(
+def _configured_check(  # noqa: PLR0913
     name: str,
     command: tuple[str, ...],
     profiles: Iterable[str],

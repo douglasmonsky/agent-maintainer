@@ -1073,7 +1073,8 @@ claims:
     text: TypeScript provider docs describe structured summaries and exact repair
       facts for tsc, ESLint JSON, Jest/Vitest JSON, Istanbul coverage summary,
       LCOV, bounded Knip JSON, bounded dependency-cruiser cruise-result JSON,
-      and bounded grouped OSV Scanner v2 outputs with malformed output fallback.
+      explicit package-manager audit JSON/NDJSON, and bounded grouped OSV
+      Scanner v2 outputs with malformed output fallback.
     severity: medium
     evidence:
       - evidence.typescript.structured_output_tests
@@ -1088,11 +1089,13 @@ claims:
       - evidence.typescript.dependency_cruiser_fact_tests
       - evidence.typescript.dependency_cruiser_summary_tests
       - evidence.typescript.dependency_cruiser_external_fixtures
+      - evidence.typescript.package_manager_audit_facts
   claim.docs.typescript_provider_unsupported_surface:
     object: docs.typescript_provider.overview
-    text: TypeScript provider docs document unsupported package managers,
-      test runners, frameworks, explicit workspace command ownership, coverage,
-      dependency, security, mutation, and blocking reviewability surfaces.
+    text: TypeScript provider docs document unsupported package-manager
+      autodetection, test runners, frameworks, explicit workspace command
+      ownership, coverage, dependency, security, mutation, and blocking
+      reviewability surfaces.
     severity: medium
     evidence:
       - evidence.typescript.provider_docs_maturity_tests
@@ -1766,6 +1769,23 @@ evidence:
       exact commands, exit status, and bounded normalized findings.
     anchors:
       - path: tests/assess/test_depcruise_external_fixtures.py
+        mode: explicit_region
+  evidence.typescript.package_manager_audit_facts:
+    type: test
+    description: TypeScript package-manager audit tests cover explicit npm,
+      pnpm, Yarn, and Bun manager context, bounded normalized JSON/NDJSON facts,
+      shared summaries and repair context, malformed neighbors, unsafe paths,
+      and pinned npm/pnpm projection replay.
+    anchors:
+      - path: tests/config/test_typescript_config.py
+        mode: explicit_region
+      - path: tests/repair_facts/test_typescript_package_manager_audit_facts.py
+        mode: explicit_region
+      - path: tests/core/test_typescript_structured_output.py
+        mode: explicit_region
+      - path: tests/context/test_typescript_exact_facts.py
+        mode: explicit_region
+      - path: tests/assess/test_typescript_package_manager_audit_external.py
         mode: explicit_region
   evidence.typescript.reviewability_fixture_tests:
     type: test

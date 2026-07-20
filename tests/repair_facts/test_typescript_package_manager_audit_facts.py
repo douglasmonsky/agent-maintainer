@@ -1,5 +1,7 @@
 """Contract tests for normalized TypeScript package-manager audit facts."""
 
+# docsync:evidence.start evidence.typescript.package_manager_audit_facts
+
 from __future__ import annotations
 
 import json
@@ -232,3 +234,6 @@ def test_summary_line_and_message_bounds_are_truthful() -> None:
     assert "omitted" in summary
     assert len(summary) <= audit.AUDIT_MESSAGE_CHAR_LIMIT
     assert len(audit.format_audit_finding(result.findings[0])) <= audit.AUDIT_MESSAGE_CHAR_LIMIT
+
+
+# docsync:evidence.end evidence.typescript.package_manager_audit_facts

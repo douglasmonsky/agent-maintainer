@@ -293,6 +293,7 @@ path = "typescript.provider"
 depends_on = [
 "models",
 "//agent_maintainer.models",
+"//agent_maintainer.config.schema",
 ]
 
 [[modules]]

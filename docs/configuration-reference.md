@@ -11,7 +11,7 @@ Configuration precedence is defaults, mode preset, file, environment, then CLI.
 |---|---|
 | `cpp` | `["build_command","build_profiles","cmake_root","coverage_command","coverage_profiles","enabled","format_command","format_profiles","static_analysis_command","static_analysis_profiles","test_command","test_profiles"]` |
 | `diagnostics` | `["enabled","log_dir","run_history_limit"]` |
-| `workspaces.*` | `["coverage_source","package_paths","source_roots","test_roots","typescript_dependency_cruiser_command","typescript_knip_command","typescript_lint_command","typescript_test_command","typescript_typecheck_command"]` |
+| `workspaces.*` | `["coverage_source","package_paths","source_roots","test_roots","typescript_dependency_cruiser_command","typescript_knip_command","typescript_lint_command","typescript_package_manager_audit_command","typescript_package_manager_audit_manager","typescript_test_command","typescript_typecheck_command"]` |
 | `file_baselines` | `["baseline","enabled","groups","mode"]` |
 | `file_baselines.groups.*` | `["changed_file_warn","changed_line_warn","exclude","include","max_nonblank_lines","max_physical_lines","role"]` |
 | `java` | `["checks","checkstyle_profiles","checkstyle_tasks","enabled","findings_baseline","gradle_args","gradle_root","jacoco_branch_property","jacoco_line_property","jacoco_profiles","jacoco_ratchet_ref","jacoco_report_tasks","jacoco_verify_tasks","pmd_profiles","pmd_tasks","projects","reports","source_roots","spotbugs_baseline","spotbugs_profiles","spotbugs_tasks","spotless_profiles","spotless_ratchet_ref","spotless_tasks","test_profiles","test_roots","test_tasks"]` |
@@ -183,6 +183,9 @@ Create and prune require a clean Git worktree. Verification and inspect are read
 | `typescript_knip_profiles` | tuple | `["full","ci"]` | `AGENT_MAINTAINER_TYPESCRIPT_KNIP_PROFILES` | none | known profiles | beta |
 | `typescript_lint_command` | tuple | `[]` | `AGENT_MAINTAINER_TYPESCRIPT_LINT_COMMAND` | none | — | beta |
 | `typescript_lint_profiles` | tuple | `["precommit","full","ci"]` | `AGENT_MAINTAINER_TYPESCRIPT_LINT_PROFILES` | none | known profiles | beta |
+| `typescript_package_manager_audit_command` | tuple | `[]` | `AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_COMMAND` | none | — | beta |
+| `typescript_package_manager_audit_manager` | str | `""` | `AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_MANAGER` | none | — | beta |
+| `typescript_package_manager_audit_profiles` | tuple | `["full","ci"]` | `AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_PROFILES` | none | known profiles | beta |
 | `typescript_test_command` | tuple | `[]` | `AGENT_MAINTAINER_TYPESCRIPT_TEST_COMMAND` | none | — | beta |
 | `typescript_test_profiles` | tuple | `["full","ci"]` | `AGENT_MAINTAINER_TYPESCRIPT_TEST_PROFILES` | none | known profiles | beta |
 | `typescript_typecheck_command` | tuple | `[]` | `AGENT_MAINTAINER_TYPESCRIPT_TYPECHECK_COMMAND` | none | — | beta |

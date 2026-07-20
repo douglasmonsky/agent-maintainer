@@ -50,13 +50,14 @@ def test_experimental_checks_follow_the_python_catalog() -> None:
     names = [check.name for check in make_checks(config, "HEAD", "origin/main")]
     start = names.index("typescript-lint")
 
-    assert names[start - 1 : start + 6] == [
+    assert names[start - 1 : start + 7] == [
         "secret-scan-history",
         "typescript-lint",
         "typescript-typecheck",
         "typescript-test",
         "typescript-knip",
         "typescript-dependency-cruiser",
+        "typescript-package-manager-audit",
         "actionlint",
     ]
 

@@ -19,6 +19,8 @@ enable_typescript = true
 typescript_lint_command = ["npm", "run", "lint"]
 typescript_typecheck_command = ["npm", "run", "typecheck"]
 typescript_test_command = ["npm", "test", "--", "--runInBand"]
+typescript_package_manager_audit_manager = "npm"
+typescript_package_manager_audit_command = ["npm", "audit", "--json"]
 ```
 
 For pnpm projects, keep the same explicit-command shape:
@@ -33,6 +35,8 @@ typescript_knip_command = ["pnpm", "exec", "knip", "--reporter", "json"]
 typescript_dependency_cruiser_command = [
   "pnpm", "exec", "depcruise", "--output-type", "json", "src",
 ]
+typescript_package_manager_audit_manager = "pnpm"
+typescript_package_manager_audit_command = ["pnpm", "audit", "--json"]
 ```
 
 For Vite/Vitest projects, prefer repository scripts over inferred commands:
@@ -57,6 +61,7 @@ typescript_typecheck_profiles = ["full", "ci"]
 typescript_test_profiles = ["full", "ci"]
 typescript_knip_profiles = ["full", "ci"]
 typescript_dependency_cruiser_profiles = ["full", "ci"]
+typescript_package_manager_audit_profiles = ["full", "ci"]
 ```
 
 Default profiles are:
@@ -68,12 +73,19 @@ Default profiles are:
 | `typescript-test` | `full`, `ci` |
 | `typescript-knip` | `full`, `ci` |
 | `typescript-dependency-cruiser` | `full`, `ci` |
+| `typescript-package-manager-audit` | `full`, `ci` |
 
 `typescript_knip_profiles` defaults to `full` and `ci`. Knip stays out of
 `precommit` by default because it normally analyzes the whole repository.
 `typescript_dependency_cruiser_profiles` also defaults to `full` and `ci`;
 architecture cruising is repository-wide and stays out of `precommit` by
 default.
+
+`typescript_package_manager_audit_manager` is required whenever the audit
+command is configured. It must be one of `npm`, `pnpm`, `yarn`, or `bun`; the
+provider never infers the manager from a lockfile, `packageManager`, or command
+text. Workspace audit commands remain explicit under the workspace's
+configuration and use the root audit profile selection.
 
 If `enable_typescript = true` but a command is empty, the corresponding check is
 reported as an optional skip. Agent Maintainer will not guess the package
@@ -105,6 +117,8 @@ configured-command output:
   or binaries;
 - `typescript-dependency-cruiser`: dependency-cruiser cruise-result JSON from
   the configured command's `summary.violations` array;
+- `typescript-package-manager-audit`: explicit npm, pnpm, Yarn, or Bun JSON or
+  NDJSON audit output normalized into bounded advisory vulnerability facts;
 - `osv-scanner`: OSV Scanner v2 output from the existing ecosystem-neutral
   manual gate.
 
@@ -117,6 +131,30 @@ namespace/class member categories are ignored in this phase.
 
 Only repository-relative paths are emitted. Absolute and parent-traversal paths
 are rejected so local machine paths cannot enter summaries or repair context.
+
+## Phase 192 Package-Manager Audit Boundary
+
+Phase 192 adds explicit package-manager audit facts without selecting or
+executing a package manager on the repository's behalf. A configured root or
+workspace check supplies both `typescript_package_manager_audit_manager` and
+the exact `typescript_package_manager_audit_command`; the command's exit status
+is preserved. npm, pnpm, Yarn, and Bun report shapes are accepted only when the
+manager is declared, and malformed neighboring records are skipped without
+discarding valid findings.
+
+The shared parser emits deterministic, bounded advisory facts with the
+manager, workspace, package, severity, advisory identifiers, vulnerable ranges,
+fixed versions, dependency scope/directness, and safe repository-relative path
+provenance when present. It retains at most 500 findings, 25 values per list,
+200-character scalar fields, 500-character display paths, and 50 summary lines;
+unsafe paths remain display-only. Clean reports with no findings pass, while
+vulnerability findings stay advisory and do not create a blocking gate or
+change the configured process exit status.
+
+Synthetic npm, pnpm, Yarn, and Bun fixtures cover the normalized contract and
+malformed-input behavior. Pinned public npm and pnpm projections replay offline
+with canonical report hashes; Yarn and Bun remain fixture-only until equivalent
+public evidence is collected. TypeScript/JavaScript remains experimental.
 
 ## Advisory LCOV Changed-Line Coverage
 
@@ -196,8 +234,8 @@ Pinned npm `decentralized-identity/dwn-sdk-js` and pnpm-workspace
 dependency-cruiser 17.0.2.
 They record exact public revisions, Node and tool versions, config and lockfile
 hashes, raw-report hashes and byte counts, commands, exit status, and bounded
-normalized violations. Package-manager audit facts are the next parity slice.
-Declared Nx boundaries and blocking architecture policy remain later work.
+normalized violations. Phase 192 package-manager audit facts are complete;
+declared Nx boundaries and blocking architecture policy remain later work.
 TypeScript/JavaScript remains experimental.
 
 ## Phase 180 OSV Boundary
@@ -222,9 +260,9 @@ paths. Bounded projections from pinned pnpm `eslint-plugin-vitest` and npm
 `node-typescript-boilerplate` revisions provide public compatibility evidence;
 they do not promote the provider or add a default check.
 
-Phase 182 advisory LCOV changed-line coverage facts are complete. The roadmap
-records that package-manager audit facts are the next parity slice. Coverage
-commands or gates, mutation, and blocking reviewability remain unsupported.
+Phase 182 advisory LCOV changed-line coverage facts are complete. Phase 192
+package-manager audit facts are complete. Coverage commands or gates,
+mutation, and blocking reviewability remain unsupported.
 TypeScript/JavaScript remains experimental.
 
 For current maturation evidence and promotion criteria, see
@@ -278,15 +316,14 @@ Workspace dependency-cruiser commands use the root
 Coverage summaries and LCOV files can improve `typescript-test` repair facts
 when a repository already produces those artifacts. Existing LCOV can also
 feed the advisory `test-intel typescript-coverage` report. Knip can improve
-unused-code and dependency repair facts, and the ecosystem-neutral OSV gate can
-provide dependency vulnerability facts. Explicit dependency-cruiser JSON can
-provide advisory architecture facts. TypeScript coverage command execution or
-enforcement, package-manager audit, mutation, and blocking reviewability
-adapters are not implemented yet. The provider should remain experimental
-until these surfaces have fixture and real-repo evidence.
-
-TypeScript coverage enforcement, package-manager audit, mutation, and blocking
-reviewability adapters are not implemented yet.
+unused-code and dependency repair facts, the ecosystem-neutral OSV gate can
+provide dependency vulnerability facts, and explicit dependency-cruiser JSON
+can provide advisory architecture facts. The package-manager audit adapter
+accepts only an explicitly declared manager and command, and remains advisory;
+Yarn and Bun have fixture coverage but no pinned public projection yet. TypeScript
+coverage command execution or enforcement, mutation, and blocking reviewability
+adapters are not implemented yet. The provider should remain experimental until
+these surfaces have fixture and real-repo evidence.
 
 ## Limitations
 
@@ -294,8 +331,7 @@ reviewability adapters are not implemented yet.
 - No generated starter files yet.
 - No structured parser for arbitrary human-oriented test or coverage
   transcripts.
-- No TypeScript coverage command or gate, mutation adapter, or package-manager
-  audit adapter.
+- No TypeScript coverage command or gate or mutation adapter.
 - No public plugin API.
 - No TypeScript reviewability gate is blocking by default.
 

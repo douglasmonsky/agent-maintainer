@@ -5,9 +5,12 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import PurePosixPath, PureWindowsPath
+from typing import cast
+
+from agent_repair_facts.parsers.typescript_package_manager_audit_contract import RawAuditRecord
 
 AUDIT_MANAGERS = frozenset(("npm", "pnpm", "yarn", "bun"))
 AUDIT_OUTCOME_CLEAN = "clean"
@@ -33,21 +36,6 @@ _SEVERITY_RANK = {
 _SEVERITIES = frozenset(_SEVERITY_RANK)
 _SCOPES = frozenset(("dev", "prod", "optional", "peer"))
 _DIRECTNESS = frozenset(("direct", "indirect"))
-
-
-@dataclass(frozen=True)
-class RawAuditRecord:
-    """One adapter-owned record before shared normalization."""
-
-    package: object
-    severity: object
-    advisory_ids: tuple[object, ...] = ()
-    vulnerable_ranges: tuple[object, ...] = ()
-    fixed_versions: tuple[object, ...] = ()
-    scope: object = ""
-    directness: object = ""
-    path: object = ""
-    title: object = ""
 
 
 @dataclass(frozen=True)
@@ -304,7 +292,7 @@ def _bounded_values(values: object) -> tuple[str, ...]:
     if isinstance(values, (str, int)) and not isinstance(values, bool):
         candidates = (values,)
     elif isinstance(values, (list, tuple)):
-        candidates = tuple(values)
+        candidates = tuple(cast(Iterable[object], values))
     else:
         candidates = ()
     normalized = sorted(
