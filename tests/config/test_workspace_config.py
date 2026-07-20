@@ -169,6 +169,25 @@ def test_coerce_updates_reads_workspace_tables() -> None:
             typescript_package_manager_audit_command=("npm", "audit", "--json"),
         ),
     )
+    assert coercion.coerce_workspace("web", {}).typescript_package_manager_audit_manager == ""
+    assert (
+        coercion.coerce_workspace(
+            "web",
+            {"typescript_package_manager_audit_manager": ""},
+        ).typescript_package_manager_audit_manager
+        == ""
+    )
+    with pytest.raises(
+        TypeError,
+        match=(
+            r"^workspaces\.web\.typescript_package_manager_audit_manager "
+            r"must be a non-empty string$"
+        ),
+    ):
+        coercion.coerce_workspace(
+            "web",
+            {"typescript_package_manager_audit_manager": 123},
+        )
     with pytest.raises(TypeError, match=r"workspaces\.api\.source_roots"):
         coercion.coerce_updates({"workspaces": {"api": {"source_roots": 12}}})
     with pytest.raises(TypeError, match=r"^workspaces\.api must be a table$"):
