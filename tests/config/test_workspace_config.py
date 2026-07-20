@@ -169,9 +169,7 @@ def test_coerce_updates_reads_workspace_tables() -> None:
             typescript_package_manager_audit_command=("npm", "audit", "--json"),
         ),
     )
-    assert (
-        coercion.coerce_workspace("web", {}).typescript_package_manager_audit_manager == ""
-    )
+    assert coercion.coerce_workspace("web", {}).typescript_package_manager_audit_manager == ""
     assert (
         coercion.coerce_workspace(
             "web",
