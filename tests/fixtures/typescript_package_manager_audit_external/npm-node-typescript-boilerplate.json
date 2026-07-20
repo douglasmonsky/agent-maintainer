@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/jsynowiec/node-typescript-boilerplate",
+  "head_commit": "550dfd2a976d69254ed71eb6f5a6c5ee20060807",
+  "collection_date": "2026-07-20",
+  "manager": "npm",
+  "tool": {"name": "npm", "version": "10.8.2"},
+  "runtime": {"node": "22.14.0"},
+  "command": ["npm", "audit", "--json"],
+  "exit_code": 1,
+  "report_format": "json-object-projection",
+  "report": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {
+      "ajv": {
+        "name": "ajv",
+        "severity": "high",
+        "isDirect": false,
+        "via": [{"source": "GHSA-2g4f-4pwh-qvx6", "title": "ajv ReDoS", "range": "<6.14.0"}],
+        "range": "<6.14.0",
+        "nodes": ["node_modules/ajv"],
+        "fixAvailable": {"name": "ajv", "version": "6.14.0"}
+      },
+      "brace-expansion": {
+        "name": "brace-expansion",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [{"source": "GHSA-f886-m6hf-6m8v", "title": "Brace expansion hang", "range": "<2.0.3"}],
+        "range": "<2.0.3",
+        "nodes": ["node_modules/brace-expansion"],
+        "fixAvailable": {"name": "brace-expansion", "version": "2.0.3"}
+      }
+    }
+  },
+  "report_sha256": "f65cf44409944b8a7578e3e212085cccf993a3e0436699f39bbb2e5efae9663f",
+  "report_bytes": 566,
+  "supported_count": 2,
+  "retained_count": 2,
+  "omitted_count": 0,
+  "normalized_findings": [
+    {"package": "ajv", "advisory_ids": ["GHSA-2g4f-4pwh-qvx6"], "severity": "high"},
+    {"package": "brace-expansion", "advisory_ids": ["GHSA-f886-m6hf-6m8v"], "severity": "moderate"}
+  ]
+}

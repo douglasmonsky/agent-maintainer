@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/vitest-dev/eslint-plugin-vitest",
+  "head_commit": "7c697f8a53d7d7551b00ef11217d58cd45a0cf7d",
+  "collection_date": "2026-07-20",
+  "manager": "pnpm",
+  "tool": {"name": "pnpm", "version": "10.18.3"},
+  "runtime": {"node": "22.14.0"},
+  "command": ["pnpm", "audit", "--json"],
+  "exit_code": 1,
+  "report_format": "json-object-projection",
+  "report": {
+    "advisories": {
+      "GHSA-2g4f-4pwh-qvx6": {
+        "module_name": "ajv",
+        "severity": "high",
+        "vulnerable_versions": "<6.14.0",
+        "patched_versions": ">=6.14.0",
+        "findings": [{"version": "6.12.6", "paths": ["node_modules/ajv"]}],
+        "title": "ajv ReDoS"
+      },
+      "GHSA-f886-m6hf-6m8v": {
+        "module_name": "brace-expansion",
+        "severity": "moderate",
+        "vulnerable_versions": "<2.0.3",
+        "patched_versions": ">=2.0.3",
+        "findings": [{"version": "2.0.2", "paths": ["node_modules/brace-expansion"]}],
+        "title": "Brace expansion hang"
+      }
+    },
+    "metadata": {"vulnerabilities": {"total": 2}}
+  },
+  "report_sha256": "fa59a74f2cac71097254d3e0b8397a47225485160b3466773a7ad6c46ef30e3c",
+  "report_bytes": 509,
+  "supported_count": 2,
+  "retained_count": 2,
+  "omitted_count": 0,
+  "normalized_findings": [
+    {"package": "ajv", "advisory_ids": ["GHSA-2g4f-4pwh-qvx6"], "severity": "high"},
+    {"package": "brace-expansion", "advisory_ids": ["GHSA-f886-m6hf-6m8v"], "severity": "moderate"}
+  ]
+}
