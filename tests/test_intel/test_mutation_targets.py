@@ -197,7 +197,10 @@ def test_target_sort_key_orders_highest_score_first() -> None:
     ) == [high_target, low_target]
 
 
-def test_targets_for_source_returns_deterministically_sorted_targets(tmp_path: Path) -> None:
+def test_targets_for_source_returns_deterministically_sorted_targets(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Source target discovery preserves target sort order."""
 
     source_file = tmp_path / "src" / "pkg" / "module.py"
@@ -219,6 +222,20 @@ def test_targets_for_source_returns_deterministically_sorted_targets(tmp_path: P
         ).lstrip(),
         encoding="utf-8",
     )
+    original_read_text = Path.read_text
+    encodings: list[str | None] = []
+
+    def record_read_text(
+        path: Path,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
+    ) -> str:
+        if path == source_file:
+            encodings.append(encoding)
+        return original_read_text(path, encoding=encoding, errors=errors, newline=newline)
+
+    monkeypatch.setattr(Path, "read_text", record_read_text)
 
     targets = mutation_targets.targets_for_source(
         "src/pkg/module.py",
@@ -230,6 +247,7 @@ def test_targets_for_source_returns_deterministically_sorted_targets(tmp_path: P
 
     assert [target.qualname for target in targets] == ["parse_value", "helper"]
     assert targets[0].score > targets[1].score
+    assert encodings == ["utf-8"]
 
 
 def test_mutation_target_report_passes_ratchet_context(
