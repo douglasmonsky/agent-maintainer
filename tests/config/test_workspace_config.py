@@ -177,6 +177,41 @@ def test_coerce_updates_reads_workspace_tables() -> None:
         coercion.coerce_workspaces([])
 
 
+def test_coerce_workspace_defaults_package_manager_audit_manager() -> None:
+    """Workspace audit manager defaults to an explicit empty value."""
+
+    workspace = coercion.coerce_workspace("web", {})
+
+    assert workspace.typescript_package_manager_audit_manager == ""
+
+
+def test_coerce_workspace_preserves_empty_package_manager_audit_manager() -> None:
+    """An explicitly empty workspace audit manager remains disabled."""
+
+    workspace = coercion.coerce_workspace(
+        "web",
+        {"typescript_package_manager_audit_manager": ""},
+    )
+
+    assert workspace.typescript_package_manager_audit_manager == ""
+
+
+def test_coerce_workspace_reports_package_manager_audit_manager_type() -> None:
+    """Invalid workspace audit manager values identify their field path."""
+
+    with pytest.raises(
+        TypeError,
+        match=(
+            r"^workspaces\.web\.typescript_package_manager_audit_manager "
+            r"must be a non-empty string$"
+        ),
+    ):
+        coercion.coerce_workspace(
+            "web",
+            {"typescript_package_manager_audit_manager": 123},
+        )
+
+
 def test_invalid_workspace_config_raises_clear_errors() -> None:
     """Invalid workspace tables fail with field-specific messages."""
     with pytest.raises(TypeError, match="workspaces must be a table"):

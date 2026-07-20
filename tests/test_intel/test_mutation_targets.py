@@ -232,6 +232,44 @@ def test_targets_for_source_returns_deterministically_sorted_targets(tmp_path: P
     assert targets[0].score > targets[1].score
 
 
+def test_targets_for_source_reads_utf8_source(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Source discovery pins the encoding used for repository files."""
+
+    source_file = tmp_path / "src" / "pkg" / "module.py"
+    source_file.parent.mkdir(parents=True)
+    source_file.write_text(
+        "def parse_value(value: int) -> int:\n    return value\n",
+        encoding="utf-8",
+    )
+    original_read_text = Path.read_text
+    encodings: list[str | None] = []
+
+    def record_read_text(
+        path: Path,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
+    ) -> str:
+        if path == source_file:
+            encodings.append(encoding)
+        return original_read_text(path, encoding=encoding, errors=errors, newline=newline)
+
+    monkeypatch.setattr(Path, "read_text", record_read_text)
+
+    mutation_targets.targets_for_source(
+        "src/pkg/module.py",
+        tmp_path,
+        changed=True,
+        likely_test_count=1,
+        ratchet_score=0,
+    )
+
+    assert encodings == ["utf-8"]
+
+
 def test_mutation_target_report_passes_ratchet_context(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
