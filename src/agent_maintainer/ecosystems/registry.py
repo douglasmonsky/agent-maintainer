@@ -62,6 +62,7 @@ TYPESCRIPT_PROVIDER = ProviderMetadata(
         "architecture",
         "dead-code",
         "dependency-hygiene",
+        "package-manager-audit",
     ),
     enabled_field="enable_typescript",
     command_specs=(
@@ -72,6 +73,10 @@ TYPESCRIPT_PROVIDER = ProviderMetadata(
         ProviderCommandSpec(
             "typescript-dependency-cruiser",
             "typescript_dependency_cruiser_command",
+        ),
+        ProviderCommandSpec(
+            "typescript-package-manager-audit",
+            "typescript_package_manager_audit_command",
         ),
     ),
 )

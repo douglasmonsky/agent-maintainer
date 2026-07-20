@@ -159,6 +159,7 @@ depends_on = [
   "//agent_repair_facts.parsers.typescript_coverage",
   "//agent_repair_facts.parsers.typescript_diagnostics",
   "//agent_repair_facts.parsers.typescript_knip",
+  "//agent_repair_facts.parsers.typescript_package_manager_audit",
   "//agent_repair_facts.parsers.typescript_tests",
 ]
 

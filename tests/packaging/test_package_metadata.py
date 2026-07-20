@@ -28,7 +28,7 @@ def test_project_metadata_uses_agent_maintainer_identity() -> None:
         metadata = tomllib.load(handle)
 
     assert metadata["project"]["name"] == "agent-maintainer"
-    assert metadata["project"]["version"] == "0.1.0b13"
+    assert metadata["project"]["version"] == "0.1.0b14"
     assert metadata["project"]["description"] == (
         "Repository maintenance checks and diagnostics for AI-assisted Python development."
     )

@@ -154,6 +154,8 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
             started_at=started_at,
             ended_at=ended_at,
             artifact_sensitivity=check.artifact_sensitivity,
+            structured_parser=check.structured_parser,
+            structured_parser_manager=check.structured_parser_manager,
         )
     ended_at = check_run_module.utc_timestamp()
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -170,7 +172,13 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
         check.name,
         passed=False,
         output=reporting.summarize_check_from_artifacts(
-            check.name, artifact_paths, output, max_lines, max_chars
+            check.name,
+            artifact_paths,
+            output,
+            max_lines,
+            max_chars,
+            structured_parser=check.structured_parser,
+            structured_parser_manager=check.structured_parser_manager,
         ),
         command=tuple(check.command),
         exit_code=returncode,
@@ -179,6 +187,8 @@ def run_check(check: Check, log_dir: Path, max_lines: int, max_chars: int) -> Ch
         ended_at=ended_at,
         artifact_paths=artifact_paths,
         artifact_sensitivity=check.artifact_sensitivity,
+        structured_parser=check.structured_parser,
+        structured_parser_manager=check.structured_parser_manager,
     )
 
 
@@ -224,6 +234,8 @@ def missing_requirement_result(
             started_at=started_at,
             ended_at=ended_at,
             artifact_sensitivity=check.artifact_sensitivity,
+            structured_parser=check.structured_parser,
+            structured_parser_manager=check.structured_parser_manager,
         )
     return CheckResult(
         check.name,
@@ -234,6 +246,8 @@ def missing_requirement_result(
         started_at=started_at,
         ended_at=ended_at,
         artifact_sensitivity=check.artifact_sensitivity,
+        structured_parser=check.structured_parser,
+        structured_parser_manager=check.structured_parser_manager,
     )
 
 
@@ -251,7 +265,14 @@ def success_result(
         return CheckResult(
             check.name,
             passed=True,
-            output=reporting.summarize_check(check.name, output, max_lines, max_chars),
+            output=reporting.summarize_check(
+                check.name,
+                output,
+                max_lines,
+                max_chars,
+                structured_parser=check.structured_parser,
+                structured_parser_manager=check.structured_parser_manager,
+            ),
             warning=True,
             command=tuple(check.command),
             exit_code=0,
@@ -260,6 +281,8 @@ def success_result(
             ended_at=check_run.ended_at,
             artifact_paths=artifact_paths,
             artifact_sensitivity=check.artifact_sensitivity,
+            structured_parser=check.structured_parser,
+            structured_parser_manager=check.structured_parser_manager,
         )
     return CheckResult(
         check.name,
@@ -271,4 +294,6 @@ def success_result(
         ended_at=check_run.ended_at,
         artifact_paths=artifact_paths,
         artifact_sensitivity=check.artifact_sensitivity,
+        structured_parser=check.structured_parser,
+        structured_parser_manager=check.structured_parser_manager,
     )

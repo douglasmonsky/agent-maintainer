@@ -55,11 +55,13 @@ class FailureRecord:
     log_bytes: int
     expansion_commands: tuple[str, ...]
     artifact_paths: tuple[str, ...] = ()
+    structured_parser: str = ""
+    structured_parser_manager: str = ""
 
     def to_json(self) -> dict[str, object]:
         """Return stable JSON payload."""
 
-        return {
+        payload: dict[str, object] = {
             "name": self.name,
             "status": self.status,
             "category": self.category,
@@ -70,6 +72,11 @@ class FailureRecord:
             "expansion_commands": list(self.expansion_commands),
             "artifact_paths": list(self.artifact_paths),
         }
+        if self.structured_parser:
+            payload["structured_parser"] = self.structured_parser
+        if self.structured_parser_manager:
+            payload["structured_parser_manager"] = self.structured_parser_manager
+        return payload
 
 
 def manifest_path(log_dir: Path) -> Path:
@@ -140,6 +147,8 @@ def record_from_payload(payload: object) -> FailureRecord | None:
         log_bytes=optional_int(check.get("log_bytes")) or 0,
         expansion_commands=string_tuple(check.get("expansion_commands", [])),
         artifact_paths=string_tuple(check.get("artifacts", [])),
+        structured_parser=str(check.get("structured_parser", "")),
+        structured_parser_manager=str(check.get("structured_parser_manager", "")),
     )
 
 

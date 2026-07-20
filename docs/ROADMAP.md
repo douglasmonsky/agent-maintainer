@@ -50,11 +50,11 @@ Current external release state:
 
 Current source candidate state:
 
-- [x] The unpublished `0.1.0b13` release candidate is the package-metadata and
+- [x] The unpublished `0.1.0b14` release candidate is the package-metadata and
       main-branch documentation target. Review the
-      [candidate notes](releases/0.1.0b13.md) and
-      [evaluation guide](upgrading-to-0.1.0b13.md).
-- [ ] `0.1.0b13` becomes the current external release only after the exact
+      [candidate notes](releases/0.1.0b14.md) and
+      [evaluation guide](upgrading-to-0.1.0b14.md).
+- [ ] `0.1.0b14` becomes the current external release only after the exact
       candidate commit passes the complete release matrix, TestPyPI and PyPI
       smokes pass, and publication evidence replaces candidate intent in the
       [release index](releases/README.md).
@@ -132,7 +132,7 @@ Follow the [parity roadmap](roadmap/typescript-react-parity-roadmap.md). Phase 1
 - [x] Phase 178: Advisory Package-Manager And Workspace Detection
 - [x] Phase 179: TypeScript Knip Unused-Code And Dependency Facts
 - [x] Phase 180: TypeScript OSV Dependency Facts; Phase 181: TypeScript Dependency-Cruiser Facts
-- [x] Phase 182: TypeScript LCOV Changed-Line Facts
+- [x] Phase 182: TypeScript LCOV Changed-Line Facts; Phase 192: TypeScript Package-Manager Audit Facts — explicit manager/command ownership, bounded advisory facts, and pinned npm/pnpm replay evidence; Yarn/Bun remain fixture-only.
 
 ## Active: External Proof And Architecture Hardening
 

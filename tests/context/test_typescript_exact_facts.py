@@ -353,6 +353,47 @@ def test_dependency_cruiser_context_uses_existing_five_fact_limit(
     assert all(fact["check"] == "typescript-dependency-cruiser:web" for fact in facts)
 
 
+def test_typescript_package_manager_audit_uses_shared_exact_fact_parser(
+    tmp_path: Path,
+) -> None:
+    """Exact repair facts use the explicit manager carried by the manifest."""
+
+    log_path = tmp_path / "audit.log"
+    log_path.write_text(
+        json.dumps(
+            {
+                "vulnerabilities": {
+                    "lodash": {
+                        "severity": "high",
+                        "via": ["GHSA-1234"],
+                        "nodes": ["node_modules/lodash"],
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_record = FailureRecord(
+        name="typescript-package-manager-audit:web",
+        status="failed",
+        category="security/tooling",
+        priority=9,
+        exit_code=1,
+        log_path=str(log_path),
+        log_bytes=log_path.stat().st_size,
+        expansion_commands=(),
+        structured_parser="typescript-package-manager-audit",
+        structured_parser_manager="npm",
+    )
+
+    facts = exact_facts.repair_facts(tmp_path, (audit_record,))
+
+    assert facts[0]["check"] == "typescript-package-manager-audit:web"
+    assert facts[0]["path"] == "node_modules/lodash"
+    assert facts[0]["symbol"] == "GHSA-1234"
+    assert facts[0]["severity"] == "high"
+
+
 def record(check: str, log_path: Path) -> FailureRecord:
     """Build failed check record with log path."""
     return FailureRecord(

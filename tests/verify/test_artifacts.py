@@ -83,6 +83,27 @@ def test_artifact_manifest_payload_and_status_helpers(tmp_path: Path) -> None:
     )
 
 
+def test_artifact_manifest_round_trips_structured_parser_context(tmp_path: Path) -> None:
+    """Audit metadata is omitted when empty and preserved when configured."""
+
+    result = CheckResult(
+        "typescript-package-manager-audit",
+        passed=False,
+        output="audit findings",
+        command=("npm", "audit", "--json"),
+        structured_parser="typescript-package-manager-audit",
+        structured_parser_manager="npm",
+    )
+    payload = artifact_manifest.check_payload(
+        artifact_adapters.artifact_check_result(result),
+        tmp_path,
+        artifact_adapters.artifact_config(MaintainerConfig()),
+    )
+
+    assert payload["structured_parser"] == "typescript-package-manager-audit"
+    assert payload["structured_parser_manager"] == "npm"
+
+
 def test_write_run_artifacts_records_manifest_and_failure_note(tmp_path: Path) -> None:
     log_dir = tmp_path / ".verify-logs"
     result = CheckResult(

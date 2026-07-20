@@ -3,11 +3,24 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 
+from agent_maintainer.config.schema import VALID_TYPESCRIPT_PACKAGE_MANAGERS
 from agent_maintainer.ecosystems.models import EcosystemCheckContext
-from agent_maintainer.models import Check
+from agent_maintainer.models import SKIP_STATUS_UNSAFE_CONFIG, Check
 
 DEPENDENCY_CRUISER_OUTPUT_LIMIT_CHARS = 5_000_000
+
+
+@dataclass(frozen=True)
+class StructuredParserHint:
+    """Carry an optional structured parser and explicit manager identity."""
+
+    name: str = ""
+    manager: str = ""
+
+
+DEFAULT_PARSER_HINT = StructuredParserHint()
 
 
 # docsync:evidence.start evidence.typescript.provider_commands
@@ -56,6 +69,13 @@ class TypeScriptProvider:
                 config.typescript_dependency_cruiser_profiles,
                 "typescript_dependency_cruiser_command",
             ),
+            _configured_audit_check(
+                "typescript-package-manager-audit",
+                config.typescript_package_manager_audit_manager,
+                config.typescript_package_manager_audit_command,
+                config.typescript_package_manager_audit_profiles,
+                "typescript_package_manager_audit_command",
+            ),
         ]
         for workspace in config.workspaces:
             workspace_specs = (
@@ -100,6 +120,16 @@ class TypeScriptProvider:
                 for check_name, command, profiles, config_field in workspace_specs
                 if command
             )
+            if workspace.typescript_package_manager_audit_command:
+                checks.append(
+                    _configured_audit_check(
+                        f"typescript-package-manager-audit:{workspace.name}",
+                        workspace.typescript_package_manager_audit_manager,
+                        workspace.typescript_package_manager_audit_command,
+                        config.typescript_package_manager_audit_profiles,
+                        f"workspaces.{workspace.name}.typescript_package_manager_audit_command",
+                    )
+                )
         return checks
 
 
@@ -108,11 +138,14 @@ def _configured_check(
     command: tuple[str, ...],
     profiles: Iterable[str],
     config_field: str,
+    *,
+    parser_hint: StructuredParserHint = DEFAULT_PARSER_HINT,
 ) -> Check:
     """Build a runnable or explicitly skipped configured-command check."""
     selected_profiles = frozenset(profiles)
     is_dependency_cruiser = name.partition(":")[0] == "typescript-dependency-cruiser"
     output_limit = DEPENDENCY_CRUISER_OUTPUT_LIMIT_CHARS if is_dependency_cruiser else None
+    report_success_output = is_dependency_cruiser or bool(parser_hint.name)
     if not command:
         return Check(
             name,
@@ -122,16 +155,54 @@ def _configured_check(
                 "TypeScript provider is enabled, but "
                 f"[tool.agent_maintainer].{config_field} is empty"
             ),
-            report_success_output=is_dependency_cruiser,
+            report_success_output=report_success_output,
             output_limit_chars=output_limit,
+            structured_parser=parser_hint.name,
+            structured_parser_manager=parser_hint.manager,
         )
     return Check(
         name,
         list(command),
         selected_profiles,
         required_executable=command[0],
-        report_success_output=is_dependency_cruiser,
+        report_success_output=report_success_output,
         output_limit_chars=output_limit,
+        structured_parser=parser_hint.name,
+        structured_parser_manager=parser_hint.manager,
+    )
+
+
+def _configured_audit_check(
+    name: str,
+    manager: str,
+    command: tuple[str, ...],
+    profiles: Iterable[str],
+    config_field: str,
+) -> Check:
+    """Build an audit check only when its manager is explicit and supported."""
+
+    parser_name = "typescript-package-manager-audit"
+    selected_profiles = frozenset(profiles)
+    if command and manager not in VALID_TYPESCRIPT_PACKAGE_MANAGERS:
+        manager_field = f"{config_field.removesuffix('_command')}_manager"
+        valid_managers = ", ".join(sorted(VALID_TYPESCRIPT_PACKAGE_MANAGERS))
+        skip_reason = f"{config_field} requires {manager_field} to be one of: {valid_managers}"
+        return Check(
+            name,
+            [name],
+            selected_profiles,
+            optional_skip_reason=skip_reason,
+            optional_skip_status=SKIP_STATUS_UNSAFE_CONFIG,
+            report_success_output=True,
+            structured_parser=parser_name,
+            structured_parser_manager="",
+        )
+    return _configured_check(
+        name,
+        command,
+        profiles,
+        config_field,
+        parser_hint=StructuredParserHint(parser_name, manager),
     )
 
 

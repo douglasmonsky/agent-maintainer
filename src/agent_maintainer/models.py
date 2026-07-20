@@ -49,6 +49,8 @@ class Check:
     timeout_seconds: int | None = None
     output_limit_chars: int | None = None
     artifact_sensitivity: str = "safe"
+    structured_parser: str = ""
+    structured_parser_manager: str = ""
 
 
 @dataclass(frozen=True)
@@ -68,3 +70,5 @@ class CheckResult:
     ended_at: str = ""
     artifact_paths: tuple[str, ...] = ()
     artifact_sensitivity: str = "safe"
+    structured_parser: str = ""
+    structured_parser_manager: str = ""

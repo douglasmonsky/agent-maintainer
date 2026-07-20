@@ -22,6 +22,8 @@ class ArtifactCheckResult:
     ended_at: str = ""
     artifact_paths: tuple[str, ...] = ()
     artifact_sensitivity: str = "safe"
+    structured_parser: str = ""
+    structured_parser_manager: str = ""
 
 
 @dataclass(frozen=True)

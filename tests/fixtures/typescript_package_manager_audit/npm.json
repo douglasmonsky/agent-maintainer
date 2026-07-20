@@ -1,0 +1,29 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "lodash": {
+      "name": "lodash",
+      "severity": "high",
+      "isDirect": true,
+      "dev": false,
+      "via": [
+        {
+          "source": "GHSA-1234",
+          "title": "Prototype pollution",
+          "range": "<4.17.21"
+        }
+      ],
+      "range": "<4.17.21",
+      "nodes": ["node_modules/lodash"],
+      "fixAvailable": {"name": "lodash", "version": "4.17.21"}
+    },
+    "minimist": {
+      "name": "minimist",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["GHSA-9999"],
+      "range": "<1.2.2",
+      "fixAvailable": false
+    }
+  }
+}

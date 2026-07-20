@@ -32,6 +32,7 @@ def test_enabled_java_checks_follow_typescript_and_precede_workflow_checks() -> 
     names = [check.name for check in checks]
 
     assert names[names.index("typescript-dependency-cruiser") + 1 : names.index("actionlint")] == [
+        "typescript-package-manager-audit",
         "java-gradle-format",
         "java-gradle-static",
         "java-gradle-tests",

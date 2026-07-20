@@ -69,7 +69,7 @@ def validate_config(
     issues.extend(java_issues(config.java, source=source))
     issues.extend(_cross_field_issues(config, source=source))
     if issues:
-        raise ConfigValidationError(tuple(issues))
+        raise ConfigValidationError(tuple(issue for issue in issues))
     return config
 
 
@@ -216,6 +216,14 @@ def _workspace_issues(
         for field_name in registry.WORKSPACE_PATH_KEYS:
             value = getattr(workspace, field_name)
             issues.extend(_nested_path_issues(value, key=f"{prefix}.{field_name}", source=source))
+        issues.extend(
+            _typescript_package_manager_audit_issues(
+                workspace.typescript_package_manager_audit_manager,
+                workspace.typescript_package_manager_audit_command,
+                prefix=prefix,
+                source=source,
+            )
+        )
     return tuple(issues)
 
 
@@ -283,6 +291,48 @@ def _cross_field_issues(
                 source,
                 "context_compression_backend",
                 "cannot be 'none' when compression is enabled",
+            )
+        )
+    issues.extend(
+        _typescript_package_manager_audit_issues(
+            config.typescript_package_manager_audit_manager,
+            config.typescript_package_manager_audit_command,
+            prefix="",
+            source=source,
+        )
+    )
+    return tuple(issues)
+
+
+def _typescript_package_manager_audit_issues(
+    manager: str,
+    command: tuple[str, ...],
+    *,
+    prefix: str,
+    source: str,
+) -> tuple[ConfigIssue, ...]:
+    """Validate the explicit audit manager/command relationship."""
+
+    manager_key = (
+        f"{prefix}.typescript_package_manager_audit_manager"
+        if prefix
+        else "typescript_package_manager_audit_manager"
+    )
+    command_key = (
+        f"{prefix}.typescript_package_manager_audit_command"
+        if prefix
+        else "typescript_package_manager_audit_command"
+    )
+    issues: list[ConfigIssue] = []
+    if manager and manager not in schema.VALID_TYPESCRIPT_PACKAGE_MANAGERS:
+        choices = ", ".join(sorted(schema.VALID_TYPESCRIPT_PACKAGE_MANAGERS))
+        issues.append(ConfigIssue(source, manager_key, f"must be one of: {choices}"))
+    if command and not manager:
+        issues.append(
+            ConfigIssue(
+                source,
+                command_key,
+                f"requires {manager_key} to be configured",
             )
         )
     return tuple(issues)

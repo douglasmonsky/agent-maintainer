@@ -1,0 +1,2 @@
+{"type":"audit","data":{"package":"lodash","id":"GHSA-1234","severity":"high","vulnerableVersions":"<4.17.21","patchedVersions":">=4.17.21","path":"node_modules/lodash"}}
+{"type":"audit","data":{"package":"kleur","id":"CVE-2024-0001","severity":"low","vulnerableVersions":"<4.1.5","path":"node_modules/kleur"}}

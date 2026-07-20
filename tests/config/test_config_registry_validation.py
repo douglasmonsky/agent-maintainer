@@ -13,7 +13,7 @@ import pytest
 from agent_maintainer.config import coercion, loader, registry, schema, validation
 from agent_maintainer.core import args as core_args
 
-EXPECTED_CONFIG_FIELD_COUNT = 137
+EXPECTED_CONFIG_FIELD_COUNT = 140
 
 
 def assert_issue(
@@ -197,6 +197,70 @@ def test_alias_and_canonical_key_conflict_fails() -> None:
     }
     with pytest.raises(validation.ConfigValidationError, match="cannot be combined"):
         loader.apply_pyproject(schema.MaintainerConfig(), raw)
+
+
+def test_typescript_audit_manager_must_be_supported() -> None:
+    """Audit configuration rejects managers without a named adapter."""
+
+    error = capture_config_error(
+        loader.apply_pyproject,
+        schema.MaintainerConfig(),
+        {
+            "typescript_package_manager_audit_manager": "deno",
+            "typescript_package_manager_audit_command": ["deno", "audit"],
+        },
+        source="settings.toml",
+    )
+
+    assert_issue(
+        error.issues[0],
+        source="settings.toml",
+        key="typescript_package_manager_audit_manager",
+        message="must be one of: bun, npm, pnpm, yarn",
+    )
+
+
+def test_typescript_audit_command_requires_explicit_manager() -> None:
+    """An audit command cannot silently select a package manager."""
+
+    error = capture_config_error(
+        loader.apply_pyproject,
+        schema.MaintainerConfig(),
+        {"typescript_package_manager_audit_command": ["npm", "audit", "--json"]},
+        source="settings.toml",
+    )
+
+    assert_issue(
+        error.issues[0],
+        source="settings.toml",
+        key="typescript_package_manager_audit_command",
+        message="requires typescript_package_manager_audit_manager to be configured",
+    )
+
+
+def test_workspace_typescript_audit_manager_uses_same_validation() -> None:
+    """Workspace audit checks cannot bypass the explicit manager contract."""
+
+    error = capture_config_error(
+        validation.validate_config,
+        schema.MaintainerConfig(
+            workspaces=(
+                schema.WorkspaceConfig(
+                    name="web",
+                    typescript_package_manager_audit_manager="deno",
+                    typescript_package_manager_audit_command=("deno", "audit"),
+                ),
+            ),
+        ),
+        source="settings.toml",
+    )
+
+    assert_issue(
+        error.issues[0],
+        source="settings.toml",
+        key="workspaces.web.typescript_package_manager_audit_manager",
+        message="must be one of: bun, npm, pnpm, yarn",
+    )
 
 
 def test_unknown_environment_name_fails_closed() -> None:

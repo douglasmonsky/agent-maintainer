@@ -6,6 +6,7 @@ from agent_repair_facts.parsers import (
     typescript_checks,
     typescript_dependency_cruiser,
     typescript_knip,
+    typescript_package_manager_audit,
 )
 from agent_repair_facts.parsers.typescript_coverage import (
     parse_coverage_summary_json,
@@ -23,6 +24,7 @@ from agent_repair_facts.parsers.typescript_tests import parse_vitest_json
 TYPESCRIPT_DIAGNOSTIC_LIMIT = 50
 KNIP_SUMMARY_LINE_LIMIT = 50
 DEPENDENCY_CRUISER_SUMMARY_LINE_LIMIT = 50
+AUDIT_SUMMARY_LINE_LIMIT = 50
 
 
 def summarize_typescript_lint(raw_output: str) -> str | None:
@@ -84,8 +86,44 @@ def summarize_typescript_dependency_cruiser(raw_output: str) -> str | None:
     return "\n".join(lines)
 
 
-def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:
+def summarize_typescript_package_manager_audit(
+    raw_output: str,
+    *,
+    manager: str,
+    workspace: str,
+) -> str | None:
+    """Return a bounded advisory summary for an explicitly selected manager."""
+
+    if not manager:
+        return None
+    result = typescript_package_manager_audit.parse_audit_report(
+        manager,
+        workspace,
+        "typescript-package-manager-audit",
+        raw_output,
+    )
+    if result.outcome == typescript_package_manager_audit.AUDIT_OUTCOME_INVALID:
+        return None
+    return typescript_package_manager_audit.render_audit_summary(
+        result,
+        max_lines=AUDIT_SUMMARY_LINE_LIMIT,
+    )
+
+
+def summarize_typescript_check(
+    check_name: str,
+    raw_output: str,
+    *,
+    structured_parser: str = "",
+    structured_parser_manager: str = "",
+) -> str | None:
     """Return compact TypeScript provider summary when output is structured."""
+    if structured_parser == "typescript-package-manager-audit":
+        return summarize_typescript_package_manager_audit(
+            raw_output,
+            manager=structured_parser_manager,
+            workspace=_workspace_label(check_name),
+        )
     summarizers = {
         "typescript-lint": summarize_typescript_lint,
         "typescript-typecheck": summarize_typescript_typecheck,
@@ -97,6 +135,12 @@ def summarize_typescript_check(check_name: str, raw_output: str) -> str | None:
     if summarizer is None:
         return None
     return summarizer(raw_output)
+
+
+def _workspace_label(check_name: str) -> str:
+    """Return explicit workspace ownership from the stable check name."""
+
+    return check_name.partition(":")[2] or "root"
 
 
 def summarize_diagnostics(diagnostics: list[TypeScriptDiagnostic]) -> str | None:

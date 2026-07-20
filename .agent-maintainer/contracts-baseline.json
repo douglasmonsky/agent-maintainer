@@ -3159,6 +3159,69 @@
             },
             "default": [],
             "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_COMMAND"
+            ],
+            "kind": "tuple",
+            "name": "typescript_package_manager_audit_command",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": true,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": "",
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_MANAGER"
+            ],
+            "kind": "str",
+            "name": "typescript_package_manager_audit_manager",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": true
+            },
+            "default": [
+              "full",
+              "ci"
+            ],
+            "environment": [
+              "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_PROFILES"
+            ],
+            "kind": "tuple",
+            "name": "typescript_package_manager_audit_profiles",
+            "required": false,
+            "stability": "beta"
+          },
+          {
+            "aliases": [],
+            "choices": [],
+            "constraints": {
+              "allow_empty": false,
+              "maximum": null,
+              "minimum": null,
+              "minimum_exclusive": false,
+              "repository_relative_path": false,
+              "verification_profiles": false
+            },
+            "default": [],
+            "environment": [
               "AGENT_MAINTAINER_TYPESCRIPT_TEST_COMMAND"
             ],
             "kind": "tuple",
@@ -3385,7 +3448,7 @@
         ]
       },
       "contract_id": "agent-maintainer-config",
-      "fingerprint": "sha256:c9137463939fe362163ef77d21386d846d5237a13bc8a7b1dfbb6df0978bf5a6",
+      "fingerprint": "sha256:57a8b82afd27e8d40a5b2424374b6665bd92f58f2bb0a4e48b2296733edbe1a0",
       "kind": "config-capabilities",
       "owner": "agent_maintainer.config.reference",
       "revision": 1,
@@ -3834,8 +3897,8 @@
       "stability": "beta"
     }
   ],
-  "document_fingerprint": "sha256:0dff3b8f14482b4451e839d7e5a0cbaf43c1f8c7cf23525b83eea5f981a0c87a",
+  "document_fingerprint": "sha256:1fa3f1e76175101407b1a40bff76a5b3d72119f8784c5531fad52b5ac15f6408",
   "generator": "agent-maintainer",
-  "package_version": "0.1.0b13",
+  "package_version": "0.1.0b14",
   "schema_version": 1
 }

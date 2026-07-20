@@ -216,6 +216,45 @@ def test_artifact_fallback_preserves_check_specific_summary() -> None:
     )
 
 
+def test_summary_helpers_fail_closed_on_invalid_options() -> None:
+    """Summary compatibility shims reject malformed limits and parser hints."""
+
+    with pytest.raises(TypeError, match="max_lines and max_chars"):
+        maintainer_reporting.summarize_check("ruff", "raw", 5)
+    with pytest.raises(TypeError, match="max_lines and max_chars"):
+        maintainer_reporting.summarize_check("ruff", "raw", "5", 500)
+    with pytest.raises(TypeError, match="unsupported summary options: typo"):
+        maintainer_reporting.summarize_check("ruff", "raw", 5, 500, typo=True)
+    with pytest.raises(TypeError, match="structured parser options must be strings"):
+        maintainer_reporting.summarize_check(
+            "ruff",
+            "raw",
+            5,
+            500,
+            structured_parser=1,
+        )
+    with pytest.raises(TypeError, match="max_lines and max_chars"):
+        maintainer_reporting.summarize_check_from_artifacts("ruff", (), "raw", 5)
+    with pytest.raises(TypeError, match="unsupported summary options: typo"):
+        maintainer_reporting.summarize_check_from_artifacts(
+            "ruff",
+            (),
+            "raw",
+            5,
+            500,
+            typo=True,
+        )
+    with pytest.raises(TypeError, match="structured parser options must be strings"):
+        maintainer_reporting.summarize_check_from_artifacts(
+            "ruff",
+            (),
+            "raw",
+            5,
+            500,
+            structured_parser_manager=1,
+        )
+
+
 def test_print_success_and_failures(capsys: pytest.CaptureFixture[str]) -> None:
     skipped = [
         CheckResult(

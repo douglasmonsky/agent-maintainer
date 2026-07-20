@@ -220,6 +220,10 @@ documents:
     path: docs/releases/0.1.0b13.md
     title: Agent Maintainer 0.1.0b13 Candidate Notes
     audience: public
+  docs.release_0_1_0b14_candidate:
+    path: docs/releases/0.1.0b14.md
+    title: Agent Maintainer 0.1.0b14 Candidate Notes
+    audience: public
   docs.upgrade_0_1_0b6:
     path: docs/upgrading-to-0.1.0b6.md
     title: Installing or Upgrading to 0.1.0b6
@@ -251,6 +255,10 @@ documents:
   docs.upgrade_0_1_0b13:
     path: docs/upgrading-to-0.1.0b13.md
     title: Upgrading from 0.1.0b12 to 0.1.0b13
+    audience: public
+  docs.upgrade_0_1_0b14:
+    path: docs/upgrading-to-0.1.0b14.md
+    title: Upgrading from 0.1.0b12 to 0.1.0b14
     audience: public
 
   docs.future_call_roi_acceleration:
@@ -762,6 +770,14 @@ objects:
     heading:
       level: 1
       text: Agent Maintainer 0.1.0b13 Candidate Notes
+  docs.release_0_1_0b14_candidate.overview:
+    document: docs.release_0_1_0b14_candidate
+    kind: heading_section
+    path: docs/releases/0.1.0b14.md
+    marker: docs.release_0_1_0b14_candidate.overview
+    heading:
+      level: 1
+      text: Agent Maintainer 0.1.0b14 Candidate Notes
   docs.upgrade_0_1_0b6.overview:
     document: docs.upgrade_0_1_0b6
     kind: heading_section
@@ -826,6 +842,14 @@ objects:
     heading:
       level: 1
       text: Upgrading from 0.1.0b12 to 0.1.0b13
+  docs.upgrade_0_1_0b14.overview:
+    document: docs.upgrade_0_1_0b14
+    kind: heading_section
+    path: docs/upgrading-to-0.1.0b14.md
+    marker: docs.upgrade_0_1_0b14.overview
+    heading:
+      level: 1
+      text: Upgrading from 0.1.0b12 to 0.1.0b14
 
   docs.future_call_roi_acceleration.overview:
     document: docs.future_call_roi_acceleration
@@ -1073,7 +1097,8 @@ claims:
     text: TypeScript provider docs describe structured summaries and exact repair
       facts for tsc, ESLint JSON, Jest/Vitest JSON, Istanbul coverage summary,
       LCOV, bounded Knip JSON, bounded dependency-cruiser cruise-result JSON,
-      and bounded grouped OSV Scanner v2 outputs with malformed output fallback.
+      explicit package-manager audit JSON/NDJSON, and bounded grouped OSV
+      Scanner v2 outputs with malformed output fallback.
     severity: medium
     evidence:
       - evidence.typescript.structured_output_tests
@@ -1088,11 +1113,13 @@ claims:
       - evidence.typescript.dependency_cruiser_fact_tests
       - evidence.typescript.dependency_cruiser_summary_tests
       - evidence.typescript.dependency_cruiser_external_fixtures
+      - evidence.typescript.package_manager_audit_facts
   claim.docs.typescript_provider_unsupported_surface:
     object: docs.typescript_provider.overview
-    text: TypeScript provider docs document unsupported package managers,
-      test runners, frameworks, explicit workspace command ownership, coverage,
-      dependency, security, mutation, and blocking reviewability surfaces.
+    text: TypeScript provider docs document unsupported package-manager
+      autodetection, test runners, frameworks, explicit workspace command
+      ownership, coverage, dependency, security, mutation, and blocking
+      reviewability surfaces.
     severity: medium
     evidence:
       - evidence.typescript.provider_docs_maturity_tests
@@ -1395,6 +1422,12 @@ claims:
     severity: high
     evidence:
       - evidence.release.public_contract_tests
+  claim.docs.release_0_1_0b14_candidate_truth:
+    object: docs.release_0_1_0b14_candidate.overview
+    text: Candidate notes identify 0.1.0b14 intent without claiming publication evidence.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
   claim.docs.upgrade_0_1_0b6_safe_adoption:
     object: docs.upgrade_0_1_0b6.overview
     text: Upgrade guidance covers published-package adoption, mutation preview, verification, and rollback.
@@ -1439,6 +1472,12 @@ claims:
       - evidence.release.public_contract_tests
   claim.docs.upgrade_0_1_0b13_safe_adoption:
     object: docs.upgrade_0_1_0b13.overview
+    text: Candidate upgrade guidance covers trusted evaluation, mutation preview, verification, and rollback to 0.1.0b12.
+    severity: high
+    evidence:
+      - evidence.release.public_contract_tests
+  claim.docs.upgrade_0_1_0b14_safe_adoption:
+    object: docs.upgrade_0_1_0b14.overview
     text: Candidate upgrade guidance covers trusted evaluation, mutation preview, verification, and rollback to 0.1.0b12.
     severity: high
     evidence:
@@ -1766,6 +1805,23 @@ evidence:
       exact commands, exit status, and bounded normalized findings.
     anchors:
       - path: tests/assess/test_depcruise_external_fixtures.py
+        mode: explicit_region
+  evidence.typescript.package_manager_audit_facts:
+    type: test
+    description: TypeScript package-manager audit tests cover explicit npm,
+      pnpm, Yarn, and Bun manager context, bounded normalized JSON/NDJSON facts,
+      shared summaries and repair context, malformed neighbors, unsafe paths,
+      and pinned npm/pnpm projection replay.
+    anchors:
+      - path: tests/config/test_typescript_config.py
+        mode: explicit_region
+      - path: tests/repair_facts/test_typescript_package_manager_audit_facts.py
+        mode: explicit_region
+      - path: tests/core/test_typescript_structured_output.py
+        mode: explicit_region
+      - path: tests/context/test_typescript_exact_facts.py
+        mode: explicit_region
+      - path: tests/assess/test_typescript_package_manager_audit_external.py
         mode: explicit_region
   evidence.typescript.reviewability_fixture_tests:
     type: test

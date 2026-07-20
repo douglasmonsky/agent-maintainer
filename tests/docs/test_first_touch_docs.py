@@ -131,9 +131,10 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
             "Agent Maintainer will run only the workspace TypeScript commands "
             "you configure and will not infer nested package commands.",
             "Coverage summaries and LCOV files can improve `typescript-test` repair facts",
-            "TypeScript coverage enforcement, package-manager audit, "
-            "mutation, and blocking reviewability adapters are not "
-            "implemented yet.",
+            "The package-manager audit adapter accepts only an explicitly "
+            "declared manager and command, and remains advisory",
+            "TypeScript coverage command execution or enforcement, mutation, "
+            "and blocking reviewability adapters are not implemented yet.",
             "No TypeScript reviewability gate is blocking by default.",
         ),
         "docs/multi-ecosystem-reviewability-policy.md": (
@@ -167,7 +168,7 @@ def test_provider_docs_contain_clear_maturity_phrases() -> None:
 
 
 def test_provider_status_tracks_typescript_knip_facts() -> None:
-    """Provider status records completed Knip facts and the next parity slice."""
+    """Provider status records completed Knip facts and the audit milestone."""
     text = normalized_text("docs/provider-status.md")
     for expected in (
         "Phase 178 package-manager and workspace evidence is advisory only.",
@@ -179,7 +180,8 @@ def test_provider_status_tracks_typescript_knip_facts() -> None:
         "TanStack Query",
         "Astro",
         "Phase 180 OSV dependency facts are complete.",
-        "package-manager audit facts are the next parity slice",
+        "Phase 192 package-manager audit facts are now complete",
+        "explicit manager and command ownership",
         "TypeScript/JavaScript remains experimental",
     ):
         assert expected in text
@@ -193,12 +195,12 @@ def test_provider_docs_track_typescript_osv_facts() -> None:
             "Phase 180 OSV dependency facts are complete.",
             "uses the existing ecosystem-neutral `osv-scanner` gate",
             "one fact per OSV alias group",
-            "package-manager audit facts are the next parity slice",
+            "Phase 192 package-manager audit facts are complete",
             "TypeScript/JavaScript remains experimental",
         ),
         "docs/provider-status.md": (
             "Phase 180 OSV dependency facts are complete.",
-            "package-manager audit facts are the next parity slice",
+            "Phase 192 package-manager audit facts are now complete",
             "TypeScript/JavaScript remains experimental",
         ),
     }
@@ -217,14 +219,14 @@ def test_provider_docs_track_typescript_dependency_cruiser_facts() -> None:
             "500 normalized findings",
             "50 total lines",
             ("dependency-cruiser is the TypeScript/JavaScript architecture-boundary counterpart"),
-            "package-manager audit facts are the next parity slice",
+            "Phase 192 package-manager audit facts are complete",
             "TypeScript/JavaScript remains experimental",
         ),
         "docs/provider-status.md": (
             "Phase 181 dependency-cruiser architecture facts are complete.",
             "decentralized-identity/dwn-sdk-js",
             "hicommonwealth/commonwealth",
-            "package-manager audit facts are the next parity slice",
+            "Phase 192 package-manager audit facts are now complete",
             "TypeScript/JavaScript remains experimental",
         ),
         "docs/tool-map.md": (

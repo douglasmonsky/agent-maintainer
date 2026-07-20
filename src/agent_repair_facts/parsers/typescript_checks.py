@@ -9,6 +9,7 @@ TYPESCRIPT_CHECK_FAMILIES = frozenset(
         "typescript-test",
         "typescript-knip",
         "typescript-dependency-cruiser",
+        "typescript-package-manager-audit",
     )
 )
 

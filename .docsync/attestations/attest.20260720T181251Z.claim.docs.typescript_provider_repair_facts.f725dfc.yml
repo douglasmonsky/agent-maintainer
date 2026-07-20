@@ -1,0 +1,21 @@
+version: 1
+attestations:
+- id: attest.20260720T181251Z.claim.docs.typescript_provider_repair_facts.f725dfc
+  claim: claim.docs.typescript_provider_repair_facts
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.package_manager_audit_facts
+  reason: Re-reviewed package-manager audit test evidence after narrowing adapter
+    helper results for strict CI typing.
+  reviewer: agent
+  reviewed_at: '2026-07-20T18:12:51Z'
+  base: HEAD
+  head: f725dfc
+  evidence_fingerprints:
+    evidence.typescript.package_manager_audit_facts: sha256:38e4059c1281d2f1868ac09e318af76eeb512b74b13d6d547a53e5d913fddcea
+  evidence_anchor_fingerprints:
+    evidence.typescript.package_manager_audit_facts:
+    - sha256:873130c46dac6c6555bcd826c8589db8a9aa5412c83ff4974615e9ac621c8e55
+    - sha256:50036483b89727d6b1cbbbaba06080e0d7d21d4234b44a110f8733f3054ae3aa
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

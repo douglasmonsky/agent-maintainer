@@ -63,6 +63,30 @@ def test_failures_cli_outputs_json(
     ]
 
 
+def test_failure_record_preserves_explicit_structured_parser_context(tmp_path: Path) -> None:
+    """Failure records round-trip the audit parser and configured manager."""
+
+    payload = {
+        "checks": [
+            {
+                "name": "typescript-package-manager-audit:web",
+                "status": "failed",
+                "exit_code": 1,
+                "log_path": "audit.log",
+                "structured_parser": "typescript-package-manager-audit",
+                "structured_parser_manager": "pnpm",
+            }
+        ]
+    }
+    (tmp_path / "manifest.json").write_text(json.dumps(payload), encoding="utf-8")
+
+    record = failure_records(tmp_path)[0]
+
+    assert record.structured_parser == "typescript-package-manager-audit"
+    assert record.structured_parser_manager == "pnpm"
+    assert record.to_json()["structured_parser_manager"] == "pnpm"
+
+
 def test_failures_missing_manifest_is_graceful(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

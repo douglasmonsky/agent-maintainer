@@ -41,6 +41,13 @@ def test_pyproject_loads_typescript_provider_config() -> None:
                 "src",
             ],
             "typescript_dependency_cruiser_profiles": ["full", "ci"],
+            "typescript_package_manager_audit_manager": "pnpm",
+            "typescript_package_manager_audit_command": [
+                "pnpm",
+                "audit",
+                "--json",
+            ],
+            "typescript_package_manager_audit_profiles": ["full", "ci"],
         },
     )
 
@@ -68,6 +75,13 @@ def test_pyproject_loads_typescript_provider_config() -> None:
         "src",
     )
     assert loaded.typescript_dependency_cruiser_profiles == ("full", "ci")
+    assert loaded.typescript_package_manager_audit_manager == "pnpm"
+    assert loaded.typescript_package_manager_audit_command == (
+        "pnpm",
+        "audit",
+        "--json",
+    )
+    assert loaded.typescript_package_manager_audit_profiles == ("full", "ci")
 
 
 def test_env_overrides_typescript_provider_config(
@@ -106,6 +120,18 @@ def test_env_overrides_typescript_provider_config(
         "AGENT_MAINTAINER_TYPESCRIPT_DEPENDENCY_CRUISER_PROFILES",
         "full,ci",
     )
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_MANAGER",
+        "pnpm",
+    )
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_COMMAND",
+        "pnpm,audit,--json",
+    )
+    monkeypatch.setenv(
+        "AGENT_MAINTAINER_TYPESCRIPT_PACKAGE_MANAGER_AUDIT_PROFILES",
+        "full,ci",
+    )
 
     loaded = loader.apply_env(MaintainerConfig())
 
@@ -133,6 +159,13 @@ def test_env_overrides_typescript_provider_config(
         "src",
     )
     assert loaded.typescript_dependency_cruiser_profiles == ("full", "ci")
+    assert loaded.typescript_package_manager_audit_manager == "pnpm"
+    assert loaded.typescript_package_manager_audit_command == (
+        "pnpm",
+        "audit",
+        "--json",
+    )
+    assert loaded.typescript_package_manager_audit_profiles == ("full", "ci")
 
 
 def test_typescript_knip_defaults_to_full_and_ci_profiles() -> None:
@@ -151,6 +184,16 @@ def test_typescript_dependency_cruiser_defaults_to_full_and_ci_profiles() -> Non
 
     assert loaded.typescript_dependency_cruiser_command == ()
     assert loaded.typescript_dependency_cruiser_profiles == ("full", "ci")
+
+
+def test_typescript_package_manager_audit_defaults_to_empty_command_and_manager() -> None:
+    """Audit remains optional until a manager and exact command are configured."""
+
+    loaded = MaintainerConfig()
+
+    assert loaded.typescript_package_manager_audit_manager == ""
+    assert loaded.typescript_package_manager_audit_command == ()
+    assert loaded.typescript_package_manager_audit_profiles == ("full", "ci")
 
 
 # docsync:evidence.start evidence.typescript.advisory_threshold_config_tests

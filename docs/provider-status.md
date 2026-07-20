@@ -12,7 +12,7 @@ providers are behind explicit configuration.
 | Ecosystem | Maturity | Current Support | Not Yet |
 |---|---|---|---|
 | Python | Core/reference | Full check catalog, reviewability policies, coverage, diff coverage, mutation ratchets, security and dependency checks, doctor support, repair facts, and starter templates. | External plugin API. |
-| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test/Knip/dependency-cruiser commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, Istanbul/LCOV, bounded Knip and dependency-cruiser repair facts, grouped OSV dependency facts through the ecosystem-neutral manual gate, and advisory LCOV changed-line coverage for existing artifacts; format-aware doctor setup and repair-fact output guidance rows. Advisory package-manager and workspace evidence. | Starter files, coverage command/gate adapters, mutation testing, package-manager audit adapters, broader security adapters, declared Nx boundaries, and blocking reviewability gates. |
+| TypeScript/JavaScript | Experimental | Explicit configured lint/typecheck/test/Knip/dependency-cruiser/package-manager-audit commands; file classification; advisory suppression classification; `tsc --pretty false`, ESLint JSON, Jest/Vitest JSON, Istanbul/LCOV, bounded Knip, dependency-cruiser, and package-manager audit repair facts, grouped OSV dependency facts through the ecosystem-neutral manual gate, and advisory LCOV changed-line coverage for existing artifacts; format-aware doctor setup and repair-fact output guidance rows. Advisory package-manager and workspace evidence. | Starter files, coverage command/gate adapters, mutation testing, broader security adapters, declared Nx boundaries, and blocking reviewability gates. |
 | Java/Gradle | Experimental calibrated ratchets | Explicit checked-wrapper task groups; reviewed setup; Spotless/native SpotBugs ratchets; exact upward-only JaCoCo thresholds; truthful project coverage; bounded XML evidence; Java debt baselines; exact repair facts; live Linux/Windows Gradle fixtures; static doctor checks. | Maven, automatic aggregate coverage, broad Java-specific blocking reviewability, production-scale calibration, and stable-provider guarantees. |
 | C/C++ (CMake) | Experimental foundation | Classification, config, suppression evidence, and static doctor only. All evidence is advisory-only. | Command execution and typed reports until Phase 188; report parsing, sanitizers, blocking policy, promotion, non-CMake build systems, and a stable external provider API. |
 
@@ -41,9 +41,11 @@ Pinned `decentralized-identity/dwn-sdk-js` and
 `hicommonwealth/commonwealth` projections cover npm and pnpm-workspace
 cruise-result shapes. Pinned committed LCOV projections from
 `CMSgov/qpp-measures-data` and `starbeamjs/starbeam` cover npm/TypeScript/Jest
-V8 and pnpm-workspace shapes. The roadmap records that package-manager audit
-facts are the next parity slice. Package-manager audit facts are the next parity
-slice; TypeScript/JavaScript remains experimental.
+V8 and pnpm-workspace shapes. Phase 192 package-manager audit facts are now
+complete: explicit manager and command ownership, bounded normalized advisory
+facts, and offline pinned npm/pnpm projections. Yarn and Bun remain fixture-only
+until equivalent public evidence is collected; TypeScript/JavaScript remains
+experimental.
 
 Java/Gradle remains the second built-in experimental priority. Neither provider
 is promoted by this sequencing decision. TypeScript still must satisfy the bar

@@ -23,8 +23,7 @@ ValueKind = Literal[
     "java",
 ]
 
-CLI_OVERRIDE_NONE = "none"
-CLI_OVERRIDE_VERIFY = "verify"
+CLI_OVERRIDE_NONE, CLI_OVERRIDE_VERIFY = "none", "verify"
 STABILITY_BETA = "beta"
 STABILITY_STABLE = "stable"
 
@@ -109,6 +108,7 @@ WORKSPACE_KEYS = frozenset(
         "typescript_test_command",
         "typescript_knip_command",
         "typescript_dependency_cruiser_command",
+        *("typescript_package_manager_audit_manager", "typescript_package_manager_audit_command"),
     )
 )
 WORKSPACE_PATH_KEYS = frozenset(("source_roots", "test_roots", "package_paths", "coverage_source"))
@@ -318,6 +318,7 @@ FIELD_KINDS: Mapping[str, ValueKind] = MappingProxyType(
 ZERO = float(0)
 ONE = float(1)
 HUNDRED = float(100)
+ALLOW_EMPTY_FIELDS = frozenset(("file_length_baseline", "typescript_package_manager_audit_manager"))
 
 
 def _value_kind(field_name: str) -> ValueKind:
@@ -367,7 +368,7 @@ def _build_spec(field_name: str) -> ConfigFieldSpec:
         minimum_exclusive=field_name == "context_compression_target_ratio",
         path_value=field_name in PATH_FIELDS,
         profile_values=field_name in PROFILE_FIELDS,
-        allow_empty=field_name == "file_length_baseline",
+        allow_empty=field_name in ALLOW_EMPTY_FIELDS,
         cli_override=(
             CLI_OVERRIDE_VERIFY if field_name in CLI_OVERRIDE_FIELDS else CLI_OVERRIDE_NONE
         ),

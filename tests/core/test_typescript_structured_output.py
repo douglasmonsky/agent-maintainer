@@ -73,6 +73,63 @@ def test_typescript_workspace_lint_uses_the_root_structured_summary() -> None:
     assert summary == f"{APP_PATH}:7:3: error: no-unused-vars: Unused variable"
 
 
+def test_typescript_package_manager_audit_uses_explicit_manager_hint() -> None:
+    """Audit summaries use the configured manager rather than command tokens."""
+
+    raw_output = json.dumps(
+        {
+            "vulnerabilities": {
+                "lodash": {
+                    "severity": "high",
+                    "via": ["GHSA-1234"],
+                    "nodes": ["node_modules/lodash"],
+                }
+            }
+        }
+    )
+
+    summary = reporting.summarize_check(
+        "typescript-package-manager-audit:web",
+        raw_output,
+        50,
+        1_000,
+        structured_parser="typescript-package-manager-audit",
+        structured_parser_manager="pnpm",
+    )
+
+    assert summary.startswith("pnpm/web: lodash; high; advisories=GHSA-1234")
+
+
+def test_typescript_package_manager_audit_invalid_output_falls_back_to_raw() -> None:
+    """Invalid audit projections retain bounded raw output instead of hiding it."""
+
+    raw_output = '{"not_an_audit_report":true}'
+
+    summary = reporting.summarize_check(
+        "typescript-package-manager-audit",
+        raw_output,
+        5,
+        500,
+        structured_parser="typescript-package-manager-audit",
+        structured_parser_manager="npm",
+    )
+
+    assert summary == raw_output
+
+
+def test_typescript_package_manager_audit_requires_explicit_manager() -> None:
+    """Audit summaries stay disabled when no manager hint is configured."""
+
+    assert (
+        structured_typescript.summarize_typescript_package_manager_audit(
+            "{}",
+            manager="",
+            workspace="root",
+        )
+        is None
+    )
+
+
 def test_typescript_test_output_summarizes_jest_json() -> None:
     """Jest-compatible JSON test output produces compact summaries."""
     raw_output = json.dumps(

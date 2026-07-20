@@ -21,6 +21,9 @@ TYPESCRIPT_KNIP_PHASE = PHASES_DIR / "phase-179-typescript-knip-unused-code-depe
 TYPESCRIPT_DEPENDENCY_CRUISER_PHASE = (
     PHASES_DIR / "phase-181-typescript-dependency-cruiser-facts.md"
 )
+TYPESCRIPT_PACKAGE_MANAGER_AUDIT_PHASE = (
+    PHASES_DIR / "phase-192-typescript-package-manager-audit-facts.md"
+)
 CPP_CMAKE_ROADMAP = ROADMAP_ROOT / "cpp-cmake-experimental-provider-roadmap.md"
 CPP_PHASE_PATHS = tuple(
     PHASES_DIR / filename
@@ -125,7 +128,7 @@ def test_typescript_parity_roadmap_keeps_execution_explicit_and_phased() -> None
         "Phase 179: Knip unused-code and dependency facts are complete.",
         "Phase 180: OSV dependency facts are complete.",
         "Phase 181: dependency-cruiser architecture-boundary facts are complete.",
-        "Package-manager audit facts are the next parity slice.",
+        "Phase 192: explicit package-manager audit facts are complete",
         "Repository evidence must never become subprocess arguments.",
         "at least two external real-repository comparisons",
         "TypeScript/React blocking-gate promotion assessment",
@@ -178,6 +181,21 @@ def test_typescript_dependency_cruiser_phase_is_complete() -> None:
     assert "Package-manager audit facts are the next parity slice" in phase
 
 
+def test_typescript_package_manager_audit_phase_is_complete_and_advisory() -> None:
+    """Phase 192 records explicit ownership, bounds, and replay evidence."""
+
+    phase = TYPESCRIPT_PACKAGE_MANAGER_AUDIT_PHASE.read_text(encoding="utf-8")
+
+    assert phase.startswith("# Phase 192: TypeScript Package-Manager Audit Facts")
+    assert "Status: complete" in phase
+    assert "typescript_package_manager_audit_manager" in phase
+    assert "500 findings" in phase
+    assert "50 summary lines" in phase
+    assert "canonical report hashes" in phase
+    assert "Yarn and Bun remain fixture-only" in phase
+    assert "TypeScript/JavaScript remains experimental" in phase
+
+
 def test_cpp_cmake_experiment_is_explicit_cross_platform_and_phased() -> None:
     """C/C++ planning stays command-owned, cross-platform, and experimental."""
 
@@ -225,6 +243,7 @@ def test_active_roadmap_reports_current_strict_and_api_state() -> None:
     assert "Phase 178: Advisory Package-Manager And Workspace Detection" in text
     assert "Phase 179: TypeScript Knip Unused-Code And Dependency Facts" in text
     assert "Phase 181: TypeScript Dependency-Cruiser Facts" in text
+    assert "Phase 192: TypeScript Package-Manager Audit Facts" in text
     assert "(roadmap/typescript-react-parity-roadmap.md)" in text
 
 
