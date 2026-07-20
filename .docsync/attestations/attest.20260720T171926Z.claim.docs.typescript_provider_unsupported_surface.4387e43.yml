@@ -1,0 +1,20 @@
+version: 1
+attestations:
+- id: attest.20260720T171926Z.claim.docs.typescript_provider_unsupported_surface.4387e43
+  claim: claim.docs.typescript_provider_unsupported_surface
+  doc_object: docs.typescript_provider.overview
+  evidence:
+  - evidence.typescript.provider_docs_maturity_tests
+  reason: Reviewed the TypeScript provider maturity and unsupported-surface documentation
+    after the audit-facts addition; limitations and non-blocking scope remain accurate.
+  reviewer: agent
+  reviewed_at: '2026-07-20T17:19:26Z'
+  base: HEAD
+  head: 4387e43
+  evidence_fingerprints:
+    evidence.typescript.provider_docs_maturity_tests: sha256:2264a171b808117f71797340a1d913e2e583a3a528379b2c5a1dd5208ab9832e
+  evidence_anchor_fingerprints:
+    evidence.typescript.provider_docs_maturity_tests:
+    - sha256:ee67a944555b1ea3ea9b712a491126204bf824763536cc95779b7edcdd9d8656
+  expires_at: null
+  statement: Reviewed changed evidence region. Documentation remains accurate.

@@ -139,6 +139,15 @@ depends_on = [
 
 path = "parsers.typescript_package_manager_audit_adapters"
 depends_on = [
+  "parsers.typescript_audit_adapter_utils",
+  "parsers.typescript_package_manager_audit_contract",
+]
+
+
+[[modules]]
+
+path = "parsers.typescript_audit_adapter_utils"
+depends_on = [
   "parsers.typescript_package_manager_audit_contract",
 ]
 

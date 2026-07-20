@@ -51,9 +51,9 @@ Unsafe paths may remain as safe display labels but never become context targets.
 Focused configuration, parser, summary, transport, and projection tests pass;
 Ruff, Pyright, Tach, and Archguard pass on the changed implementation. The
 post-documentation full verification body passed 3,148 tests with 11 skips and
-92.71% coverage. Contract compatibility remains qualification-pending only
-because the public configuration additions require the next prerelease version
-(`0.1.0b14`); this implementation turn does not bump or publish that version.
+92.71% coverage. Contract compatibility is qualified by the `0.1.0b14`
+candidate bump; hosted release evidence is recorded separately after the
+protected publication flow.
 DocSync recognizes the new audit evidence anchors; its check still reports 26
 stale historical attestations from earlier changes, which were not rewritten.
 

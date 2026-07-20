@@ -5,10 +5,22 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
+from agent_repair_facts.parsers.typescript_audit_adapter_utils import (
+    JsonObject,
+    advisory_container,
+    list_value,
+    object_value,
+    record_from_item,
+    records_from_items,
+    vulnerability_map,
+)
 from agent_repair_facts.parsers.typescript_package_manager_audit_contract import RawAuditRecord
 
-JsonObject = dict[str, object]
 Adapter = Callable[[object], tuple[RawAuditRecord, ...] | None]
+UNSUPPORTED_RESULT: tuple[RawAuditRecord, ...] | None = cast(
+    tuple[RawAuditRecord, ...] | None,
+    None,
+)
 
 
 def adapter_for(manager: str) -> Adapter:
@@ -25,279 +37,122 @@ def adapter_for(manager: str) -> Adapter:
 def parse_npm_payload(payload: object) -> tuple[RawAuditRecord, ...] | None:
     """Parse current or legacy npm audit object projections."""
 
-    items = _list(payload)
-    if items is not None:
-        return tuple(record for item in items if (record := _record_from_item(item)) is not None)
-    root = _object(payload)
-    if root is None:
-        return None
-    if "vulnerabilities" in root:
-        return _vulnerability_map(root["vulnerabilities"])
-    if "advisories" in root:
-        return _advisory_container(root["advisories"])
-    if "auditReportVersion" in root or "metadata" in root:
-        return ()
-    return None
+    return _parse_package_payload(payload, advisories_first=False)
 
 
 def parse_pnpm_payload(payload: object) -> tuple[RawAuditRecord, ...] | None:
     """Parse pnpm advisory objects and supported wrapper projections."""
 
-    items = _list(payload)
+    return _parse_package_payload(payload, advisories_first=True)
+
+
+def _parse_package_payload(
+    payload: object,
+    *,
+    advisories_first: bool,
+) -> tuple[RawAuditRecord, ...] | None:
+    """Parse the shared npm/pnpm wrapper shapes."""
+
+    items = list_value(payload)
     if items is not None:
-        return tuple(record for item in items if (record := _record_from_item(item)) is not None)
-    root = _object(payload)
+        return records_from_items(items)
+    root = object_value(payload)
     if root is None:
         return None
-    if "advisories" in root:
-        return _advisory_container(root["advisories"])
-    if "vulnerabilities" in root:
-        return _vulnerability_map(root["vulnerabilities"])
-    if any(key in root for key in ("metadata", "auditReportVersion", "actions")):
-        return ()
-    return None
+    parsers: tuple[tuple[str, Adapter], ...] = (
+        (("advisories", advisory_container), ("vulnerabilities", vulnerability_map))
+        if advisories_first
+        else (
+            ("vulnerabilities", vulnerability_map),
+            ("advisories", advisory_container),
+        )
+    )
+    clean_projection = any(key in root for key in ("metadata", "auditReportVersion", "actions"))
+    for key, parser in parsers:
+        value = root.get(key, None)
+        if value is not None:
+            return parser(value)
+    return () if clean_projection else None
 
 
 def parse_yarn_record(payload: object) -> tuple[RawAuditRecord, ...] | None:
     """Parse Yarn auditAdvisory NDJSON and object projections."""
 
-    result: tuple[RawAuditRecord, ...] | None = None
-    root = _object(payload)
-    items = _list(payload)
-    if root is None and items is not None:
-        result = tuple(record for item in items if (record := _record_from_item(item)) is not None)
-    elif root is not None:
-        record_type = root.get("type")
-        if record_type in {"auditSummary", "auditAction"}:
-            result = ()
-        elif record_type == "auditAdvisory":
-            data = _object(root.get("data")) or {}
-            advisory = _object(data.get("advisory")) or data
-            record = _record_from_item(advisory)
-            result = (record,) if record is not None else None
-        elif "advisories" in root:
-            result = _advisory_container(root["advisories"])
-        elif "auditReportVersion" in root or "metadata" in root:
-            result = ()
-    return result
+    items = list_value(payload)
+    if items is not None:
+        return records_from_items(items)
+    root = object_value(payload)
+    if root is None:
+        return None
+    return _parse_yarn_object(root)
+
+
+def _parse_yarn_object(root: JsonObject) -> tuple[RawAuditRecord, ...] | None:
+    """Parse one Yarn object projection."""
+
+    record_type = root.get("type", None)
+    if record_type in {"auditSummary", "auditAction"}:
+        return ()
+    if record_type == "auditAdvisory":
+        return _parse_yarn_advisory(root)
+    advisories = root.get("advisories", None)
+    if advisories is not None:
+        return advisory_container(advisories)
+    return () if any(key in root for key in ("auditReportVersion", "metadata")) else None
+
+
+def _parse_yarn_advisory(root: JsonObject) -> tuple[RawAuditRecord, ...] | None:
+    """Parse the nested Yarn auditAdvisory payload."""
+
+    data = object_value(root.get("data", None)) or {}
+    advisory = object_value(data.get("advisory", None)) or data
+    record = record_from_item(advisory)
+    if record is None:
+        return None
+    return (record,)
 
 
 def parse_bun_payload(payload: object) -> tuple[RawAuditRecord, ...] | None:
     """Parse Bun advisory object/NDJSON projections without trusting chatter."""
 
-    result: tuple[RawAuditRecord, ...] | None = None
-    items = _list(payload)
+    items = list_value(payload)
     if items is not None:
-        result = tuple(record for item in items if (record := _record_from_item(item)) is not None)
-    else:
-        root = _object(payload)
-        if root is not None:
-            if "advisories" in root:
-                result = _advisory_container(root["advisories"])
-            elif "vulnerabilities" in root:
-                result = _vulnerability_map(root["vulnerabilities"])
-            else:
-                data = _object(root.get("data"))
-                if data is not None and any(
-                    key in data for key in ("advisory", "package", "module_name")
-                ):
-                    record = _record_from_item(data.get("advisory", data))
-                    result = (record,) if record is not None else None
-                else:
-                    record = _record_from_item(root)
-                    if record is not None:
-                        result = (record,)
-                    elif root.get("type") == "auditSummary" or "metadata" in root:
-                        result = ()
-    return result
-
-
-def _vulnerability_map(value: object) -> tuple[RawAuditRecord, ...] | None:
-    mapping = _object(value)
-    if mapping is None:
-        return () if value == {} else None
-    return tuple(
-        record
-        for package, details in mapping.items()
-        if (record := _record_from_vulnerability(package, details)) is not None
-    )
-
-
-def _advisory_container(value: object) -> tuple[RawAuditRecord, ...] | None:
-    items = _list(value)
-    if items is not None:
-        return tuple(record for item in items if (record := _record_from_item(item)) is not None)
-    mapping = _object(value)
-    if mapping is None:
-        return () if value == {} else None
-    return tuple(
-        record
-        for advisory_id, details in mapping.items()
-        if (record := _record_from_item(details, fallback_advisory_id=advisory_id)) is not None
-    )
-
-
-def _record_from_vulnerability(package: str, details: object) -> RawAuditRecord | None:
-    value = _object(details)
-    if value is None:
+        return records_from_items(items)
+    root = object_value(payload)
+    if root is None:
         return None
-    via = value.get("via")
-    via_values = _list(via) or (via,)
-    advisory_ids = tuple(
-        candidate
-        for item in via_values
-        if (mapping_item := _object(item)) is not None
-        for candidate in (_first(mapping_item, "source", "id", "advisoryId"),)
-        if _looks_like_id(candidate)
-    )
-    advisory_ids += tuple(
-        item for item in via_values if _looks_like_id(item) and _object(item) is None
-    )
-    if not advisory_ids:
+    return _parse_bun_object(root)
+
+
+def _parse_bun_object(root: JsonObject) -> tuple[RawAuditRecord, ...] | None:
+    """Parse one Bun object projection."""
+
+    for key, parser in (
+        ("advisories", advisory_container),
+        ("vulnerabilities", vulnerability_map),
+    ):
+        value = root.get(key, None)
+        if value is not None:
+            return parser(value)
+    data = object_value(root.get("data", None))
+    if data and any(data_key in data for data_key in ("advisory", "package", "module_name")):
+        return _record_result(data.get("advisory", data))
+    record = record_from_item(root)
+    if record is not None:
+        return (record,)
+    return () if root.get("type", None) == "auditSummary" or "metadata" in root else None
+
+
+def _record_result(value: object) -> tuple[RawAuditRecord, ...] | None:
+    """Wrap one optional raw record in the adapter result shape."""
+
+    record = record_from_item(value)
+    if record is None:
         return None
-    return RawAuditRecord(
-        package=package or _first(value, "name", "package", "module_name"),
-        severity=_first(value, "severity", "level"),
-        advisory_ids=advisory_ids,
-        vulnerable_ranges=_values(
-            _first(value, "range", "vulnerable_versions", "vulnerableVersions")
-        ),
-        fixed_versions=_fixed_versions(value),
-        scope=_scope(value),
-        directness=_directness(value),
-        path=_first_path(value),
-        title=_first(value, "title", "summary"),
-    )
+    return (record,)
 
 
-def _record_from_item(item: object, fallback_advisory_id: object = "") -> RawAuditRecord | None:
-    value = _object(item)
-    if value is None:
-        return None
-    package = _first(value, "package", "packageName", "module_name", "module", "name")
-    advisory_ids = _id_values(value)
-    if fallback_advisory_id:
-        advisory_ids = (*advisory_ids, fallback_advisory_id)
-    if not advisory_ids:
-        return None
-    findings = value.get("findings")
-    finding_values = _list(findings) or ()
-    finding_paths = tuple(
-        path
-        for finding in finding_values
-        if (finding_object := _object(finding)) is not None
-        for path in _values(_first(finding_object, "paths", "path", "node"))
-    )
-    return RawAuditRecord(
-        package=package,
-        severity=_first(value, "severity", "level"),
-        advisory_ids=advisory_ids,
-        vulnerable_ranges=_values(
-            _first(value, "vulnerable_versions", "vulnerableVersions", "range", "vulnerableRange")
-        ),
-        fixed_versions=_fixed_versions(value),
-        scope=_scope(value),
-        directness=_directness(value),
-        path=finding_paths[0] if finding_paths else _first_path(value),
-        title=_first(value, "title", "summary"),
-    )
+def _unsupported_payload(_payload: object) -> tuple[RawAuditRecord, ...] | None:
+    """Return the adapter's unsupported result."""
 
-
-def _id_values(value: JsonObject) -> tuple[object, ...]:
-    """Return explicit advisory IDs from an object."""
-
-    ids: list[object] = []
-    for key in ("id", "source", "advisory", "advisoryId", "githubAdvisoryId"):
-        candidate = value.get(key)
-        if _looks_like_id(candidate):
-            ids.append(candidate)
-    return tuple(ids)
-
-
-def _fixed_versions(value: JsonObject) -> tuple[object, ...]:
-    """Return explicit fix versions, never an inferred package update."""
-
-    versions = list(
-        _values(
-            _first(value, "patched_versions", "patchedVersions", "fixed_versions", "fixedVersions")
-        )
-    )
-    fix = _object(value.get("fixAvailable"))
-    if fix is not None:
-        version = _first(fix, "version", "fixedVersion")
-        if version:
-            versions.append(version)
-    return tuple(versions)
-
-
-def _scope(value: JsonObject) -> object:
-    explicit = _first(value, "scope", "dependencyScope", "scopeType")
-    if explicit:
-        return explicit
-    for key, scope in (("dev", "dev"), ("optional", "optional"), ("peer", "peer")):
-        if value.get(key) is True:
-            return scope
-    return ""
-
-
-def _directness(value: JsonObject) -> object:
-    explicit = _first(value, "directness", "dependencyType")
-    if explicit:
-        return explicit
-    is_direct = value.get("isDirect")
-    if isinstance(is_direct, bool):
-        return "direct" if is_direct else "indirect"
-    return ""
-
-
-def _first_path(value: JsonObject) -> object:
-    paths = _values(_first(value, "paths", "nodes", "path"))
-    return paths[0] if paths else ""
-
-
-def _values(value: object) -> tuple[object, ...]:
-    if value is None:
-        return ()
-    if isinstance(value, list):
-        return tuple(cast(list[object], value))
-    if isinstance(value, tuple):
-        return tuple(cast(tuple[object, ...], value))
-    return (value,)
-
-
-def _first(value: JsonObject, *keys: str) -> object:
-    for key in keys:
-        candidate = value.get(key)
-        if candidate is not None:
-            return candidate
-    return ""
-
-
-def _object(value: object) -> JsonObject | None:
-    if not isinstance(value, dict):
-        return None
-    normalized: JsonObject = {}
-    for key, item in cast(dict[object, object], value).items():
-        if not isinstance(key, str):
-            return None
-        normalized[key] = item
-    return normalized
-
-
-def _list(value: object) -> list[object] | None:
-    """Return a JSON list with its unknown element type normalized to object."""
-
-    return cast(list[object], value) if isinstance(value, list) else None
-
-
-def _looks_like_id(value: object) -> bool:
-    if isinstance(value, int) and not isinstance(value, bool):
-        return True
-    if not isinstance(value, str) or not value.strip():
-        return False
-    normalized = value.strip().upper()
-    return normalized.startswith(("GHSA-", "CVE-", "OSV-", "NPM-")) or normalized.isdigit()
-
-
-def _unsupported_payload(_payload: object) -> None:
-    return None
+    return UNSUPPORTED_RESULT

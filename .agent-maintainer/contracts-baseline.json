@@ -3897,8 +3897,8 @@
       "stability": "beta"
     }
   ],
-  "document_fingerprint": "sha256:8648683b8d8944388ec75d7730b56670dce2c79263f4d2a2616e356a398657a9",
+  "document_fingerprint": "sha256:1fa3f1e76175101407b1a40bff76a5b3d72119f8784c5531fad52b5ac15f6408",
   "generator": "agent-maintainer",
-  "package_version": "0.1.0b13",
+  "package_version": "0.1.0b14",
   "schema_version": 1
 }

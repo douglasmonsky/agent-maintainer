@@ -94,14 +94,6 @@ def as_str(value: object, field_name: str) -> str:
     raise TypeError(f"{field_name} must be a non-empty string")
 
 
-def as_optional_str(value: object, field_name: str) -> str:
-    """Coerce an optional string while preserving an explicit empty value."""
-
-    if value is None or value == "":
-        return ""
-    return as_str(value, field_name)
-
-
 def as_choice(value: object, field_name: str, choices: frozenset[str]) -> str:
     """Coerce a string config value constrained to an allowed choice set."""
 
@@ -110,15 +102,6 @@ def as_choice(value: object, field_name: str, choices: frozenset[str]) -> str:
         return selected
     valid_values = ", ".join(sorted(choices))
     raise TypeError(f"{field_name} must be one of: {valid_values}")
-
-
-WORKSPACE_FIELD_PARSERS = tuple(
-    (
-        field_name,
-        as_optional_str if field_name == "typescript_package_manager_audit_manager" else as_tuple,
-    )
-    for field_name in sorted(registry.WORKSPACE_KEYS)
-)
 
 
 def coerce_file_baseline_group(
@@ -218,10 +201,14 @@ def coerce_workspace(
         {"workspaces": {name: workspace}},
         source=source,
     )
-    updates: dict[str, Any] = {
-        field_name: parser(workspace.get(field_name), f"workspaces.{name}.{field_name}")
-        for field_name, parser in WORKSPACE_FIELD_PARSERS
-    }
+    updates: dict[str, Any] = {}
+    for field_name in sorted(registry.WORKSPACE_KEYS):
+        field_path = f"workspaces.{name}.{field_name}"
+        raw_value = workspace.get(field_name)
+        if field_name == "typescript_package_manager_audit_manager":
+            updates[field_name] = "" if raw_value in (None, "") else as_str(raw_value, field_path)
+        else:
+            updates[field_name] = as_tuple(raw_value, field_path)
     return schema.WorkspaceConfig(name=name, **updates)
 
 

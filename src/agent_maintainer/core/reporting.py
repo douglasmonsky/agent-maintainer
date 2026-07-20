@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from agent_context.budget import bound_text
 from agent_context.models import ContextBudget
@@ -25,6 +25,7 @@ from agent_maintainer.core.structured_values import (
 
 PYRIGHT_DIAGNOSTIC_LIMIT = 50
 STRUCTURED_DIAGNOSTIC_LIMIT = 50
+SUMMARY_ARGUMENT_COUNT = 2
 
 
 def nonblank_lines(text: str) -> list[str]:
@@ -126,18 +127,30 @@ def summarize_pyright(raw: str) -> str | None:
     return "\n".join(lines)
 
 
-def summarize_check_from_artifacts(  # noqa: PLR0913
+def summarize_check_from_artifacts(
     check_name: str,
     artifact_paths: tuple[str, ...],
     raw_output: str,
-    max_lines: int,
-    max_chars: int,
-    *,
-    structured_parser: str = "",
-    structured_parser_manager: str = "",
+    *summary_args: object,
+    **parser_options: object,
 ) -> str:
     """Summarize failed check, preferring known structured artifacts."""
 
+    if len(summary_args) != SUMMARY_ARGUMENT_COUNT or not all(
+        isinstance(item, int) for item in summary_args
+    ):
+        raise TypeError("summary requires max_lines and max_chars integer limits")
+    unknown = set(parser_options) - {"structured_parser", "structured_parser_manager"}
+    if unknown:
+        unknown_options = ", ".join(sorted(unknown))
+        raise TypeError(f"unsupported summary options: {unknown_options}")
+    parser = parser_options.get("structured_parser", "")
+    manager = parser_options.get("structured_parser_manager", "")
+    if not isinstance(parser, str) or not isinstance(manager, str):
+        raise TypeError("structured parser options must be strings")
+    limits = cast(tuple[int, int], summary_args)
+    max_lines, max_chars = limits[0], limits[1]
+    structured_parser, structured_parser_manager = parser, manager
     artifact_summary = structured_artifact_summary(check_name, artifact_paths)
     if artifact_summary:
         return compact_output(artifact_summary, max_lines, max_chars)
@@ -243,17 +256,29 @@ def format_bandit_finding(finding: dict[str, object]) -> str:
     return f"{filename}:{line_number}: {test_id} {severity}: {message}"
 
 
-def summarize_check(  # noqa: PLR0913
+def summarize_check(
     check_name: str,
     raw_output: str,
-    max_lines: int,
-    max_chars: int,
-    *,
-    structured_parser: str = "",
-    structured_parser_manager: str = "",
+    *summary_args: object,
+    **parser_options: object,
 ) -> str:
     """Summarize a failed check with check-specific formatting when available."""
 
+    if len(summary_args) != SUMMARY_ARGUMENT_COUNT or not all(
+        isinstance(item, int) for item in summary_args
+    ):
+        raise TypeError("summary requires max_lines and max_chars integer limits")
+    unknown = set(parser_options) - {"structured_parser", "structured_parser_manager"}
+    if unknown:
+        unknown_options = ", ".join(sorted(unknown))
+        raise TypeError(f"unsupported summary options: {unknown_options}")
+    parser = parser_options.get("structured_parser", "")
+    manager = parser_options.get("structured_parser_manager", "")
+    if not isinstance(parser, str) or not isinstance(manager, str):
+        raise TypeError("structured parser options must be strings")
+    limits = cast(tuple[int, int], summary_args)
+    max_lines, max_chars = limits[0], limits[1]
+    structured_parser, structured_parser_manager = parser, manager
     if check_name == "pyright":
         pyright_summary = summarize_pyright(raw_output)
         if pyright_summary:

@@ -14,7 +14,6 @@ from agent_repair_facts.parsers import (
     security,
     typescript_checks,
     typescript_dependency_cruiser,
-    typescript_package_manager_audit,
 )
 from agent_repair_facts.parsers.logs import (
     architecture_decision_facts,
@@ -33,6 +32,10 @@ from agent_repair_facts.parsers.typescript import (
     typescript_typecheck_facts,
 )
 from agent_repair_facts.parsers.typescript_knip import knip_facts
+from agent_repair_facts.parsers.typescript_package_manager_audit import (
+    format_audit_finding,
+    parse_audit_report,
+)
 from agent_repair_facts.payloads import FactSource, MemoryFactSource, fact_payload
 
 FactParser = Callable[[FactSource, str], list[dict[str, object]]]
@@ -105,7 +108,7 @@ def log_facts_from_text(
     """Return log facts without reopening an already-read path."""
 
     if structured_parser == "typescript-package-manager-audit":
-        result = typescript_package_manager_audit.parse_audit_report(
+        result = parse_audit_report(
             structured_parser_manager,
             _workspace_label(check),
             path.as_posix(),
@@ -117,7 +120,7 @@ def log_facts_from_text(
                     "check": check,
                     "path": finding.path,
                     "symbol": finding.advisory_ids[0],
-                    "message": typescript_package_manager_audit.format_audit_finding(finding),
+                    "message": format_audit_finding(finding),
                     "severity": finding.severity,
                 }
             )

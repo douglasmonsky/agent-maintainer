@@ -69,7 +69,7 @@ def validate_config(
     issues.extend(java_issues(config.java, source=source))
     issues.extend(_cross_field_issues(config, source=source))
     if issues:
-        raise ConfigValidationError(tuple(issues))
+        raise ConfigValidationError(tuple(issue for issue in issues))
     return config
 
 

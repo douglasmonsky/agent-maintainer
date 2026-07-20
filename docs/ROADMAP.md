@@ -50,11 +50,11 @@ Current external release state:
 
 Current source candidate state:
 
-- [x] The unpublished `0.1.0b13` release candidate is the package-metadata and
+- [x] The unpublished `0.1.0b14` release candidate is the package-metadata and
       main-branch documentation target. Review the
-      [candidate notes](releases/0.1.0b13.md) and
-      [evaluation guide](upgrading-to-0.1.0b13.md).
-- [ ] `0.1.0b13` becomes the current external release only after the exact
+      [candidate notes](releases/0.1.0b14.md) and
+      [evaluation guide](upgrading-to-0.1.0b14.md).
+- [ ] `0.1.0b14` becomes the current external release only after the exact
       candidate commit passes the complete release matrix, TestPyPI and PyPI
       smokes pass, and publication evidence replaces candidate intent in the
       [release index](releases/README.md).

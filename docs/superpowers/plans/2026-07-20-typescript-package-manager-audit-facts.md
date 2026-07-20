@@ -51,6 +51,7 @@ Modify the existing provider/config/transport files:
 ### Task 1: Add explicit audit configuration and provider checks
 
 **Files:**
+
 - Modify: `src/agent_maintainer/config/schema.py`
 - Modify: `src/agent_maintainer/config/schema_fields.py`
 - Modify: `src/agent_maintainer/config/registry.py`
@@ -66,6 +67,7 @@ Modify the existing provider/config/transport files:
 - Test: `tests/catalogs/test_provider_registry.py`
 
 **Interfaces:**
+
 - Add `typescript_package_manager_audit_manager` as an empty-by-default string, `typescript_package_manager_audit_command` as an empty tuple of strings, and `typescript_package_manager_audit_profiles` as the tuple `("full", "ci")` to root and workspace configuration models.
 - Add `structured_parser: str = ""` as the final defaulted field on `Check`; this preserves existing positional constructors while allowing the provider to label `typescript-package-manager-audit` checks.
 - Extend `TypeScriptProvider._configured_check(name, command, profiles, config_field, *, structured_parser="") -> Check` and set the field only for the audit check.
@@ -128,6 +130,7 @@ git commit -m "feat: configure TypeScript package-manager audits"
 ### Task 2: Build the shared normalized audit model and four adapters
 
 **Files:**
+
 - Create: `src/agent_repair_facts/parsers/typescript_package_manager_audit.py`
 - Create: `src/agent_repair_facts/parsers/typescript_package_manager_audit_adapters.py`
 - Create: `tests/fixtures/typescript_package_manager_audit/npm.json`
@@ -138,6 +141,7 @@ git commit -m "feat: configure TypeScript package-manager audits"
 - Test: `tests/repair_facts/test_typescript_package_manager_audit_facts.py`
 
 **Interfaces:**
+
 - Define frozen `PackageManagerAuditFinding` with fields `manager`, `package`, `severity`, `advisory_ids`, `vulnerable_ranges`, `fixed_versions`, `scope`, `directness`, `workspace`, `path`, `source_label`, and `title`.
 - Define frozen `PackageManagerAuditParseResult` with fields `manager`, `workspace`, `outcome`, `findings`, `supported_count`, `retained_count`, and `omitted_count`.
 - Export `parse_audit_report(manager: str, workspace: str, source_label: str, text: str) -> PackageManagerAuditParseResult` and `render_audit_summary(result: PackageManagerAuditParseResult, *, max_lines: int = 50, max_chars: int = 1000) -> str`.
@@ -199,6 +203,7 @@ git commit -m "feat: normalize TypeScript package-manager audit facts"
 ### Task 3: Transport the explicit parser hint and reuse the normalized result
 
 **Files:**
+
 - Modify: `src/agent_run_artifacts/models.py`
 - Modify: `src/agent_maintainer/verify/artifact_adapters.py`
 - Modify: `src/agent_run_artifacts/artifact_manifest.py`
@@ -217,6 +222,7 @@ git commit -m "feat: normalize TypeScript package-manager audit facts"
 - Test: `tests/context/test_typescript_exact_facts.py`
 
 **Interfaces:**
+
 - Append `structured_parser: str = ""` to `CheckResult`, `ArtifactCheckResult`, and `FailureRecord`; serialize it only when non-empty so existing artifacts remain stable.
 - Add `structured_parser: str = ""` to `check_payload` and copy it through `artifact_check_result`, executor result constructors, `record_from_payload`, and `FailureRecord.to_json`.
 - Extend `summarize_check` and `summarize_check_from_artifacts` with keyword-only `structured_parser: str = ""`; route `"typescript-package-manager-audit"` to the shared parser.
@@ -289,6 +295,7 @@ git commit -m "feat: reuse structured TypeScript audit facts"
 ### Task 4: Add pinned public projections and offline evidence gates
 
 **Files:**
+
 - Create: `tests/fixtures/typescript_package_manager_audit_external/npm-node-typescript-boilerplate.json`
 - Create: `tests/fixtures/typescript_package_manager_audit_external/pnpm-eslint-plugin-vitest.json`
 - Create: `tests/fixtures/typescript_package_manager_audit_external/README.md`
@@ -297,6 +304,7 @@ git commit -m "feat: reuse structured TypeScript audit facts"
 - Read: `tests/fixtures/typescript_external_reviewability/eslint_plugin_vitest_7c697f8_reviewability.json`
 
 **Interfaces:**
+
 - Each projection stores public repository URL, pinned revision, UTC collection time, manager/tool/runtime versions, exact command, exit status, report SHA-256/byte count, supported/retained/omitted counts, and bounded normalized findings.
 - The fixture test accepts a `Path`, `manager`, `repository`, and `head_commit` and replays the saved projection without network, package installation, a clone, or a package-manager binary.
 
@@ -347,6 +355,7 @@ git commit -m "test: add pinned TypeScript audit projections"
 ### Task 5: Update architecture, docs, generated references, and roadmap evidence
 
 **Files:**
+
 - Create: `docs/architecture/decisions/2026-07-20-typescript-package-manager-audit-facts.md`
 - Create: `docs/roadmap/phases/phase-192-typescript-package-manager-audit-facts.md`
 - Modify: `docs/typescript-javascript-provider.md`
@@ -362,6 +371,7 @@ git commit -m "test: add pinned TypeScript audit projections"
 - Generate: `config/agent-maintainer-capabilities.json`
 
 **Interfaces:**
+
 - The ADR records the selected shared model, explicit manager boundary, advisory semantics, bounds, and rejected alternatives.
 - Phase 192 records implementation commit SHAs, focused/full checks, two pinned projections, fixture-only Yarn/Bun status, and the remaining roadmap order.
 - Public docs use the exact configuration keys and claim “normalized advisory facts,” never automatic manager selection or blocking security review.
@@ -413,10 +423,12 @@ git commit -m "docs: document TypeScript audit facts"
 ### Task 6: Run the full verification gate and prepare handoff
 
 **Files:**
+
 - Read: all files changed in Tasks 1–5
 - Test: repository verification commands and the final diff
 
 **Interfaces:**
+
 - No new public interface; this task proves the complete contract and records the exact evidence used for handoff.
 
 - [ ] **Step 1: Run focused functional, parser, transport, and docs checks.**

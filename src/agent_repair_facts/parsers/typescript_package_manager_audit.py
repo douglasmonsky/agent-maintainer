@@ -8,8 +8,10 @@ import unicodedata
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import PurePosixPath, PureWindowsPath
+from types import MappingProxyType
 from typing import cast
 
+from agent_repair_facts.parsers import typescript_package_manager_audit_adapters as adapters
 from agent_repair_facts.parsers.typescript_package_manager_audit_contract import RawAuditRecord
 
 AUDIT_MANAGERS = frozenset(("npm", "pnpm", "yarn", "bun"))
@@ -25,14 +27,16 @@ AUDIT_SUMMARY_LINE_LIMIT = 50
 TRUNCATION_MARKER_LENGTH = 3
 
 _WHITESPACE_RE = re.compile(r"\s+")
-_SEVERITY_RANK = {
-    "critical": 0,
-    "high": 1,
-    "moderate": 2,
-    "low": 3,
-    "info": 4,
-    "unknown": 5,
-}
+_SEVERITY_RANK = MappingProxyType(
+    {
+        "critical": 0,
+        "high": 1,
+        "moderate": 2,
+        "low": 3,
+        "info": 4,
+        "unknown": 5,
+    }
+)
 _SEVERITIES = frozenset(_SEVERITY_RANK)
 _SCOPES = frozenset(("dev", "prod", "optional", "peer"))
 _DIRECTNESS = frozenset(("direct", "indirect"))
@@ -80,9 +84,11 @@ def parse_audit_report(
 ) -> PackageManagerAuditParseResult:
     """Parse a bounded JSON or NDJSON report using only the explicit manager."""
 
-    normalized_manager = _scalar(manager, limit=AUDIT_FIELD_CHAR_LIMIT).lower()
-    normalized_workspace = _scalar(workspace, limit=AUDIT_FIELD_CHAR_LIMIT) or "root"
-    normalized_source = _scalar(source_label, limit=AUDIT_FIELD_CHAR_LIMIT) or "<unknown source>"
+    normalized_manager, normalized_workspace, normalized_source = _normalize_inputs(
+        manager,
+        workspace,
+        source_label,
+    )
     if normalized_manager not in AUDIT_MANAGERS:
         return _invalid_result(normalized_manager, normalized_workspace)
 
@@ -90,32 +96,33 @@ def parse_audit_report(
     if not decoded:
         return _invalid_result(normalized_manager, normalized_workspace)
 
-    from agent_repair_facts.parsers import typescript_package_manager_audit_adapters as adapters
-
     supported_container, normalized_records = _parse_decoded_payloads(
         decoded,
         is_ndjson=is_ndjson,
         adapter=adapters.adapter_for(normalized_manager),
         context=(normalized_manager, normalized_workspace, normalized_source),
     )
-
     if not supported_container:
         return _invalid_result(normalized_manager, normalized_workspace)
 
     deduped = _deduplicate(normalized_records)
     deduped.sort(key=_finding_sort_key)
     retained = tuple(deduped[:AUDIT_FACT_LIMIT])
-    supported_count = len(normalized_records)
-    omitted_count = max(0, supported_count - len(retained))
-    outcome = AUDIT_OUTCOME_FINDINGS if retained else AUDIT_OUTCOME_CLEAN
-    return PackageManagerAuditParseResult(
+    return _build_parse_result(
         manager=normalized_manager,
         workspace=normalized_workspace,
-        outcome=outcome,
         findings=retained,
-        supported_count=supported_count,
-        retained_count=len(retained),
-        omitted_count=omitted_count,
+        supported_count=len(normalized_records),
+    )
+
+
+def _normalize_inputs(manager: str, workspace: str, source_label: str) -> tuple[str, str, str]:
+    """Normalize parser identity and display labels before decoding."""
+
+    return (
+        _scalar(manager, limit=AUDIT_FIELD_CHAR_LIMIT).lower(),
+        _scalar(workspace, limit=AUDIT_FIELD_CHAR_LIMIT) or "root",
+        _scalar(source_label, limit=AUDIT_FIELD_CHAR_LIMIT) or "<unknown source>",
     )
 
 
@@ -175,6 +182,9 @@ def render_audit_summary(
 def format_audit_finding(finding: PackageManagerAuditFinding) -> str:
     """Format one normalized advisory finding with bounded clauses."""
 
+    source_clause = finding.source_label
+    if source_clause == "<unknown source>":
+        source_clause = ""
     clauses = [f"{finding.manager}/{finding.workspace}: {finding.package}", finding.severity]
     clauses.extend(
         f"{label}={value}"
@@ -185,10 +195,7 @@ def format_audit_finding(finding: PackageManagerAuditFinding) -> str:
             ("scope", finding.scope),
             ("directness", finding.directness),
             ("path", finding.path or ""),
-            (
-                "source",
-                finding.source_label if finding.source_label != "<unknown source>" else "",
-            ),
+            ("source", source_clause),
         )
         if value
     )
@@ -203,16 +210,20 @@ def _decode_report(text: str) -> tuple[list[object], bool]:
     try:
         return [json.loads(text)], False
     except (json.JSONDecodeError, RecursionError, TypeError):
-        pass
+        return _decode_ndjson(text), True
+
+
+def _decode_ndjson(text: str) -> list[object]:
+    """Decode independently valid, non-empty NDJSON lines."""
+
     values: list[object] = []
     for line in text.splitlines():
-        if not line.strip():
-            continue
-        try:
-            values.append(json.loads(line))
-        except (json.JSONDecodeError, RecursionError, TypeError):
-            continue
-    return values, True
+        if line.strip():
+            try:
+                values.append(json.loads(line))
+            except (json.JSONDecodeError, RecursionError, TypeError):
+                values.extend(())
+    return values
 
 
 def _normalize_record(
@@ -275,14 +286,13 @@ def _finding_sort_key(
     """Return deterministic manager/workspace/package/fact ordering."""
 
     return (
-        finding.manager,
-        finding.workspace,
-        finding.source_label,
-        finding.package,
-        _SEVERITY_RANK[finding.severity],
-        finding.advisory_ids,
-        finding.vulnerable_ranges,
-        finding.fixed_versions,
+        (finding.manager, finding.workspace, finding.source_label, finding.package),
+        (
+            _SEVERITY_RANK[finding.severity],
+            finding.advisory_ids,
+            finding.vulnerable_ranges,
+            finding.fixed_versions,
+        ),
     )
 
 
@@ -336,16 +346,17 @@ def _safe_path(value: object) -> tuple[str | None, str]:
     normalized_text = value.replace("\\", "/")
     posix_path = PurePosixPath(normalized_text)
     windows_path = PureWindowsPath(value)
-    unsafe = (
-        had_controls
-        or len(value) > AUDIT_PATH_CHAR_LIMIT
-        or posix_path.is_absolute()
-        or windows_path.is_absolute()
-        or bool(windows_path.drive)
-        or ".." in posix_path.parts
-        or posix_path.as_posix() == "."
-    )
-    if unsafe:
+    if any(
+        (
+            had_controls,
+            len(value) > AUDIT_PATH_CHAR_LIMIT,
+            posix_path.is_absolute(),
+            windows_path.is_absolute(),
+            bool(windows_path.drive),
+            ".." in posix_path.parts,
+            posix_path.as_posix() == ".",
+        )
+    ):
         basename = _scalar(posix_path.name)
         return None, basename or "<unknown source>"
     normalized = _scalar(posix_path.as_posix(), limit=AUDIT_PATH_CHAR_LIMIT)
@@ -359,7 +370,8 @@ def _truncate(value: str, limit: int) -> str:
         return value
     if limit <= TRUNCATION_MARKER_LENGTH:
         return value[:limit]
-    return f"{value[: limit - TRUNCATION_MARKER_LENGTH].rstrip()}..."
+    prefix = value[: limit - TRUNCATION_MARKER_LENGTH].rstrip()
+    return f"{prefix}..."
 
 
 def _invalid_result(manager: str, workspace: str) -> PackageManagerAuditParseResult:
@@ -373,4 +385,26 @@ def _invalid_result(manager: str, workspace: str) -> PackageManagerAuditParseRes
         supported_count=0,
         retained_count=0,
         omitted_count=0,
+    )
+
+
+def _build_parse_result(
+    *,
+    manager: str,
+    workspace: str,
+    findings: tuple[PackageManagerAuditFinding, ...],
+    supported_count: int,
+) -> PackageManagerAuditParseResult:
+    """Build the bounded result and derive truthful retention counters."""
+
+    omitted_count = max(0, supported_count - len(findings))
+    outcome = AUDIT_OUTCOME_FINDINGS if findings else AUDIT_OUTCOME_CLEAN
+    return PackageManagerAuditParseResult(
+        manager=manager,
+        workspace=workspace,
+        outcome=outcome,
+        findings=findings,
+        supported_count=supported_count,
+        retained_count=len(findings),
+        omitted_count=omitted_count,
     )

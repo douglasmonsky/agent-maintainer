@@ -1,10 +1,20 @@
 # Changelog
 
-## Unreleased (target: 0.1.0b13)
+## Unreleased (target: 0.1.0b14)
 
-`0.1.0b13` is an unpublished release candidate.
-The published 0.1.0b12 release evidence remains authoritative; no b13 changes
-are recorded.
+`0.1.0b14` is an unpublished release candidate.
+The published 0.1.0b12 release evidence remains authoritative; the unpublished
+0.1.0b13 candidate was superseded before publication.
+
+- Added explicit TypeScript package-manager audit configuration for npm, pnpm,
+  Yarn, and Bun without inferring a manager or executing unreviewed commands.
+- Normalized bounded JSON/NDJSON audit facts, failure records, summaries, and
+  context across configured TypeScript workspaces with safe-path handling and
+  deterministic ordering.
+- Added pinned npm and pnpm public projections plus malformed-input, clean-report,
+  retention, and transport coverage; Yarn and Bun remain fixture-only.
+- Kept audit output advisory-only: vulnerability findings do not create a
+  blocking security or reviewability gate.
 
 ## 0.1.0b12 - 2026-07-19
 
