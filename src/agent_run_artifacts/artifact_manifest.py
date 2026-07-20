@@ -21,7 +21,7 @@ def check_payload(
 
     metadata = summary_metadata(result, config)
     log_path = log_path_override or result.log_path
-    return {
+    payload: dict[str, object] = {
         "name": result.name,
         "status": result_status(result),
         "command": list(result.command),
@@ -38,6 +38,11 @@ def check_payload(
         "artifacts": list(result.artifact_paths),
         "artifact_sensitivity": result.artifact_sensitivity,
     }
+    if result.structured_parser:
+        payload["structured_parser"] = result.structured_parser
+    if result.structured_parser_manager:
+        payload["structured_parser_manager"] = result.structured_parser_manager
+    return payload
 
 
 def summary_metadata(

@@ -90,6 +90,8 @@ def artifact_check_result(result: CheckResult) -> artifact_models.ArtifactCheckR
         ended_at=result.ended_at,
         artifact_paths=tuple(result.artifact_paths),
         artifact_sensitivity=result.artifact_sensitivity,
+        structured_parser=result.structured_parser,
+        structured_parser_manager=result.structured_parser_manager,
     )
 
 

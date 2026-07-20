@@ -81,6 +81,7 @@ def test_typescript_checks_are_included_when_enabled() -> None:
     assert by_name["typescript-package-manager-audit"].structured_parser == (
         "typescript-package-manager-audit"
     )
+    assert by_name["typescript-package-manager-audit"].structured_parser_manager == "pnpm"
 
 
 def test_typescript_audit_command_without_manager_is_unsafe_skip() -> None:
@@ -233,6 +234,7 @@ def test_workspace_typescript_commands_emit_owned_checks() -> None:
     assert checks["typescript-package-manager-audit:api"].structured_parser == (
         "typescript-package-manager-audit"
     )
+    assert checks["typescript-package-manager-audit:api"].structured_parser_manager == "pnpm"
 
 
 def test_typescript_fixture_config_smoke(

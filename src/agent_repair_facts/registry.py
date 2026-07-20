@@ -14,6 +14,7 @@ from agent_repair_facts.parsers import (
     security,
     typescript_checks,
     typescript_dependency_cruiser,
+    typescript_package_manager_audit,
 )
 from agent_repair_facts.parsers.logs import (
     architecture_decision_facts,
@@ -32,7 +33,7 @@ from agent_repair_facts.parsers.typescript import (
     typescript_typecheck_facts,
 )
 from agent_repair_facts.parsers.typescript_knip import knip_facts
-from agent_repair_facts.payloads import FactSource, MemoryFactSource
+from agent_repair_facts.payloads import FactSource, MemoryFactSource, fact_payload
 
 FactParser = Callable[[FactSource, str], list[dict[str, object]]]
 FactParserEntry = tuple[str, FactParser]
@@ -97,10 +98,38 @@ def log_facts_from_text(
     check: str,
     path: Path,
     text: str,
+    *,
+    structured_parser: str = "",
+    structured_parser_manager: str = "",
 ) -> list[dict[str, object]]:
     """Return log facts without reopening an already-read path."""
 
+    if structured_parser == "typescript-package-manager-audit":
+        result = typescript_package_manager_audit.parse_audit_report(
+            structured_parser_manager,
+            _workspace_label(check),
+            path.as_posix(),
+            text,
+        )
+        return [
+            fact_payload(
+                {
+                    "check": check,
+                    "path": finding.path,
+                    "symbol": finding.advisory_ids[0],
+                    "message": typescript_package_manager_audit.format_audit_finding(finding),
+                    "severity": finding.severity,
+                }
+            )
+            for finding in result.findings
+        ]
     return _source_facts(check, MemoryFactSource(path, text), LOG_FACT_PARSERS)
+
+
+def _workspace_label(check: str) -> str:
+    """Return explicit workspace ownership from a stable check name."""
+
+    return check.partition(":")[2] or "root"
 
 
 def find_parser(check: str, parsers: tuple[FactParserEntry, ...]) -> FactParser | None:

@@ -128,6 +128,7 @@ def _configured_check(
     config_field: str,
     *,
     structured_parser: str = "",
+    structured_parser_manager: str = "",
 ) -> Check:
     """Build a runnable or explicitly skipped configured-command check."""
     selected_profiles = frozenset(profiles)
@@ -146,6 +147,7 @@ def _configured_check(
             report_success_output=report_success_output,
             output_limit_chars=output_limit,
             structured_parser=structured_parser,
+            structured_parser_manager=structured_parser_manager,
         )
     return Check(
         name,
@@ -155,6 +157,7 @@ def _configured_check(
         report_success_output=report_success_output,
         output_limit_chars=output_limit,
         structured_parser=structured_parser,
+        structured_parser_manager=structured_parser_manager,
     )
 
 
@@ -182,6 +185,7 @@ def _configured_audit_check(
             optional_skip_status=SKIP_STATUS_UNSAFE_CONFIG,
             report_success_output=True,
             structured_parser=parser_name,
+            structured_parser_manager="",
         )
     return _configured_check(
         name,
@@ -189,6 +193,7 @@ def _configured_audit_check(
         profiles,
         config_field,
         structured_parser=parser_name,
+        structured_parser_manager=manager,
     )
 
 

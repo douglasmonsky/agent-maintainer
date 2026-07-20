@@ -126,19 +126,29 @@ def summarize_pyright(raw: str) -> str | None:
     return "\n".join(lines)
 
 
-def summarize_check_from_artifacts(
+def summarize_check_from_artifacts(  # noqa: PLR0913
     check_name: str,
     artifact_paths: tuple[str, ...],
     raw_output: str,
     max_lines: int,
     max_chars: int,
+    *,
+    structured_parser: str = "",
+    structured_parser_manager: str = "",
 ) -> str:
     """Summarize failed check, preferring known structured artifacts."""
 
     artifact_summary = structured_artifact_summary(check_name, artifact_paths)
     if artifact_summary:
         return compact_output(artifact_summary, max_lines, max_chars)
-    return summarize_check(check_name, raw_output, max_lines, max_chars)
+    return summarize_check(
+        check_name,
+        raw_output,
+        max_lines,
+        max_chars,
+        structured_parser=structured_parser,
+        structured_parser_manager=structured_parser_manager,
+    )
 
 
 def structured_artifact_summary(check_name: str, artifact_paths: tuple[str, ...]) -> str | None:
@@ -233,14 +243,27 @@ def format_bandit_finding(finding: dict[str, object]) -> str:
     return f"{filename}:{line_number}: {test_id} {severity}: {message}"
 
 
-def summarize_check(check_name: str, raw_output: str, max_lines: int, max_chars: int) -> str:
+def summarize_check(  # noqa: PLR0913
+    check_name: str,
+    raw_output: str,
+    max_lines: int,
+    max_chars: int,
+    *,
+    structured_parser: str = "",
+    structured_parser_manager: str = "",
+) -> str:
     """Summarize a failed check with check-specific formatting when available."""
 
     if check_name == "pyright":
         pyright_summary = summarize_pyright(raw_output)
         if pyright_summary:
             return compact_output(pyright_summary, max_lines, max_chars)
-    typescript_summary = summarize_typescript_check(check_name, raw_output)
+    typescript_summary = summarize_typescript_check(
+        check_name,
+        raw_output,
+        structured_parser=structured_parser,
+        structured_parser_manager=structured_parser_manager,
+    )
     if typescript_summary:
         return compact_output(typescript_summary, max_lines, max_chars)
     return compact_output(raw_output, max_lines, max_chars)

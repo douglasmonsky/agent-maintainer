@@ -123,6 +123,8 @@ def structured_facts(
         record.name,
         resolved_log,
         log_text,
+        structured_parser=record.structured_parser,
+        structured_parser_manager=record.structured_parser_manager,
     )[:MAX_FACTS_PER_CHECK]
 
 
