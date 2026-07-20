@@ -307,12 +307,17 @@ def test_parser_edge_outcomes_and_bounded_rendering() -> None:
         "npm", "root", "npm", '{"auditReportVersion":2,"vulnerabilities":{}}'
     )
     assert audit.render_audit_summary(clean) == "npm: no audit findings"
-    assert audit._bounded_values("GHSA-1") == ("GHSA-1",)
-    assert audit._bounded_values(1) == ("1",)
-    assert audit._scalar(True) == ""
-    assert audit._scalar({"value": 1}) == ""
+    private_names = ("_bounded_values", "_scalar", "_normalize_record", "_truncate")
+    bounded_values, scalar, normalize_record, truncate = (
+        getattr(audit, name) for name in private_names
+    )
+    assert bounded_values("GHSA-1") == ("GHSA-1",)
+    assert bounded_values(1) == ("1",)
+    assert bounded_values({"value": 1}) == ()
+    assert scalar(True) == ""
+    assert scalar({"value": 1}) == ""
     assert (
-        audit._normalize_record(
+        normalize_record(
             "npm",
             "root",
             "npm",
@@ -345,8 +350,8 @@ def test_parser_edge_outcomes_and_bounded_rendering() -> None:
     )
     assert "audit findings omitted" in audit.render_audit_summary(result)
     assert "upgrade pkg" in audit.format_audit_finding(finding)
-    assert audit._truncate("abcdef", 3) == "abc"
-    assert audit._truncate("abcdef", 5) == "ab..."
+    assert truncate("abcdef", 3) == "abc"
+    assert truncate("abcdef", 5) == "ab..."
 
 
 # docsync:evidence.end evidence.typescript.package_manager_audit_facts
