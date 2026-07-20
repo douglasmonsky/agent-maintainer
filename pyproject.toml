@@ -448,7 +448,7 @@ pytest_add_cli_args_test_selection = [
   "tests/test_intel/test_mutation_targets.py::test_target_for_function_keeps_threshold_score_and_details",
   "tests/test_intel/test_mutation_targets.py::test_target_sort_key_orders_highest_score_first",
   "tests/test_intel/test_mutation_targets.py::test_targets_for_source_returns_deterministically_sorted_targets",
-  "tests/test_intel/test_mutation_targets.py::test_targets_for_source_reads_utf8_source",
+  "tests/test_intel/test_mutation_target_survivors.py::test_targets_for_source_reads_utf8_source",
   "tests/test_intel/test_mutation_targets.py::test_mutation_target_report_passes_ratchet_context",
   "tests/test_intel/test_mutation_target_survivors.py::test_mutation_target_report_defaults_missing_metadata_to_zero",
   "tests/test_intel/test_mutation_target_survivors.py::test_ratchet_path_scores_reads_existing_baseline",
