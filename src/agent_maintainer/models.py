@@ -49,6 +49,7 @@ class Check:
     timeout_seconds: int | None = None
     output_limit_chars: int | None = None
     artifact_sensitivity: str = "safe"
+    structured_parser: str = ""
 
 
 @dataclass(frozen=True)

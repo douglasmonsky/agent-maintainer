@@ -71,6 +71,7 @@ def test_configured_provider_command_fields() -> None:
         "typescript_test_command",
         "typescript_knip_command",
         "typescript_dependency_cruiser_command",
+        "typescript_package_manager_audit_command",
     ]
     assert {"architecture", "dead-code", "dependency-hygiene"} <= set(
         providers["typescript"].capabilities

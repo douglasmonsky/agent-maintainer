@@ -47,6 +47,8 @@ def test_workspace_config_loads_named_tables(tmp_path: Path) -> None:
           "pnpm", "--filter", "api", "exec", "depcruise",
           "--output-type", "json", "src",
         ]
+        typescript_package_manager_audit_manager = "pnpm"
+        typescript_package_manager_audit_command = ["pnpm", "audit", "--json"]
         """,
         encoding="utf-8",
     )
@@ -87,6 +89,8 @@ def test_workspace_config_loads_named_tables(tmp_path: Path) -> None:
                 "json",
                 "src",
             ),
+            typescript_package_manager_audit_manager="pnpm",
+            typescript_package_manager_audit_command=("pnpm", "audit", "--json"),
         ),
         schema.WorkspaceConfig(
             name="worker",
@@ -125,6 +129,12 @@ def test_coerce_updates_reads_workspace_tables() -> None:
                         "json",
                         "src",
                     ],
+                    "typescript_package_manager_audit_manager": "npm",
+                    "typescript_package_manager_audit_command": [
+                        "npm",
+                        "audit",
+                        "--json",
+                    ],
                 },
             },
         }
@@ -155,6 +165,8 @@ def test_coerce_updates_reads_workspace_tables() -> None:
                 "json",
                 "src",
             ),
+            typescript_package_manager_audit_manager="npm",
+            typescript_package_manager_audit_command=("npm", "audit", "--json"),
         ),
     )
     with pytest.raises(TypeError, match=r"workspaces\.api\.source_roots"):

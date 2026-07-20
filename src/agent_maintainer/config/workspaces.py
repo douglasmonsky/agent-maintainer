@@ -19,3 +19,5 @@ class WorkspaceConfig:
     typescript_test_command: tuple[str, ...] = ()
     typescript_knip_command: tuple[str, ...] = ()
     typescript_dependency_cruiser_command: tuple[str, ...] = ()
+    typescript_package_manager_audit_manager: str = ""
+    typescript_package_manager_audit_command: tuple[str, ...] = ()

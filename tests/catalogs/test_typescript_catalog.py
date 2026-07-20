@@ -45,6 +45,8 @@ def test_typescript_checks_are_included_when_enabled() -> None:
             "json",
             "src",
         ),
+        typescript_package_manager_audit_manager="pnpm",
+        typescript_package_manager_audit_command=("pnpm", "audit", "--json"),
     )
 
     checks = maintainer_catalog.make_checks(config, "HEAD", "origin/main")
@@ -70,6 +72,34 @@ def test_typescript_checks_are_included_when_enabled() -> None:
         "src",
     ]
     assert by_name["typescript-dependency-cruiser"].profiles == frozenset(("full", "ci"))
+    assert by_name["typescript-package-manager-audit"].command == [
+        "pnpm",
+        "audit",
+        "--json",
+    ]
+    assert by_name["typescript-package-manager-audit"].profiles == frozenset(("full", "ci"))
+    assert by_name["typescript-package-manager-audit"].structured_parser == (
+        "typescript-package-manager-audit"
+    )
+
+
+def test_typescript_audit_command_without_manager_is_unsafe_skip() -> None:
+    """The provider never guesses a manager from an audit command."""
+
+    config = replace(
+        MaintainerConfig(),
+        enable_typescript=True,
+        typescript_package_manager_audit_command=("npm", "audit", "--json"),
+    )
+
+    checks = {
+        check.name: check for check in maintainer_catalog.make_checks(config, "HEAD", "origin/main")
+    }
+    audit_check = checks["typescript-package-manager-audit"]
+
+    assert audit_check.optional_skip_status == "skipped-unsafe-config"
+    assert audit_check.required_executable is None
+    assert audit_check.structured_parser == "typescript-package-manager-audit"
 
 
 def test_depcruise_large_output_reaches_summary(tmp_path: Path) -> None:
@@ -147,6 +177,12 @@ def test_workspace_typescript_commands_emit_owned_checks() -> None:
                     "json",
                     "src",
                 ),
+                typescript_package_manager_audit_manager="pnpm",
+                typescript_package_manager_audit_command=(
+                    "pnpm",
+                    "audit",
+                    "--json",
+                ),
             ),
         ),
     )
@@ -189,6 +225,14 @@ def test_workspace_typescript_commands_emit_owned_checks() -> None:
         "src",
     ]
     assert checks["typescript-dependency-cruiser:api"].profiles == frozenset(("full", "ci"))
+    assert checks["typescript-package-manager-audit:api"].command == [
+        "pnpm",
+        "audit",
+        "--json",
+    ]
+    assert checks["typescript-package-manager-audit:api"].structured_parser == (
+        "typescript-package-manager-audit"
+    )
 
 
 def test_typescript_fixture_config_smoke(

@@ -94,6 +94,14 @@ def as_str(value: object, field_name: str) -> str:
     raise TypeError(f"{field_name} must be a non-empty string")
 
 
+def as_optional_str(value: object, field_name: str) -> str:
+    """Coerce an optional string while preserving an explicit empty value."""
+
+    if value is None or value == "":
+        return ""
+    return as_str(value, field_name)
+
+
 def as_choice(value: object, field_name: str, choices: frozenset[str]) -> str:
     """Coerce a string config value constrained to an allowed choice set."""
 
@@ -105,7 +113,11 @@ def as_choice(value: object, field_name: str, choices: frozenset[str]) -> str:
 
 
 WORKSPACE_FIELD_PARSERS = tuple(
-    (field_name, as_tuple) for field_name in sorted(registry.WORKSPACE_KEYS)
+    (
+        field_name,
+        as_optional_str if field_name == "typescript_package_manager_audit_manager" else as_tuple,
+    )
+    for field_name in sorted(registry.WORKSPACE_KEYS)
 )
 
 

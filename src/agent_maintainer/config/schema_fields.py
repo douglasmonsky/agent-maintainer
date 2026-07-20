@@ -32,6 +32,8 @@ TUPLE_FIELDS = frozenset(
         "typescript_knip_profiles",
         "typescript_dependency_cruiser_command",
         "typescript_dependency_cruiser_profiles",
+        "typescript_package_manager_audit_command",
+        "typescript_package_manager_audit_profiles",
         "sbom_args",
         "sbom_profiles",
         "license_check_args",
@@ -151,5 +153,6 @@ STR_FIELDS = frozenset(
         "secret_scanner",
         "ratchet_baseline_path",
         "ratchet_guidance_path",
+        "typescript_package_manager_audit_manager",
     )
 )
