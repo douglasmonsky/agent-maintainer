@@ -1,0 +1,3 @@
+{"type":"auditAdvisory","data":{"advisory":{"id":1234,"module_name":"lodash","severity":"high","vulnerable_versions":"<4.17.21","patched_versions":">=4.17.21","findings":[{"paths":["web > lodash"]}],"title":"Prototype pollution"}}}
+not-json-neighbor
+{"type":"auditSummary","data":{"vulnerabilities":{"high":1}}}

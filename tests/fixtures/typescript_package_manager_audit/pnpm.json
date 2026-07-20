@@ -1,0 +1,20 @@
+{
+  "advisories": {
+    "GHSA-1234": {
+      "module_name": "lodash",
+      "severity": "high",
+      "vulnerable_versions": "<4.17.21",
+      "patched_versions": ">=4.17.21",
+      "findings": [{"version": "4.17.20", "paths": ["web > lodash"]}],
+      "title": "Prototype pollution"
+    },
+    "CVE-2024-0001": {
+      "module_name": "kleur",
+      "severity": "low",
+      "vulnerable_versions": "<4.1.5",
+      "patched_versions": ">=4.1.5",
+      "findings": [{"version": "4.1.4", "paths": ["node_modules/kleur"]}]
+    }
+  },
+  "metadata": {"vulnerabilities": {"total": 2}}
+}
