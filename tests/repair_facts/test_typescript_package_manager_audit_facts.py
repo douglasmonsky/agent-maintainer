@@ -9,10 +9,14 @@ from pathlib import Path
 
 import pytest
 
+from agent_repair_facts.parsers import typescript_audit_adapter_utils as adapter_utils
 from agent_repair_facts.parsers import typescript_package_manager_audit as audit
+from agent_repair_facts.parsers import typescript_package_manager_audit_adapters as adapters
+from agent_repair_facts.parsers.typescript_package_manager_audit_contract import RawAuditRecord
 
 FIXTURE_ROOT = Path(__file__).parents[1] / "fixtures" / "typescript_package_manager_audit"
 EXPECTED_DUPLICATE_RECORDS = 2
+EXPECTED_SECOND_VALUE = 2
 SUMMARY_LINE_LIMIT = 5
 
 
@@ -234,6 +238,106 @@ def test_summary_line_and_message_bounds_are_truthful() -> None:
     assert "omitted" in summary
     assert len(summary) <= audit.AUDIT_MESSAGE_CHAR_LIMIT
     assert len(audit.format_audit_finding(result.findings[0])) <= audit.AUDIT_MESSAGE_CHAR_LIMIT
+
+
+def test_adapter_helpers_fail_closed_and_preserve_explicit_fields() -> None:
+    """Shared adapter helpers reject unsafe shapes without guessing."""
+
+    record = {"id": "GHSA-1234", "package": "pkg", "severity": "high"}
+    assert adapter_utils.records_from_items([record])[0].package == "pkg"
+    assert adapter_utils.record_from_item("not an object") is None
+    assert adapter_utils.record_from_vulnerability("pkg", "not an object") is None
+    assert adapter_utils.record_from_vulnerability("pkg", {}) is None
+    assert adapter_utils.vulnerability_map("not a map") is None
+    assert adapter_utils.vulnerability_map(None) == ()
+    assert adapter_utils.advisory_container([record])[0].advisory_ids == ("GHSA-1234",)
+    assert adapter_utils.advisory_container("not a container") is None
+    assert adapter_utils.advisory_container(None) == ()
+    assert adapter_utils.scope({"scope": "runtime"}) == "runtime"
+    assert adapter_utils.scope({"dev": True}) == "dev"
+    assert adapter_utils.scope({"optional": True}) == "optional"
+    assert adapter_utils.scope({"peer": True}) == "peer"
+    assert adapter_utils.directness({"directness": "direct"}) == "direct"
+    assert adapter_utils.directness({"isDirect": True}) == "direct"
+    assert adapter_utils.directness({"isDirect": False}) == "indirect"
+    assert adapter_utils.values(None) == ()
+    assert adapter_utils.values(("one",)) == ("one",)
+    assert (
+        adapter_utils.first({"first": None, "second": EXPECTED_SECOND_VALUE}, "first", "second")
+        == EXPECTED_SECOND_VALUE
+    )
+    assert adapter_utils.object_value({1: "unsafe"}) is None
+
+
+def test_manager_adapters_cover_supported_projection_shapes() -> None:
+    """Manager adapters keep list, summary, advisory, and data shapes bounded."""
+
+    record = {"id": "GHSA-1234", "package": "pkg", "severity": "high"}
+    assert adapters.parse_npm_payload([record])[0].package == "pkg"
+    assert adapters.parse_npm_payload("not JSON") is None
+    assert adapters.parse_yarn_record("not JSON") is None
+    assert adapters.parse_yarn_record({"type": "auditSummary"}) == ()
+    assert (
+        adapters.parse_yarn_record({"type": "auditAdvisory", "data": {"advisory": record}})[
+            0
+        ].package
+        == "pkg"
+    )
+    assert adapters.parse_yarn_record({"type": "auditAdvisory", "data": {"advisory": {}}}) is None
+    assert adapters.parse_bun_payload("not JSON") is None
+    assert adapters.parse_bun_payload({"type": "auditSummary"}) == ()
+    assert adapters.parse_bun_payload({"data": {"advisory": record}})[0].package == "pkg"
+    assert adapters.parse_bun_payload(record)[0].package == "pkg"
+
+
+def test_parser_edge_outcomes_and_bounded_rendering() -> None:
+    """Empty, omitted, scalar, and invalid raw fields remain deterministic."""
+
+    assert audit.parse_audit_report("npm", "root", "npm", "").outcome == audit.AUDIT_OUTCOME_INVALID
+    clean = audit.parse_audit_report(
+        "npm", "root", "npm", '{"auditReportVersion":2,"vulnerabilities":{}}'
+    )
+    assert audit.render_audit_summary(clean) == "npm: no audit findings"
+    assert audit._bounded_values("GHSA-1") == ("GHSA-1",)
+    assert audit._bounded_values(1) == ("1",)
+    assert audit._scalar(True) == ""
+    assert audit._scalar({"value": 1}) == ""
+    assert (
+        audit._normalize_record(
+            "npm",
+            "root",
+            "npm",
+            RawAuditRecord(package="", severity="high", advisory_ids=("ADV-1",)),
+        )
+        is None
+    )
+    finding = audit.PackageManagerAuditFinding(
+        manager="npm",
+        package="pkg",
+        severity="high",
+        advisory_ids=("ADV-1",),
+        vulnerable_ranges=("<1",),
+        fixed_versions=("1.0.0",),
+        scope="dev",
+        directness="direct",
+        workspace="root",
+        path=None,
+        source_label="<unknown source>",
+        title="upgrade pkg",
+    )
+    result = audit.PackageManagerAuditParseResult(
+        manager="npm",
+        workspace="root",
+        outcome=audit.AUDIT_OUTCOME_FINDINGS,
+        findings=(finding,),
+        supported_count=3,
+        retained_count=1,
+        omitted_count=2,
+    )
+    assert "audit findings omitted" in audit.render_audit_summary(result)
+    assert "upgrade pkg" in audit.format_audit_finding(finding)
+    assert audit._truncate("abcdef", 3) == "abc"
+    assert audit._truncate("abcdef", 5) == "ab..."
 
 
 # docsync:evidence.end evidence.typescript.package_manager_audit_facts

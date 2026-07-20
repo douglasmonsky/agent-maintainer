@@ -117,6 +117,19 @@ def test_typescript_package_manager_audit_invalid_output_falls_back_to_raw() -> 
     assert summary == raw_output
 
 
+def test_typescript_package_manager_audit_requires_explicit_manager() -> None:
+    """Audit summaries stay disabled when no manager hint is configured."""
+
+    assert (
+        structured_typescript.summarize_typescript_package_manager_audit(
+            "{}",
+            manager="",
+            workspace="root",
+        )
+        is None
+    )
+
+
 def test_typescript_test_output_summarizes_jest_json() -> None:
     """Jest-compatible JSON test output produces compact summaries."""
     raw_output = json.dumps(
