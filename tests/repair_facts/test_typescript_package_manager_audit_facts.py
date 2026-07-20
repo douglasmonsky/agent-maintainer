@@ -244,13 +244,17 @@ def test_adapter_helpers_fail_closed_and_preserve_explicit_fields() -> None:
     """Shared adapter helpers reject unsafe shapes without guessing."""
 
     record = {"id": "GHSA-1234", "package": "pkg", "severity": "high"}
-    assert adapter_utils.records_from_items([record])[0].package == "pkg"
+    records = adapter_utils.records_from_items([record])
+    assert records
+    assert records[0].package == "pkg"
     assert adapter_utils.record_from_item("not an object") is None
     assert adapter_utils.record_from_vulnerability("pkg", "not an object") is None
     assert adapter_utils.record_from_vulnerability("pkg", {}) is None
     assert adapter_utils.vulnerability_map("not a map") is None
     assert adapter_utils.vulnerability_map(None) == ()
-    assert adapter_utils.advisory_container([record])[0].advisory_ids == ("GHSA-1234",)
+    advisory_records = adapter_utils.advisory_container([record])
+    assert advisory_records
+    assert advisory_records[0].advisory_ids == ("GHSA-1234",)
     assert adapter_utils.advisory_container("not a container") is None
     assert adapter_utils.advisory_container(None) == ()
     assert adapter_utils.scope({"scope": "runtime"}) == "runtime"
@@ -273,21 +277,26 @@ def test_manager_adapters_cover_supported_projection_shapes() -> None:
     """Manager adapters keep list, summary, advisory, and data shapes bounded."""
 
     record = {"id": "GHSA-1234", "package": "pkg", "severity": "high"}
-    assert adapters.parse_npm_payload([record])[0].package == "pkg"
+    npm_records = adapters.parse_npm_payload([record])
+    assert npm_records
+    assert npm_records[0].package == "pkg"
     assert adapters.parse_npm_payload("not JSON") is None
     assert adapters.parse_yarn_record("not JSON") is None
     assert adapters.parse_yarn_record({"type": "auditSummary"}) == ()
-    assert (
-        adapters.parse_yarn_record({"type": "auditAdvisory", "data": {"advisory": record}})[
-            0
-        ].package
-        == "pkg"
+    yarn_records = adapters.parse_yarn_record(
+        {"type": "auditAdvisory", "data": {"advisory": record}}
     )
+    assert yarn_records
+    assert yarn_records[0].package == "pkg"
     assert adapters.parse_yarn_record({"type": "auditAdvisory", "data": {"advisory": {}}}) is None
     assert adapters.parse_bun_payload("not JSON") is None
     assert adapters.parse_bun_payload({"type": "auditSummary"}) == ()
-    assert adapters.parse_bun_payload({"data": {"advisory": record}})[0].package == "pkg"
-    assert adapters.parse_bun_payload(record)[0].package == "pkg"
+    bun_data_records = adapters.parse_bun_payload({"data": {"advisory": record}})
+    assert bun_data_records
+    assert bun_data_records[0].package == "pkg"
+    bun_records = adapters.parse_bun_payload(record)
+    assert bun_records
+    assert bun_records[0].package == "pkg"
 
 
 def test_parser_edge_outcomes_and_bounded_rendering() -> None:
