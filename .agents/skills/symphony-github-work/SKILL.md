@@ -28,7 +28,11 @@ are materially missing, block before editing.
 9. Publish only explicit changed paths with
    `/Users/Monsky/.codex-symphony/bin/symphony-git publish "<type>: <summary>" <path>...`.
 10. Use `github_api` to open or update a pull request against `main`. Follow
-   `.github/pull_request_template.md` and record exact verification evidence.
+    `.github/pull_request_template.md` and record exact verification evidence.
+
+Do not repeat an identical failed external mutation more than once. After one
+evidence-preserving retry, block with the provider status and attempted
+operation instead of trying equivalent REST, GraphQL, or CLI surfaces.
 
 Use `github_api` for repository-scoped issue comments, labels, and pull-request
 operations. Do not expose its host-side credential or copy it into the

@@ -109,6 +109,9 @@ Follow these rules:
     Update the workpad with the exact required human action, why it is required,
     security implications, how to verify it, and how to requeue. Then add
     `agent-blocked` and remove `agent-running` and `agent-ready`.
+14. Never repeat the same failed external mutation more than once. After one
+    evidence-preserving retry, use the blocked flow instead of changing API
+    surfaces or spending additional turns on equivalent requests.
 
 Your final response must contain completed actions, verification evidence, the
 branch and pull-request URL when available, or the precise blocked reason. Do

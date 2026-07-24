@@ -36,6 +36,18 @@ be recorded here after the live run.
   266,496 (87.1%) were cached and 39,586 were non-cached. The bridge preflight
   was moved ahead of broad repository reading so future permission failures
   fail in the first few calls.
+- The bridge-enabled rerun prepared the issue branch, changed only
+  `docs/symphony/operations.md`, passed focused Markdown lint and full verifier
+  run `20260724T192808210147Z-full-d7f0b4678694`, then published commit
+  `5d1af53`. Pull-request creation returned an opaque GitHub server error
+  through injected REST, `gh pr create`, and direct REST even though GitHub's
+  status API reported Pull Requests and API Requests operational. The branch,
+  commit, verification, and workpad are preserved under `agent-blocked`.
+- The rerun consumed 2,262,556 aggregate input tokens across 47 model calls;
+  2,149,120 (95.0%) were cached and 113,436 were non-cached, with 13,040 output
+  tokens. This is not an acceptable steady-state cost for a one-file task.
+  Repeated equivalent external mutations are now capped at one retry, and the
+  pilot remains concurrency one.
 - Initial service start failed closed because `v0.0.2` requires an explicit
   engineering-preview acknowledgement flag not shown in short help; the wrapper
   was corrected using the official CLI source before retrying.
