@@ -1,0 +1,4 @@
+interface:
+  display_name: "Symphony GitHub Work"
+  short_description: "Complete Symphony-dispatched GitHub issues"
+  default_prompt: "Use $symphony-github-work to complete an eligible issue and hand off a verified PR."

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if [[ -x .venv/bin/python ]]; then
+  export PATH="$repo_root/.venv/bin:$PATH"
+fi
+
+exec just v

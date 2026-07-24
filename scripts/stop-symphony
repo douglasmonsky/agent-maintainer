@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+launch_label="${SYMPHONY_LAUNCH_LABEL:-com.openai.symphony.agent-maintainer}"
+
+if ! launchctl print "gui/$UID/$launch_label" >/dev/null 2>&1; then
+  printf 'Symphony is not running (no launch job).\n'
+  exit 0
+fi
+
+launchctl remove "$launch_label"
+for _ in {1..20}; do
+  if ! launchctl print "gui/$UID/$launch_label" >/dev/null 2>&1; then
+    printf 'Symphony stopped.\n'
+    exit 0
+  fi
+  sleep 0.5
+done
+
+printf 'Symphony launch job did not stop: %s\n' "$launch_label" >&2
+exit 1

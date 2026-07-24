@@ -4,7 +4,6 @@
 #
 #    pip-compile --allow-unsafe --output-file=config/dev-lock.txt --strip-extras config/dev-dependencies.in pyproject.toml
 #
-# Lock refreshed for source candidate 0.1.0b14; resolved dependencies are unchanged.
 actionlint-py==1.7.12.24
     # via -r config/dev-dependencies.in
 annotated-types==0.7.0
@@ -124,7 +123,7 @@ fqdn==1.5.1
     # via jsonschema
 gitdb==4.0.12
     # via gitpython
-gitpython==3.1.52
+gitpython==3.1.55
     # via tach
 glom==25.12.0
     # via semgrep

@@ -63,6 +63,18 @@ fail. Treat `manual` as required only when requested, before release, or when
 manual gates are touched. Do not lower thresholds, delete checks, or add broad
 suppressions to make the pipeline pass.
 
+## Symphony-Dispatched Work
+
+For GitHub issues carrying `agent-ready`, read and follow
+`.agents/skills/symphony-github-work/SKILL.md`. Treat the issue as the scope
+contract, create a dedicated branch, and finish with `scripts/verify`.
+
+Use Serena for precise symbol work when it is available in the current
+workspace. Use GitNexus only for architecture, dependency, call-graph, or impact
+questions. Use Agent Perf only for measured performance work. A headless
+Symphony worker must continue with native repository tools when Desktop-bound
+services are unavailable.
+
 If the repository does not use `src/` and `tests/`, configure
 `[tool.agent_maintainer]` in `pyproject.toml` instead of letting checks drift or
 fail ambiguously.
