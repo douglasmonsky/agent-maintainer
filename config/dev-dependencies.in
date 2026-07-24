@@ -2,12 +2,12 @@ actionlint-py==1.7.12.24
 build==1.5.1
 setuptools==83.0.0
 wheel==0.47.0
-ruff==0.15.21
+ruff==0.15.22
 pyright==1.1.411
 pytest==9.1.1
 pytest-cov==7.1.0
 hypothesis==6.156.6
-coverage==7.15.0
+coverage==7.15.2
 defusedxml==0.7.1
 diff-cover==10.3.0
 import-linter==2.13
@@ -22,7 +22,7 @@ bandit==1.9.4
 pip-audit==2.10.1
 pip-tools==7.5.3
 mutmut==3.6.0
-semgrep==1.169.0
+semgrep==1.170.0
 cyclonedx-bom==7.3.0
 pip-licenses==5.5.5
 yamllint==1.38.0
