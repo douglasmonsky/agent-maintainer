@@ -26,7 +26,7 @@ agent:
   max_turns: 12
   max_retry_backoff_ms: 120000
 codex:
-  command: "$CODEX_BIN --profile symphony --strict-config --config features.hooks=false --config features.multi_agent=false app-server"
+  command: "$CODEX_BIN --strict-config --config features.hooks=false --config features.multi_agent=false app-server"
   approval_policy: never
   thread_sandbox: workspace-write
   turn_sandbox_policy:

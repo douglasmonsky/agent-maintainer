@@ -9,7 +9,7 @@ Pilot repository: `douglasmonsky/agent-maintainer`
 Run the official Symphony reference implementation as a pinned user-level
 binary outside the repository. Use GitHub Issues with the opt-in `agent-ready`
 label, one isolated clone per issue, one concurrent worker, a dedicated Codex
-profile, the stock loopback-only dashboard, and `scripts/status-symphony` for
+home, the stock loopback-only dashboard, and `scripts/status-symphony` for
 Git/PR facts the dashboard does not expose.
 
 The repository's experimental task broker remains a planning and manual
@@ -27,15 +27,17 @@ does not duplicate Symphony.
 | App Server | Available and experimental; stdio is supported |
 | User config | `~/.codex/config.toml` |
 | Existing profiles | `deep`, `routine`, and `urgent` separate config files |
-| Pilot profile | `~/.codex/symphony.config.toml` |
+| Pilot Codex home | `~/.codex-symphony/config.toml` |
 | Interactive defaults | `workspace-write`, approval `never`, network enabled |
 | Global instructions | `~/.codex/AGENTS.md` plus repository `AGENTS.md` |
 
-Official Codex configuration uses separate files named
-`$CODEX_HOME/<profile>.config.toml`; it does not use a `[profiles]` table.
-Project `.codex/config.toml` has higher precedence than a selected profile, and
-CLI overrides have the highest precedence. The Symphony command therefore
-disables hooks and multi-agent execution explicitly as well as in the profile.
+The installed CLI accepts `--profile` for runtime commands but rejects it for
+`app-server`. The pilot therefore starts App Server with
+`CODEX_HOME=~/.codex-symphony`, whose `config.toml` contains only restricted
+autonomous defaults and whose `auth.json` is a symlink to the existing
+permission-restricted ChatGPT login. Project `.codex/config.toml` may still be
+discovered, so the Symphony command also disables hooks and multi-agent
+execution through highest-precedence CLI overrides.
 
 ## Symphony Installation
 
@@ -159,7 +161,8 @@ dependencies during this pilot.
 - The stock dashboard does not expose branch, dirty files, recent commit,
   persisted verification status, or PR URL. `scripts/status-symphony` adds
   those facts from Symphony JSON, Git, verification artifacts, and GitHub.
-- Codex profile configuration is file-based, and repository skills live under
+- Codex App Server isolation uses a dedicated `CODEX_HOME`, and repository
+  skills live under
   `.agents/skills`.
 - Codex Desktop does not need a private App Server deep link for intervention;
   the supported `codex app <workspace>` command opens the workspace as a new

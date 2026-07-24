@@ -5,6 +5,7 @@ repo_root="$(git rev-parse --show-toplevel)"
 state_root="${SYMPHONY_STATE_ROOT:-$HOME/.codex/symphony/agent-maintainer}"
 workspace_root="${SYMPHONY_WORKSPACE_ROOT:-$HOME/Developer/Codex/symphony-workspaces/agent-maintainer}"
 symphony_bin="${SYMPHONY_BIN:-$HOME/.codex/bin/symphony}"
+codex_home="${SYMPHONY_CODEX_HOME:-$HOME/.codex-symphony}"
 port="${SYMPHONY_PORT:-4000}"
 launch_label="${SYMPHONY_LAUNCH_LABEL:-com.openai.symphony.agent-maintainer}"
 service_log="$state_root/service.log"
@@ -18,6 +19,12 @@ fi
 
 [[ -x "$symphony_bin" ]] || {
   printf 'Symphony binary is missing or not executable: %s\n' "$symphony_bin" >&2
+  exit 1
+}
+
+[[ -r "$codex_home/config.toml" ]] || {
+  printf 'Symphony Codex config is missing or unreadable: %s\n' \
+    "$codex_home/config.toml" >&2
   exit 1
 }
 
@@ -35,6 +42,7 @@ launchctl submit \
   "PATH=$PATH" \
   "CODEX_BIN=$codex_bin" \
   "SYMPHONY_BIN=$symphony_bin" \
+  "SYMPHONY_CODEX_HOME=$codex_home" \
   "SYMPHONY_PORT=$port" \
   "SYMPHONY_REPO_ROOT=$repo_root" \
   "SYMPHONY_SOURCE_REF=${SYMPHONY_SOURCE_REF:-main}" \

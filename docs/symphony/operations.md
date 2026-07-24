@@ -5,7 +5,8 @@
 Prerequisites:
 
 - `~/.codex/bin/symphony` points to the approved pinned release;
-- `~/.codex/symphony.config.toml` exists;
+- `~/.codex-symphony/config.toml` exists and
+  `~/.codex-symphony/auth.json` resolves to the existing ChatGPT login;
 - `codex login status` and `gh auth status` succeed;
 - port `4000` is available on loopback.
 
@@ -155,7 +156,7 @@ Keep all optional MCPs disabled during the pilot. For Serena or GitNexus:
    or disclose another checkout.
 3. Prove startup is noninteractive and no browser login is required.
 4. Bound or recreate indexes per workspace.
-5. Enable only that MCP in `~/.codex/symphony.config.toml`.
+5. Enable only that MCP in `~/.codex-symphony/config.toml`.
 6. Run a labeled test issue whose acceptance criteria require the tool.
 7. Record the result in the validation report.
 

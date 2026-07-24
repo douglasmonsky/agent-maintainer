@@ -7,6 +7,13 @@ symphony_bin="${SYMPHONY_BIN:-$HOME/.codex/bin/symphony}"
 port="${SYMPHONY_PORT:-4000}"
 
 export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}"
+export CODEX_HOME="${SYMPHONY_CODEX_HOME:-$HOME/.codex-symphony}"
+
+[[ -r "$CODEX_HOME/config.toml" ]] || {
+  printf 'Symphony Codex config is missing or unreadable: %s\n' \
+    "$CODEX_HOME/config.toml" >&2
+  exit 1
+}
 
 exec "$symphony_bin" \
   --i-understand-that-this-will-be-running-without-the-usual-guardrails \

@@ -22,8 +22,11 @@ be recorded here after the live run.
 - Repository work isolated from an unrelated dirty checkout in
   `/Users/Monsky/Developer/Codex/agent-maintainer-symphony-pilot`.
 - Current `WORKFLOW.md` schema checked against the official `v0.0.2` source.
-- Symphony profile created with optional MCPs, hooks, and multi-agent execution
-  disabled.
+- A dedicated `~/.codex-symphony` App Server home was created with no optional
+  MCPs and with hooks and multi-agent execution disabled. An initial
+  `--profile symphony` live claim failed before its first turn because the
+  installed CLI does not support profiles for `app-server`; the dedicated-home
+  mechanism replaced it and retained strict CLI overrides.
 - Initial service start failed closed because `v0.0.2` requires an explicit
   engineering-preview acknowledgement flag not shown in short help; the wrapper
   was corrected using the official CLI source before retrying.
@@ -38,7 +41,7 @@ be recorded here after the live run.
 2. Start Symphony and confirm the dashboard/API are healthy.
 3. Add `agent-ready`.
 4. Observe the issue claim and isolated workspace creation.
-5. Confirm the App Server starts with the Symphony profile.
+5. Confirm the App Server starts with the dedicated Symphony `CODEX_HOME`.
 6. Confirm `github_api` operates without exposing its credential.
 7. Observe `agent-running`, workpad creation, branch creation, and edits.
 8. Observe focused and final verification.

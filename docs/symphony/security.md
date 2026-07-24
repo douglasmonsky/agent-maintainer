@@ -9,8 +9,8 @@ dependencies, Git, and GitHub.
 
 The reference binary describes itself as running without the usual guardrails
 and requires an explicit acknowledgement flag. For this pilot, the compensating
-controls are an opt-in label, one repository, one worker, a dedicated profile,
-workspace-only Codex writes, disabled optional MCPs/hooks/subagents, a
+controls are an opt-in label, one repository, one worker, a dedicated Codex
+home, workspace-only Codex writes, disabled optional MCPs/hooks/subagents, a
 loopback-only dashboard, required verification, manual review, and no auto-merge.
 
 Only trusted maintainers may apply `agent-ready`. Issue content, repository
@@ -37,7 +37,9 @@ credential remains a human action.
 
 ## Codex Policy
 
-- profile: `~/.codex/symphony.config.toml`;
+- Codex home: `~/.codex-symphony`;
+- authentication: `auth.json` is a permission-restricted symlink to the
+  existing ChatGPT login; no credential is copied into a workspace;
 - approval: `never`;
 - thread sandbox: `workspace-write`;
 - turn policy: workspace write with network access;
