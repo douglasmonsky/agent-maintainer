@@ -2,7 +2,7 @@
 set -euo pipefail
 
 port="${SYMPHONY_PORT:-4000}"
-launch_label="${SYMPHONY_LAUNCH_LABEL:-com.openai.symphony.agent-maintainer}"
+launch_label="com.openai.symphony.agent-maintainer"
 
 if ! launchctl print "gui/$UID/$launch_label" >/dev/null 2>&1; then
   printf 'Symphony: stopped\n'
@@ -34,7 +34,12 @@ for group in ("running", "retrying", "blocked"):
         issue = item["issue_identifier"]
         workspace = item.get("workspace_path") or "-"
         action = item.get("last_message") or item.get("error") or "-"
-        last_activity = item.get("last_event_at") or item.get("due_at") or "-"
+        last_activity = (
+            item.get("last_event_at")
+            or item.get("blocked_at")
+            or item.get("due_at")
+            or "-"
+        )
         turns = item.get("turn_count", 0)
         attempt = item.get("attempt", 0)
         print(
@@ -59,7 +64,32 @@ import sys
 
 with open(sys.argv[1], encoding="utf-8") as handle:
     data = json.load(handle)
-print(data.get("status") or data.get("result") or "manifest-present")
+checks = data.get("checks") or []
+statuses = {
+    str(check.get("status") or "").lower()
+    for check in checks
+}
+failed = any(
+    check.get("exit_code") not in (None, 0)
+    or str(check.get("status") or "").lower()
+    in {"cancelled", "error", "failed", "timed-out", "timed_out"}
+    for check in checks
+)
+incomplete = not checks or bool(
+    statuses - {"passed", "skipped", "warning"}
+)
+warned = bool(statuses & {"skipped", "warning"})
+if failed:
+    outcome = "failed"
+elif incomplete:
+    outcome = "incomplete"
+elif warned:
+    outcome = "passed-with-warnings"
+else:
+    outcome = "passed"
+run_id = data.get("run_id") or "-"
+profile = data.get("profile") or "-"
+print(f"{outcome} run_id={run_id} profile={profile}")
 ' "$workspace/.verify-logs/manifest.json"
     )"
   fi

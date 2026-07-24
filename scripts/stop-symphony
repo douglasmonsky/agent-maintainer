@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-launch_label="${SYMPHONY_LAUNCH_LABEL:-com.openai.symphony.agent-maintainer}"
+repo_root="$(git rev-parse --show-toplevel)"
+repo_root="$(cd "$repo_root" && pwd -P)"
+launch_label="com.openai.symphony.agent-maintainer"
 
-if ! launchctl print "gui/$UID/$launch_label" >/dev/null 2>&1; then
+if ! job="$(launchctl print "gui/$UID/$launch_label" 2>/dev/null)"; then
   printf 'Symphony is not running (no launch job).\n'
   exit 0
+fi
+
+if [[ "$job" != *"SYMPHONY_REPO_ROOT=$repo_root"* ]] ||
+  [[ "$job" != *"$repo_root/scripts/run-symphony"* ]]; then
+  printf 'Refusing to stop an unrecognized launch job: %s\n' "$launch_label" >&2
+  exit 1
 fi
 
 launchctl remove "$launch_label"

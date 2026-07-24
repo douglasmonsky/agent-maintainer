@@ -37,6 +37,29 @@ Status: pilot mechanics validated; autonomous PR creation externally blocked
   lock refresh changed only GitPython `3.1.52` to `3.1.55`; the configured
   audit then passed with only the repository's existing time-bounded ignores.
 
+## Independent Review Corrections
+
+The final read-only review reported six findings, all accepted:
+
+- the public issue form no longer grants `agent-ready`; dispatch requires a
+  separate trusted-maintainer label action;
+- the dedicated Codex home selects OS-keychain storage, and startup rejects
+  any `auth.json` file or symlink;
+- the Git bridge requires an empty index, rejects repository-wide, glob, and
+  pathspec-magic inputs, stages literal paths, verifies the exact staged set,
+  and clears staging after validation failure;
+- the status command aggregates real verifier checks and reports the run ID,
+  profile, warnings, failures, incompleteness, and blocked timestamps;
+- login preflight now runs against the dedicated `CODEX_HOME`; and
+- the service uses a fixed launch label, while shutdown validates the
+  registered repository root and entrypoint before removing the job.
+
+Post-review validation confirmed that the dedicated device authorization is
+readable from the OS keychain, `~/.codex-symphony/auth.json` is absent, startup
+rejects that file boundary, and the hardened service starts successfully. Git
+bridge negative tests rejected `.`, glob, and directory-wide publication;
+post-stage failures restored an empty index.
+
 ## Bounded Implementation Exercise
 
 Issue [#424](https://github.com/douglasmonsky/agent-maintainer/issues/424)

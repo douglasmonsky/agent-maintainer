@@ -5,9 +5,11 @@
 Prerequisites:
 
 - `~/.codex/bin/symphony` points to the approved pinned release;
-- `~/.codex-symphony/config.toml` exists and
-  `~/.codex-symphony/auth.json` resolves to the existing ChatGPT login;
-- `codex login status` and `gh auth status` succeed;
+- `~/.codex-symphony/config.toml` sets
+  `cli_auth_credentials_store = "keyring"`;
+- no file or symlink exists at `~/.codex-symphony/auth.json`;
+- `CODEX_HOME="$HOME/.codex-symphony" codex login status` and
+  `gh auth status` succeed;
 - port `4000` is available on loopback.
 
 Start:
@@ -34,6 +36,12 @@ system daemon or require `sudo`. Runtime state and logs live under
 `~/.codex/symphony/agent-maintainer`. Issue workspaces default to
 `~/Developer/Codex/symphony-workspaces/agent-maintainer`.
 
+The dedicated Codex home must be authenticated once through the OS keychain.
+If login is absent, run an interactive
+`CODEX_HOME="$HOME/.codex-symphony" codex login --device-auth`, then confirm
+that `auth.json` was not created. The start script refuses file-based Codex
+credentials because `workspace-write` does not prevent general host reads.
+
 The start script reads the existing GitHub CLI credential into the Symphony host
 environment without printing it. Symphony removes `GITHUB_TOKEN` from the Codex
 child environment before the App Server starts.
@@ -51,8 +59,9 @@ the sandbox. This is required because `workspace-write` intentionally protects
 
 ## Create an Eligible Issue
 
-Use the **Agent-ready task** issue form. Confirm every required section is
-complete and apply `agent-ready` only after product, architecture, dependency,
+Use the **Agent-ready task** issue form. It intentionally creates an unlabelled
+candidate. A trusted maintainer must confirm every required section is complete
+and then apply `agent-ready` after product, architecture, dependency,
 permission, and verification decisions are resolved.
 
 Lifecycle:
@@ -91,7 +100,8 @@ curl -fsS http://127.0.0.1:4000/api/v1/GH-123
 - workspace and branch;
 - dirty-file count;
 - recent commit;
-- persisted Agent Maintainer verification status;
+- aggregate persisted Agent Maintainer verification outcome, run ID, and
+  profile;
 - pull-request URL;
 - blocked reason and last activity.
 

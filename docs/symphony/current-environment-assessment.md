@@ -34,9 +34,10 @@ does not duplicate Symphony.
 The installed CLI accepts `--profile` for runtime commands but rejects it for
 `app-server`. The pilot therefore starts App Server with
 `CODEX_HOME=~/.codex-symphony`, whose `config.toml` contains only restricted
-autonomous defaults and whose `auth.json` is a symlink to the existing
-permission-restricted ChatGPT login. Project `.codex/config.toml` may still be
-discovered, so the Symphony command also disables hooks and multi-agent
+autonomous defaults and selects a dedicated OS-keychain credential. Startup
+refuses `~/.codex-symphony/auth.json` files and symlinks so the worker cannot
+read a file-based ChatGPT credential. Project `.codex/config.toml` may still
+be discovered, so the Symphony command also disables hooks and multi-agent
 execution through highest-precedence CLI overrides.
 
 ## Symphony Installation
@@ -166,7 +167,8 @@ dependencies during this pilot.
   `.agents/skills`.
 - Current Codex protects `.git` recursively under `workspace-write`. A
   read-only, absolute-path execution-rule bridge performs only validated
-  issue-workspace branch preparation and explicit-path publication.
+  issue-workspace branch preparation and literal explicit-path publication
+  from an initially empty index.
 - Codex Desktop does not need a private App Server deep link for intervention;
   the supported `codex app <workspace>` command opens the workspace as a new
   Desktop context.
@@ -175,10 +177,13 @@ dependencies during this pilot.
 
 - Symphony `v0.0.2` is an early preview with an unstable schema.
 - Public issue content is untrusted input. Only maintainers should apply
-  `agent-ready`, and the worker must still reject ambiguous or unsafe issues.
+  `agent-ready`; the public issue form deliberately applies no dispatch label,
+  and the worker must still reject ambiguous or unsafe issues.
 - The current GitHub identity has broader permissions than a future bot should.
 - Network access is necessary for clone, dependencies, push, and GitHub, so the
   workspace sandbox is not a network isolation boundary.
+- `workspace-write` permits general host reads. File-based Codex credentials
+  are prohibited, while other host-readable data remains a pilot trust risk.
 - All optional MCPs are disabled for the pilot. Serena and GitNexus should be
   enabled only after isolated-workspace path and data-scope tests pass.
 - Verification can be long and resource-intensive; concurrency remains one.

@@ -1,15 +1,14 @@
 name: Agent-ready task
 description: Define a bounded task that Symphony may execute autonomously.
 title: "[Agent]: "
-labels:
-  - agent-ready
 body:
   - type: markdown
     attributes:
       value: |
-        Symphony claims only issues with `agent-ready`. Remove that label when
-        design, dependencies, permissions, or acceptance criteria are unresolved.
-        Never include credentials, private data, or real student records.
+        This form creates an unlabelled candidate task. After reviewing every
+        field, a trusted maintainer may apply `agent-ready` to authorize
+        Symphony dispatch. Never include credentials, private data, or real
+        student records.
   - type: textarea
     id: objective
     attributes:

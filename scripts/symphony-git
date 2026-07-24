@@ -49,25 +49,74 @@ case "${1:-}" in
       printf 'Publish requires one or more explicit repository-relative paths.\n' >&2
       exit 1
     }
+    git diff --cached --quiet || {
+      printf 'Refusing to publish with a nonempty Git index.\n' >&2
+      exit 1
+    }
 
     paths=()
     for path in "$@"; do
-      if [[ "$path" == /* ]] || [[ "$path" == -* ]] ||
+      if [[ -z "$path" ]] || [[ "$path" == "." ]] ||
+        [[ "$path" == /* ]] || [[ "$path" == -* ]] ||
+        [[ "$path" == :* ]] || [[ "$path" == *[\*\?\[\]]* ]] ||
         [[ "$path" == ".." ]] || [[ "$path" == ../* ]] ||
         [[ "$path" == */../* ]] || [[ "$path" == */.. ]]; then
         printf 'Unsafe publish path: %s\n' "$path" >&2
         exit 1
       fi
+      if [[ ! -e "$repo_root/$path" ]] &&
+        [[ ! -L "$repo_root/$path" ]] &&
+        ! git --literal-pathspecs ls-files --error-unmatch -- "$path" \
+          >/dev/null 2>&1; then
+        printf 'Publish path does not exist and is not tracked: %s\n' "$path" >&2
+        exit 1
+      fi
       paths+=("$path")
     done
 
+    staging_active=1
+    cleanup_staging() {
+      if ((staging_active)); then
+        git reset --quiet -- || {
+          printf 'Warning: failed to restore an empty Git index.\n' >&2
+        }
+      fi
+    }
+    trap cleanup_staging EXIT
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+
     git diff --check
-    git add -- "${paths[@]}"
+    git --literal-pathspecs add -- "${paths[@]}"
     git diff --cached --check
     git diff --cached --quiet && {
       printf 'No staged change to publish.\n' >&2
       exit 1
     }
+
+    staged_paths=()
+    while IFS= read -r -d '' staged_path; do
+      staged_paths+=("$staged_path")
+    done < <(git diff --cached --name-only -z)
+    ((${#staged_paths[@]} == ${#paths[@]})) || {
+      printf 'Staged paths do not exactly match the authorized publish paths.\n' >&2
+      exit 1
+    }
+    for staged_path in "${staged_paths[@]}"; do
+      authorized=0
+      for path in "${paths[@]}"; do
+        if [[ "$staged_path" == "$path" ]]; then
+          authorized=1
+          break
+        fi
+      done
+      ((authorized)) || {
+        printf 'Unauthorized staged path: %s\n' "$staged_path" >&2
+        exit 1
+      }
+    done
+
     git diff --quiet || {
       printf 'Refusing to publish with unstaged tracked changes.\n' >&2
       exit 1
@@ -78,6 +127,8 @@ case "${1:-}" in
     }
 
     git commit -m "$commit_message"
+    staging_active=0
+    trap - EXIT HUP INT TERM
     git push -u origin "$issue_branch"
     ;;
   *)

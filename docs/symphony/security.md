@@ -20,7 +20,7 @@ content, dependencies, and external responses remain untrusted inputs.
 
 | Credential | Storage | Exposure |
 |---|---|---|
-| Codex login | Existing Codex/ChatGPT credential store | Used by App Server; not copied into the repository |
+| Codex login | Dedicated OS keychain entry for `~/.codex-symphony` | Used by App Server; no `auth.json` is exposed to the worker |
 | GitHub CLI login | Existing OS keyring | Start script retrieves it for the Symphony host without printing it |
 | `GITHUB_TOKEN` | Symphony process environment | Removed from the Codex child by the GitHub adapter |
 | Git push credential | Existing Git credential helper/keyring | May be reachable by `git push` from the worker |
@@ -38,8 +38,9 @@ credential remains a human action.
 ## Codex Policy
 
 - Codex home: `~/.codex-symphony`;
-- authentication: `auth.json` is a permission-restricted symlink to the
-  existing ChatGPT login; no credential is copied into a workspace;
+- authentication: `cli_auth_credentials_store = "keyring"` with a dedicated
+  OS keychain entry; startup refuses a file or symlink at
+  `~/.codex-symphony/auth.json`;
 - approval: `never`;
 - thread sandbox: `workspace-write`;
 - turn policy: workspace write with network access;
@@ -60,8 +61,10 @@ requires a direct `GH-<number>` clone under the configured workspace root and
 permits only:
 
 - clean-worktree fetch and issue-branch preparation; or
-- explicit-path staging, Conventional Commit creation, and push from the
-  matching issue branch after refusing unstaged or untracked residue.
+- literal, explicit-path staging, Conventional Commit creation, and push from
+  the matching issue branch after requiring an initially empty index, proving
+  the staged set exactly matches the authorized paths, and refusing unstaged
+  or untracked residue. Failed pre-commit validation restores an empty index.
 
 The executable is installed mode `0555` from the maintainer-controlled setup
 branch before Symphony starts; issue workers cannot replace it.
@@ -109,8 +112,9 @@ risk. Optional browser, Computer Use, and remote MCP tools remain disabled.
 
 ## Destructive-Action Protections
 
-- Symphony is stopped with a validated PID and `SIGTERM`; the script refuses an
-  unrelated process.
+- Symphony uses one fixed per-user launch label. Before removing it, the stop
+  script verifies that the registered job names this repository root and its
+  `scripts/run-symphony` entrypoint.
 - Workspace cleanup is manual and not implemented as recursive deletion.
 - The worker does not merge, close issues, force-push, rewrite history, or
   change protected settings.
@@ -125,6 +129,9 @@ risk. Optional browser, Computer Use, and remote MCP tools remain disabled.
   injected tracker tool.
 - The host process and current macOS account are outside the Codex workspace
   sandbox.
+- `workspace-write` restricts worker writes, not general host reads. Removing
+  file-based Codex credentials is therefore required; other readable host data
+  remains part of the macOS-user trust boundary.
 - Network access cannot be restricted to an allowlist by this workflow.
 - Dashboard history is limited; the status script and GitHub workpad provide
   operational evidence, not a tamper-proof audit log.
