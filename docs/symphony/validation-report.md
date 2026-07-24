@@ -1,6 +1,6 @@
 # Symphony Pilot Validation Report
 
-Status: pilot mechanics validated; autonomous PR creation externally blocked
+Status: pilot mechanics and autonomous issue-to-PR delivery validated
 
 ## Preflight Evidence
 
@@ -81,15 +81,20 @@ Validated:
 - `codex app /Users/Monsky/Developer/Codex/symphony-workspaces/agent-maintainer/GH-424`
   successfully opened the preserved workspace in Desktop.
 
-Blocked:
+Initially blocked, then resolved:
 
 - Pull-request creation returned an opaque GitHub server error through
   Symphony's injected REST tool, direct REST, and `gh pr create`, against both
   `main` and the stacked setup branch.
 - GitHub's status API reported API Requests and Pull Requests operational.
-- The branch, commit, verification artifacts, and workpad are preserved.
-  Issue #424 is `agent-blocked`; no credential, permission, or repository
-  setting change is indicated.
+- The branch, commit, verification artifacts, and workpad were preserved
+  without changing credentials, permissions, or repository settings.
+- After the post-review setup corrections were pushed, one controlled retry
+  opened pull request
+  [#426](https://github.com/douglasmonsky/agent-maintainer/pull/426) against the
+  intentional `codex/symphony-pilot` source branch.
+- The existing workpad records the PR and verification evidence. Issue #424
+  now carries only `human-review`.
 
 ## Token Evidence
 
@@ -121,10 +126,9 @@ intentionally withheld a harmless public terminology choice.
 ## Expansion Recommendation
 
 Do not expand this pilot yet. Keep one worker, no optional MCPs, and no
-auto-merge until:
+auto-merge until the setup PR is merged and:
 
-1. GitHub accepts PR creation for the preserved #424 branch.
-2. At least two more bounded tasks complete below an agreed token/call budget.
-3. A repository-only GitHub identity replaces the current broad user token.
-4. Serena or GitNexus is individually proven in a disposable isolated
+1. At least two more bounded tasks complete below an agreed token/call budget.
+2. A repository-only GitHub identity replaces the current broad user token.
+3. Serena or GitNexus is individually proven in a disposable isolated
    workspace before being allowlisted.
