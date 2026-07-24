@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+workspace_root="${SYMPHONY_WORKSPACE_ROOT:?SYMPHONY_WORKSPACE_ROOT is required}"
+workspace_root="$(cd "$workspace_root" && pwd -P)"
+repo_root="$(git rev-parse --show-toplevel)"
+repo_root="$(cd "$repo_root" && pwd -P)"
+workspace_name="$(basename "$repo_root")"
+
+if [[ "$(dirname "$repo_root")" != "$workspace_root" ]] ||
+  [[ ! "$workspace_name" =~ ^GH-([0-9]+)$ ]] ||
+  [[ ! -d "$repo_root/.git" ]] ||
+  [[ -L "$repo_root/.git" ]]; then
+  printf 'Refusing Git bridge outside a direct GH-<number> workspace clone.\n' >&2
+  exit 1
+fi
+
+issue_number="${BASH_REMATCH[1]}"
+issue_branch="codex/symphony-gh-$issue_number"
+cd "$repo_root"
+
+case "${1:-}" in
+  prepare)
+    [[ -z "$(git status --porcelain)" ]] || {
+      printf 'Refusing to prepare a dirty workspace.\n' >&2
+      exit 1
+    }
+    git fetch origin main
+    if git show-ref --verify --quiet "refs/heads/$issue_branch"; then
+      git switch "$issue_branch"
+    else
+      git switch -c "$issue_branch"
+    fi
+    ;;
+  publish)
+    shift
+    commit_message="${1:-}"
+    shift || true
+
+    [[ "$(git branch --show-current)" == "$issue_branch" ]] || {
+      printf 'Refusing to publish from any branch except %s.\n' "$issue_branch" >&2
+      exit 1
+    }
+    [[ "$commit_message" =~ ^(feat|fix|test|docs|chore|refactor):[[:space:]].+ ]] || {
+      printf 'Commit message must use an allowed Conventional Commit prefix.\n' >&2
+      exit 1
+    }
+    (($# > 0)) || {
+      printf 'Publish requires one or more explicit repository-relative paths.\n' >&2
+      exit 1
+    }
+
+    paths=()
+    for path in "$@"; do
+      if [[ "$path" == /* ]] || [[ "$path" == -* ]] ||
+        [[ "$path" == ".." ]] || [[ "$path" == ../* ]] ||
+        [[ "$path" == */../* ]] || [[ "$path" == */.. ]]; then
+        printf 'Unsafe publish path: %s\n' "$path" >&2
+        exit 1
+      fi
+      paths+=("$path")
+    done
+
+    git diff --check
+    git add -- "${paths[@]}"
+    git diff --cached --check
+    git diff --cached --quiet && {
+      printf 'No staged change to publish.\n' >&2
+      exit 1
+    }
+    git diff --quiet || {
+      printf 'Refusing to publish with unstaged tracked changes.\n' >&2
+      exit 1
+    }
+    [[ -z "$(git ls-files --others --exclude-standard)" ]] || {
+      printf 'Refusing to publish with untracked files outside the explicit set.\n' >&2
+      exit 1
+    }
+
+    git commit -m "$commit_message"
+    git push -u origin "$issue_branch"
+    ;;
+  *)
+    printf 'Usage: symphony-git prepare | publish <message> <path>...\n' >&2
+    exit 2
+    ;;
+esac

@@ -14,6 +14,7 @@ allowed_paths = [
   "config/dev-lock.txt",
   "docs/symphony/**",
   "scripts/run-symphony",
+  "scripts/symphony-git",
   "scripts/start-symphony",
   "scripts/status-symphony",
   "scripts/stop-symphony",

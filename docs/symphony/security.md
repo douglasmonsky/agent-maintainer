@@ -52,6 +52,20 @@ credential remains a human action.
 The worker must stop and label the issue blocked instead of seeking an
 interactive approval that no human is monitoring.
 
+A read-only host bridge at `~/.codex-symphony/bin/symphony-git` is the only
+allowed command outside the workspace sandbox. Codex protects `.git`
+recursively even when the checkout is a writable root. The corresponding
+execution rule matches only the absolute bridge path. The bridge independently
+requires a direct `GH-<number>` clone under the configured workspace root and
+permits only:
+
+- clean-worktree fetch and issue-branch preparation; or
+- explicit-path staging, Conventional Commit creation, and push from the
+  matching issue branch after refusing unstaged or untracked residue.
+
+The executable is installed mode `0555` from the maintainer-controlled setup
+branch before Symphony starts; issue workers cannot replace it.
+
 ## GitHub Tool
 
 Symphony's injected `github_api` executes in the host process using the

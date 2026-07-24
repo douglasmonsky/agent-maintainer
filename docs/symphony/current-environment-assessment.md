@@ -164,6 +164,9 @@ dependencies during this pilot.
 - Codex App Server isolation uses a dedicated `CODEX_HOME`, and repository
   skills live under
   `.agents/skills`.
+- Current Codex protects `.git` recursively under `workspace-write`. A
+  read-only, absolute-path execution-rule bridge performs only validated
+  issue-workspace branch preparation and explicit-path publication.
 - Codex Desktop does not need a private App Server deep link for intervention;
   the supported `codex app <workspace>` command opens the workspace as a new
   Desktop context.

@@ -11,23 +11,31 @@ are materially missing, block before editing.
 
 ## Execute
 
-1. Read the issue, applicable `AGENTS.md` files, and relevant architecture docs.
-2. Add `agent-running` while retaining `agent-ready`.
-3. Find or create one issue comment headed `## Symphony Workpad`. Keep the plan,
+1. Read the issue and reject missing or contradictory material sections.
+2. Run `/Users/Monsky/.codex-symphony/bin/symphony-git prepare` before broad
+   repository reading. It validates the issue workspace, fetches `origin/main`,
+   and creates or reuses `codex/symphony-gh-<issue-number>` outside the
+   protected Git metadata sandbox.
+3. Read applicable `AGENTS.md` files and only relevant architecture docs.
+4. Add `agent-running` while retaining `agent-ready`.
+5. Find or create one issue comment headed `## Symphony Workpad`. Keep the plan,
    acceptance checklist, current action, verification, and blockers there.
-4. Fetch `origin/main` and create or reuse `codex/symphony-gh-<issue-number>`.
-5. Reproduce or inspect first, implement only the issue scope, and add tests for
+6. Reproduce or inspect first, implement only the issue scope, and add tests for
    behavior changes.
-6. Run focused checks during development and `scripts/verify` at the coherent
+7. Run focused checks during development and `scripts/verify` at the coherent
    final state.
-7. Review status and diffs for scope, generated files, secrets, and private data.
-8. Commit with a focused Conventional Commit message and push the branch.
-9. Use `github_api` to open or update a pull request against `main`. Follow
+8. Review status and diffs for scope, generated files, secrets, and private data.
+9. Publish only explicit changed paths with
+   `/Users/Monsky/.codex-symphony/bin/symphony-git publish "<type>: <summary>" <path>...`.
+10. Use `github_api` to open or update a pull request against `main`. Follow
    `.github/pull_request_template.md` and record exact verification evidence.
 
 Use `github_api` for repository-scoped issue comments, labels, and pull-request
 operations. Do not expose its host-side credential or copy it into the
-workspace. Use normal `git` commands for branch and push operations.
+workspace. Do not run ordinary mutating `git` commands. Codex protects `.git`
+recursively under `workspace-write`; the installed, read-only bridge is narrowly
+allowed outside the sandbox and refuses any checkout outside a direct
+`GH-<number>` workspace, unexpected branch, implicit staging, or dirty publish.
 
 ## Hand Off
 

@@ -9,6 +9,8 @@ codex_home="${SYMPHONY_CODEX_HOME:-$HOME/.codex-symphony}"
 port="${SYMPHONY_PORT:-4000}"
 launch_label="${SYMPHONY_LAUNCH_LABEL:-com.openai.symphony.agent-maintainer}"
 service_log="$state_root/service.log"
+git_bridge_source="$repo_root/scripts/symphony-git"
+git_bridge="$codex_home/bin/symphony-git"
 
 mkdir -p "$state_root/logs" "$workspace_root"
 
@@ -27,6 +29,14 @@ fi
     "$codex_home/config.toml" >&2
   exit 1
 }
+
+[[ -x "$git_bridge_source" ]] || {
+  printf 'Symphony Git bridge is missing or not executable: %s\n' \
+    "$git_bridge_source" >&2
+  exit 1
+}
+mkdir -p "$codex_home/bin"
+install -m 0555 "$git_bridge_source" "$git_bridge"
 
 command -v gh >/dev/null
 gh auth status >/dev/null

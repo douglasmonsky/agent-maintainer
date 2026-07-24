@@ -46,6 +46,8 @@ for group in ("running", "retrying", "blocked"):
 while IFS=$'\t' read -r issue workspace; do
   [[ -n "$workspace" && -d "$workspace/.git" ]] || continue
   branch="$(git -C "$workspace" branch --show-current)"
+  issue_number="${issue#GH-}"
+  delivery_branch="codex/symphony-gh-$issue_number"
   changed_count="$(git -C "$workspace" status --short | wc -l | tr -d ' ')"
   recent_commit="$(git -C "$workspace" log -1 --format='%h %s')"
   verification="not-recorded"
@@ -64,13 +66,13 @@ print(data.get("status") or data.get("result") or "manifest-present")
   pr_url="$(
     gh pr list \
       --repo douglasmonsky/agent-maintainer \
-      --head "$branch" \
+      --head "$delivery_branch" \
       --state all \
       --json url \
       --jq '.[0].url // "none"'
   )"
-  printf 'Detail: %s branch=%s changed=%s verification=%s pr=%s\n' \
-    "$issue" "$branch" "$changed_count" "$verification" "$pr_url"
+  printf 'Detail: %s local_branch=%s delivery_branch=%s changed=%s verification=%s pr=%s\n' \
+    "$issue" "$branch" "$delivery_branch" "$changed_count" "$verification" "$pr_url"
   printf 'Recent commit: %s\n' "$recent_commit"
 done < <(
   printf '%s' "$payload" | python3 -c '

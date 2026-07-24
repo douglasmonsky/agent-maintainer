@@ -72,11 +72,13 @@ Follow these rules:
    acceptance criteria, verification, dependencies, and resolved human
    decisions. If a material section is missing or contradictory, use the
    blocked flow below before editing.
-3. Read every applicable `AGENTS.md`, then read
-   `.agents/skills/symphony-github-work/SKILL.md` and relevant architecture
+3. Before broad repository reading, run
+   `/Users/Monsky/.codex-symphony/bin/symphony-git prepare`. This validated host
+   bridge is the only permitted route for Git metadata writes under the
+   workspace sandbox. If it fails, use the blocked flow before editing.
+4. Read every applicable `AGENTS.md`, then read
+   `.agents/skills/symphony-github-work/SKILL.md` and only relevant architecture
    documentation.
-4. Inspect the branch and worktree. Fetch `origin/main`, then create or reuse
-   `codex/symphony-gh-{{ issue.id }}`. Never commit directly to `main`.
 5. Use the injected `github_api` tool for issue labels, the persistent workpad
    comment, and pull-request operations. Keep `agent-ready` while working and
    add `agent-running` before implementation.
@@ -94,8 +96,9 @@ Follow these rules:
 10. Review `git diff`, `git status`, and the staged diff for scope, generated
     artifacts, private data, and secrets. Update documentation when behavior or
     commands changed.
-11. Commit with a focused Conventional Commit message and push the dedicated
-    branch. Open or update a pull request against `main` using
+11. Publish explicit changed paths with
+    `/Users/Monsky/.codex-symphony/bin/symphony-git publish "<type>: <summary>" <path>...`.
+    Open or update a pull request against `main` using
     `.github/pull_request_template.md`. Include exact commands and results in
     the Verification section.
 12. On success, link the pull request in the workpad, add `human-review`, and

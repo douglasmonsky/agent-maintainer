@@ -43,6 +43,12 @@ The official `v0.0.2` binary also requires the explicit
 engineering-preview acknowledgement. The wrapper supplies it only alongside the
 pilot controls documented in the security model.
 
+At startup, the wrapper installs the validated Git bridge from
+`scripts/symphony-git` to `~/.codex-symphony/bin/symphony-git` with mode `0555`.
+The dedicated Codex execution rule allows only that absolute command outside
+the sandbox. This is required because `workspace-write` intentionally protects
+`.git`; it does not grant a worker general host filesystem access.
+
 ## Create an Eligible Issue
 
 Use the **Agent-ready task** issue form. Confirm every required section is
@@ -91,6 +97,9 @@ curl -fsS http://127.0.0.1:4000/api/v1/GH-123
 
 It reads structured Symphony JSON, Git state, `.verify-logs/manifest.json`, and
 GitHub metadata. It does not scrape terminal logs.
+
+The local branch and the expected `codex/symphony-gh-<number>` delivery branch
+are reported separately so a missing publication is visible.
 
 ## Intervene from Desktop
 

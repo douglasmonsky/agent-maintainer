@@ -27,6 +27,15 @@ be recorded here after the live run.
   `--profile symphony` live claim failed before its first turn because the
   installed CLI does not support profiles for `app-server`; the dedicated-home
   mechanism replaced it and retained strict CLI overrides.
+- The next live claim authenticated and reached its first turn, then correctly
+  blocked before editing because current Codex protects `.git/FETCH_HEAD` under
+  `workspace-write`. A mode-`0555`, absolute-path execution-rule bridge now
+  limits out-of-sandbox Git writes to the direct issue clone, matching issue
+  branch, explicit paths, Conventional Commit, and push.
+- That blocked claim used 306,082 aggregate input tokens across 12 calls;
+  266,496 (87.1%) were cached and 39,586 were non-cached. The bridge preflight
+  was moved ahead of broad repository reading so future permission failures
+  fail in the first few calls.
 - Initial service start failed closed because `v0.0.2` requires an explicit
   engineering-preview acknowledgement flag not shown in short help; the wrapper
   was corrected using the official CLI source before retrying.
