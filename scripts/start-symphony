@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+state_root="${SYMPHONY_STATE_ROOT:-$HOME/.codex/symphony/agent-maintainer}"
+workspace_root="${SYMPHONY_WORKSPACE_ROOT:-$HOME/Developer/Codex/symphony-workspaces/agent-maintainer}"
+symphony_bin="${SYMPHONY_BIN:-$HOME/.codex/bin/symphony}"
+codex_home="${SYMPHONY_CODEX_HOME:-$HOME/.codex-symphony}"
+port="${SYMPHONY_PORT:-4000}"
+launch_label="com.openai.symphony.agent-maintainer"
+service_log="$state_root/service.log"
+git_bridge_source="$repo_root/scripts/symphony-git"
+git_bridge="$codex_home/bin/symphony-git"
+
+mkdir -p "$state_root/logs" "$workspace_root"
+
+if launchctl print "gui/$UID/$launch_label" >/dev/null 2>&1; then
+  printf 'Symphony launch job is already registered (%s).\n' "$launch_label"
+  exit 0
+fi
+
+[[ -x "$symphony_bin" ]] || {
+  printf 'Symphony binary is missing or not executable: %s\n' "$symphony_bin" >&2
+  exit 1
+}
+
+[[ -r "$codex_home/config.toml" ]] || {
+  printf 'Symphony Codex config is missing or unreadable: %s\n' \
+    "$codex_home/config.toml" >&2
+  exit 1
+}
+if [[ -e "$codex_home/auth.json" ]] || [[ -L "$codex_home/auth.json" ]]; then
+  printf 'Refusing file-based Codex credentials in %s/auth.json.\n' \
+    "$codex_home" >&2
+  exit 1
+fi
+
+[[ -x "$git_bridge_source" ]] || {
+  printf 'Symphony Git bridge is missing or not executable: %s\n' \
+    "$git_bridge_source" >&2
+  exit 1
+}
+mkdir -p "$codex_home/bin"
+install -m 0555 "$git_bridge_source" "$git_bridge"
+
+command -v gh >/dev/null
+gh auth status >/dev/null
+codex_bin="${CODEX_BIN:-$(command -v codex)}"
+CODEX_HOME="$codex_home" "$codex_bin" login status >/dev/null
+
+launchctl submit \
+  -l "$launch_label" \
+  -o "$service_log" \
+  -e "$service_log" \
+  -- /usr/bin/env \
+  "HOME=$HOME" \
+  "PATH=$PATH" \
+  "CODEX_BIN=$codex_bin" \
+  "SYMPHONY_BIN=$symphony_bin" \
+  "SYMPHONY_CODEX_HOME=$codex_home" \
+  "SYMPHONY_PORT=$port" \
+  "SYMPHONY_REPO_ROOT=$repo_root" \
+  "SYMPHONY_SOURCE_REF=${SYMPHONY_SOURCE_REF:-main}" \
+  "SYMPHONY_STATE_ROOT=$state_root" \
+  "SYMPHONY_WORKSPACE_ROOT=$workspace_root" \
+  "$repo_root/scripts/run-symphony"
+
+for _ in {1..30}; do
+  if curl --fail --silent "http://127.0.0.1:$port/api/v1/state" >/dev/null; then
+    symphony_pid="$(
+      launchctl print "gui/$UID/$launch_label" |
+        awk '/pid =/ { print $3; exit }'
+    )"
+    printf 'Symphony started (pid %s).\n' "${symphony_pid:-unknown}"
+    printf 'Dashboard: http://127.0.0.1:%s/\n' "$port"
+    printf 'Workspaces: %s\n' "$workspace_root"
+    exit 0
+  fi
+  if ! launchctl print "gui/$UID/$launch_label" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 1
+done
+
+launchctl remove "$launch_label" >/dev/null 2>&1 || true
+printf 'Symphony did not become ready. See %s\n' "$service_log" >&2
+exit 1

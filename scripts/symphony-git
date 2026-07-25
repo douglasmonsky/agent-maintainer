@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+workspace_root="${SYMPHONY_WORKSPACE_ROOT:?SYMPHONY_WORKSPACE_ROOT is required}"
+workspace_root="$(cd "$workspace_root" && pwd -P)"
+repo_root="$(git rev-parse --show-toplevel)"
+repo_root="$(cd "$repo_root" && pwd -P)"
+workspace_name="$(basename "$repo_root")"
+
+if [[ "$(dirname "$repo_root")" != "$workspace_root" ]] ||
+  [[ ! "$workspace_name" =~ ^GH-([0-9]+)$ ]] ||
+  [[ ! -d "$repo_root/.git" ]] ||
+  [[ -L "$repo_root/.git" ]]; then
+  printf 'Refusing Git bridge outside a direct GH-<number> workspace clone.\n' >&2
+  exit 1
+fi
+
+issue_number="${BASH_REMATCH[1]}"
+issue_branch="codex/symphony-gh-$issue_number"
+cd "$repo_root"
+
+case "${1:-}" in
+  prepare)
+    [[ -z "$(git status --porcelain)" ]] || {
+      printf 'Refusing to prepare a dirty workspace.\n' >&2
+      exit 1
+    }
+    git fetch origin main
+    if git show-ref --verify --quiet "refs/heads/$issue_branch"; then
+      git switch "$issue_branch"
+    else
+      git switch -c "$issue_branch"
+    fi
+    ;;
+  publish)
+    shift
+    commit_message="${1:-}"
+    shift || true
+
+    [[ "$(git branch --show-current)" == "$issue_branch" ]] || {
+      printf 'Refusing to publish from any branch except %s.\n' "$issue_branch" >&2
+      exit 1
+    }
+    [[ "$commit_message" =~ ^(feat|fix|test|docs|chore|refactor):[[:space:]].+ ]] || {
+      printf 'Commit message must use an allowed Conventional Commit prefix.\n' >&2
+      exit 1
+    }
+    (($# > 0)) || {
+      printf 'Publish requires one or more explicit repository-relative paths.\n' >&2
+      exit 1
+    }
+    git diff --cached --quiet || {
+      printf 'Refusing to publish with a nonempty Git index.\n' >&2
+      exit 1
+    }
+
+    paths=()
+    for path in "$@"; do
+      if [[ -z "$path" ]] || [[ "$path" == "." ]] ||
+        [[ "$path" == /* ]] || [[ "$path" == -* ]] ||
+        [[ "$path" == :* ]] || [[ "$path" == *[\*\?\[\]]* ]] ||
+        [[ "$path" == ".." ]] || [[ "$path" == ../* ]] ||
+        [[ "$path" == */../* ]] || [[ "$path" == */.. ]]; then
+        printf 'Unsafe publish path: %s\n' "$path" >&2
+        exit 1
+      fi
+      if [[ ! -e "$repo_root/$path" ]] &&
+        [[ ! -L "$repo_root/$path" ]] &&
+        ! git --literal-pathspecs ls-files --error-unmatch -- "$path" \
+          >/dev/null 2>&1; then
+        printf 'Publish path does not exist and is not tracked: %s\n' "$path" >&2
+        exit 1
+      fi
+      paths+=("$path")
+    done
+
+    staging_active=1
+    cleanup_staging() {
+      if ((staging_active)); then
+        git reset --quiet -- || {
+          printf 'Warning: failed to restore an empty Git index.\n' >&2
+        }
+      fi
+    }
+    trap cleanup_staging EXIT
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+
+    git diff --check
+    git --literal-pathspecs add -- "${paths[@]}"
+    git diff --cached --check
+
+    staged_paths=()
+    while IFS= read -r -d '' staged_path; do
+      staged_paths+=("$staged_path")
+    done < <(git diff --cached --name-only -z)
+
+    validate_authorized_paths() {
+      local candidate_path authorized
+
+      (($# == ${#paths[@]})) || {
+        printf 'Changed paths do not exactly match the authorized publish paths.\n' >&2
+        return 1
+      }
+      for candidate_path in "$@"; do
+        authorized=0
+        for path in "${paths[@]}"; do
+          if [[ "$candidate_path" == "$path" ]]; then
+            authorized=1
+            break
+          fi
+        done
+        ((authorized)) || {
+          printf 'Unauthorized publish path: %s\n' "$candidate_path" >&2
+          return 1
+        }
+      done
+    }
+
+    if ((${#staged_paths[@]} > 0)); then
+      validate_authorized_paths "${staged_paths[@]}"
+    fi
+
+    git diff --quiet || {
+      printf 'Refusing to publish with unstaged tracked changes.\n' >&2
+      exit 1
+    }
+    [[ -z "$(git ls-files --others --exclude-standard)" ]] || {
+      printf 'Refusing to publish with untracked files outside the explicit set.\n' >&2
+      exit 1
+    }
+
+    if ((${#staged_paths[@]} == 0)); then
+      source_ref="${SYMPHONY_SOURCE_REF:?SYMPHONY_SOURCE_REF is required to resume a committed publish}"
+      git check-ref-format --branch "$source_ref" >/dev/null
+      base_ref="$source_ref"
+      if git show-ref --verify --quiet "refs/remotes/origin/$source_ref"; then
+        base_ref="origin/$source_ref"
+      fi
+      git rev-parse --verify --quiet "$base_ref" >/dev/null || {
+        printf 'Cannot resolve publication base: %s\n' "$source_ref" >&2
+        exit 1
+      }
+
+      committed_paths=()
+      while IFS= read -r -d '' committed_path; do
+        committed_paths+=("$committed_path")
+      done < <(git diff --name-only -z "$base_ref...HEAD" --)
+      ((${#committed_paths[@]} > 0)) || {
+        printf 'No staged or committed change to publish.\n' >&2
+        exit 1
+      }
+      validate_authorized_paths "${committed_paths[@]}"
+      staging_active=0
+      trap - EXIT HUP INT TERM
+      git push -u origin "$issue_branch"
+      exit 0
+    fi
+
+    git commit -m "$commit_message"
+    staging_active=0
+    trap - EXIT HUP INT TERM
+    git push -u origin "$issue_branch"
+    ;;
+  *)
+    printf 'Usage: symphony-git prepare | publish <message> <path>...\n' >&2
+    exit 2
+    ;;
+esac

@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+port="${SYMPHONY_PORT:-4000}"
+launch_label="com.openai.symphony.agent-maintainer"
+
+if ! launchctl print "gui/$UID/$launch_label" >/dev/null 2>&1; then
+  printf 'Symphony: stopped\n'
+  exit 1
+fi
+
+payload="$(curl --fail --silent "http://127.0.0.1:$port/api/v1/state")"
+symphony_pid="$(
+  launchctl print "gui/$UID/$launch_label" |
+    awk '/pid =/ { print $3; exit }'
+)"
+printf 'Symphony: running (pid %s)\n' "${symphony_pid:-unknown}"
+printf 'Dashboard: http://127.0.0.1:%s/\n' "$port"
+
+printf '%s' "$payload" | python3 -c '
+import json
+import sys
+
+data = json.load(sys.stdin)
+counts = data["counts"]
+print(
+    "Queue snapshot: "
+    f"running={counts['"'"'running'"'"']} "
+    f"retrying={counts['"'"'retrying'"'"']} "
+    f"blocked={counts['"'"'blocked'"'"']}"
+)
+for group in ("running", "retrying", "blocked"):
+    for item in data[group]:
+        issue = item["issue_identifier"]
+        workspace = item.get("workspace_path") or "-"
+        action = item.get("last_message") or item.get("error") or "-"
+        last_activity = (
+            item.get("last_event_at")
+            or item.get("blocked_at")
+            or item.get("due_at")
+            or "-"
+        )
+        turns = item.get("turn_count", 0)
+        attempt = item.get("attempt", 0)
+        print(
+            f"{group}: {issue} workspace={workspace} turns={turns} "
+            f"attempt={attempt} last_activity={last_activity} action={action}"
+        )
+'
+
+while IFS=$'\t' read -r issue workspace; do
+  [[ -n "$workspace" && -d "$workspace/.git" ]] || continue
+  branch="$(git -C "$workspace" branch --show-current)"
+  issue_number="${issue#GH-}"
+  delivery_branch="codex/symphony-gh-$issue_number"
+  changed_count="$(git -C "$workspace" status --short | wc -l | tr -d ' ')"
+  recent_commit="$(git -C "$workspace" log -1 --format='%h %s')"
+  verification="not-recorded"
+  if [[ -f "$workspace/.verify-logs/manifest.json" ]]; then
+    verification="$(
+      python3 -c '
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    data = json.load(handle)
+checks = data.get("checks") or []
+statuses = {
+    str(check.get("status") or "").lower()
+    for check in checks
+}
+failed = any(
+    check.get("exit_code") not in (None, 0)
+    or str(check.get("status") or "").lower()
+    in {"cancelled", "error", "failed", "timed-out", "timed_out"}
+    for check in checks
+)
+incomplete = not checks or bool(
+    statuses - {"passed", "skipped", "warning"}
+)
+warned = bool(statuses & {"skipped", "warning"})
+if failed:
+    outcome = "failed"
+elif incomplete:
+    outcome = "incomplete"
+elif warned:
+    outcome = "passed-with-warnings"
+else:
+    outcome = "passed"
+run_id = data.get("run_id") or "-"
+profile = data.get("profile") or "-"
+print(f"{outcome} run_id={run_id} profile={profile}")
+' "$workspace/.verify-logs/manifest.json"
+    )"
+  fi
+  pr_url="$(
+    gh pr list \
+      --repo douglasmonsky/agent-maintainer \
+      --head "$delivery_branch" \
+      --state all \
+      --json url \
+      --jq '.[0].url // "none"'
+  )"
+  printf 'Detail: %s local_branch=%s delivery_branch=%s changed=%s verification=%s pr=%s\n' \
+    "$issue" "$branch" "$delivery_branch" "$changed_count" "$verification" "$pr_url"
+  printf 'Recent commit: %s\n' "$recent_commit"
+done < <(
+  printf '%s' "$payload" | python3 -c '
+import json
+import sys
+
+data = json.load(sys.stdin)
+for group in ("running", "retrying", "blocked"):
+    for item in data[group]:
+        print(
+            f"{item['"'"'issue_identifier'"'"']}\t"
+            f"{item.get('"'"'workspace_path'"'"') or '"'"''"'"'}"
+        )
+'
+)

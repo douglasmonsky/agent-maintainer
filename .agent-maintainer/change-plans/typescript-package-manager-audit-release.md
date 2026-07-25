@@ -1,7 +1,7 @@
 +++
 id = "typescript-package-manager-audit-release"
 kind = "feat"
-status = "active"
+status = "complete"
 base_ref = "origin/main"
 expires = 2026-08-03
 allowed_paths = [
