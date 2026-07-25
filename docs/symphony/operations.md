@@ -111,6 +111,28 @@ GitHub metadata. It does not scrape terminal logs.
 The local branch and the expected `codex/symphony-gh-<number>` delivery branch
 are reported separately so a missing publication is visible.
 
+### Troubleshoot an Offline LiveView Badge
+
+If a headless dashboard capture shows an offline badge, first check the service:
+
+```bash
+scripts/status-symphony
+```
+
+Then check the JSON API directly:
+
+```bash
+curl --fail http://127.0.0.1:4000/api/v1/state
+```
+
+If both checks succeed, Symphony and its API are healthy. The offline badge
+describes the browser's LiveView WebSocket state, which a headless capture may
+fail to maintain; the badge alone is not evidence that the service is down. It
+can still indicate a real WebSocket problem. Inspect
+`~/.codex/symphony/agent-maintainer/service.log` for errors and open
+`http://127.0.0.1:4000/` in a normal interactive browser to confirm whether the
+LiveView connection remains online.
+
 ## Intervene from Desktop
 
 1. Remove `agent-ready` to prevent a new claim.
