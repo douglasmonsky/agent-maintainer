@@ -90,32 +90,37 @@ case "${1:-}" in
     git diff --check
     git --literal-pathspecs add -- "${paths[@]}"
     git diff --cached --check
-    git diff --cached --quiet && {
-      printf 'No staged change to publish.\n' >&2
-      exit 1
-    }
 
     staged_paths=()
     while IFS= read -r -d '' staged_path; do
       staged_paths+=("$staged_path")
     done < <(git diff --cached --name-only -z)
-    ((${#staged_paths[@]} == ${#paths[@]})) || {
-      printf 'Staged paths do not exactly match the authorized publish paths.\n' >&2
-      exit 1
-    }
-    for staged_path in "${staged_paths[@]}"; do
-      authorized=0
-      for path in "${paths[@]}"; do
-        if [[ "$staged_path" == "$path" ]]; then
-          authorized=1
-          break
-        fi
-      done
-      ((authorized)) || {
-        printf 'Unauthorized staged path: %s\n' "$staged_path" >&2
-        exit 1
+
+    validate_authorized_paths() {
+      local candidate_path authorized
+
+      (($# == ${#paths[@]})) || {
+        printf 'Changed paths do not exactly match the authorized publish paths.\n' >&2
+        return 1
       }
-    done
+      for candidate_path in "$@"; do
+        authorized=0
+        for path in "${paths[@]}"; do
+          if [[ "$candidate_path" == "$path" ]]; then
+            authorized=1
+            break
+          fi
+        done
+        ((authorized)) || {
+          printf 'Unauthorized publish path: %s\n' "$candidate_path" >&2
+          return 1
+        }
+      done
+    }
+
+    if ((${#staged_paths[@]} > 0)); then
+      validate_authorized_paths "${staged_paths[@]}"
+    fi
 
     git diff --quiet || {
       printf 'Refusing to publish with unstaged tracked changes.\n' >&2
@@ -125,6 +130,33 @@ case "${1:-}" in
       printf 'Refusing to publish with untracked files outside the explicit set.\n' >&2
       exit 1
     }
+
+    if ((${#staged_paths[@]} == 0)); then
+      source_ref="${SYMPHONY_SOURCE_REF:?SYMPHONY_SOURCE_REF is required to resume a committed publish}"
+      git check-ref-format --branch "$source_ref" >/dev/null
+      base_ref="$source_ref"
+      if git show-ref --verify --quiet "refs/remotes/origin/$source_ref"; then
+        base_ref="origin/$source_ref"
+      fi
+      git rev-parse --verify --quiet "$base_ref" >/dev/null || {
+        printf 'Cannot resolve publication base: %s\n' "$source_ref" >&2
+        exit 1
+      }
+
+      committed_paths=()
+      while IFS= read -r -d '' committed_path; do
+        committed_paths+=("$committed_path")
+      done < <(git diff --name-only -z "$base_ref...HEAD" --)
+      ((${#committed_paths[@]} > 0)) || {
+        printf 'No staged or committed change to publish.\n' >&2
+        exit 1
+      }
+      validate_authorized_paths "${committed_paths[@]}"
+      staging_active=0
+      trap - EXIT HUP INT TERM
+      git push -u origin "$issue_branch"
+      exit 0
+    fi
 
     git commit -m "$commit_message"
     staging_active=0
